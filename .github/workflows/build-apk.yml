@@ -41,6 +41,20 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
+      - name: Patch Android project (V5 build 1.2 — version bump + offline hygiene)
+        run: |
+          MF=android/app/src/main/AndroidManifest.xml
+          GR=android/app/build.gradle
+          # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
+          sed -i '/android.permission.INTERNET/d' "$MF" || true
+          # Bump version — BUILD_NOTES step 3
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 2/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "1.2"/' "$GR" || true
+          echo "----- AndroidManifest permissions -----"
+          grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
+          echo "----- versioning -----"
+          grep -nE "versionCode|versionName" "$GR" || true
+
       - name: Sync web assets into Android project
         run: npx --no-install cap sync android
 
@@ -55,7 +69,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v4-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build1.2-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -71,9 +85,14 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: "Saagar Control Centre — latest APK"
+          name: "Saagar Control Centre — V5 (build 1.2)"
           body: |
-            Fully offline Android build of the Business Control Centre (V4).
+            Fully offline Android build — Control Centre **V5 shell, build 1.2**.
+            New: DM Serif/Sans + navy-gold UI, bottom nav, Today's Brief, Reports
+            tab, action-only attention list. Includes the rebuilt Expense Manager
+            (central ledger). INTERNET permission removed (fully offline).
+            Existing data is preserved on update.
+
             Download **SaagarControlCentre-latest.apk** below, copy it to the
             phone, and tap to install (allow "install from unknown sources").
           files: out/*.apk
