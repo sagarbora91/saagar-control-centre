@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRO Daily Audit v3 — Saagar Traders</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d2340;--navy-mid:#1a3a5c;--navy-light:#264d7a;
+  --gold:#b8922a;--gold-light:#d4a843;--gold-pale:#fdf6e3;
+  --cream:#faf8f3;--white:#fff;
+  --red:#b91c1c;--red-pale:#fef2f2;
+  --amber:#b45309;--amber-pale:#fffbeb;
+  --green:#166534;--green-pale:#f0fdf4;--green-mid:#bbf7d0;
+  --teal:#0f766e;--teal-pale:#f0fdfa;
+  --g50:#fafafa;--g100:#f4f4f5;--g200:#e4e4e7;--g300:#d4d4d8;
+  --g400:#a1a1aa;--g500:#71717a;--g600:#52525b;--g800:#27272a;
+  --sh:0 2px 12px rgba(13,35,64,.08);--sh-lg:0 8px 28px rgba(13,35,64,.13);
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--g800);min-height:100vh;}
+
+/* HEADER */
+.ph{background:var(--navy);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:300;box-shadow:0 2px 16px rgba(0,0,0,.22);}
+.brand{font-family:'DM Serif Display',serif;font-size:19px;color:var(--gold-light);}
+.brand-sub{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.hbadge{background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.05em;}
+
+/* SCORE BANNER */
+.score-banner{background:var(--navy-mid);padding:9px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:54px;z-index:200;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-left{display:flex;align-items:center;gap:13px;}
+.sb-num{font-family:'DM Serif Display',serif;font-size:24px;color:var(--white);line-height:1;}
+.sb-denom{font-size:12px;color:rgba(255,255,255,.33);margin-left:1px;}
+.sb-lbl{font-size:9px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.07em;margin-top:1px;}
+.sb-tasks{font-size:11px;color:rgba(255,255,255,.42);}
+.sb-bar{flex:1;min-width:90px;max-width:160px;}
+.sb-track{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.sb-fill{height:5px;border-radius:3px;transition:width .3s;background:var(--gold-light);}
+.gpill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.g-out{background:#dcfce7;color:#14532d;}
+.g-good{background:#cffafe;color:#164e63;}
+.g-sat{background:#fef9c3;color:#713f12;}
+.g-below{background:#ffedd5;color:#7c2d12;}
+.g-poor{background:var(--red-pale);color:var(--red);}
+
+/* TABS */
+.tabs{background:var(--navy-mid);display:flex;padding:0 26px;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.06);}
+.tab{padding:10px 15px;font-size:12px;font-weight:500;color:rgba(255,255,255,.36);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none;}
+.tab:hover{color:rgba(255,255,255,.7);}
+.tab.active{color:var(--gold-light);border-bottom-color:var(--gold-light);}
+
+/* LAYOUT */
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 70px;}
+.sec{display:none;}.sec.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);padding:18px 20px;margin-bottom:14px;}
+.card-title{font-family:'DM Serif Display',serif;font-size:16px;color:var(--navy);margin-bottom:3px;}
+.card-sub{font-size:12px;color:var(--g500);margin-bottom:16px;}
+
+/* FORM */
+.frow{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:13px;}
+.fg{flex:1;min-width:160px;}
+.flabel{display:block;font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.finput,.fsel{width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--g800);outline:none;background:var(--white);transition:border .15s;}
+.finput:focus,.fsel:focus{border-color:var(--navy);}
+.sbtn{width:100%;padding:11px;background:var(--navy);color:var(--white);border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;margin-top:2px;}
+.sbtn:hover{background:var(--navy-mid);}
+.sbtn.green{background:var(--green);}.sbtn.green:hover{background:#14532d;}
+
+/* TASK CARDS */
+.task-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:11px;overflow:hidden;transition:border-color .2s;}
+.task-card.r0{border-left:4px solid var(--red);}
+.task-card.r4{border-left:4px solid var(--amber);}
+.task-card.r7{border-left:4px solid var(--navy-light);}
+.task-card.r10{border-left:4px solid var(--green);}
+.task-card.rauto{border-left:4px solid var(--teal);}
+.task-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;gap:10px;cursor:pointer;user-select:none;}
+.task-left{display:flex;align-items:center;gap:10px;}
+.tnum{width:26px;height:26px;border-radius:50%;background:var(--g100);color:var(--g600);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.task-card.r0 .tnum{background:var(--red-pale);color:var(--red);}
+.task-card.r4 .tnum{background:var(--amber-pale);color:var(--amber);}
+.task-card.r7 .tnum{background:#eef4fb;color:var(--navy);}
+.task-card.r10 .tnum{background:var(--green-pale);color:var(--green);}
+.task-card.rauto .tnum{background:var(--teal-pale);color:var(--teal);}
+.task-ttl{font-size:13px;font-weight:600;color:var(--navy);}
+.task-dsc{font-size:11px;color:var(--g400);margin-top:1px;}
+.tpts{font-size:12px;font-weight:700;color:var(--g400);white-space:nowrap;}
+.tpts.scored{color:var(--navy);}
+.task-body{padding:0 16px 14px;}
+
+/* CRITERIA */
+.crit-tog{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g400);cursor:pointer;user-select:none;margin-bottom:8px;}
+.crit-tog:hover{color:var(--g600);}
+.crit-box{margin-bottom:10px;padding:9px 12px;background:var(--g50);border-radius:7px;border:1px solid var(--g100);}
+.crit-item{font-size:12px;color:var(--g600);padding:2px 0;display:flex;gap:6px;}
+.crit-item::before{content:'•';color:var(--gold);flex-shrink:0;}
+
+/* QUAL RATING BUTTONS */
+.rgroup{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.rbtn{padding:8px 3px;border:1.5px solid var(--g200);border-radius:7px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;user-select:none;background:var(--white);color:var(--g500);}
+.rbtn:hover{border-color:var(--g400);background:var(--g50);}
+.rbtn .rpts{font-size:15px;font-family:'DM Serif Display',serif;display:block;color:var(--g800);}
+.rbtn.ar0{background:var(--red-pale);border-color:var(--red);color:var(--red);}
+.rbtn.ar0 .rpts{color:var(--red);}
+.rbtn.ar4{background:var(--amber-pale);border-color:var(--amber);color:var(--amber);}
+.rbtn.ar4 .rpts{color:var(--amber);}
+.rbtn.ar7{background:#eef4fb;border-color:var(--navy);color:var(--navy);}
+.rbtn.ar7 .rpts{color:var(--navy);}
+.rbtn.ar10{background:var(--green-pale);border-color:var(--green);color:var(--green);}
+.rbtn.ar10 .rpts{color:var(--green);}
+
+/* METRIC INPUTS (quantitative tasks) */
+.metric-grp{background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:11px 13px;margin-bottom:10px;}
+.mrow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--g200);}
+.mrow:last-child{border-bottom:none;padding-bottom:0;}
+.ml{flex:1;}
+.ml-name{font-size:12px;font-weight:600;color:var(--g800);}
+.ml-hint{font-size:10px;color:var(--g400);margin-top:1px;}
+.mr{display:flex;align-items:center;gap:7px;}
+.minp{width:70px;padding:5px 7px;border:1.5px solid var(--g200);border-radius:6px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;text-align:center;outline:none;background:var(--white);}
+.minp:focus{border-color:var(--navy);}
+.minp.ro{background:var(--g50);color:var(--navy);cursor:default;}
+.mbar-wrap{width:70px;flex-shrink:0;}
+.mbar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.mbar-fill{height:5px;border-radius:3px;transition:width .3s;}
+.mpct{font-size:10px;font-weight:700;color:var(--g600);min-width:32px;text-align:right;}
+
+/* AUTO SCORE STRIP */
+.auto-strip{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:7px;background:var(--teal-pale);border:1px solid rgba(15,118,110,.2);margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.as-score{font-family:'DM Serif Display',serif;font-size:19px;color:var(--teal);}
+.as-score sub{font-size:11px;opacity:.6;}
+.as-break{font-size:11px;color:var(--teal);opacity:.75;flex:1;text-align:right;}
+
+/* WEEK / MONTH PROGRESS */
+.wm-prog{margin-bottom:10px;}
+.wm-row{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--g50);border:1px solid var(--g100);border-radius:6px;margin-bottom:5px;}
+.wm-lbl{font-size:11px;color:var(--g600);flex:1;}
+.wm-val{font-size:11px;font-weight:700;color:var(--navy);min-width:60px;text-align:right;}
+.wm-bar-wrap{width:80px;flex-shrink:0;}
+.wm-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.wm-fill{height:5px;border-radius:3px;transition:width .3s;}
+.wm-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;white-space:nowrap;}
+.wm-tag.on{background:var(--green-pale);color:var(--green);}
+.wm-tag.off{background:var(--amber-pale);color:var(--amber);}
+
+/* REMARKS */
+.rem-lbl{font-size:10px;color:var(--g500);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.rem-inp{width:100%;padding:7px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--g800);resize:vertical;min-height:50px;outline:none;}
+.rem-inp:focus{border-color:var(--navy);}
+.rem-inp::placeholder{color:var(--g400);}
+
+/* SCORE CHIPS */
+.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px;}
+.sc-chip{background:var(--g100);border-radius:7px;padding:7px 5px;text-align:center;}
+.sc-chip.p0{background:var(--red-pale);}
+.sc-chip.p4{background:var(--amber-pale);}
+.sc-chip.p5{background:var(--amber-pale);}
+.sc-chip.p7{background:#eef4fb;}
+.sc-chip.p8{background:#eef4fb;}
+.sc-chip.p9{background:var(--green-pale);}
+.sc-chip.p10{background:var(--green-pale);}
+.sc-n{font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;}
+.sc-v{font-family:'DM Serif Display',serif;font-size:16px;line-height:1;margin-top:2px;}
+.sc-chip.p0 .sc-v{color:var(--red);}
+.sc-chip.p4 .sc-v,.sc-chip.p5 .sc-v{color:var(--amber);}
+.sc-chip.p7 .sc-v,.sc-chip.p8 .sc-v{color:var(--navy);}
+.sc-chip.p9 .sc-v,.sc-chip.p10 .sc-v{color:var(--green);}
+
+/* SUBMIT CARD */
+.submit-dk{background:var(--navy);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;}
+.submit-dk .card-title{color:var(--gold-light);}
+.submit-dk .card-sub{color:rgba(255,255,255,.38);}
+.sub-meta{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.38);margin-bottom:5px;}
+.sub-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:13px;}
+.sub-fill{height:5px;border-radius:3px;background:var(--gold-light);transition:width .35s;}
+.unrated-list{font-size:11px;color:var(--red-pale);margin-bottom:10px;padding:7px 10px;background:rgba(185,28,28,.15);border-radius:6px;display:none;}
+
+/* DASHBOARD */
+.period-toggle{display:flex;gap:7px;margin-bottom:14px;}
+.pt-btn{padding:7px 16px;border:1.5px solid var(--g200);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--white);color:var(--g600);transition:all .15s;}
+.pt-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+.period-nav{display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:10px 15px;margin-bottom:14px;box-shadow:var(--sh);}
+.pn-lbl{font-family:'DM Serif Display',serif;font-size:15px;color:var(--navy);}
+.pn-sub{font-size:10px;color:var(--g400);margin-top:2px;}
+.pn-btn{background:var(--g100);border:1px solid var(--g200);border-radius:6px;padding:6px 11px;font-size:11px;cursor:pointer;color:var(--g600);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.pn-btn:hover{background:var(--g200);}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px;}
+.kpi-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);line-height:1;}
+.kpi-sub{font-size:10px;color:var(--g400);margin-top:3px;}
+.kpi-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;margin-top:7px;}
+.kpi-fill{height:5px;border-radius:3px;transition:width .4s;}
+.kpi-met{font-size:10px;font-weight:700;color:var(--green);margin-top:3px;}
+.dash-sec-lbl{font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;}
+.cpc{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:8px;overflow:hidden;}
+.cpc-top{height:3px;}
+.cpc-body{padding:11px 15px;}
+.cpc-r1{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;}
+.cpc-name{font-size:13px;font-weight:600;color:var(--navy);}
+.cpc-meta{font-size:10px;color:var(--g400);margin-top:2px;}
+.cpc-right{display:flex;align-items:center;gap:7px;}
+.cpc-score{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);}
+.trend{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;}
+.trend.up{background:#dcfce7;color:#14532d;}
+.trend.dn{background:var(--red-pale);color:var(--red);}
+.trend.eq{background:var(--g100);color:var(--g600);}
+.cpc-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--g100);}
+.cpc-kpi{font-size:11px;color:var(--g600);}
+.cpc-kv{font-weight:700;color:var(--navy);}
+.thr{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--g100);}
+.thr:last-child{border-bottom:none;}
+.thr-name{flex:1;font-size:12px;color:var(--g800);}
+.thr-bwrap{width:100px;flex-shrink:0;}
+.thr-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.thr-fill{height:5px;border-radius:3px;}
+.thr-sc{font-size:12px;font-weight:700;min-width:34px;text-align:right;}
+
+/* HISTORY */
+.hi-filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end;}
+.hi-item{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:8px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;}
+.hi-item:hover{box-shadow:var(--sh-lg);}
+.hi-bar{height:3px;}
+.hi-body{display:flex;align-items:center;padding:11px 14px;gap:10px;flex-wrap:wrap;}
+.hi-date{font-size:10px;color:var(--g500);background:var(--g100);padding:3px 7px;border-radius:5px;white-space:nowrap;}
+.hi-cro{font-size:13px;font-weight:600;color:var(--navy);flex:1;}
+.hi-store{font-size:10px;color:var(--g400);}
+.hi-spill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.hi-del{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;padding:3px 5px;transition:color .15s;line-height:1;}
+.hi-del:hover{color:var(--red);}
+
+/* SETTINGS */
+.set-hint{font-size:11px;color:var(--g500);background:var(--g50);border:1px solid var(--g200);border-radius:7px;padding:8px 11px;margin-bottom:14px;}
+.set-derived{font-size:10px;color:var(--teal);margin-top:3px;font-weight:600;}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:18px;}
+.stat-c{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);}
+.st-lbl{font-size:9px;color:var(--g400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.st-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);}
+.st-sub{font-size:10px;color:var(--g400);margin-top:2px;}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--g400);}
+.empty-ico{font-size:32px;margin-bottom:8px;}
+.empty-t{font-size:13px;font-weight:600;color:var(--g600);margin-bottom:3px;}
+.empty-s{font-size:11px;}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:14px;}
+.mo.show{display:flex;}
+.modal{background:var(--white);border-radius:12px;box-shadow:var(--sh-lg);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
+.mhead{background:var(--navy);padding:16px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.mtitle{font-family:'DM Serif Display',serif;font-size:16px;color:var(--gold-light);}
+.mclose{background:none;border:none;color:rgba(255,255,255,.38);font-size:18px;cursor:pointer;padding:2px 5px;border-radius:4px;transition:color .15s;}
+.mclose:hover{color:var(--white);}
+.mbody{padding:18px 20px;}
+.res-score{text-align:center;padding:14px 0 10px;}
+.res-big{font-family:'DM Serif Display',serif;font-size:48px;color:var(--navy);line-height:1;}
+.res-bar{height:8px;background:var(--g200);border-radius:4px;overflow:hidden;margin:9px 0 12px;}
+.res-fill{height:8px;border-radius:4px;transition:width .5s;}
+.mpills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:13px;}
+.mpill{display:inline-flex;align-items:center;gap:4px;background:var(--g100);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--g600);}
+.trr{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--g100);}
+.trr:last-child{border-bottom:none;}
+.trr-i{font-size:10px;font-weight:700;color:var(--g400);width:16px;text-align:center;flex-shrink:0;margin-top:2px;}
+.trr-n{flex:1;font-size:12px;color:var(--g800);}
+.trr-d{font-size:10px;color:var(--g400);margin-top:1px;}
+.trr-s{font-size:12px;font-weight:700;min-width:35px;text-align:right;}
+.trr-s.s0{color:var(--red);}
+.trr-s.s4,.trr-s.s5{color:var(--amber);}
+.trr-s.s6,.trr-s.s7,.trr-s.s8,.trr-s.s9{color:var(--navy);}
+.trr-s.s10{color:var(--green);}
+.print-btn{width:100%;padding:10px;background:var(--g100);border:1px solid var(--g200);border-radius:7px;font-size:12px;font-weight:600;color:var(--g700,#27272a);cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;margin-top:11px;}
+.print-btn:hover{background:var(--g200);}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);padding:8px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+.footer{background:var(--navy);padding:12px 26px;text-align:center;font-size:9px;color:rgba(255,255,255,.22);letter-spacing:.06em;}
+
+@media(max-width:560px){
+  .ph,.tabs{padding-left:12px;padding-right:12px;}
+  .score-banner{padding:8px 12px;top:52px;}
+  .wrap{padding:12px 10px 55px;}
+  .card{padding:13px 12px;}
+  .rgroup{gap:5px;}
+  .rbtn{padding:7px 2px;font-size:10px;}
+  .rbtn .rpts{font-size:13px;}
+  .mbar-wrap,.sb-bar,.thr-bwrap,.wm-bar-wrap{display:none;}
+  .sc-grid{grid-template-columns:repeat(5,1fr);}
+}
+</style>
+</head>
+<body>
+
+<div class="ph">
+  <div>
+    <div class="brand">Saagar Traders</div>
+    <div class="brand-sub">Titan World &amp; Helios · Latur</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:10px;color:rgba(255,255,255,.38);margin-bottom:3px" id="hdate"></div>
+    <div class="hbadge">CRO DAILY AUDIT</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="go('audit')" id="tab-audit">New Audit</div>
+  <div class="tab" onclick="go('dash')"    id="tab-dash">Dashboard</div>
+  <div class="tab" onclick="go('history')" id="tab-history">History</div>
+  <div class="tab" onclick="go('settings')" id="tab-settings">Settings</div>
+</div>
+
+<div class="score-banner" id="score-banner">
+  <div class="sb-left">
+    <div>
+      <div><span class="sb-num" id="sb-num">0</span><span class="sb-denom">/100</span></div>
+      <div class="sb-lbl">Live Score</div>
+    </div>
+    <div class="gpill g-poor" id="sb-grade">—</div>
+  </div>
+  <div class="sb-tasks" id="sb-tasks">0 / 10 rated</div>
+  <div class="sb-bar">
+    <div style="font-size:9px;color:rgba(255,255,255,.28);margin-bottom:2px" id="sb-pct">0%</div>
+    <div class="sb-track"><div class="sb-fill" id="sb-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ════ AUDIT ════ -->
+<div class="sec active" id="sec-audit">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Audit Session</div>
+      <div class="card-sub">Fill session details, then rate all 10 tasks</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Date</label>
+          <input class="finput" type="date" id="f-date">
+        </div>
+        <div class="fg">
+          <label class="flabel">Store</label>
+          <select class="fsel" id="f-store">
+            <option value="">Select…</option>
+            <option>Titan World, Latur</option>
+            <option>Helios, Latur</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:2">
+          <label class="flabel">CRO Name</label>
+          <input class="finput" type="text" id="f-cro" placeholder="CRO full name" list="cro-dl" autocomplete="off">
+          <datalist id="cro-dl">
+            <option value="Rahul Sharma"><option value="Priya Patil">
+            <option value="Suresh Kulkarni"><option value="Anita Deshmukh"><option value="Vijay Jadhav">
+          </datalist>
+        </div>
+        <div class="fg">
+          <label class="flabel">SM (Auditor)</label>
+          <input class="finput" type="text" id="f-sm" placeholder="SM name" list="sm-dl" autocomplete="off">
+          <datalist id="sm-dl"><option value="Sagar"><option value="Vikram Patil"></datalist>
+        </div>
+      </div>
+    </div>
+
+    <div id="tasks-area"></div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px">Score Summary (all 10 tasks)</div>
+      <div class="sc-grid" id="sc-grid"></div>
+    </div>
+
+    <div class="submit-dk" id="submit-dk">
+      <div class="card-title">Submit Audit</div>
+      <div class="card-sub" id="sub-sub">Rate all qualitative tasks before submitting</div>
+      <div class="unrated-list" id="unrated-list"></div>
+      <div class="sub-meta"><span id="sub-done">0 rated</span><span id="sub-pts">0 / 100 pts</span></div>
+      <div class="sub-bar"><div class="sub-fill" id="sub-fill" style="width:0%"></div></div>
+      <button class="sbtn green" onclick="submitAudit()">Save &amp; Submit Audit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div class="sec" id="sec-dash">
+  <div class="wrap">
+    <div class="period-toggle">
+      <button class="pt-btn active" id="pt-week" onclick="setPeriod('week')">Weekly</button>
+      <button class="pt-btn" id="pt-month" onclick="setPeriod('month')">Monthly</button>
+    </div>
+    <div class="period-nav">
+      <button class="pn-btn" onclick="shiftPeriod(-1)">← Prev</button>
+      <div style="text-align:center">
+        <div class="pn-lbl" id="pn-lbl">—</div>
+        <div class="pn-sub" id="pn-sub"></div>
+      </div>
+      <button class="pn-btn" onclick="shiftPeriod(1)">Next →</button>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+</div>
+
+<!-- ════ HISTORY ════ -->
+<div class="sec" id="sec-history">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Audit History</div>
+      <div class="card-sub">Click any record to view full breakdown</div>
+      <div class="hi-filters">
+        <div class="fg"><label class="flabel">CRO</label>
+          <input class="finput" type="text" id="h-cro" placeholder="All" oninput="renderHistory()"></div>
+        <div class="fg"><label class="flabel">From</label>
+          <input class="finput" type="date" id="h-from" onchange="renderHistory()"></div>
+        <div class="fg"><label class="flabel">To</label>
+          <input class="finput" type="date" id="h-to" onchange="renderHistory()"></div>
+        <div class="fg" style="display:flex;align-items:flex-end">
+          <button class="sbtn" style="margin-top:0" onclick="clearHF()">Clear</button></div>
+      </div>
+      <div class="stat-grid" id="hist-stats"></div>
+      <div id="hist-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+<div class="sec" id="sec-settings">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Monthly KPI Targets</div>
+      <div class="card-sub">Enter monthly targets — weekly and daily breakdowns are calculated automatically</div>
+      <div class="set-hint">These targets drive scoring for Tasks 5, 6, 7 and appear as progress benchmarks in the audit form and dashboard.</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">NPS Surveys / Month</label>
+          <input class="finput" type="number" id="s-surveys" min="1" placeholder="80" oninput="updDerived()">
+          <div class="set-derived" id="d-surveys">Weekly: ~18 · Daily: ~3</div>
+        </div>
+        <div class="fg">
+          <label class="flabel">NPS Score Target (0–100)</label>
+          <input class="finput" type="number" id="s-nps-score" min="1" max="100" placeholder="85" oninput="updDerived()">
+          <div class="set-derived" id="d-nps">Score ≥ 85 = full 5 pts</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Response Rate Target (%)</label>
+          <input class="finput" type="number" id="s-rate" min="1" max="100" placeholder="40" oninput="updDerived()">
+          <div class="set-derived" id="d-rate">Surveys ÷ Bills × 100 — target 40%</div>
+        </div>
+        <div class="fg">
+          <label class="flabel">Google Reviews / Month</label>
+          <input class="finput" type="number" id="s-reviews" min="1" placeholder="30" oninput="updDerived()">
+          <div class="set-derived" id="d-reviews">Weekly: ~7 · Daily: ~1</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Marketing Activities / Month</label>
+          <input class="finput" type="number" id="s-mktg" min="1" placeholder="120" oninput="updDerived()">
+          <div class="set-derived" id="d-mktg">Calls + visits. Weekly: ~28 · Daily: ~5</div>
+        </div>
+        <div class="fg"></div>
+      </div>
+      <button class="sbtn" onclick="saveSettings()">Save Targets</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Scoring Reference</div>
+      <div class="card-sub">How each task is scored out of 10</div>
+      <div id="scoring-ref"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mo" onclick="closeMO(event)">
+  <div class="modal" id="modal-box">
+    <div class="mhead">
+      <div class="mtitle" id="m-title">Audit Result</div>
+      <button class="mclose" onclick="hideMO()">✕</button>
+    </div>
+    <div class="mbody" id="m-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="footer">Saagar Traders · CRO Daily Audit · Data stored in browser localStorage</div>
+
+<script>
+/* ──────────────────────────────────────────
+   TASK DEFINITIONS
+────────────────────────────────────────── */
+const TASKS = [
+  { id:'t1', n:1,  title:'Open Stock',               type:'qual',
+    desc:'Count & verify stock at store opening',
+    criteria:['Physical stock count completed before first customer','Matches previous day closing stock record','Discrepancies reported to SM immediately'] },
+  { id:'t2', n:2,  title:'Display Management',        type:'qual',
+    desc:'All displays organised, correct product placement',
+    criteria:['All display stands / counters neatly arranged','Correct price tags visible on every product','Glass, trays & boards dusted and clean'] },
+  { id:'t3', n:3,  title:'Sale Recording',            type:'qual',
+    desc:'Every transaction accurately recorded',
+    criteria:['All sales entered in system / register same day','Customer name & contact captured per bill','Bills generated, serial-numbered & filed'] },
+  { id:'t4', n:4,  title:'Non-Purchase Recording',    type:'qual',
+    desc:'Track walk-ins who left without buying',
+    criteria:['Total footfall count recorded throughout the day','Reason for non-purchase noted per visitor','Follow-up / callback action planned where applicable'] },
+  { id:'t5', n:5,  title:'Thank You Calling — NPS',   type:'nps',
+    desc:'Collect NPS surveys; response rate = surveys ÷ bills × 100',
+    criteria:['TY calls made to recent customers for NPS collection','NPS score recorded per survey (0–100 scale)','Complaints escalated to SM same day'] },
+  { id:'t6', n:6,  title:'Google Review Collection',  type:'reviews',
+    desc:'Request & collect Google reviews vs monthly target',
+    criteria:['Review QR / link shared proactively at billing','Verbal request to every satisfied customer','Daily count recorded & monthly target tracked'] },
+  { id:'t7', n:7,  title:'Marketing Activity',        type:'activity',
+    desc:'Outbound calls + door-to-door visits for leads',
+    criteria:['Outbound calls to prospects / wedding lists / referrals','Door-to-door visits in catchment area','Lead details & follow-up noted in register'] },
+  { id:'t8', n:8,  title:'Closing Stock',             type:'qual',
+    desc:'Full closing count + EOD report submitted to SM',
+    criteria:['Physical closing count completed before shutdown','Matches opening stock minus today\'s sales','EOD stock report submitted to SM before leaving'] },
+  { id:'t9', n:9,  title:'Grooming Score',            type:'grooming',
+    desc:'Enter % from the daily grooming checklist',
+    criteria:['Uniform — clean, ironed, well-fitted all day','Name badge clearly visible during store hours','Personal hygiene & presentation maintained'] },
+  { id:'t10',n:10, title:'Store Discipline',          type:'qual',
+    desc:'Punctuality, conduct & store environment',
+    criteria:['On time — no unauthorised absences or late arrivals','Personal phone use minimised on floor','Store kept clean, organised & welcoming all day'] }
+];
+
+const QUAL_R = [
+  { val:0,  label:'Not Done',   cls:'ar0'  },
+  { val:4,  label:'Below Exp.', cls:'ar4'  },
+  { val:7,  label:'Met Exp.',   cls:'ar7'  },
+  { val:10, label:'Exceeded',   cls:'ar10' }
+];
+
+/* ──────────────────────────────────────────
+   SETTINGS
+────────────────────────────────────────── */
+const DEF = { surveys:80, npsScore:85, rate:40, reviews:30, mktg:120 };
+
+function getS(){ try{ return Object.assign({},DEF,JSON.parse(localStorage.getItem('cro_s_v3')||'{}')); }catch(e){ return {...DEF}; } }
+
+function saveSettings(){
+  const s={
+    surveys: +document.getElementById('s-surveys').value||DEF.surveys,
+    npsScore:+document.getElementById('s-nps-score').value||DEF.npsScore,
+    rate:    +document.getElementById('s-rate').value||DEF.rate,
+    reviews: +document.getElementById('s-reviews').value||DEF.reviews,
+    mktg:    +document.getElementById('s-mktg').value||DEF.mktg
+  };
+  localStorage.setItem('cro_s_v3', JSON.stringify(s));
+  showToast('Targets saved!');
+  buildTasks(); // rebuild to reflect new targets in cards
+}
+
+function loadSettingsForm(){
+  const s=getS();
+  document.getElementById('s-surveys').value  = s.surveys;
+  document.getElementById('s-nps-score').value= s.npsScore;
+  document.getElementById('s-rate').value     = s.rate;
+  document.getElementById('s-reviews').value  = s.reviews;
+  document.getElementById('s-mktg').value     = s.mktg;
+  updDerived();
+}
+
+function wkly(m){ return Math.ceil(m/4.33); }
+function daily(m){ return Math.max(1,Math.ceil(m/26)); }
+
+function updDerived(){
+  const sur  = +document.getElementById('s-surveys').value||DEF.surveys;
+  const rev  = +document.getElementById('s-reviews').value||DEF.reviews;
+  const mktg = +document.getElementById('s-mktg').value||DEF.mktg;
+  const nps  = +document.getElementById('s-nps-score').value||DEF.npsScore;
+  const rate = +document.getElementById('s-rate').value||DEF.rate;
+  document.getElementById('d-surveys').textContent = `Weekly: ~${wkly(sur)} surveys · Daily: ~${daily(sur)}`;
+  document.getElementById('d-reviews').textContent = `Weekly: ~${wkly(rev)} reviews · Daily: ~${daily(rev)}`;
+  document.getElementById('d-mktg').textContent    = `Weekly: ~${wkly(mktg)} activities · Daily: ~${daily(mktg)}`;
+  document.getElementById('d-nps').textContent     = `Score ≥ ${nps} = full 5 pts (out of 10 for Task 5)`;
+  document.getElementById('d-rate').textContent    = `Target ${rate}% response rate = full 5 pts`;
+}
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let tData   = {};
+let weekPre = {};
+let monthPre= {};
+let dashMode= 'week';
+let dashOff = 0;
+
+function initTData(){
+  // quantitative tasks are pre-initialised with zeros so submission is never blocked by them
+  tData['t5'] = { billsCount:0, npsCollected:0, npsScore:0, remarks:'' };
+  tData['t6'] = { reviewsCount:0, remarks:'' };
+  tData['t7'] = { activityCount:0, remarks:'' };
+  tData['t9'] = { groomingPct:0, remarks:'' };
+  // qual tasks (t1-t4, t8, t10) start undefined — must be explicitly rated
+}
+
+function loadPreData(){
+  const all = getAudits();
+  const today = todayStr();
+  const wRange = getWeekRange(0);
+  const mPfx   = today.substring(0,7);
+  const wStart = dStr(wRange.start);
+  const wEnd   = dStr(wRange.end);
+  // exclude today's audits (in case of re-submit)
+  const wAudits = all.filter(a=>a.date>=wStart&&a.date<=wEnd&&a.date!==today);
+  const mAudits = all.filter(a=>a.date.startsWith(mPfx)&&a.date!==today);
+
+  weekPre = {
+    surveys:  wAudits.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0),
+    reviews:  wAudits.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0),
+    mktg:     wAudits.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0)
+  };
+  monthPre = {
+    surveys:  mAudits.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0),
+    reviews:  mAudits.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0),
+    mktg:     mAudits.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0)
+  };
+}
+
+/* ──────────────────────────────────────────
+   SCORING
+────────────────────────────────────────── */
+function calcNps(d, s){
+  const responseRate = d.billsCount>0 ? Math.round((d.npsCollected/d.billsCount)*100) : 0;
+  const ratePts  = Math.min(Math.round((responseRate/s.rate)*5), 5);
+  const scorePts = Math.min(Math.round(((d.npsScore||0)/s.npsScore)*5), 5);
+  return { total:ratePts+scorePts, ratePts, scorePts, responseRate };
+}
+function calcRev(d, s){ const dt=daily(s.reviews); return Math.min(Math.round(((d.reviewsCount||0)/dt)*10),10); }
+function calcMktg(d, s){ const dt=daily(s.mktg); return Math.min(Math.round(((d.activityCount||0)/dt)*10),10); }
+function calcGroom(d){ return Math.min(Math.round((d.groomingPct||0)/10),10); }
+
+function getTaskPts(tid){
+  const t=TASKS.find(x=>x.id===tid);
+  const d=tData[tid]||{};
+  const s=getS();
+  if(t.type==='qual')     return (d.pts!=null)?d.pts:null;
+  if(t.type==='nps')      return calcNps(d,s).total;
+  if(t.type==='reviews')  return calcRev(d,s);
+  if(t.type==='activity') return calcMktg(d,s);
+  if(t.type==='grooming') return calcGroom(d);
+  return null;
+}
+function getTotal(){ return TASKS.reduce((sum,t)=>{ const p=getTaskPts(t.id); return sum+(p!=null?p:0); },0); }
+function getGrade(sc){
+  if(sc>=90) return {label:'Outstanding',cls:'g-out', color:'#16a34a',barCls:'g-out-c'};
+  if(sc>=75) return {label:'Good',       cls:'g-good',color:'#0891b2',barCls:'g-good-c'};
+  if(sc>=60) return {label:'Satisfactory',cls:'g-sat',color:'#ca8a04',barCls:'g-sat-c'};
+  if(sc>=45) return {label:'Below Exp.',cls:'g-below',color:'#ea580c',barCls:'g-below-c'};
+  return            {label:'Poor',      cls:'g-poor', color:'#dc2626',barCls:'g-poor-c'};
+}
+
+/* ──────────────────────────────────────────
+   BUILD TASK CARDS
+────────────────────────────────────────── */
+function buildTasks(){
+  const area=document.getElementById('tasks-area');
+  area.innerHTML='';
+  const s=getS();
+  loadPreData();
+
+  TASKS.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='task-card';
+    div.id='tc-'+t.id;
+    const critHtml=t.criteria.map(c=>`<div class="crit-item">${c}</div>`).join('');
+    let body=`
+      <div class="crit-tog" onclick="togCrit('${t.id}');event.stopPropagation()">
+        &#9432; <span id="ct-${t.id}">Show criteria</span>
+      </div>
+      <div class="crit-box" id="cb-${t.id}" style="display:none">${critHtml}</div>`;
+
+    if(t.type==='qual')     body+=buildQualBody(t);
+    else if(t.type==='nps')      body+=buildNpsBody(t,s);
+    else if(t.type==='reviews')  body+=buildRevBody(t,s);
+    else if(t.type==='activity') body+=buildMktgBody(t,s);
+    else if(t.type==='grooming') body+=buildGroomBody(t);
+
+    body+=`<div class="rem-lbl">SM Remarks <span style="font-weight:400;color:var(--g400)">(optional)</span></div>
+      <textarea class="rem-inp" id="rem-${t.id}" placeholder="Observation or note…" oninput="setRem('${t.id}',this.value)">${tData[t.id]?.remarks||''}</textarea>`;
+
+    div.innerHTML=`
+      <div class="task-hdr" onclick="togCrit('${t.id}')">
+        <div class="task-left">
+          <div class="tnum" id="tn-${t.id}">${t.n}</div>
+          <div><div class="task-ttl">${t.title}</div><div class="task-dsc">${t.desc}</div></div>
+        </div>
+        <div class="tpts" id="tp-${t.id}">—/10</div>
+      </div>
+      <div class="task-body">${body}</div>`;
+    area.appendChild(div);
+  });
+  buildScChips();
+}
+
+function setRem(tid,val){ if(tData[tid]) tData[tid].remarks=val; }
+
+function buildQualBody(t){
+  const existing=tData[t.id]?.pts;
+  return `<div class="rgroup" id="rg-${t.id}">
+    ${QUAL_R.map(r=>`<div class="rbtn${existing===r.val?' '+r.cls:''}" id="rb-${t.id}-${r.val}" onclick="setQual('${t.id}',${r.val})">
+      <span class="rpts">${r.val}</span>${r.label}</div>`).join('')}
+  </div>`;
+}
+
+function buildNpsBody(t,s){
+  const wT=wkly(s.surveys); const mT=s.surveys;
+  const wCur=weekPre.surveys; const mCur=monthPre.surveys;
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Bills / Invoices Today</div><div class="ml-hint">Total bills raised at store today</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="nps-bills" placeholder="0" oninput="onNpsInput()">
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">NPS Surveys Collected</div><div class="ml-hint">Customers who gave NPS rating today</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="nps-coll" placeholder="0" oninput="onNpsInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-coll" style="width:0%;background:var(--navy)"></div></div></div>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Response Rate</div><div class="ml-hint">Auto: Surveys ÷ Bills × 100 — Target ${s.rate}%</div></div>
+      <div class="mr">
+        <input class="minp ro" type="text" id="nps-rate-disp" value="—" readonly>
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-rate" style="width:0%;background:var(--teal)"></div></div></div>
+        <span class="mpct" id="np-rate-pct"></span>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">NPS Score Today (0–100)</div><div class="ml-hint">Average satisfaction score — Target ≥ ${s.npsScore}</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" max="100" id="nps-score-inp" placeholder="0" oninput="onNpsInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-score" style="width:0%;background:var(--green)"></div></div></div>
+        <span class="mpct" id="np-score-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="nps-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Enter bills and surveys above</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — NPS surveys</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-nps-fill" style="width:0%;background:var(--navy)"></div></div></div>
+      <span class="wm-val" id="w-nps-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — NPS surveys</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-nps-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-nps-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildRevBody(t,s){
+  const wT=wkly(s.reviews); const mT=s.reviews; const dt=daily(s.reviews);
+  const wCur=weekPre.reviews; const mCur=monthPre.reviews;
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Google Reviews Collected Today</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="rev-cnt" placeholder="0" oninput="onRevInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="rev-fill" style="width:0%;background:var(--gold)"></div></div></div>
+        <span class="mpct" id="rev-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="rev-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Daily target: ${dt}</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — reviews</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-rev-fill" style="width:0%;background:var(--gold)"></div></div></div>
+      <span class="wm-val" id="w-rev-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — reviews</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-rev-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-rev-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildMktgBody(t,s){
+  const wT=wkly(s.mktg); const mT=s.mktg; const dt=daily(s.mktg);
+  const wCur=weekPre.mktg; const mCur=monthPre.mktg;
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Total Activities Today (calls + visits)</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="mktg-cnt" placeholder="0" oninput="onMktgInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="mktg-fill" style="width:0%;background:var(--navy)"></div></div></div>
+        <span class="mpct" id="mktg-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="mktg-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Daily target: ${dt}</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — activities</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-mktg-fill" style="width:0%;background:var(--navy)"></div></div></div>
+      <span class="wm-val" id="w-mktg-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — activities</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-mktg-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-mktg-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildGroomBody(t){
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Grooming Checklist Score (%)</div><div class="ml-hint">From the daily grooming checklist tool · 100% = 10 pts</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" max="100" id="groom-pct" placeholder="0" oninput="onGroomInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="groom-fill" style="width:0%;background:var(--teal)"></div></div></div>
+        <span class="mpct" id="groom-pct-lbl"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="groom-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Enter % from grooming checklist</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   INPUT HANDLERS
+────────────────────────────────────────── */
+function setQual(tid,val){
+  tData[tid]=tData[tid]||{};
+  tData[tid].pts=val;
+  QUAL_R.forEach(r=>{ document.getElementById(`rb-${tid}-${r.val}`).className='rbtn'+(val===r.val?' '+r.cls:''); });
+  updTaskDisp(tid);
+}
+
+function onNpsInput(){
+  const bills = +document.getElementById('nps-bills').value||0;
+  const coll  = +document.getElementById('nps-coll').value||0;
+  const score = +document.getElementById('nps-score-inp').value||0;
+  const s=getS();
+  const rr = bills>0 ? Math.round((coll/bills)*100) : 0;
+
+  document.getElementById('nps-rate-disp').value = bills>0 ? rr+'%' : '—';
+  setFill('nf-coll', coll/Math.max(daily(s.surveys),1));
+  setFill('nf-rate', rr/s.rate, 'np-rate-pct', rr+'%');
+  setFill('nf-score', score/s.npsScore, 'np-score-pct', score+'');
+
+  tData['t5']={ billsCount:bills, npsCollected:coll, responseRate:rr, npsScore:score, remarks:tData['t5']?.remarks||'' };
+  const {total,ratePts,scorePts}=calcNps(tData['t5'],s);
+  updAutoStrip('nps-auto', total, `Rate ${ratePts}/5 · NPS ${scorePts}/5 · Response ${rr}%`);
+  updTaskDisp('t5');
+
+  // update week/month progress bars
+  const wNew=weekPre.surveys+coll; const wT=wkly(s.surveys);
+  const mNew=monthPre.surveys+coll; const mT=s.surveys;
+  updWM('w-nps',wNew,wT); updWM('m-nps',mNew,mT);
+}
+
+function onRevInput(){
+  const cnt=+document.getElementById('rev-cnt').value||0;
+  const s=getS(); const dt=daily(s.reviews);
+  setFill('rev-fill', cnt/dt, 'rev-pct', cnt+'');
+  tData['t6']={ reviewsCount:cnt, remarks:tData['t6']?.remarks||'' };
+  const pts=calcRev(tData['t6'],s);
+  updAutoStrip('rev-auto', pts, `${cnt} reviews · daily target ${dt}`);
+  updTaskDisp('t6');
+  const wNew=weekPre.reviews+cnt; const mNew=monthPre.reviews+cnt;
+  updWM('w-rev',wNew,wkly(s.reviews)); updWM('m-rev',mNew,s.reviews);
+}
+
+function onMktgInput(){
+  const cnt=+document.getElementById('mktg-cnt').value||0;
+  const s=getS(); const dt=daily(s.mktg);
+  setFill('mktg-fill', cnt/dt, 'mktg-pct', cnt+'');
+  tData['t7']={ activityCount:cnt, remarks:tData['t7']?.remarks||'' };
+  const pts=calcMktg(tData['t7'],s);
+  updAutoStrip('mktg-auto', pts, `${cnt} activities · daily target ${dt}`);
+  updTaskDisp('t7');
+  const wNew=weekPre.mktg+cnt; const mNew=monthPre.mktg+cnt;
+  updWM('w-mktg',wNew,wkly(s.mktg)); updWM('m-mktg',mNew,s.mktg);
+}
+
+function onGroomInput(){
+  const pct=+document.getElementById('groom-pct').value||0;
+  setFill('groom-fill', pct/100, 'groom-pct-lbl', pct+'%');
+  tData['t9']={ groomingPct:pct, remarks:tData['t9']?.remarks||'' };
+  const pts=calcGroom(tData['t9']);
+  updAutoStrip('groom-auto', pts, `${pct}% checklist compliance = ${pts}/10 pts`);
+  updTaskDisp('t9');
+}
+
+/* helpers */
+function setFill(barId, ratio, pctId, pctTxt){
+  const r=Math.min(ratio,1); const el=document.getElementById(barId);
+  if(el) el.style.width=(r*100)+'%';
+  if(pctId){ const pe=document.getElementById(pctId); if(pe) pe.textContent=pctTxt||Math.round(ratio*100)+'%'; }
+}
+function updAutoStrip(id,pts,breakdown){
+  const el=document.getElementById(id); if(!el) return;
+  const c=pts>=8?'var(--green)':pts>=6?'var(--teal)':pts>=4?'var(--amber)':'var(--red)';
+  el.innerHTML=`<div><div class="as-score" style="color:${c}">${pts}<sub style="color:${c}">/10</sub></div></div><div class="as-break">${breakdown}</div>`;
+}
+function updWM(prefix, cur, target){
+  const f=document.getElementById(prefix+'-fill');
+  const v=document.getElementById(prefix+'-val');
+  const t=document.getElementById(prefix.replace('w-','w-').replace('m-','m-')+'-val')?.closest('.wm-row')?.querySelector('.wm-tag');
+  if(f) f.style.width=Math.min(cur/target*100,100)+'%';
+  if(v) v.textContent=cur+' / '+target;
+  const tag=document.querySelector('#'+prefix+'-val')?.closest('.wm-row')?.querySelector('.wm-tag');
+  if(tag){ tag.textContent=cur>=target?'✓ Met':'Target: '+target; tag.className='wm-tag '+(cur>=target?'on':'off'); }
+}
+function togCrit(tid){
+  const el=document.getElementById('cb-'+tid); const tog=document.getElementById('ct-'+tid);
+  const open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  tog.textContent=open?'Show criteria':'Hide criteria';
+}
+
+/* ──────────────────────────────────────────
+   TASK DISPLAY UPDATE
+────────────────────────────────────────── */
+function updTaskDisp(tid){
+  const pts=getTaskPts(tid); if(pts===null) return;
+  const card=document.getElementById('tc-'+tid);
+  const rc=pts===0?'r0':pts<=4?'r4':pts<=7?'r7':'r10';
+  const isAuto=TASKS.find(x=>x.id===tid)?.type!=='qual';
+  card.className='task-card '+(isAuto?'rauto':rc);
+  const lbl=document.getElementById('tp-'+tid);
+  lbl.textContent=pts+'/10'; lbl.className='tpts scored';
+  updBanner(); updScChips();
+}
+function updBanner(){
+  const rated=TASKS.filter(t=>getTaskPts(t.id)!==null).length;
+  const total=getTotal();
+  document.getElementById('sb-num').textContent=total;
+  document.getElementById('sb-tasks').textContent=rated+' / 10 rated';
+  document.getElementById('sb-pct').textContent=total+'%';
+  document.getElementById('sb-fill').style.width=total+'%';
+  const g=getGrade(total);
+  const gb=document.getElementById('sb-grade'); gb.textContent=g.label; gb.className='gpill '+g.cls;
+  document.getElementById('sub-done').textContent=rated+' tasks rated';
+  document.getElementById('sub-pts').textContent=total+' / 100 pts';
+  document.getElementById('sub-fill').style.width=total+'%';
+  const qualUnrated=TASKS.filter(t=>t.type==='qual'&&getTaskPts(t.id)===null).length;
+  document.getElementById('sub-sub').textContent=qualUnrated>0
+    ?`Rate ${qualUnrated} more qualitative task${qualUnrated>1?'s':''} to submit`
+    :'All tasks rated — ready to submit';
+}
+function buildScChips(){
+  document.getElementById('sc-grid').innerHTML=TASKS.map(t=>`
+    <div class="sc-chip" id="scc-${t.id}"><div class="sc-n">T${t.n}</div><div class="sc-v" id="scv-${t.id}">—</div></div>`).join('');
+}
+function updScChips(){
+  TASKS.forEach(t=>{
+    const pts=getTaskPts(t.id);
+    const c=document.getElementById('scc-'+t.id);
+    const v=document.getElementById('scv-'+t.id);
+    if(pts===null){ c.className='sc-chip'; v.textContent='—'; return; }
+    c.className='sc-chip p'+pts; v.textContent=pts;
+  });
+}
+
+/* ──────────────────────────────────────────
+   SUBMIT
+────────────────────────────────────────── */
+function submitAudit(){
+  const qualUnrated=TASKS.filter(t=>t.type==='qual'&&getTaskPts(t.id)===null);
+  if(qualUnrated.length){
+    const ul=document.getElementById('unrated-list');
+    ul.style.display='block';
+    ul.textContent='Please rate: '+qualUnrated.map(t=>t.title).join(', ');
+    qualUnrated[0]&&document.getElementById('tc-'+qualUnrated[0].id)?.scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('Rate all qualitative tasks first');
+    return;
+  }
+  document.getElementById('unrated-list').style.display='none';
+
+  const cro  =document.getElementById('f-cro').value.trim();
+  const sm   =document.getElementById('f-sm').value.trim();
+  const date =document.getElementById('f-date').value;
+  const store=document.getElementById('f-store').value;
+  if(!cro)  { showToast('Enter CRO name');  return; }
+  if(!sm)   { showToast('Enter SM name');   return; }
+  if(!date) { showToast('Select a date');   return; }
+  if(!store){ showToast('Select store');    return; }
+
+  // build tasks snapshot
+  const tasks={};
+  TASKS.forEach(t=>{
+    tasks[t.id]={ ...( tData[t.id]||{} ), pts: getTaskPts(t.id)||0 };
+  });
+  const total=getTotal();
+  const audit={
+    id:'a'+Date.now(), date, store, cro, sm, total,
+    grade:getGrade(total).label,
+    tasks,
+    submittedAt:new Date().toISOString()
+  };
+  const all=getAudits();
+  all.unshift(audit);
+  localStorage.setItem('cro_audits_v3',JSON.stringify(all));
+  showToast('Audit saved successfully!');
+  showModal(audit);
+  resetForm();
+  renderHistory();
+}
+
+function resetForm(){
+  tData={};
+  initTData();
+  buildTasks();
+  updBanner();
+  document.getElementById('f-cro').value='';
+  document.getElementById('f-sm').value='';
+  document.getElementById('unrated-list').style.display='none';
+  setToday();
+}
+
+/* ──────────────────────────────────────────
+   DATA
+────────────────────────────────────────── */
+function getAudits(){ try{ return JSON.parse(localStorage.getItem('cro_audits_v3'))||[]; }catch(e){ return []; } }
+
+/* ──────────────────────────────────────────
+   MODAL
+────────────────────────────────────────── */
+function showModal(a){
+  const g=getGrade(a.total);
+  let rows=TASKS.map((t,i)=>{
+    const td=a.tasks?.[t.id]||{}; const pts=td.pts!=null?td.pts:0;
+    let detail='';
+    if(t.type==='nps'){
+      const rr=td.billsCount>0?Math.round((td.npsCollected/td.billsCount)*100):0;
+      detail=`Bills: ${td.billsCount||0} · Surveys: ${td.npsCollected||0} · Response: ${rr}% · NPS Score: ${td.npsScore||0}`;
+    }
+    if(t.type==='reviews')  detail=`Reviews collected: ${td.reviewsCount||0}`;
+    if(t.type==='activity') detail=`Activities done: ${td.activityCount||0}`;
+    if(t.type==='grooming') detail=`Grooming: ${td.groomingPct||0}%`;
+    if(td.remarks) detail+=(detail?' · ':'')+`"${td.remarks}"`;
+    return `<div class="trr"><div class="trr-i">${i+1}</div>
+      <div class="trr-n">${t.title}${detail?`<div class="trr-d">${detail}</div>`:''}</div>
+      <div class="trr-s s${pts}">${pts}/10</div></div>`;
+  }).join('');
+
+  document.getElementById('m-title').textContent=`Audit — ${a.cro}`;
+  document.getElementById('m-body').innerHTML=`
+    <div class="res-score">
+      <div class="res-big">${a.total}<span style="font-size:16px;color:var(--g400)">/100</span></div>
+      <div class="res-bar"><div class="res-fill" style="width:${a.total}%;background:${g.color}"></div></div>
+      <div class="gpill ${g.cls}">${g.label}</div>
+    </div>
+    <div class="mpills">
+      <span class="mpill">📅 ${fmtDate(a.date,true)}</span>
+      <span class="mpill">🏪 ${a.store}</span>
+      <span class="mpill">👤 ${a.cro}</span>
+      <span class="mpill">🔍 SM: ${a.sm}</span>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Task Breakdown</div>
+    ${rows}
+    <button class="print-btn" onclick="printAudit('${a.id}')">🖨 Print / Save as PDF</button>`;
+  document.getElementById('mo').classList.add('show');
+}
+function hideMO(){ document.getElementById('mo').classList.remove('show'); }
+function closeMO(e){ if(e.target===document.getElementById('mo')) hideMO(); }
+
+/* ──────────────────────────────────────────
+   HISTORY
+────────────────────────────────────────── */
+function renderHistory(){
+  const all=getAudits();
+  const cro=(document.getElementById('h-cro')?.value||'').trim().toLowerCase();
+  const from=document.getElementById('h-from')?.value||'';
+  const to=document.getElementById('h-to')?.value||'';
+  const fil=all.filter(a=>{
+    if(cro&&!a.cro.toLowerCase().includes(cro)) return false;
+    if(from&&a.date<from) return false;
+    if(to&&a.date>to) return false;
+    return true;
+  });
+  const se=document.getElementById('hist-stats');
+  const le=document.getElementById('hist-list');
+  if(!se||!le) return;
+
+  if(fil.length){
+    const avg=Math.round(fil.reduce((s,a)=>s+a.total,0)/fil.length);
+    se.innerHTML=`
+      <div class="stat-c"><div class="st-lbl">Audits</div><div class="st-val">${fil.length}</div><div class="st-sub">shown</div></div>
+      <div class="stat-c"><div class="st-lbl">Avg Score</div><div class="st-val">${avg}</div><div class="st-sub">/ 100</div></div>
+      <div class="stat-c"><div class="st-lbl">Best</div><div class="st-val">${Math.max(...fil.map(a=>a.total))}</div><div class="st-sub">score</div></div>
+      <div class="stat-c"><div class="st-lbl">CROs</div><div class="st-val">${new Set(fil.map(a=>a.cro)).size}</div><div class="st-sub">unique</div></div>`;
+  } else se.innerHTML='';
+
+  if(!fil.length){
+    le.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><div class="empty-t">No audits found</div><div class="empty-s">${all.length?'Adjust filters':'Submit your first audit'}</div></div>`;
+    return;
+  }
+  le.innerHTML=fil.map(a=>{
+    const g=getGrade(a.total);
+    return `<div class="hi-item" onclick="showModal(${JSON.stringify(a).replace(/'/g,"&#39;")})">
+      <div class="hi-bar" style="background:${g.color}"></div>
+      <div class="hi-body">
+        <div class="hi-date">${fmtDate(a.date)}</div>
+        <div><div class="hi-cro">${a.cro}</div><div class="hi-store">${a.store} · SM: ${a.sm}</div></div>
+        <div class="hi-spill ${g.cls}">${a.total}/100</div>
+        <button class="hi-del" onclick="delAudit('${a.id}',event)" title="Delete">✕</button>
+      </div></div>`;
+  }).join('');
+}
+function delAudit(id,e){
+  e.stopPropagation();
+  if(!confirm('Delete this audit record?')) return;
+  localStorage.setItem('cro_audits_v3',JSON.stringify(getAudits().filter(a=>a.id!==id)));
+  renderHistory(); showToast('Deleted');
+}
+function clearHF(){
+  document.getElementById('h-cro').value='';
+  document.getElementById('h-from').value='';
+  document.getElementById('h-to').value='';
+  renderHistory();
+}
+
+/* ──────────────────────────────────────────
+   DASHBOARD
+────────────────────────────────────────── */
+function setPeriod(m){
+  dashMode=m; dashOff=0;
+  document.getElementById('pt-week').className ='pt-btn'+(m==='week'?' active':'');
+  document.getElementById('pt-month').className='pt-btn'+(m==='month'?' active':'');
+  renderDash();
+}
+function shiftPeriod(d){ dashOff+=d; renderDash(); }
+
+function getWeekRange(off){
+  const n=new Date(); const day=n.getDay(); const md=day===0?-6:1-day;
+  const mon=new Date(n); mon.setDate(mon.getDate()+md+off*7);
+  const sun=new Date(mon); sun.setDate(sun.getDate()+6);
+  return {start:mon,end:sun};
+}
+function getMonthInfo(off){
+  const n=new Date();
+  const d=new Date(n.getFullYear(),n.getMonth()+off,1);
+  return {year:d.getFullYear(),month:d.getMonth()};
+}
+function dStr(d){ return d.toISOString().split('T')[0]; }
+function todayStr(){ return dStr(new Date()); }
+function wkNum(d){ const j=new Date(d.getFullYear(),0,1); return Math.ceil(((d-j)/864e5+j.getDay()+1)/7); }
+
+function renderDash(){ if(dashMode==='week') renderWeekDash(); else renderMonthDash(); }
+
+function renderWeekDash(){
+  const wr=getWeekRange(dashOff); const pr=getWeekRange(dashOff-1);
+  const all=getAudits();
+  const cur=all.filter(a=>a.date>=dStr(wr.start)&&a.date<=dStr(wr.end));
+  const prv=all.filter(a=>a.date>=dStr(pr.start)&&a.date<=dStr(pr.end));
+  const s=getS();
+  const wT_sur=wkly(s.surveys); const wT_rev=wkly(s.reviews); const wT_mktg=wkly(s.mktg);
+  const fmt=d=>d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('pn-lbl').textContent=`Week ${wkNum(wr.start)}, ${wr.start.getFullYear()}`;
+  document.getElementById('pn-sub').textContent=`${fmt(wr.start)} – ${fmt(wr.end)} · ${cur.length} audit${cur.length!==1?'s':''}`;
+
+  const el=document.getElementById('dash-content');
+  if(!cur.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-t">No audits this week</div><div class="empty-s">Submit audits to see weekly performance</div></div>`;
+    return;
+  }
+
+  // week-level KPIs
+  const totSur  = cur.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0);
+  const totBills= cur.reduce((s,a)=>s+(a.tasks?.t5?.billsCount||0),0);
+  const totRev  = cur.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0);
+  const totMktg = cur.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0);
+  const npsVals = cur.map(a=>a.tasks?.t5?.npsScore||0).filter(v=>v>0);
+  const avgNPS  = npsVals.length?(npsVals.reduce((a,b)=>a+b,0)/npsVals.length).toFixed(1):'—';
+  const wkRR    = totBills>0?Math.round(totSur/totBills*100):0;
+  const kpiBand = (v,t)=>v>=t?'var(--green)':'var(--amber)';
+
+  const kpiHtml=`<div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-lbl">NPS Surveys</div><div class="kpi-val">${totSur}</div>
+      <div class="kpi-sub">Target: ${wT_sur}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totSur/wT_sur*100,100)}%;background:${kpiBand(totSur,wT_sur)}"></div></div>
+      ${totSur>=wT_sur?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Response Rate</div><div class="kpi-val">${wkRR}%</div>
+      <div class="kpi-sub">Target: ${s.rate}% (${totSur}/${totBills} bills)</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(wkRR/s.rate*100,100)}%;background:${kpiBand(wkRR,s.rate)}"></div></div>
+      ${wkRR>=s.rate?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg NPS Score</div><div class="kpi-val">${avgNPS}</div>
+      <div class="kpi-sub">Target: ≥${s.npsScore}</div>
+      ${avgNPS!=='—'?`<div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(+avgNPS/s.npsScore*100,100)}%;background:${kpiBand(+avgNPS,s.npsScore)}"></div></div>`:''}
+      ${avgNPS!=='—'&&+avgNPS>=s.npsScore?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Google Reviews</div><div class="kpi-val">${totRev}</div>
+      <div class="kpi-sub">Target: ${wT_rev}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totRev/wT_rev*100,100)}%;background:${kpiBand(totRev,wT_rev)}"></div></div>
+      ${totRev>=wT_rev?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Marketing Activities</div><div class="kpi-val">${totMktg}</div>
+      <div class="kpi-sub">Target: ${wT_mktg}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totMktg/wT_mktg*100,100)}%;background:${kpiBand(totMktg,wT_mktg)}"></div></div>
+      ${totMktg>=wT_mktg?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+  </div>`;
+
+  const croMap=groupByCRO(cur,true); const prvMap=groupByCRO(prv);
+  const croHtml=Object.entries(croMap).sort((a,b)=>b[1].avg-a[1].avg).map(([nm,cd])=>{
+    const g=getGrade(cd.avg); const pa=prvMap[nm]?.avg||null;
+    const d=pa!==null?Math.round(cd.avg-pa):null;
+    const tr=d===null?'':`<span class="trend ${d>0?'up':d<0?'dn':'eq'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;
+    const avgN=cd.npsVals.length?(cd.npsVals.reduce((a,b)=>a+b,0)/cd.npsVals.length).toFixed(1):'—';
+    const rr=cd.bills>0?Math.round(cd.surveys/cd.bills*100):0;
+    return `<div class="cpc"><div class="cpc-top" style="background:${g.color}"></div>
+      <div class="cpc-body">
+        <div class="cpc-r1">
+          <div><div class="cpc-name">${nm}</div><div class="cpc-meta">${cd.count} audit${cd.count>1?'s':''}</div></div>
+          <div class="cpc-right">${tr}<div class="cpc-score">${cd.avg}/100</div><div class="gpill ${g.cls}">${g.label}</div></div>
+        </div>
+        <div class="cpc-kpis">
+          <div class="cpc-kpi">Surveys <span class="cpc-kv">${cd.surveys}</span></div>
+          <div class="cpc-kpi">Bills <span class="cpc-kv">${cd.bills}</span></div>
+          <div class="cpc-kpi">Rate <span class="cpc-kv">${rr}%</span></div>
+          <div class="cpc-kpi">NPS <span class="cpc-kv">${avgN}</span></div>
+          <div class="cpc-kpi">Reviews <span class="cpc-kv">${cd.reviews}</span></div>
+        </div>
+      </div></div>`;
+  }).join('');
+
+  const taskRows=taskAvgRows(cur);
+  el.innerHTML=`
+    <div style="margin-bottom:14px">${kpiHtml}</div>
+    <div class="dash-sec-lbl" style="margin-bottom:9px">CRO Performance</div>
+    ${croHtml}
+    <div class="card" style="margin-top:14px"><div class="dash-sec-lbl">Task Averages (weakest first)</div>${taskRows}</div>`;
+}
+
+function renderMonthDash(){
+  const mi=getMonthInfo(dashOff); const pmi=getMonthInfo(dashOff-1);
+  const pfx=`${mi.year}-${String(mi.month+1).padStart(2,'0')}`;
+  const ppfx=`${pmi.year}-${String(pmi.month+1).padStart(2,'0')}`;
+  const all=getAudits();
+  const cur=all.filter(a=>a.date.startsWith(pfx));
+  const prv=all.filter(a=>a.date.startsWith(ppfx));
+  const s=getS();
+  const mLabel=new Date(mi.year,mi.month,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  document.getElementById('pn-lbl').textContent=mLabel;
+  document.getElementById('pn-sub').textContent=`${cur.length} audit${cur.length!==1?'s':''} · ${new Set(cur.map(a=>a.cro)).size} CRO${new Set(cur.map(a=>a.cro)).size!==1?'s':''}`;
+
+  const el=document.getElementById('dash-content');
+  if(!cur.length){
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📈</div><div class="empty-t">No audits for ${mLabel}</div><div class="empty-s">Submit audits to see monthly KPIs</div></div>`;
+    return;
+  }
+
+  const totSur  =cur.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0);
+  const totBills=cur.reduce((s,a)=>s+(a.tasks?.t5?.billsCount||0),0);
+  const totRev  =cur.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0);
+  const totMktg =cur.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0);
+  const npsVals =cur.map(a=>a.tasks?.t5?.npsScore||0).filter(v=>v>0);
+  const avgNPS  =npsVals.length?(npsVals.reduce((a,b)=>a+b,0)/npsVals.length).toFixed(1):'—';
+  const mRR     =totBills>0?Math.round(totSur/totBills*100):0;
+  const avgSc   =Math.round(cur.reduce((s,a)=>s+a.total,0)/cur.length);
+  const kpiBand =(v,t)=>v>=t?'var(--green)':'var(--amber)';
+
+  // week-by-week breakdown for current month
+  const weekBreak = buildWeekBreakdown(cur, mi.year, mi.month, s);
+
+  const kpiHtml=`<div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-lbl">NPS Surveys</div><div class="kpi-val">${totSur}</div>
+      <div class="kpi-sub">Target: ${s.surveys}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totSur/s.surveys*100,100)}%;background:${kpiBand(totSur,s.surveys)}"></div></div>
+      ${totSur>=s.surveys?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Response Rate</div><div class="kpi-val">${mRR}%</div>
+      <div class="kpi-sub">Target: ${s.rate}% (${totSur}/${totBills} bills)</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(mRR/s.rate*100,100)}%;background:${kpiBand(mRR,s.rate)}"></div></div>
+      ${mRR>=s.rate?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg NPS Score</div><div class="kpi-val">${avgNPS}</div>
+      <div class="kpi-sub">Target: ≥${s.npsScore}</div>
+      ${avgNPS!=='—'?`<div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(+avgNPS/s.npsScore*100,100)}%;background:${kpiBand(+avgNPS,s.npsScore)}"></div></div>`:''}
+      ${avgNPS!=='—'&&+avgNPS>=s.npsScore?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Google Reviews</div><div class="kpi-val">${totRev}</div>
+      <div class="kpi-sub">Target: ${s.reviews}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totRev/s.reviews*100,100)}%;background:${kpiBand(totRev,s.reviews)}"></div></div>
+      ${totRev>=s.reviews?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Marketing Activities</div><div class="kpi-val">${totMktg}</div>
+      <div class="kpi-sub">Target: ${s.mktg}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totMktg/s.mktg*100,100)}%;background:${kpiBand(totMktg,s.mktg)}"></div></div>
+      ${totMktg>=s.mktg?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg Audit Score</div><div class="kpi-val">${avgSc}</div>
+      <div class="kpi-sub">/ 100 · ${cur.length} audits</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${avgSc}%;background:${getGrade(avgSc).color}"></div></div>
+    </div>
+  </div>`;
+
+  const croMap=groupByCRO(cur,true); const prvMap=groupByCRO(prv);
+  const croHtml=Object.entries(croMap).sort((a,b)=>b[1].avg-a[1].avg).map(([nm,cd])=>{
+    const g=getGrade(cd.avg); const pa=prvMap[nm]?.avg||null;
+    const d=pa!==null?Math.round(cd.avg-pa):null;
+    const tr=d===null?'':`<span class="trend ${d>0?'up':d<0?'dn':'eq'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;
+    const avgN=cd.npsVals.length?(cd.npsVals.reduce((a,b)=>a+b,0)/cd.npsVals.length).toFixed(1):'—';
+    const rr=cd.bills>0?Math.round(cd.surveys/cd.bills*100):0;
+    return `<div class="cpc"><div class="cpc-top" style="background:${g.color}"></div>
+      <div class="cpc-body">
+        <div class="cpc-r1">
+          <div><div class="cpc-name">${nm}</div><div class="cpc-meta">${cd.count} audit${cd.count>1?'s':''} · ${mLabel}</div></div>
+          <div class="cpc-right">${tr}<div class="cpc-score">${cd.avg}/100</div><div class="gpill ${g.cls}">${g.label}</div></div>
+        </div>
+        <div class="cpc-kpis">
+          <div class="cpc-kpi">📞 Surveys <span class="cpc-kv">${cd.surveys}/${s.surveys}</span></div>
+          <div class="cpc-kpi">📄 Bills <span class="cpc-kv">${cd.bills}</span></div>
+          <div class="cpc-kpi">📊 Rate <span class="cpc-kv">${rr}%</span></div>
+          <div class="cpc-kpi">⭐ NPS <span class="cpc-kv">${avgN}/${s.npsScore}</span></div>
+          <div class="cpc-kpi">🌟 Reviews <span class="cpc-kv">${cd.reviews}/${s.reviews}</span></div>
+        </div>
+      </div></div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div style="margin-bottom:14px">${kpiHtml}</div>
+    ${weekBreak}
+    <div class="dash-sec-lbl" style="margin-bottom:9px">CRO Monthly Performance</div>
+    ${croHtml}
+    <div class="card" style="margin-top:14px"><div class="dash-sec-lbl">Task Averages — ${mLabel} (weakest first)</div>${taskAvgRows(cur)}</div>`;
+}
+
+function buildWeekBreakdown(audits, year, month, s){
+  // group audits into their ISO weeks within this month
+  const weeks={};
+  audits.forEach(a=>{
+    const d=new Date(a.date+'T12:00:00');
+    const wn=wkNum(d);
+    if(!weeks[wn]) weeks[wn]={label:'',audits:[],surveys:0,reviews:0,mktg:0,bills:0,npsVals:[]};
+    weeks[wn].audits.push(a);
+    weeks[wn].surveys +=a.tasks?.t5?.npsCollected||0;
+    weeks[wn].bills   +=a.tasks?.t5?.billsCount||0;
+    weeks[wn].reviews +=a.tasks?.t6?.reviewsCount||0;
+    weeks[wn].mktg    +=a.tasks?.t7?.activityCount||0;
+    const ns=a.tasks?.t5?.npsScore||0;
+    if(ns>0) weeks[wn].npsVals.push(ns);
+  });
+  if(!Object.keys(weeks).length) return '';
+  const wT_sur=wkly(s.surveys); const wT_rev=wkly(s.reviews); const wT_mktg=wkly(s.mktg);
+
+  const rows=Object.entries(weeks).sort((a,b)=>+a[0]-+b[0]).map(([wn,wd])=>{
+    const avgSc=Math.round(wd.audits.reduce((s,a)=>s+a.total,0)/wd.audits.length);
+    const rr=wd.bills>0?Math.round(wd.surveys/wd.bills*100):0;
+    const avgN=wd.npsVals.length?(wd.npsVals.reduce((a,b)=>a+b,0)/wd.npsVals.length).toFixed(1):'—';
+    const g=getGrade(avgSc);
+    const surOk=wd.surveys>=wT_sur; const revOk=wd.reviews>=wT_rev; const mktgOk=wd.mktg>=wT_mktg;
+    return `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--g100);flex-wrap:wrap">
+      <div style="min-width:70px;font-size:11px;font-weight:700;color:var(--g600)">Week ${wn}</div>
+      <div style="font-size:11px;color:var(--g800);flex:1">${wd.audits.length} audits · Avg <b>${avgSc}/100</b></div>
+      <span class="wm-tag ${surOk?'on':'off'}">Sur ${wd.surveys}/${wT_sur}</span>
+      <span class="wm-tag ${rr>=s.rate?'on':'off'}">Rate ${rr}%</span>
+      <span class="wm-tag ${avgN!=='—'&&+avgN>=s.npsScore?'on':'off'}">NPS ${avgN}</span>
+      <span class="wm-tag ${revOk?'on':'off'}">Rev ${wd.reviews}/${wT_rev}</span>
+      <span class="wm-tag ${mktgOk?'on':'off'}">Mktg ${wd.mktg}/${wT_mktg}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="dash-sec-lbl">Week-by-Week Breakdown</div>
+    <div style="font-size:10px;color:var(--g400);margin-bottom:8px">Weekly targets — Surveys: ${wT_sur} · Reviews: ${wT_rev} · Marketing: ${wT_mktg}</div>
+    ${rows}
+  </div>`;
+}
+
+function groupByCRO(audits, kpi=false){
+  const m={};
+  audits.forEach(a=>{
+    if(!m[a.cro]) m[a.cro]={scores:[],count:0,surveys:0,bills:0,reviews:0,mktg:0,npsVals:[]};
+    m[a.cro].scores.push(a.total); m[a.cro].count++;
+    if(kpi){
+      m[a.cro].surveys +=a.tasks?.t5?.npsCollected||0;
+      m[a.cro].bills   +=a.tasks?.t5?.billsCount||0;
+      m[a.cro].reviews +=a.tasks?.t6?.reviewsCount||0;
+      m[a.cro].mktg    +=a.tasks?.t7?.activityCount||0;
+      const ns=a.tasks?.t5?.npsScore||0; if(ns>0) m[a.cro].npsVals.push(ns);
+    }
+  });
+  Object.values(m).forEach(cd=>{ cd.avg=Math.round(cd.scores.reduce((a,b)=>a+b,0)/cd.scores.length); });
+  return m;
+}
+function taskAvgRows(audits){
+  return TASKS.map(t=>{
+    const vals=audits.map(a=>a.tasks?.[t.id]?.pts||0);
+    const avg=vals.reduce((s,v)=>s+v,0)/vals.length;
+    const color=avg>=7.5?'#16a34a':avg>=5?'#0891b2':avg>=3?'#ca8a04':'#dc2626';
+    return {t,avg,color};
+  }).sort((a,b)=>a.avg-b.avg)
+    .map(({t,avg,color})=>`<div class="thr">
+      <div class="thr-name">${t.title}</div>
+      <div class="thr-bwrap"><div class="thr-bar"><div class="thr-fill" style="width:${(avg/10)*100}%;background:${color}"></div></div></div>
+      <div class="thr-sc" style="color:${color}">${avg.toFixed(1)}/10</div>
+    </div>`).join('');
+}
+
+/* ──────────────────────────────────────────
+   SETTINGS UI
+────────────────────────────────────────── */
+function renderScoringRef(){
+  const s=getS();
+  const el=document.getElementById('scoring-ref'); if(!el) return;
+  el.innerHTML=`<div style="font-size:12px;color:var(--g600);line-height:2">
+    <div><b>Tasks 1–4, 8, 10</b> (qualitative): Not Done <b>0</b> · Below Exp. <b>4</b> · Met Exp. <b>7</b> · Exceeded <b>10</b></div>
+    <div><b>Task 5 — NPS Calling (10 pts)</b><br>
+      &nbsp;&nbsp;Response Rate (5 pts): (Surveys ÷ Bills × 100) ÷ ${s.rate}% × 5<br>
+      &nbsp;&nbsp;NPS Score (5 pts): NPS Score ÷ ${s.npsScore} × 5</div>
+    <div><b>Task 6 — Google Reviews (10 pts)</b>: Reviews ÷ ${daily(s.reviews)} daily target × 10</div>
+    <div><b>Task 7 — Marketing Activity (10 pts)</b>: Activities ÷ ${daily(s.mktg)} daily target × 10</div>
+    <div><b>Task 9 — Grooming (10 pts)</b>: Checklist % ÷ 10</div>
+    <hr style="border:none;border-top:1px solid var(--g200);margin:8px 0">
+    <div><b>Grades:</b> Outstanding ≥90 · Good ≥75 · Satisfactory ≥60 · Below Exp. ≥45 · Poor &lt;45</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   PRINT
+────────────────────────────────────────── */
+function printAudit(id){
+  const a=getAudits().find(x=>x.id===id); if(!a) return;
+  const g=getGrade(a.total);
+  const rows=TASKS.map((t,i)=>{
+    const td=a.tasks?.[t.id]||{}; const pts=td.pts!=null?td.pts:0;
+    let detail='';
+    if(t.type==='nps'){ const rr=td.billsCount>0?Math.round(td.npsCollected/td.billsCount*100):0; detail=`Bills: ${td.billsCount||0} | Surveys: ${td.npsCollected||0} | Response: ${rr}% | NPS: ${td.npsScore||0}`; }
+    if(t.type==='reviews') detail=`Reviews: ${td.reviewsCount||0}`;
+    if(t.type==='activity') detail=`Activities: ${td.activityCount||0}`;
+    if(t.type==='grooming') detail=`Grooming: ${td.groomingPct||0}%`;
+    if(td.remarks) detail+=(detail?' | ':'')+`"${td.remarks}"`;
+    return `<tr><td>${i+1}</td><td>${t.title}</td><td style="color:#555;font-size:11px">${detail}</td><td><b>${pts}/10</b></td></tr>`;
+  }).join('');
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CRO Audit — ${a.cro} — ${a.date}</title>
+    <style>body{font-family:Arial,sans-serif;padding:24px;color:#111;font-size:13px}h1{font-size:17px;color:#0d2340}
+    table{width:100%;border-collapse:collapse;margin-top:14px}th{text-align:left;font-size:10px;text-transform:uppercase;color:#888;padding:7px 8px;border-bottom:2px solid #ddd}
+    td{padding:7px 8px;border-bottom:1px solid #eee}.score{font-size:34px;font-weight:700;color:#0d2340}
+    .meta{font-size:11px;color:#888;margin-bottom:14px}.footer{margin-top:20px;font-size:11px;color:#bbb;border-top:1px solid #eee;padding-top:9px}</style>
+    </head><body>
+    <h1>CRO Daily Audit — Saagar Traders</h1>
+    <div class="meta">${a.store} · ${fmtDate(a.date,true)} · SM: ${a.sm}</div>
+    <div class="score">${a.total}/100 <span style="font-size:13px;color:#888">${g.label}</span></div>
+    <table><thead><tr><th>#</th><th>Task</th><th>Details</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="footer">CRO: ${a.cro} · Submitted: ${new Date(a.submittedAt).toLocaleString('en-IN')}</div>
+    </body></html>`);
+  win.document.close(); setTimeout(()=>win.print(),400);
+}
+
+/* ──────────────────────────────────────────
+   TABS
+────────────────────────────────────────── */
+function go(tab){
+  ['audit','dash','history','settings'].forEach(t=>{
+    document.getElementById('sec-'+t).classList.toggle('active',t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  document.getElementById('score-banner').style.display=tab==='audit'?'':'none';
+  if(tab==='history')  renderHistory();
+  if(tab==='dash')     renderDash();
+  if(tab==='settings'){ loadSettingsForm(); renderScoringRef(); }
+}
+
+/* ──────────────────────────────────────────
+   UTILS & INIT
+────────────────────────────────────────── */
+function fmtDate(str,long=false){
+  try{
+    const d=new Date(str+'T12:00:00');
+    return long
+      ?d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+      :d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){ return str; }
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+function setToday(){
+  document.getElementById('f-date').value=todayStr();
+  document.getElementById('hdate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setToday();
+  initTData();
+  buildTasks();
+  updBanner();
+  renderDash();
+});
+</script>
+</body>
+</html>
