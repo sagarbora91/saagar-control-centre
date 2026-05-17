@@ -464,6 +464,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{
       <div class="module-title"><div class="mi" id="activeIcon">□</div><div><h3 id="activeTitle">Module</h3><p id="activeSub">Working area</p></div></div>
       <button class="btn small" onclick="reloadModule()">↻ Reload</button>
       <button class="btn small" onclick="printModule()">⎙ Print</button>
+      <button class="btn small" onclick="SaagarShareCurrent({mode:'share'})" title="Make a PDF of this module and send on WhatsApp">📲 WhatsApp</button>
       <button class="btn small" onclick="openModuleTab()">↗ New tab</button>
       <button class="btn small" onclick="downloadActiveModule()">⇩ Download</button>
     </div>
@@ -877,5 +878,8 @@ function updateClock(){ const now=new Date(); const t=$('clockTime'); const d=$(
 </script>
 <!-- ════ APK build addition: offline daily auto-backup safety net ════ -->
 <script src="auto-backup.js"></script>
+<!-- ════ APK build addition: WhatsApp / PDF share for every print ════ -->
+<script src="html2pdf.bundle.min.js"></script>
+<script src="whatsapp-share.js"></script>
 </body>
 </html>
