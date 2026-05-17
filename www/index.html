@@ -747,6 +747,7 @@ body.admin-on .admin-dot{display:block}
       </div>
       <nav class="subtabs" id="configTabs">
         <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">Staff master</button>
+        <button class="subtab" data-sub="org" onclick="switchConfigTab('org')">Organisation</button>
         <button class="subtab" data-sub="backup" onclick="switchConfigTab('backup')">Data &amp; backup</button>
         <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')">Admin</button>
         <button class="subtab" data-sub="diagnostics" onclick="switchConfigTab('diagnostics')">Diagnostics</button>
@@ -783,6 +784,26 @@ body.admin-on .admin-dot{display:block}
           <h4><span class="em">📋</span> Master list</h4>
           <p>Edit, deactivate or archive. Archived records remain for traceability.</p>
           <div id="empMasterTable"></div>
+        </div>
+      </div>
+
+      <!-- Organisation Master -->
+      <div class="sub-section hidden" id="subOrg">
+        <div class="card card-pad">
+          <h4><span class="em">🏛️</span> Organisation master</h4>
+          <p>Single source of truth for firms &amp; branches. Feeds Payroll letterheads, Tax firm master and report headers. Published to modules via the integration bus.</p>
+          <div class="note-banner">Edit and Save, then tap <b>Publish to modules</b>. Existing module data is never overwritten — only blank defaults are seeded.</div>
+          <h4 style="margin-top:14px"><span class="em">🏢</span> Firms</h4>
+          <div id="orgFirmsTable"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn small" onclick="orgAddFirm()">+ Add firm</button></div>
+          <h4 style="margin-top:16px"><span class="em">🏬</span> Branches / stores</h4>
+          <div id="orgBranchesTable"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn small" onclick="orgAddBranch()">+ Add branch</button></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-top:14px">
+            <button class="btn primary" onclick="saveOrganisation()">Save organisation</button>
+            <button class="btn green" onclick="publishOrganisation()">Publish to modules</button>
+          </div>
+          <div id="orgStatus" class="note-banner" style="display:none;margin-top:10px"></div>
         </div>
       </div>
 
@@ -984,6 +1005,7 @@ const ADMIN_PIN_KEY     = "st_v2_admin_pin_hash";
 const ADMIN_MODE_KEY    = "st_v2_admin_mode";
 const LAST_BACKUP_KEY   = "st_v2_last_backup";
 const EMP_MASTER_KEY    = "saagar_employee_master_v1";
+const ORG_MASTER_KEY    = "saagar_org_master_v1";
 const ACTIVITY_KEY      = "st_v3_activity_log";
 const AUDIT_LOG_KEY     = "st_v4_audit_log";
 const RESTORE_ROLLBACK_PREFIX = "st_v4_restore_rollback_";
@@ -1035,7 +1057,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY]; }
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY]; }
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
 function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
@@ -1517,13 +1539,73 @@ function switchView(name){
   if(name==='reports') renderReports();
   if(name==='config')  renderConfigPage();
 }
+/* ═══════════════════ ORGANISATION MASTER ═══════════════════ */
+const ORG_DEFAULT = {
+  firms:[
+    {code:'GM', name:'Gold Mart',        legalName:'', pan:'', gstin:'', address:'', active:true},
+    {code:'SAT',name:'Saagar Traders',   legalName:'', pan:'', gstin:'', address:'Latur, Maharashtra', active:true},
+    {code:'STB',name:'S.T. Bora & Co.',  legalName:'', pan:'', gstin:'', address:'', active:true},
+    {code:'AST',name:'Arihant Steel',    legalName:'', pan:'', gstin:'', address:'', active:true}
+  ],
+  branches:[
+    {code:'WLMHW',name:'Titan World — Latur',firmCode:'SAT',channel:'Titan World',region:'WEST-2',rso:'Lakshay',active:true},
+    {code:'HEMW', name:'Helios — Latur',     firmCode:'SAT',channel:'Helios',     region:'WEST-2',rso:'Lakshay',active:true}
+  ],
+  updatedAt:null
+};
+function loadOrg(){ try{ const r=tryJSON(safeGet(ORG_MASTER_KEY)); if(r&&Array.isArray(r.firms)&&Array.isArray(r.branches)) return r; }catch(e){} return JSON.parse(JSON.stringify(ORG_DEFAULT)); }
+let _orgDraft=null;
+function orgDraft(){ if(!_orgDraft) _orgDraft=loadOrg(); return _orgDraft; }
+function renderOrganisation(){
+  const o=orgDraft();
+  $('orgFirmsTable').innerHTML = orgTable(o.firms, [
+    {k:'code',l:'Code',w:60},{k:'name',l:'Name'},{k:'legalName',l:'Legal name'},
+    {k:'pan',l:'PAN',w:110},{k:'gstin',l:'GSTIN',w:150},{k:'address',l:'Address'}], 'firm');
+  $('orgBranchesTable').innerHTML = orgTable(o.branches, [
+    {k:'code',l:'Code',w:80},{k:'name',l:'Name'},{k:'firmCode',l:'Firm',w:70},
+    {k:'channel',l:'Channel',w:110},{k:'region',l:'Region',w:90},{k:'rso',l:'RSO',w:100}], 'branch');
+}
+function orgTable(rows, cols, kind){
+  let h='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  h+='<thead><tr>'+cols.map(c=>`<th style="text-align:left;padding:6px;border-bottom:1px solid var(--gray-300);white-space:nowrap">${c.l}</th>`).join('')+'<th style="padding:6px">Active</th><th></th></tr></thead><tbody>';
+  rows.forEach((r,idx)=>{
+    h+='<tr>'+cols.map(c=>`<td style="padding:4px"><input data-kind="${kind}" data-i="${idx}" data-f="${c.k}" value="${escapeHtml(r[c.k]==null?'':String(r[c.k]))}" oninput="orgEdit(this)" style="width:${c.w?c.w+'px':'100%'};min-width:56px;padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px"></td>`).join('');
+    h+=`<td style="text-align:center"><input type="checkbox" ${r.active!==false?'checked':''} onchange="orgEditActive('${kind}',${idx},this.checked)"></td>`;
+    h+=`<td><button class="btn small red" onclick="orgDel('${kind}',${idx})">✕</button></td></tr>`;
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+function orgEdit(el){ const k=el.dataset.kind,i=+el.dataset.i,f=el.dataset.f,o=orgDraft(); (k==='firm'?o.firms:o.branches)[i][f]=el.value; }
+function orgEditActive(k,i,v){ const o=orgDraft(); (k==='firm'?o.firms:o.branches)[i].active=v; }
+function orgDel(k,i){ const o=orgDraft(); (k==='firm'?o.firms:o.branches).splice(i,1); renderOrganisation(); }
+function orgAddFirm(){ orgDraft().firms.push({code:'',name:'',legalName:'',pan:'',gstin:'',address:'',active:true}); renderOrganisation(); }
+function orgAddBranch(){ orgDraft().branches.push({code:'',name:'',firmCode:'SAT',channel:'',region:'WEST-2',rso:'',active:true}); renderOrganisation(); }
+function saveOrganisation(){
+  const o=orgDraft(); o.updatedAt=new Date().toISOString();
+  safeSet(ORG_MASTER_KEY, JSON.stringify(o));
+  try{ auditLog('org.save',{firms:o.firms.length,branches:o.branches.length}); }catch(e){}
+  orgStatus('Saved — '+o.firms.length+' firm(s), '+o.branches.length+' branch(es). Tap “Publish to modules” to seed Payroll & Tax.','ok');
+}
+function publishOrganisation(){
+  saveOrganisation();
+  let res;
+  try{
+    if(window.SaagarBridge && typeof window.SaagarBridge.publishOrg==='function'){ const r=window.SaagarBridge.publishOrg(); res='Published to modules — '+JSON.stringify(r); }
+    else res='Saved. The integration bus will apply it automatically; open Payroll or Tax to see it seeded.';
+  }catch(e){ res='Saved, but live publish failed ('+e.message+'). It will still apply on next module open.'; }
+  orgStatus(res,'ok');
+}
+function orgStatus(msg,kind){ const b=$('orgStatus'); if(!b)return; b.textContent=msg; b.style.display='block'; b.className='note-banner'+(kind==='ok'?'':' warn'); }
+
 function switchConfigTab(tab){
   activeConfigTab = tab;
   document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active', b.dataset.sub===tab));
-  ['employees','backup','admin','diagnostics','about'].forEach(s=>{
+  ['employees','org','backup','admin','diagnostics','about'].forEach(s=>{
     const el = $('sub'+s[0].toUpperCase()+s.slice(1)); if(el) el.classList.toggle('hidden', s!==tab);
   });
   if(tab==='employees')    renderConfigEmployees();
+  if(tab==='org')          renderOrganisation();
   if(tab==='backup')       renderConfigBackup();
   if(tab==='admin')        renderConfigAdmin();
   if(tab==='diagnostics')  renderDiagnostics();
