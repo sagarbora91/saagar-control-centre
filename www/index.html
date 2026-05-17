@@ -2678,6 +2678,14 @@ function printModule(){
   catch(e){ toast('Print could not be opened'); }
 }
 
+/* Insert a fragment before the LAST </body> (the real document close).
+   Modules like Payroll/CRO-Audit contain </body> inside JS print/letterhead
+   strings BEFORE the real one — replacing the first </body> corrupted them. */
+function __injBeforeBodyEnd(html, frag){
+  var idx = html.toLowerCase().lastIndexOf('</body>');
+  if(idx >= 0) return html.slice(0, idx) + frag + '\n' + html.slice(idx);
+  return html + frag;
+}
 function injectBackHome(html, title){
   const dock = `
 <style id="st-v5-back-style">
@@ -2693,24 +2701,21 @@ function injectBackHome(html, title){
 </style>
 <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <scr`+`ipt id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});})();<\/scr`+`ipt>`;
-  if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, dock+'\n</body>');
-  return html + dock;
+  return __injBeforeBodyEnd(html, dock);
 }
 
 function injectEmployeeAssist(html, moduleId){
   const assist = `
 <style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style>
 <div class="st-v5-emp-chip" id="st-v5-emp-chip" style="display:none">👥 Employee suggestions active</div>
-<scr`+`ipt id="st-v5-emp-assist-script">(function(){var KEY='${EMP_MASTER_KEY}';function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name}):[]}catch(e){return[]}}function apply(){var emps=read();if(!emps.length)return;var dl=document.getElementById('st-v5-employee-list');if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+String(e.name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'"></option>'}).join('');var selectors=['#cro-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-an','#f-dtn','#f-dcs','input[data-field="name"]'];selectors.forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){if(!el.readOnly&&!el.disabled)el.setAttribute('list','st-v5-employee-list')})});var chip=document.getElementById('st-v5-emp-chip');if(chip)chip.style.display='block'}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{new MutationObserver(function(){apply()}).observe(document.body,{subtree:true,childList:true})}catch(e){}})();<\/scr`+`ipt>`;
-  if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, assist+'\n</body>');
-  return html + assist;
+<scr`+`ipt id="st-v5-emp-assist-script">(function(){var KEY='${EMP_MASTER_KEY}';function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var sig=emps.map(function(e){return e.name}).join('|');var selA=['#cro-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-an','#f-dtn','#f-dcs','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list')})})}var dl=document.getElementById('st-v5-employee-list');if(sig===__sig&&dl)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+String(e.name).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')+'"></option>'}).join('');__sig=sig;var chip=document.getElementById('st-v5-emp-chip');if(chip)chip.style.display=emps.length?'block':'none'}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();<\/scr`+`ipt>`;
+  return __injBeforeBodyEnd(html, assist);
 }
 
 function injectModuleAuditBridge(html, moduleId){
   const bridge = `
 <scr`+`ipt id="st-v5-module-audit-bridge">(function(){var moduleId='${moduleId}';var nativeSet=localStorage.setItem.bind(localStorage);var nativeRemove=localStorage.removeItem.bind(localStorage);var sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;parent.postMessage({type:'ST_AUDIT',action:action,detail:{module:moduleId,key:key,beforeBytes:String(before||'').length,afterBytes:String(after||'').length},before:before,after:after},'*')}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();<\/scr`+`ipt>`;
-  if(/<\/body>/i.test(html)) return html.replace(/<\/body>/i, bridge+'\n</body>');
-  return html + bridge;
+  return __injBeforeBodyEnd(html, bridge);
 }
 
 /* FIXED in V5: enforces DM Serif Display + DM Sans + navy/gold, matching modules' own design system
