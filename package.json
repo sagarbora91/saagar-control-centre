@@ -1,0 +1,22 @@
+{
+  "name": "saagar-bcc-android",
+  "version": "4.0.0",
+  "private": true,
+  "description": "Saagar Traders — Business Control Centre V4, packaged as a fully offline Android app with daily auto-backup.",
+  "scripts": {
+    "postinstall": "echo Dependencies installed. Next: npm run add:android",
+    "add:android": "cap add android",
+    "sync": "cap sync android",
+    "open": "cap open android",
+    "build:apk": "cap sync android && cd android && gradlew.bat assembleDebug",
+    "build:release": "cap sync android && cd android && gradlew.bat assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/filesystem": "^6.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
