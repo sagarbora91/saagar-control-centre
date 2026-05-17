@@ -33,7 +33,13 @@
   var PAYROLL='payroll_suite_v1_2026', TAX='taxcal_v2', EXP_STMT='tanishq_statements';
   var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
+  var CFG='saagar_bridge_config';
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
+  function cfg(){ var c=L(CFG,null)||{}; return {
+    failPct: (typeof c.failPct==='number'&&c.failPct>=0&&c.failPct<=100)?c.failPct:60,
+    leaveGates: c.leaveGates!==false,
+    voucherThreshold: (typeof c.voucherThreshold==='number'&&c.voucherThreshold>=0)?c.voucherThreshold:2000
+  }; }
 
   function today(){var d=new Date();function p(n){return(n<10?'0':'')+n;}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
   function ym(s){return(s||today()).slice(0,7);}
@@ -142,14 +148,14 @@
   }
 
   function computeGate(bus){
-    var d=today(), blocked=[], cleared=[], seen={};
+    var d=today(), blocked=[], cleared=[], seen={}, C=cfg();
     bus.forEach(function(e){
       if(e.type==='GROOMING_RESULT' && e.payload && e.payload.date===d){
-        var p=e.payload; if(p.pct<FAIL_PCT){ blocked.push({name:p.name,why:'grooming '+Math.round(p.pct)+'%'}); seen[kk(p.name)]=1; }
+        var p=e.payload; if(p.pct<C.failPct){ blocked.push({name:p.name,why:'grooming '+Math.round(p.pct)+'%'}); seen[kk(p.name)]=1; }
         else cleared.push(p.name);
       }
     });
-    bus.forEach(function(e){
+    if(C.leaveGates) bus.forEach(function(e){
       if(e.type==='LEAVE_APPROVED' && e.payload && e.payload.date===d){
         var n=e.payload.name; if(!seen[kk(n)]){ blocked.push({name:n,why:'on leave'}); seen[kk(n)]=1; }
       }
@@ -269,8 +275,9 @@
       } }catch(e){}
       // Missing vouchers (Expense ledger today, >2000, no photo) — read-only
       try{ var led=L(EXP_LEDGER,null); if(Array.isArray(led)){
-        var mv=led.filter(function(x){return x&&!x.void&&(x.date||'')===d&&(x.type||'expense')!=='income'&&Number(x.amount)>2000&&!x.billPhoto;}).length;
-        if(mv) ex.push({sev:'low',area:'Expense',msg:mv+' expense(s) >₹2000 today without a bill photo',at:d});
+        var vth=cfg().voucherThreshold;
+        var mv=led.filter(function(x){return x&&!x.void&&(x.date||'')===d&&(x.type||'expense')!=='income'&&Number(x.amount)>vth&&!x.billPhoto;}).length;
+        if(mv) ex.push({sev:'low',area:'Expense',msg:mv+' expense(s) >₹'+vth+' today without a bill photo',at:d});
       } }catch(e){}
       // Tax payable due (from our own feed)
       try{ var tp=L(TAXPAY,{})[ym(d)]; if(tp&&(tp.pf||tp.esic||tp.pt||tp.gstEstimate)) ex.push({sev:'low',area:'Tax',msg:'Statutory payable accruing this month (PF/ESIC/PT/GST) — see Tax',at:d}); }catch(e){}
@@ -354,6 +361,7 @@
     exceptions:function(){return L(EXC,{items:[]});},
     croAuditFeed:function(){return L(CRO_FEED,{});},
     taxPayable:function(){return L(TAXPAY,{});},
+    config:function(){return cfg();},
     status:function(){var b=busLoad();var byType={};b.forEach(function(e){byType[e.type]=(byType[e.type]||0)+1;});
       var exc=L(EXC,{items:[]});
       return {busEvents:b.length,byType:byType,employeeMaster:(L(EMP_MASTER,[])||[]).length,
