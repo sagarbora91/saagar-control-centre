@@ -742,14 +742,15 @@ body.admin-on .admin-dot{display:block}
     <!-- ────── SETTINGS ────── -->
     <section class="view" id="configView">
       <div class="page-head">
-        <h2>Settings</h2>
-        <p class="sub">Staff master, backup, admin lock and diagnostics.</p>
+        <h2>Settings Hub</h2>
+        <p class="sub">One place for people, organisation, roles, data &amp; cross-module sync.</p>
       </div>
       <nav class="subtabs" id="configTabs">
-        <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">Staff master</button>
+        <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">People</button>
         <button class="subtab" data-sub="org" onclick="switchConfigTab('org')">Organisation</button>
+        <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')">Roles &amp; access</button>
         <button class="subtab" data-sub="backup" onclick="switchConfigTab('backup')">Data &amp; backup</button>
-        <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')">Admin</button>
+        <button class="subtab" data-sub="sync" onclick="switchConfigTab('sync')">Sync</button>
         <button class="subtab" data-sub="diagnostics" onclick="switchConfigTab('diagnostics')">Diagnostics</button>
         <button class="subtab" data-sub="about" onclick="switchConfigTab('about')">About</button>
       </nav>
@@ -804,6 +805,29 @@ body.admin-on .admin-dot{display:block}
             <button class="btn green" onclick="publishOrganisation()">Publish to modules</button>
           </div>
           <div id="orgStatus" class="note-banner" style="display:none;margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- Sync / Integration -->
+      <div class="sub-section hidden" id="subSync">
+        <div class="card card-pad">
+          <h4><span class="em">🔗</span> Cross-module sync</h4>
+          <p>The integration event-bus links all modules. Every flow is an idempotent event — this is the live audit trail.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+            <button class="btn primary small" onclick="renderSync()">Refresh</button>
+            <button class="btn green small" onclick="bridgeRunNow()">Run sync now</button>
+            <button class="btn small" onclick="publishOrganisation()">Publish organisation</button>
+          </div>
+          <div id="syncStatus"></div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">⚠️</span> Exceptions</h4>
+          <p>Aggregated red-flags across every module (floor gate, open leads, unlocked stock, cash, vouchers, statutory).</p>
+          <div id="syncExceptions"></div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">🧾</span> Recent integration log</h4>
+          <div id="syncLog"></div>
         </div>
       </div>
 
@@ -1598,14 +1622,55 @@ function publishOrganisation(){
 }
 function orgStatus(msg,kind){ const b=$('orgStatus'); if(!b)return; b.textContent=msg; b.style.display='block'; b.className='note-banner'+(kind==='ok'?'':' warn'); }
 
+/* ═══════════════════ SYNC / INTEGRATION VIEW ═══════════════════ */
+function bridgeRunNow(){
+  try{
+    if(window.SaagarBridge&&window.SaagarBridge.runNow){ window.SaagarBridge.runNow(); if(typeof toast==='function') toast('Cross-module sync run'); }
+    else if(typeof toast==='function') toast('Integration bridge not loaded in this view');
+  }catch(e){ if(typeof toast==='function') toast('Sync error: '+e.message); }
+  renderSync();
+}
+function renderSync(){
+  const SB = window.SaagarBridge;
+  if(!SB || typeof SB.status!=='function'){
+    $('syncStatus').innerHTML='<div class="note-banner warn">Integration bridge not active in this preview. In the installed app the bus runs continuously.</div>';
+    $('syncExceptions').innerHTML=''; $('syncLog').innerHTML=''; return;
+  }
+  let st={},exc={items:[]},bus=[];
+  try{ st=SB.status()||{}; }catch(e){}
+  try{ exc=SB.exceptions()||{items:[]}; }catch(e){}
+  try{ bus=SB.bus()||[]; }catch(e){}
+  const bt=st.byType||{};
+  const chips=Object.keys(bt).sort().map(k=>`<span class="status-pill" style="margin:2px">${escapeHtml(k)}: <b>${bt[k]}</b></span>`).join('') || '<span class="sub">No events yet — use the modules and they will appear here.</span>';
+  $('syncStatus').innerHTML =
+    `<div class="emp-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+       <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Bus events</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${st.busEvents||0}</div></div>
+       <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Staff (master)</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${st.employeeMaster||0}</div></div>
+       <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Floor-gate blocked</div><div style="font-size:22px;font-weight:800;color:${(st.gate&&st.gate.blocked&&st.gate.blocked.length)?'var(--red)':'var(--navy)'}">${(st.gate&&st.gate.blocked&&st.gate.blocked.length)||0}</div></div>
+       <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">QMS→DSR linked</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${st.qms2dsrLinked||0}</div></div>
+       <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Organisation</div><div style="font-size:15px;font-weight:800;color:${st.org?'var(--green)':'var(--gray-600)'};margin-top:6px">${st.org?'configured':'not set'}</div></div>
+     </div>
+     <div><b>Event types on the bus:</b><br>${chips}</div>`;
+  const sevColor={high:'var(--red)',med:'var(--amber,#b45309)',low:'var(--gray-600)'};
+  const items=(exc.items||[]);
+  $('syncExceptions').innerHTML = items.length
+    ? items.map(x=>`<div class="note-banner" style="border-left:4px solid ${sevColor[x.sev]||'var(--gray-300)'};margin:6px 0"><b>${escapeHtml(x.area)}</b> — ${escapeHtml(x.msg)} <span class="sub">(${escapeHtml(x.sev)})</span></div>`).join('')
+    : '<div class="note-banner">No exceptions right now — all clear.</div>';
+  const log=(st.recentLog||[]);
+  $('syncLog').innerHTML = log.length
+    ? '<div style="font-size:12px">'+log.map(l=>`<div style="padding:3px 0;border-bottom:1px solid var(--gray-200)"><span class="sub">${escapeHtml((l.at||'').replace('T',' ').slice(0,16))}</span> — ${escapeHtml(l.m||'')}</div>`).join('')+'</div>'
+    : '<div class="sub">No integration activity logged yet.</div>';
+}
+
 function switchConfigTab(tab){
   activeConfigTab = tab;
   document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active', b.dataset.sub===tab));
-  ['employees','org','backup','admin','diagnostics','about'].forEach(s=>{
+  ['employees','org','backup','admin','sync','diagnostics','about'].forEach(s=>{
     const el = $('sub'+s[0].toUpperCase()+s.slice(1)); if(el) el.classList.toggle('hidden', s!==tab);
   });
   if(tab==='employees')    renderConfigEmployees();
   if(tab==='org')          renderOrganisation();
+  if(tab==='sync')         renderSync();
   if(tab==='backup')       renderConfigBackup();
   if(tab==='admin')        renderConfigAdmin();
   if(tab==='diagnostics')  renderDiagnostics();

@@ -31,6 +31,8 @@
   var DSR='saagar_dsr_', DSR_STAFF='saagar_dsr_staff';
   var LEAVE='leavedesk_v3', STOCK_RE=/^saagar_stock_(WLMHW|HEMW)_(\d{4}-\d{2}-\d{2})$/;
   var PAYROLL='payroll_suite_v1_2026', TAX='taxcal_v2', EXP_STMT='tanishq_statements';
+  var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
+  var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
 
   function today(){var d=new Date();function p(n){return(n<10?'0':'')+n;}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -189,9 +191,92 @@
       if((p.type||'full_day')==='full_day') o.leave++; else o.half++;
       month[nm(p.name)]=o; return true;
     });
+    Object.keys(month).forEach(function(n){ var o=month[n]; o.avgScore=o.scoreN?Math.round(o.scoreSum/o.scoreN):null; });
     feed[m]=month; feed._generatedAt=new Date().toISOString();
-    feed._note='DSR present-days + SM scores + LeaveDesk leave-days. Payroll maker reconciles before lock.';
+    feed._note='DSR present-days + SM avgScore + LeaveDesk leave-days. Payroll maker reconciles before lock.';
     S(ATT,feed);
+  }
+
+  /* ── LINK 1: DSR/QMS/Grooming → CRO Daily Audit (derived-inputs feed) ── */
+  function consumeCroAuditFeed(bus){
+    var feed=L(CRO_FEED,{}); if(typeof feed!=='object'||!feed)feed={};
+    function slot(date,name){ feed[date]=feed[date]||{}; var k=kk(name); feed[date][k]=feed[date][k]||{cro:nm(name),date:date,groomingPct:null,qmsSales:0,qmsSalesAmt:0,qmsNonPurch:0,dsrSubmitted:false,dsrScore:null}; return feed[date][k]; }
+    consume(bus,'GROOMING_RESULT','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;slot(p.date,p.name).groomingPct=Math.round(p.pct||0);return true;});
+    consume(bus,'SALE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;var s=slot(p.date,p.cro);s.qmsSales++;s.qmsSalesAmt+=p.amount||0;return true;});
+    consume(bus,'NONPURCHASE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;slot(p.date,p.cro).qmsNonPurch++;return true;});
+    consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;return true;});
+    feed._note='Auto-derived CRO audit inputs (grooming %, QMS sales/non-purchase, DSR submit/score). SM confirms in CRO Daily Audit.';
+    feed._generatedAt=new Date().toISOString();
+    S(CRO_FEED,feed);
+  }
+
+  /* ── LINK 2: QMS service lead → Watch Service Centre stub case ── */
+  function consumeQmsServiceToWsc(bus){
+    var cur=L(WSC,null);
+    if(cur!=null && !Array.isArray(cur)) return;            // unknown shape — never corrupt
+    var arr=Array.isArray(cur)?cur:[];
+    var have={}; arr.forEach(function(c){ if(c&&c.sourceRef) have[c.sourceRef]=1; });
+    var added=0;
+    consume(bus,'SERVICE_CLOSED','wsc',function(e){
+      var p=e.payload||{}; if(!p.cid) return true;
+      if(have[p.cid]) return true;
+      arr.push({id:'wsc_'+p.cid,status:'open',source:'qms',sourceRef:p.cid,
+        custName:p.cust||'',custMobile:p.mobile||'',dateRec:(p.date||today()),
+        advisor:p.cro||'',brand:'',model:'',_bridgeStub:true,
+        note:'Auto-created from a QMS service lead — open and complete the intake.'});
+      have[p.cid]=1; added++; return true;
+    });
+    if(added){ S(WSC,arr); blog('QMS→WSC stub +'+added); }
+  }
+
+  /* ── LINK 4: Payroll statutory + Expense GST → Tax "amount payable" ── */
+  function buildTaxPayable(){
+    try{
+      var m=ym(today()), out=L(TAXPAY,{}); if(typeof out!=='object'||!out)out={};
+      var rec={month:m,pf:0,esic:0,pt:0,gstEstimate:0,sources:[],at:new Date().toISOString()};
+      var pb=L(PAYROLL,null);
+      if(pb&&Array.isArray(pb.rows)&&pb.meta){
+        var py=pb.meta.year+'-'+String(pb.meta.month||'').slice(0,3);
+        pb.rows.forEach(function(r){ rec.pf+=Number(r.pf||r.pfAmt||0)||0; rec.esic+=Number(r.esic||r.esicAmt||0)||0; rec.pt+=Number(r.pt||r.ptAmt||0)||0; });
+        if(rec.pf||rec.esic||rec.pt) rec.sources.push('payroll('+py+')');
+        else rec.sources.push('payroll(no statutory fields — see Payroll module)');
+      }
+      var ef=L(EXP_TAXFEED,null);  // Expense Manager v2 already writes this (read-only here)
+      if(ef&&ef[m]&&typeof ef[m].gstEstimate!=='undefined'){ rec.gstEstimate=Number(ef[m].gstEstimate)||0; rec.sources.push('expense.gm_tax_feed'); }
+      out[m]=rec; out._note='Best-effort: PF/ESIC/PT from Payroll rows + GST estimate from Expense Manager. Verify with CA before filing.';
+      S(TAXPAY,out);
+    }catch(e){}
+  }
+
+  /* ── LINK 5: Exceptions Hub — one aggregated red-flag feed ── */
+  function buildExceptions(bus){
+    try{
+      var d=today(), ex=[];
+      var g=L(GATE,{blocked:[]}); (g.blocked||[]).forEach(function(b){ ex.push({sev:'high',area:'Floor gate',msg:b.name+' — '+b.why+' (blocked from floor)',at:d}); });
+      // QMS open leads today
+      try{ var q=L(QMS,null); if(q&&Array.isArray(q.customers)){
+        var open=q.customers.filter(function(c){var t=(c.walkInTime||'')+'';return t.slice(0,10)===d && !(c.outcome) && c.status!=='closed';}).length;
+        if(open) ex.push({sev:'med',area:'QMS',msg:open+' open lead(s) not closed today',at:d});
+      } }catch(e){}
+      // Stock not locked today
+      try{ ['WLMHW','HEMW'].forEach(function(sc){ var sb=L('saagar_stock_'+sc+'_'+d,null);
+        if(sb&&typeof sb==='object'&&!sb.closingLocked) ex.push({sev:'med',area:'Stock',msg:sc+' closing not locked today',at:d});
+      }); }catch(e){}
+      // Cash statement today not closed / mismatch (read-only)
+      try{ var stm=L(EXP_STMT,null); if(stm&&stm[d]){ var s=stm[d];
+        if(!s.closed) ex.push({sev:'med',area:'Cash',msg:'Cash statement not closed today',at:d});
+        if(s.mismatchReason) ex.push({sev:'high',area:'Cash',msg:'Cash mismatch: '+String(s.mismatchReason).slice(0,60),at:d});
+      } }catch(e){}
+      // Missing vouchers (Expense ledger today, >2000, no photo) — read-only
+      try{ var led=L(EXP_LEDGER,null); if(Array.isArray(led)){
+        var mv=led.filter(function(x){return x&&!x.void&&(x.date||'')===d&&(x.type||'expense')!=='income'&&Number(x.amount)>2000&&!x.billPhoto;}).length;
+        if(mv) ex.push({sev:'low',area:'Expense',msg:mv+' expense(s) >₹2000 today without a bill photo',at:d});
+      } }catch(e){}
+      // Tax payable due (from our own feed)
+      try{ var tp=L(TAXPAY,{})[ym(d)]; if(tp&&(tp.pf||tp.esic||tp.pt||tp.gstEstimate)) ex.push({sev:'low',area:'Tax',msg:'Statutory payable accruing this month (PF/ESIC/PT/GST) — see Tax',at:d}); }catch(e){}
+      ex.sort(function(a,b){var o={high:0,med:1,low:2};return o[a.sev]-o[b.sev];});
+      S(EXC,{date:d,items:ex,generatedAt:new Date().toISOString()});
+    }catch(e){}
   }
 
   /* ── EMPLOYEE MASTER UNION (reconcile, not event) ──────────────────── */
@@ -251,10 +336,14 @@
     consumeQmsToDsr(bus);
     consumeDsrToStock(bus);
     consumeAttendanceFeed(bus);
+    consumeCroAuditFeed(bus);
+    consumeQmsServiceToWsc(bus);
     computeGate(bus);
     busSave(bus);
     reconcileEmployeeMaster();
     publishOrg();
+    buildTaxPayable();
+    buildExceptions(bus);
   }
 
   window.SaagarBridge={
@@ -262,10 +351,15 @@
     publishOrg:function(){var r=publishOrg();blog('manual org publish');return r;},
     bus:function(){return busLoad();},
     events:function(type){var b=busLoad();return type?b.filter(function(e){return e.type===type;}):b;},
+    exceptions:function(){return L(EXC,{items:[]});},
+    croAuditFeed:function(){return L(CRO_FEED,{});},
+    taxPayable:function(){return L(TAXPAY,{});},
     status:function(){var b=busLoad();var byType={};b.forEach(function(e){byType[e.type]=(byType[e.type]||0)+1;});
+      var exc=L(EXC,{items:[]});
       return {busEvents:b.length,byType:byType,employeeMaster:(L(EMP_MASTER,[])||[]).length,
         gate:L(GATE,{blocked:[]}),qms2dsrLinked:Object.keys(L(Q2D,{})||{}).length,
-        org:!!L(ORG_MASTER,null),recentLog:(L(LOGK,[])||[]).slice(0,12)};}
+        org:!!L(ORG_MASTER,null),exceptions:(exc.items||[]).length,
+        recentLog:(L(LOGK,[])||[]).slice(0,12)};}
   };
 
   /* gate banner in QMS / DSR (same as before) */
