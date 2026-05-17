@@ -315,6 +315,7 @@
       da.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
       union.forEach(function(u){if(!dh[kk(u.name)]){da.push(u.name);dadd++;}});
       if(dadd){S(DSR_STAFF,da);blog('seeded '+dadd+' → DSR list');}
+      try{ S('saagar_cros', union.map(function(u){return u.name;})); }catch(e){}
     }catch(e){}
   }
 
