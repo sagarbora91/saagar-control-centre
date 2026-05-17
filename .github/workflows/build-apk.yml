@@ -54,6 +54,14 @@ jobs:
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
           grep -nE "versionCode|versionName" "$GR" || true
+          # Disable Android force-dark so WebView cannot invert module text (API 29-32;
+          # API 33+ is handled by CSS color-scheme:light). Patch every values*/styles.xml.
+          for SX in $(find android/app/src/main/res -name styles.xml); do
+            if ! grep -q 'android:forceDarkAllowed' "$SX"; then
+              sed -i -E '0,/<style [^>]*>/s//&\n        <item name="android:forceDarkAllowed">false<\/item>/' "$SX" || true
+            fi
+            echo "----- $SX -----"; grep -n 'forceDarkAllowed' "$SX" || echo "(forceDarkAllowed not set in $SX)"
+          done
 
       - name: Sync web assets into Android project
         run: npx --no-install cap sync android
