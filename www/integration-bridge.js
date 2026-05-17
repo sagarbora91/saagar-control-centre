@@ -287,20 +287,32 @@
   }
 
   /* ── EMPLOYEE MASTER UNION (reconcile, not event) ──────────────────── */
+  /* ONE-WAY: the Employee Master is the single source of truth (edited in
+     Settings → People). The bridge no longer harvests module staff lists into
+     it (that was leaking QMS demo CROs everywhere). It only PUSHES the master
+     into QMS/DSR, and preserves every master field (gender, empId, dept…). */
+  var DEMO_STUBS={rahul:1,priya:1,neha:1,amit:1,suresh:1};
   function reconcileEmployeeMaster(){
     try{
       var master=L(EMP_MASTER,[]); if(!Array.isArray(master))master=[];
-      var by={}; master.forEach(function(e){var n=(e&&e.name)||e; if(n)by[kk(n)]={name:nm(n),roles:(e&&e.roles)||[],active:!(e&&e.active===false)};});
-      var q=L(QMS,null); if(q&&Array.isArray(q.cros)) q.cros.forEach(function(c){if(c&&c.name&&!by[kk(c.name)])by[kk(c.name)]={name:nm(c.name),roles:['CRO'],active:true};});
-      var ds=L(DSR_STAFF,null); if(Array.isArray(ds)) ds.forEach(function(n){if(n&&!by[kk(n)])by[kk(n)]={name:nm(n),roles:['CRO'],active:true};});
-      try{(L(GROOM+today(),[])||[]).forEach(function(r){if(r&&r.name&&!by[kk(r.name)])by[kk(r.name)]={name:nm(r.name),roles:['CRO'],active:true};});}catch(e){}
-      try{var lv=L(LEAVE,null);if(lv&&Array.isArray(lv.employees))lv.employees.forEach(function(e){var n=e&&(e.name||e.employeeId);if(n&&!by[kk(n)])by[kk(n)]={name:nm(n),roles:[],active:true};});}catch(e){}
+      var by={};
+      master.forEach(function(e){
+        var n=(e&&e.name)||e; if(!n) return; var k=kk(n);
+        var obj=(e&&typeof e==='object')?e:{};
+        // drop legacy auto-harvested demo stubs (no real details = not user-curated)
+        if(DEMO_STUBS[k] && !obj.gender && !obj.empId && !obj.dept) return;
+        by[k]=Object.assign({},obj,{name:nm(n),active:!(obj&&obj.active===false)});
+      });
       var union=Object.keys(by).map(function(k){return by[k];}).sort(function(a,b){return a.name.localeCompare(b.name);});
-      if(JSON.stringify(union)!==JSON.stringify(master)){ S(EMP_MASTER,union); blog('emp-master union '+union.length); }
+      if(JSON.stringify(union)!==JSON.stringify(master)){ S(EMP_MASTER,union); blog('emp-master cleaned '+union.length); }
+      // master → QMS roster (dedupe by name)
+      var q=L(QMS,null);
       if(q&&Array.isArray(q.cros)){var h={};q.cros.forEach(function(c){if(c&&c.name)h[kk(c.name)]=1;});var add=0;
         union.forEach(function(u){if(!h[kk(u.name)]){q.cros.push({id:'emp_'+kk(u.name).replace(/[^a-z0-9]/g,''),name:u.name,active:true});add++;}});
         if(add){S(QMS,q);blog('seeded '+add+' → QMS roster');}}
-      var da=Array.isArray(ds)?ds.slice():[],dh={};da.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
+      // master → DSR staff list (dedupe by name)
+      var ds=L(DSR_STAFF,null), da=Array.isArray(ds)?ds.slice():[],dh={};
+      da.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
       union.forEach(function(u){if(!dh[kk(u.name)]){da.push(u.name);dadd++;}});
       if(dadd){S(DSR_STAFF,da);blog('seeded '+dadd+' → DSR list');}
     }catch(e){}
@@ -337,6 +349,18 @@
   }
 
   /* ── ORCHESTRATION ─────────────────────────────────────────────────── */
+  /* Re-entrancy lock + storage debounce. A module write (e.g. QMS creating a
+     rotation) fires a 'storage' event in the shell; without this guard a
+     burst of writes could re-enter cycle() repeatedly and freeze the app. */
+  var _running=false, _lastCycle=0;
+  function safeCycle(fromStorage){
+    var now=Date.now();
+    if(_running) return;
+    if(fromStorage && (now-_lastCycle)<4000) return;   // debounce storm
+    _running=true; _lastCycle=now;
+    try{ cycle(); }catch(e){}
+    finally{ _running=false; }
+  }
   function cycle(){
     var bus=busLoad();
     produce(bus);
@@ -384,7 +408,7 @@
   }
   function hookFrame(){
     var f=document.getElementById('moduleFrame'); if(!f||f.__saagarBridgeBound)return; f.__saagarBridgeBound=true;
-    f.addEventListener('load',function(){ try{ cycle();
+    f.addEventListener('load',function(){ try{ safeCycle(false);
       var doc=f.contentDocument||(f.contentWindow&&f.contentWindow.document); if(!doc)return;
       var t=(doc.title||'')+' '+((document.getElementById('activeTitle')||{}).textContent||'');
       if(/queue management|qms/i.test(t)) gateBanner(doc,'Queue Management');
@@ -394,8 +418,8 @@
   function init(){
     cycle(); hookFrame();
     var n=0,iv=setInterval(function(){hookFrame();if(++n>20)clearInterval(iv);},500);
-    setInterval(cycle,TICK);
-    window.addEventListener('storage',function(){cycle();});
+    setInterval(function(){safeCycle(false);},TICK);
+    window.addEventListener('storage',function(){safeCycle(true);});
     blog('integration bridge v2 (event bus) ready');
     console.log('[integration-bridge] event-bus ready');
   }
