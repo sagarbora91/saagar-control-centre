@@ -467,6 +467,51 @@ body.admin-on .admin-dot{display:block}
 }
 .subtab.active{color:var(--navy);border-bottom-color:var(--gold)}
 
+/* ── REPORTS dashboard (consolidated hub) ──────────────────────────────── */
+.rep-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.rep-controls .subtabs{display:flex;gap:2px;border-bottom:2px solid var(--gray-200)}
+.rep-controls input[type=date],.rep-controls input[type=month]{font-family:inherit;font-size:13px;font-weight:600;color:var(--navy);padding:7px 10px;border:1px solid var(--gray-300);border-radius:8px;background:#fff}
+.rcard{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
+.rcard>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:13px 15px;color:var(--navy);background:linear-gradient(180deg,#fff,#fbfaf6)}
+.rcard>summary::-webkit-details-marker{display:none}
+.rcard>summary::after{content:'⌄';margin-left:auto;color:var(--gold);font-size:18px;line-height:1;transition:transform .2s}
+.rcard[open]>summary::after{transform:rotate(180deg)}
+.rcard>summary b{font-size:14px;font-weight:700}
+.rcard>summary small{color:var(--gray-500);font-weight:600;font-size:11.5px}
+.r-icon{font-size:18px;line-height:1}
+.r-body{padding:13px 15px;border-top:1px solid var(--gray-100)}
+.r-body>p{font-size:13px;color:var(--gray-800);line-height:1.5}
+.r-h5{font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px}
+.r-foot{font-size:11.5px;color:var(--gray-500);margin-top:8px}
+.r-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.snap{white-space:pre-wrap;font-family:'DM Sans',monospace;font-size:12.5px;line-height:1.6;background:var(--cream);border:1px solid var(--gray-200);border-radius:8px;padding:12px;color:var(--gray-800);margin:0}
+.age-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:560px){.age-grid{grid-template-columns:repeat(2,1fr)}}
+.age-card{background:var(--gray-100);border-radius:9px;padding:11px 8px;text-align:center;border:1px solid var(--gray-200)}
+.age-card b{display:block;font-size:21px;font-weight:800;line-height:1.1;color:var(--navy)}
+.age-card span{font-size:10.5px;color:var(--gray-600);font-weight:600}
+.age-card.green{background:var(--green-pale);border-color:var(--green-mid)}.age-card.green b{color:var(--green)}
+.age-card.amber{background:var(--amber-pale);border-color:#fde68a}.age-card.amber b{color:var(--amber)}
+.age-card.orange{background:#fff4ed;border-color:#fed7aa}.age-card.orange b{color:#c2410c}
+.age-card.red{background:var(--red-pale);border-color:#fecaca}.age-card.red b{color:var(--red)}
+.exp-totals{display:flex;gap:8px;flex-wrap:wrap}
+.exp-total{flex:1;min-width:90px;background:var(--cream);border:1px solid var(--gray-200);border-radius:9px;padding:10px 12px;text-align:center}
+.exp-total b{display:block;font-size:18px;font-weight:800;color:var(--navy)}
+.exp-total span{font-size:10.5px;color:var(--gray-600);font-weight:600}
+.exp-total b.green{color:var(--green)}.exp-total b.amber{color:var(--amber)}.exp-total b.red{color:var(--red)}
+.trend-grid{display:flex;align-items:flex-end;gap:2px;height:64px;padding:6px 0;border-bottom:1px solid var(--gray-200)}
+.trend-bar{flex:1;min-width:3px;border-radius:2px 2px 0 0;background:var(--gray-300)}
+.trend-bar.green{background:var(--green)}.trend-bar.amber{background:var(--gold)}.trend-bar.red{background:var(--red)}.trend-bar.idle{background:var(--gray-200)}
+.trend-foot{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--gray-600)}
+.data-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.data-table.small{font-size:12px}
+.data-table th{text-align:left;padding:7px 8px;border-bottom:2px solid var(--gray-200);color:var(--gray-600);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.data-table td{padding:7px 8px;border-bottom:1px solid var(--gray-100);color:var(--gray-800);vertical-align:top}
+.data-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.data-table .num.green{color:var(--green);font-weight:700}.data-table .num.amber{color:var(--amber);font-weight:700}.data-table .num.red{color:var(--red);font-weight:700}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--gray-400);vertical-align:middle}
+.dot.green{background:var(--green)}.dot.amber{background:var(--gold)}.dot.red{background:var(--red)}
+
 /* ── FIELD GRIDS (forms) ───────────────────────────────────────────────── */
 .field-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:10px}
 .field-grid .full{grid-column:1/-1}
@@ -1105,6 +1150,7 @@ const FIRM_NAME_TO_CODE = {
    ═══════════════════════════════════════════════════════════════════════ */
 let activeView = "home";
 let activeConfigTab = "employees";
+let repScope = "daily"; let repDate = ""; let repMonth = "";
 let activeCategory = "All";
 let activeModuleId = null;
 let isAdmin = false;
@@ -1525,8 +1571,8 @@ function getModuleInsight(moduleId){
    TODAY'S BRIEF AGGREGATOR (NEW IN V5)
    Compiles today's activity across all 7 modules into one snapshot.
    ═══════════════════════════════════════════════════════════════════════ */
-function buildTodayBrief(){
-  const t = todayIso();
+function buildTodayBrief(dIso){
+  const t = dIso || todayIso();
   const out = { date:t, ts:new Date().toISOString() };
   // Stock
   const stockKeys = keysForModule('stock').filter(k=>k.endsWith('_'+t));
@@ -2034,153 +2080,347 @@ function renderModuleCards(){
 /* ═══════════════════════════════════════════════════════════════════════
    REPORTS  (new in V5)
    ═══════════════════════════════════════════════════════════════════════ */
+function repMonthLabel(m){ try{ return new Date(m+'-01T00:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'}); }catch(e){ return m; } }
+function repDateLabel(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return d; } }
+
 function renderReports(){
   const host = $('reportsList'); if(!host) return;
-  const b = buildTodayBrief();
+  if(!repDate) repDate = todayIso();
+  if(!repMonth) repMonth = monthIso();
+  const header = `
+    <div class="rep-controls">
+      <div class="subtabs">
+        <button class="subtab ${repScope==='daily'?'active':''}" onclick="setReportScope('daily')">Today</button>
+        <button class="subtab ${repScope==='monthly'?'active':''}" onclick="setReportScope('monthly')">This month</button>
+      </div>
+      ${repScope==='daily'
+        ? `<label class="sub">Date&nbsp;<input type="date" value="${repDate}" max="${todayIso()}" onchange="setRepDate(this.value)"></label>`
+        : `<label class="sub">Month&nbsp;<input type="month" value="${repMonth}" max="${monthIso()}" onchange="setRepMonth(this.value)"></label>`}
+    </div>`;
+  let cards = '';
+  try{ cards = repScope==='daily' ? dailyReportsHTML(repDate) : monthlyReportsHTML(repMonth); }
+  catch(e){ cards = '<div class="empty"><span class="em">⚠️</span>Could not build report — '+escapeHtml(e.message)+'</div>'; }
+  host.innerHTML = header + cards;
+}
+function setReportScope(s){ repScope = (s==='monthly')?'monthly':'daily'; renderReports(); }
+function setRepDate(v){ if(v) repDate = v; renderReports(); }
+function setRepMonth(v){ if(v) repMonth = v; renderReports(); }
+function shareDayBrief(){ shareText(buildSnapshotText(buildTodayBrief(repDate), repDate), 'Saagar_Brief_'+repDate); }
+function copyDayBrief(){ copyToClipboard(buildSnapshotText(buildTodayBrief(repDate), repDate)); }
 
-  // 1. Today's snapshot
-  const snapText = buildSnapshotText(b);
-  // 2. Employee performance (per-employee cross-module)
-  const perf = computeEmployeePerformance();
-  // 3. Grooming trend (last 30 days)
-  const trend = computeGroomingTrend(30);
-  // 4. Service aging
+function dailyReportsHTML(date){
+  const inr = n => '₹'+(Math.round(n||0)).toLocaleString('en-IN');
+  const sc = p => p>=80?'green':p>=60?'amber':'red';
+  const snap = buildSnapshotText(buildTodayBrief(date), date);
+  const qms = computeQmsDay(date);
+  const dsr = computeDsrDay(date);
+  const stock = computeStockDay(date);
+  const groom = computeGroomingDay(date);
+  const cash = computeCashDay(date);
+  const leave = computeLeaveDay(date);
+  return `
+   <details class="rcard" open>
+     <summary><span class="r-icon">☀️</span><b>Day snapshot</b><small>${escapeHtml(repDateLabel(date))}</small></summary>
+     <div class="r-body">
+       <pre class="snap">${escapeHtml(snap)}</pre>
+       <div class="r-actions">
+         <button class="btn primary small" onclick="shareDayBrief()">Share to WhatsApp</button>
+         <button class="btn small" onclick="copyDayBrief()">Copy text</button>
+       </div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">🎫</span><b>Queue &amp; conversion</b><small>${qms.total} walk-in${qms.total===1?'':'s'}</small></summary>
+     <div class="r-body">
+       ${qms.total ? `
+         <div class="age-grid">
+           <div class="age-card green"><b>${qms.purchases}</b><span>Purchases</span></div>
+           <div class="age-card amber"><b>${qms.service}</b><span>Service</span></div>
+           <div class="age-card orange"><b>${qms.nonPurchase}</b><span>No purchase</span></div>
+           <div class="age-card ${qms.conversion>=40?'green':qms.conversion>=20?'amber':'red'}"><b>${qms.conversion}%</b><span>Conversion</span></div>
+         </div>
+         <h5 class="r-h5">Sales ${inr(qms.sales)} · ${qms.closed}/${qms.total} closed</h5>
+         ${qms.byCro.length?`<div class="table-wrap"><table class="data-table small"><thead><tr><th>CRO</th><th class="num">Walk-ins</th><th class="num">Purch.</th><th class="num">Sales</th></tr></thead><tbody>${qms.byCro.map(c=>`<tr><td>${escapeHtml(c.cro)}</td><td class="num">${c.walkins}</td><td class="num">${c.purchases}</td><td class="num">${c.sales?inr(c.sales):'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
+       ` : `<div class="empty"><span class="em">🎫</span>No walk-ins recorded on this date.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('qms')">Open Queue</button></div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">📋</span><b>Daily staff register</b><small>${dsr.present} logged</small></summary>
+     <div class="r-body">
+       ${dsr.present ? `
+         <div class="exp-totals">
+           <div class="exp-total"><b>${dsr.present}</b><span>staff logged</span></div>
+           <div class="exp-total"><b>${inr(dsr.salesAmt)}</b><span>sales total</span></div>
+           <div class="exp-total"><b>${dsr.salesCnt}</b><span>sale entries</span></div>
+         </div>
+         <div class="table-wrap"><table class="data-table small"><thead><tr><th>Staff</th><th>Role</th><th class="num">Sales</th></tr></thead><tbody>${dsr.staff.map(s=>`<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.role||'—')}</td><td class="num">${s.salesAmt?inr(s.salesAmt):'—'}</td></tr>`).join('')}</tbody></table></div>
+       ` : `<div class="empty"><span class="em">📋</span>No staff register submitted on this date.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('dsr')">Open Register</button></div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">📦</span><b>Stock register</b><small>${stock.filter(s=>s.posted).length}/2 posted</small></summary>
+     <div class="r-body">
+       <div class="table-wrap"><table class="data-table small"><thead><tr><th>Store</th><th>Status</th><th class="num">Brands</th><th class="num">Sys stock</th><th class="num">GRN</th></tr></thead><tbody>${stock.map(s=>`<tr><td><b>${escapeHtml(s.store)}</b><br><small>${escapeHtml(s.code)}</small></td><td>${s.posted?(s.movementsSubmitted?'<span class="dot green"></span>Submitted':s.openingLocked?'<span class="dot amber"></span>Opening locked':'<span class="dot amber"></span>In progress'):'<span class="dot red"></span>Not posted'}</td><td class="num">${s.posted?s.brands:'—'}</td><td class="num">${s.posted?s.sysTot:'—'}</td><td class="num">${s.posted?s.grnTot:'—'}</td></tr>`).join('')}</tbody></table></div>
+       <div class="r-actions"><button class="btn small" onclick="openModule('stock')">Open Stock</button></div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">✅</span><b>Grooming</b><small>${groom.checks} check${groom.checks===1?'':'s'}</small></summary>
+     <div class="r-body">
+       ${groom.checks ? `
+         <div class="exp-totals">
+           <div class="exp-total"><b class="${sc(groom.avg)}">${groom.avg}%</b><span>average</span></div>
+           <div class="exp-total"><b>${groom.pass}/${groom.checks}</b><span>passed ≥80%</span></div>
+         </div>
+         <div class="table-wrap"><table class="data-table small"><thead><tr><th>CRO</th><th>Gender</th><th class="num">Score</th></tr></thead><tbody>${groom.list.map(g=>`<tr><td>${escapeHtml(g.name||'—')}</td><td>${/^f/i.test(g.gender||'')?'Female':/^m/i.test(g.gender||'')?'Male':'—'}</td><td class="num ${sc(g.pct)}">${g.pct}%</td></tr>`).join('')}</tbody></table></div>
+       ` : `<div class="empty"><span class="em">✅</span>No grooming checks on this date.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('grooming')">Open Grooming</button></div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">💵</span><b>Cash sheet</b><small>${cash.done?'done':'pending'}</small></summary>
+     <div class="r-body">
+       ${cash.done ? `<p>Cash statement <b>completed</b>${cash.by?(' by '+escapeHtml(cash.by)):''}.${cash.total?(' Total '+inr(cash.total)+'.'):''}</p>` : `<div class="empty"><span class="em">💵</span>Cash statement not filled for this date.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('expense')">Open Expense</button></div>
+     </div>
+   </details>
+
+   <details class="rcard">
+     <summary><span class="r-icon">🌴</span><b>On leave</b><small>${leave.count}</small></summary>
+     <div class="r-body">
+       ${leave.count ? `<div class="table-wrap"><table class="data-table small"><thead><tr><th>Name</th><th>Type</th><th>Approved by</th></tr></thead><tbody>${leave.items.map(l=>`<tr><td>${escapeHtml(l.name)}</td><td>${escapeHtml(l.type)}</td><td>${escapeHtml(l.approvedBy||'—')}</td></tr>`).join('')}</tbody></table></div>` : `<div class="empty"><span class="em">🌴</span>Nobody on leave this date.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('leave')">Open Leave</button></div>
+     </div>
+   </details>`;
+}
+
+function monthlyReportsHTML(month){
+  const inr = n => '₹'+(Math.round(n||0)).toLocaleString('en-IN');
+  const sc = p => p>=80?'green':p>=60?'amber':'red';
+  const perf = computeEmployeePerformance(month);
+  const exp = computeExpenseSummary(month);
+  const pay = computePayrollSummary();
+  const audit = computeCroAuditMonth(month);
+  const groom = computeGroomingMonth(month);
   const aging = computeServiceAging();
-  // 5. Expense summary (current month)
-  const exp = computeExpenseSummary();
-  // 6. Tax status
   const tax = computeTaxStatus();
+  let html = `
+   <details class="rcard" open>
+     <summary><span class="r-icon">👥</span><b>Employee performance</b><small>${perf.length} staff</small></summary>
+     <div class="r-body">
+       ${perf.length ? `
+         <div class="table-wrap"><table class="data-table small"><thead><tr><th>Name</th><th>Firm</th><th class="num">Groom %</th><th class="num">Service</th><th class="num">Cash</th></tr></thead><tbody>${perf.map(r=>`<tr><td><b>${escapeHtml(r.name)}</b><br><small>${escapeHtml(r.role||'')}</small></td><td>${escapeHtml(firmName(r.firm))}</td><td class="num ${r.groomPctClass}">${r.groomChecks?r.groomPct+'%':'—'}</td><td class="num">${r.serviceJobs||'—'}</td><td class="num">${r.cashStatements||'—'}</td></tr>`).join('')}</tbody></table></div>
+         <p class="r-foot">Grooming + Service + Cash for ${escapeHtml(repMonthLabel(month))}.</p>
+       ` : `<div class="empty"><span class="em">👥</span>Add staff to Employee Master to see performance.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="shareReport('performance')">Share to WhatsApp</button></div>
+     </div>
+   </details>
 
-  host.innerHTML = `
-    <details class="rcard" open>
-      <summary><span class="r-icon">☀️</span><b>Today's snapshot</b><small>${escapeHtml(new Date().toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'}))}</small></summary>
-      <div class="r-body">
-        <pre class="snap">${escapeHtml(snapText)}</pre>
-        <div class="r-actions">
-          <button class="btn primary small" onclick="shareTodayBrief()">Share to WhatsApp</button>
-          <button class="btn small" onclick="copyToClipboard(\`${snapText.replace(/`/g,'\\`')}\`)">Copy text</button>
-        </div>
-      </div>
-    </details>
+   <details class="rcard">
+     <summary><span class="r-icon">💰</span><b>Payroll</b><small>${escapeHtml(pay.month||'—')} ${pay.year||''}</small></summary>
+     <div class="r-body">
+       ${pay.headcount ? `
+         <div class="exp-totals">
+           <div class="exp-total"><b>${pay.headcount}</b><span>employees</span></div>
+           <div class="exp-total"><b>${inr(pay.gross)}</b><span>gross</span></div>
+           <div class="exp-total"><b>${inr(pay.net)}</b><span>net payable</span></div>
+         </div>
+         <h5 class="r-h5">Run status: ${escapeHtml(pay.status)}${pay.firm?(' · '+escapeHtml(pay.firm)):''}</h5>
+       ` : `<div class="empty"><span class="em">💰</span>No payroll rows yet${pay.month?(' for '+escapeHtml(pay.month)+' '+pay.year):''}.</div>`}
+       <p class="r-foot">Payroll runs for the month set inside the module (now ${escapeHtml(pay.month||'—')} ${pay.year||''}), independent of the picker.</p>
+       <div class="r-actions"><button class="btn small" onclick="openModule('payroll')">Open Payroll</button></div>
+     </div>
+   </details>
 
-    <details class="rcard">
-      <summary><span class="r-icon">👥</span><b>Employee performance</b><small>${perf.length} staff</small></summary>
-      <div class="r-body">
-        ${perf.length ? `
-          <div class="table-wrap"><table class="data-table small">
-            <thead><tr><th>Name</th><th>Firm</th><th class="num">Groom %</th><th class="num">Service jobs</th><th class="num">Cash done</th><th>Status</th></tr></thead>
-            <tbody>${perf.map(r=>`
-              <tr>
-                <td><b>${escapeHtml(r.name)}</b><br><small>${escapeHtml(r.role||r.firm||'')}</small></td>
-                <td>${escapeHtml(firmName(r.firm))}</td>
-                <td class="num ${r.groomPctClass}">${r.groomChecks?r.groomPct+'%':'—'}</td>
-                <td class="num">${r.serviceJobs||'—'}</td>
-                <td class="num">${r.cashStatements||'—'}</td>
-                <td>${r.active?'<span class="dot green"></span>Active':'<span class="dot red"></span>Inactive'}</td>
-              </tr>`).join('')}
-            </tbody></table></div>
-          <p class="r-foot">Computed from Grooming + Service + Cash records for the current month. Open Employee Master to edit roles/firms.</p>
-        ` : `<div class="empty"><span class="em">👥</span>Add staff to Employee Master to see performance.</div>`}
-        <div class="r-actions"><button class="btn small" onclick="shareReport('performance')">Share to WhatsApp</button></div>
-      </div>
-    </details>
+   <details class="rcard">
+     <summary><span class="r-icon">💳</span><b>Expense summary</b><small>${escapeHtml(exp.monthLabel)}</small></summary>
+     <div class="r-body">
+       ${exp.total ? `
+         <div class="exp-totals">
+           <div class="exp-total"><b>${inr(exp.total)}</b><span>total</span></div>
+           <div class="exp-total"><b>${exp.count}</b><span>entries</span></div>
+           <div class="exp-total"><b>${exp.firmCount}</b><span>firms</span></div>
+         </div>
+         ${exp.byFirm.length?`<h5 class="r-h5">By firm</h5><div class="table-wrap"><table class="data-table small"><thead><tr><th>Firm</th><th class="num">Entries</th><th class="num">Amount</th></tr></thead><tbody>${exp.byFirm.map(f=>`<tr><td>${escapeHtml(f.firm)}</td><td class="num">${f.count}</td><td class="num">${inr(f.amount)}</td></tr>`).join('')}</tbody></table></div>`:''}
+       ` : `<div class="empty"><span class="em">💳</span>No expenses recorded for this month.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('expense')">Open Expense</button><button class="btn small" onclick="shareReport('expense')">Share</button></div>
+     </div>
+   </details>
 
-    <details class="rcard">
-      <summary><span class="r-icon">✅</span><b>Grooming trend</b><small>last 30 days</small></summary>
-      <div class="r-body">
-        ${trend.totalChecks
-          ? `<div class="trend-grid">
-              ${trend.days.map(d=>{
-                const cls = d.avg>=80?'green':d.avg>=60?'amber':d.avg>0?'red':'idle';
-                const h = Math.max(2, Math.round((d.avg||0)*0.6));
-                return `<div class="trend-bar ${cls}" style="height:${h}px" title="${escapeHtml(d.date)} · ${d.avg}% · ${d.checks} check${d.checks===1?'':'s'}"></div>`;
-              }).join('')}
-            </div>
-            <div class="trend-foot">
-              <span><b>${trend.totalChecks}</b> total checks</span>
-              <span><b>${trend.avg}%</b> average</span>
-              <span><b>${trend.daysWithData}/${trend.days.length}</b> days logged</span>
-            </div>`
-          : `<div class="empty"><span class="em">✅</span>No grooming checks in the last 30 days.</div>`
-        }
-        <div class="r-actions"><button class="btn small" onclick="shareReport('grooming')">Share to WhatsApp</button></div>
-      </div>
-    </details>
+   <details class="rcard">
+     <summary><span class="r-icon">🏅</span><b>CRO audit scores</b><small>${audit.totalAudits} audit${audit.totalAudits===1?'':'s'}</small></summary>
+     <div class="r-body">
+       ${audit.totalAudits ? `
+         <div class="exp-totals"><div class="exp-total"><b class="${sc(audit.avg)}">${audit.avg}</b><span>avg / 100</span></div><div class="exp-total"><b>${audit.totalAudits}</b><span>audits</span></div></div>
+         <div class="table-wrap"><table class="data-table small"><thead><tr><th>CRO</th><th class="num">Avg /100</th><th class="num">Audits</th><th>Last grade</th></tr></thead><tbody>${audit.byCro.map(c=>`<tr><td>${escapeHtml(c.cro)}</td><td class="num ${sc(c.avg)}">${c.avg}</td><td class="num">${c.count}</td><td>${escapeHtml(c.grade||'—')}</td></tr>`).join('')}</tbody></table></div>
+       ` : `<div class="empty"><span class="em">🏅</span>No CRO audits for this month.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('cro_audit')">Open CRO Audit</button></div>
+     </div>
+   </details>
 
-    <details class="rcard">
-      <summary><span class="r-icon">🛠️</span><b>Service job aging</b><small>${aging.totalOpen} open</small></summary>
-      <div class="r-body">
-        ${aging.totalOpen ? `
-          <div class="age-grid">
-            <div class="age-card green"><b>${aging.b0_3}</b><span>0–3 days</span></div>
-            <div class="age-card amber"><b>${aging.b4_7}</b><span>4–7 days</span></div>
-            <div class="age-card orange"><b>${aging.b8_15}</b><span>8–15 days</span></div>
-            <div class="age-card red"><b>${aging.b16}</b><span>16+ days</span></div>
-          </div>
-          ${aging.oldest.length ? `
-            <h5 class="r-h5">Oldest open jobs</h5>
-            <div class="table-wrap"><table class="data-table small">
-              <thead><tr><th>Job</th><th>Booked</th><th class="num">Days</th><th>Status</th></tr></thead>
-              <tbody>${aging.oldest.map(j=>`
-                <tr><td><b>${escapeHtml(j.customer||j.name||'—')}</b><br><small>${escapeHtml(j.brand||j.item||'')}</small></td>
-                  <td>${escapeHtml(j.date||'')}</td>
-                  <td class="num">${j.days}</td>
-                  <td>${escapeHtml(j.status||'open')}</td></tr>`).join('')}
-              </tbody></table></div>` : ''}
-        ` : `<div class="empty"><span class="em">🛠️</span>No open service jobs.</div>`}
-        <div class="r-actions">
-          <button class="btn small" onclick="openModule('service')">Open Service Centre</button>
-          <button class="btn small" onclick="shareReport('service')">Share to WhatsApp</button>
-        </div>
-      </div>
-    </details>
+   <details class="rcard">
+     <summary><span class="r-icon">✅</span><b>Grooming trend</b><small>${groom.totalChecks} checks</small></summary>
+     <div class="r-body">
+       ${groom.totalChecks ? `
+         <div class="trend-grid">${groom.days.map(d=>{const cls=d.avg>=80?'green':d.avg>=60?'amber':d.avg>0?'red':'idle';const h=Math.max(2,Math.round((d.avg||0)*0.55));return `<div class="trend-bar ${cls}" style="height:${h}px" title="${escapeHtml(d.date)} · ${d.avg}% · ${d.checks} check${d.checks===1?'':'s'}"></div>`;}).join('')}</div>
+         <div class="trend-foot"><span><b>${groom.totalChecks}</b> checks</span><span><b>${groom.avg}%</b> average</span><span><b>${groom.daysWithData}/${groom.days.length}</b> days logged</span></div>
+       ` : `<div class="empty"><span class="em">✅</span>No grooming checks this month.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="shareReport('grooming')">Share</button></div>
+     </div>
+   </details>
 
-    <details class="rcard">
-      <summary><span class="r-icon">💳</span><b>Expense summary</b><small>${exp.monthLabel}</small></summary>
-      <div class="r-body">
-        ${exp.total ? `
-          <div class="exp-totals">
-            <div class="exp-total"><b>₹${exp.total.toLocaleString('en-IN')}</b><span>total this month</span></div>
-            <div class="exp-total"><b>${exp.count}</b><span>entries</span></div>
-            <div class="exp-total"><b>${exp.firmCount}</b><span>firms</span></div>
-          </div>
-          ${exp.byFirm.length ? `
-            <h5 class="r-h5">By firm</h5>
-            <div class="table-wrap"><table class="data-table small">
-              <thead><tr><th>Firm</th><th class="num">Entries</th><th class="num">Amount</th></tr></thead>
-              <tbody>${exp.byFirm.map(f=>`<tr><td>${escapeHtml(f.firm)}</td><td class="num">${f.count}</td><td class="num">₹${f.amount.toLocaleString('en-IN')}</td></tr>`).join('')}</tbody>
-            </table></div>` : ''}
-        ` : `<div class="empty"><span class="em">💳</span>No expenses recorded this month.</div>`}
-        <div class="r-actions">
-          <button class="btn small" onclick="openModule('expense')">Open Expense Manager</button>
-          <button class="btn small" onclick="shareReport('expense')">Share to WhatsApp</button>
-        </div>
-      </div>
-    </details>
+   <details class="rcard">
+     <summary><span class="r-icon">🛠️</span><b>Service job aging</b><small>${aging.totalOpen} open</small></summary>
+     <div class="r-body">
+       ${aging.totalOpen ? `
+         <div class="age-grid"><div class="age-card green"><b>${aging.b0_3}</b><span>0–3 days</span></div><div class="age-card amber"><b>${aging.b4_7}</b><span>4–7 days</span></div><div class="age-card orange"><b>${aging.b8_15}</b><span>8–15 days</span></div><div class="age-card red"><b>${aging.b16}</b><span>16+ days</span></div></div>
+         ${aging.oldest.length?`<h5 class="r-h5">Oldest open jobs</h5><div class="table-wrap"><table class="data-table small"><thead><tr><th>Job</th><th>Booked</th><th class="num">Days</th></tr></thead><tbody>${aging.oldest.map(j=>`<tr><td><b>${escapeHtml(j.customer||j.name||'—')}</b><br><small>${escapeHtml(j.brand||j.item||'')}</small></td><td>${escapeHtml(j.date||'')}</td><td class="num">${j.days}</td></tr>`).join('')}</tbody></table></div>`:''}
+       ` : `<div class="empty"><span class="em">🛠️</span>No open service jobs.</div>`}
+       <div class="r-actions"><button class="btn small" onclick="openModule('service')">Open Service</button><button class="btn small" onclick="shareReport('service')">Share</button></div>
+     </div>
+   </details>
 
-    <details class="rcard">
-      <summary><span class="r-icon">⚖️</span><b>Tax compliance status</b><small>${tax.overdue+tax.dueWeek} need attention</small></summary>
-      <div class="r-body">
-        <div class="age-grid">
-          <div class="age-card red"><b>${tax.overdue}</b><span>Overdue</span></div>
-          <div class="age-card orange"><b>${tax.dueWeek}</b><span>Due this week</span></div>
-          <div class="age-card amber"><b>${tax.dueMonth}</b><span>Due this month</span></div>
-          <div class="age-card green"><b>${tax.done}</b><span>Completed</span></div>
-        </div>
-        ${tax.upcoming.length ? `
-          <h5 class="r-h5">Upcoming items</h5>
-          <div class="table-wrap"><table class="data-table small">
-            <thead><tr><th>Firm</th><th>Item</th><th>Due</th><th>Status</th></tr></thead>
-            <tbody>${tax.upcoming.slice(0,10).map(t=>`<tr><td>${escapeHtml(t.firm)}</td><td>${escapeHtml(t.item)}</td><td>${escapeHtml(t.due)}</td><td>${escapeHtml(t.status)}</td></tr>`).join('')}</tbody>
-          </table></div>` : ''}
-        <div class="r-actions">
-          <button class="btn small" onclick="openModule('tax')">Open Tax Calendar</button>
-          <button class="btn small" onclick="shareReport('tax')">Share to WhatsApp</button>
-        </div>
-      </div>
-    </details>
-  `;
-  try{ host.innerHTML += reconcileCardsHTML(); }catch(e){}
+   <details class="rcard">
+     <summary><span class="r-icon">⚖️</span><b>Tax compliance</b><small>${tax.overdue+tax.dueWeek} need attention</small></summary>
+     <div class="r-body">
+       <div class="age-grid"><div class="age-card red"><b>${tax.overdue}</b><span>Overdue</span></div><div class="age-card orange"><b>${tax.dueWeek}</b><span>Due this week</span></div><div class="age-card amber"><b>${tax.dueMonth}</b><span>Due this month</span></div><div class="age-card green"><b>${tax.done}</b><span>Completed</span></div></div>
+       ${tax.upcoming.length?`<h5 class="r-h5">Upcoming items</h5><div class="table-wrap"><table class="data-table small"><thead><tr><th>Firm</th><th>Item</th><th>Due</th></tr></thead><tbody>${tax.upcoming.slice(0,10).map(t=>`<tr><td>${escapeHtml(t.firm)}</td><td>${escapeHtml(t.item)}</td><td>${escapeHtml(t.due)}</td></tr>`).join('')}</tbody></table></div>`:''}
+       <p class="r-foot">Tax status is live (not month-filtered).</p>
+       <div class="r-actions"><button class="btn small" onclick="openModule('tax')">Open Tax</button><button class="btn small" onclick="shareReport('tax')">Share</button></div>
+     </div>
+   </details>`;
+  try{ html += reconcileCardsHTML(); }catch(e){}
+  return html;
+}
+
+function computeQmsDay(dateIso){
+  const q = tryJSON(safeGet('retail_queue_management_v1'))||{};
+  const custs = Array.isArray(q.customers)?q.customers:[];
+  const cros = Array.isArray(q.cros)?q.cros:[];
+  const nameOf = id => { const c=cros.find(x=>x.id===id); return c?c.name:null; };
+  const day = custs.filter(c=>String(c.entryTime||'').slice(0,10)===dateIso);
+  const out = { total:day.length, purchases:0, service:0, nonPurchase:0, closed:0, sales:0, conversion:0, byCro:[] };
+  const cm = {};
+  day.forEach(c=>{
+    const oc = c.outcome||'';
+    if(oc==='Purchase'){ out.purchases++; out.sales += Number(c.purchaseAmount)||0; }
+    else if(oc==='Service') out.service++;
+    else if(oc==='Non Purchase') out.nonPurchase++;
+    if(c.status==='Closed') out.closed++;
+    const nm = nameOf(c.assignedCroId)||'Unassigned';
+    if(!cm[nm]) cm[nm]={cro:nm, walkins:0, purchases:0, sales:0};
+    cm[nm].walkins++;
+    if(oc==='Purchase'){ cm[nm].purchases++; cm[nm].sales += Number(c.purchaseAmount)||0; }
+  });
+  out.conversion = out.total ? Math.round(out.purchases/out.total*100) : 0;
+  out.byCro = Object.values(cm).sort((a,b)=>b.walkins-a.walkins);
+  return out;
+}
+
+function computeDsrDay(dateIso){
+  const out = { staff:[], present:0, salesAmt:0, salesCnt:0 };
+  const pre = 'saagar_dsr_'+dateIso+'_';
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.indexOf(pre)===0){
+      const r = tryJSON(safeGet(k))||{};
+      const nm = r.staffName || k.slice(pre.length);
+      let amt=0, cnt=0;
+      if(Array.isArray(r.sales)) r.sales.forEach(s=>{ const a=Number(s.amount)||0; if(a>0){ amt+=a; cnt++; } });
+      out.staff.push({ name:nm, role:r.role||'', salesAmt:amt, salesCnt:cnt });
+      out.present++; out.salesAmt+=amt; out.salesCnt+=cnt;
+    }
+  }
+  out.staff.sort((a,b)=>b.salesAmt-a.salesAmt);
+  return out;
+}
+
+function computeStockDay(dateIso){
+  const stores = [{code:'WLMHW', name:'Titan World'},{code:'HEMW', name:'Helios'}];
+  return stores.map(s=>{
+    const blob = tryJSON(safeGet('saagar_stock_'+s.code+'_'+dateIso));
+    if(!blob || typeof blob!=='object') return { store:s.name, code:s.code, posted:false };
+    const opening = blob.opening||{}, mov = blob.movements||{};
+    let sysTot=0, grnTot=0, salesUnits=0;
+    Object.keys(opening).forEach(b=>{ sysTot += Number(opening[b]&&opening[b].systemStock)||0; });
+    Object.keys(mov).forEach(b=>{ grnTot += Number(mov[b]&&mov[b].grn)||0; salesUnits += Number(mov[b]&&mov[b].sales)||0; });
+    return { store:s.name, code:s.code, posted:true, openingLocked:!!blob.openingLocked, movementsSubmitted:!!blob.movementsSubmitted, sysTot, grnTot, salesUnits, brands:Object.keys(opening).length };
+  });
+}
+
+function computeGroomingDay(dateIso){
+  const arr = tryJSON(safeGet('saagar_grooming_'+dateIso))||[];
+  const list = Array.isArray(arr)?arr:[];
+  const checks = list.length;
+  const sum = list.reduce((s,g)=>s+(Number(g.pct)||0),0);
+  const pass = list.filter(g=>(Number(g.pct)||0)>=80).length;
+  return { checks, avg: checks?Math.round(sum/checks):0, pass, list: list.map(g=>({name:g.name, pct:Number(g.pct)||0, gender:g.gender})) };
+}
+
+function computeGroomingMonth(month){
+  const out = { days:[], totalChecks:0, totalSum:0, daysWithData:0, avg:0 };
+  const parts = String(month).split('-'); const y=Number(parts[0]), m=Number(parts[1]);
+  if(!y||!m) return out;
+  const dim = new Date(y, m, 0).getDate();
+  for(let dd=1; dd<=dim; dd++){
+    const iso = month+'-'+String(dd).padStart(2,'0');
+    const arr = tryJSON(safeGet('saagar_grooming_'+iso))||[];
+    const checks = Array.isArray(arr)?arr.length:0;
+    const sum = Array.isArray(arr)?arr.reduce((s,g)=>s+(Number(g.pct)||0),0):0;
+    out.days.push({ date:iso, checks, avg: checks?Math.round(sum/checks):0 });
+    out.totalChecks+=checks; out.totalSum+=sum; if(checks) out.daysWithData++;
+  }
+  out.avg = out.totalChecks?Math.round(out.totalSum/out.totalChecks):0;
+  return out;
+}
+
+function computeCashDay(dateIso){
+  const st = tryJSON(safeGet('tanishq_statements'))||{};
+  const rec = st && st[dateIso];
+  if(!rec) return { done:false };
+  return { done: !!rec.filledBy, by: rec.filledBy||'', total: Number(rec.total||rec.netSales||rec.amount||0)||0 };
+}
+
+function computeLeaveDay(dateIso){
+  const d = leaveData();
+  const arr = (d && d.leaves && d.leaves[dateIso]) ? d.leaves[dateIso] : [];
+  const list = Array.isArray(arr)?arr:[];
+  const lab = t => t==='half_day_am'?'½ Morning':t==='half_day_pm'?'½ Afternoon':'Full day';
+  return { count:list.length, items:list.map(l=>({name:l.name||'—', type:lab(l.type), reason:l.reason||'', approvedBy:l.approvedBy||''})) };
+}
+
+function computePayrollSummary(){
+  const p = tryJSON(safeGet('payroll_suite_v1_2026'))||{};
+  const meta = p.meta||{}, rows = Array.isArray(p.rows)?p.rows:[];
+  let gross=0, net=0;
+  rows.forEach(r=>{
+    gross += Number((r.gross!=null?r.gross:(r.grossPay!=null?r.grossPay:r.salaryAmount)))||0;
+    net += Number((r.net!=null?r.net:(r.netPay!=null?r.netPay:r.payable)))||0;
+  });
+  return { month: meta.month||'', year: meta.year||'', status: (meta.run&&meta.run.status)||'draft', firm: meta.firmName||'', headcount: rows.length, gross, net };
+}
+
+function computeCroAuditMonth(month){
+  const all = tryJSON(safeGet('cro_audits_v3'))||[];
+  const list = Array.isArray(all)?all.filter(a=>String(a.date||'').slice(0,7)===month):[];
+  const cm = {};
+  list.forEach(a=>{
+    const nm = a.cro||'—';
+    if(!cm[nm]) cm[nm]={cro:nm, sum:0, count:0, lastDate:'', grade:''};
+    cm[nm].sum += Number(a.total)||0; cm[nm].count++;
+    if(String(a.date||'') >= cm[nm].lastDate){ cm[nm].lastDate=String(a.date||''); cm[nm].grade=a.grade||''; }
+  });
+  const byCro = Object.values(cm).map(c=>({cro:c.cro, avg:Math.round(c.sum/c.count), count:c.count, grade:c.grade})).sort((a,b)=>b.avg-a.avg);
+  const totalAudits = list.length;
+  const avg = totalAudits ? Math.round(list.reduce((s,a)=>s+(Number(a.total)||0),0)/totalAudits) : 0;
+  return { totalAudits, avg, byCro };
 }
 
 /* ── PHASE 3: Reconciliation view — same money/counts seen by different
@@ -2240,8 +2480,8 @@ function copyToClipboard(text){
   }catch(e){ toast('Copy not supported'); }
 }
 
-function buildSnapshotText(b){
-  const dateLine = new Date().toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+function buildSnapshotText(b, dIso){
+  const dateLine = new Date((dIso||todayIso())+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
   const owner = ownerName();
   return [
     `📊 *Saagar Traders — Today's Brief*`,
@@ -2258,10 +2498,10 @@ function buildSnapshotText(b){
   ].join('\n');
 }
 
-function computeEmployeePerformance(){
+function computeEmployeePerformance(month){
+  month = month || monthIso();
   const master = getEmployeeMaster();
   if(!master.length) return [];
-  const month = monthIso();
   // Aggregate grooming per name (current month)
   const groomMap = {};
   Object.keys(allStorage()).filter(k=>k.startsWith('saagar_grooming_'+month)).forEach(k=>{
@@ -2352,10 +2592,10 @@ function computeServiceAging(){
   return out;
 }
 
-function computeExpenseSummary(){
+function computeExpenseSummary(month){
   const arr = tryJSON(safeGet('gm_expenses'))||[];
-  const month = monthIso();
-  const out = { monthLabel: new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'}), total:0, count:0, firmCount:0, byFirm:[] };
+  month = month || monthIso();
+  const out = { monthLabel: new Date(month+'-01T00:00:00').toLocaleDateString('en-IN',{month:'long',year:'numeric'}), total:0, count:0, firmCount:0, byFirm:[] };
   if(!Array.isArray(arr)) return out;
   const firms = {};
   arr.forEach(e=>{
@@ -2404,7 +2644,7 @@ function shareReport(kind){
   const owner = ownerName();
   const header = `*Saagar Traders — ${kind[0].toUpperCase()+kind.slice(1)} Report*\n${date}${owner?(' · '+owner):''}\n\n`;
   if(kind==='performance'){
-    const perf = computeEmployeePerformance().slice(0,12);
+    const perf = computeEmployeePerformance(repMonth||monthIso()).slice(0,12);
     text = header + (perf.length
       ? perf.map(r=>`• ${r.name} (${firmName(r.firm)}): groom ${r.groomChecks?r.groomPct+'%':'—'}, service ${r.serviceJobs}, cash ${r.cashStatements}`).join('\n')
       : 'No staff in master list.');
@@ -2415,7 +2655,7 @@ function shareReport(kind){
     const a = computeServiceAging();
     text = header + `Open jobs: ${a.totalOpen}\n• 0–3d: ${a.b0_3}\n• 4–7d: ${a.b4_7}\n• 8–15d: ${a.b8_15}\n• 16d+: ${a.b16}` + (a.oldest.length?`\n\nOldest:\n`+a.oldest.slice(0,5).map(j=>`• ${j.customer||'—'} (${j.days}d, ${j.status})`).join('\n'):'');
   } else if(kind==='expense'){
-    const e = computeExpenseSummary();
+    const e = computeExpenseSummary(repMonth||monthIso());
     text = header + `${e.monthLabel}\nTotal: ₹${e.total.toLocaleString('en-IN')} · ${e.count} entries\n\nBy firm:\n` + (e.byFirm.map(f=>`• ${f.firm}: ₹${f.amount.toLocaleString('en-IN')} (${f.count})`).join('\n')||'No entries.');
   } else if(kind==='tax'){
     const t = computeTaxStatus();
