@@ -1826,21 +1826,6 @@ window.SaagarMasters = {
   customers:function(){ return this.get('customers'); }
 };
 
-/* Declarative map of each module's settings — Phase 2 renders editable forms from
-   this and hides each module's native settings tab. */
-const SETTINGS_REGISTRY = {
-  grooming:   { key:'(internal)',                 label:'Grooming', fields:[{k:'failPct',label:'Pass threshold %',type:'number',via:'bridge'}] },
-  qms:        { key:'retail_queue_management_v1',  label:'Queue Management', path:'settings', fields:[{k:'storeName',label:'Store name',type:'text'}] },
-  leave:      { key:'leavedesk_v3',                label:'Staff Leave', fields:[{k:'capacity',label:'AM/PM capacity per shift',type:'number'}] },
-  dsr:        { key:'saagar_dsr_settings',         label:'Daily Staff Register', fields:[] },
-  stock:      { key:'saagar_appstate',             label:'Stock Register', fields:[{k:'store',label:'Active store',type:'select'}] },
-  expense:    { key:'gm_settings',                 label:'Expense Manager', fields:[{k:'gstRate',label:'GST rate %',type:'number'}] },
-  payroll:    { key:'payroll_suite_v1_2026',       label:'Payroll', path:'meta', fields:[{k:'month',label:'Month',type:'text'},{k:'year',label:'Year',type:'number'}] },
-  tax:        { key:'taxcal_v2',                    label:'Tax Compliance', fields:[{k:'fyStartYear',label:'FY start year',type:'number'}] },
-  cro_audit:  { key:'cro_s_v3',                     label:'CRO Daily Audit', fields:[{k:'surveys',label:'NPS surveys target',type:'number'},{k:'reviews',label:'Reviews target',type:'number'}] },
-  bridge:     { key:'saagar_bridge_config',         label:'Integration rules', fields:[{k:'failPct',label:'Grooming-fail %',type:'number'},{k:'voucherThreshold',label:'Voucher ₹',type:'number'},{k:'leaveGates',label:'Gate on-leave',type:'bool'}] }
-};
-
 function renderMasters(){
   masterTable('brands',  'mTblBrands',  ['name','store']);
   masterTable('vendors', 'mTblVendors', ['name','gstin']);
