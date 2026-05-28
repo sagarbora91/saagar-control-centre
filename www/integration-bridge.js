@@ -343,9 +343,11 @@
         var mbCh=false;
         Object.keys(sb).forEach(function(store){ (sb[store]||[]).forEach(function(nm){ if(nm){ var k=kk(nm)+'|'+store; if(!mbKey[k]&&!mbKey[kk(nm)+'|']){ mb.push({name:String(nm),store:store}); mbKey[k]=1; mbCh=true; } } }); });
         if(mbCh) S(MK_BRANDS,mb);
-        var stores=['WLMHW','HEMW'], sbCh=false;
-        mb.forEach(function(b){ if(!b||!b.name)return; var tg=b.store?[b.store]:stores; tg.forEach(function(st){ if(!Array.isArray(sb[st]))sb[st]=[]; if(!sb[st].some(function(n){return kk(n)===kk(b.name);})){ sb[st].push(b.name); sbCh=true; } }); });
-        if(sbCh){ S('saagar_brands',sb); blog('seeded brands → Stock'); } }catch(e){}
+        /* Phase 1: do NOT push master brands into saagar_brands. Stock's getBrands() now UNIONS the
+           brand master at read time (mapping store code→internal key), so writing here would risk
+           replacing Stock's built-in DEFAULT_BRANDS (getBrands returns saagar_brands[store] wholesale
+           when present). The harvest above still pulls any Stock-saved brands up into the master. */
+      }catch(e){}
       // vendors: union master ↔ gm_vendors [{name}]
       try{ var mv=L(MK_VENDORS,[]); if(!Array.isArray(mv))mv=[];
         var gv=L('gm_vendors',[]); if(!Array.isArray(gv))gv=[];
