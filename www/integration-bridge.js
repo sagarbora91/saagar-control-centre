@@ -292,7 +292,6 @@
      Settings → People). The bridge no longer harvests module staff lists into
      it (that was leaking QMS demo CROs everywhere). It only PUSHES the master
      into QMS/DSR, and preserves every master field (gender, empId, dept…). */
-  var DEMO_STUBS={rahul:1,priya:1,neha:1,amit:1,suresh:1};
   function reconcileEmployeeMaster(){
     try{
       var master=L(EMP_MASTER,[]); if(!Array.isArray(master))master=[];
@@ -300,8 +299,11 @@
       master.forEach(function(e){
         var n=(e&&e.name)||e; if(!n) return; var k=kk(n);
         var obj=(e&&typeof e==='object')?e:{};
-        // drop legacy auto-harvested demo stubs (no real details = not user-curated)
-        if(DEMO_STUBS[k] && !obj.gender && !obj.empId && !obj.dept) return;
+        // NOTE: the Employee Master (Settings → People) is now the single source of truth for
+        // creating employees, so we must NEVER silently drop a user-created record here. (The old
+        // DEMO_STUBS rule deleted anyone named Rahul/Priya/Neha/Amit/Suresh with no extra fields —
+        // it could vanish a real employee added as a bare first name. QMS still purges its OWN seeded
+        // demo CROs by name+code in its load(), which is specific and safe.)
         by[k]=Object.assign({},obj,{name:nm(n),active:!(obj&&obj.active===false)});
       });
       var union=Object.keys(by).map(function(k){return by[k];}).sort(function(a,b){return a.name.localeCompare(b.name);});

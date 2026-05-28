@@ -3072,9 +3072,49 @@ function showMainView(){
   $('botnav').classList.remove('hidden');
   switchView(activeView||'home');
 }
+/* ── INTEGRATION: Employee Master = single source of truth ──────────────────
+   Before opening a module that keeps its own staff list, push the master's
+   active people into that module's storage so they appear immediately — you
+   never re-type an employee inside any module. ADD-ONLY + idempotent: it never
+   clobbers per-module data (e.g. salaries already entered in Payroll) and never
+   touches an approved/locked pay-run. QMS/DSR/Stock/Grooming/CRO-Audit already
+   read the master directly; this covers Leave + Payroll. */
+function seedModuleFromMaster(id){
+  try{
+    const emps = getEmployeeMaster().filter(e=>e && e.name && e.active!==false);
+    if(!emps.length) return;
+    const slug = n => 'emp_'+String(n).toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(id==='leave'){
+      let lv = tryJSON(safeGet('leavedesk_v3')); if(!lv || typeof lv!=='object') lv={};
+      if(!Array.isArray(lv.employees)) lv.employees=[];
+      const seen={}; lv.employees.forEach(x=>{ const n=x&&(x.name||x); if(n) seen[String(n).trim().toLowerCase()]=1; });
+      let added=0;
+      emps.forEach(e=>{ const k=e.name.trim().toLowerCase(); if(!seen[k]){ lv.employees.push({id:slug(e.name),name:e.name,empId:e.employeeId||'',department:e.department||''}); seen[k]=1; added++; } });
+      if(added){ if(!lv.leaves)lv.leaves={}; if(!lv.agendas)lv.agendas={}; safeSet('leavedesk_v3', JSON.stringify(lv)); }
+    } else if(id==='payroll'){
+      const pb = tryJSON(safeGet('payroll_suite_v1_2026'));
+      if(!pb || typeof pb!=='object' || !Array.isArray(pb.rows)) return;   // let Payroll create its own blob on first open
+      const status = (pb.meta && pb.meta.run && pb.meta.run.status) || 'draft';
+      if(status!=='draft') return;   // never mutate an approved/locked pay-run snapshot
+      pb.nextId = pb.nextId || 1;
+      const seen={}; pb.rows.forEach(r=>{ if(r){ const idk=String(r.empId||'').trim().toLowerCase(), nk=String(r.name||'').trim().toLowerCase(); if(idk) seen['id:'+idk]=1; if(nk) seen['nm:'+nk]=1; } });
+      let added=0;
+      emps.forEach(e=>{ const idk=String(e.employeeId||'').trim().toLowerCase(), nk=e.name.trim().toLowerCase();
+        if((idk && seen['id:'+idk]) || seen['nm:'+nk]) return;
+        pb.nextId++;
+        const row={ id:pb.nextId, name:e.name, empId:e.employeeId||'', firm:e.firm||'', designation:e.role||'', gender:(String(e.gender||'').toUpperCase()==='F'?'F':'M'), joiningDate:e.joiningDate||'', phone:e.phone||'', active:true };
+        if(Number(e.monthlySalary)>0) row.gross = Number(e.monthlySalary);
+        if(e.salaryType==='S'||e.salaryType==='B') row.salaryType = e.salaryType;
+        pb.rows.push(row); seen['nm:'+nk]=1; if(idk) seen['id:'+idk]=1; added++;
+      });
+      if(added) safeSet('payroll_suite_v1_2026', JSON.stringify(pb));
+    }
+  }catch(e){}
+}
 function openModule(id){
   const mod = moduleById(id); if(!mod) return;
   if(!ensureModuleAccess(id)) return;
+  try{ seedModuleFromMaster(id); }catch(e){}
   logActivity(id);
   activeModuleId = id;
   $('activeTitle').textContent = mod.title;
@@ -3114,7 +3154,13 @@ function printModule(){
    Settings Hub. CSS-only (no JS) — operational controls (role, SM-login) stay. */
 function injectModuleHideCSS(html, moduleId){
   const HIDE = {
-    leave: '.btn-teal{display:none !important}' /* "Staff Master" — employees now sync from Settings → People */
+    /* Employees are created ONLY in Settings → People and flow into every module.
+       Hide each module's own "add employee/CRO/staff" entry point so nobody creates a
+       divergent record. Viewing/managing the synced list is unaffected. */
+    leave:   '.btn-teal{display:none !important}' /* "Staff Master" */,
+    qms:     '[onclick="addCroToMaster()"]{display:none !important}' /* "Add CRO" / "Add CRO Master" */,
+    dsr:     '#new-staff-inp,[onclick="addStaff()"]{display:none !important}' /* add-staff input + button */,
+    payroll: '[onclick="addEmployee()"],[onclick="addMasterEmployee()"]{display:none !important}' /* "+ Add Employee" (both tabs) */
   };
   const css = HIDE[moduleId]; if(!css) return html;
   const tag = '<style id="st-v5-hide-css">'+css+'</style>';
