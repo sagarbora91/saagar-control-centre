@@ -4,6 +4,10 @@
 *.keystore
 android/key.properties
 
+# jsdom test scratch dir (npm install + decoded module copies)
+/_v/
+_dec_*.html
+
 # OS / editor noise
 .DS_Store
 Thumbs.db
