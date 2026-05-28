@@ -34,6 +34,7 @@
   var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
   var CFG='saagar_bridge_config';
+  var MK_BRANDS='saagar_master_brands', MK_VENDORS='saagar_master_vendors', MK_CUSTOMERS='saagar_master_customers';
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
   function cfg(){ var c=L(CFG,null)||{}; return {
     failPct: (typeof c.failPct==='number'&&c.failPct>=0&&c.failPct<=100)?c.failPct:60,
@@ -319,6 +320,49 @@
     }catch(e){}
   }
 
+  /* ── PHASE 2: SHARED MASTERS → modules (add once, appears everywhere) ──
+     Seeds each module's own list from the canonical masters (dedupe, one-way)
+     and harvests module-local additions back into the masters (union), so the
+     masters stay complete. Idempotent: only writes on an actual change. */
+  function reconcileMasters(){
+    try{
+      var emp=L(EMP_MASTER,[]); if(!Array.isArray(emp))emp=[];
+      var empNames=emp.filter(function(e){return e&&e.name&&e.active!==false;});
+      // employees → Leave staff master (fixes "add employees again in Leave")
+      try{ var lv=L(LEAVE,null);
+        if(lv&&typeof lv==='object'){ if(!Array.isArray(lv.employees))lv.employees=[];
+          var lh={}; lv.employees.forEach(function(x){var n=x&&(x.name||x); if(n)lh[kk(n)]=1;});
+          var ladd=0; empNames.forEach(function(e){ if(!lh[kk(e.name)]){ lv.employees.push({id:'emp_'+kk(e.name).replace(/[^a-z0-9]/g,''),name:e.name,employeeId:e.empId||'',department:e.dept||''}); ladd++; } });
+          if(ladd){ S(LEAVE,lv); blog('seeded '+ladd+' → Leave staff'); } } }catch(e){}
+      // brands: union master ↔ saagar_brands {store:[names]}
+      try{ var mb=L(MK_BRANDS,[]); if(!Array.isArray(mb))mb=[];
+        var sb=L('saagar_brands',null); if(!sb||typeof sb!=='object')sb={};
+        var mbKey={}; mb.forEach(function(b){ if(b&&b.name)mbKey[kk(b.name)+'|'+(b.store||'')]=1; });
+        var mbCh=false;
+        Object.keys(sb).forEach(function(store){ (sb[store]||[]).forEach(function(nm){ if(nm){ var k=kk(nm)+'|'+store; if(!mbKey[k]&&!mbKey[kk(nm)+'|']){ mb.push({name:String(nm),store:store}); mbKey[k]=1; mbCh=true; } } }); });
+        if(mbCh) S(MK_BRANDS,mb);
+        var stores=['WLMHW','HEMW'], sbCh=false;
+        mb.forEach(function(b){ if(!b||!b.name)return; var tg=b.store?[b.store]:stores; tg.forEach(function(st){ if(!Array.isArray(sb[st]))sb[st]=[]; if(!sb[st].some(function(n){return kk(n)===kk(b.name);})){ sb[st].push(b.name); sbCh=true; } }); });
+        if(sbCh){ S('saagar_brands',sb); blog('seeded brands → Stock'); } }catch(e){}
+      // vendors: union master ↔ gm_vendors [{name}]
+      try{ var mv=L(MK_VENDORS,[]); if(!Array.isArray(mv))mv=[];
+        var gv=L('gm_vendors',[]); if(!Array.isArray(gv))gv=[];
+        var mvKey={}; mv.forEach(function(v){ if(v&&v.name)mvKey[kk(v.name)]=1; }); var mvCh=false;
+        gv.forEach(function(v){ var n=v&&(v.name||v); if(n&&!mvKey[kk(n)]){ mv.push({name:String(n),gstin:(v&&v.gstin)||''}); mvKey[kk(n)]=1; mvCh=true; } });
+        if(mvCh) S(MK_VENDORS,mv);
+        var gvKey={}; gv.forEach(function(v){var n=v&&(v.name||v); if(n)gvKey[kk(n)]=1;}); var gvCh=false;
+        mv.forEach(function(v){ if(v&&v.name&&!gvKey[kk(v.name)]){ gv.push({name:v.name}); gvKey[kk(v.name)]=1; gvCh=true; } });
+        if(gvCh){ S('gm_vendors',gv); blog('seeded vendors → Expense'); } }catch(e){}
+      // customers: harvest QMS + WSC → master (one-way; customers are created in modules)
+      try{ var mc=L(MK_CUSTOMERS,[]); if(!Array.isArray(mc))mc=[];
+        var mcKey={}; mc.forEach(function(c){ if(c&&c.name)mcKey[kk(c.name)+'|'+(c.mobile||'')]=1; }); var mcCh=false;
+        function addCust(n,mob){ if(!n)return; var k=kk(n)+'|'+(mob||''); if(!mcKey[k]){ mc.push({name:String(n),mobile:String(mob||'')}); mcKey[k]=1; mcCh=true; } }
+        var q=L(QMS,null); if(q&&Array.isArray(q.customers)) q.customers.forEach(function(c){ if(c&&c.name)addCust(c.name,c.mobile); });
+        var w=L(WSC,null); if(Array.isArray(w)) w.forEach(function(c){ if(c&&c.custName)addCust(c.custName,c.custMobile); });
+        if(mcCh){ S(MK_CUSTOMERS,mc); blog('harvested customers → master'); } }catch(e){}
+    }catch(e){}
+  }
+
   /* ── ORGANISATION PUBLISHER (additive; never overwrites user data) ─── */
   function publishOrg(){
     var res={payroll:'skipped',taxFirmsAdded:0};
@@ -373,6 +417,7 @@
     computeGate(bus);
     busSave(bus);
     reconcileEmployeeMaster();
+    reconcileMasters();
     publishOrg();
     buildTaxPayable();
     buildExceptions(bus);
