@@ -7,9 +7,11 @@
 <meta name="color-scheme" content="light only" />
 <title>Saagar Traders — Business Control Centre</title>
 <style>:root{color-scheme:light only}html{color-scheme:light only;forced-color-adjust:none;-webkit-text-size-adjust:100%}</style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Fonts are NOT loaded over the network. The APK ships with the INTERNET permission removed (fully
+     offline), so a remote font <link>/@import is render-blocking and can NEVER resolve on-device —
+     a real cause of UI stalls / "hanging" on every screen. We rely on the system-font fallback stacks
+     already declared in CSS (DM Sans → system sans-serif, DM Serif Display → serif). -->
+<style>:root{color-scheme:light only}</style>
 <style>
 /* ═════════════════════════════════════════════════════════════════════════
    SAAGAR TRADERS — BUSINESS CONTROL CENTRE  V5  (APK build 1.2)
@@ -3163,7 +3165,8 @@ function injectModuleAuditBridge(html, moduleId){
 function injectUniformCSS(html){
   const css = `
 <style id="st-v5-uniform-css">
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap');
+/* No remote @import — app is fully offline (INTERNET permission removed); a render-blocking
+   font fetch that can never resolve was a likely cause of module-open stalls. System fonts below. */
 /* ── VISIBILITY FIX ── force light rendering so Android WebView dark-mode
    (algorithmic darkening / force-dark) cannot invert text to invisible.
    This is the root cause of "some text not visible" on phones/tablets. */

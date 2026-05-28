@@ -454,11 +454,21 @@
   }
   function hookFrame(){
     var f=document.getElementById('moduleFrame'); if(!f||f.__saagarBridgeBound)return; f.__saagarBridgeBound=true;
-    f.addEventListener('load',function(){ try{ safeCycle(false);
-      var doc=f.contentDocument||(f.contentWindow&&f.contentWindow.document); if(!doc)return;
-      var t=(doc.title||'')+' '+((document.getElementById('activeTitle')||{}).textContent||'');
-      if(/queue management|qms/i.test(t)) gateBanner(doc,'Queue Management');
-      else if(/daily staff register/i.test(t)) gateBanner(doc,'Daily Staff Register');
+    f.addEventListener('load',function(){ try{
+      // Show the (cheap) gate banner from the already-computed gate state FIRST, so the
+      // module is immediately usable.
+      var doc=f.contentDocument||(f.contentWindow&&f.contentWindow.document);
+      if(doc){
+        var t=(doc.title||'')+' '+((document.getElementById('activeTitle')||{}).textContent||'');
+        if(/queue management|qms/i.test(t)) gateBanner(doc,'Queue Management');
+        else if(/daily staff register/i.test(t)) gateBanner(doc,'Daily Staff Register');
+      }
+      // DEFER + DEBOUNCE the full reconcile. Previously this ran cycle() synchronously inside the
+      // iframe 'load' handler, so opening a module blocked the main thread for the whole reconcile —
+      // a real "open a module → it hangs" cause once localStorage/the bus grew large. Now the module
+      // paints first; the reconcile runs after paint and is debounced (4s) so rapid opens don't each
+      // trigger a full pass. Still eventually-consistent (also runs on the 60s tick + storage events).
+      setTimeout(function(){ safeCycle(true); }, 50);
     }catch(e){} });
   }
   function init(){
