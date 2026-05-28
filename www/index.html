@@ -748,6 +748,7 @@ body.admin-on .admin-dot{display:block}
       <nav class="subtabs" id="configTabs">
         <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">People</button>
         <button class="subtab" data-sub="org" onclick="switchConfigTab('org')">Organisation</button>
+        <button class="subtab" data-sub="masters" onclick="switchConfigTab('masters')">Masters</button>
         <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')">Roles &amp; access</button>
         <button class="subtab" data-sub="backup" onclick="switchConfigTab('backup')">Data &amp; backup</button>
         <button class="subtab" data-sub="sync" onclick="switchConfigTab('sync')">Sync</button>
@@ -805,6 +806,34 @@ body.admin-on .admin-dot{display:block}
             <button class="btn green" onclick="publishOrganisation()">Publish to modules</button>
           </div>
           <div id="orgStatus" class="note-banner" style="display:none;margin-top:10px"></div>
+        </div>
+      </div>
+
+      <!-- Masters (canonical, shared across modules) -->
+      <div class="sub-section hidden" id="subMasters">
+        <div class="card card-pad">
+          <h4><span class="em">🗂️</span> Shared masters</h4>
+          <p>One source of truth for every module (Phase 1). Employees live under <b>People</b>, firms/branches under <b>Organisation</b>. Manage brands, vendors and customers here. From Phase 2, modules read these directly so you add each item only once.</p>
+          <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:6px">
+            <button class="btn sm" onclick="switchConfigTab('employees')">Employees →</button>
+            <button class="btn sm" onclick="switchConfigTab('org')">Firms &amp; branches →</button>
+            <button class="btn sm" onclick="mastersImportDetected()">⤵ Import from existing module data</button>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">🏷️</span> Brands / products</h4>
+          <div class="row"><input id="mb-name" placeholder="brand name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><select id="mb-store" style="padding:9px;border:1px solid var(--gray-300);border-radius:8px"><option value="">All stores</option><option value="WLMHW">Titan World</option><option value="HEMW">Helios</option></select><button class="btn p" onclick="masterAdd('brands')">Add</button></div>
+          <div id="mTblBrands" style="margin-top:10px"></div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">🧾</span> Vendors / payees</h4>
+          <div class="row"><input id="mv-name" placeholder="vendor name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mv-gstin" placeholder="GSTIN (optional)" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('vendors')">Add</button></div>
+          <div id="mTblVendors" style="margin-top:10px"></div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">👤</span> Customers</h4>
+          <div class="row"><input id="mc-name" placeholder="customer name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mc-mobile" placeholder="mobile" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('customers')">Add</button></div>
+          <div id="mTblCustomers" style="margin-top:10px"></div>
         </div>
       </div>
 
@@ -1050,6 +1079,9 @@ const ADMIN_MODE_KEY    = "st_v2_admin_mode";
 const LAST_BACKUP_KEY   = "st_v2_last_backup";
 const EMP_MASTER_KEY    = "saagar_employee_master_v1";
 const ORG_MASTER_KEY    = "saagar_org_master_v1";
+const MK_BRANDS         = "saagar_master_brands";
+const MK_VENDORS        = "saagar_master_vendors";
+const MK_CUSTOMERS      = "saagar_master_customers";
 const ACTIVITY_KEY      = "st_v3_activity_log";
 const AUDIT_LOG_KEY     = "st_v4_audit_log";
 const RESTORE_ROLLBACK_PREFIX = "st_v4_restore_rollback_";
@@ -1101,7 +1133,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY]; }
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY]; }
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
 function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
@@ -1714,14 +1746,95 @@ function saveBridgeConfig(){
   renderSync();
 }
 
+/* ═══════════════════ PHASE 1 — CANONICAL MASTERS + REGISTRY ═══════════════════ */
+/* Single source of truth for every module. Phase 2 wires modules to read these. */
+window.SaagarMasters = {
+  _k:{employees:EMP_MASTER_KEY, org:ORG_MASTER_KEY, brands:MK_BRANDS, vendors:MK_VENDORS, customers:MK_CUSTOMERS},
+  get:function(name){ try{ var v=tryJSON(safeGet(this._k[name])); if(name==='org') return v&&v.firms?v:{firms:[],branches:[]}; return Array.isArray(v)?v:[]; }catch(e){ return name==='org'?{firms:[],branches:[]}:[]; } },
+  save:function(name,val){ try{ safeSet(this._k[name], JSON.stringify(val)); return true; }catch(e){ return false; } },
+  add:function(name,obj){ var a=this.get(name); if(!Array.isArray(a)) return false; a.push(obj); return this.save(name,a); },
+  // convenience read helpers used by Phase-2 module adapters (via parent.SaagarMasters)
+  employeeNames:function(){ return this.get('employees').filter(function(e){return e&&e.name&&e.active!==false;}).map(function(e){return e.name;}); },
+  employeeByName:function(n){ var k=String(n||'').trim().toLowerCase(); return this.get('employees').find(function(e){return e&&String(e.name||'').trim().toLowerCase()===k;})||null; },
+  firms:function(){ return (this.get('org').firms||[]).filter(function(f){return f&&f.active!==false&&f.name;}); },
+  brandNames:function(store){ return this.get('brands').filter(function(b){return b&&b.name&&(!store||!b.store||b.store===store);}).map(function(b){return b.name;}); },
+  vendorNames:function(){ return this.get('vendors').filter(function(v){return v&&v.name;}).map(function(v){return v.name;}); },
+  customers:function(){ return this.get('customers'); }
+};
+
+/* Declarative map of each module's settings — Phase 2 renders editable forms from
+   this and hides each module's native settings tab. */
+const SETTINGS_REGISTRY = {
+  grooming:   { key:'(internal)',                 label:'Grooming', fields:[{k:'failPct',label:'Pass threshold %',type:'number',via:'bridge'}] },
+  qms:        { key:'retail_queue_management_v1',  label:'Queue Management', path:'settings', fields:[{k:'storeName',label:'Store name',type:'text'}] },
+  leave:      { key:'leavedesk_v3',                label:'Staff Leave', fields:[{k:'capacity',label:'AM/PM capacity per shift',type:'number'}] },
+  dsr:        { key:'saagar_dsr_settings',         label:'Daily Staff Register', fields:[] },
+  stock:      { key:'saagar_appstate',             label:'Stock Register', fields:[{k:'store',label:'Active store',type:'select'}] },
+  expense:    { key:'gm_settings',                 label:'Expense Manager', fields:[{k:'gstRate',label:'GST rate %',type:'number'}] },
+  payroll:    { key:'payroll_suite_v1_2026',       label:'Payroll', path:'meta', fields:[{k:'month',label:'Month',type:'text'},{k:'year',label:'Year',type:'number'}] },
+  tax:        { key:'taxcal_v2',                    label:'Tax Compliance', fields:[{k:'fyStartYear',label:'FY start year',type:'number'}] },
+  cro_audit:  { key:'cro_s_v3',                     label:'CRO Daily Audit', fields:[{k:'surveys',label:'NPS surveys target',type:'number'},{k:'reviews',label:'Reviews target',type:'number'}] },
+  bridge:     { key:'saagar_bridge_config',         label:'Integration rules', fields:[{k:'failPct',label:'Grooming-fail %',type:'number'},{k:'voucherThreshold',label:'Voucher ₹',type:'number'},{k:'leaveGates',label:'Gate on-leave',type:'bool'}] }
+};
+
+function renderMasters(){
+  masterTable('brands',  'mTblBrands',  ['name','store']);
+  masterTable('vendors', 'mTblVendors', ['name','gstin']);
+  masterTable('customers','mTblCustomers',['name','mobile']);
+}
+function masterTable(name, hostId, cols){
+  const host=$(hostId); if(!host) return;
+  const rows=window.SaagarMasters.get(name);
+  if(!rows.length){ host.innerHTML='<div class="sub">None yet. Add above, or tap “Import from existing module data”.</div>'; return; }
+  host.innerHTML='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr>'+cols.map(c=>`<th style="text-align:left;padding:6px;border-bottom:1px solid var(--gray-300)">${c}</th>`).join('')+'<th></th></tr></thead><tbody>'+
+    rows.map((r,idx)=>'<tr>'+cols.map(c=>`<td style="padding:5px">${escapeHtml(r[c]==null?'':String(r[c]))}</td>`).join('')+
+      `<td style="text-align:right"><button class="btn xs red" onclick="masterDel('${name}',${idx})">✕</button></td></tr>`).join('')+
+    '</tbody></table></div><div class="sub" style="margin-top:6px">'+rows.length+' record(s)</div>';
+}
+function masterAdd(name){
+  let obj=null;
+  if(name==='brands'){ const n=($('mb-name').value||'').trim(); if(!n){toast('Enter a brand name');return;} obj={name:n,store:$('mb-store').value||''}; $('mb-name').value=''; }
+  if(name==='vendors'){ const n=($('mv-name').value||'').trim(); if(!n){toast('Enter a vendor name');return;} obj={name:n,gstin:($('mv-gstin').value||'').trim()}; $('mv-name').value=''; $('mv-gstin').value=''; }
+  if(name==='customers'){ const n=($('mc-name').value||'').trim(); if(!n){toast('Enter a customer name');return;} obj={name:n,mobile:($('mc-mobile').value||'').trim()}; $('mc-name').value=''; $('mc-mobile').value=''; }
+  if(!obj) return;
+  const list=window.SaagarMasters.get(name);
+  const dup=list.some(r=>String(r.name||'').trim().toLowerCase()===obj.name.toLowerCase() && (name!=='brands'||(r.store||'')===(obj.store||'')));
+  if(dup){ toast('Already in the master'); return; }
+  window.SaagarMasters.add(name,obj);
+  try{ auditLog('master.add',{master:name,name:obj.name}); }catch(e){}
+  renderMasters();
+}
+function masterDel(name,idx){
+  const list=window.SaagarMasters.get(name); if(idx<0||idx>=list.length) return;
+  const rm=list.splice(idx,1)[0]; window.SaagarMasters.save(name,list);
+  try{ auditLog('master.remove',{master:name,name:rm&&rm.name}); }catch(e){}
+  renderMasters();
+}
+function mastersImportDetected(){
+  let added={brands:0,vendors:0,customers:0};
+  function uniqAdd(name, obj, keyfn){ const list=window.SaagarMasters.get(name); const k=keyfn(obj); if(!list.some(r=>keyfn(r)===k)){ list.push(obj); window.SaagarMasters.save(name,list); added[name]++; } }
+  // brands ← saagar_brands {store:[names]}
+  try{ const b=tryJSON(safeGet('saagar_brands'))||{}; Object.keys(b).forEach(store=>{ (b[store]||[]).forEach(nm=>{ if(nm) uniqAdd('brands',{name:String(nm),store:store}, o=>o.name.toLowerCase()+'|'+(o.store||'')); }); }); }catch(e){}
+  // vendors ← gm_vendors [{name}]
+  try{ const v=tryJSON(safeGet('gm_vendors'))||[]; v.forEach(x=>{ const nm=x&&(x.name||x); if(nm) uniqAdd('vendors',{name:String(nm),gstin:(x&&x.gstin)||''}, o=>o.name.toLowerCase()); }); }catch(e){}
+  // customers ← QMS + Watch Service
+  try{ const q=tryJSON(safeGet('retail_queue_management_v1')); if(q&&Array.isArray(q.customers)) q.customers.forEach(c=>{ if(c&&c.name) uniqAdd('customers',{name:String(c.name),mobile:String(c.mobile||'')}, o=>o.name.toLowerCase()+'|'+(o.mobile||'')); }); }catch(e){}
+  try{ const w=tryJSON(safeGet('saagar_wsf_v2')); if(Array.isArray(w)) w.forEach(c=>{ if(c&&c.custName) uniqAdd('customers',{name:String(c.custName),mobile:String(c.custMobile||'')}, o=>o.name.toLowerCase()+'|'+(o.mobile||'')); }); }catch(e){}
+  try{ auditLog('master.import',added); }catch(e){}
+  toast('Imported — brands +'+added.brands+', vendors +'+added.vendors+', customers +'+added.customers);
+  renderMasters();
+}
+
 function switchConfigTab(tab){
   activeConfigTab = tab;
   document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active', b.dataset.sub===tab));
-  ['employees','org','backup','admin','sync','diagnostics','about'].forEach(s=>{
+  ['employees','org','masters','backup','admin','sync','diagnostics','about'].forEach(s=>{
     const el = $('sub'+s[0].toUpperCase()+s.slice(1)); if(el) el.classList.toggle('hidden', s!==tab);
   });
   if(tab==='employees')    renderConfigEmployees();
   if(tab==='org')          renderOrganisation();
+  if(tab==='masters')      renderMasters();
   if(tab==='sync')         renderSync();
   if(tab==='backup')       renderConfigBackup();
   if(tab==='admin')        renderConfigAdmin();
