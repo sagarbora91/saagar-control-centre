@@ -2180,6 +2180,57 @@ function renderReports(){
       </div>
     </details>
   `;
+  try{ host.innerHTML += reconcileCardsHTML(); }catch(e){}
+}
+
+/* ── PHASE 3: Reconciliation view — same money/counts seen by different
+   modules should agree; plus a live "what synced where" activity log.
+   Read-only: computed from saved data, writes nothing. ── */
+function reconcileCardsHTML(){
+  function dstr(){var x=new Date();function p(n){return(n<10?'0':'')+n;}return x.getFullYear()+'-'+p(x.getMonth()+1)+'-'+p(x.getDate());}
+  const TODAY=dstr(), MONTH=TODAY.slice(0,7);
+  function J(k,fb){ return tryJSON(safeGet(k))||fb; }
+  const inr=n=>'₹'+(Math.round(n||0)).toLocaleString('en-IN');
+  // QMS today purchases
+  const q=J('retail_queue_management_v1',{}), qCusts=Array.isArray(q.customers)?q.customers:[];
+  let qSalesAmt=0,qSalesCnt=0;
+  qCusts.forEach(c=>{ const t=(c.walkInTime||c.exitTime||'')+''; if(t.slice(0,10)===TODAY && (c.outcome||'').toLowerCase()==='purchase'){ qSalesAmt+=Number(c.amount)||0; qSalesCnt++; } });
+  // DSR today sales
+  let dsrAmt=0,dsrCnt=0;
+  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf('saagar_dsr_'+TODAY+'_')===0){ const r=J(k,null); if(r&&Array.isArray(r.sales)) r.sales.forEach(s=>{ const a=Number(s.amount)||0; if(a>0){dsrAmt+=a;dsrCnt++;} }); } }
+  // Expense
+  let exp=J('gm_expenses',[]); if(!Array.isArray(exp))exp=[];
+  let expIncToday=0,expInvMonth=0,expSalMonth=0;
+  exp.forEach(e=>{ if(!e||e.void)return; const dt=(e.date||''),amt=Number(e.amount)||0,ty=(e.type||'expense').toLowerCase(),cat=(e.category||'');
+    if(dt===TODAY && ty==='income') expIncToday+=amt;
+    if(dt.slice(0,7)===MONTH && ty==='expense'){ if(/inventory/i.test(cat)) expInvMonth+=amt; if(/salary/i.test(cat)) expSalMonth+=amt; } });
+  // Stock GRN month
+  let grnMonth=0;
+  for(let j=0;j<localStorage.length;j++){ const sk=localStorage.key(j); const mm=sk&&sk.match(/^saagar_stock_(WLMHW|HEMW)_(\d{4}-\d{2}-\d{2})$/); if(mm && mm[2].slice(0,7)===MONTH){ const blob=J(sk,{}); Object.keys(blob).forEach(bk=>{ const row=blob[bk]; if(row&&row.mov&&row.mov.grn) grnMonth+=Number(row.mov.grn)||0; }); } }
+  // Payroll gross
+  const pay=J('payroll_suite_v1_2026',{}); let payGross=0; if(pay&&Array.isArray(pay.rows)) pay.rows.forEach(r=>{ payGross+=Number(r.gross||r.salaryAmount)||0; });
+  function row(label,aTxt,av,bTxt,bv,tol){ const match=(av==null||bv==null)?null:Math.abs(av-bv)<=(tol||1); const st=match===null?'<span class="status-pill">no data</span>':match?'<span class="status-pill" style="color:var(--green)">match</span>':'<span class="status-pill" style="color:var(--red)">mismatch</span>'; return '<tr><td>'+label+'</td><td>'+aTxt+'</td><td>'+bTxt+'</td><td>'+st+'</td></tr>'; }
+  const recRows =
+    row('Today sales ₹','QMS '+inr(qSalesAmt),qSalesAmt,'DSR '+inr(dsrAmt),dsrAmt,1)+
+    row('Today sales count','QMS '+qSalesCnt,qSalesCnt,'DSR '+dsrCnt,dsrCnt,0)+
+    row('Today cash income','Expense '+inr(expIncToday),expIncToday,'QMS sales '+inr(qSalesAmt),qSalesAmt,Math.max(1,qSalesAmt*0.02))+
+    row('Month inventory cost','Stock GRN '+inr(grnMonth),grnMonth,'Expense Inv '+inr(expInvMonth),expInvMonth,Math.max(1,grnMonth*0.02))+
+    row('Month salary','Payroll '+inr(payGross),payGross,'Expense Salary '+inr(expSalMonth),expSalMonth,Math.max(1,payGross*0.02));
+  let log=J('saagar_bridge_log',[]); if(!Array.isArray(log))log=[];
+  const logHtml = log.length ? log.slice(0,15).map(l=>'<div style="padding:3px 0;border-bottom:1px solid var(--gray-200);font-size:12px"><span class="sub">'+escapeHtml((l.at||'').replace('T',' ').slice(0,16))+'</span> — '+escapeHtml(l.m||'')+'</div>').join('') : '<div class="empty">No sync activity yet.</div>';
+  return `
+    <details class="rcard">
+      <summary><span class="r-icon">🔗</span><b>Reconciliation</b><small>cross-checks</small></summary>
+      <div class="r-body">
+        <p class="sub">Same money / counts seen by different modules — these should agree.</p>
+        <div class="table-wrap"><table class="data-table small"><thead><tr><th>Check</th><th>Source A</th><th>Source B</th><th>Status</th></tr></thead><tbody>${recRows}</tbody></table></div>
+        <p class="sub" style="margin-top:6px">A mismatch usually means an entry was made in one module but not yet synced/confirmed in the other.</p>
+      </div>
+    </details>
+    <details class="rcard">
+      <summary><span class="r-icon">🧾</span><b>Sync activity</b><small>recent cross-module flow</small></summary>
+      <div class="r-body">${logHtml}</div>
+    </details>`;
 }
 
 function copyToClipboard(text){
