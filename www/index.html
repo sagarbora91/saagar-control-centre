@@ -1683,6 +1683,7 @@ function bridgeRunNow(){
   renderSync();
 }
 function renderSync(){
+  renderModuleSettings();   // module settings editor — always available, independent of the bridge
   const SB = window.SaagarBridge;
   if(!SB || typeof SB.status!=='function'){
     $('syncStatus').innerHTML='<div class="note-banner warn">Integration bridge not active in this preview. In the installed app the bus runs continuously.</div>';
@@ -1720,18 +1721,35 @@ function renderSync(){
   if($('cfgVoucher')) $('cfgVoucher').value=cfg.voucherThreshold;
   if($('cfgLeaveGates')) $('cfgLeaveGates').value=cfg.leaveGates?'1':'0';
 
-  // Detected module settings (read-only transparency)
-  const MSET=[
-    ['CRO Daily Audit','cro_s_v3'],['Daily Staff Register','saagar_dsr_settings'],
-    ['Expense Manager','gm_settings'],['Expense role','gm_role'],
-    ['Stock — last state','saagar_appstate'],['Stock — brands','saagar_brands'],['Stock — CROs','saagar_cros'],
-    ['Leave (capacity in blob)','leavedesk_v3'],['Payroll (meta in blob)','payroll_suite_v1_2026'],
-    ['Tax (firms in blob)','taxcal_v2'],['Organisation master','saagar_org_master_v1'],['Integration rules','saagar_bridge_config']
-  ];
-  $('syncModuleSettings').innerHTML = '<div style="font-size:12px">'+MSET.map(([label,key])=>{
-    const raw=safeGet(key); const present=raw!=null;
-    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--gray-200)"><span><b>${escapeHtml(label)}</b> <span class="sub">${escapeHtml(key)}</span></span><span class="status-pill">${present ? (raw.length+' B') : 'not set'}</span></div>`;
-  }).join('')+'</div>';
+  renderModuleSettings();
+}
+
+/* ── PHASE 2B: edit module settings from the one hub (only settings the
+   modules genuinely read from their own keys — no fake controls). ── */
+const HUB_SETTINGS=[
+  {id:'qms', label:'Queue Management', key:'retail_queue_management_v1', path:'settings', fields:[{k:'storeName',label:'Store name',type:'text'}]},
+  {id:'expense', label:'Expense Manager', key:'gm_settings', fields:[{k:'gstRate',label:'GST rate %',type:'number'}]},
+  {id:'tax', label:'Tax Compliance', key:'taxcal_v2', fields:[{k:'fyStartYear',label:'FY start year',type:'number'}]},
+  {id:'cro_audit', label:'CRO Daily Audit targets', key:'cro_s_v3', fields:[{k:'surveys',label:'NPS surveys',type:'number'},{k:'npsScore',label:'NPS target',type:'number'},{k:'rate',label:'Conversion %',type:'number'},{k:'reviews',label:'Reviews',type:'number'},{k:'mktg',label:'Marketing',type:'number'}]}
+];
+function renderModuleSettings(){
+  const host=$('syncModuleSettings'); if(!host) return;
+  host.innerHTML = '<p class="sub" style="margin-bottom:8px">Edit each module’s settings here; changes apply next time the module is opened.</p>'+
+    HUB_SETTINGS.map(function(m){
+      let root=tryJSON(safeGet(m.key))||{}; let obj=m.path?(root[m.path]||{}):root;
+      return '<div style="border-bottom:1px solid var(--gray-200);padding:8px 0"><b>'+escapeHtml(m.label)+'</b> <span class="sub">'+escapeHtml(m.key)+(m.path?('.'+m.path):'')+'</span>'+
+        '<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:6px;align-items:flex-end">'+
+        m.fields.map(function(f){ return '<label class="sub" style="display:flex;flex-direction:column;gap:2px">'+escapeHtml(f.label)+'<input id="ms_'+m.id+'_'+f.k+'" type="'+(f.type==='number'?'number':'text')+'" value="'+escapeHtml(obj[f.k]==null?'':String(obj[f.k]))+'" style="padding:6px 8px;border:1px solid var(--gray-300);border-radius:6px;min-width:110px"></label>'; }).join('')+
+        '<button class="btn sm p" onclick="saveModuleSetting(\''+m.id+'\')">Save</button></div></div>';
+    }).join('');
+}
+function saveModuleSetting(id){
+  const m=HUB_SETTINGS.find(x=>x.id===id); if(!m) return;
+  let root=tryJSON(safeGet(m.key))||{}; let tgt=m.path?(root[m.path]=root[m.path]||{}):root;
+  m.fields.forEach(function(f){ const el=$('ms_'+m.id+'_'+f.k); if(!el) return; let v=el.value; if(f.type==='number') v=(v===''?'':Number(v)); tgt[f.k]=v; });
+  safeSet(m.key, JSON.stringify(root));
+  try{ auditLog('module.setting.save',{module:id}); }catch(e){}
+  if(typeof toast==='function') toast(m.label+' settings saved — reopen the module to apply');
 }
 function saveBridgeConfig(){
   const c={
@@ -2793,7 +2811,7 @@ function openModule(id){
         injectUniformCSS(
           injectModuleAuditBridge(
             injectEmployeeAssist(
-              injectBackHome(decodeHtml(mod.html_b64), mod.title),
+              injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title), mod.id),
               mod.id
             ), mod.id
           )
@@ -2814,6 +2832,17 @@ function printModule(){
 /* Insert a fragment before the LAST </body> (the real document close).
    Modules like Payroll/CRO-Audit contain </body> inside JS print/letterhead
    strings BEFORE the real one — replacing the first </body> corrupted them. */
+/* Phase 2B: hide redundant in-module MASTER UIs now managed centrally in the
+   Settings Hub. CSS-only (no JS) — operational controls (role, SM-login) stay. */
+function injectModuleHideCSS(html, moduleId){
+  const HIDE = {
+    leave: '.btn-teal{display:none !important}' /* "Staff Master" — employees now sync from Settings → People */
+  };
+  const css = HIDE[moduleId]; if(!css) return html;
+  const tag = '<style id="st-v5-hide-css">'+css+'</style>';
+  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, tag+'\n</head>');
+  return tag + html;
+}
 function __injBeforeBodyEnd(html, frag){
   var idx = html.toLowerCase().lastIndexOf('</body>');
   if(idx >= 0) return html.slice(0, idx) + frag + '\n' + html.slice(idx);
