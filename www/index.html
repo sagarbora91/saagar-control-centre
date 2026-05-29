@@ -770,7 +770,7 @@ body.admin-on .admin-dot{display:block}
     <section class="view" id="modulesView">
       <div class="page-head">
         <h2>Business modules</h2>
-        <p class="sub" id="moduleCountSub">7 embedded tools, all data stays on this device.</p>
+        <p class="sub" id="moduleCountSub">All data stays on this device.</p>
       </div>
       <div class="search-bar"><input class="search-input" id="moduleSearchBox" placeholder="Search modules…" oninput="renderModuleCards()" /></div>
       <nav class="cat-tabs" id="categoryTabs"></nav>
@@ -2063,13 +2063,13 @@ function renderModuleCards(){
     const ins = getModuleInsight(m.id);
     const protect = (m.id==='payroll'||m.id==='tax') && protectedModulesEnabled() && !isAdmin;
     return `<button class="mcard ${ins.level}" onclick="openModule('${m.id}')">
-      <div class="m-icon">${m.icon}</div>
-      <div class="m-body">
-        <h4>${escapeHtml(m.title)}${protect?' <span class="lock">🔒</span>':''}</h4>
+      <div class="mcard-icon">${m.icon}</div>
+      <div class="mcard-body">
+        <h4>${escapeHtml(m.title)}${protect?' 🔒':''}</h4>
         <p>${escapeHtml(m.subtitle || m.summary || '')}</p>
-        <div class="m-meta">
-          <span class="m-cat">${escapeHtml(m.category)}</span>
-          <span class="m-state ${ins.level}">${escapeHtml(ins.title)}</span>
+        <div class="mcard-foot">
+          <span class="tag">${escapeHtml(m.category)}</span>
+          <span class="status-pill ${ins.level==='ok'?'has':''}">${escapeHtml(ins.title)}</span>
         </div>
       </div>
     </button>`;
@@ -2435,9 +2435,12 @@ function reconcileCardsHTML(){
   function J(k,fb){ return tryJSON(safeGet(k))||fb; }
   const inr=n=>'₹'+(Math.round(n||0)).toLocaleString('en-IN');
   // QMS today purchases
-  const q=J('retail_queue_management_v1',{}), qCusts=Array.isArray(q.customers)?q.customers:[];
-  let qSalesAmt=0,qSalesCnt=0;
-  qCusts.forEach(c=>{ const t=(c.walkInTime||c.exitTime||'')+''; if(t.slice(0,10)===TODAY && (c.outcome||'').toLowerCase()==='purchase'){ qSalesAmt+=Number(c.amount)||0; qSalesCnt++; } });
+  // QMS today purchases — route through the single correct reader (computeQmsDay) so amount
+  // (purchaseAmount, NOT the non-existent c.amount) + outcome are read consistently. Previously
+  // this read c.amount (0 uses in QMS) -> QMS sales always ₹0 -> permanent false "mismatch".
+  let __qd=null; try{ __qd = (typeof computeQmsDay==='function') ? computeQmsDay(TODAY) : null; }catch(e){}
+  let qSalesAmt = __qd ? (Number(__qd.sales)||0) : 0;
+  let qSalesCnt = __qd ? (Number(__qd.purchases)||0) : 0;
   // DSR today sales
   let dsrAmt=0,dsrCnt=0;
   for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf('saagar_dsr_'+TODAY+'_')===0){ const r=J(k,null); if(r&&Array.isArray(r.sales)) r.sales.forEach(s=>{ const a=Number(s.amount)||0; if(a>0){dsrAmt+=a;dsrCnt++;} }); } }
@@ -3053,7 +3056,7 @@ function runDiagnostics(showModal=false){
   const checks = [];
   const add = (name,pass,detail)=>checks.push({name,pass,detail});
   add('Storage read/write', storageAvailable(), storageAvailable()?'localStorage available':'Storage blocked');
-  add('Embedded module count', MODULES.length===7, `${MODULES.length} module(s) found`);
+  add('Embedded module count', MODULES.length>0, `${MODULES.length} module(s) found`);
   let decOk = 0;
   MODULES.forEach(m=>{ try{ const h=decodeHtml(m.html_b64); if(/<html|<!doctype/i.test(h)) decOk++; }catch(e){} });
   add('Module decode integrity', decOk===MODULES.length, `${decOk}/${MODULES.length} decoded successfully`);

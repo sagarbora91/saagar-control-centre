@@ -90,10 +90,10 @@
         q.customers.forEach(function(c){
           if(!c) return; var out=(c.outcome||'').toLowerCase(); if(!out&&c.status!=='closed') return; if(!out) return;
           var cid=c.id||c.mobile; if(!cid) return;
-          var t=(c.exitTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):d;
-          var cro=cros[c.allocatedCroId]||cros[c.croId]||c.croName||c.allocatedCroName||'';
+          var t=(c.exitTime||c.entryTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):d;
+          var cro=cros[c.assignedCroId]||cros[c.allocatedCroId]||cros[c.croId]||c.croName||c.allocatedCroName||'';
           var type= out==='purchase'?'SALE_CLOSED' : out==='service'?'SERVICE_CLOSED' : 'NONPURCHASE_CLOSED';
-          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.amount)||0,bill:c.billNo||c.jobCard||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
+          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCard||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
         });
       } }catch(e){}
     // leave approved (today + tomorrow window) → LEAVE_APPROVED
