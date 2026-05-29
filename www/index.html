@@ -719,6 +719,7 @@ body.admin-on .admin-dot{display:block}
         <div class="greet" id="greetLine">Good morning</div>
         <h2 id="ownerLine">Today at the store</h2>
         <p class="sub" id="todayLine">—</p>
+        <div id="actingAsWrap" class="sub" style="margin-top:7px"></div>
       </div>
 
       <!-- Today's Brief -->
@@ -1931,12 +1932,29 @@ function switchConfigTab(tab){
 /* ═══════════════════════════════════════════════════════════════════════
    HOME RENDER
    ═══════════════════════════════════════════════════════════════════════ */
+/* "Acting as" — advisory convenience only (NOT security/login). Pre-fills the staff-name field
+   in modules with the chosen employee so they don't re-pick themselves each time. */
+const ACTING_AS_KEY = 'saagar_acting_as';
+function getActingAs(){ return safeGet(ACTING_AS_KEY) || ''; }
+function setActingAs(v){ if(v) safeSet(ACTING_AS_KEY, v); else safeRemove(ACTING_AS_KEY); renderActingAs(); }
+function renderActingAs(){
+  const host = $('actingAsWrap'); if(!host) return;
+  const emps = (typeof getEmployeeMaster==='function' ? getEmployeeMaster() : []).filter(e=>e && e.name && e.active!==false);
+  if(!emps.length){ host.innerHTML=''; return; }
+  const cur = getActingAs();
+  host.innerHTML = '<label style="display:inline-flex;align-items:center;gap:6px">Acting as '+
+    '<select onchange="setActingAs(this.value)" style="padding:4px 8px;border:1px solid var(--gray-300);border-radius:6px;font:inherit;color:var(--navy)">'+
+    '<option value="">— nobody —</option>'+
+    emps.map(e=>`<option value="${escapeHtml(e.name)}"${cur===e.name?' selected':''}>${escapeHtml(e.name)}</option>`).join('')+
+    '</select></label> <span style="opacity:.7">— pre-fills your name in forms (not a login)</span>';
+}
 function renderHome(){
   // Greeting line
   const owner = ownerName();
   if($('greetLine'))  $('greetLine').textContent = timeGreeting() + (owner ? ', '+owner : '');
   if($('ownerLine'))  $('ownerLine').textContent = "Today at the store";
   if($('todayLine'))  $('todayLine').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  renderActingAs();
 
   applyMode();
 
@@ -3265,7 +3283,7 @@ function injectEmployeeAssist(html, moduleId){
   const assist = `
 <style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style>
 <div class="st-v5-emp-chip" id="st-v5-emp-chip" style="display:none">👥 Suggestions active</div>
-<scr`+`ipt id="st-v5-emp-assist-script">(function(){var KEY='${EMP_MASTER_KEY}';var CKEY='${MK_CUSTOMERS}';var CSEL=${custSelJS};function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name}):[]}catch(e){return[]}}function readC(){try{var x=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(x)?x.filter(function(c){return c&&c.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var custs=CSEL.length?readC():[];var sig='E:'+emps.map(function(e){return e.name}).join('|')+'||C:'+custs.map(function(c){return c.name}).join('|');var selA=['#cro-inp','#staff-name-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-dtn','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list')})})}if(custs.length){CSEL.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-customer-list')el.setAttribute('list','st-v5-customer-list')})})}var dl=document.getElementById('st-v5-employee-list');var cOk=CSEL.length?!!document.getElementById('st-v5-customer-list'):true;if(sig===__sig&&dl&&cOk)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+esc(e.name)+'"></option>'}).join('');if(CSEL.length){var cdl=document.getElementById('st-v5-customer-list');if(!cdl){cdl=document.createElement('datalist');cdl.id='st-v5-customer-list';document.body.appendChild(cdl)}cdl.innerHTML=custs.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.mobile?' label="'+esc(c.mobile)+'"':'')+'></option>'}).join('')}__sig=sig;var chip=document.getElementById('st-v5-emp-chip');if(chip)chip.style.display=(emps.length||custs.length)?'block':'none'}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();<\/scr`+`ipt>`;
+<scr`+`ipt id="st-v5-emp-assist-script">(function(){var KEY='${EMP_MASTER_KEY}';var CKEY='${MK_CUSTOMERS}';var CSEL=${custSelJS};function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name}):[]}catch(e){return[]}}function readC(){try{var x=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(x)?x.filter(function(c){return c&&c.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var custs=CSEL.length?readC():[];var __act='';try{__act=localStorage.getItem('saagar_acting_as')||'';}catch(e){}var sig='E:'+emps.map(function(e){return e.name}).join('|')+'||C:'+custs.map(function(c){return c.name}).join('|');var selA=['#cro-inp','#staff-name-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-dtn','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(el.readOnly||el.disabled)return;if(el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list');if(__act&&!el.__stPre&&el.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|number|date|file)$/i.test(el.type||'')&&!el.value){el.value=__act;el.__stPre=1;}})})}if(custs.length){CSEL.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-customer-list')el.setAttribute('list','st-v5-customer-list')})})}var dl=document.getElementById('st-v5-employee-list');var cOk=CSEL.length?!!document.getElementById('st-v5-customer-list'):true;if(sig===__sig&&dl&&cOk)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+esc(e.name)+'"></option>'}).join('');if(CSEL.length){var cdl=document.getElementById('st-v5-customer-list');if(!cdl){cdl=document.createElement('datalist');cdl.id='st-v5-customer-list';document.body.appendChild(cdl)}cdl.innerHTML=custs.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.mobile?' label="'+esc(c.mobile)+'"':'')+'></option>'}).join('')}__sig=sig;var chip=document.getElementById('st-v5-emp-chip');if(chip)chip.style.display=(emps.length||custs.length)?'block':'none'}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();<\/scr`+`ipt>`;
   return __injBeforeBodyEnd(html, assist);
 }
 
