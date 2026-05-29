@@ -1,0 +1,7 @@
+# Binary assets — never apply text/CRLF normalization (would corrupt them).
+*.wasm binary
+*.apk binary
+*.keystore binary
+*.png binary
+*.jpg binary
+*.ico binary

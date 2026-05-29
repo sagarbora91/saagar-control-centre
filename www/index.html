@@ -948,6 +948,12 @@ body.admin-on .admin-dot{display:block}
           <p>Wipes every module's saved data on this device (stock, staff, payroll, expenses, service, leave, tax, employee master, settings) for a clean start. A backup is auto-exported first. This cannot be undone.</p>
           <button class="btn red" onclick="factoryReset()" style="margin-top:8px">Clear all app data</button>
         </div>
+        <div class="card card-pad adminOnly">
+          <h4><span class="em">🗄️</span> Archive data older than 12 months</h4>
+          <p>Exports day-records (stock, staff register, grooming) older than 12 months to a JSON file (Documents/SaagarBCC-Backups + a download), then removes them from this device to free space. Masters, payroll, tax and ledgers are kept. Keep the exported file safe — this cannot be undone.</p>
+          <div id="archiveInfo" class="sub" style="margin:8px 0"></div>
+          <button class="btn outline-gold" onclick="archiveOldData()" style="margin-top:4px">Archive &amp; free space</button>
+        </div>
         <div id="adminLockedBackup" class="note-banner warn hidden">🔒 Admin lock is on. Unlock to access destructive tools.</div>
         <div class="card card-pad">
           <h4><span class="em">📊</span> Stored data summary</h4>
@@ -3029,6 +3035,55 @@ function factoryReset(){
   toast(done+' keys cleared — app reset. Reloading…');
   setTimeout(function(){ try{ location.reload(); }catch(e){} }, 900);
 }
+
+/* ── ARCHIVE data older than 12 months (admin) ──────────────────────────────
+   Per-DAY keys (stock / DSR / grooming) grow unbounded over time. This exports
+   the old ones to a durable JSON file FIRST (Documents/SaagarBCC-Backups + a
+   download), then prunes them from localStorage (write-through also removes them
+   from the SQLite DB). Masters, payroll, tax, expense ledger, audits etc. are NOT
+   touched. Gated: admin PIN + typed ARCHIVE + mandatory successful export. */
+function archiveCutoffIso(){ const c=new Date(); c.setMonth(c.getMonth()-12); return c.toISOString().slice(0,10); }
+function archivableDayKeys(cutoffIso){
+  const out=[];
+  function dateOf(k){
+    let m = k.match(/^saagar_stock_(?:WLMHW|HEMW|titanworld|helios)_(\d{4}-\d{2}-\d{2})$/)
+         || k.match(/^saagar_grooming_(\d{4}-\d{2}-\d{2})$/)
+         || k.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_/);
+    return m ? m[1] : null;
+  }
+  try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!k) continue; const d=dateOf(k); if(d && d < cutoffIso) out.push(k); } }catch(e){}
+  return out;
+}
+function fsPluginShell(){ return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) || null; }
+async function archiveOldData(){
+  if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
+  const cutoff = archiveCutoffIso();
+  const keys = archivableDayKeys(cutoff);
+  if(!keys.length){ toast('Nothing older than 12 months to archive.'); return; }
+  if(!confirm('Archive '+keys.length+' day-record(s) dated before '+cutoff+'?\n\nThey are EXPORTED to a JSON file first (Documents/SaagarBCC-Backups + a download), then removed from this device to free space. Masters, payroll, tax and ledgers are NOT touched. Keep the exported file safe — this cannot be undone.')) return;
+  if(prompt('Type ARCHIVE to confirm:') !== 'ARCHIVE'){ toast('Archive cancelled.'); return; }
+  // Build the archive payload.
+  const data={}; keys.forEach(k=>{ data[k]=safeGet(k); });
+  const payload={ app:'Saagar Traders Business Control Centre', type:'archive', archivedBefore:cutoff, createdAt:new Date().toISOString(), count:keys.length, localStorage:data };
+  const text = JSON.stringify(payload,null,2);
+  const fname = 'Saagar_Archive_before_'+cutoff+'_'+todayIso()+'.json';
+  // MANDATORY durable pre-export. Prefer Capacitor Filesystem (guaranteed on-device file); always
+  // also trigger a download. Only proceed to prune if at least one export path succeeded.
+  let exported=false;
+  const FS = fsPluginShell();
+  if(FS){
+    try{ await FS.writeFile({ path:'SaagarBCC-Backups/'+fname, data:text, directory:'DOCUMENTS', encoding:'utf8', recursive:true }); exported=true; }
+    catch(e){ exported=false; }
+  }
+  try{ downloadText(fname, text, 'application/json'); if(!FS) exported=true; }catch(e){}
+  if(!exported){ toast('Export failed — archive aborted, nothing was deleted.'); return; }
+  // Prune (write-through removeItem also deletes each key from the SQLite DB).
+  let done=0; keys.forEach(k=>{ if(safeRemove(k)) done++; });
+  try{ if(window.SaagarDB && window.SaagarDB.ready && window.SaagarDB.ready()) window.SaagarDB.save(); }catch(e){}
+  try{ auditLog('app.archive',{before:cutoff, archived:done}); }catch(e){}
+  toast(done+' old day-record(s) archived to '+fname+' and removed. Keep that file safe.');
+  try{ renderConfigBackup(); }catch(e){}
+}
 function populateResetSelect(){
   const el = $('resetModuleSelect'); if(!el) return;
   el.innerHTML = MODULES.map(m=>`<option value="${m.id}">${escapeHtml(m.title)}</option>`).join('');
@@ -3053,6 +3108,14 @@ function renderConfigBackup(){
       <div class="note">${lb?fmtDate(lb):'Tap Create backup to start.'}</div>
     </div>
     ${autoLine ? `<div class="note-banner" style="margin-top:8px;font-size:12px">${autoLine}</div>` : ''}`;
+  // Archive info + SQLite storage meter
+  try{
+    const cutoff = archiveCutoffIso();
+    const oldKeys = archivableDayKeys(cutoff);
+    let dbLine = '';
+    try{ if(window.SaagarDB && window.SaagarDB.status){ const st=window.SaagarDB.status(); dbLine = st.ready ? ` · SQLite store: <b>active</b> (${st.rows} keys${st.lastError?', last err: '+escapeHtml(st.lastError):''})` : ' · SQLite store: <b>fallback</b> (using localStorage)'; } }catch(e){}
+    if($('archiveInfo')) $('archiveInfo').innerHTML = (oldKeys.length ? `<b>${oldKeys.length}</b> day-record(s) older than ${cutoff} can be archived.` : `No day-records older than ${cutoff}.`) + dbLine;
+  }catch(e){}
   // Stored summary
   const store = appStorage();
   const totalBytes = Object.entries(store).reduce((s,[k,v])=>s+k.length+String(v||'').length, 0);
