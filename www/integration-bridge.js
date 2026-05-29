@@ -355,7 +355,7 @@
         gv.forEach(function(v){ var n=v&&(v.name||v); if(n&&!mvKey[kk(n)]){ mv.push({name:String(n),gstin:(v&&v.gstin)||''}); mvKey[kk(n)]=1; mvCh=true; } });
         if(mvCh) S(MK_VENDORS,mv);
         var gvKey={}; gv.forEach(function(v){var n=v&&(v.name||v); if(n)gvKey[kk(n)]=1;}); var gvCh=false;
-        mv.forEach(function(v){ if(v&&v.name&&!gvKey[kk(v.name)]){ gv.push({name:v.name}); gvKey[kk(v.name)]=1; gvCh=true; } });
+        mv.forEach(function(v){ if(v&&v.name&&!gvKey[kk(v.name)]){ gv.push({name:v.name,gstin:v.gstin||''}); gvKey[kk(v.name)]=1; gvCh=true; } });
         if(gvCh){ S('gm_vendors',gv); blog('seeded vendors → Expense'); } }catch(e){}
       // customers: harvest QMS + WSC → master (one-way; customers are created in modules)
       try{ var mc=L(MK_CUSTOMERS,[]); if(!Array.isArray(mc))mc=[];

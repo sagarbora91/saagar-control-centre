@@ -2334,9 +2334,11 @@ function computeDsrDay(dateIso){
 }
 
 function computeStockDay(dateIso){
-  const stores = [{code:'WLMHW', name:'Titan World'},{code:'HEMW', name:'Helios'}];
+  const stores = [{code:'WLMHW', key:'titanworld', name:'Titan World'},{code:'HEMW', key:'helios', name:'Helios'}];
   return stores.map(s=>{
-    const blob = tryJSON(safeGet('saagar_stock_'+s.code+'_'+dateIso));
+    // Stock saves under its INTERNAL key (saagar_stock_titanworld_<date>), not the code — read that
+    // first, with the legacy code form as a fallback. (Without this the card always said "not posted".)
+    const blob = tryJSON(safeGet('saagar_stock_'+s.key+'_'+dateIso)) || tryJSON(safeGet('saagar_stock_'+s.code+'_'+dateIso));
     if(!blob || typeof blob!=='object') return { store:s.name, code:s.code, posted:false };
     const opening = blob.opening||{}, mov = blob.movements||{};
     let sysTot=0, grnTot=0, salesUnits=0;
@@ -2437,7 +2439,7 @@ function reconcileCardsHTML(){
     if(dt.slice(0,7)===MONTH && ty==='expense'){ if(/inventory/i.test(cat)) expInvMonth+=amt; if(/salary/i.test(cat)) expSalMonth+=amt; } });
   // Stock GRN month
   let grnMonth=0;
-  for(let j=0;j<localStorage.length;j++){ const sk=localStorage.key(j); const mm=sk&&sk.match(/^saagar_stock_(WLMHW|HEMW)_(\d{4}-\d{2}-\d{2})$/); if(mm && mm[2].slice(0,7)===MONTH){ const blob=J(sk,{}); Object.keys(blob).forEach(bk=>{ const row=blob[bk]; if(row&&row.mov&&row.mov.grn) grnMonth+=Number(row.mov.grn)||0; }); } }
+  for(let j=0;j<localStorage.length;j++){ const sk=localStorage.key(j); const mm=sk&&sk.match(/^saagar_stock_(WLMHW|HEMW|titanworld|helios)_(\d{4}-\d{2}-\d{2})$/); if(mm && mm[2].slice(0,7)===MONTH){ const blob=J(sk,{}); const mov=blob.movements||{}; Object.keys(mov).forEach(b=>{ grnMonth+=Number(mov[b]&&mov[b].grn)||0; }); } }
   // Payroll gross
   const pay=J('payroll_suite_v1_2026',{}); let payGross=0; if(pay&&Array.isArray(pay.rows)) pay.rows.forEach(r=>{ payGross+=Number(r.gross||r.salaryAmount)||0; });
   function row(label,aTxt,av,bTxt,bv,tol){ const match=(av==null||bv==null)?null:Math.abs(av-bv)<=(tol||1); const st=match===null?'<span class="status-pill">no data</span>':match?'<span class="status-pill" style="color:var(--green)">match</span>':'<span class="status-pill" style="color:var(--red)">mismatch</span>'; return '<tr><td>'+label+'</td><td>'+aTxt+'</td><td>'+bTxt+'</td><td>'+st+'</td></tr>'; }
@@ -3178,7 +3180,7 @@ function injectModuleHideCSS(html, moduleId){
        Hide each module's own "add employee/CRO/staff" entry point so nobody creates a
        divergent record. Viewing/managing the synced list is unaffected. */
     leave:   '.btn-teal{display:none !important}' /* "Staff Master" */,
-    qms:     '[onclick="addCroToMaster()"]{display:none !important}' /* "Add CRO" / "Add CRO Master" */,
+    qms:     '[onclick="addCroToMaster()"],[onclick^="editCro"],[onclick^="toggleCro"]{display:none !important}' /* add + edit/deactivate CRO — managed in Settings → People */,
     dsr:     '#new-staff-inp,[onclick="addStaff()"]{display:none !important}' /* add-staff input + button */,
     payroll: '[onclick="addEmployee()"],[onclick="addMasterEmployee()"]{display:none !important}' /* "+ Add Employee" (both tabs) */,
     /* Phase 1: brands/vendors are created in Settings → Masters and flow into the modules. */
