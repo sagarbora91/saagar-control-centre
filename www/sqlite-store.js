@@ -115,12 +115,16 @@
   /* ── reconcile localStorage <-> DB at startup ── */
   function reconcile() {
     var dbRows = kvAll(); var dbKeys = Object.keys(dbRows);
-    var lsCount = 0; try { lsCount = localStorage.length; } catch (e) {}
-    // RECOVERY: localStorage wiped but DB survived -> hydrate localStorage, reload.
-    if (lsCount <= 2 && dbKeys.length > 3) {
-      dbKeys.forEach(function (k) { try { nSet(k, dbRows[k]); } catch (e) {} });
-      log('recovery: hydrated ' + dbKeys.length + ' keys from DB -> reloading');
-      try { localStorage.removeItem('__sqlite_reconciled'); } catch (e) {}
+    // RECOVERY: keys present in the DB but MISSING from localStorage (WebView data was cleared but
+    // bcc.sqlite survived, or restore on a new install). Detect by PER-KEY absence, not a raw count —
+    // integration-bridge.js loads first and writes a few volatile keys (bus/gate/log/…) before we
+    // boot, so a count-based guard (old lsCount<=2) never fired and recovery was effectively dead.
+    // Deliberately-deleted data is removed from the DB too (write-through), so it won't resurrect.
+    var missing = [];
+    for (var qi = 0; qi < dbKeys.length; qi++) { var dk = dbKeys[qi]; if (dk === LOG_KEY) continue; try { if (nGet(dk) == null) missing.push(dk); } catch (e) {} }
+    if (missing.length > 3) {
+      missing.forEach(function (k) { try { nSet(k, dbRows[k]); } catch (e) {} });
+      log('recovery: hydrated ' + missing.length + ' missing key(s) from DB -> reloading');
       setTimeout(function () { try { location.reload(); } catch (e) {} }, 250);
       return true; // signal reload pending
     }
