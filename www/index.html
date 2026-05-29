@@ -238,6 +238,8 @@ body.admin-on .admin-dot{display:block}
   color:#fff;line-height:1.1;
 }
 .brief-stat span{font-size:10px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.brief-stat.tappable{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.brief-stat.tappable:active{transform:scale(.96);border-color:rgba(255,255,255,.30)}
 .brief-line{
   font-size:12px;color:rgba(255,255,255,.85);margin-top:11px;
   display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:relative;
@@ -1954,6 +1956,9 @@ function renderActingAs(){
     emps.map(e=>`<option value="${escapeHtml(e.name)}"${cur===e.name?' selected':''}>${escapeHtml(e.name)}</option>`).join('')+
     '</select></label> <span style="opacity:.7">— pre-fills your name in forms (not a login)</span>';
 }
+/* Rec #6: which module fixes each cross-module exception area (areas emitted by the bridge's
+   buildExceptions). Floor-gate → grooming (the actionable fix; leave-blocks stay visible in Sync). */
+const EXC_AREA_TO_MODULE = { 'Floor gate':'grooming', 'QMS':'qms', 'Stock':'stock', 'Cash':'expense', 'Expense':'expense', 'Tax':'tax', 'Service':'service' };
 function renderHome(){
   // Greeting line
   const owner = ownerName();
@@ -1968,11 +1973,15 @@ function renderHome(){
   const b = buildTodayBrief();
   if($('briefDate')) $('briefDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short', day:'2-digit', month:'short'});
   const briefStats = [
-    [b.serviceOpen, 'open jobs'],
-    [b.groomingTodayChecks, 'grooming checks'],
-    [b.expenseToday, 'expenses today']
+    [b.serviceOpen, 'open jobs', 'service'],
+    [b.groomingTodayChecks, 'grooming checks', 'grooming'],
+    [b.expenseToday, 'expenses today', 'expense']
   ];
-  if($('briefStats')) $('briefStats').innerHTML = briefStats.map(s=>`<div class="brief-stat"><b>${escapeHtml(String(s[0]))}</b><span>${escapeHtml(s[1])}</span></div>`).join('');
+  if($('briefStats')) $('briefStats').innerHTML = briefStats.map(s=>{
+    const mod=s[2];
+    const tap = mod ? ` role="button" tabindex="0" data-mod="${escapeHtml(mod)}" onclick="navigateToModule('${mod}')"` : '';
+    return `<div class="brief-stat${mod?' tappable':''}"${tap}><b>${escapeHtml(String(s[0]))}</b><span>${escapeHtml(s[1])}</span></div>`;
+  }).join('');
 
   const briefPills = [];
   if (b.stockToday>0)    briefPills.push(['ok', '📦 Stock posted today']);
@@ -2029,13 +2038,16 @@ function renderHome(){
   const quicks = [
     ['stock','📦','Stock'],
     ['service','🛠️','Service'],
+    ['qms','🎯','Queue'],
+    ['dsr','📋','Staff Log'],
     ['expense','💳','Expenses'],
     ['grooming','✅','Grooming'],
+    ['cro_audit','🎖️','CRO Audit'],
     ['payroll','₹','Payroll'],
     ['leave','🗓️','Leave']
   ];
   if($('quickGrid')) $('quickGrid').innerHTML = quicks.map(a=>`
-    <button class="quick" onclick="openModule('${a[0]}')">
+    <button class="quick" onclick="navigateToModule('${a[0]}')">
       <span class="qicon">${a[1]}</span>
       <strong>${escapeHtml(a[2])}</strong>
     </button>`).join('');
@@ -2063,7 +2075,10 @@ function renderHome(){
     const sevMap = {high:'red', med:'orange', low:'orange'};
     const sevEm  = {high:'⛔', med:'⚠️', low:'•'};
     exItems.forEach(x=>{
-      const it = {color:sevMap[x.sev]||'orange', em:sevEm[x.sev]||'⚠️', title:`${x.area}: ${x.msg}`, msg:'Cross-module flag — open Sync for detail.', action:"switchView('config');switchConfigTab('sync')", cta:'Sync'};
+      const mid = EXC_AREA_TO_MODULE[x.area];
+      const it = mid
+        ? {color:sevMap[x.sev]||'orange', em:sevEm[x.sev]||'⚠️', title:`${x.area}: ${x.msg}`, msg:'Cross-module flag — opens the module that fixes it.', action:`navigateToModule('${mid}')`, cta:'Fix'}
+        : {color:sevMap[x.sev]||'orange', em:sevEm[x.sev]||'⚠️', title:`${x.area}: ${x.msg}`, msg:'Cross-module flag — open Sync for detail.', action:"switchView('config');switchConfigTab('sync')", cta:'Sync'};
       if(x.sev==='high') items.unshift(it); else items.push(it);
     });
   }catch(e){}
@@ -3195,6 +3210,41 @@ function showMainView(){
   $('botnav').classList.remove('hidden');
   switchView(activeView||'home');
 }
+
+/* ── Rec #5: guarded module→module navigation ──────────────────────────────
+   navigateToModule() is the SINGLE entry point for programmatic module hops
+   (deep-links, exceptions routing, switcher, next-step chips). It runs a
+   dirty-state guard so a hop never silently wipes an in-progress screen
+   (openModule resets the iframe srcdoc). Same-origin iframe (no sandbox) ⇒ we
+   can read its contentDocument synchronously. Fail-safe: if we can't inspect,
+   treat as dirty (confirm) — never a silent wipe. Pre-filled (rec #17) fields
+   marked __stPre are NOT counted as dirty. */
+function isModuleDirty(){
+  try{
+    const f = $('moduleFrame'); const doc = f && f.contentDocument;
+    if(!doc) return false;
+    const isShell = el => { const id=el.id||'', cl=(typeof el.className==='string'?el.className:''); return id.indexOf('st-v5-')===0 || cl.indexOf('st-v5-')>=0 || id.indexOf('__saagar')===0; };
+    const ins = doc.querySelectorAll('input,textarea');
+    for(const el of ins){
+      if(isShell(el) || el.disabled || el.readOnly || el.__stPre) continue;
+      const t = (el.type||'text').toLowerCase();
+      if(t==='checkbox'||t==='radio'){ if(el.checked!==el.defaultChecked) return true; continue; }
+      if(/^(button|submit|reset|file|hidden)$/.test(t)) continue;
+      if(String(el.value||'').trim()!=='') return true;
+    }
+    const sels = doc.querySelectorAll('select');
+    for(const el of sels){ if(!isShell(el) && !el.disabled && el.selectedIndex>0) return true; }
+    return false;
+  }catch(e){ return true; }
+}
+function navigateToModule(id, date){
+  if(!id) return;
+  if(id===activeModuleId){ openModule(id); return; }
+  if(activeModuleId && isModuleDirty()){
+    if(!confirm('Leave this screen? Unsaved entries will be lost.')) return;
+  }
+  openModule(id);
+}
 /* ── INTEGRATION: Employee Master = single source of truth ──────────────────
    Before opening a module that keeps its own staff list, push the master's
    active people into that module's storage so they appear immediately — you
@@ -3451,6 +3501,7 @@ window.addEventListener('unhandledrejection', e => {
 window.addEventListener('message', e => {
   if(!e || !e.data) return;
   if(e.data.type === 'ST_BACK_HOME') showMainView();
+  if(e.data.type === 'ST_OPEN_MODULE' && e.data.id) navigateToModule(String(e.data.id), e.data.date);
   if(e.data.type === 'ST_AUDIT' && e.data.action){
     auditLog(e.data.action, e.data.detail||{}, e.data.before ?? null, e.data.after ?? null);
     if(!activeModuleId && activeView==='home') renderHome();

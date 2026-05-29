@@ -457,8 +457,15 @@
       var bar=doc.createElement('div'); bar.id='__saagarGate';
       bar.setAttribute('style','position:fixed;left:0;right:0;bottom:0;z-index:2147483646;background:#b91c1c;color:#fff;font:600 13px/1.4 Arial,sans-serif;padding:10px 14px;box-shadow:0 -4px 14px rgba(0,0,0,.25)');
       bar.innerHTML='⛔ <b>Floor gate ('+modName+')</b> — not cleared today: <b>'+names+'</b>. Do not assign / expect on floor until resolved.'+
-        '<span style="float:right;cursor:pointer;font-weight:700;padding-left:12px" onclick="this.parentNode.style.display=\'none\'">✕</span>';
+        '<span id="__saagarGateOpen" style="float:right;cursor:pointer;font-weight:700;padding:0 10px;text-decoration:underline">Open ▸</span>'+
+        '<span id="__saagarGateX" style="float:right;cursor:pointer;font-weight:700;padding-left:12px">✕</span>';
       doc.body.appendChild(bar);
+      /* Rec #6: "Open ▸" jumps to the module that clears the gate (grooming = the actionable fix).
+         The bar is inside the iframe, so it posts to the shell, which calls navigateToModule. */
+      var ob=doc.getElementById('__saagarGateOpen');
+      if(ob) ob.addEventListener('click',function(){ try{ parent.postMessage({type:'ST_OPEN_MODULE',id:'grooming'},'*'); }catch(e){} });
+      var xb=doc.getElementById('__saagarGateX');
+      if(xb) xb.addEventListener('click',function(){ try{ bar.style.display='none'; }catch(e){} });
     }catch(e){}
   }
   function hookFrame(){
