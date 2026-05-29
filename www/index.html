@@ -1183,7 +1183,7 @@ function bytesFmt(n){ n = Number(n)||0; if (n<1024) return n+' B'; if (n<1024*10
 function safeFileName(n){ return String(n||'file').replace(/[^a-z0-9\-_]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,80) || 'file'; }
 function tryJSON(value){ try { return JSON.parse(value); } catch (e) { return null; } }
 function safeGet(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }
-function safeSet(k,v){ try { localStorage.setItem(k,v); return true; } catch(e) { return false; } }
+function safeSet(k,v){ try { localStorage.setItem(k,v); return true; } catch(e) { try{ if(e && (e.name==='QuotaExceededError' || /quota/i.test((e&&e.message)||'')) && typeof toast==='function'){ toast('Storage full — export a backup (Settings → Data & backup) to free space.'); } }catch(_){} return false; } }
 function safeRemove(k){ try { localStorage.removeItem(k); return true; } catch(e) { return false; } }
 function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; } catch(e){ return false; } }
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
@@ -3182,8 +3182,16 @@ function openModule(id){
   $('botnav').classList.add('hidden');
   $('loader').classList.remove('hidden');
   setTimeout(()=>{
+    const __f = $('moduleFrame');
+    let __hidden=false;
+    const __hide=()=>{ if(__hidden)return; __hidden=true; $('loader').classList.add('hidden'); };
+    // Hide the loader when the iframe ACTUALLY finishes loading (heavy modules like Payroll keep
+    // painting well past a fixed 300ms timer — the old fixed timeout caused a blank/half-rendered
+    // flash that felt like a freeze). 4s safety net in case no load event fires.
+    try{ __f.addEventListener('load', __hide, { once:true }); }catch(e){}
+    setTimeout(__hide, 4000);
     try{
-      $('moduleFrame').srcdoc = injectSafetyNet(
+      __f.srcdoc = injectSafetyNet(
         injectUniformCSS(
           injectModuleAuditBridge(
             injectEmployeeAssist(
@@ -3194,9 +3202,9 @@ function openModule(id){
         )
       );
     }catch(e){
-      $('moduleFrame').srcdoc = `<h1 style="font-family:DM Sans,sans-serif;color:#b91c1c">Could not open module</h1><p>${escapeHtml(e.message)}</p>`;
+      __f.srcdoc = `<h1 style="font-family:DM Sans,sans-serif;color:#b91c1c">Could not open module</h1><p>${escapeHtml(e.message)}</p>`;
+      __hide();
     }
-    setTimeout(()=>$('loader').classList.add('hidden'), 300);
   }, 50);
 }
 function reloadModule(){ if(activeModuleId) openModule(activeModuleId); }
@@ -3236,7 +3244,7 @@ function __injBeforeBodyEnd(html, frag){
 function injectBackHome(html, title){
   const dock = `
 <style id="st-v5-back-style">
-#st-v5-home-fab{position:fixed;bottom:22px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
+#st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
   background:linear-gradient(135deg,#0d2340,#18385f);border:2px solid rgba(184,146,42,.7);color:#fff;cursor:pointer;
   display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(13,35,64,.35);
   transition:transform .15s,box-shadow .15s,border-color .15s;padding:0;outline:none}
@@ -3244,7 +3252,7 @@ function injectBackHome(html, title){
 #st-v5-home-fab:active{transform:scale(.96)}
 #st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 @media print{#st-v5-home-fab{display:none!important}}
-@media(max-width:600px){#st-v5-home-fab{bottom:14px;right:14px;width:42px;height:42px}}
+@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}}
 </style>
 <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <scr`+`ipt id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});})();<\/scr`+`ipt>`;
