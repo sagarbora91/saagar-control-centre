@@ -3440,5 +3440,11 @@ document.addEventListener('keydown', e => {
 <!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════ -->
 <script src="integration-bridge.js"></script>
 
+<!-- ════ APK build addition: SQLite durable backing store (Design A — durable mirror + fallback).
+     sql.js (WASM) must load first; sqlite-store.js attaches localStorage to a bcc.sqlite file.
+     If either is unavailable the app silently stays on pure localStorage (no regression). ════ -->
+<script src="sql-wasm.js"></script>
+<script src="sqlite-store.js"></script>
+
 </body>
 </html>
