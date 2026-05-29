@@ -1129,6 +1129,11 @@ const ORG_MASTER_KEY    = "saagar_org_master_v1";
 const MK_BRANDS         = "saagar_master_brands";
 const MK_VENDORS        = "saagar_master_vendors";
 const MK_CUSTOMERS      = "saagar_master_customers";
+/* Stores: the org master's `branches` ARE the store registry (edited in Settings → Organisation).
+   Stock saves data under an INTERNAL key (titanworld/helios), not the store CODE (WLMHW/HEMW) — this
+   maps code→key so every consumer reads the same blob. New branches fall back to a slug of the code. */
+const STORE_KEY_MAP = { WLMHW:"titanworld", HEMW:"helios" };
+function storeKeyForCode(code){ const c=String(code||"").toUpperCase(); return STORE_KEY_MAP[c] || String(code||"").toLowerCase(); }
 const ACTIVITY_KEY      = "st_v3_activity_log";
 const AUDIT_LOG_KEY     = "st_v4_audit_log";
 const RESTORE_ROLLBACK_PREFIX = "st_v4_restore_rollback_";
@@ -1829,7 +1834,10 @@ window.SaagarMasters = {
   firms:function(){ return (this.get('org').firms||[]).filter(function(f){return f&&f.active!==false&&f.name;}); },
   brandNames:function(store){ return this.get('brands').filter(function(b){return b&&b.name&&(!store||!b.store||b.store===store);}).map(function(b){return b.name;}); },
   vendorNames:function(){ return this.get('vendors').filter(function(v){return v&&v.name;}).map(function(v){return v.name;}); },
-  customers:function(){ return this.get('customers'); }
+  customers:function(){ return this.get('customers'); },
+  stores:function(){ var br=(this.get('org').branches||[]).filter(function(b){return b&&b.code&&b.active!==false;}); return br.map(function(b){ return {code:b.code,key:storeKeyForCode(b.code),name:b.channel||b.name||b.code,fullName:b.name||b.code,channel:b.channel||'',firmCode:b.firmCode||'',region:b.region||'',rso:b.rso||'',active:b.active!==false}; }); },
+  storeByCode:function(c){ return this.stores().find(function(s){return s.code===c;})||null; },
+  storeByKey:function(k){ return this.stores().find(function(s){return s.key===k;})||null; }
 };
 
 function renderMasters(){
@@ -2334,7 +2342,9 @@ function computeDsrDay(dateIso){
 }
 
 function computeStockDay(dateIso){
-  const stores = [{code:'WLMHW', key:'titanworld', name:'Titan World'},{code:'HEMW', key:'helios', name:'Helios'}];
+  let stores = null;
+  try{ const s = window.SaagarMasters && SaagarMasters.stores(); if(s && s.length) stores = s.map(x=>({code:x.code, key:x.key, name:x.name})); }catch(e){}
+  if(!stores || !stores.length) stores = [{code:'WLMHW', key:'titanworld', name:'Titan World'},{code:'HEMW', key:'helios', name:'Helios'}];
   return stores.map(s=>{
     // Stock saves under its INTERNAL key (saagar_stock_titanworld_<date>), not the code — read that
     // first, with the legacy code form as a fallback. (Without this the card always said "not posted".)

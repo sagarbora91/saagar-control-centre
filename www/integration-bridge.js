@@ -29,7 +29,12 @@
   var Q2D='saagar_bridge_qms2dsr', ATT='saagar_payroll_attendance_feed';
   var GROOM='saagar_grooming_', QMS='retail_queue_management_v1';
   var DSR='saagar_dsr_', DSR_STAFF='saagar_dsr_staff';
-  var LEAVE='leavedesk_v3', STOCK_RE=/^saagar_stock_(WLMHW|HEMW)_(\d{4}-\d{2}-\d{2})$/;
+  /* Stock keys: the Stock module saves under its INTERNAL key (titanworld/helios), while the rest of
+     the app historically used the store CODE (WLMHW/HEMW). Accept both, and map code→internal-key so
+     the bridge reads/writes the SAME blob Stock actually uses. */
+  var STORE_KEY_MAP={WLMHW:'titanworld',HEMW:'helios'};
+  function skey(code){ var c=String(code||'').toUpperCase(); return STORE_KEY_MAP[c]||String(code||'').toLowerCase(); }
+  var LEAVE='leavedesk_v3', STOCK_RE=/^saagar_stock_(WLMHW|HEMW|titanworld|helios)_(\d{4}-\d{2}-\d{2})$/;
   var PAYROLL='payroll_suite_v1_2026', TAX='taxcal_v2', EXP_STMT='tanishq_statements';
   var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
@@ -177,7 +182,7 @@
     });
     if(touched) ['WLMHW','HEMW'].forEach(function(sc){
       if(!agg[sc].cros.length) return;
-      var sk='saagar_stock_'+sc+'_'+d, sb=L(sk,null); if(!sb||typeof sb!=='object') sb={};
+      var sk='saagar_stock_'+skey(sc)+'_'+d, sb=L(sk,null); if(!sb||typeof sb!=='object') sb={};
       sb._dsrRollup={openingTotal:agg[sc].open,closingTotal:agg[sc].close,cros:agg[sc].cros,source:'dsr',note:'Auto roll-up from DSR — informational; SM count/lock unaffected',at:new Date().toISOString()};
       S(sk,sb);
     });
@@ -266,7 +271,7 @@
         if(open) ex.push({sev:'med',area:'QMS',msg:open+' open lead(s) not closed today',at:d});
       } }catch(e){}
       // Stock not locked today
-      try{ ['WLMHW','HEMW'].forEach(function(sc){ var sb=L('saagar_stock_'+sc+'_'+d,null);
+      try{ ['WLMHW','HEMW'].forEach(function(sc){ var sb=L('saagar_stock_'+skey(sc)+'_'+d,null);
         if(sb&&typeof sb==='object'&&!sb.closingLocked) ex.push({sev:'med',area:'Stock',msg:sc+' closing not locked today',at:d});
       }); }catch(e){}
       // Cash statement today not closed / mismatch (read-only)
