@@ -1118,7 +1118,10 @@ const STORAGE_RULES = {
   grooming:{ exact: [], prefix: ["saagar_grooming_"] },
   payroll: { exact: ["payroll_suite_v1_2026"], prefix: [] },
   leave:   { exact: ["leavedesk_v3","leavedesk_v2"], prefix: [] },
-  tax:     { exact: ["taxcal_v2"], prefix: [] }
+  tax:     { exact: ["taxcal_v2"], prefix: [] },
+  qms:       { exact: ["retail_queue_management_v1"], prefix: [] },
+  dsr:       { exact: ["saagar_dsr_staff","saagar_dsr_settings"], prefix: ["saagar_dsr_"] },
+  cro_audit: { exact: ["cro_s_v3","cro_audits_v3"], prefix: [] }
 };
 const PROTECTED_MODULES_KEY = "st_v2_protect_admin_modules";
 const ADMIN_PIN_KEY     = "st_v2_admin_pin_hash";
@@ -1523,7 +1526,10 @@ const MODULE_VALIDATORS = {
   grooming(){ const keys=keysForModule('grooming'); return {valid: keys.every(k=>Array.isArray(tryJSON(safeGet(k)))), detail:'Grooming day keys should be arrays'}; },
   payroll(){ const p=tryJSON(safeGet('payroll_suite_v1_2026')); return {valid:!p || (p && typeof p==='object' && Array.isArray(p.rows)), detail:'Payroll state should contain rows[]'}; },
   leave(){ const l=tryJSON(safeGet('leavedesk_v3'))||tryJSON(safeGet('leavedesk_v2')); return {valid:!l || (l && typeof l==='object' && Array.isArray(l.employees)), detail:'Leave state should contain employees[]'}; },
-  tax(){ const t=tryJSON(safeGet('taxcal_v2')); return {valid:!t || (t && typeof t==='object'), detail:'Tax calendar state should be an object'}; }
+  tax(){ const t=tryJSON(safeGet('taxcal_v2')); return {valid:!t || (t && typeof t==='object'), detail:'Tax calendar state should be an object'}; },
+  qms(){ const q=tryJSON(safeGet('retail_queue_management_v1')); return {valid:!q || (q && typeof q==='object' && Array.isArray(q.customers)), detail:'QMS state should contain customers[]'}; },
+  dsr(){ const keys=keysForModule('dsr'); return {valid: keys.every(k=> tryJSON(safeGet(k))!==null), detail:'DSR day/staff/settings keys should parse'}; },
+  cro_audit(){ const a=tryJSON(safeGet('cro_audits_v3')); const s=tryJSON(safeGet('cro_s_v3')); return {valid:(Array.isArray(a)||a==null) && ((s&&typeof s==='object')||s==null), detail:'CRO audits array + settings object checked'}; }
 };
 function validateModuleData(id){ try { const fn=MODULE_VALIDATORS[id]; return fn?fn():{valid:false,detail:'No validator configured'}; } catch(e){ return {valid:false,detail:e.message||'Validation failed'}; } }
 function getModuleInsight(moduleId){
@@ -1573,6 +1579,23 @@ function getModuleInsight(moduleId){
       const days = info.keys.filter(k=>k.startsWith('saagar_stock_'));
       const today = days.filter(k=>k.endsWith('_'+todayIso()));
       return { level: today.length?'ok':'warn', title:`${days.length} stock day${days.length===1?'':'s'}`, detail: today.length?'Stock posted today.':'No stock entry today.', count:days.length };
+    }
+    if(moduleId==='qms'){
+      const q = tryJSON(safeGet('retail_queue_management_v1'))||{};
+      const custs = Array.isArray(q.customers)?q.customers:[];
+      const today = custs.filter(c=>String(c.entryTime||'').slice(0,10)===todayIso());
+      const open = today.filter(c=>!c.outcome && c.status!=='Closed').length;
+      return { level: open?'warn':(today.length?'ok':'empty'), title:`${today.length} walk-in${today.length===1?'':'s'} today`, detail:`${open} open · ${custs.length} total`, count:today.length };
+    }
+    if(moduleId==='dsr'){
+      const today = keysForModule('dsr').filter(k=>k.indexOf('saagar_dsr_'+todayIso()+'_')===0);
+      return { level: today.length?'ok':'warn', title:`${today.length} staff logged today`, detail:'Daily staff registers.', count:today.length };
+    }
+    if(moduleId==='cro_audit'){
+      const a = tryJSON(safeGet('cro_audits_v3'))||[];
+      const arr = Array.isArray(a)?a:[];
+      const today = arr.filter(x=>String(x.date||'').slice(0,10)===todayIso()).length;
+      return { level: arr.length?'ok':'empty', title:`${arr.length} audit${arr.length===1?'':'s'}`, detail:`${today} today.`, count:arr.length };
     }
   }catch(e){ return { level:'warn', title:'Saved data, details unreadable', detail:'Open and verify.', count:info.keys.length }; }
   return { level:'ok', title:`${info.keys.length} saved record${info.keys.length===1?'':'s'}`, detail:'Saved data detected.', count:info.keys.length };
