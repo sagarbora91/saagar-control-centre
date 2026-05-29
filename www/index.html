@@ -1296,8 +1296,12 @@ function ensureModuleAccess(id){
 function normText(v){ return String(v||'').trim().replace(/\s+/g,' '); }
 function normLower(v){ return normText(v).toLowerCase(); }
 function uidEmp(){ return 'emp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
-function firmCode(v){ const raw=normText(v); if(!raw) return ''; const up=raw.toUpperCase(); if(FIRM_OPTIONS.some(f=>f.code===up)) return up; return FIRM_NAME_TO_CODE[normLower(raw)]||''; }
-function firmName(code){ const f=FIRM_OPTIONS.find(x=>x.code===code); return f?f.name:(code||'Unassigned'); }
+/* Firms come from the Organisation master (Settings → Organisation). FIRM_OPTIONS is only a
+   fallback when the org master is empty. This makes "add/rename a firm once" flow everywhere. */
+function _orgFirms(){ try{ var fs=(loadOrg().firms||[]).filter(function(f){return f&&f.code;}); return fs.length?fs:FIRM_OPTIONS.filter(function(f){return f.code;}); }catch(e){ return FIRM_OPTIONS.filter(function(f){return f.code;}); } }
+function firmPickOptions(){ return [{code:'',name:'Unassigned'}].concat(_orgFirms().map(function(f){return {code:f.code,name:f.name||f.code};})); }
+function firmCode(v){ const raw=normText(v); if(!raw) return ''; const up=raw.toUpperCase(); const of=_orgFirms(); if(of.some(f=>f.code===up)||FIRM_OPTIONS.some(f=>f.code===up)) return up; const byName=of.find(f=>normLower(f.name)===normLower(raw)); if(byName) return byName.code; return FIRM_NAME_TO_CODE[normLower(raw)]||''; }
+function firmName(code){ if(!code) return 'Unassigned'; const f=_orgFirms().find(x=>x.code===code)||FIRM_OPTIONS.find(x=>x.code===code); return f?(f.name||code):code; }
 function normalizeEmployee(e={}){
   const name = normText(e.name||e.fullName||e.employeeName||'');
   const employeeId = normText(e.employeeId||e.empId||e.idCode||'');
@@ -2680,7 +2684,7 @@ function renderConfigEmployees(){
   // Firm select
   const firmSel = $('emFirm');
   if(firmSel && !firmSel.options.length){
-    firmSel.innerHTML = FIRM_OPTIONS.map(f=>`<option value="${f.code}">${escapeHtml(f.name)}</option>`).join('');
+    firmSel.innerHTML = firmPickOptions().map(f=>`<option value="${f.code}">${escapeHtml(f.name)}</option>`).join('');
   }
   // Stats
   const stats = employeeStats();
@@ -2705,7 +2709,7 @@ function renderConfigEmployees(){
         <tr data-emp-row="${i}">
           <td><input data-emp-field="name" value="${escapeHtml(e.name)}"></td>
           <td><input data-emp-field="employeeId" value="${escapeHtml(e.employeeId)}" style="width:80px"></td>
-          <td><select data-emp-field="firm">${FIRM_OPTIONS.map(f=>`<option value="${f.code}" ${e.firm===f.code?'selected':''}>${escapeHtml(f.name)}</option>`).join('')}</select></td>
+          <td><select data-emp-field="firm">${firmPickOptions().map(f=>`<option value="${f.code}" ${e.firm===f.code?'selected':''}>${escapeHtml(f.name)}</option>`).join('')}</select></td>
           <td><input data-emp-field="department" value="${escapeHtml(e.department)}" style="width:90px"></td>
           <td><input data-emp-field="role" value="${escapeHtml(e.role)}" style="width:90px"></td>
           <td class="num"><input data-emp-field="monthlySalary" type="number" step="0.01" value="${e.monthlySalary||0}" style="width:90px;text-align:right"></td>
@@ -3081,6 +3085,12 @@ function showMainView(){
    read the master directly; this covers Leave + Payroll. */
 function seedModuleFromMaster(id){
   try{
+    // Firms (Phase 2): push the Organisation master into Payroll (firmName) + Tax (firm list)
+    // immediately on open, instead of waiting for the bridge's 60s cycle. publishOrg is additive
+    // + idempotent (seeds blank payroll firmName, adds missing tax firms only).
+    if((id==='payroll'||id==='tax') && window.SaagarBridge && typeof window.SaagarBridge.publishOrg==='function'){
+      try{ window.SaagarBridge.publishOrg(); }catch(e){}
+    }
     const emps = getEmployeeMaster().filter(e=>e && e.name && e.active!==false);
     const slug = n => 'emp_'+String(n).toLowerCase().replace(/[^a-z0-9]/g,'');
     // NOTE: no early-return on empty employees — the expense(vendors) branch is independent of
