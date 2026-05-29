@@ -2162,7 +2162,7 @@ function dailyReportsHTML(date){
    </details>
 
    <details class="rcard">
-     <summary><span class="r-icon">📦</span><b>Stock register</b><small>${stock.filter(s=>s.posted).length}/2 posted</small></summary>
+     <summary><span class="r-icon">📦</span><b>Stock register</b><small>${stock.filter(s=>s.posted).length}/${stock.length} posted</small></summary>
      <div class="r-body">
        <div class="table-wrap"><table class="data-table small"><thead><tr><th>Store</th><th>Status</th><th class="num">Brands</th><th class="num">Sys stock</th><th class="num">GRN</th></tr></thead><tbody>${stock.map(s=>`<tr><td><b>${escapeHtml(s.store)}</b><br><small>${escapeHtml(s.code)}</small></td><td>${s.posted?(s.movementsSubmitted?'<span class="dot green"></span>Submitted':s.openingLocked?'<span class="dot amber"></span>Opening locked':'<span class="dot amber"></span>In progress'):'<span class="dot red"></span>Not posted'}</td><td class="num">${s.posted?s.brands:'—'}</td><td class="num">${s.posted?s.sysTot:'—'}</td><td class="num">${s.posted?s.grnTot:'—'}</td></tr>`).join('')}</tbody></table></div>
        <div class="r-actions"><button class="btn small" onclick="openModule('stock')">Open Stock</button></div>
