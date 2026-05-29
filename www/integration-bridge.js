@@ -416,6 +416,7 @@
     finally{ _running=false; }
   }
   function cycle(){
+    _lastCycle=Date.now();   // rec #18: stamp every reconcile (all entry paths) for the freshness indicator
     var bus=busLoad();
     produce(bus);
     consumeQmsToDsr(bus);
@@ -446,6 +447,7 @@
       return {busEvents:b.length,byType:byType,employeeMaster:(L(EMP_MASTER,[])||[]).length,
         gate:L(GATE,{blocked:[]}),qms2dsrLinked:Object.keys(L(Q2D,{})||{}).length,
         org:!!L(ORG_MASTER,null),exceptions:(exc.items||[]).length,
+        lastCycleAt:_lastCycle?new Date(_lastCycle).toISOString():null,
         recentLog:(L(LOGK,[])||[]).slice(0,12)};}
   };
 

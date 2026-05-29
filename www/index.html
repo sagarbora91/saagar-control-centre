@@ -740,6 +740,9 @@ body.admin-on .admin-dot{display:block}
         <div class="brief-line" id="briefLine"></div>
       </div>
 
+      <!-- Today's Run (rec #9) — read-only derived checklist -->
+      <div id="todayRunHost"></div>
+
       <!-- KPI row -->
       <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -1067,7 +1070,10 @@ body.admin-on .admin-dot{display:block}
       <button class="back" onclick="showMainView()" title="Back">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
       </button>
-      <div class="module-title"><h3 id="activeTitle">Module</h3><p id="activeSub">Working area</p></div>
+      <button class="module-title" id="moduleSwitchBtn" type="button" onclick="openModuleSwitcher()" title="Switch module" style="display:flex;align-items:center;gap:6px;background:none;border:0;text-align:left;cursor:pointer;color:inherit">
+        <span style="min-width:0;flex:1"><h3 id="activeTitle">Module</h3><p id="activeSub">Working area</p></span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.8"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
       <button class="m-action" onclick="reloadModule()" title="Reload">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
       </button>
@@ -1187,6 +1193,7 @@ function todayIso(){ return new Date().toISOString().slice(0,10); }
 function monthIso(){ return new Date().toISOString().slice(0,7); }
 function fmtDate(v){ if(!v) return 'Never'; try { return new Date(v).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}); } catch(e){ return String(v); } }
 function fmtDateShort(v){ try { return new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); } catch(e){ return String(v||'').slice(0,10); } }
+function fmtSyncTime(v){ if(!v) return '—'; try { return new Date(v).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } }
 function escapeHtml(v){ return String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function bytesFmt(n){ n = Number(n)||0; if (n<1024) return n+' B'; if (n<1024*1024) return (n/1024).toFixed(1)+' KB'; return (n/1024/1024).toFixed(2)+' MB'; }
 function safeFileName(n){ return String(n||'file').replace(/[^a-z0-9\-_]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,80) || 'file'; }
@@ -1785,7 +1792,8 @@ function renderSync(){
   const bt=st.byType||{};
   const chips=Object.keys(bt).sort().map(k=>`<span class="status-pill" style="margin:2px">${escapeHtml(k)}: <b>${bt[k]}</b></span>`).join('') || '<span class="sub">No events yet — use the modules and they will appear here.</span>';
   $('syncStatus').innerHTML =
-    `<div class="emp-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+    `<div class="sub" style="margin-bottom:8px">${st.lastCycleAt?('🔄 Synced • '+escapeHtml(fmtSyncTime(st.lastCycleAt))):'Not synced yet'}</div>
+     <div class="emp-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
        <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Bus events</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${st.busEvents||0}</div></div>
        <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Staff (master)</div><div style="font-size:22px;font-weight:800;color:var(--navy)">${st.employeeMaster||0}</div></div>
        <div class="card card-pad" style="flex:1;min-width:120px"><div class="sub">Floor-gate blocked</div><div style="font-size:22px;font-weight:800;color:${(st.gate&&st.gate.blocked&&st.gate.blocked.length)?'var(--red)':'var(--navy)'}">${(st.gate&&st.gate.blocked&&st.gate.blocked.length)||0}</div></div>
@@ -1959,12 +1967,45 @@ function renderActingAs(){
 /* Rec #6: which module fixes each cross-module exception area (areas emitted by the bridge's
    buildExceptions). Floor-gate → grooming (the actionable fix; leave-blocks stay visible in Sync). */
 const EXC_AREA_TO_MODULE = { 'Floor gate':'grooming', 'QMS':'qms', 'Stock':'stock', 'Cash':'expense', 'Expense':'expense', 'Tax':'tax', 'Service':'service' };
+
+/* Rec #9: "Today's run" — a read-only, DERIVED checklist (writes NO new key). Reuses the existing
+   .rcard collapsible + buildTodayBrief() so almost no new reads. Each row taps into its module. */
+function renderTodayRun(){
+  const host = $('todayRunHost'); if(!host) return;
+  const t = todayIso();
+  const b = buildTodayBrief(t);
+  let gate=null; try{ gate=(window.SaagarBridge&&SaagarBridge.status&&SaagarBridge.status().gate)||null; }catch(e){}
+  if(!gate) gate = tryJSON(safeGet('saagar_gate_status')) || {blocked:[]};
+  const gBlocked = Array.isArray(gate.blocked)?gate.blocked.length:0;
+  let stockLocked=false; try{ stockLocked=(computeStockDay(t)||[]).some(s=>s&&s.movementsSubmitted); }catch(e){}
+  // [label, dotClass, sub, moduleId]
+  const rows = [
+    ['Stock posted',     b.stockToday>0?'green':'amber', b.stockToday>0?'posted today':'no entry yet', 'stock'],
+    ['Grooming done',    b.groomingTodayChecks>0?'green':'amber', b.groomingTodayChecks>0?`${b.groomingTodayPass}/${b.groomingTodayChecks} pass`:'no checks yet', 'grooming'],
+    ['Floor gate clear', gBlocked===0?'green':'red', gBlocked===0?'all clear':`${gBlocked} blocked`, 'dsr'],
+    ['Cash closed',      b.cashTodayDone?'green':'amber', b.cashTodayDone?'sheet done':'pending', 'expense'],
+    ['Stock locked',     (b.stockToday>0&&stockLocked)?'green':'amber', b.stockToday<=0?'post stock first':(stockLocked?'movements submitted':'not locked'), 'stock']
+  ];
+  const done = rows.filter(r=>r[1]==='green').length;
+  const worst = rows.some(r=>r[1]==='red')?'red':rows.some(r=>r[1]==='amber')?'amber':'green';
+  host.innerHTML =
+    `<details class="rcard" id="todayRunCard"><summary><span class="r-icon">🗓️</span><b>Today's run</b><small><span class="dot ${worst}"></span>${done}/${rows.length} done</small></summary>
+     <div class="r-body" style="padding-top:4px">
+       ${rows.map(r=>`<button type="button" onclick="navigateToModule('${r[3]}')" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--gray-100);padding:11px 2px;cursor:pointer;color:var(--navy);font:inherit">
+         <span class="dot ${r[1]}"></span><strong style="font-size:13.5px;font-weight:700">${escapeHtml(r[0])}</strong>
+         <span class="sub" style="margin-left:auto;font-size:12px">${escapeHtml(r[2])} ›</span></button>`).join('')}
+     </div></details>`;
+}
 function renderHome(){
   // Greeting line
   const owner = ownerName();
   if($('greetLine'))  $('greetLine').textContent = timeGreeting() + (owner ? ', '+owner : '');
   if($('ownerLine'))  $('ownerLine').textContent = "Today at the store";
-  if($('todayLine'))  $('todayLine').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  if($('todayLine')){
+    let __d = new Date().toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+    try{ const __s=(window.SaagarBridge&&window.SaagarBridge.status&&window.SaagarBridge.status())||{}; if(__s.lastCycleAt) __d += ' · Synced ' + fmtSyncTime(__s.lastCycleAt); }catch(e){}
+    $('todayLine').textContent = __d;
+  }
   renderActingAs();
 
   applyMode();
@@ -1982,6 +2023,8 @@ function renderHome(){
     const tap = mod ? ` role="button" tabindex="0" data-mod="${escapeHtml(mod)}" onclick="navigateToModule('${mod}')"` : '';
     return `<div class="brief-stat${mod?' tappable':''}"${tap}><b>${escapeHtml(String(s[0]))}</b><span>${escapeHtml(s[1])}</span></div>`;
   }).join('');
+
+  renderTodayRun();   // rec #9 — read-only Today's Run checklist (above KPI grid)
 
   const briefPills = [];
   if (b.stockToday>0)    briefPills.push(['ok', '📦 Stock posted today']);
@@ -3326,7 +3369,7 @@ function openModule(id){
         injectUniformCSS(
           injectModuleAuditBridge(
             injectEmployeeAssist(
-              injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title), mod.id),
+              injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
               mod.id
             ), mod.id
           )
@@ -3372,7 +3415,17 @@ function __injBeforeBodyEnd(html, frag){
   if(idx >= 0) return html.slice(0, idx) + frag + '\n' + html.slice(idx);
   return html + frag;
 }
-function injectBackHome(html, title){
+/* Rec #7: contextual "next-step" chips per module (1-2 each), mirroring Sagar's daily flow
+   QMS→DSR→Stock + the bridge's own QMS→DSR/WSC links. Chips post ST_OPEN_MODULE (guarded). */
+const NEXT_STEPS = {
+  qms:      [{id:'dsr',   label:'Record in DSR →'}],
+  dsr:      [{id:'stock', label:'Update Stock →'}],
+  grooming: [{id:'qms',   label:'Open Queue →'}],
+  service:  [{id:'qms',   label:'Back to Queue →'}],
+  expense:  [{id:'tax',   label:'Check Tax →'}]
+};
+function injectBackHome(html, title, moduleId){
+  const steps = JSON.stringify(NEXT_STEPS[moduleId] || []);
   const dock = `
 <style id="st-v5-back-style">
 #st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
@@ -3383,10 +3436,14 @@ function injectBackHome(html, title){
 #st-v5-home-fab:active{transform:scale(.96)}
 #st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 @media print{#st-v5-home-fab{display:none!important}}
-@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}}
+@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}#st-v5-next-chips{bottom:124px;right:14px}}
+#st-v5-next-chips{position:fixed;bottom:140px;right:22px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#st-v5-next-chips button{background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;border:1px solid rgba(184,146,42,.7);border-radius:999px;padding:8px 14px;font:700 12px 'DM Sans',Arial,sans-serif;box-shadow:0 6px 18px rgba(13,35,64,.35);cursor:pointer}
+@media print{#st-v5-next-chips{display:none!important}}
 </style>
 <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
-<scr`+`ipt id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});})();<\/scr`+`ipt>`;
+<div id="st-v5-next-chips"></div>
+<scr`+`ipt id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});var steps=${steps};var host=document.getElementById('st-v5-next-chips');if(host&&steps.length){steps.forEach(function(s){var c=document.createElement('button');c.type='button';c.textContent=s.label;c.onclick=function(){try{parent.postMessage({type:'ST_OPEN_MODULE',id:s.id},'*')}catch(e){}};host.appendChild(c);});}})();<\/scr`+`ipt>`;
   return __injBeforeBodyEnd(html, dock);
 }
 
@@ -3488,6 +3545,25 @@ function injectSafetyNet(html){
    ═══════════════════════════════════════════════════════════════════════ */
 function openModal(){ $('modalBackdrop').classList.remove('hidden'); }
 function closeModal(){ $('modalBackdrop').classList.add('hidden'); }
+
+/* Rec #7: module switcher — chevron on the module-bar opens a sheet (recent-first) to hop
+   module→module without bouncing to Home. Routes through navigateToModule (the #5 dirty guard). */
+function openModuleSwitcher(){
+  const recent = (tryJSON(safeGet(ACTIVITY_KEY)) || []).map(e=>e&&e.id).filter(Boolean);
+  const seen = {};
+  const order = recent.filter(id=>{ if(seen[id]||!moduleById(id))return false; seen[id]=1; return true; })
+                      .concat(MODULES.map(m=>m.id).filter(id=>!seen[id]));
+  if($('modalTitle')) $('modalTitle').textContent = 'Switch module';
+  if($('modalBody')) $('modalBody').innerHTML = order.map(id=>{
+    const m=moduleById(id); if(!m) return '';
+    const ins=getModuleInsight(id); const isCur=id===activeModuleId;
+    return `<button class="mcard ${ins.level}" ${isCur?'disabled style="opacity:.5"':`onclick="switcherGo('${id}')"`} style="width:100%;text-align:left;margin-bottom:8px">
+      <div class="mcard-icon">${m.icon}</div>
+      <div class="mcard-body"><h4>${escapeHtml(m.title)}${isCur?' · current':''}</h4><p>${escapeHtml(m.subtitle||m.summary||'')}</p></div></button>`;
+  }).join('');
+  openModal();
+}
+function switcherGo(id){ closeModal(); navigateToModule(id); }
 
 /* ═══════════════════════════════════════════════════════════════════════
    GLOBAL EVENTS  (postMessage + keyboard)
