@@ -1624,6 +1624,9 @@ function getModuleInsight(moduleId){
 function buildTodayBrief(dIso){
   const t = dIso || todayIso();
   const out = { date:t, ts:new Date().toISOString() };
+  // rec#10: money-first — QMS sales + conversion for the digest
+  try{ const q=computeQmsDay(t); out.qmsSales=q.sales; out.qmsConversion=q.conversion; out.qmsPurchases=q.purchases; out.qmsWalkins=q.total; }
+  catch(e){ out.qmsSales=0; out.qmsConversion=0; out.qmsPurchases=0; out.qmsWalkins=0; }
   // Stock
   const stockKeys = keysForModule('stock').filter(k=>k.endsWith('_'+t));
   out.stockToday = stockKeys.length;
@@ -2217,12 +2220,36 @@ function dailyReportsHTML(date){
   const sc = p => p>=80?'green':p>=60?'amber':'red';
   const snap = buildSnapshotText(buildTodayBrief(date), date);
   const qms = computeQmsDay(date);
+  // rec#10: yesterday's QMS for the vs-delta. Anchor at NOON (not midnight) so the -1-day math is
+  // timezone-robust — midnight-local + toISOString (UTC) can skip a day in +ve TZs like IST.
+  const ydayIso = new Date(new Date(date+'T12:00:00').getTime() - 86400000).toISOString().slice(0,10);
+  const qmsY = computeQmsDay(ydayIso);
+  const salesDelta = qms.sales - qmsY.sales;
+  const convDelta = qms.conversion - qmsY.conversion;
+  const arrow = d => d>0?'▲':d<0?'▼':'•';
+  const hadY = qmsY.total > 0;
   const dsr = computeDsrDay(date);
   const stock = computeStockDay(date);
   const groom = computeGroomingDay(date);
   const cash = computeCashDay(date);
   const leave = computeLeaveDay(date);
   return `
+   <details class="rcard" open>
+     <summary><span class="r-icon">💰</span><b>Business today</b><small>${escapeHtml(repDateLabel(date))}</small></summary>
+     <div class="r-body">
+       <div class="age-grid">
+         <div class="age-card green"><b>${inr(qms.sales)}</b><span>Net sales${hadY?` ${arrow(salesDelta)} ${salesDelta>=0?'+':''}${inr(salesDelta)}`:''}</span></div>
+         <div class="age-card ${qms.conversion>=40?'green':qms.conversion>=20?'amber':'red'}"><b>${qms.conversion}%</b><span>Conversion${hadY?` ${arrow(convDelta)} ${convDelta>=0?'+':''}${convDelta} pt`:''}</span></div>
+         <div class="age-card"><b>${qms.purchases}</b><span>Purchases / ${qms.total} walk-in${qms.total===1?'':'s'}</span></div>
+         <div class="age-card"><b>${qms.closed}</b><span>Closed</span></div>
+       </div>
+       ${hadY ? `<p class="r-foot">vs ${escapeHtml(repDateLabel(ydayIso))}: ${inr(qmsY.sales)} · ${qmsY.conversion}% conv.</p>` : `<p class="r-foot">No data for ${escapeHtml(repDateLabel(ydayIso))} to compare.</p>`}
+       <div class="r-actions">
+         <button class="btn primary small" onclick="shareDayBrief()">Send owner digest</button>
+         <button class="btn small" onclick="navigateToModule('qms')">Open Queue</button>
+       </div>
+     </div>
+   </details>
    <details class="rcard" open>
      <summary><span class="r-icon">☀️</span><b>Day snapshot</b><small>${escapeHtml(repDateLabel(date))}</small></summary>
      <div class="r-body">
@@ -2598,6 +2625,8 @@ function buildSnapshotText(b, dIso){
     `📊 *Saagar Traders — Today's Brief*`,
     `${dateLine}${owner?(' · '+owner):''}`,
     ``,
+    `💰 *Net sales: ₹${(b.qmsSales||0).toLocaleString('en-IN')}* · Conversion ${b.qmsConversion||0}%`,
+    `🎯 ${b.qmsPurchases||0} purchase${(b.qmsPurchases||0)===1?'':'s'} from ${b.qmsWalkins||0} walk-in${(b.qmsWalkins||0)===1?'':'s'}`,
     `📦 Stock today: ${b.stockToday?'posted':'NOT posted'}`,
     `🛠️ Service: ${b.serviceOpen} open · ${b.serviceNewToday} new today`,
     `💳 Expenses today: ${b.expenseToday} entries, ₹${(b.expenseTodayAmount||0).toLocaleString('en-IN')}`,
