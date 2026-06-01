@@ -1192,16 +1192,13 @@ const DEPT_OPTIONS  = ["Sales","Service","Support","Admin"];
 const STORE_OPTIONS = ["Titan World","Helios"];
 const FIRM_OPTIONS = [
   {code:"",   name:"Unassigned"},
-  {code:"GM", name:"Gold Mart"},
-  {code:"SAT",name:"Saagar Traders"},
-  {code:"STB",name:"S.T.Bora & Company"},
-  {code:"AS", name:"Arihant Steel Traders"}
+  {code:"SAT",name:"Saagar Traders"}
 ];
 const FIRM_NAME_TO_CODE = {
-  "gold mart":"GM","gm":"GM",
   "saagar traders":"SAT","sagar traders":"SAT","sat":"SAT",
-  "s.t.bora & company":"STB","s.t. bora & company":"STB","stb":"STB",
-  "arihant steel traders":"AS","as":"AS"
+  /* C2: Titan World + Helios are STORES of the one firm; legacy firm names all resolve to it
+     so any pre-existing employee/expense rows still map to Saagar Traders, never "Unassigned". */
+  "helios by saagar":"SAT","helios":"SAT","titan world":"SAT","gold mart":"SAT","gm":"SAT"
 };
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -1761,14 +1758,17 @@ function switchView(name){
 /* ═══════════════════ ORGANISATION MASTER ═══════════════════ */
 const ORG_DEFAULT = {
   firms:[
-    {code:'GM', name:'Gold Mart',        legalName:'', pan:'', gstin:'', address:'', active:true},
-    {code:'SAT',name:'Saagar Traders',   legalName:'', pan:'', gstin:'', address:'Latur, Maharashtra', active:true},
-    {code:'STB',name:'S.T. Bora & Co.',  legalName:'', pan:'', gstin:'', address:'', active:true},
-    {code:'AST',name:'Arihant Steel',    legalName:'', pan:'', gstin:'', address:'', active:true}
+    {code:'SAT',name:'Saagar Traders', legalName:'', pan:'', gstin:'', address:'Latur, Maharashtra', active:true}
   ],
+  /* Titan World + Helios are the two STORES (branches) of the single firm SAT. Codes WLMHW/HEMW are
+     kept because STORE_KEY_MAP maps them to the internal stock keys titanworld/helios. */
   branches:[
-    {code:'WLMHW',name:'Titan World — Latur',firmCode:'SAT',channel:'Titan World',region:'WEST-2',rso:'Lakshay',active:true},
-    {code:'HEMW', name:'Helios — Latur',     firmCode:'SAT',channel:'Helios',     region:'WEST-2',rso:'Lakshay',active:true}
+    {code:'WLMHW',name:'Titan World',firmCode:'SAT',channel:'Titan World',region:'WEST-2',rso:'Lakshay',active:true},
+    {code:'HEMW', name:'Helios',     firmCode:'SAT',channel:'Helios',     region:'WEST-2',rso:'Lakshay',active:true}
+  ],
+  stores:[
+    {name:'Titan World',storeKey:'titanworld'},
+    {name:'Helios',storeKey:'helios'}
   ],
   updatedAt:null
 };
@@ -1802,6 +1802,7 @@ function orgAddFirm(){ orgDraft().firms.push({code:'',name:'',legalName:'',pan:'
 function orgAddBranch(){ orgDraft().branches.push({code:'',name:'',firmCode:'SAT',channel:'',region:'WEST-2',rso:'',active:true}); renderOrganisation(); }
 function saveOrganisation(){
   const o=orgDraft(); o.updatedAt=new Date().toISOString();
+  o.stores=(o.branches||[]).filter(function(b){return b&&b.code&&b.active!==false;}).map(function(b){return {name:b.channel||b.name||b.code, storeKey:storeKeyForCode(b.code)};});
   safeSet(ORG_MASTER_KEY, JSON.stringify(o));
   try{ auditLog('org.save',{firms:o.firms.length,branches:o.branches.length}); }catch(e){}
   orgStatus('Saved — '+o.firms.length+' firm(s), '+o.branches.length+' branch(es). Tap “Publish to modules” to seed Payroll & Tax.','ok');

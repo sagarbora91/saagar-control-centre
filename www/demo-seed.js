@@ -95,10 +95,12 @@
 
   // Firms / Organisation master
   set('saagar_org_master_v1', {
-    firms: [
-      { code: 'TW', name: 'Saagar Traders', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5' },
-      { code: 'HE', name: 'Helios by Saagar', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5' }
-    ], branches: [], stores: []
+    firms: [{ code: 'SAT', name: 'Saagar Traders', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5', address: 'Latur, Maharashtra', active: true }],
+    branches: [
+      { code: 'WLMHW', name: 'Titan World', firmCode: 'SAT', channel: 'Titan World', region: 'WEST-2', rso: 'Lakshay', active: true },
+      { code: 'HEMW', name: 'Helios', firmCode: 'SAT', channel: 'Helios', region: 'WEST-2', rso: 'Lakshay', active: true }
+    ],
+    stores: [{ name: 'Titan World', storeKey: 'titanworld' }, { name: 'Helios', storeKey: 'helios' }]
   });
 
   /* ════════════════════ QMS  (retail_queue_management_v1) ════════════════════ */
@@ -304,8 +306,7 @@
   /* ════════════════════ TAX / GST  (taxcal_v2) — dueDate-bearing so Reports light up ════════════════════ */
   function plusDays(n) { var d = new Date(today); d.setDate(d.getDate() + n); return ymd(d); }
   set('taxcal_v2', {
-    firms: [{ id: 'firm_1', name: 'Saagar Traders', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5', entity: 'proprietorship', type: 'both', notes: '' },
-      { id: 'firm_2', name: 'Helios by Saagar', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5', entity: 'proprietorship', type: 'regular', notes: '' }],
+    firms: [{ id: 'firm_1', name: 'Saagar Traders', pan: 'ABCDE1234F', gstin: '27ABCDE1234F1Z5', entity: 'proprietorship', type: 'both', notes: '' }],
     activeFirmId: 'firm_1', fyStartYear: Math.max(2026, curYear),
     compliance: { firm_1: (function () { var o = {}; o[Math.max(2026, curYear)] = {
       gstr3b_prev: { done: true, dueDate: plusDays(-20), filedOn: plusDays(-19), notes: 'Filed' },

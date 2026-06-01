@@ -378,24 +378,28 @@
     try{
       var org=L(ORG_MASTER,null); if(!org||!Array.isArray(org.firms)) return res;
       var activeFirms=org.firms.filter(function(f){return f&&f.active!==false&&f.name;});
-      // Payroll: seed firmName/firmAddr only if blank
+      if(!activeFirms.length) return res;
+      /* C2 SINGLE-FIRM MODEL: Saagar Traders is the one firm; Titan World/Helios are its stores.
+         firmName must never be ambiguous, so on a DRAFT run we overwrite a stale name; on an approved
+         run we only fill a blank (never mutate an approved snapshot). */
+      var SINGLE_FIRM=activeFirms.find(function(f){return f.code==='SAT';})||activeFirms[0];
       try{ var pb=L(PAYROLL,null);
         if(pb&&pb.meta){
-          var want=activeFirms.find(function(f){return f.code===(pb.meta.firmCode||'');})||activeFirms.find(function(f){return f.code==='SAT';})||activeFirms[0];
-          if(want){
-            var changed=false;
-            if(!nm(pb.meta.firmName)){ pb.meta.firmName=want.name; changed=true; }
-            if(!nm(pb.meta.firmAddr)&&nm(want.address)){ pb.meta.firmAddr=want.address; changed=true; }
-            if(changed){ S(PAYROLL,pb); res.payroll='seeded "'+want.name+'"'; blog('org→payroll firm seeded'); }
-            else res.payroll='kept (already set)';
-          }
+          var runStatus=(pb.meta.run&&pb.meta.run.status)||'draft';
+          var changed=false;
+          if(runStatus==='draft'){
+            if(nm(pb.meta.firmName)!==nm(SINGLE_FIRM.name)){ pb.meta.firmName=SINGLE_FIRM.name; pb.meta.firmCode=SINGLE_FIRM.code; changed=true; }
+            if(!nm(pb.meta.firmAddr)&&nm(SINGLE_FIRM.address)){ pb.meta.firmAddr=SINGLE_FIRM.address; changed=true; }
+          } else if(!nm(pb.meta.firmName)){ pb.meta.firmName=SINGLE_FIRM.name; changed=true; }
+          if(changed){ S(PAYROLL,pb); res.payroll='set "'+SINGLE_FIRM.name+'"'; blog('org→payroll firm set'); }
+          else res.payroll='kept (already "'+nm(pb.meta.firmName)+'")';
         } }catch(e){ res.payroll='error'; }
-      // Tax: additively add firms not present (match by name)
+      // Tax: ensure the single firm exists (add by name); never delete a user-added firm.
       try{ var tx=L(TAX,null);
         if(tx&&typeof tx==='object'){
           if(!Array.isArray(tx.firms)) tx.firms=[];
           var have={}; tx.firms.forEach(function(f){ if(f&&f.name) have[kk(f.name)]=1; });
-          activeFirms.forEach(function(f){ if(!have[kk(f.name)]){ tx.firms.push({id:'org_'+(f.code||kk(f.name)),name:f.name,pan:f.pan||'',gstin:f.gstin||'',entityType:'',source:'org'}); res.taxFirmsAdded++; } });
+          if(!have[kk(SINGLE_FIRM.name)]){ tx.firms.push({id:'org_'+(SINGLE_FIRM.code||kk(SINGLE_FIRM.name)),name:SINGLE_FIRM.name,pan:SINGLE_FIRM.pan||'',gstin:SINGLE_FIRM.gstin||'',entityType:'',source:'org'}); res.taxFirmsAdded++; }
           if(res.taxFirmsAdded){ S(TAX,tx); blog('org→tax +'+res.taxFirmsAdded+' firm(s)'); }
         } }catch(e){}
     }catch(e){}
