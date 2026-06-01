@@ -687,6 +687,19 @@ body.admin-on .admin-dot{display:block}
   .main{overflow:visible;padding:0}
 }
 </style>
+<!-- Mobile mode: set the flag BEFORE first paint (default 'mobile') so there is no Desktop→Mobile flash -->
+<script>try{var __m=localStorage.getItem('saagar_ui_mode');if(__m!=='desktop')document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>
+<style id="bcc-mobile-shell">
+/* Display-mode segmented control (Settings Hub) — always styled (not gated) */
+.seg{display:flex;gap:8px;margin-top:8px}
+.seg-btn{flex:1;padding:11px 12px;border:1.5px solid #d4d4d8;background:#fff;border-radius:10px;font:700 13px 'DM Sans',sans-serif;color:#52525b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg-btn.active{border-color:#0d2340;background:#0d2340;color:#fff}
+#uiModeBtn span{font-size:18px;line-height:1}
+/* Shell chrome in Mobile mode: keep content a comfortable centered column even on a wide screen */
+html.bcc-mobile .main{max-width:560px;margin-left:auto;margin-right:auto}
+</style>
+<!-- DEMO DATA SEEDER (verification build) — seeds ~30 days of dummy data once, before the shell/bridge read storage. Delete this one line for a clean (no-demo) build. -->
+<script src="demo-seed.js"></script>
 </head>
 <body>
 
@@ -702,6 +715,7 @@ body.admin-on .admin-dot{display:block}
       </div>
     </div>
     <div class="top-actions">
+      <button class="icon-btn" id="uiModeBtn" onclick="toggleUiMode()" title="Switch Mobile / Desktop layout"><span id="uiModeIcon">📱</span></button>
       <button class="icon-btn" onclick="shareTodayBrief()" title="Share today's brief">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </button>
@@ -797,6 +811,14 @@ body.admin-on .admin-dot{display:block}
       <div class="page-head">
         <h2>Settings Hub</h2>
         <p class="sub">One place for people, organisation, roles, data &amp; cross-module sync.</p>
+      </div>
+      <div class="card card-pad" id="uiModeCard" style="margin-bottom:14px">
+        <h4><span class="em">📱</span> Display mode</h4>
+        <p>How this device shows the app. Saved on this device — your store tablet and a phone can each keep their own.</p>
+        <div class="seg" id="uiModeSeg">
+          <button type="button" class="seg-btn" data-mode="mobile" onclick="setUiMode('mobile')"><span>📱</span> Mobile</button>
+          <button type="button" class="seg-btn" data-mode="desktop" onclick="setUiMode('desktop')"><span>🖥</span> Desktop</button>
+        </div>
       </div>
       <nav class="subtabs" id="configTabs">
         <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">People</button>
@@ -2520,7 +2542,7 @@ function computeCashDay(dateIso){
   const st = tryJSON(safeGet('tanishq_statements'))||{};
   const rec = st && st[dateIso];
   if(!rec) return { done:false };
-  return { done: !!rec.filledBy, by: rec.filledBy||'', total: Number(rec.total||rec.netSales||rec.amount||0)||0 };
+  return { done: !!(rec.filledBy||rec.closed), by: rec.filledBy||rec.closedBy||'', total: Number(rec.total||rec.netSales||rec.amount||0)||0 };
 }
 
 function computeLeaveDay(dateIso){
@@ -2739,6 +2761,7 @@ function computeExpenseSummary(month){
   if(!Array.isArray(arr)) return out;
   const firms = {};
   arr.forEach(e=>{
+    if(!e || e.void || String(e.type||'expense').toLowerCase()==='income') return;   // expense card = expenses only
     const d = String(e.date||e.entryDate||e.expenseDate||'').slice(0,7);
     if(d!==month) return;
     const amt = Number(e.amount||e.total||0)||0;
@@ -3118,6 +3141,9 @@ function factoryReset(){
   if(prompt('Type RESET to confirm clearing all data:') !== 'RESET'){ toast('Factory reset cancelled.'); return; }
   try{ exportBackup(); }catch(e){}
   let done=0; keys.forEach(k=>{ if(safeRemove(k)) done++; });
+  // Demo build: leave a marker so the first-launch seeder does NOT repopulate after a reset
+  // (the seed flag itself matches saagar_* and was just cleared, so re-stamp it as 'cleared').
+  try{ localStorage.setItem('saagar_demo_seeded','cleared'); }catch(e){}
   // Persist the deletions to the SQLite file NOW (write-through only schedules a 3s debounced save,
   // but we reload in 900ms — without this the wiped keys linger in bcc.sqlite AND would be
   // resurrected by the recovery path on next launch).
@@ -3399,13 +3425,15 @@ function openModule(id){
     setTimeout(__hide, 4000);
     try{
       __f.srcdoc = injectSafetyNet(
-        injectUniformCSS(
-          injectModuleAuditBridge(
-            injectEmployeeAssist(
-              injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
-              mod.id
-            ), mod.id
-          )
+        injectMobileMode(
+          injectUniformCSS(
+            injectModuleAuditBridge(
+              injectEmployeeAssist(
+                injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
+                mod.id
+              ), mod.id
+            )
+          ), mod.id
         )
       );
     }catch(e){
@@ -3536,6 +3564,191 @@ img,svg,video,canvas{max-width:100%;height:auto}
   return css + html;
 }
 
+/* ── MOBILE MODE (Desktop ⇄ Mobile toggle) ─────────────────────────────────────
+   A class-gated, WIDTH-INDEPENDENT mobile layer injected into every module iframe.
+   It is active ONLY when html.bcc-mobile is present (the shell toggles it from the
+   saagar_ui_mode setting, default 'mobile'). Desktop mode = no class = byte-identical
+   to before — every rule is scoped under html.bcc-mobile (base) or
+   html.bcc-mobile[data-mod="<id>"] (per module), so it can never touch Desktop mode or
+   another module. A tiny boot script (in <head>, runs before paint) sets data-mod +
+   the class from localStorage (shared same-origin) and live-updates on toggle. The
+   per-module rules were authored against each module's REAL selectors. */
+const MOBILE_CSS = `
+/* base layer (all modules) */
+html.bcc-mobile table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile thead,html.bcc-mobile tbody,html.bcc-mobile tr{width:max-content;min-width:100%}
+html.bcc-mobile .table-wrap,html.bcc-mobile .twrap,html.bcc-mobile .table-scroll,html.bcc-mobile .tbl-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+html.bcc-mobile input,html.bcc-mobile select,html.bcc-mobile textarea{font-size:16px;max-width:100%}
+html.bcc-mobile td input,html.bcc-mobile td select,html.bcc-mobile td textarea,html.bcc-mobile th input,html.bcc-mobile th select{font-size:13px}
+html.bcc-mobile button,html.bcc-mobile .btn,html.bcc-mobile a.btn,html.bcc-mobile [role=button]{min-height:42px}
+html.bcc-mobile img,html.bcc-mobile svg,html.bcc-mobile video,html.bcc-mobile canvas{max-width:100%;height:auto}
+html.bcc-mobile .fg{min-width:0}
+html.bcc-mobile body{padding-bottom:80px}
+/* qms off-canvas menu button (injected for qms only) */
+#st-v5-qms-menu{display:none}
+html.bcc-mobile[data-mod="qms"] #st-v5-qms-menu{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:10px;z-index:70;width:42px;height:42px;border-radius:10px;background:#0d2340;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+/* stock */
+html.bcc-mobile[data-mod="stock"] .main{max-width:none !important;width:auto !important;margin:0 !important;padding:10px !important}
+html.bcc-mobile[data-mod="stock"] .scards{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
+html.bcc-mobile[data-mod="stock"] .scard{padding:10px !important}
+html.bcc-mobile[data-mod="stock"] .scard-val{font-size:21px !important}
+html.bcc-mobile[data-mod="stock"] .set-grid{grid-template-columns:1fr !important;gap:12px !important}
+html.bcc-mobile[data-mod="stock"] .sec-hdr{flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important}
+html.bcc-mobile[data-mod="stock"] .btn-row{width:100% !important}
+html.bcc-mobile[data-mod="stock"] .hdr{flex-wrap:wrap !important;gap:8px !important}
+html.bcc-mobile[data-mod="stock"] .add-row{flex-direction:column !important}
+html.bcc-mobile[data-mod="stock"] .rtbl{font-size:11px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl thead th{padding:5px 3px !important;font-size:9px !important;letter-spacing:0 !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td{padding:3px 3px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td.brand-td{padding-left:8px !important;font-size:10px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl thead th.tl{padding-left:8px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td .ni{width:48px !important;min-height:0 !important;font-size:11px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td .si,html.bcc-mobile[data-mod="stock"] .rtbl td .cro-sel{width:80px !important;min-height:0 !important;font-size:11px !important}
+html.bcc-mobile[data-mod="stock"] .modal-box{min-width:0 !important;max-width:92vw !important;padding:20px !important}
+/* service */
+html.bcc-mobile[data-mod="service"] .dash-wrap,html.bcc-mobile[data-mod="service"] .form-content{max-width:none !important;padding-left:14px !important;padding-right:14px !important}
+html.bcc-mobile[data-mod="service"] .form-layout{display:block !important;min-height:0 !important}
+html.bcc-mobile[data-mod="service"] .form-sidebar{display:none !important}
+html.bcc-mobile[data-mod="service"] .grid-2,html.bcc-mobile[data-mod="service"] .grid-3,html.bcc-mobile[data-mod="service"] .grid-4,html.bcc-mobile[data-mod="service"] .check-columns{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="service"] .stats-grid{grid-template-columns:1fr 1fr !important;gap:10px !important}
+html.bcc-mobile[data-mod="service"] .col-span-2,html.bcc-mobile[data-mod="service"] .col-span-full{grid-column:auto !important}
+html.bcc-mobile[data-mod="service"] .dash-hero,html.bcc-mobile[data-mod="service"] .form-topbar,html.bcc-mobile[data-mod="service"] .section-header{flex-wrap:wrap !important}
+html.bcc-mobile[data-mod="service"] .form-topbar-left,html.bcc-mobile[data-mod="service"] .form-topbar-right{flex-wrap:wrap !important;width:100% !important}
+html.bcc-mobile[data-mod="service"] .tweaks-panel{position:static !important;width:auto !important;margin:12px 14px !important;box-shadow:none !important}
+html.bcc-mobile[data-mod="service"] .est-totals{align-items:stretch !important}
+html.bcc-mobile[data-mod="service"] .tot-row{justify-content:space-between !important;gap:8px !important}
+html.bcc-mobile[data-mod="service"] .tot-row .tot-label{width:auto !important}
+html.bcc-mobile[data-mod="service"] .tot-input{width:120px !important}
+html.bcc-mobile[data-mod="service"] .cond-table,html.bcc-mobile[data-mod="service"] .est-table{font-size:11.5px !important}
+html.bcc-mobile[data-mod="service"] .cond-table th,html.bcc-mobile[data-mod="service"] .est-table th{padding:6px 6px !important}
+html.bcc-mobile[data-mod="service"] .cond-table td,html.bcc-mobile[data-mod="service"] .est-table td{padding:4px 5px !important}
+html.bcc-mobile[data-mod="service"] .cond-table td input,html.bcc-mobile[data-mod="service"] .cond-table td select,html.bcc-mobile[data-mod="service"] .est-table td input{min-height:36px !important;font-size:13px !important}
+/* qms */
+html.bcc-mobile[data-mod="qms"] body{display:block !important;overflow:auto !important}
+html.bcc-mobile[data-mod="qms"]{--sidebar:0px}
+html.bcc-mobile[data-mod="qms"] .main-area{margin-left:0 !important}
+html.bcc-mobile[data-mod="qms"] .role-banner{left:0 !important}
+html.bcc-mobile[data-mod="qms"] .sidebar{transform:translateX(-240px);transition:transform .25s;z-index:60;width:240px}
+html.bcc-mobile[data-mod="qms"] .sidebar.open{transform:translateX(0)}
+html.bcc-mobile[data-mod="qms"] .topbar{padding-left:60px;position:relative}
+html.bcc-mobile[data-mod="qms"] .topbar .page-title{font-size:14px}
+html.bcc-mobile[data-mod="qms"] .kpi-grid,html.bcc-mobile[data-mod="qms"] .grid-2,html.bcc-mobile[data-mod="qms"] .grid-3,html.bcc-mobile[data-mod="qms"] .grid-auto,html.bcc-mobile[data-mod="qms"] .form-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="qms"] .field.col3{grid-column:auto !important}
+html.bcc-mobile[data-mod="qms"] .audit-item{grid-template-columns:1fr auto !important;gap:6px}
+html.bcc-mobile[data-mod="qms"] .audit-time{grid-column:1/-1}
+html.bcc-mobile[data-mod="qms"] .content{padding:16px 14px 32px}
+html.bcc-mobile[data-mod="qms"] .modal{max-width:100% !important}
+html.bcc-mobile[data-mod="qms"] .tbl{font-size:12px}
+html.bcc-mobile[data-mod="qms"] .tbl th{padding:7px 9px;font-size:10px}
+html.bcc-mobile[data-mod="qms"] .tbl td{padding:8px 9px}
+html.bcc-mobile[data-mod="qms"] .tbl td.actions{flex-wrap:wrap}
+/* dsr */
+html.bcc-mobile[data-mod="dsr"] .sgrid,html.bcc-mobile[data-mod="dsr"] .mkt-grid,html.bcc-mobile[data-mod="dsr"] .score-grid,html.bcc-mobile[data-mod="dsr"] .audit-ar-grid,html.bcc-mobile[data-mod="dsr"] .fgrid2,html.bcc-mobile[data-mod="dsr"] .role-sw{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="dsr"] .dash-kpi-grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="dsr"] .dkpi{padding:12px 8px !important}
+html.bcc-mobile[data-mod="dsr"] .dkpi-val{font-size:22px !important}
+html.bcc-mobile[data-mod="dsr"] .content-area{padding:12px !important}
+html.bcc-mobile[data-mod="dsr"] .audit-done-view{max-width:100% !important}
+html.bcc-mobile[data-mod="dsr"] .entry-item{width:100% !important;padding:14px 12px !important}
+html.bcc-mobile[data-mod="dsr"] .entry-hdr{flex-wrap:wrap !important;gap:4px 8px !important}
+html.bcc-mobile[data-mod="dsr"] .entry-detail{font-size:13px !important;word-break:break-word !important}
+html.bcc-mobile[data-mod="dsr"] .ptbl,html.bcc-mobile[data-mod="dsr"] .var-tbl{font-size:12px !important}
+html.bcc-mobile[data-mod="dsr"] .ptbl th,html.bcc-mobile[data-mod="dsr"] .ptbl td,html.bcc-mobile[data-mod="dsr"] .var-tbl th,html.bcc-mobile[data-mod="dsr"] .var-tbl td{padding:7px 8px !important;white-space:nowrap}
+/* expense */
+html.bcc-mobile[data-mod="expense"] .wrap{max-width:none !important}
+html.bcc-mobile[data-mod="expense"] .modal{max-width:none !important}
+html.bcc-mobile[data-mod="expense"] .fgrid,html.bcc-mobile[data-mod="expense"] .st-grid,html.bcc-mobile[data-mod="expense"] .deno{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="expense"] .kgrid{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="expense"] .deno-row{grid-template-columns:48px 1fr auto !important;gap:8px}
+html.bcc-mobile[data-mod="expense"] .tabs{-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="expense"] .card-h{flex-wrap:wrap}
+html.bcc-mobile[data-mod="expense"] .card-h .actions{width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="expense"] .card-h .actions>*{flex:0 0 auto}
+html.bcc-mobile[data-mod="expense"] th{padding:7px 7px !important;font-size:11px !important;white-space:nowrap}
+html.bcc-mobile[data-mod="expense"] td{padding:6px 7px !important;font-size:11.5px !important}
+html.bcc-mobile[data-mod="expense"] table{font-size:11.5px !important}
+html.bcc-mobile[data-mod="expense"] .st-row{font-size:12px;gap:8px}
+html.bcc-mobile[data-mod="expense"] .fitem{grid-template-columns:auto 1fr;row-gap:4px}
+/* grooming */
+html.bcc-mobile[data-mod="grooming"] .wrap{max-width:100%}
+html.bcc-mobile[data-mod="grooming"] .frow{flex-direction:column;gap:11px}
+html.bcc-mobile[data-mod="grooming"] .fg{min-width:0}
+html.bcc-mobile[data-mod="grooming"] .statgrid{grid-template-columns:repeat(2,1fr);gap:9px}
+html.bcc-mobile[data-mod="grooming"] .filter-bar{flex-direction:column;align-items:stretch;gap:11px}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .fg{flex:1 1 auto}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .finput{width:100% !important}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .btn2{width:100%;margin-bottom:0 !important}
+html.bcc-mobile[data-mod="grooming"] .mt{font-size:11px}
+html.bcc-mobile[data-mod="grooming"] .mt th,html.bcc-mobile[data-mod="grooming"] .mt td{padding:6px 7px}
+html.bcc-mobile[data-mod="grooming"] .mt th{white-space:normal}
+html.bcc-mobile[data-mod="grooming"] .cro-right{flex-wrap:wrap;justify-content:flex-end}
+/* cro_audit */
+html.bcc-mobile[data-mod="cro_audit"] .sc-grid{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="cro_audit"] .rgroup{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="cro_audit"] .kpi-strip,html.bcc-mobile[data-mod="cro_audit"] .stat-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="cro_audit"] .wrap{max-width:none !important;padding:12px 10px 60px !important}
+html.bcc-mobile[data-mod="cro_audit"] .modal{max-width:none !important}
+html.bcc-mobile[data-mod="cro_audit"] .frow,html.bcc-mobile[data-mod="cro_audit"] .hi-filters{flex-direction:column;gap:9px}
+html.bcc-mobile[data-mod="cro_audit"] .fg{min-width:0 !important;width:100%;flex:1 1 auto}
+html.bcc-mobile[data-mod="cro_audit"] .mrow{flex-wrap:wrap}
+html.bcc-mobile[data-mod="cro_audit"] .mbar-wrap,html.bcc-mobile[data-mod="cro_audit"] .sb-bar,html.bcc-mobile[data-mod="cro_audit"] .thr-bwrap,html.bcc-mobile[data-mod="cro_audit"] .wm-bar-wrap{display:none !important}
+html.bcc-mobile[data-mod="cro_audit"] .minp{width:90px !important;min-height:40px}
+html.bcc-mobile[data-mod="cro_audit"] .ph,html.bcc-mobile[data-mod="cro_audit"] .tabs,html.bcc-mobile[data-mod="cro_audit"] .score-banner{padding-left:12px !important;padding-right:12px !important}
+/* payroll */
+html.bcc-mobile[data-mod="payroll"] .wp{max-width:100% !important;margin:0 !important;padding:12px 10px 84px !important}
+html.bcc-mobile[data-mod="payroll"] .grid{grid-template-columns:1fr !important;gap:10px !important}
+html.bcc-mobile[data-mod="payroll"] .controls{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="payroll"] .summary{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
+html.bcc-mobile[data-mod="payroll"] #pane-slips .stiles{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="payroll"] section[style*="minmax(240px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(220px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(180px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(170px"]{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="payroll"] .hero{flex-direction:column;align-items:flex-start;padding:14px 16px}
+html.bcc-mobile[data-mod="payroll"] .hero-r{width:100%}
+html.bcc-mobile[data-mod="payroll"] .tab-nav{position:static !important;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="payroll"] .tab-btn{padding:0 13px;font-size:11px}
+html.bcc-mobile[data-mod="payroll"] .table-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch;border-radius:10px}
+html.bcc-mobile[data-mod="payroll"] .table-scroll{overflow:auto !important;max-height:none !important}
+html.bcc-mobile[data-mod="payroll"] thead th{padding:6px 4px;font-size:9px}
+html.bcc-mobile[data-mod="payroll"] tbody td,html.bcc-mobile[data-mod="payroll"] tfoot td{padding:4px 3px}
+html.bcc-mobile[data-mod="payroll"] td input,html.bcc-mobile[data-mod="payroll"] td select,html.bcc-mobile[data-mod="payroll"] td textarea{font-size:13px;padding:5px 4px}
+html.bcc-mobile[data-mod="payroll"] td.calc-cell,html.bcc-mobile[data-mod="payroll"] td.final-cell,html.bcc-mobile[data-mod="payroll"] td.total-cell,html.bcc-mobile[data-mod="payroll"] td.locked,html.bcc-mobile[data-mod="payroll"] td.earn-cell,html.bcc-mobile[data-mod="payroll"] td.ded-cell,html.bcc-mobile[data-mod="payroll"] td.net-cell,html.bcc-mobile[data-mod="payroll"] td.ctc-cell,html.bcc-mobile[data-mod="payroll"] td.final-pay-cell,html.bcc-mobile[data-mod="payroll"] td.advance-cell{font-size:10px;padding:4px 3px}
+html.bcc-mobile[data-mod="payroll"] #pane-slips .stbl-wrap{max-height:none}
+html.bcc-mobile[data-mod="payroll"] .sheet-actions{flex-direction:column;align-items:stretch}
+html.bcc-mobile[data-mod="payroll"] .left-actions,html.bcc-mobile[data-mod="payroll"] .right-actions{justify-content:flex-start}
+/* leave */
+html.bcc-mobile[data-mod="leave"] .cal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="leave"] .day-headers,html.bcc-mobile[data-mod="leave"] .cal-grid{min-width:336px}
+html.bcc-mobile[data-mod="leave"] .cal-cell{min-height:92px;padding:6px 5px}
+html.bcc-mobile[data-mod="leave"] .leave-chip{font-size:9.5px}
+html.bcc-mobile[data-mod="leave"] .stats-strip{flex-direction:column !important}
+html.bcc-mobile[data-mod="leave"] .stats-strip .stat-card{flex:1 1 100% !important;min-width:0 !important}
+html.bcc-mobile[data-mod="leave"] .capacity-grid,html.bcc-mobile[data-mod="leave"] .form-grid,html.bcc-mobile[data-mod="leave"] .detail-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="leave"] main{max-width:100% !important;padding:13px !important}
+html.bcc-mobile[data-mod="leave"] .modal,html.bcc-mobile[data-mod="leave"] .modal-wide,html.bcc-mobile[data-mod="leave"] .modal-xl{max-width:100% !important}
+html.bcc-mobile[data-mod="leave"] .cal-nav{flex-wrap:wrap}
+html.bcc-mobile[data-mod="leave"] .month-label{min-width:0;font-size:22px}
+html.bcc-mobile[data-mod="leave"] .leave-chip,html.bcc-mobile[data-mod="leave"] .agenda-mini{white-space:normal}
+/* tax */
+html.bcc-mobile[data-mod="tax"] .wp,html.bcc-mobile[data-mod="tax"] .dash-wrap{max-width:none !important;margin:0 !important;padding:14px 10px 60px !important}
+html.bcc-mobile[data-mod="tax"] .mhd-note,html.bcc-mobile[data-mod="tax"] .cos-banner-sub,html.bcc-mobile[data-mod="tax"] .modal{max-width:100% !important}
+html.bcc-mobile[data-mod="tax"] .cos-grid,html.bcc-mobile[data-mod="tax"] .dash-grid-2,html.bcc-mobile[data-mod="tax"] .owner-grid,html.bcc-mobile[data-mod="tax"] .ng,html.bcc-mobile[data-mod="tax"] .ff-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="tax"] .focus-row{grid-template-columns:1fr !important;gap:4px !important;padding:10px 0 !important}
+html.bcc-mobile[data-mod="tax"] .dash-stats{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="tax"] .mb-row{grid-template-columns:1fr 1fr !important;gap:2px 10px !important;padding:10px 12px !important}
+html.bcc-mobile[data-mod="tax"] .mb-row.header{display:none !important}
+html.bcc-mobile[data-mod="tax"] .mb-row .mb-num:last-child{display:block !important}
+html.bcc-mobile[data-mod="tax"] .view-tabs,html.bcc-mobile[data-mod="tax"] .q-tabs{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
+`;
+function injectMobileMode(html, moduleId){
+  const mid = JSON.stringify(String(moduleId));
+  const css = '<style id="st-v5-mobile-css">'+MOBILE_CSS+'</style>';
+  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});window.addEventListener("message",function(e){if(e&&e.data&&e.data.type==="ST_UI_MODE")ap(e.data.mode);});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
+  const frag = css + boot;
+  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+frag);
+  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, frag+'\n</head>');
+  return frag + html;
+}
+
 /* Interaction safety net — installed FIRST in every module so an out-of-sequence
    tap (e.g. Save before selecting a row) can never freeze the screen. It does
    NOT hide bugs: the error is still logged to the console; the user just gets a
@@ -3628,10 +3841,32 @@ document.addEventListener('keydown', e => {
 /* ═══════════════════════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════════════════════ */
+/* ── UI MODE (Desktop ⇄ Mobile display toggle) ───────────────────────────────
+   Persisted per device (saagar_ui_mode); DEFAULT 'mobile' on first launch. Toggling
+   adds/removes html.bcc-mobile on the shell + the open module iframe (the iframe also
+   self-applies from localStorage via its injected boot script + storage events).
+   Desktop = no class = the exact layout we shipped. */
+const UI_MODE_KEY='saagar_ui_mode';
+function getUiMode(){ try{ var m=safeGet(UI_MODE_KEY); return m==='desktop'?'desktop':'mobile'; }catch(e){ return 'mobile'; } }
+function applyUiModeToFrame(){
+  try{ var f=$('moduleFrame'); var d=f&&f.contentDocument;
+    if(d&&d.documentElement) d.documentElement.classList.toggle('bcc-mobile', getUiMode()==='mobile');
+    try{ if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_UI_MODE',mode:getUiMode()},'*'); }catch(e){}
+  }catch(e){}
+}
+function reflectUiModeUI(){ var m=getUiMode();
+  try{ document.documentElement.classList.toggle('bcc-mobile', m==='mobile'); }catch(e){}
+  try{ var ic=$('uiModeIcon'); if(ic) ic.textContent=(m==='mobile'?'📱':'🖥'); var b=$('uiModeBtn'); if(b) b.title='Layout: '+(m==='mobile'?'Mobile':'Desktop')+' — tap to switch'; }catch(e){}
+  try{ var segs=document.querySelectorAll('#uiModeSeg .seg-btn'); for(var i=0;i<segs.length;i++){ segs[i].classList.toggle('active', segs[i].getAttribute('data-mode')===m); } }catch(e){}
+}
+function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop') return; try{ safeSet(UI_MODE_KEY, mode); }catch(e){} reflectUiModeUI(); applyUiModeToFrame(); try{ toast((mode==='mobile'?'📱 Mobile':'🖥 Desktop')+' layout'); }catch(e){} }
+function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
+
 (function init(){
   // Restore admin mode from session
   isAdmin = safeGet(ADMIN_MODE_KEY)==='true';
   applyMode();
+  reflectUiModeUI();
 
   // Validate modules array
   if(!Array.isArray(MODULES) || !MODULES.length){

@@ -93,13 +93,13 @@
           var t=(c.exitTime||c.entryTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):d;
           var cro=cros[c.assignedCroId]||cros[c.allocatedCroId]||cros[c.croId]||c.croName||c.allocatedCroName||'';
           var type= out==='purchase'?'SALE_CLOSED' : out==='service'?'SERVICE_CLOSED' : 'NONPURCHASE_CLOSED';
-          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCard||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
+          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCardNo||c.jobCard||'',prod:c.purchaseCategory||c.productInterest||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
         });
       } }catch(e){}
     // leave approved (today + tomorrow window) → LEAVE_APPROVED
     try{ var lv=L(LEAVE,null);
       if(lv&&lv.leaves){ Object.keys(lv.leaves).forEach(function(dk){
-        (lv.leaves[dk]||[]).forEach(function(l){ var n=nm(l.staffName||l.empId||''); if(!n) return;
+        (lv.leaves[dk]||[]).forEach(function(l){ var n=nm(l.staffName||l.name||l.empId||''); if(!n) return;
           emitted+=emit(bus,'LEAVE_APPROVED',dk+':'+kk(n),{name:n,date:dk,type:l.type||'full_day'},'leave')?1:0; });
       }); } }catch(e){}
     // DSR submitted → DSR_SUBMITTED
@@ -138,7 +138,7 @@
       var ed=ensureDsr(p.date,p.cro);
       if(kind==='sale'||kind==='service'){
         if(hasRef(ed.r.sales,p.cid)) { track[p.cid]=track[p.cid]||{at:e.at}; return true; }
-        ed.r.sales.push({amount:p.amount||0,billNo:p.bill||'',customer:p.cust||'',mobile:p.mobile||'',type:kind==='service'?'service':'sale',source:'qms',sourceRef:p.cid,_confirmed:false});
+        ed.r.sales.push({amount:p.amount||0,billNo:p.bill||'',product:p.prod||(kind==='service'?'Service':'QMS Sale'),customer:p.cust||'',mobile:p.mobile||'',type:kind==='service'?'service':'sale',source:'qms',sourceRef:p.cid,_confirmed:false});
       } else {
         if(hasRef(ed.r.nonpurch,p.cid)) { track[p.cid]=track[p.cid]||{at:e.at}; return true; }
         ed.r.nonpurch.push({customer:p.cust||'',mobile:p.mobile||'',reason:p.reason||'non-purchase',source:'qms',sourceRef:p.cid,_confirmed:false});
