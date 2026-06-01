@@ -695,6 +695,8 @@ body.admin-on .admin-dot{display:block}
 .seg-btn{flex:1;padding:11px 12px;border:1.5px solid #d4d4d8;background:#fff;border-radius:10px;font:700 13px 'DM Sans',sans-serif;color:#52525b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .seg-btn.active{border-color:#0d2340;background:#0d2340;color:#fff}
 #uiModeBtn span{font-size:18px;line-height:1}
+.role-select{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;font:600 12px 'DM Sans',sans-serif;padding:5px 8px;max-width:140px}
+.role-select option{color:#111}
 /* Shell chrome in Mobile mode: keep content a comfortable centered column even on a wide screen */
 html.bcc-mobile .main{max-width:560px;margin-left:auto;margin-right:auto}
 /* B: keep the Business-Modules grid single-column in Mobile mode so the 560px clamp is never
@@ -719,6 +721,7 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
       </div>
     </div>
     <div class="top-actions">
+      <select id="roleSelect" class="role-select" onchange="setCurrentRole(this.value)" title="Current role (device)" aria-label="Current role"></select>
       <button class="icon-btn" id="uiModeBtn" onclick="toggleUiMode()" title="Switch Mobile / Desktop layout"><span id="uiModeIcon">📱</span></button>
       <button class="icon-btn" onclick="shareTodayBrief()" title="Share today's brief">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -1007,6 +1010,20 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
             <button class="btn" id="adminModeBtn" onclick="toggleAdminMode()">Unlock admin</button>
           </div>
         </div>
+        <div class="card card-pad">
+          <h4><span class="em">🎭</span> Current role (this device)</h4>
+          <p>Pick who is using this device. Each role only opens the modules enabled for it below. The Owner (admin mode) always sees everything.</p>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+            <select id="cfgRoleSelect" onchange="setCurrentRole(this.value);renderConfigAdmin()" style="padding:8px 10px;border:1px solid var(--gray-300);border-radius:8px;font-size:13px;min-width:160px"></select>
+            <span class="sub" id="cfgRoleHint"></span>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">🗝️</span> Module access by role</h4>
+          <p>Turn each module on or off per role. Owner &amp; Store Manager default to all. Changes apply the next time a module is opened.</p>
+          <div id="roleAccessMatrix" style="margin-top:10px"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn small" onclick="resetRoleAccessDefaults()">Reset to defaults</button></div>
+        </div>
         <div class="card card-pad adminOnly">
           <h4><span class="em">🔑</span> Change admin PIN</h4>
           <p>Update the PIN used to unlock admin tools on this device.</p>
@@ -1200,6 +1217,28 @@ const FIRM_NAME_TO_CODE = {
      so any pre-existing employee/expense rows still map to Saagar Traders, never "Unassigned". */
   "helios by saagar":"SAT","helios":"SAT","titan world":"SAT","gold mart":"SAT","gm":"SAT"
 };
+/* ── ROLES & ACCESS (G): per-device role×module matrix. Owner (admin mode) bypasses all.
+   Default current role = "Store Manager" (= ALL modules) so a fresh device is never locked out. ── */
+const ROLE_ACCESS_KEY  = "saagar_role_access_v1";
+const CURRENT_ROLE_KEY = "saagar_current_role_v1";
+const ACCESS_ROLES = ["Store Manager","Cashier","CRO","Greeter","Technician","Assistant Technician","Trainee","Others"];
+const ACCESS_MODULES = ["stock","service","qms","dsr","expense","grooming","cro_audit","payroll","leave","tax"];
+function defaultRoleAccess(){
+  const ALL=()=>ACCESS_MODULES.reduce((o,m)=>(o[m]=true,o),{});
+  const ONLY=(...ids)=>ACCESS_MODULES.reduce((o,m)=>(o[m]=ids.includes(m),o),{});
+  return { "Store Manager":ALL(), "Cashier":ONLY("expense"), "CRO":ONLY("qms","dsr","grooming","cro_audit"),
+    "Greeter":ONLY("qms"), "Technician":ONLY("service"), "Assistant Technician":ONLY("service"),
+    "Trainee":ONLY("qms","dsr"), "Others":ONLY() };
+}
+function loadRoleAccess(){ let m=tryJSON(safeGet(ROLE_ACCESS_KEY)); const def=defaultRoleAccess();
+  if(!m||typeof m!=='object') m=def;
+  ACCESS_ROLES.forEach(r=>{ if(!m[r]||typeof m[r]!=='object') m[r]=def[r]||{}; ACCESS_MODULES.forEach(id=>{ if(typeof m[r][id]!=='boolean') m[r][id]=!!(def[r]&&def[r][id]); }); });
+  return m;
+}
+function saveRoleAccess(m){ safeSet(ROLE_ACCESS_KEY, JSON.stringify(m)); try{ auditLog('roles.access.save',{}); }catch(e){} }
+function currentRole(){ const r=safeGet(CURRENT_ROLE_KEY); return ACCESS_ROLES.includes(r)?r:"Store Manager"; }
+function setCurrentRole(r){ if(ACCESS_ROLES.includes(r)){ safeSet(CURRENT_ROLE_KEY, r); try{ auditLog('roles.current.set',{role:r}); }catch(e){} } applyMode(); }
+function roleCanOpen(id){ if(isAdmin) return true; const m=loadRoleAccess(); const row=m[currentRole()]||{}; return row[id]===true; }
 
 /* ═══════════════════════════════════════════════════════════════════════
    STATE
@@ -1297,6 +1336,8 @@ function applyMode(){
   const n1=$('adminLockedNote'); if(n1) n1.classList.toggle('hidden', isAdmin);
   const n2=$('adminLockedBackup'); if(n2) n2.classList.toggle('hidden', isAdmin);
   const pBtn=$('protectedModulesBtn'); if(pBtn) pBtn.textContent = protectedModulesEnabled()?'Disable protection':'Enable protection';
+  const rs=$('roleSelect');
+  if(rs){ if(!rs.options.length){ rs.innerHTML = ACCESS_ROLES.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join(''); } rs.value=currentRole(); rs.title = isAdmin ? 'Owner (admin) — bypasses role limits' : 'Current role: '+currentRole(); }
 }
 function setAdmin(v){ isAdmin = !!v; safeSet(ADMIN_MODE_KEY, String(isAdmin)); applyMode(); }
 function promptNewPin(){
@@ -1338,7 +1379,8 @@ function toggleProtectedModules(){
   applyMode();
 }
 function ensureModuleAccess(id){
-  if(isAdmin) return true;
+  if(isAdmin) return true;                       // Owner / super-admin bypasses everything
+  if(!roleCanOpen(id)){ const m=moduleById(id); toast((m?m.short:'This module')+' is not enabled for the '+currentRole()+' role'); return false; }
   if(!protectedModulesEnabled()) return true;
   if(!['payroll','tax'].includes(id)) return true;
   toast('Admin PIN required for this module'); unlockAdmin();
@@ -3304,7 +3346,21 @@ function renderConfigBackup(){
       }).join('')}</tbody></table></div>`;
 }
 
-function renderConfigAdmin(){ applyMode(); }
+function renderConfigAdmin(){
+  applyMode();
+  const sel=$('cfgRoleSelect');
+  if(sel){ sel.innerHTML = ACCESS_ROLES.map(r=>`<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join(''); sel.value=currentRole(); }
+  const hint=$('cfgRoleHint'); if(hint) hint.textContent = isAdmin ? 'Owner (admin) is active — role limits are bypassed.' : 'Active role: '+currentRole();
+  const host=$('roleAccessMatrix'); if(!host) return;
+  const m=loadRoleAccess();
+  const modMeta = ACCESS_MODULES.map(id=>{ const mm=moduleById(id); return {id, label: mm?mm.short:id}; });
+  let h='<div style="overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:6px;border-bottom:2px solid var(--gray-200);position:sticky;left:0;background:var(--white)">Role</th>'+modMeta.map(c=>`<th style="padding:6px 4px;border-bottom:2px solid var(--gray-200);white-space:nowrap">${escapeHtml(c.label)}</th>`).join('')+'</tr></thead><tbody>';
+  ACCESS_ROLES.forEach(role=>{ h+=`<tr><td style="padding:6px;font-weight:700;white-space:nowrap;position:sticky;left:0;background:var(--white)">${escapeHtml(role)}</td>`+modMeta.map(c=>{ const on=m[role]&&m[role][c.id]===true; return `<td style="text-align:center;padding:5px 4px"><input type="checkbox" ${on?'checked':''} onchange="toggleRoleAccess('${escapeHtml(role)}','${c.id}',this.checked)"></td>`; }).join('')+'</tr>'; });
+  h+='</tbody></table></div><p class="sub" style="margin-top:6px">Owner (admin mode) ignores this matrix and always sees every module.</p>';
+  host.innerHTML=h;
+}
+function toggleRoleAccess(role,id,on){ const m=loadRoleAccess(); if(!m[role]) m[role]={}; m[role][id]=!!on; saveRoleAccess(m); try{ toast(role+' · '+((moduleById(id)||{}).short||id)+': '+(on?'enabled':'disabled')); }catch(e){} }
+function resetRoleAccessDefaults(){ if(!confirm('Reset all role→module access to the recommended defaults?')) return; saveRoleAccess(defaultRoleAccess()); renderConfigAdmin(); try{ toast('Role access reset to defaults'); }catch(e){} }
 
 function renderDiagnostics(){
   const checks = runDiagnostics(false);
