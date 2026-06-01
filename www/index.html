@@ -1276,7 +1276,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,"saagar_owner_name"]; }
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,"saagar_owner_name"]; }
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
 function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
@@ -1482,7 +1482,12 @@ function getEmployeeMaster(){
   }catch(e){ return []; }
 }
 function saveEmployeeMaster(list){
-  const clean=consolidateEmployees(list).map(e=>({...e,updatedAt:new Date().toISOString()}));
+  // Defensive net for EVERY write path (inline edit, import, merge, form): the owner is the
+  // super-admin and is NEVER an employee row. Guard here so no single path can violate it.
+  const own=normLower(ownerName());
+  const clean=consolidateEmployees(list)
+    .filter(e=> !own || normLower(e.name)!==own)
+    .map(e=>({...e,updatedAt:new Date().toISOString()}));
   safeSet(EMP_MASTER_KEY, JSON.stringify(clean));
   return clean;
 }
@@ -1498,7 +1503,8 @@ function mergeEmployees(base, incoming){
 }
 function detectEmployeesFromModules(){
   const found=[];
-  const push = obj => { const e=normalizeEmployee(obj); if(e.name) found.push(e); };
+  const own=normLower(ownerName());
+  const push = obj => { const e=normalizeEmployee(obj); if(e.name && !(own && normLower(e.name)===own)) found.push(e); };
   const payroll = tryJSON(safeGet('payroll_suite_v1_2026'));
   if (payroll && Array.isArray(payroll.rows)){
     payroll.rows.forEach(r=>{
@@ -3029,6 +3035,7 @@ function saveEmpRow(i){
   });
   list[i] = normalizeEmployee(list[i]);
   if(!list[i].name){ toast('Name cannot be blank'); return; }
+  if(ownerName() && normLower(list[i].name)===normLower(ownerName())){ toast('The owner is the super-admin, not an employee'); renderConfigEmployees(); return; }
   saveEmployeeMaster(list);
   auditLog('employee.update',{name:list[i].name, employeeId:list[i].employeeId}, before, list[i]);
   toast('Employee saved'); renderConfigEmployees();
