@@ -844,20 +844,24 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
           <div class="note-banner">Edit existing entries or import detected names from saved module data. Sync is safe — it won't delete attendance or leave records.</div>
           <div class="field-grid">
             <div class="field"><label>Full name *</label><input id="emName" placeholder="e.g. Ravi Kumar"></div>
-            <div class="field"><label>Employee ID</label><input id="emEmpId" placeholder="EMP001"></div>
+            <div class="field"><label>Employee code (auto)</label><input id="emEmpId" placeholder="EMP001" readonly style="background:var(--gray-100);color:var(--gray-600)"><input type="hidden" id="emEditId"></div>
             <div class="field"><label>Firm</label><select id="emFirm"></select></div>
-            <div class="field"><label>Department</label><input id="emDept" placeholder="Sales / Admin"></div>
-            <div class="field"><label>Role</label><input id="emRole" placeholder="CRO / Tech / Cashier"></div>
+            <div class="field"><label>Store</label><select id="emStore"></select></div>
+            <div class="field"><label>Department</label><select id="emDept"></select></div>
+            <div class="field"><label>Role</label><select id="emRole"></select></div>
             <div class="field"><label>Gender</label><select id="emGender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></select></div>
             <div class="field"><label>Salary (₹/month)</label><input id="emSalary" type="number" step="0.01" min="0"></div>
             <div class="field"><label>Salary type</label><select id="emSalaryType"><option value="">—</option><option value="S">Structured</option><option value="B">Basic</option></select></div>
             <div class="field"><label>Phone</label><input id="emPhone" placeholder="Mobile"></div>
             <div class="field"><label>Joining date</label><input id="emJoin" type="date"></div>
+            <div class="field"><label>Bank name</label><input id="emBank" placeholder="HDFC / SBI"></div>
+            <div class="field"><label>A/C number</label><input id="emAcc" placeholder="Account no."></div>
+            <div class="field"><label>IFSC</label><input id="emIfsc" placeholder="HDFC0001234"></div>
             <div class="field full"><label>Notes</label><input id="emNotes" placeholder="Optional notes"></div>
           </div>
           <div style="display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end">
             <button class="btn small" onclick="showEmployeeImport()">Import detected</button>
-            <button class="btn primary small" onclick="addEmployeeMasterFromForm()">Add employee</button>
+            <button class="btn primary small" id="emFormBtn" onclick="addEmployeeMasterFromForm()">Add employee</button>
             <button class="btn green small" onclick="syncEmployeeMasterAll()">Sync Payroll + Leave</button>
           </div>
         </div>
@@ -1182,6 +1186,10 @@ const ACTIVITY_KEY      = "st_v3_activity_log";
 const AUDIT_LOG_KEY     = "st_v4_audit_log";
 const RESTORE_ROLLBACK_PREFIX = "st_v4_restore_rollback_";
 const OWNER_NAME_KEY    = "st_v5_owner_name";
+const ROLE_MASTER_KEY = "saagar_role_master_v1";
+const DEFAULT_ROLES = ["Store Manager","Cashier","CRO","Greeter","Technician","Assistant Technician","Trainee","Others"];
+const DEPT_OPTIONS  = ["Sales","Service","Support","Admin"];
+const STORE_OPTIONS = ["Titan World","Helios"];
 const FIRM_OPTIONS = [
   {code:"",   name:"Unassigned"},
   {code:"GM", name:"Gold Mart"},
@@ -1352,6 +1360,12 @@ function _orgFirms(){ try{ var fs=(loadOrg().firms||[]).filter(function(f){retur
 function firmPickOptions(){ return [{code:'',name:'Unassigned'}].concat(_orgFirms().map(function(f){return {code:f.code,name:f.name||f.code};})); }
 function firmCode(v){ const raw=normText(v); if(!raw) return ''; const up=raw.toUpperCase(); const of=_orgFirms(); if(of.some(f=>f.code===up)||FIRM_OPTIONS.some(f=>f.code===up)) return up; const byName=of.find(f=>normLower(f.name)===normLower(raw)); if(byName) return byName.code; return FIRM_NAME_TO_CODE[normLower(raw)]||''; }
 function firmName(code){ if(!code) return 'Unassigned'; const f=_orgFirms().find(x=>x.code===code)||FIRM_OPTIONS.find(x=>x.code===code); return f?(f.name||code):code; }
+/* C1: auto employee code = next EMP00N (max existing +1). */
+function nextEmployeeId(list){ list=list||getEmployeeMaster(); let max=0; (list||[]).forEach(e=>{ const m=/^EMP(\d+)$/i.exec(String((e&&e.employeeId)||'').trim()); if(m){ const n=parseInt(m[1],10); if(n>max) max=n; } }); return 'EMP'+String(max+1).padStart(3,'0'); }
+/* D: role master (8 default roles, user-extendable). */
+function getRoleMaster(){ try{ const r=tryJSON(safeGet(ROLE_MASTER_KEY)); if(Array.isArray(r)&&r.length) return r.map(x=>normText(x)).filter(Boolean); }catch(e){} return DEFAULT_ROLES.slice(); }
+function seedRoleMaster(){ if(!safeGet(ROLE_MASTER_KEY)) safeSet(ROLE_MASTER_KEY, JSON.stringify(DEFAULT_ROLES)); }
+function optionList(values, current){ return ['<option value="">—</option>'].concat((values||[]).map(v=>`<option value="${escapeHtml(v)}" ${normLower(v)===normLower(current||'')?'selected':''}>${escapeHtml(v)}</option>`)).join(''); }
 function normalizeEmployee(e={}){
   const name = normText(e.name||e.fullName||e.employeeName||'');
   const employeeId = normText(e.employeeId||e.empId||e.idCode||'');
@@ -1371,6 +1385,10 @@ function normalizeEmployee(e={}){
     firm: firmCode(e.firm||e.company||e.departmentFirm||''),
     department: normText(e.department||e.dept||''),
     role: normText(e.role||e.designation||''),
+    store: normText(e.store||''),
+    bankName: normText(e.bankName||''),
+    accountNo: normText(e.accountNo||e.accNo||''),
+    ifsc: normText(e.ifsc||'').toUpperCase(),
     gender, salaryType, monthlySalary,
     joiningDate: normText(e.joiningDate||e.joinDate||''),
     phone: normText(e.phone||e.mobile||''),
@@ -2857,11 +2875,15 @@ function shareText(text, fileBase){
 function renderConfigPage(){ applyMode(); populateResetSelect(); switchConfigTab(activeConfigTab||'employees'); }
 
 function renderConfigEmployees(){
+  seedRoleMaster();
+  if(!ownerName()) safeSet(OWNER_NAME_KEY, "Sagar Sanjay Bora");   // E: default super-admin owner
   // Firm select
   const firmSel = $('emFirm');
   if(firmSel && !firmSel.options.length){
     firmSel.innerHTML = firmPickOptions().map(f=>`<option value="${f.code}">${escapeHtml(f.name)}</option>`).join('');
   }
+  populateEmployeeFormSelects();
+  if($('emEmpId') && !($('emEditId')&&$('emEditId').value)) $('emEmpId').value = nextEmployeeId();
   // Stats
   const stats = employeeStats();
   const pp = payrollSyncPreview(); const lp = leaveSyncPreview();
@@ -2886,25 +2908,46 @@ function renderConfigEmployees(){
           <td><input data-emp-field="name" value="${escapeHtml(e.name)}"></td>
           <td><input data-emp-field="employeeId" value="${escapeHtml(e.employeeId)}" style="width:80px"></td>
           <td><select data-emp-field="firm">${firmPickOptions().map(f=>`<option value="${f.code}" ${e.firm===f.code?'selected':''}>${escapeHtml(f.name)}</option>`).join('')}</select></td>
-          <td><input data-emp-field="department" value="${escapeHtml(e.department)}" style="width:90px"></td>
-          <td><input data-emp-field="role" value="${escapeHtml(e.role)}" style="width:90px"></td>
+          <td><select data-emp-field="department" style="width:96px">${optionList(DEPT_OPTIONS, e.department)}</select></td>
+          <td><select data-emp-field="role" style="width:110px">${optionList(getRoleMaster(), e.role)}</select></td>
           <td class="num"><input data-emp-field="monthlySalary" type="number" step="0.01" value="${e.monthlySalary||0}" style="width:90px;text-align:right"></td>
           <td><select data-emp-field="salaryType"><option value="" ${!e.salaryType?'selected':''}>—</option><option value="S" ${e.salaryType==='S'?'selected':''}>S</option><option value="B" ${e.salaryType==='B'?'selected':''}>B</option></select></td>
           <td>${e.archived?'<span class="emp-badge archived">Archived</span>':e.active?'<span class="emp-badge active">Yes</span>':'<span class="emp-badge inactive">No</span>'}</td>
-          <td><button class="btn tiny" onclick="saveEmpRow(${i})">Save</button>
-              <button class="btn tiny" onclick="toggleEmpActive(${i})">${e.active?'Hide':'Show'}</button>
+          <td><button class="btn tiny" onclick="editEmployee(${i})">✎ Edit</button>
+              <button class="btn tiny" onclick="saveEmpRow(${i})">Save</button>
+              <button class="btn tiny ${e.active?'':'green'}" onclick="toggleEmpActive(${i})">${e.active?'Deactivate':'Activate'}</button>
               ${!e.archived?`<button class="btn tiny red" onclick="archiveEmpRow(${i})">Archive</button>`:''}</td>
         </tr>`).join('')}
       </tbody></table></div>`;
+}
+function populateEmployeeFormSelects(){
+  if($('emRole'))  $('emRole').innerHTML  = optionList(getRoleMaster(), $('emRole').value);
+  if($('emDept'))  $('emDept').innerHTML  = optionList(DEPT_OPTIONS,   $('emDept').value);
+  if($('emStore')) $('emStore').innerHTML = optionList(STORE_OPTIONS,  $('emStore').value);
+}
+function editEmployee(i){
+  const e = getEmployeeMaster()[i]; if(!e) return;
+  $('emName').value=e.name||''; $('emEmpId').value=e.employeeId||''; if($('emEditId')) $('emEditId').value=e.employeeId||'';
+  $('emFirm').value=e.firm||''; $('emGender').value=e.gender||''; $('emSalary').value=e.monthlySalary||''; $('emSalaryType').value=e.salaryType||'';
+  $('emPhone').value=e.phone||''; $('emJoin').value=e.joiningDate||''; $('emNotes').value=e.notes||'';
+  if($('emBank')) $('emBank').value=e.bankName||''; if($('emAcc')) $('emAcc').value=e.accountNo||''; if($('emIfsc')) $('emIfsc').value=e.ifsc||'';
+  populateEmployeeFormSelects();
+  if($('emDept')) $('emDept').value=e.department||''; if($('emRole')) $('emRole').value=e.role||''; if($('emStore')) $('emStore').value=e.store||'';
+  const btn=$('emFormBtn'); if(btn) btn.textContent='Update employee';
+  try{ $('emName').scrollIntoView({behavior:'smooth',block:'center'}); }catch(_){}
+  $('emName').focus();
 }
 function addEmployeeMasterFromForm(){
   const name = ($('emName').value||'').trim();
   if(!name){ toast('Name is required'); return; }
   const list = getEmployeeMaster();
+  const editId = (($('emEditId') && $('emEditId').value) || '').trim();
+  if(ownerName() && normLower(name)===normLower(ownerName())){ toast('The owner is the super-admin, not an employee'); return; }
   const incoming = normalizeEmployee({
     name,
-    employeeId: $('emEmpId').value,
+    employeeId: editId || nextEmployeeId(list),
     firm: $('emFirm').value,
+    store: $('emStore') ? $('emStore').value : '',
     department: $('emDept').value,
     role: $('emRole').value,
     gender: $('emGender').value,
@@ -2912,18 +2955,23 @@ function addEmployeeMasterFromForm(){
     salaryType: $('emSalaryType').value,
     phone: $('emPhone').value,
     joiningDate: $('emJoin').value,
+    bankName: $('emBank') ? $('emBank').value : '',
+    accountNo: $('emAcc') ? $('emAcc').value : '',
+    ifsc: $('emIfsc') ? $('emIfsc').value : '',
     notes: $('emNotes').value,
     source: 'Manual',
     active: true
   });
   const before = list.slice();
   const idx = findEmployeeIndex(list, incoming);
-  if(idx>=0){ list[idx] = combineEmployee(list[idx], incoming); }
+  if(idx>=0){ if(editId){ incoming.id = list[idx].id; list[idx] = incoming; } else { list[idx] = combineEmployee(list[idx], incoming); } }
   else { list.push(incoming); }
   saveEmployeeMaster(list);
-  auditLog('employee.add', { name:incoming.name }, before, list);
-  ['emName','emEmpId','emDept','emRole','emSalary','emPhone','emJoin','emNotes'].forEach(id=>{ if($(id)) $(id).value=''; });
-  toast('Employee saved');
+  auditLog(editId?'employee.update':'employee.add', { name:incoming.name, employeeId:incoming.employeeId }, before, list);
+  ['emName','emEmpId','emEditId','emSalary','emPhone','emJoin','emBank','emAcc','emIfsc','emNotes'].forEach(id=>{ if($(id)) $(id).value=''; });
+  ['emFirm','emStore','emDept','emRole','emGender','emSalaryType'].forEach(id=>{ if($(id)) $(id).selectedIndex=0; });
+  const _ab=$('emFormBtn'); if(_ab) _ab.textContent='Add employee';
+  toast(editId?'Employee updated':'Employee saved');
   renderConfigEmployees();
 }
 function saveEmpRow(i){
