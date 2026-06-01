@@ -88,10 +88,14 @@
       if(q&&Array.isArray(q.customers)){
         var cros={}; (q.cros||[]).forEach(function(c){if(c)cros[c.id]=c.name;});
         q.customers.forEach(function(c){
-          if(!c) return; var out=(c.outcome||'').toLowerCase(); if(!out&&c.status!=='closed') return; if(!out) return;
+          if(!c) return; var out=(c.outcome||'').toLowerCase();
           var cid=c.id||c.mobile; if(!cid) return;
           var t=(c.exitTime||c.entryTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):d;
           var cro=cros[c.assignedCroId]||cros[c.allocatedCroId]||cros[c.croId]||c.croName||c.allocatedCroName||'';
+          var isClosed=/closed/i.test(String(c.status||''));
+          // O1: allocated-but-not-closed → DSR Visitors tab (staff marks purchase/non-purchase there)
+          if(!out && !isClosed && cro){ emitted+=emit(bus,'QMS_ALLOCATED',String(cid),{cid:cid,cro:cro,date:dt,cust:c.name||'',mobile:c.mobile||'',queueNo:c.queueNo||'',visit:c.visitType||'',prod:c.productInterest||''},'qms')?1:0; }
+          if(!out&&!isClosed) return; if(!out) return;
           var type= out==='purchase'?'SALE_CLOSED' : out==='service'?'SERVICE_CLOSED' : 'NONPURCHASE_CLOSED';
           emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCardNo||c.jobCard||'',prod:c.purchaseCategory||c.productInterest||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
         });
@@ -153,6 +157,26 @@
     return n;
   }
 
+  /* O1: allocated-but-not-closed QMS customers → DSR record's visitors[] (a "Visitors" tab where
+     staff mark Purchase/Non-purchase). Deduped by QMS customer id; if the lead is later closed in
+     QMS, reflect that outcome unless staff already marked it. */
+  function consumeQmsAllocatedToDsr(bus){
+    var closedCid={};
+    bus.forEach(function(e){ if(/^(SALE|SERVICE|NONPURCHASE)_CLOSED$/.test(e.type)){ var p=e.payload||{}; if(p.cid) closedCid[String(p.cid)]={out:e.type}; } });
+    var n=consume(bus,'QMS_ALLOCATED','dsrvis',function(e){
+      var p=e.payload||{}; if(!p.cro||!p.date||!p.cid) return false;
+      var ed=ensureDsr(p.date,p.cro); var r=ed.r; if(!Array.isArray(r.visitors)) r.visitors=[];
+      var cid=String(p.cid);
+      var row=r.visitors.filter(function(v){return v&&String(v.sourceRef)===cid;})[0];
+      if(!row){ row={sourceRef:cid,customer:p.cust||'',mobile:p.mobile||'',queueNo:p.queueNo||'',visit:p.visit||'',product:p.prod||'',outcome:null,source:'qms',at:new Date().toISOString()}; r.visitors.push(row); }
+      var cl=closedCid[cid];
+      if(cl && !row._staffMarked){ row.outcome = cl.out==='SALE_CLOSED'?'purchase':(cl.out==='SERVICE_CLOSED'?'service':'nonpurchase'); row.resolvedBy='qms'; }
+      S(ed.k,r); return true;
+    });
+    if(n) blog('QMS allocated → DSR visitors '+n);
+    return n;
+  }
+
   function computeGate(bus){
     var d=today(), blocked=[], cleared=[], seen={}, C=cfg();
     bus.forEach(function(e){
@@ -166,8 +190,13 @@
         var n=e.payload.name; if(!seen[kk(n)]){ blocked.push({name:n,why:'on leave'}); seen[kk(n)]=1; }
       }
     });
-    var prev=L(GATE,null), status={date:d,blocked:blocked,cleared:cleared,generatedAt:new Date().toISOString()};
-    if(!prev||prev.date!==d||JSON.stringify(prev.blocked)!==JSON.stringify(blocked)){ S(GATE,status); if(blocked.length) blog('gate: '+blocked.length+' blocked'); }
+    // J: per-name "unavailable today" map so consumers filter dropdowns in one lookup. Leave
+    //    (full or half day) sets leave:true; grooming-fail blocks are kept distinct (leave:false).
+    var unavailable={};
+    if(C.leaveGates) bus.forEach(function(e){ if(e.type==='LEAVE_APPROVED' && e.payload && e.payload.date===d){ var ln=e.payload.name, lt=e.payload.type||'full_day'; unavailable[kk(ln)]={name:nm(ln),reason:(lt==='full_day'?'on leave':'half day'),leave:true,type:lt}; } });
+    blocked.forEach(function(b){ var k=kk(b.name); if(!unavailable[k]) unavailable[k]={name:b.name,reason:b.why,leave:/leave/i.test(b.why)}; });
+    var prev=L(GATE,null), status={date:d,blocked:blocked,cleared:cleared,unavailable:unavailable,generatedAt:new Date().toISOString()};
+    if(!prev||prev.date!==d||JSON.stringify(prev.blocked)!==JSON.stringify(blocked)||JSON.stringify((prev.unavailable||{}))!==JSON.stringify(unavailable)){ S(GATE,status); if(blocked.length) blog('gate: '+blocked.length+' blocked'); }
     return status;
   }
 
@@ -216,7 +245,9 @@
     consume(bus,'GROOMING_RESULT','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;slot(p.date,p.name).groomingPct=Math.round(p.pct||0);return true;});
     consume(bus,'SALE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;var s=slot(p.date,p.cro);s.qmsSales++;s.qmsSalesAmt+=p.amount||0;return true;});
     consume(bus,'NONPURCHASE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;slot(p.date,p.cro).qmsNonPurch++;return true;});
-    consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;return true;});
+    consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;
+      try{ var rr=L(dsrKey(p.date,p.name),null); if(rr){ var sc=0,sa=0; (rr.sales||[]).forEach(function(x){ sc++; sa+=Number(x.amount)||0; }); s.dsrSalesCount=sc; s.dsrSalesAmt=sa; s.dsrNonPurch=(rr.nonpurch||[]).length; } }catch(_e){}
+      return true;});
     feed._note='Auto-derived CRO audit inputs (grooming %, QMS sales/non-purchase, DSR submit/score). SM confirms in CRO Daily Audit.';
     feed._generatedAt=new Date().toISOString();
     S(CRO_FEED,feed);
@@ -424,6 +455,7 @@
     var bus=busLoad();
     produce(bus);
     consumeQmsToDsr(bus);
+    consumeQmsAllocatedToDsr(bus);
     consumeDsrToStock(bus);
     consumeAttendanceFeed(bus);
     consumeCroAuditFeed(bus);
