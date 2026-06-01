@@ -60,11 +60,12 @@
     ['Meera Nair', 'F', 'Technician', FIRM_T, 16500, 'S'],
     ['Nisha Bora', 'F', 'Cashier', FIRM_T, 12000, 'B'],
     ['Arjun Pawar', 'M', 'Cashier', FIRM_H, 11500, 'B'],
-    ['Kavya Iyer', 'F', 'RSO', FIRM_T, 20000, 'S'],
+    ['Kavya Iyer', 'F', 'Store Manager', FIRM_H, 20000, 'S'],
     ['Manish Jain', 'M', 'Store Manager', FIRM_T, 22000, 'S']
   ].map(function (e, i) {
-    return { name: e[0], gender: e[1], role: e[2], firm: e[3], monthlySalary: e[4], salaryType: e[5],
-      employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' ? 'Sales' : e[2] === 'Technician' ? 'Service' : 'Admin'),
+    return { name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
+      employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' || e[2] === 'Greeter' ? 'Sales' : (e[2] === 'Technician' || e[2] === 'Assistant Technician' ? 'Service' : 'Admin')),
+      bankName: ['HDFC', 'SBI', 'ICICI', 'Axis'][i % 4], accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i),
       active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: '90' + String(11000000 + i * 137).slice(0, 8) };
   });
   var CRO_EMP = EMP.filter(function (e) { return e.role === 'CRO'; });   // 8 CROs
@@ -222,7 +223,7 @@
   var CRIT_F = ['Neat bun', 'Black band & pins', 'Hair off face', 'Natural colour—no oil', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Name badge visible', 'Shoes black & polished', 'Belt black & visible', 'One pair studs/small hoops', 'Watch simple', 'Nails clean & trimmed', 'Lipstick nude only', 'Nail polish nude only'];
   DSTR.forEach(function (ds) {
     if (isWeekend(new Date(ds + 'T12:00:00'))) return;
-    var arr = EMP.filter(function (e) { return e.role === 'CRO' || e.role === 'RSO'; }).map(function (e) {
+    var arr = EMP.filter(function (e) { return e.role === 'CRO'; }).map(function (e) {
       var g = e.gender === 'F' ? 'f' : 'm'; var crit = g === 'f' ? CRIT_F : CRIT_M;
       var checked = ri(11, 15);
       var items = crit.map(function (lbl, i) { return { label: lbl, passed: i < checked }; });

@@ -969,6 +969,7 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
           <div id="backupStatusBox" style="margin:10px 0"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn green" onclick="exportBackup()">Create backup JSON</button>
+            <button class="btn gold" onclick="shareBackup()">Back up → Share to Drive</button>
             <button class="btn outline-gold" onclick="document.getElementById('restoreFile').click()">Restore from JSON</button>
             <input id="restoreFile" class="hidden" type="file" accept="application/json,.json" onchange="handleRestoreFile(this.files&&this.files[0]);this.value=''" />
           </div>
@@ -3124,6 +3125,24 @@ function exportBackupConfirmed(){
   downloadText(`Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`, JSON.stringify(payload,null,2), 'application/json');
   closeModal(); renderHome(); toast('Backup downloaded');
 }
+/* P: one-file backup → Android share sheet (Google Drive / WhatsApp / email). Keeps the app
+   fully offline — the OS does the upload; the app never touches the network. Desktop → download. */
+function capsShare(){ var C=window.Capacitor; return (C&&C.Plugins&&C.Plugins.Share&&C.Plugins.Filesystem)?{Share:C.Plugins.Share,FS:C.Plugins.Filesystem}:null; }
+function shareBackup(){
+  const payload = window.__stBackupPayload || backupPayload();
+  const json = JSON.stringify(payload,null,2);
+  const fname = `Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`;
+  setLastBackup();
+  try{ auditLog('backup.share',{keys:Object.keys(payload.localStorage).length, scope:payload.scope}); }catch(e){}
+  const c = capsShare();
+  if(!c){ downloadText(fname, json, 'application/json'); closeModal(); toast('Backup downloaded (Share to Drive works in the installed app)'); return; }
+  const b64 = (window.btoa ? window.btoa(unescape(encodeURIComponent(json))) : '');
+  c.FS.writeFile({ path: fname, data: b64, directory: 'CACHE' })
+    .then(function(){ return c.FS.getUri({ directory:'CACHE', path: fname }); })
+    .then(function(res){ return c.Share.share({ title:'Saagar Traders backup', text:`Saagar Traders — full data backup (${todayIso()}). Save this to Google Drive.`, files:[res.uri], dialogTitle:'Back up to Google Drive' }); })
+    .then(function(){ closeModal(); toast('Pick Google Drive (or Files) in the share menu'); })
+    .catch(function(e){ var m=(e&&e.message)||String(e); if(/cancel|abort|dismiss/i.test(m)) return; toast('Share failed: '+m); });
+}
 
 function restoreKeyOwnerId(k){ const owner=ownerModuleForKey(k); return owner?owner.id:'control'; }
 function parsedRestoreValue(raw){ const text=String(raw ?? '').trim(); return text?tryJSON(text):null; }
@@ -3204,8 +3223,11 @@ function restoreValidatedBackup(){
   keys.forEach(k => { if(safeSet(k, review.valid[k])) written++; });
   auditLog('restore.apply',{written, rejected:review.rejected.length, invalid:review.invalid.length, rollbackKey});
   closeModal();
-  toast(`Restore complete: ${written} key(s) written`);
+  toast(`Restore complete: ${written} key(s) written — reloading…`);
   renderConfigBackup(); renderHome();
+  // persist restored keys into the SQLite mirror, then reload so every module re-reads them
+  try{ if(window.SaagarDB && window.SaagarDB.ready && window.SaagarDB.ready() && window.SaagarDB.save) window.SaagarDB.save(); }catch(e){}
+  setTimeout(function(){ try{ location.reload(); }catch(e){} }, 1000);
 }
 function resetSelectedModule(){
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
