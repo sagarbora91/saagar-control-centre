@@ -95,8 +95,9 @@
       + '</div></div>';
   }
   function foot(pageNo, pageTot) {
-    return '<div class="foot"><span>Saagar Traders · Latur · Confidential</span>'
-      + '<span>Business Control Centre · Page ' + pageNo + ' of ' + pageTot + '</span></div>';
+    var pg = (pageNo != null && pageTot != null) ? (' · Page ' + pageNo + ' of ' + pageTot) : '';
+    return '<div class="foot"><span>Saagar Traders · Latur · Confidential — for owner review</span>'
+      + '<span>Business Control Centre' + pg + '</span></div>';
   }
   function kpiRow(items, cols) {
     return '<div class="kpis" style="grid-template-columns:repeat(' + (cols || items.length) + ',1fr)">'
@@ -359,13 +360,108 @@
         return inner + foot(i + 1, stores.length);
       });
       return { orientation: 'landscape', pages: pages };
+    },
+
+    /* ===== DSR — DAILY SALES REGISTER (portrait) ===== */
+    dsrRegister: function (o) {
+      var date = o.date || curDate();
+      var d = G('computeDsrDay', function () { return { staff: [], present: 0, salesAmt: 0, salesCnt: 0 }; })(date);
+      var recs = [], pre = 'saagar_dsr_' + date + '_';
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(pre) === 0) { var r = J(k, {}) || {}; r.__name = r.staffName || k.slice(pre.length).replace(/_/g, ' '); recs.push(r); } }
+      if (!d.present) return { orientation: 'portrait', pages: [lhead('DAILY SALES REGISTER', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:60px">No sales register submitted for this date.</div>' + foot()] };
+      var avg = d.salesCnt ? Math.round(d.salesAmt / d.salesCnt) : 0;
+      var kpis = kpiRow([
+        { label: 'Net Sales', value: inr(d.salesAmt), hero: true }, { label: 'Bills', value: num(d.salesCnt) },
+        { label: 'Staff Present', value: num(d.present) },
+        { label: 'Top Performer', value: esc((d.staff[0] && d.staff[0].name) || '—'), sub: d.staff[0] ? inr(d.staff[0].salesAmt) : '', subClass: 'neu' },
+        { label: 'Avg / Bill', value: inr(avg) }
+      ], 5);
+      var staffRows = d.staff.map(function (s) { var r = recs.filter(function (x) { return x.__name === s.name; })[0] || {}; return { name: esc(s.name), role: esc(s.role || '—'), cnt: s.salesCnt, amt: inr(s.salesAmt), subm: r.submitted ? ('✓ ' + (r.submitTime || '')) : '✗' }; });
+      var staffTbl = dataTable([{ key: 'name', label: 'Staff' }, { key: 'role', label: 'Role' }, { key: 'cnt', label: 'Bills', align: 'r' }, { key: 'amt', label: 'Sales ₹', align: 'r' }, { key: 'subm', label: 'Submitted', align: 'c' }], staffRows, { totals: { name: 'Total', role: '', cnt: num(d.salesCnt), amt: inr(d.salesAmt), subm: '' } });
+      var bills = []; recs.forEach(function (r) { (Array.isArray(r.sales) ? r.sales : []).forEach(function (s) { var a = Number(s.amount) || 0; if (a > 0) bills.push({ billNo: esc(s.billNo || '—'), staff: esc(r.__name), product: esc(s.product || '—'), customer: esc(s.customer || '—'), source: (/qms/i.test(s.source || '') ? 'QMS' : 'Manual'), amount: a }); }); });
+      var billTbl = bills.length ? dataTable([{ key: 'billNo', label: 'Bill No' }, { key: 'staff', label: 'Staff' }, { key: 'product', label: 'Product' }, { key: 'customer', label: 'Customer' }, { key: 'source', label: 'Source', align: 'c' }, { key: 'amount', label: 'Amount ₹', align: 'r', fmt: inr }], bills, { totals: { billNo: 'Total', staff: '', product: '', customer: '', source: '', amount: inr(bills.reduce(function (a, b) { return a + b.amount; }, 0)) } }) : '<div class="empty">No bills recorded</div>';
+      var nps = []; recs.forEach(function (r) { (Array.isArray(r.nonpurch) ? r.nonpurch : []).forEach(function (n) { nps.push({ customer: esc(n.customer || n.name || '—'), mobile: esc(n.mobile || '—'), reason: esc(n.reason || '—') }); }); });
+      var npTbl = nps.length ? dataTable([{ key: 'customer', label: 'Customer' }, { key: 'mobile', label: 'Mobile' }, { key: 'reason', label: 'Reason' }], nps) : '<div class="empty">No lost walk-ins logged</div>';
+      var page = lhead('DAILY SALES REGISTER', 'Staff sales & activity · Latur', longDate(date)) + kpis
+        + '<div class="grid">'
+        + card('Staff Sales Summary', null, { p0: true, html: staffTbl }, true)
+        + card('Bill-Level Detail', { cls: 'ok', txt: num(bills.length) + ' bills' }, { p0: true, html: billTbl }, true)
+        + card('Lost Walk-ins (Non-Purchase)', nps.length ? { cls: 'warn', txt: num(nps.length) } : { cls: 'ok', txt: '0' }, { p0: true, html: npTbl }, true)
+        + '</div>' + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== QMS — DAILY QUEUE & CONVERSION (landscape) ===== */
+    qmsReport: function (o) {
+      var date = o.date || curDate();
+      var q = G('computeQmsDay', function () { return { byCro: [], total: 0 }; })(date);
+      var st = J('retail_queue_management_v1', {}) || {}; var custs = Array.isArray(st.customers) ? st.customers : [], cros = Array.isArray(st.cros) ? st.cros : [];
+      var nameOf = function (id) { var c = cros.filter(function (x) { return x.id === id; })[0]; return c ? c.name : 'Unassigned'; };
+      var day = custs.filter(function (c) { return String(c.entryTime || '').slice(0, 10) === date; });
+      if (!q.total) return { orientation: 'landscape', pages: [lhead('QUEUE & CONVERSION REPORT', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:50px">No queue activity recorded for this date.</div>' + foot()] };
+      var top = (q.byCro || []).slice().sort(function (a, b) { return (b.purchases / Math.max(1, b.walkins)) - (a.purchases / Math.max(1, a.walkins)); })[0];
+      var kpis = kpiRow([
+        { label: 'Walk-ins', value: num(q.total) }, { label: 'Purchases', value: num(q.purchases) },
+        { label: 'Conversion', value: pct(q.conversion), hero: true }, { label: 'Sales ₹', value: inr(q.sales) },
+        { label: 'Non-Purchase', value: num(q.nonPurchase) },
+        { label: 'Top CRO', value: esc((top && top.cro) || '—'), sub: top ? pct(Math.round(top.purchases / Math.max(1, top.walkins) * 100)) : '', subClass: 'neu' }
+      ], 6);
+      var croRows = (q.byCro || []).map(function (c) { return { cro: esc(c.cro), walkins: c.walkins, purchases: c.purchases, conv: c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—', sales: inr(c.sales), __flag: (c.walkins >= 3 && c.purchases / c.walkins < 0.2) }; });
+      var croTbl = dataTable([{ key: 'cro', label: 'CRO' }, { key: 'walkins', label: 'Walk-ins', align: 'r' }, { key: 'purchases', label: 'Purchases', align: 'r' }, { key: 'conv', label: 'Conv %', align: 'r' }, { key: 'sales', label: 'Sales ₹', align: 'r' }], croRows, { totals: { cro: 'Total', walkins: num(q.total), purchases: num(q.purchases), conv: pct(q.conversion), sales: inr(q.sales) } });
+      var lr = {}; day.filter(function (c) { return /non.?purchase/i.test(c.outcome || ''); }).forEach(function (c) { var k = c.lostReason || 'Not specified'; if (!lr[k]) lr[k] = { reason: k, count: 0, val: 0 }; lr[k].count++; lr[k].val += Number(c.lostValue) || 0; });
+      var lrRows = Object.keys(lr).map(function (k) { return lr[k]; }).sort(function (a, b) { return b.count - a.count; }).map(function (x) { return { reason: esc(x.reason), count: x.count, val: inr(x.val) }; });
+      var lrTbl = lrRows.length ? dataTable([{ key: 'reason', label: 'Reason' }, { key: 'count', label: 'Count', align: 'r' }, { key: 'val', label: 'Est. Lost ₹', align: 'r' }], lrRows) : '<div class="empty">No lost-sale reasons logged</div>';
+      var pb = day.filter(function (c) { return c.outcome === 'Purchase'; }).map(function (c) { return { q: esc(c.queueNo || '—'), name: esc(c.name || '—'), bill: esc(c.billNo || '—'), cat: esc(c.purchaseCategory || '—'), pay: esc(c.paymentMode || '—'), cro: esc(nameOf(c.assignedCroId)), amt: inr(Number(c.purchaseAmount) || 0) }; });
+      var pbTbl = pb.length ? dataTable([{ key: 'q', label: 'Queue' }, { key: 'name', label: 'Customer' }, { key: 'bill', label: 'Bill' }, { key: 'cat', label: 'Category' }, { key: 'pay', label: 'Pay' }, { key: 'cro', label: 'CRO' }, { key: 'amt', label: 'Amount ₹', align: 'r' }], pb, { totals: { q: 'Total', name: '', bill: '', cat: '', pay: '', cro: '', amt: inr(q.sales) } }) : '<div class="empty">No purchase bills</div>';
+      var page = lhead('QUEUE & CONVERSION REPORT', 'Walk-in funnel · Latur', longDate(date)) + kpis
+        + '<div class="grid">'
+        + card('CRO Performance', null, { p0: true, html: croTbl })
+        + card('Lost Sales — by reason', lrRows.length ? { cls: 'warn', txt: num(q.nonPurchase) } : { cls: 'ok', txt: '0' }, { p0: true, html: lrTbl })
+        + card('Purchase Bills', { cls: 'ok', txt: num(pb.length) }, { p0: true, html: pbTbl }, true)
+        + '</div>' + foot();
+      return { orientation: 'landscape', pages: [page] };
+    },
+
+    /* ===== CRO — DAILY AUDIT SCORECARD (landscape) ===== */
+    croAudit: function (o) {
+      var date = o.date || curDate();
+      var all = J('cro_audits_v3', []); var list = Array.isArray(all) ? all.filter(function (a) { return String(a.date || '').slice(0, 10) === date; }) : [];
+      if (!list.length) return { orientation: 'landscape', pages: [lhead('CRO DAILY AUDIT SCORECARD', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:50px">No CRO audits recorded for this date.</div>' + foot()] };
+      var TASKS = [['t1', 'Open Stk'], ['t2', 'Display'], ['t3', 'Sale Rec'], ['t4', 'Non-Pur'], ['t5', 'NPS'], ['t6', 'Reviews'], ['t7', 'Mktg'], ['t8', 'Close Stk'], ['t9', 'Groom'], ['t10', 'Disc.']];
+      function pts(a, t) { return (a.tasks && a.tasks[t] && a.tasks[t].pts != null) ? a.tasks[t].pts : 0; }
+      var sm = list[0].sm || '', store = list[0].store || '';
+      var avg = Math.round(list.reduce(function (s, a) { return s + (Number(a.total) || 0); }, 0) / list.length);
+      var top = list.slice().sort(function (a, b) { return (Number(b.total) || 0) - (Number(a.total) || 0); })[0];
+      var needs = list.filter(function (a) { return (Number(a.total) || 0) < 60; }).length;
+      var groomAvg = Math.round(list.reduce(function (s, a) { return s + (Number(a.tasks && a.tasks.t9 && a.tasks.t9.groomingPct) || 0); }, 0) / list.length);
+      var kpis = kpiRow([
+        { label: 'CROs Audited', value: num(list.length) }, { label: 'Avg Score', value: avg + '/100', hero: true },
+        { label: 'Top CRO', value: esc((top && top.cro) || '—'), sub: top ? (top.total + '/100') : '', subClass: 'up' },
+        { label: 'Needs Attention', value: num(needs), sub: needs ? '< 60' : 'none', subClass: needs ? 'down' : 'up' },
+        { label: 'Avg Grooming', value: groomAvg + '%' }
+      ], 5);
+      var sorted = list.slice().sort(function (a, b) { return (Number(b.total) || 0) - (Number(a.total) || 0); });
+      var sumRows = sorted.map(function (a) { var weak = '—', low = 99; TASKS.forEach(function (t) { var p = pts(a, t[0]); if (p < low) { low = p; weak = t[1]; } }); return { cro: esc(a.cro), score: (Number(a.total) || 0) + '/100', grade: esc(a.grade || '—'), groom: ((a.tasks && a.tasks.t9 && a.tasks.t9.groomingPct) || 0) + '%', weak: weak + ' (' + low + ')', __flag: (Number(a.total) || 0) < 60 }; });
+      var sumTbl = dataTable([{ key: 'cro', label: 'CRO' }, { key: 'score', label: 'Score', align: 'r' }, { key: 'grade', label: 'Grade' }, { key: 'groom', label: 'Grooming', align: 'r' }, { key: 'weak', label: 'Weakest Task' }], sumRows);
+      var mcols = [{ key: 'cro', label: 'CRO' }].concat(TASKS.map(function (t) { return { key: t[0], label: t[1], align: 'r' }; })).concat([{ key: 'tot', label: 'Total', align: 'r' }]);
+      var mrows = sorted.map(function (a) { var row = { cro: esc(a.cro), tot: (Number(a.total) || 0) }; TASKS.forEach(function (t) { row[t[0]] = pts(a, t[0]); }); return row; });
+      var mtot = { cro: 'Avg' }; TASKS.forEach(function (t) { mtot[t[0]] = Math.round(mrows.reduce(function (s, r) { return s + r[t[0]]; }, 0) / mrows.length); }); mtot.tot = avg;
+      var matrix = dataTable(mcols, mrows, { totals: mtot });
+      var page = lhead('CRO DAILY AUDIT SCORECARD', (store || 'Saagar Traders') + ' · Auditor ' + esc(sm || '—'), longDate(date)) + kpis
+        + '<div style="margin-top:14px">' + card('Scorecard Summary', needs ? { cls: 'bad', txt: needs + ' below 60' } : { cls: 'ok', txt: 'All passing' }, { p0: true, html: sumTbl }, true) + '</div>'
+        + '<div style="margin-top:12px">' + card('Task Breakdown — points / 10', null, { p0: true, html: matrix }, true) + '</div>'
+        + foot();
+      return { orientation: 'landscape', pages: [page] };
     }
   };
 
   var META = {
     ownerBrief: { title: 'Daily Owner Brief', scope: 'daily', icon: '📊' },
     cashStatement: { title: 'Daily Cash Statement', scope: 'daily', icon: '💵' },
-    stockRegister: { title: 'Stock Closing Register', scope: 'daily', icon: '📦' }
+    stockRegister: { title: 'Stock Closing Register', scope: 'daily', icon: '📦' },
+    dsrRegister: { title: 'Daily Sales Register (DSR)', scope: 'daily', icon: '🧾' },
+    qmsReport: { title: 'Queue & Conversion (QMS)', scope: 'daily', icon: '🎯' },
+    croAudit: { title: 'CRO Audit Scorecard', scope: 'daily', icon: '✅' }
   };
 
   /* ---------- render: page HTML → html2canvas → jsPDF (one image per A4 page) ---------- */
@@ -396,8 +492,13 @@
         return window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, width: W, windowWidth: W, height: node.scrollHeight, logging: false });
       }).then(function (canvas) {
         var data = canvas.toDataURL('image/jpeg', 0.92);
-        if (idx > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
-        pdf.addImage(data, 'JPEG', 0, 0, pw, ph, undefined, 'FAST');
+        // full image height when scaled to page width; slice into A4-height pages 1:1 (never shrink)
+        var imgH = pw * canvas.height / canvas.width;
+        var slices = Math.max(1, Math.ceil((imgH - 2) / ph));
+        for (var s = 0; s < slices; s++) {
+          if (idx > 0 || s > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
+          pdf.addImage(data, 'JPEG', 0, -s * ph, pw, imgH, undefined, 'FAST'); // jsPDF clips to page bounds
+        }
         idx++; return step();
       });
     }
