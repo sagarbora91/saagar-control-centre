@@ -353,29 +353,28 @@
     stockRegister: function (o) {
       var date = o.date || curDate();
       var stores = storeList().map(function (s) { return stockDetailStore(s, date); });
-      var cols = [
-        { key: 'brand', label: 'Brand' }, { key: 'sysOpen', label: 'Opening (sys)', align: 'r' }, { key: 'inward', label: 'Inward', align: 'r' },
-        { key: 'grn', label: 'GRN', align: 'r' }, { key: 'outward', label: 'Outward', align: 'r' }, { key: 'sales', label: 'Sales', align: 'r' },
-        { key: 'theft', label: 'Theft', align: 'r', fmt: function (v) { return v > 0 ? '<b style="color:#c0392b">' + v + '</b>' : '—'; } },
-        { key: 'closingSys', label: 'Closing-Sys', align: 'r' }, { key: 'closingPhys', label: 'Closing-Phys', align: 'r', fmt: function (v) { return v == null ? '—' : v; } },
-        { key: 'variance', label: 'Variance', align: 'r', fmt: function (v) { return v == null ? '—' : v === 0 ? '—' : '<b style="color:#c0392b">' + (v > 0 ? '+' : '') + v + '</b>'; } },
-        { key: 'status', label: 'Status', align: 'c', fmt: function (v) { var c = v === 'OK' ? 'ok' : v === 'Mismatch' ? 'bad' : 'warn'; return '<span class="pill ' + c + '">' + v + '</span>'; } }
-      ];
-      var pages = stores.map(function (st, i) {
-        var inner = lhead('STOCK CLOSING REGISTER', st.store + (st.code ? ' (' + st.code + ')' : ''), longDate(date), { chip: st.posted ? (st.closingLocked ? 'Closing locked' : 'Open') : 'Not posted', chipClass: st.posted ? '' : 'draft', addr: 'Daily inventory integrity — system vs physical' });
-        if (!st.posted) return inner + '<div class="empty" style="margin-top:60px">' + esc(st.store) + ' stock not posted for this date.</div>' + foot(i + 1, stores.length);
+      var blocks = [{ t: 'header', title: 'STOCK CLOSING REGISTER', sub: 'Daily inventory integrity — system vs physical', period: longDate(date) }];
+      stores.forEach(function (st, i) {
+        if (i > 0) blocks.push({ t: 'spacer', h: 6 });
+        blocks.push({ t: 'section', title: st.store + (st.code ? ' (' + st.code + ')' : ''), tag: st.posted ? (st.closingLocked ? { cls: 'ok', txt: 'Closing locked' } : { cls: 'warn', txt: 'Open' }) : { cls: 'bad', txt: 'Not posted' } });
+        if (!st.posted) { blocks.push({ t: 'empty', text: st.store + ' stock not posted for this date.' }); return; }
         var T = st.totals, varBrands = st.rows.filter(function (r) { return r.variance != null && r.variance !== 0; }).length;
-        inner += kpiRow([
-          { label: 'Brands', value: num(st.rows.length) }, { label: 'Opening (sys)', value: num(T.sysOpen) },
-          { label: 'Sales units', value: num(T.sales) }, { label: 'Theft units', value: num(T.theft), sub: T.theft > 0 ? 'flagged' : 'clean', subClass: T.theft > 0 ? 'down' : 'up', hero: true },
+        blocks.push({ t: 'kpi', cols: 5, items: [
+          { label: 'Brands', value: num(st.rows.length) },
+          { label: 'Opening (sys)', value: num(T.sysOpen) },
+          { label: 'Sales units', value: num(T.sales) },
+          { label: 'Theft units', value: num(T.theft), sub: T.theft > 0 ? 'flagged' : 'clean', subClass: T.theft > 0 ? 'down' : 'up', hero: true },
           { label: 'Variance brands', value: num(varBrands), sub: varBrands ? 'check' : 'none', subClass: varBrands ? 'down' : 'up' }
-        ], 5);
-        inner += dataTable(cols, st.rows, {
-          totals: { brand: 'TOTAL (' + st.rows.length + ')', sysOpen: num(T.sysOpen), inward: num(T.inward), grn: num(T.grn), outward: num(T.outward), sales: num(T.sales), theft: num(T.theft), closingSys: num(T.closingSys), closingPhys: num(T.closingPhys), variance: '', status: '' }
-        });
-        return inner + foot(i + 1, stores.length);
+        ] });
+        blocks.push({ t: 'table',
+          head: [['Brand', 'Open(sys)', 'Inward', 'GRN', 'Outward', 'Sales', 'Theft', 'Close-Sys', 'Close-Phys', 'Variance', 'Status']],
+          body: st.rows.map(function (r) { return [trunc(r.brand, 22), num(r.sysOpen), num(r.inward), num(r.grn), num(r.outward), num(r.sales), r.theft > 0 ? num(r.theft) : '—', num(r.closingSys), r.closingPhys == null ? '—' : num(r.closingPhys), (r.variance == null || r.variance === 0) ? '—' : (r.variance > 0 ? '+' : '') + r.variance, r.status]; }),
+          flagRows: st.rows.map(function (r) { return r.theft > 0 || (r.variance != null && r.variance !== 0); }),
+          pills: [10],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 58, halign: 'right' }, 3: { cellWidth: 50, halign: 'right' }, 4: { cellWidth: 62, halign: 'right' }, 5: { cellWidth: 54, halign: 'right' }, 6: { cellWidth: 52, halign: 'right' }, 7: { cellWidth: 70, halign: 'right' }, 8: { cellWidth: 76, halign: 'right' }, 9: { cellWidth: 64, halign: 'right' }, 10: { cellWidth: 78, halign: 'center' } },
+          foot: [['TOTAL (' + st.rows.length + ')', num(T.sysOpen), num(T.inward), num(T.grn), num(T.outward), num(T.sales), num(T.theft), num(T.closingSys), num(T.closingPhys), '', '']] });
       });
-      return { orientation: 'landscape', pages: pages };
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== DSR — DAILY SALES REGISTER (portrait) ===== */
@@ -469,7 +468,8 @@
     croAudit: function (o) {
       var date = o.date || curDate();
       var all = J('cro_audits_v3', []); var list = Array.isArray(all) ? all.filter(function (a) { return String(a.date || '').slice(0, 10) === date; }) : [];
-      if (!list.length) return { orientation: 'landscape', pages: [lhead('CRO DAILY AUDIT SCORECARD', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:50px">No CRO audits recorded for this date.</div>' + foot()] };
+      var hdr0 = { t: 'header', title: 'CRO DAILY AUDIT SCORECARD', sub: 'Saagar Traders · Latur', period: longDate(date) };
+      if (!list.length) return { orientation: 'landscape', blocks: [hdr0, { t: 'empty', text: 'No CRO audits recorded for this date.' }] };
       var TASKS = [['t1', 'Open Stk'], ['t2', 'Display'], ['t3', 'Sale Rec'], ['t4', 'Non-Pur'], ['t5', 'NPS'], ['t6', 'Reviews'], ['t7', 'Mktg'], ['t8', 'Close Stk'], ['t9', 'Groom'], ['t10', 'Disc.']];
       function pts(a, t) { return (a.tasks && a.tasks[t] && a.tasks[t].pts != null) ? a.tasks[t].pts : 0; }
       var sm = list[0].sm || '', store = list[0].store || '';
@@ -477,24 +477,32 @@
       var top = list.slice().sort(function (a, b) { return (Number(b.total) || 0) - (Number(a.total) || 0); })[0];
       var needs = list.filter(function (a) { return (Number(a.total) || 0) < 60; }).length;
       var groomAvg = Math.round(list.reduce(function (s, a) { return s + (Number(a.tasks && a.tasks.t9 && a.tasks.t9.groomingPct) || 0); }, 0) / list.length);
-      var kpis = kpiRow([
-        { label: 'CROs Audited', value: num(list.length) }, { label: 'Avg Score', value: avg + '/100', hero: true },
-        { label: 'Top CRO', value: esc((top && top.cro) || '—'), sub: top ? (top.total + '/100') : '', subClass: 'up' },
+      var sorted = list.slice().sort(function (a, b) { return (Number(b.total) || 0) - (Number(a.total) || 0); });
+      var blocks = [{ t: 'header', title: 'CRO DAILY AUDIT SCORECARD', sub: (store || 'Saagar Traders') + ' · Auditor ' + (sm || '—'), period: longDate(date) }];
+      blocks.push({ t: 'kpi', cols: 5, items: [
+        { label: 'CROs Audited', value: num(list.length) },
+        { label: 'Avg Score', value: avg + '/100', hero: true },
+        { label: 'Top CRO', value: (top && top.cro) || '—', sub: top ? (top.total + '/100') : '', subClass: 'up' },
         { label: 'Needs Attention', value: num(needs), sub: needs ? '< 60' : 'none', subClass: needs ? 'down' : 'up' },
         { label: 'Avg Grooming', value: groomAvg + '%' }
-      ], 5);
-      var sorted = list.slice().sort(function (a, b) { return (Number(b.total) || 0) - (Number(a.total) || 0); });
-      var sumRows = sorted.map(function (a) { var weak = '—', low = 99; TASKS.forEach(function (t) { var p = pts(a, t[0]); if (p < low) { low = p; weak = t[1]; } }); return { cro: esc(a.cro), score: (Number(a.total) || 0) + '/100', grade: esc(a.grade || '—'), groom: ((a.tasks && a.tasks.t9 && a.tasks.t9.groomingPct) || 0) + '%', weak: weak + ' (' + low + ')', __flag: (Number(a.total) || 0) < 60 }; });
-      var sumTbl = dataTable([{ key: 'cro', label: 'CRO' }, { key: 'score', label: 'Score', align: 'r' }, { key: 'grade', label: 'Grade' }, { key: 'groom', label: 'Grooming', align: 'r' }, { key: 'weak', label: 'Weakest Task' }], sumRows);
-      var mcols = [{ key: 'cro', label: 'CRO' }].concat(TASKS.map(function (t) { return { key: t[0], label: t[1], align: 'r' }; })).concat([{ key: 'tot', label: 'Total', align: 'r' }]);
-      var mrows = sorted.map(function (a) { var row = { cro: esc(a.cro), tot: (Number(a.total) || 0) }; TASKS.forEach(function (t) { row[t[0]] = pts(a, t[0]); }); return row; });
-      var mtot = { cro: 'Avg' }; TASKS.forEach(function (t) { mtot[t[0]] = Math.round(mrows.reduce(function (s, r) { return s + r[t[0]]; }, 0) / mrows.length); }); mtot.tot = avg;
-      var matrix = dataTable(mcols, mrows, { totals: mtot });
-      var page = lhead('CRO DAILY AUDIT SCORECARD', (store || 'Saagar Traders') + ' · Auditor ' + esc(sm || '—'), longDate(date)) + kpis
-        + '<div style="margin-top:14px">' + card('Scorecard Summary', needs ? { cls: 'bad', txt: needs + ' below 60' } : { cls: 'ok', txt: 'All passing' }, { p0: true, html: sumTbl }, true) + '</div>'
-        + '<div style="margin-top:12px">' + card('Task Breakdown — points / 10', null, { p0: true, html: matrix }, true) + '</div>'
-        + foot();
-      return { orientation: 'landscape', pages: [page] };
+      ] });
+      blocks.push({ t: 'section', title: 'Scorecard Summary', tag: needs ? { cls: 'bad', txt: needs + ' below 60' } : { cls: 'ok', txt: 'All passing' } });
+      blocks.push({ t: 'table',
+        head: [['CRO', 'Score', 'Grade', 'Grooming', 'Weakest Task']],
+        body: sorted.map(function (a) { var weak = '—', low = 99; TASKS.forEach(function (t) { var p = pts(a, t[0]); if (p < low) { low = p; weak = t[1]; } }); return [a.cro, (Number(a.total) || 0) + '/100', a.grade || '—', ((a.tasks && a.tasks.t9 && a.tasks.t9.groomingPct) || 0) + '%', weak + ' (' + low + ')']; }),
+        flagRows: sorted.map(function (a) { return (Number(a.total) || 0) < 60; }),
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 70 }, 3: { cellWidth: 84, halign: 'right' }, 4: { cellWidth: 170 } } });
+      blocks.push({ t: 'section', title: 'Task Breakdown — points / 10' });
+      var mhead = ['CRO'].concat(TASKS.map(function (t) { return t[1]; })).concat(['Total']);
+      var mcolStyles = { 0: { cellWidth: 86 } }; for (var ci = 1; ci <= 10; ci++) mcolStyles[ci] = { halign: 'right' }; mcolStyles[11] = { cellWidth: 50, halign: 'right' };
+      var mtotRow = ['Avg']; TASKS.forEach(function (t) { mtotRow.push(String(Math.round(sorted.reduce(function (s, a) { return s + pts(a, t[0]); }, 0) / sorted.length))); }); mtotRow.push(String(avg));
+      blocks.push({ t: 'table',
+        head: [mhead],
+        body: sorted.map(function (a) { var row = [a.cro]; TASKS.forEach(function (t) { row.push(num(pts(a, t[0]))); }); row.push(num(Number(a.total) || 0)); return row; }),
+        flagRows: sorted.map(function (a) { return (Number(a.total) || 0) < 60; }),
+        colStyles: mcolStyles,
+        foot: [mtotRow] });
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== PAYROLL — SALARY REGISTER (landscape) ===== */
