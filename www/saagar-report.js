@@ -65,7 +65,7 @@
       + ".cb{padding:11px 13px}.cb.p0{padding:0}"
       + "table{width:100%;border-collapse:collapse}"
       + "th{background:var(--navy);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;padding:7px 10px;text-align:left}th.r,td.r{text-align:right}th.c,td.c{text-align:center}"
-      + "td{font-size:11.5px;padding:6px 10px;border-bottom:1px solid var(--line);color:var(--ink)}"
+      + "td{font-size:11.5px;padding:5px 10px;border-bottom:1px solid var(--line);color:var(--ink)}"
       + "tr:nth-child(even) td{background:#fafbfd}"
       + "td.net{font-weight:800;color:var(--navy)}"
       + "tr.tot td{font-weight:800;background:#eef2f8 !important;border-top:2px solid var(--navy);color:var(--navy)}"
@@ -73,8 +73,8 @@
       + ".kv{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:12px}.kv .k{color:var(--mut);font-weight:500}.kv .v{font-weight:700;text-align:right}.kv .v.big{font-size:14px;color:var(--navy)}"
       + ".pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}.pill.ok{background:#e6f5ec;color:var(--green)}.pill.bad{background:var(--redbg);color:var(--red)}.pill.warn{background:#fef3e0;color:var(--amber)}"
       + ".empty{padding:40px;text-align:center;color:var(--mut);font-size:13px;font-weight:600}"
-      + ".statline{margin-top:13px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:11.5px;display:flex;gap:22px;flex-wrap:wrap}.statline b{color:var(--navy)}"
-      + ".sign{display:flex;justify-content:space-between;margin-top:26px;padding:0 20px}.sigbox{text-align:center;font-size:11px;color:var(--mut)}.sigbox .ln{width:190px;border-top:1.3px solid var(--ink);margin-bottom:6px}.sigbox b{color:var(--ink);display:block;font-size:12px}"
+      + ".statline{margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:11.5px;display:flex;gap:22px;flex-wrap:wrap}.statline b{color:var(--navy)}"
+      + ".sign{display:flex;justify-content:space-between;margin-top:18px;padding:0 20px}.sigbox{text-align:center;font-size:11px;color:var(--mut)}.sigbox .ln{width:190px;border-top:1.3px solid var(--ink);margin-bottom:6px}.sigbox b{color:var(--ink);display:block;font-size:12px}"
       + ".foot{position:absolute;left:44px;right:44px;bottom:22px;border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;font-size:9.5px;color:#94a3b8}"
       + ".page.land .foot{left:40px;right:40px;bottom:18px}";
   }
@@ -452,6 +452,117 @@
         + '<div style="margin-top:12px">' + card('Task Breakdown — points / 10', null, { p0: true, html: matrix }, true) + '</div>'
         + foot();
       return { orientation: 'landscape', pages: [page] };
+    },
+
+    /* ===== PAYROLL — SALARY REGISTER (landscape) ===== */
+    payrollRegister: function (o) {
+      var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
+      var period = (meta.month || '') + ' ' + (meta.year || '');
+      if (!rows.length) return { orientation: 'landscape', pages: [lhead('PAYROLL — SALARY REGISTER', 'Saagar Traders', period) + '<div class="empty" style="margin-top:50px">No employees in payroll.</div>' + foot()] };
+      var T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 };
+      var rr = rows.map(function (r, i) {
+        var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : (r.netPay || 0)) || 0;
+        var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross)); // OT is in net but not in base gross → derive so Net = Gross+OT−deductions
+        T.gross += gross; T.ot += ot; T.pt += pt; T.pf += pf; T.esic += es; T.adv += adv; T.net += net;
+        return { sr: i + 1, empId: esc(r.empId || '—'), name: esc(r.name || '—'), desig: esc(r.designation || '—'), gross: inr(gross), ot: inr(ot), pt: inr(pt), pf: inr(pf), esic: inr(es), adv: inr(adv), net: inr(net) };
+      });
+      var status = (meta.run && meta.run.status) || ((p.runs && Object.keys(p.runs).length) ? 'locked' : 'draft'), locked = /lock/i.test(status);
+      var kpis = kpiRow([
+        { label: 'Employees', value: num(rows.length) }, { label: 'Gross + OT', value: inr(T.gross + T.ot) },
+        { label: 'Total Deductions', value: inr(T.pt + T.pf + T.esic + T.adv) }, { label: 'Total Advance', value: inr(T.adv) },
+        { label: 'Net Payable', value: inr(T.net), hero: true }
+      ], 5);
+      var tbl = dataTable([
+        { key: 'sr', label: 'Sr', align: 'c' }, { key: 'empId', label: 'Emp ID' }, { key: 'name', label: 'Employee' }, { key: 'desig', label: 'Designation' },
+        { key: 'gross', label: 'Gross', align: 'r' }, { key: 'ot', label: 'OT', align: 'r' }, { key: 'pt', label: 'PT', align: 'r' }, { key: 'pf', label: 'PF (EE)', align: 'r' }, { key: 'esic', label: 'ESIC (EE)', align: 'r' }, { key: 'adv', label: 'Advance', align: 'r' }, { key: 'net', label: 'Net Pay', align: 'r', cell: ' net' }
+      ], rr, { totals: { sr: '', empId: '', name: 'TOTAL (' + rows.length + ')', desig: '', gross: inr(T.gross), ot: inr(T.ot), pt: inr(T.pt), pf: inr(T.pf), esic: inr(T.esic), adv: inr(T.adv), net: inr(T.net) } });
+      var page = lhead('PAYROLL — SALARY REGISTER', 'Saagar Traders · Latur', period, { chip: locked ? '🔒 LOCKED — FINAL' : '⚠ DRAFT', chipClass: locked ? '' : 'draft', addr: 'Prepared by ' + esc(meta.preparedBy || '—') + ' · Approved by ' + esc(meta.approvedBy || '—') })
+        + kpis + tbl
+        + '<div class="statline"><span><b>Statutory (employee deductions):</b></span><span>PT <b>' + inr(T.pt) + '</b></span><span>PF (EE) <b>' + inr(T.pf) + '</b></span><span>ESIC (EE) <b>' + inr(T.esic) + '</b></span><span>Net paid to staff <b>' + inr(T.net) + '</b></span></div>'
+        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Prepared By<b>' + esc(meta.preparedBy || '—') + '</b></div><div class="sigbox"><div class="ln"></div>Checked By<b>' + esc(meta.checkedBy || '—') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(meta.approvedBy || '—') + '</b></div></div>'
+        + foot();
+      return { orientation: 'landscape', pages: [page] };
+    },
+
+    /* ===== PAYROLL — SALARY SLIP (portrait, per employee) ===== */
+    payrollSlip: function (o) {
+      var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
+      var r = o.empId ? rows.filter(function (x) { return x.empId === o.empId; })[0] : (o.empIndex != null ? rows[o.empIndex] : rows[0]);
+      var period = (meta.month || '') + ' ' + (meta.year || '');
+      if (!r) return { orientation: 'portrait', pages: [lhead('SALARY SLIP', 'Saagar Traders', period) + '<div class="empty" style="margin-top:60px">Employee not found.</div>' + foot()] };
+      var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : 0) || 0, ded = pt + pf + es + adv, ot = Math.max(0, Math.round(net + ded - gross));
+      var info = kvList([
+        ['Employee', esc(r.name || '—')], ['Employee ID', esc(r.empId || '—')], ['Designation', esc(r.designation || '—')], ['Pay Period', period],
+        ['Bank', esc(r.bankName || '—')], ['A/C No.', esc(r.accountNo || '—')], ['IFSC', esc(r.ifsc || '—')], ['Payment Mode', esc(r.paidMode || r.payMode || '—')],
+        ['Days absent', num(r.absent || 0)], ['Half / Leave days', num(r.halfDay || 0) + ' / ' + num(r.leavesApplied || 0)]
+      ]);
+      var earn = kvList([['Gross Salary (payable)', inr(gross)], ['Overtime', inr(ot)], ['Total Earnings', inr(gross + ot), 'big']]);
+      var dedB = kvList([['Professional Tax', inr(pt)], ['PF (Employee)', inr(pf)], ['ESIC (Employee)', inr(es)], ['Advance', inr(adv)], ['Total Deductions', inr(ded), 'big']]);
+      var page = lhead('SALARY SLIP', 'Saagar Traders · Latur', 'For ' + period, { addr: 'Ref GM/SAL/' + (r.empId || '') + '/' + period })
+        + '<div class="grid">' + card('Employee & Attendance', null, info, true)
+        + card('Earnings', { cls: 'ok', txt: inr(gross + ot) }, earn) + card('Deductions', { cls: 'warn', txt: inr(ded) }, dedB) + '</div>'
+        + '<div style="margin-top:16px;text-align:center;background:#0d2340;color:#fff;border-radius:12px;padding:16px"><div style="font-size:11px;letter-spacing:1px;opacity:.8">NET PAY (TAKE HOME)</div><div style="font-size:30px;font-weight:800;margin-top:4px" class="tnum">' + inr(net) + '</div></div>'
+        + (r.salaryRemark ? '<div style="margin-top:10px;font-size:11px;color:#64748b">Remark: ' + esc(r.salaryRemark) + '</div>' : '')
+        + (r.paidRef ? '<div style="margin-top:6px;font-size:11px;color:#64748b">Payment: ' + esc(r.paidMode || '') + ' · Ref ' + esc(r.paidRef) + (r.paidDate ? ' · ' + esc(r.paidDate) : '') + '</div>' : '')
+        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Employee<b>' + esc(r.name || '') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(meta.approvedBy || 'Authorised') + '</b></div></div>'
+        + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== LEAVE REGISTER (landscape, month) ===== */
+    leaveRegister: function (o) {
+      var month = o.month || curMonth();
+      var d = J('leavedesk_v3', {}) || {}, by = (d && d.leaves) || {}, emps = Array.isArray(d.employees) ? d.employees : [];
+      var empMap = {}; emps.forEach(function (e) { empMap[(e.name || '').toLowerCase()] = e; });
+      var seen = {}, out = [];
+      Object.keys(by).filter(function (dk) { return dk.slice(0, 7) === month; }).sort().forEach(function (dk) {
+        var arr = by[dk]; if (!Array.isArray(arr)) return;
+        arr.forEach(function (l) { if (!l || !l.name) return; var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: 1 }; seen[key] = rec; out.push(rec); });
+      });
+      if (!out.length) return { orientation: 'landscape', pages: [lhead('LEAVE REGISTER', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:50px">No leave recorded for this month.</div>' + foot()] };
+      var totDays = 0, full = 0, half = 0, names = {};
+      var rr = out.map(function (r, i) { var ld = r.half ? r.days * 0.5 : r.days; totDays += ld; if (r.half) half++; else full++; names[r.name.toLowerCase()] = 1; var e = empMap[r.name.toLowerCase()] || {}; return { sr: i + 1, empId: esc(e.empId || '—'), name: esc(r.name), dept: esc(e.department || '—'), from: esc(r.from), to: esc(r.to), type: esc(r.type), days: r.days, ld: ld, cat: esc(r.category || '—'), reason: esc(r.reason || '—'), approvedBy: esc(r.approvedBy || '—') }; });
+      var kpis = kpiRow([
+        { label: 'Applications', value: num(out.length) }, { label: 'Leave Days (payroll)', value: totDays, hero: true },
+        { label: 'Full-day', value: num(full) }, { label: 'Half-day', value: num(half) }, { label: 'Employees', value: num(Object.keys(names).length) }
+      ], 5);
+      var tbl = dataTable([
+        { key: 'sr', label: 'Sr', align: 'c' }, { key: 'empId', label: 'Emp ID' }, { key: 'name', label: 'Employee' }, { key: 'dept', label: 'Dept' },
+        { key: 'from', label: 'From' }, { key: 'to', label: 'To' }, { key: 'type', label: 'Type' }, { key: 'days', label: 'Days', align: 'r' }, { key: 'ld', label: 'Leave-Days', align: 'r' }, { key: 'cat', label: 'Category' }, { key: 'reason', label: 'Reason' }, { key: 'approvedBy', label: 'Approved By' }
+      ], rr, { totals: { sr: '', empId: '', name: 'TOTAL (' + out.length + ')', dept: '', from: '', to: '', type: '', days: '', ld: totDays, cat: '', reason: '', approvedBy: '' } });
+      return { orientation: 'landscape', pages: [lhead('LEAVE REGISTER', 'Saagar Traders · Latur', monthLong(month)) + kpis + tbl + foot()] };
+    },
+
+    /* ===== GROOMING — DAILY AUDIT (portrait) ===== */
+    groomingDaily: function (o) {
+      var date = o.date || curDate(); var g = G('computeGroomingDay', function () { return { checks: 0, pass: 0, avg: 0, list: [] }; })(date);
+      var arr = J('saagar_grooming_' + date, []) || [];
+      if (!g.checks) return { orientation: 'portrait', pages: [lhead('DAILY GROOMING AUDIT', 'Saagar Traders', longDate(date)) + '<div class="empty" style="margin-top:60px">No grooming audit recorded for this date.</div>' + foot()] };
+      var perfect = arr.filter(function (r) { return Number(r.pct) === 100; }).length, below = arr.filter(function (r) { return (Number(r.pct) || 0) < 80; }).length;
+      var kpis = kpiRow([
+        { label: 'CROs Checked', value: num(g.checks) }, { label: 'Passed ≥80%', value: num(g.pass), subClass: 'up' },
+        { label: 'Below 80%', value: num(below), subClass: below ? 'down' : 'up' }, { label: 'Perfect 100%', value: num(perfect) }, { label: 'Day Average', value: g.avg + '%', hero: true }
+      ], 5);
+      var rows = arr.slice().sort(function (a, b) { return (Number(a.pct) || 0) - (Number(b.pct) || 0); }).map(function (r) { var failed = (Array.isArray(r.items) ? r.items.filter(function (i) { return i && !i.passed; }).map(function (i) { return i.label; }) : []).filter(Boolean); return { name: esc(r.name || '—'), gender: r.gender === 'f' ? 'Female' : 'Male', pct: (Number(r.pct) || 0) + '%', passed: (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—'), time: esc(r.time || '—'), failed: failed.length ? esc(failed.join(', ')) : 'All passed', __flag: (Number(r.pct) || 0) < 80 }; });
+      var tbl = dataTable([{ key: 'name', label: 'CRO' }, { key: 'gender', label: 'Gender' }, { key: 'pct', label: 'Score', align: 'r' }, { key: 'passed', label: 'Passed', align: 'c' }, { key: 'time', label: 'Time' }, { key: 'failed', label: 'Failed Parameters' }], rows);
+      return { orientation: 'portrait', pages: [lhead('DAILY GROOMING AUDIT', 'Titan World + Helios · Latur', longDate(date)) + kpis + '<div style="margin-top:14px">' + card('CRO Grooming Checks', below ? { cls: 'warn', txt: below + ' below 80%' } : { cls: 'ok', txt: 'All ≥80%' }, { p0: true, html: tbl }, true) + '</div>' + foot()] };
+    },
+
+    /* ===== GROOMING — MONTHLY TREND (portrait) ===== */
+    groomingMonthly: function (o) {
+      var month = o.month || curMonth(); var gm = G('computeGroomingMonth', function () { return { days: [], totalChecks: 0, avg: 0, daysWithData: 0 }; })(month);
+      var cm = {};
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('saagar_grooming_' + month) === 0) { var arr = J(k, []); (Array.isArray(arr) ? arr : []).forEach(function (r) { var nm = (r.name || '').trim(); if (!nm) return; var key = nm.toLowerCase(); if (!cm[key]) cm[key] = { name: nm, gender: r.gender, sum: 0, n: 0, best: 0, low: 100, pass: 0 }; var pc = Number(r.pct) || 0; cm[key].sum += pc; cm[key].n++; cm[key].best = Math.max(cm[key].best, pc); cm[key].low = Math.min(cm[key].low, pc); if (pc >= 80) cm[key].pass++; }); } }
+      var cros = Object.keys(cm).map(function (k) { var c = cm[k]; return { name: c.name, gender: c.gender, n: c.n, avg: Math.round(c.sum / c.n), best: c.best, low: c.low, cons: Math.round(c.pass / c.n * 100) }; }).sort(function (a, b) { return b.avg - a.avg; });
+      if (!cros.length) return { orientation: 'portrait', pages: [lhead('MONTHLY GROOMING TREND', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:60px">No grooming audits recorded for this month.</div>' + foot()] };
+      var best = cros[0];
+      var kpis = kpiRow([
+        { label: 'CROs', value: num(cros.length) }, { label: 'Check-ins', value: num(gm.totalChecks) }, { label: 'Month Average', value: gm.avg + '%', hero: true },
+        { label: 'Best CRO', value: esc(best.name), sub: best.avg + '%', subClass: 'up' }, { label: 'Days Audited', value: num(gm.daysWithData) }
+      ], 5);
+      var rows = cros.map(function (c, i) { return { rank: i + 1, name: esc(c.name), gender: c.gender === 'f' ? 'F' : 'M', n: c.n, avg: c.avg + '%', best: c.best + '%', low: c.low + '%', cons: c.cons + '%', __flag: c.avg < 80 }; });
+      var tbl = dataTable([{ key: 'rank', label: 'Rank', align: 'c' }, { key: 'name', label: 'CRO' }, { key: 'gender', label: 'G', align: 'c' }, { key: 'n', label: 'Check-ins', align: 'r' }, { key: 'avg', label: 'Avg', align: 'r' }, { key: 'best', label: 'Best', align: 'r' }, { key: 'low', label: 'Low', align: 'r' }, { key: 'cons', label: 'Consistency', align: 'r' }], rows);
+      return { orientation: 'portrait', pages: [lhead('MONTHLY GROOMING TREND', 'Saagar Traders · Latur', monthLong(month)) + kpis + '<div style="margin-top:14px">' + card('CRO Leaderboard', null, { p0: true, html: tbl }, true) + '</div>' + '<div style="margin-top:10px;font-size:11px;color:#64748b">Month average ' + gm.avg + '% across ' + gm.totalChecks + ' check-ins · ' + gm.daysWithData + ' days audited.</div>' + foot()] };
     }
   };
 
@@ -461,7 +572,12 @@
     stockRegister: { title: 'Stock Closing Register', scope: 'daily', icon: '📦' },
     dsrRegister: { title: 'Daily Sales Register (DSR)', scope: 'daily', icon: '🧾' },
     qmsReport: { title: 'Queue & Conversion (QMS)', scope: 'daily', icon: '🎯' },
-    croAudit: { title: 'CRO Audit Scorecard', scope: 'daily', icon: '✅' }
+    croAudit: { title: 'CRO Audit Scorecard', scope: 'daily', icon: '✅' },
+    payrollRegister: { title: 'Payroll — Salary Register', scope: 'monthly', icon: '💼' },
+    payrollSlip: { title: 'Payroll — Salary Slip', scope: 'monthly', icon: '🧾' },
+    leaveRegister: { title: 'Leave Register', scope: 'monthly', icon: '🌴' },
+    groomingDaily: { title: 'Grooming — Daily Audit', scope: 'daily', icon: '✨' },
+    groomingMonthly: { title: 'Grooming — Monthly Trend', scope: 'monthly', icon: '📈' }
   };
 
   /* ---------- render: page HTML → html2canvas → jsPDF (one image per A4 page) ---------- */
@@ -492,12 +608,19 @@
         return window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, width: W, windowWidth: W, height: node.scrollHeight, logging: false });
       }).then(function (canvas) {
         var data = canvas.toDataURL('image/jpeg', 0.92);
-        // full image height when scaled to page width; slice into A4-height pages 1:1 (never shrink)
-        var imgH = pw * canvas.height / canvas.width;
-        var slices = Math.max(1, Math.ceil((imgH - 2) / ph));
-        for (var s = 0; s < slices; s++) {
-          if (idx > 0 || s > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
-          pdf.addImage(data, 'JPEG', 0, -s * ph, pw, imgH, undefined, 'FAST'); // jsPDF clips to page bounds
+        var imgH = pw * canvas.height / canvas.width; // image height when scaled to page width
+        if (idx > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
+        if (imgH <= ph + 2) {
+          pdf.addImage(data, 'JPEG', 0, 0, pw, imgH, undefined, 'FAST'); // fits one page, top-aligned
+        } else if (imgH <= ph * 1.12) {
+          var sw = pw * (ph / imgH), sx = (pw - sw) / 2; // barely over → gentle ≤12% shrink to one page (no near-empty 2nd page)
+          pdf.addImage(data, 'JPEG', sx, 0, sw, ph, undefined, 'FAST');
+        } else {
+          var slices = Math.ceil((imgH - 2) / ph); // genuinely long → slice into A4 pages 1:1 (no shrink)
+          for (var s = 0; s < slices; s++) {
+            if (s > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
+            pdf.addImage(data, 'JPEG', 0, -s * ph, pw, imgH, undefined, 'FAST'); // jsPDF clips to page bounds
+          }
         }
         idx++; return step();
       });
