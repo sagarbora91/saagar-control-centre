@@ -185,6 +185,22 @@
     });
     return { store: s.name, code: s.code, posted: true, rows: rows, totals: T, openingLocked: !!blob.openingLocked, movementsSubmitted: !!blob.movementsSubmitted, closingLocked: !!blob.closingLocked };
   }
+  function expenseMonth(month) {
+    var rows = J('gm_expenses', []); var inc = {}, exp = {}, incTot = 0, expTot = 0, firms = {};
+    (Array.isArray(rows) ? rows : []).forEach(function (e) {
+      if (!e || e.void) return; if (String(e.date || e.entryDate || e.expenseDate || '').slice(0, 7) !== month) return;
+      var amt = Number(e.amount || e.total || 0) || 0, cat = e.category || 'Other';
+      if (String(e.type || 'expense').toLowerCase() === 'income') { inc[cat] = (inc[cat] || 0) + amt; incTot += amt; }
+      else { exp[cat] = (exp[cat] || 0) + amt; expTot += amt; var fk = e.firm || 'Unassigned'; if (!firms[fk]) firms[fk] = { firm: fk, amount: 0, count: 0 }; firms[fk].amount += amt; firms[fk].count++; }
+    });
+    return { inc: inc, exp: exp, incTot: incTot, expTot: expTot, net: incTot - expTot, firms: Object.keys(firms).map(function (k) { return firms[k]; }).sort(function (a, b) { return b.amount - a.amount; }) };
+  }
+  function monthQms(month) {
+    var parts = String(month).split('-'), y = +parts[0], mo = +parts[1]; if (!y || !mo) return { sales: 0, purchases: 0, walkins: 0, conversion: 0 };
+    var dim = new Date(y, mo, 0).getDate(), s = 0, p = 0, w = 0, fn = G('computeQmsDay', null);
+    if (fn) for (var dd = 1; dd <= dim; dd++) { var q = fn(month + '-' + String(dd).padStart(2, '0')); s += q.sales || 0; p += q.purchases || 0; w += q.total || 0; }
+    return { sales: s, purchases: p, walkins: w, conversion: w ? Math.round(p / w * 100) : 0 };
+  }
 
   /* ---------- per-report builders → { orientation, pages:[innerHtml,...] } ---------- */
   var BUILDERS = {
@@ -563,6 +579,120 @@
       var rows = cros.map(function (c, i) { return { rank: i + 1, name: esc(c.name), gender: c.gender === 'f' ? 'F' : 'M', n: c.n, avg: c.avg + '%', best: c.best + '%', low: c.low + '%', cons: c.cons + '%', __flag: c.avg < 80 }; });
       var tbl = dataTable([{ key: 'rank', label: 'Rank', align: 'c' }, { key: 'name', label: 'CRO' }, { key: 'gender', label: 'G', align: 'c' }, { key: 'n', label: 'Check-ins', align: 'r' }, { key: 'avg', label: 'Avg', align: 'r' }, { key: 'best', label: 'Best', align: 'r' }, { key: 'low', label: 'Low', align: 'r' }, { key: 'cons', label: 'Consistency', align: 'r' }], rows);
       return { orientation: 'portrait', pages: [lhead('MONTHLY GROOMING TREND', 'Saagar Traders · Latur', monthLong(month)) + kpis + '<div style="margin-top:14px">' + card('CRO Leaderboard', null, { p0: true, html: tbl }, true) + '</div>' + '<div style="margin-top:10px;font-size:11px;color:#64748b">Month average ' + gm.avg + '% across ' + gm.totalChecks + ' check-ins · ' + gm.daysWithData + ' days audited.</div>' + foot()] };
+    },
+
+    /* ===== EXPENSE — MONTHLY P&L SUMMARY (portrait) ===== */
+    expenseMonthly: function (o) {
+      var month = o.month || curMonth(); var e = expenseMonth(month);
+      if (!e.incTot && !e.expTot) return { orientation: 'portrait', pages: [lhead('MONTHLY EXPENSE & P&L', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:60px">No ledger entries for this month.</div>' + foot()] };
+      var topExp = ''; var mv = 0; Object.keys(e.exp).forEach(function (k) { if (e.exp[k] > mv) { mv = e.exp[k]; topExp = k; } });
+      var kpis = kpiRow([
+        { label: 'Total Income', value: inr(e.incTot) }, { label: 'Total Expense', value: inr(e.expTot) },
+        { label: 'Net P&L', value: inr(e.net), hero: true, subClass: e.net >= 0 ? 'up' : 'down', sub: e.net >= 0 ? 'profit' : 'loss' },
+        { label: 'Net Margin', value: e.incTot ? Math.round(e.net / e.incTot * 100) + '%' : '—' }, { label: 'Top Expense', value: esc(topExp || '—') }
+      ], 5);
+      function catTbl(map, tot) { var arr = Object.keys(map).map(function (k) { return { k: k, v: map[k] }; }).sort(function (a, b) { return b.v - a.v; }); return arr.length ? dataTable([{ key: 'cat', label: 'Category' }, { key: 'amt', label: 'Amount ₹', align: 'r' }, { key: 'pc', label: '%', align: 'r' }], arr.map(function (x) { return { cat: esc(x.k), amt: inr(x.v), pc: tot ? Math.round(x.v / tot * 100) + '%' : '—' }; }), { totals: { cat: 'Total', amt: inr(tot), pc: '' } }) : '<div class="empty">None</div>'; }
+      var firmTbl = e.firms.length ? dataTable([{ key: 'firm', label: 'Firm / Store' }, { key: 'count', label: 'Entries', align: 'r' }, { key: 'amount', label: 'Expense ₹', align: 'r', fmt: inr }], e.firms.map(function (f) { return { firm: esc(f.firm), count: f.count, amount: f.amount }; }), { totals: { firm: 'Total', count: '', amount: inr(e.expTot) } }) : '<div class="empty">—</div>';
+      var page = lhead('MONTHLY EXPENSE & P&L', 'Saagar Traders · Latur', monthLong(month)) + kpis
+        + '<div class="grid">'
+        + card('Income by Category', { cls: 'ok', txt: inr(e.incTot) }, { p0: true, html: catTbl(e.inc, e.incTot) })
+        + card('Expense by Category', { cls: 'warn', txt: inr(e.expTot) }, { p0: true, html: catTbl(e.exp, e.expTot) })
+        + card('Expense by Firm / Store', null, { p0: true, html: firmTbl }, true)
+        + '</div>' + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== TAX — COMPLIANCE DUE REPORT (portrait) ===== */
+    taxReport: function (o) {
+      var t = G('computeTaxStatus', function () { return { overdue: 0, dueWeek: 0, dueMonth: 0, done: 0, upcoming: [] }; })();
+      var kpis = kpiRow([
+        { label: 'Overdue', value: num(t.overdue), hero: true, subClass: t.overdue ? 'down' : 'up', sub: t.overdue ? 'act now' : 'clear' },
+        { label: 'Due This Week', value: num(t.dueWeek) }, { label: 'Due This Month', value: num(t.dueMonth) },
+        { label: 'Completed', value: num(t.done), subClass: 'up' }, { label: 'Upcoming', value: num((t.upcoming || []).length) }
+      ], 5);
+      var rows = (t.upcoming || []).slice(0, 40).map(function (u) { return { firm: esc(u.firm), item: esc(u.item), due: esc(u.due), status: u.status, __flag: u.status === 'Overdue' }; });
+      var tbl = rows.length ? dataTable([{ key: 'firm', label: 'Firm' }, { key: 'item', label: 'Compliance Item' }, { key: 'due', label: 'Due Date', align: 'r' }, { key: 'status', label: 'Status', align: 'c', fmt: function (v) { var c = v === 'Overdue' ? 'bad' : v === 'This week' ? 'warn' : 'ok'; return '<span class="pill ' + c + '">' + v + '</span>'; } }], rows) : '<div class="empty">No upcoming compliance items.</div>';
+      var page = lhead('TAX COMPLIANCE — DUE REPORT', 'Saagar Traders · Latur', longDate(curDate())) + kpis
+        + '<div style="margin-top:14px">' + card('Upcoming & Overdue Filings', t.overdue ? { cls: 'bad', txt: t.overdue + ' overdue' } : { cls: 'ok', txt: 'On track' }, { p0: true, html: tbl }, true) + '</div>' + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== SERVICE — OPEN CASES AGING (portrait) ===== */
+    serviceAging: function (o) {
+      var a = G('computeServiceAging', function () { return { totalOpen: 0, b0_3: 0, b4_7: 0, b8_15: 0, b16: 0 }; })();
+      var arr = J('saagar_wsf_v2', []); var closedW = ['delivered', 'closed', 'complete', 'completed', 'cancelled', 'canceled'];
+      var open = (Array.isArray(arr) ? arr : []).filter(function (j) { var s = String(j.status || j.stage || '').toLowerCase(); return !closedW.some(function (w) { return s.indexOf(w) >= 0; }); });
+      var now = Date.now();
+      open.forEach(function (j) { var ds = String(j.bookingDate || j.dateRec || j.date || j.createdAt || '').slice(0, 10); var dt = ds ? new Date(ds) : null; j.__days = dt && !isNaN(+dt) ? Math.max(0, Math.round((now - +dt) / 86400000)) : 0; j.__date = ds; });
+      open.sort(function (x, y) { return y.__days - x.__days; });
+      var kpis = kpiRow([
+        { label: 'Total Open', value: num(a.totalOpen), hero: true }, { label: '0–3 days', value: num(a.b0_3) },
+        { label: '4–7 days', value: num(a.b4_7) }, { label: '8–15 days', value: num(a.b8_15) },
+        { label: '16+ days', value: num(a.b16), subClass: a.b16 ? 'down' : 'up', sub: a.b16 ? 'overdue' : 'ok' }
+      ], 5);
+      var rows = open.slice(0, 40).map(function (j) { return { id: esc(j.id || '—'), cust: esc(j.custName || j.customer || j.name || '—'), item: esc([j.brand, j.model].filter(Boolean).join(' ') || j.item || '—'), date: esc(j.__date || '—'), days: j.__days, status: esc(j.status || 'open'), __flag: j.__days > 15 }; });
+      var tbl = rows.length ? dataTable([{ key: 'id', label: 'Order No' }, { key: 'cust', label: 'Customer' }, { key: 'item', label: 'Watch' }, { key: 'date', label: 'Received', align: 'r' }, { key: 'days', label: 'Age (days)', align: 'r' }, { key: 'status', label: 'Status' }], rows) : '<div class="empty">No open service cases — all delivered.</div>';
+      var note = open.length > 40 ? '<div style="margin-top:8px;font-size:10px;color:#94a3b8">Showing 40 oldest of ' + open.length + ' open cases.</div>' : '';
+      var page = lhead('SERVICE — OPEN CASES AGING', 'Watch Service · Latur', longDate(curDate())) + kpis
+        + '<div style="margin-top:14px">' + card('Open Cases (oldest first)', a.b16 ? { cls: 'bad', txt: a.b16 + ' aged 16d+' } : { cls: 'ok', txt: 'none aged' }, { p0: true, html: tbl }, true) + '</div>' + note + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== SERVICE — JOB CARD (portrait, per case) ===== */
+    serviceJobCard: function (o) {
+      var arr = J('saagar_wsf_v2', []); arr = Array.isArray(arr) ? arr : [];
+      var j = o.id ? arr.filter(function (x) { return x.id === o.id; })[0] : (arr.filter(function (x) { return String(x.status || '').toLowerCase() !== 'closed'; })[0] || arr[0]);
+      if (!j) return { orientation: 'portrait', pages: [lhead('WATCH SERVICE — JOB CARD', 'Saagar Traders', longDate(curDate())) + '<div class="empty" style="margin-top:60px">No service cases.</div>' + foot()] };
+      var info = kvList([['Service Order', esc(j.id || '—')], ['Date Received', esc(j.dateRec || '—')], ['Advisor', esc(j.advisor || '—')], ['Expected Delivery', esc(j.expDel || '—')], ['Status', esc(j.status || 'open')]]);
+      var cust = kvList([['Customer', esc(j.custName || '—')], ['Mobile', esc(j.custMobile || '—')], ['Email', esc(j.custEmail || '—')]]);
+      var watch = kvList([['Brand', esc(j.brand || '—')], ['Model', esc(j.model || '—')], ['Reference No', esc(j.refNo || '—')], ['Serial No', esc(j.serialNo || '—')]]);
+      var items = Array.isArray(j.lineItems) ? j.lineItems.filter(function (l) { return l && (l.desc || l.description); }) : [];
+      var itemTbl = items.length ? dataTable([{ key: 'd', label: 'Description' }, { key: 'q', label: 'Qty', align: 'r' }, { key: 'u', label: 'Unit ₹', align: 'r' }, { key: 't', label: 'Total ₹', align: 'r' }], items.map(function (l) { return { d: esc(l.desc || l.description || '—'), q: l.qty || 1, u: inr(l.unit || 0), t: inr(l.total || 0) }; }), { totals: { d: 'Total Estimate', q: '', u: '', t: inr(j.estTotal || 0) } }) : '<div style="padding:11px 13px">Estimated Total: <b>' + inr(j.estTotal || 0) + '</b></div>';
+      var page = lhead('WATCH SERVICE — JOB CARD', 'Service Order ' + esc(j.id || ''), longDate(j.dateRec || curDate()))
+        + '<div class="grid">' + card('Case', null, info) + card('Customer', null, cust) + card('Watch Details', null, watch, true)
+        + card('Estimate', { cls: 'ok', txt: inr(j.estTotal || 0) }, { p0: !!items.length, html: itemTbl }, true) + '</div>'
+        + (j.diagnosis ? '<div style="margin-top:12px;font-size:11.5px"><b>Diagnosis:</b> ' + esc(j.diagnosis) + '</div>' : '')
+        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Customer Signature<b>' + esc(j.custName || '') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(j.advisor || 'Authorised') + '</b></div></div>'
+        + foot();
+      return { orientation: 'portrait', pages: [page] };
+    },
+
+    /* ===== ⭐ OWNER MONTHLY BRIEF (portrait) ===== */
+    ownerMonthly: function (o) {
+      var month = o.month || curMonth();
+      var e = expenseMonth(month), pay = G('computePayrollSummary', function () { return {}; })(), qm = monthQms(month);
+      var gm = G('computeGroomingMonth', function () { return { avg: 0, totalChecks: 0, daysWithData: 0 }; })(month), ca = G('computeCroAuditMonth', function () { return { avg: 0, totalAudits: 0 }; })(month);
+      var aging = G('computeServiceAging', function () { return { totalOpen: 0, b16: 0 }; })(), tax = G('computeTaxStatus', function () { return { overdue: 0, dueWeek: 0 }; })();
+      var perf = (function () { try { return computeEmployeePerformance(month) || []; } catch (e) { return []; } })();
+      var grossPay = Number(pay.gross) || 0;
+      var opSurplus = qm.sales - e.expTot - grossPay; // revenue = actual retail sales (QMS), not the partial expense-ledger income
+      var flags = [];
+      if (opSurplus < 0) flags.push('<b>Costs exceed sales</b> — operating surplus ' + inr(opSurplus));
+      if (qm.walkins >= 50 && qm.conversion < 25) flags.push('<b>Low monthly conversion</b> ' + qm.conversion + '%');
+      if (tax.overdue > 0) flags.push('<b>' + tax.overdue + ' overdue tax filing(s)</b>');
+      if (aging.b16 > 0) flags.push('<b>' + aging.b16 + ' service cases aged 16+ days</b>');
+      if (gm.avg && gm.avg < 80) flags.push('<b>Grooming avg ' + gm.avg + '%</b> below standard');
+      if (qm.sales && grossPay / qm.sales > 0.4) flags.push('<b>Payroll ' + Math.round(grossPay / qm.sales * 100) + '% of sales</b> — high cost ratio');
+      var kpis = kpiRow([
+        { label: 'Retail Sales', value: inr(qm.sales), hero: true }, { label: 'Conversion', value: pct(qm.conversion) },
+        { label: 'Op. Surplus', value: inr(opSurplus), subClass: opSurplus >= 0 ? 'up' : 'down', sub: opSurplus >= 0 ? 'positive' : 'negative' },
+        { label: 'Payroll (gross)', value: inr(grossPay) }, { label: 'Grooming avg', value: (gm.avg || 0) + '%' }, { label: 'Tax overdue', value: num(tax.overdue) }
+      ], 6);
+      var pnl = kvList([['Retail sales (QMS)', inr(qm.sales)], ['Ledger expenses', inr(e.expTot)], ['Payroll (gross)', inr(grossPay)], ['Operating surplus', inr(opSurplus), 'big'], ['Payroll % of sales', qm.sales ? Math.round(grossPay / qm.sales * 100) + '%' : '—']]);
+      var sales = kvList([['Walk-ins (month)', num(qm.walkins)], ['Purchases', num(qm.purchases)], ['Conversion', pct(qm.conversion)], ['QMS sales ₹', inr(qm.sales)]]);
+      var staff = kvList([['Headcount', num(pay.headcount || 0)], ['Payroll gross', inr(pay.gross || 0)], ['Payroll net', inr(pay.net || 0)], ['Payroll run', esc(pay.status || 'draft')], ['Grooming avg', (gm.avg || 0) + '% (' + gm.totalChecks + ' checks)'], ['CRO audit avg', (ca.avg || 0) + '/100 (' + ca.totalAudits + ' audits)']]);
+      var svc = kvList([['Open service cases', num(aging.totalOpen)], ['Aged 16+ days', (aging.b16 || 0) > 0 ? '<span class="pill bad">' + aging.b16 + '</span>' : '0'], ['Tax overdue', (tax.overdue || 0) > 0 ? '<span class="pill bad">' + tax.overdue + '</span>' : '0'], ['Tax due this week', num(tax.dueWeek)]]);
+      var topPerf = perf.slice(0, 8).map(function (r) { return { name: esc(r.name), firm: esc(r.firm || r.role || '—'), groom: (r.groomChecks ? r.groomPct + '%' : '—'), service: num(r.serviceJobs || 0), cash: num(r.cashStatements || 0) }; });
+      var perfTbl = topPerf.length ? dataTable([{ key: 'name', label: 'Employee' }, { key: 'firm', label: 'Role / Firm' }, { key: 'groom', label: 'Grooming', align: 'r' }, { key: 'service', label: 'Service jobs', align: 'r' }, { key: 'cash', label: 'Cash sheets', align: 'r' }], topPerf) : '<div class="empty">No staff performance data.</div>';
+      var page = lhead('OWNER MONTHLY BRIEF', 'Titan World + Helios · Latur', monthLong(month)) + attn(flags) + kpis
+        + '<div class="grid">'
+        + card('Profit & Loss', opSurplus >= 0 ? { cls: 'ok', txt: 'Surplus' } : { cls: 'bad', txt: 'Deficit' }, pnl)
+        + card('Sales & Conversion', null, sales)
+        + card('Staff & Quality', null, staff)
+        + card('Service & Compliance', ((aging.b16 || 0) > 0 || (tax.overdue || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' }, svc)
+        + card('Staff Performance — top contributors', null, { p0: true, html: perfTbl }, true)
+        + '</div>' + foot();
+      return { orientation: 'portrait', pages: [page] };
     }
   };
 
@@ -577,7 +707,12 @@
     payrollSlip: { title: 'Payroll — Salary Slip', scope: 'monthly', icon: '🧾' },
     leaveRegister: { title: 'Leave Register', scope: 'monthly', icon: '🌴' },
     groomingDaily: { title: 'Grooming — Daily Audit', scope: 'daily', icon: '✨' },
-    groomingMonthly: { title: 'Grooming — Monthly Trend', scope: 'monthly', icon: '📈' }
+    groomingMonthly: { title: 'Grooming — Monthly Trend', scope: 'monthly', icon: '📈' },
+    expenseMonthly: { title: 'Monthly Expense & P&L', scope: 'monthly', icon: '📒' },
+    taxReport: { title: 'Tax Compliance — Due Report', scope: 'monthly', icon: '⚖️' },
+    serviceAging: { title: 'Service — Open Cases Aging', scope: 'daily', icon: '🛠️' },
+    serviceJobCard: { title: 'Service — Job Card', scope: 'daily', icon: '📋' },
+    ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' }
   };
 
   /* ---------- render: page HTML → html2canvas → jsPDF (one image per A4 page) ---------- */
