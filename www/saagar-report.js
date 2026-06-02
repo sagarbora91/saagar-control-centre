@@ -384,27 +384,40 @@
       var d = G('computeDsrDay', function () { return { staff: [], present: 0, salesAmt: 0, salesCnt: 0 }; })(date);
       var recs = [], pre = 'saagar_dsr_' + date + '_';
       for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf(pre) === 0) { var r = J(k, {}) || {}; r.__name = r.staffName || k.slice(pre.length).replace(/_/g, ' '); recs.push(r); } }
-      if (!d.present) return { orientation: 'portrait', pages: [lhead('DAILY SALES REGISTER', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:60px">No sales register submitted for this date.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'DAILY SALES REGISTER', sub: 'Staff sales & activity · Latur', period: longDate(date) };
+      if (!d.present) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No sales register submitted for this date.' }] };
       var avg = d.salesCnt ? Math.round(d.salesAmt / d.salesCnt) : 0;
-      var kpis = kpiRow([
-        { label: 'Net Sales', value: inr(d.salesAmt), hero: true }, { label: 'Bills', value: num(d.salesCnt) },
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Net Sales', value: inr(d.salesAmt), hero: true },
+        { label: 'Bills', value: num(d.salesCnt) },
         { label: 'Staff Present', value: num(d.present) },
-        { label: 'Top Performer', value: esc((d.staff[0] && d.staff[0].name) || '—'), sub: d.staff[0] ? inr(d.staff[0].salesAmt) : '', subClass: 'neu' },
+        { label: 'Top Performer', value: (d.staff[0] && d.staff[0].name) || '—', sub: d.staff[0] ? inr(d.staff[0].salesAmt) : '' },
         { label: 'Avg / Bill', value: inr(avg) }
-      ], 5);
-      var staffRows = d.staff.map(function (s) { var r = recs.filter(function (x) { return x.__name === s.name; })[0] || {}; return { name: esc(s.name), role: esc(s.role || '—'), cnt: s.salesCnt, amt: inr(s.salesAmt), subm: r.submitted ? ('✓ ' + (r.submitTime || '')) : '✗' }; });
-      var staffTbl = dataTable([{ key: 'name', label: 'Staff' }, { key: 'role', label: 'Role' }, { key: 'cnt', label: 'Bills', align: 'r' }, { key: 'amt', label: 'Sales ₹', align: 'r' }, { key: 'subm', label: 'Submitted', align: 'c' }], staffRows, { totals: { name: 'Total', role: '', cnt: num(d.salesCnt), amt: inr(d.salesAmt), subm: '' } });
-      var bills = []; recs.forEach(function (r) { (Array.isArray(r.sales) ? r.sales : []).forEach(function (s) { var a = Number(s.amount) || 0; if (a > 0) bills.push({ billNo: esc(s.billNo || '—'), staff: esc(r.__name), product: esc(s.product || '—'), customer: esc(s.customer || '—'), source: (/qms/i.test(s.source || '') ? 'QMS' : 'Manual'), amount: a }); }); });
-      var billTbl = bills.length ? dataTable([{ key: 'billNo', label: 'Bill No' }, { key: 'staff', label: 'Staff' }, { key: 'product', label: 'Product' }, { key: 'customer', label: 'Customer' }, { key: 'source', label: 'Source', align: 'c' }, { key: 'amount', label: 'Amount ₹', align: 'r', fmt: inr }], bills, { totals: { billNo: 'Total', staff: '', product: '', customer: '', source: '', amount: inr(bills.reduce(function (a, b) { return a + b.amount; }, 0)) } }) : '<div class="empty">No bills recorded</div>';
-      var nps = []; recs.forEach(function (r) { (Array.isArray(r.nonpurch) ? r.nonpurch : []).forEach(function (n) { nps.push({ customer: esc(n.customer || n.name || '—'), mobile: esc(n.mobile || '—'), reason: esc(n.reason || '—') }); }); });
-      var npTbl = nps.length ? dataTable([{ key: 'customer', label: 'Customer' }, { key: 'mobile', label: 'Mobile' }, { key: 'reason', label: 'Reason' }], nps) : '<div class="empty">No lost walk-ins logged</div>';
-      var page = lhead('DAILY SALES REGISTER', 'Staff sales & activity · Latur', longDate(date)) + kpis
-        + '<div class="grid">'
-        + card('Staff Sales Summary', null, { p0: true, html: staffTbl }, true)
-        + card('Bill-Level Detail', { cls: 'ok', txt: num(bills.length) + ' bills' }, { p0: true, html: billTbl }, true)
-        + card('Lost Walk-ins (Non-Purchase)', nps.length ? { cls: 'warn', txt: num(nps.length) } : { cls: 'ok', txt: '0' }, { p0: true, html: npTbl }, true)
-        + '</div>' + foot();
-      return { orientation: 'portrait', pages: [page] };
+      ] }];
+      blocks.push({ t: 'section', title: 'Staff Sales Summary' });
+      blocks.push({ t: 'table',
+        head: [['Staff', 'Role', 'Bills', 'Sales ₹', 'Submitted']],
+        body: d.staff.map(function (s) { var r = recs.filter(function (x) { return x.__name === s.name; })[0] || {}; return [s.name, s.role || '—', num(s.salesCnt), inr(s.salesAmt), r.submitted ? ('Yes ' + (r.submitTime || '')) : '—']; }),
+        money: [3],
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 84 }, 2: { cellWidth: 48, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' }, 4: { cellWidth: 96, halign: 'center' } },
+        foot: [['Total', '', num(d.salesCnt), inr(d.salesAmt), '']] });
+      var bills = []; recs.forEach(function (r) { (Array.isArray(r.sales) ? r.sales : []).forEach(function (s) { var a = Number(s.amount) || 0; if (a > 0) bills.push({ billNo: s.billNo || '—', staff: r.__name, product: s.product || '—', customer: s.customer || '—', source: (/qms/i.test(s.source || '') ? 'QMS' : 'Manual'), amount: a }); }); });
+      var billSum = bills.reduce(function (a, b) { return a + b.amount; }, 0);
+      blocks.push({ t: 'section', title: 'Bill-Level Detail', tag: { cls: 'ok', txt: num(bills.length) + ' bills' } });
+      if (bills.length) {
+        blocks.push({ t: 'table',
+          head: [['Bill No', 'Staff', 'Product', 'Customer', 'Source', 'Amount ₹']],
+          body: bills.map(function (b) { return [b.billNo, trunc(b.staff, 18), trunc(b.product, 26), trunc(b.customer, 22), b.source, inr(b.amount)]; }),
+          raw: bills.map(function (b) { return [0, 0, 0, 0, 0, b.amount]; }),
+          money: [5],
+          colStyles: { 0: { cellWidth: 56 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 86 }, 4: { cellWidth: 50, halign: 'center' }, 5: { cellWidth: 80, halign: 'right' } },
+          foot: [['Total', '', '', '', '', inr(billSum)]] });
+      } else { blocks.push({ t: 'empty', text: 'No bills recorded.' }); }
+      var nps = []; recs.forEach(function (r) { (Array.isArray(r.nonpurch) ? r.nonpurch : []).forEach(function (n) { nps.push({ customer: n.customer || n.name || '—', mobile: n.mobile || '—', reason: n.reason || '—' }); }); });
+      blocks.push({ t: 'section', title: 'Lost Walk-ins (Non-Purchase)', tag: nps.length ? { cls: 'warn', txt: num(nps.length) } : { cls: 'ok', txt: '0' } });
+      if (nps.length) { blocks.push({ t: 'table', head: [['Customer', 'Mobile', 'Reason']], body: nps.map(function (n) { return [trunc(n.customer, 30), n.mobile, trunc(n.reason, 44)]; }), colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96 }, 2: { cellWidth: 'auto' } } }); }
+      else { blocks.push({ t: 'empty', text: 'No lost walk-ins logged.' }); }
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== QMS — DAILY QUEUE & CONVERSION (landscape) ===== */
@@ -414,28 +427,42 @@
       var st = J('retail_queue_management_v1', {}) || {}; var custs = Array.isArray(st.customers) ? st.customers : [], cros = Array.isArray(st.cros) ? st.cros : [];
       var nameOf = function (id) { var c = cros.filter(function (x) { return x.id === id; })[0]; return c ? c.name : 'Unassigned'; };
       var day = custs.filter(function (c) { return String(c.entryTime || '').slice(0, 10) === date; });
-      if (!q.total) return { orientation: 'landscape', pages: [lhead('QUEUE & CONVERSION REPORT', 'Saagar Traders · Latur', longDate(date)) + '<div class="empty" style="margin-top:50px">No queue activity recorded for this date.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'QUEUE & CONVERSION REPORT', sub: 'Walk-in funnel · Latur', period: longDate(date) };
+      if (!q.total) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'No queue activity recorded for this date.' }] };
       var top = (q.byCro || []).slice().sort(function (a, b) { return (b.purchases / Math.max(1, b.walkins)) - (a.purchases / Math.max(1, a.walkins)); })[0];
-      var kpis = kpiRow([
-        { label: 'Walk-ins', value: num(q.total) }, { label: 'Purchases', value: num(q.purchases) },
-        { label: 'Conversion', value: pct(q.conversion), hero: true }, { label: 'Sales ₹', value: inr(q.sales) },
+      var blocks = [hdr, { t: 'kpi', cols: 6, items: [
+        { label: 'Walk-ins', value: num(q.total) },
+        { label: 'Purchases', value: num(q.purchases) },
+        { label: 'Conversion', value: pct(q.conversion), hero: true },
+        { label: 'Sales ₹', value: inr(q.sales) },
         { label: 'Non-Purchase', value: num(q.nonPurchase) },
-        { label: 'Top CRO', value: esc((top && top.cro) || '—'), sub: top ? pct(Math.round(top.purchases / Math.max(1, top.walkins) * 100)) : '', subClass: 'neu' }
-      ], 6);
-      var croRows = (q.byCro || []).map(function (c) { return { cro: esc(c.cro), walkins: c.walkins, purchases: c.purchases, conv: c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—', sales: inr(c.sales), __flag: (c.walkins >= 3 && c.purchases / c.walkins < 0.2) }; });
-      var croTbl = dataTable([{ key: 'cro', label: 'CRO' }, { key: 'walkins', label: 'Walk-ins', align: 'r' }, { key: 'purchases', label: 'Purchases', align: 'r' }, { key: 'conv', label: 'Conv %', align: 'r' }, { key: 'sales', label: 'Sales ₹', align: 'r' }], croRows, { totals: { cro: 'Total', walkins: num(q.total), purchases: num(q.purchases), conv: pct(q.conversion), sales: inr(q.sales) } });
+        { label: 'Top CRO', value: (top && top.cro) || '—', sub: top ? pct(Math.round(top.purchases / Math.max(1, top.walkins) * 100)) : '' }
+      ] }];
+      var croFlags = [], croBody = (q.byCro || []).map(function (c, i) { croFlags[i] = (c.walkins >= 3 && c.purchases / c.walkins < 0.2); return [c.cro, num(c.walkins), num(c.purchases), (c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—'), inr(c.sales)]; });
+      blocks.push({ t: 'section', title: 'CRO Performance' });
+      blocks.push({ t: 'table',
+        head: [['CRO', 'Walk-ins', 'Purchases', 'Conv %', 'Sales ₹']],
+        body: croBody, money: [4], flagRows: croFlags,
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96, halign: 'right' }, 2: { cellWidth: 96, halign: 'right' }, 3: { cellWidth: 84, halign: 'right' }, 4: { cellWidth: 130, halign: 'right' } },
+        foot: [['Total', num(q.total), num(q.purchases), pct(q.conversion), inr(q.sales)]] });
       var lr = {}; day.filter(function (c) { return /non.?purchase/i.test(c.outcome || ''); }).forEach(function (c) { var k = c.lostReason || 'Not specified'; if (!lr[k]) lr[k] = { reason: k, count: 0, val: 0 }; lr[k].count++; lr[k].val += Number(c.lostValue) || 0; });
-      var lrRows = Object.keys(lr).map(function (k) { return lr[k]; }).sort(function (a, b) { return b.count - a.count; }).map(function (x) { return { reason: esc(x.reason), count: x.count, val: inr(x.val) }; });
-      var lrTbl = lrRows.length ? dataTable([{ key: 'reason', label: 'Reason' }, { key: 'count', label: 'Count', align: 'r' }, { key: 'val', label: 'Est. Lost ₹', align: 'r' }], lrRows) : '<div class="empty">No lost-sale reasons logged</div>';
-      var pb = day.filter(function (c) { return c.outcome === 'Purchase'; }).map(function (c) { return { q: esc(c.queueNo || '—'), name: esc(c.name || '—'), bill: esc(c.billNo || '—'), cat: esc(c.purchaseCategory || '—'), pay: esc(c.paymentMode || '—'), cro: esc(nameOf(c.assignedCroId)), amt: inr(Number(c.purchaseAmount) || 0) }; });
-      var pbTbl = pb.length ? dataTable([{ key: 'q', label: 'Queue' }, { key: 'name', label: 'Customer' }, { key: 'bill', label: 'Bill' }, { key: 'cat', label: 'Category' }, { key: 'pay', label: 'Pay' }, { key: 'cro', label: 'CRO' }, { key: 'amt', label: 'Amount ₹', align: 'r' }], pb, { totals: { q: 'Total', name: '', bill: '', cat: '', pay: '', cro: '', amt: inr(q.sales) } }) : '<div class="empty">No purchase bills</div>';
-      var page = lhead('QUEUE & CONVERSION REPORT', 'Walk-in funnel · Latur', longDate(date)) + kpis
-        + '<div class="grid">'
-        + card('CRO Performance', null, { p0: true, html: croTbl })
-        + card('Lost Sales — by reason', lrRows.length ? { cls: 'warn', txt: num(q.nonPurchase) } : { cls: 'ok', txt: '0' }, { p0: true, html: lrTbl })
-        + card('Purchase Bills', { cls: 'ok', txt: num(pb.length) }, { p0: true, html: pbTbl }, true)
-        + '</div>' + foot();
-      return { orientation: 'landscape', pages: [page] };
+      var lrRows = Object.keys(lr).map(function (k) { return lr[k]; }).sort(function (a, b) { return b.count - a.count; });
+      blocks.push({ t: 'section', title: 'Lost Sales — by reason', tag: lrRows.length ? { cls: 'warn', txt: num(q.nonPurchase) } : { cls: 'ok', txt: '0' } });
+      if (lrRows.length) { blocks.push({ t: 'table', head: [['Reason', 'Count', 'Est. Lost ₹']], body: lrRows.map(function (x) { return [trunc(x.reason, 48), num(x.count), inr(x.val)]; }), money: [2], colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 90, halign: 'right' }, 2: { cellWidth: 150, halign: 'right' } } }); }
+      else { blocks.push({ t: 'empty', text: 'No lost-sale reasons logged.' }); }
+      var pb = day.filter(function (c) { return c.outcome === 'Purchase'; }).map(function (c) { return { q: c.queueNo || '—', name: c.name || '—', bill: c.billNo || '—', cat: c.purchaseCategory || '—', pay: c.paymentMode || '—', cro: nameOf(c.assignedCroId), amt: Number(c.purchaseAmount) || 0 }; });
+      var pbSum = pb.reduce(function (a, b) { return a + b.amt; }, 0);
+      blocks.push({ t: 'section', title: 'Purchase Bills', tag: { cls: 'ok', txt: num(pb.length) } });
+      if (pb.length) {
+        blocks.push({ t: 'table',
+          head: [['Queue', 'Customer', 'Bill', 'Category', 'Pay', 'CRO', 'Amount ₹']],
+          body: pb.map(function (c) { return [c.q, trunc(c.name, 22), c.bill, trunc(c.cat, 18), trunc(c.pay, 12), trunc(c.cro, 18), inr(c.amt)]; }),
+          raw: pb.map(function (c) { return [0, 0, 0, 0, 0, 0, c.amt]; }),
+          money: [6],
+          colStyles: { 0: { cellWidth: 50, halign: 'right' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 72 }, 3: { cellWidth: 104 }, 4: { cellWidth: 72 }, 5: { cellWidth: 112 }, 6: { cellWidth: 98, halign: 'right' } },
+          foot: [['Total', '', '', '', '', '', inr(pbSum)]] });
+      } else { blocks.push({ t: 'empty', text: 'No purchase bills.' }); }
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== CRO — DAILY AUDIT SCORECARD (landscape) ===== */
@@ -625,17 +652,23 @@
       var now = Date.now();
       open.forEach(function (j) { var ds = String(j.bookingDate || j.dateRec || j.date || j.createdAt || '').slice(0, 10); var dt = ds ? new Date(ds) : null; j.__days = dt && !isNaN(+dt) ? Math.max(0, Math.round((now - +dt) / 86400000)) : 0; j.__date = ds; });
       open.sort(function (x, y) { return y.__days - x.__days; });
-      var kpis = kpiRow([
-        { label: 'Total Open', value: num(a.totalOpen), hero: true }, { label: '0–3 days', value: num(a.b0_3) },
-        { label: '4–7 days', value: num(a.b4_7) }, { label: '8–15 days', value: num(a.b8_15) },
+      var hdr = { t: 'header', title: 'SERVICE — OPEN CASES AGING', sub: 'Watch Service · Latur', period: longDate(curDate()) };
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Total Open', value: num(a.totalOpen), hero: true },
+        { label: '0–3 days', value: num(a.b0_3) },
+        { label: '4–7 days', value: num(a.b4_7) },
+        { label: '8–15 days', value: num(a.b8_15) },
         { label: '16+ days', value: num(a.b16), subClass: a.b16 ? 'down' : 'up', sub: a.b16 ? 'overdue' : 'ok' }
-      ], 5);
-      var rows = open.slice(0, 40).map(function (j) { return { id: esc(j.id || '—'), cust: esc(j.custName || j.customer || j.name || '—'), item: esc([j.brand, j.model].filter(Boolean).join(' ') || j.item || '—'), date: esc(j.__date || '—'), days: j.__days, status: esc(j.status || 'open'), __flag: j.__days > 15 }; });
-      var tbl = rows.length ? dataTable([{ key: 'id', label: 'Order No' }, { key: 'cust', label: 'Customer' }, { key: 'item', label: 'Watch' }, { key: 'date', label: 'Received', align: 'r' }, { key: 'days', label: 'Age (days)', align: 'r' }, { key: 'status', label: 'Status' }], rows) : '<div class="empty">No open service cases — all delivered.</div>';
-      var note = open.length > 40 ? '<div style="margin-top:8px;font-size:10px;color:#94a3b8">Showing 40 oldest of ' + open.length + ' open cases.</div>' : '';
-      var page = lhead('SERVICE — OPEN CASES AGING', 'Watch Service · Latur', longDate(curDate())) + kpis
-        + '<div style="margin-top:14px">' + card('Open Cases (oldest first)', a.b16 ? { cls: 'bad', txt: a.b16 + ' aged 16d+' } : { cls: 'ok', txt: 'none aged' }, { p0: true, html: tbl }, true) + '</div>' + note + foot();
-      return { orientation: 'portrait', pages: [page] };
+      ] }];
+      blocks.push({ t: 'section', title: 'Open Cases (oldest first)', tag: a.b16 ? { cls: 'bad', txt: a.b16 + ' aged 16d+' } : { cls: 'ok', txt: 'none aged' } });
+      if (!open.length) { blocks.push({ t: 'empty', text: 'No open service cases — all delivered.' }); return { orientation: 'portrait', blocks: blocks }; }
+      blocks.push({ t: 'table',
+        head: [['Order No', 'Customer', 'Watch', 'Received', 'Age (days)', 'Status']],
+        body: open.map(function (j) { return [j.id || '—', trunc(j.custName || j.customer || j.name || '—', 24), trunc([j.brand, j.model].filter(Boolean).join(' ') || j.item || '—', 26), j.__date || '—', num(j.__days), j.status || 'open']; }),
+        flagRows: open.map(function (j) { return j.__days > 15; }),
+        pills: [5],
+        colStyles: { 0: { cellWidth: 78 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 78, halign: 'right' }, 4: { cellWidth: 68, halign: 'right' }, 5: { cellWidth: 92, halign: 'center' } } });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== SERVICE — JOB CARD (portrait, per case) ===== */
@@ -761,7 +794,7 @@
     text: function(s){ return String(s==null?'':s)
         .replace(/[\u{1F000}-\u{1FAFF}]/gu,'').replace(/[\u{2600}-\u{27BF}]/gu,'')
         .replace(/[✅⛔✔✖✗️⭐]/g,'')
-        .replace(/≥/g,'>=').replace(/≤/g,'<=')
+        .replace(/≥/g,'>=').replace(/≤/g,'<=').replace(/…/g,'...')
         .replace(/\s+/g,' ').trim(); },
     flags: function(arr){ return (arr||[]).map(SAN.text).filter(Boolean); }
   };
@@ -905,6 +938,7 @@
 
   /* ---- table support: formatting, pills, deterministic carry ---- */
   function formatCell(d, blk){
+    if(d.cell && d.cell.text && d.cell.text.length){ d.cell.text = d.cell.text.map(function(t){ return SAN.text(t); }); }  // strip any stray emoji/symbol in real data
     if(d.section==='foot'){ d.cell.styles.halign=(d.column.index===0?'left':'right'); return; }
     if(d.section!=='body') return;
     if(blk.money && blk.money.indexOf(d.column.index)>=0){ d.cell.styles.halign='right'; d.cell.styles.fontStyle='bold'; d.cell.styles.textColor=PAL.NAVY; }
@@ -926,6 +960,7 @@
     _txt(doc,tc); doc.text(label, d.cell.x+d.cell.width/2, cy+h/2+2.6, {align:'center'});
   }
   function fmtLD(v){ v=Number(v)||0; return (v%1)? v.toFixed(1) : String(Math.round(v)); }
+  function trunc(s, n){ s=String(s==null?'':s); return s.length>n ? s.slice(0, n-2)+'...' : s; }
   function fmtCarry(blk, ci, val){ var f=(blk.fmt&&blk.fmt[ci])||inr; return f(val); }
   function prepCarry(blk){
     blk._cum={};
