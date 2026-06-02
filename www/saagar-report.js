@@ -496,25 +496,28 @@
         flagRows: rows.map(function (r) { return (Number(r.pct) || 0) < 80; }),
         pills: [5],
         colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 66 }, 2: { cellWidth: 52, halign: 'right' }, 3: { cellWidth: 70, halign: 'center' }, 4: { cellWidth: 54, halign: 'center' }, 5: { cellWidth: 76, halign: 'center' } } });
-      /* 2) full per-CRO checklist — EVERY parameter, pass and fail, failed rows highlighted (no "+N" truncation) */
-      blocks.push({ t: 'section', title: 'Per-CRO Parameter Checklist' });
-      blocks.push({ t: 'note', text: 'Full grooming checklist for each CRO, worst score first. Failed parameters are highlighted in pink — these are the exact items counted in the "Failed" column above.' });
-      rows.forEach(function (r) {
-        var pct = (Number(r.pct) || 0), pass = pct >= 80;
-        var items = Array.isArray(r.items) ? r.items : [];
-        blocks.push({ t: 'section', title: r.name || '—', tag: pass ? { cls: 'ok', txt: pct + '% PASS' } : { cls: 'bad', txt: pct + '% BELOW 80%' } });
-        blocks.push({ t: 'statline', spans: [['Gender', r.gender === 'f' ? 'Female' : 'Male'], ['Score', pct + '%'], ['Passed', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—')], ['Failed', String(failCount(r))], ['Audited', r.time || '—']] });
-        if (items.length) {
-          blocks.push({ t: 'table',
-            head: [['#', 'Grooming Parameter', 'Result']],
-            body: items.map(function (it, i) { return [String(i + 1), it.label || '—', it.passed ? 'Pass' : 'Fail']; }),
-            flagRows: items.map(function (it) { return !it.passed; }),
-            pills: [2],
-            colStyles: { 0: { cellWidth: 26, halign: 'center' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 76, halign: 'center' } } });
-        } else {
-          blocks.push({ t: 'note', text: 'No per-parameter breakdown was stored for this entry.' });
-        }
-      });
+      /* 2) failures-only detail — ONLY CROs with >=1 missed parameter (worst score first); clean CROs are already in the summary above */
+      blocks.push({ t: 'section', title: 'Failures Detail' });
+      var failing = rows.filter(function (r) { return failCount(r) > 0; });
+      if (!failing.length) {
+        blocks.push({ t: 'note', text: 'All CROs passed every grooming parameter — nothing to action today.' });
+      } else {
+        failing.forEach(function (r) {
+          var pct = (Number(r.pct) || 0), pass = pct >= 80, fc = failCount(r), fails = failedLabels(r);
+          /* tag reflects the REAL pass/fail state: a CRO can score >=80% (Pass) yet still miss a few items */
+          blocks.push({ t: 'section', title: r.name || '—', tag: pass ? { cls: 'warn', txt: pct + '% · ' + fc + ' to fix' } : { cls: 'bad', txt: pct + '% BELOW 80%' } });
+          blocks.push({ t: 'statline', spans: [['Gender', r.gender === 'f' ? 'Female' : 'Male'], ['Score', pct + '%'], ['Passed', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—')], ['Failed', String(fc)], ['Audited', r.time || '—']] });
+          if (fails.length) {
+            blocks.push({ t: 'table',
+              head: [['#', 'Failed Parameter']],
+              body: fails.map(function (label, i) { return [String(i + 1), label]; }),
+              flagRows: fails.map(function () { return true; }),
+              colStyles: { 0: { cellWidth: 26, halign: 'center' }, 1: { cellWidth: 'auto' } } });
+          } else {
+            blocks.push({ t: 'note', text: 'Per-parameter breakdown not stored — ' + fc + ' parameter(s) failed.' });
+          }
+        });
+      }
       return { orientation: 'portrait', blocks: blocks };
     },
 
