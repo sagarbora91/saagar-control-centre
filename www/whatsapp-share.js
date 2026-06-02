@@ -189,6 +189,12 @@
       catch (e) { notify('Print is not available here'); }
       return;
     }
+    // Prefer the new enterprise report engine: build a clean, data-driven A4 report for the
+    // open module instead of screenshotting its live screen. Falls back to the legacy buildPdf
+    // only if no report is mapped or the engine isn't present.
+    var modId = null; try { modId = (typeof activeModuleId !== 'undefined') ? activeModuleId : null; } catch (e) {}
+    var rType = (window.SaagarReport && modId) ? window.SaagarReport.forModule(modId) : null;
+    if (rType && window.SaagarReport) { window.SaagarReport.generate(rType, {}); return; }
     notify('Preparing PDF for WhatsApp…');
     setTimeout(function () {
       buildPdf(doc)

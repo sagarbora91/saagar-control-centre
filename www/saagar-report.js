@@ -798,6 +798,27 @@
       }).catch(function (e) { try { toast('Could not build report: ' + (e && e.message || e)); } catch (_) {} });
     },
     list: function () { return Object.keys(META).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
+    forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
+    openHub: function () {
+      var el = function (i) { return document.getElementById(i); };
+      var groups = { Daily: [], Monthly: [] };
+      Object.keys(META).forEach(function (k) { (META[k].scope === 'monthly' ? groups.Monthly : groups.Daily).push({ type: k, t: META[k].title, i: META[k].icon }); });
+      function btns(arr) { return arr.map(function (r) { return '<button onclick="SaagarReport.fromHub(\'' + r.type + '\')" style="display:flex;align-items:center;gap:9px;text-align:left;padding:11px 13px;border:1px solid #e3e8f0;border-radius:10px;background:#fff;font:600 13px inherit;color:#0d2340;cursor:pointer;width:100%"><span style="font-size:17px">' + r.i + '</span>' + esc(r.t) + '</button>'; }).join(''); }
+      var body = '<div>'
+        + '<div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;font-size:12px;color:#475569"><label>Date <input id="rptDate" type="date" value="' + curDate() + '" style="padding:6px 8px;border:1px solid #cbd6e4;border-radius:8px;font:inherit"></label><label>Month <input id="rptMonth" type="month" value="' + curMonth() + '" style="padding:6px 8px;border:1px solid #cbd6e4;border-radius:8px;font:inherit"></label></div>'
+        + '<div style="font:800 11px inherit;letter-spacing:.5px;color:#64748b;text-transform:uppercase;margin:4px 0 8px">Daily reports</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + btns(groups.Daily) + '</div>'
+        + '<div style="font:800 11px inherit;letter-spacing:.5px;color:#64748b;text-transform:uppercase;margin:16px 0 8px">Monthly reports</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + btns(groups.Monthly) + '</div>'
+        + '<p style="font-size:11px;color:#8295ad;margin-top:14px">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p></div>';
+      if (el('modalTitle')) el('modalTitle').textContent = 'Generate Report (PDF)';
+      if (el('modalBody')) el('modalBody').innerHTML = body;
+      if (window.openModal) window.openModal();
+    },
+    fromHub: function (type) {
+      var el = function (i) { return document.getElementById(i); };
+      var d = (el('rptDate') && el('rptDate').value) || curDate(), m = (el('rptMonth') && el('rptMonth').value) || curMonth();
+      if (window.closeModal) window.closeModal();
+      return this.generate(type, { date: d, month: m });
+    },
     _buildModel: buildModel // for tests
   };
 })();
