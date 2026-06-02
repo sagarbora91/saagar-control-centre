@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SAAGAR CONTROL CENTRE — DEMO DATA SEEDER  (verification build only)
    ───────────────────────────────────────────────────────────────────────────
-   Populates ~30 days of cross-consistent dummy data across all 10 modules so the
+   Populates ~180 days (6 months) of cross-consistent dummy data across all 10 modules so the
    owner can click through every module + Report and confirm they work under load.
    • Runs ONCE on first launch (guarded by saagar_demo_seeded). Factory Reset sets
      that flag to 'cleared' so a reset device stays clean and never re-seeds.
@@ -29,7 +29,7 @@
 
   /* ── date helpers: last N calendar days, noon-anchored so the YYYY-MM-DD is
         stable whether a module slices it as local or UTC ── */
-  var DAYS = 30;
+  var DAYS = 180;   // 6 months of daily entries (was 30 = 1 month)
   var today = new Date(); today.setHours(12, 0, 0, 0);
   function dayN(k) { var d = new Date(today); d.setDate(d.getDate() - k); d.setHours(12, 0, 0, 0); return d; }
   function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -112,7 +112,8 @@
   var qCustomers = [];
   var dsrByDay = {};                    // dateStr -> croName -> [sales]
   DSTR.forEach(function (ds, di) {
-    var count = ri(25, 30);
+    if (isWeekend(new Date(ds + 'T12:00:00'))) return;   // store closed Sundays (no walk-ins)
+    var count = ri(7, 12);
     for (var c = 0; c < count; c++) {
       var cro = qCros[(di + c) % qCros.length];        // rotation
       var roll = rnd();
@@ -146,6 +147,7 @@
      days. (35-category stock left light — submit gate is UI-only, readers don't enforce.) */
   var dsrStaff = {};
   DSTR.forEach(function (ds, di) {
+    if (isWeekend(new Date(ds + 'T12:00:00'))) return;   // no DSR on closed Sundays
     var perCro = dsrByDay[ds] || {};
     CRO_NAMES.forEach(function (name) {
       var sales = (perCro[name] || []).slice();
@@ -166,11 +168,15 @@
   });
   set('saagar_dsr_staff', Object.keys(dsrStaff));
 
-  /* ════════════════════ SERVICE  (saagar_wsf_v2)  — 400 cases, 100 open / 300 closed ════════════════════ */
+  /* ════════════════════ SERVICE  (saagar_wsf_v2)  — 600 cases, 80 open / 520 closed ════════════════════ */
   var WSC = []; var BRANDS_ALL = BR_T.concat(BR_H, ['Titan', 'Casio', 'Fossil', 'Rolex (genuine?)']);
-  for (var s = 0; s < 400; s++) {
-    var di2 = s % DSTR.length; var ds2 = DSTR[di2];
-    var closed = s >= 100;                              // first 100 open, rest closed
+  var SVC_OPEN = 80, SVC_CLOSED = 520, SVC_TOTAL = SVC_OPEN + SVC_CLOSED;   // 6-month service book
+  var svcRecent = Math.min(21, DSTR.length - 1);      // open cases land in the last ~3 weeks -> realistic 0-21d aging
+  for (var s = 0; s < SVC_TOTAL; s++) {
+    var open = s >= SVC_CLOSED;                         // the last SVC_OPEN cases are still open
+    var di2 = open ? (DSTR.length - 1 - ri(0, svcRecent)) : ri(0, DSTR.length - 1);
+    var ds2 = DSTR[di2];
+    var closed = !open;
     var amt = ri(2, 30) * 100;
     var wc = { id: 'WS-' + curYear + '-' + String(s + 1).padStart(3, '0'), status: closed ? 'closed' : 'open', prog: closed ? 100 : ri(20, 80),
       createdAt: ds2 + 'T09:30:00.000Z', dateRec: ds2, custName: pick(FIRSTN) + ' ' + pick(LASTN), custMobile: '97' + String(10000000 + ri(0, 9999999)).slice(0, 8),
@@ -221,8 +227,8 @@
   /* ════════════════════ GROOMING  (saagar_grooming_<date>) ════════════════════ */
   var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied—no oil', 'Sideburns ≤ mid-ear', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Sleeves not rolled', 'Name badge visible', 'Hand gloves worn', 'Shoes black & polished', 'Belt black & visible', 'Watch simple', 'Max one ring/hand', 'Nails clean & trimmed'];
   var CRIT_F = ['Neat bun', 'Black band & pins', 'Hair off face', 'Natural colour—no oil', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Name badge visible', 'Shoes black & polished', 'Belt black & visible', 'One pair studs/small hoops', 'Watch simple', 'Nails clean & trimmed', 'Lipstick nude only', 'Nail polish nude only'];
-  DSTR.forEach(function (ds) {
-    if (isWeekend(new Date(ds + 'T12:00:00'))) return;
+  DSTR.forEach(function (ds, di) {
+    if (isWeekend(new Date(ds + 'T12:00:00')) || di % 2) return;   // grooming audited ~every other working day
     var arr = EMP.filter(function (e) { return e.role === 'CRO'; }).map(function (e) {
       var g = e.gender === 'F' ? 'f' : 'm'; var crit = g === 'f' ? CRIT_F : CRIT_M;
       var checked = ri(11, 15);
@@ -324,6 +330,7 @@
      (matched day). Internal store keys are lowercase titanworld / helios. */
   var STORES = [['titanworld', BR_T.slice(0, 6)], ['helios', BR_H.slice(0, 5)]];
   DSTR.forEach(function (ds) {
+    if (isWeekend(new Date(ds + 'T12:00:00'))) return;   // no stock count on closed Sundays
     STORES.forEach(function (st) {
       var brands = st[1], opening = {}, movements = {}, closing = {};
       brands.forEach(function (b) {
@@ -343,6 +350,6 @@
   set('gm_role', 'owner');
   set('saagar_owner_name', 'Sagar');
   // mark seeded LAST so a crash mid-seed re-runs cleanly next launch
-  set('saagar_demo_seeded', 'v1');
+  set('saagar_demo_seeded', 'v2_6mo');
   try { console.log('[demo-seed] seeded ' + DSTR.length + ' days · ' + qCustomers.length + ' QMS · ' + WSC.length + ' service · ' + payRows.length + ' payroll · ' + audits.length + ' CRO audits'); } catch (e) {}
 })();
