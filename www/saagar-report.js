@@ -485,13 +485,36 @@
         { label: 'Perfect 100%', value: num(perfect) },
         { label: 'Day Average', value: g.avg + '%', hero: true }
       ] }];
-      blocks.push({ t: 'section', title: 'CRO Grooming Checks', tag: below ? { cls: 'warn', txt: below + ' below 80%' } : { cls: 'ok', txt: 'All >=80%' } });
       var rows = arr.slice().sort(function (a, b) { return (Number(a.pct) || 0) - (Number(b.pct) || 0); });
+      function failedLabels(r) { return (Array.isArray(r.items) ? r.items.filter(function (i) { return i && !i.passed; }).map(function (i) { return i.label; }) : []).filter(Boolean); }
+      function failCount(r) { return Array.isArray(r.items) ? failedLabels(r).length : Math.max(0, (Number(r.total) || 0) - (Number(r.checked) || 0)); }
+      /* 1) at-a-glance summary — one row per CRO (worst first); 'Failed' is the exact count, expanded in full below */
+      blocks.push({ t: 'section', title: 'CRO Grooming Summary', tag: below ? { cls: 'bad', txt: below + ' below 80%' } : { cls: 'ok', txt: 'All >=80%' } });
       blocks.push({ t: 'table',
-        head: [['CRO', 'Gender', 'Score', 'Passed', 'Time', 'Failed Parameters']],
-        body: rows.map(function (r) { var failed = (Array.isArray(r.items) ? r.items.filter(function (i) { return i && !i.passed; }).map(function (i) { return i.label; }) : []).filter(Boolean); var fstr = failed.length ? (failed.length + ' failed: ' + failed[0] + (failed.length > 1 ? ' +' + (failed.length - 1) : '')) : 'All passed'; return [trunc(r.name || '—', 22), r.gender === 'f' ? 'Female' : 'Male', (Number(r.pct) || 0) + '%', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—'), r.time || '—', fstr]; }),
+        head: [['CRO', 'Gender', 'Score', 'Passed', 'Failed', 'Result']],
+        body: rows.map(function (r) { var pass = (Number(r.pct) || 0) >= 80; return [trunc(r.name || '—', 26), r.gender === 'f' ? 'Female' : 'Male', (Number(r.pct) || 0) + '%', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—'), String(failCount(r)), pass ? 'Pass' : 'Fail']; }),
         flagRows: rows.map(function (r) { return (Number(r.pct) || 0) < 80; }),
-        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 66 }, 2: { cellWidth: 54, halign: 'right' }, 3: { cellWidth: 66, halign: 'center' }, 4: { cellWidth: 64 }, 5: { cellWidth: 'auto' } } });
+        pills: [5],
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 66 }, 2: { cellWidth: 52, halign: 'right' }, 3: { cellWidth: 70, halign: 'center' }, 4: { cellWidth: 54, halign: 'center' }, 5: { cellWidth: 76, halign: 'center' } } });
+      /* 2) full per-CRO checklist — EVERY parameter, pass and fail, failed rows highlighted (no "+N" truncation) */
+      blocks.push({ t: 'section', title: 'Per-CRO Parameter Checklist' });
+      blocks.push({ t: 'note', text: 'Full grooming checklist for each CRO, worst score first. Failed parameters are highlighted in pink — these are the exact items counted in the "Failed" column above.' });
+      rows.forEach(function (r) {
+        var pct = (Number(r.pct) || 0), pass = pct >= 80;
+        var items = Array.isArray(r.items) ? r.items : [];
+        blocks.push({ t: 'section', title: r.name || '—', tag: pass ? { cls: 'ok', txt: pct + '% PASS' } : { cls: 'bad', txt: pct + '% BELOW 80%' } });
+        blocks.push({ t: 'statline', spans: [['Gender', r.gender === 'f' ? 'Female' : 'Male'], ['Score', pct + '%'], ['Passed', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—')], ['Failed', String(failCount(r))], ['Audited', r.time || '—']] });
+        if (items.length) {
+          blocks.push({ t: 'table',
+            head: [['#', 'Grooming Parameter', 'Result']],
+            body: items.map(function (it, i) { return [String(i + 1), it.label || '—', it.passed ? 'Pass' : 'Fail']; }),
+            flagRows: items.map(function (it) { return !it.passed; }),
+            pills: [2],
+            colStyles: { 0: { cellWidth: 26, halign: 'center' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 76, halign: 'center' } } });
+        } else {
+          blocks.push({ t: 'note', text: 'No per-parameter breakdown was stored for this entry.' });
+        }
+      });
       return { orientation: 'portrait', blocks: blocks };
     },
 
@@ -602,11 +625,11 @@
       blocks.push({ t: 'section', title: 'Open Cases (oldest first)', tag: a.b16 ? { cls: 'bad', txt: a.b16 + ' aged 16d+' } : { cls: 'ok', txt: 'none aged' } });
       if (!open.length) { blocks.push({ t: 'empty', text: 'No open service cases — all delivered.' }); return { orientation: 'portrait', blocks: blocks }; }
       blocks.push({ t: 'table',
-        head: [['Order No', 'Customer', 'Watch', 'Received', 'Age (days)', 'Status']],
-        body: open.map(function (j) { return [j.id || '—', trunc(j.custName || j.customer || j.name || '—', 24), trunc([j.brand, j.model].filter(Boolean).join(' ') || j.item || '—', 26), j.__date || '—', num(j.__days), j.status || 'open']; }),
+        head: [['Order No', 'Customer', 'Mobile', 'Watch', 'Received', 'Age (days)', 'Status']],
+        body: open.map(function (j) { return [j.id || '—', trunc(j.custName || j.customer || j.name || '—', 22), j.custMobile || j.mobile || j.custPhone || j.phone || j.contact || '—', trunc([j.brand, j.model].filter(Boolean).join(' ') || j.item || '—', 22), j.__date || '—', num(j.__days), j.status || 'open']; }),
         flagRows: open.map(function (j) { return j.__days > 15; }),
-        pills: [5],
-        colStyles: { 0: { cellWidth: 78 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 78, halign: 'right' }, 4: { cellWidth: 68, halign: 'right' }, 5: { cellWidth: 92, halign: 'center' } } });
+        pills: [6],
+        colStyles: { 0: { cellWidth: 64 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 84 }, 3: { cellWidth: 'auto' }, 4: { cellWidth: 66, halign: 'right' }, 5: { cellWidth: 56, halign: 'right' }, 6: { cellWidth: 82, halign: 'center' } } });
       return { orientation: 'portrait', blocks: blocks };
     },
 
@@ -905,8 +928,8 @@
     var src=(blk.body[d.row.index]||[])[d.column.index];
     var label=SAN.text(String(src==null?'':src)); if(!label) return;
     var doc=d.doc, fillc, tc;
-    if(/\b(ok|done|filed|balanced|delivered|closed|paid)\b/i.test(label)){ fillc=PAL.OK_FILL; tc=PAL.GREEN; }
-    else if(/\b(overdue|mismatch|bad|theft|aged|short)\b/i.test(label)){ fillc=PAL.BAD_FILL; tc=PAL.RED; }
+    if(/\b(ok|done|filed|balanced|delivered|closed|paid|pass|passed)\b/i.test(label)){ fillc=PAL.OK_FILL; tc=PAL.GREEN; }
+    else if(/\b(overdue|mismatch|bad|theft|aged|short|fail|failed|missing)\b/i.test(label)){ fillc=PAL.BAD_FILL; tc=PAL.RED; }
     else { fillc=PAL.WARN_FILL; tc=PAL.AMBER; }
     _setf(doc,'bold',FZ.tableBody-0.5);
     var tw=doc.getTextWidth(label), pillW=Math.min(tw+12, d.cell.width-2), h=Math.min(d.cell.height-4, FZ.tableBody+5);
