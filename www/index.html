@@ -1128,6 +1128,9 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
       <button class="m-action" onclick="SaagarShareCurrent({mode:'share'})" title="WhatsApp PDF">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
       </button>
+      <button class="m-action" onclick="openWAComposer()" title="Send a WhatsApp message">
+        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
       <button class="m-action" onclick="printModule()" title="Print">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
       </button>
@@ -2903,6 +2906,126 @@ function shareReport(kind){
 function shareTodayBrief(){
   const text = buildSnapshotText(buildTodayBrief());
   shareText(text, `Saagar_Brief_${todayIso()}`);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WHATSAPP MESSAGE COMPOSER  (offline — routes through the OS share sheet)
+   ───────────────────────────────────────────────────────────────────────────
+   Context-aware: opens scoped to the active module. Reads that module's OWN
+   stored records (by storage key — the same offline data the bridge/Reports
+   already read), builds a ready-to-send templated message, lets the owner pick
+   a record + message + edit it, then hands the text to shareText() → Android
+   share sheet → the user taps WhatsApp and picks the contact. No phone numbers,
+   no deep links, no network, no new permission. Each module config is data-
+   driven (kind:'record' = pick a person/case; kind:'summary' = one owner note).
+   ═══════════════════════════════════════════════════════════════════════════ */
+const WA_PLACE = 'Saagar Traders, Latur';
+function waEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function waSign(s){ return String(s||'').replace(/\s+$/,'') + '\n— ' + WA_PLACE; }
+function waINR(n){ return '₹'+(Math.round(Number(n)||0)).toLocaleString('en-IN'); }
+function waJSON(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } }
+function waItem(c){ return [c&&c.brand, c&&c.model].filter(Boolean).join(' ') || 'watch'; }
+
+const WA_CFG = {
+  service: {
+    title: 'Watch Service — message customer', kind: 'record',
+    load(){ const DB = waJSON('saagar_wsf_v2', []); if(!Array.isArray(DB)) return [];
+      return DB.slice().sort((a,b)=>String(b.createdAt||'').localeCompare(String(a.createdAt||''))).slice(0,80)
+        .map(c=>({ id:c.id, rec:c, label:(c.id||'?')+' · '+(c.custName||'—')+(waItem(c)!=='watch'?(' · '+waItem(c)):'')+' ['+(c.status==='closed'?'delivered':'open')+']' })); },
+    templates: [
+      { id:'estimate', name:'Estimate — please approve', ok:c=>c&&c.status!=='closed'&&parseFloat(c.estTotal)>0,
+        build:c=>waSign('Namaste '+(c.custName||'')+',\nYour '+waItem(c)+' (Service No: '+(c.id||'')+') has been inspected at Saagar Traders Watch Service Centre.\nEstimated service cost: '+waINR(c.estTotal)+'.\nKindly reply YES to approve so we can begin the work. For any questions, just message us here.') },
+      { id:'ready', name:'Ready for pickup', ok:c=>c&&c.status!=='closed',
+        build:c=>waSign('Namaste '+(c.custName||'')+',\nGood news — your '+waItem(c)+' (Service No: '+(c.id||'')+') is ready for collection at Saagar Traders, Latur.\nPlease visit at your convenience and carry this service number for a quick handover.') },
+      { id:'delivered', name:'Delivered — thank you + review', ok:c=>c&&c.status==='closed',
+        build:c=>waSign('Namaste '+(c.custName||'')+',\nThank you for collecting your '+waItem(c)+' from Saagar Traders, Latur (Service No: '+(c.id||'')+').'+((c.delivery&&c.delivery.finalAmt)?('\nAmount paid: '+waINR(c.delivery.finalAmt)+'.'):'')+'\nWe hope you are delighted with the service. A quick Google review would mean a lot to us!') },
+      { id:'reminder', name:'Pickup reminder', ok:c=>c&&c.status!=='closed',
+        build:c=>waSign('Namaste '+(c.custName||'')+',\nA gentle reminder that your '+waItem(c)+' (Service No: '+(c.id||'')+') is awaiting collection at Saagar Traders, Latur.\nKindly visit us soon to collect it.') },
+    ],
+  },
+  qms: {
+    title: 'Queue (QMS) — message customer', kind: 'record',
+    load(){ const st = waJSON('retail_queue_management_v1', {}); const arr = (st && Array.isArray(st.customers)) ? st.customers : [];
+      return arr.slice().sort((a,b)=>String(b.entryTime||'').localeCompare(String(a.entryTime||''))).slice(0,80)
+        .map(c=>({ id:c.id, rec:c, label:(c.queueNo||'?')+' · '+(c.name||'—')+(c.outcome?(' · '+c.outcome):'') })); },
+    templates: [
+      { id:'thanks', name:'Thank you for visiting', ok:()=>true,
+        build:c=>waSign('Namaste '+(c.name||'')+',\nThank you for visiting Saagar Traders, Latur today. It was a pleasure assisting you.\nIf you have any questions about what you saw, just reply to this message — we are happy to help.') },
+      { id:'purchase', name:'Post-purchase care', ok:c=>c&&c.outcome==='Purchase',
+        build:c=>waSign('Namaste '+(c.name||'')+',\nThank you for your purchase at Saagar Traders, Latur 🙏'+(c.billNo?(' (Bill No: '+c.billNo+')'):'')+'.\nWe hope you love your '+(c.purchaseCategory||'purchase')+'. Reach out anytime for after-sales care, strap fitting or servicing.\nA quick Google review would make our day!') },
+      { id:'service', name:'Service follow-up', ok:c=>c&&c.outcome==='Service',
+        build:c=>waSign('Namaste '+(c.name||'')+',\nRegarding your service at Saagar Traders, Latur'+(c.jobCardNo?(' (Job Card: '+c.jobCardNo+')'):'')+' — your '+(c.serviceType||'watch')+' is being attended to.'+(c.deliveryDate?(' Expected ready by '+c.deliveryDate+'.'):'')+'\nWe will keep you posted. Reply here for any update.') },
+      { id:'winback', name:'We missed you / offer', ok:c=>c&&/non.?purchase/i.test(c.outcome||''),
+        build:c=>waSign('Namaste '+(c.name||'')+',\nThank you for visiting Saagar Traders, Latur. We are sorry we could not find the perfect match this time.\nNew arrivals have just come in — we would love a second chance to help you choose. Visit us and ask for a special assisted viewing.') },
+    ],
+  },
+};
+
+let __waId = null, __waRecs = [];
+function openWAComposer(presetId){
+  const want = presetId || activeModuleId;
+  __waId = (want && WA_CFG[want]) ? want : Object.keys(WA_CFG)[0];
+  if(!__waId){ toast('No WhatsApp messages available yet'); return; }
+  $('modalTitle').textContent = 'Send on WhatsApp';
+  $('modalBody').innerHTML = waBodyHTML();
+  waBindAndBuild();
+  openModal();
+}
+function waBodyHTML(){
+  const keys = Object.keys(WA_CFG);
+  const modOpts = keys.map(k=>'<option value="'+k+'"'+(k===__waId?' selected':'')+'>'+waEsc(WA_CFG[k].title)+'</option>').join('');
+  const S = 'width:100%;padding:10px 12px;border:1px solid #cbd6e4;border-radius:10px;font:inherit;color:#0d2340;background:#fff;margin-bottom:12px';
+  const L = 'display:block;font:700 12px/1.2 inherit;color:#5b6a82;margin:0 0 6px';
+  return '<div style="display:flex;flex-direction:column">'
+    + (keys.length>1 ? ('<label style="'+L+'">Module</label><select id="waMod" style="'+S+'">'+modOpts+'</select>') : '')
+    + '<div id="waRecWrap"></div>'
+    + '<label style="'+L+'">Message</label><select id="waTpl" style="'+S+'"></select>'
+    + '<label style="'+L+'">Preview (edit before sending)</label>'
+    + '<textarea id="waPreview" rows="9" style="'+S+';resize:vertical;line-height:1.45"></textarea>'
+    + '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">'
+    +   '<button onclick="closeModal()" style="padding:11px 16px;border:1px solid #cbd6e4;border-radius:10px;background:#fff;color:#0d2340;font:700 14px inherit;cursor:pointer">Cancel</button>'
+    +   '<button onclick="waSend()" style="padding:11px 18px;border:0;border-radius:10px;background:#1f9d4f;color:#fff;font:800 14px inherit;cursor:pointer">Share to WhatsApp ▸</button>'
+    + '</div>'
+    + '<p style="font:500 11.5px/1.5 inherit;color:#8295ad;margin:12px 0 0">Opens your phone\'s share sheet — pick WhatsApp, then the contact. Works fully offline; the app never connects to the internet itself.</p>'
+    + '</div>';
+}
+function waBindAndBuild(){
+  const m = $('waMod'); if(m) m.onchange = function(){ __waId = this.value; $('modalBody').innerHTML = waBodyHTML(); waBindAndBuild(); };
+  const cfg = WA_CFG[__waId], recWrap = $('waRecWrap');
+  const S = 'width:100%;padding:10px 12px;border:1px solid #cbd6e4;border-radius:10px;font:inherit;color:#0d2340;background:#fff;margin-bottom:12px';
+  const L = 'display:block;font:700 12px/1.2 inherit;color:#5b6a82;margin:0 0 6px';
+  if(cfg.kind==='record'){
+    __waRecs = cfg.load() || [];
+    if(!__waRecs.length){
+      recWrap.innerHTML = '<p style="font:600 13px inherit;color:#8295ad;padding:8px 0 14px">No records in this module yet — add one first, then send.</p>';
+    } else {
+      recWrap.innerHTML = '<label style="'+L+'">Recipient / record</label><select id="waRec" style="'+S+'">'
+        + __waRecs.map((r,i)=>'<option value="'+i+'">'+waEsc(r.label)+'</option>').join('') + '</select>';
+      $('waRec').onchange = waFillTpl;
+    }
+  } else { __waRecs = []; recWrap.innerHTML = ''; }
+  waFillTpl();
+}
+function waCurRec(){ if(WA_CFG[__waId].kind!=='record') return null; const el=$('waRec'); if(!el) return null; const i=+el.value; return (i>=0 && __waRecs[i]) ? __waRecs[i].rec : null; }
+function waFillTpl(){
+  const cfg = WA_CFG[__waId], rec = waCurRec(), sel = $('waTpl'); if(!sel) return;
+  const usable = (cfg.kind!=='record') || rec || __waRecs.length===0;
+  const tpls = usable ? (cfg.templates||[]).filter(t=>!t.ok || t.ok(rec)) : [];
+  sel.innerHTML = tpls.length ? tpls.map(t=>'<option value="'+t.id+'">'+waEsc(t.name)+'</option>').join('') : '<option value="">—</option>';
+  sel.onchange = waBuildPreview;
+  waBuildPreview();
+}
+function waBuildPreview(){
+  const cfg = WA_CFG[__waId], rec = waCurRec(), sel = $('waTpl'), ta = $('waPreview'); if(!ta) return;
+  const t = (cfg.templates||[]).find(x=>x.id===(sel&&sel.value));
+  let txt = '';
+  try { txt = t ? t.build(cfg.kind==='record' ? rec : undefined) : ''; } catch(e){ txt = ''; }
+  ta.value = txt || '';
+}
+function waSend(){
+  const ta = $('waPreview'); if(!ta || !ta.value.trim()){ toast('Nothing to send — pick a record and message'); return; }
+  shareText(ta.value, 'Saagar_WA_'+(__waId||'msg')+'_'+todayIso());
+  closeModal();
 }
 
 /* Use Capacitor Share through whatsapp-share.js if present; fallback to download */
