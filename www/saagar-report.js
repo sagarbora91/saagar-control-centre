@@ -217,88 +217,74 @@
       var leave = G('computeLeaveDay', function () { return { items: [] }; })(date);
       var stores = storeList().map(function (s) { return stockDetailStore(s, date); });
 
-      // exceptions (red flags)
       var flags = [];
-      if (cash.rec && !cash.balanced) flags.push('<b>Cash ' + (cash.variance < 0 ? 'short' : 'over') + ' ' + inr(Math.abs(cash.variance)) + '</b> (counted ' + inr(cash.counted) + ' vs expected ' + inr(cash.expected) + ')');
-      if (cash.rec && !cash.closed) flags.push('<b>Cash sheet not closed</b> for ' + longDate(date).split(',')[0]);
+      if (cash.rec && !cash.balanced) flags.push('Cash ' + (cash.variance < 0 ? 'short' : 'over') + ' ' + inr(Math.abs(cash.variance)) + ' (counted ' + inr(cash.counted) + ' vs expected ' + inr(cash.expected) + ')');
+      if (cash.rec && !cash.closed) flags.push('Cash sheet not closed for ' + longDate(date).split(',')[0]);
       stores.forEach(function (st) {
-        if (!st.posted) { flags.push('<b>' + esc(st.store) + ' stock not posted</b> today'); return; }
+        if (!st.posted) { flags.push(st.store + ' stock not posted today'); return; }
         var theft = st.totals.theft, varc = st.rows.filter(function (r) { return r.variance != null && r.variance !== 0; }).length;
-        if (theft > 0) flags.push('<b>' + esc(st.store) + ' theft</b> — ' + theft + ' unit(s) flagged');
-        else if (varc > 0) flags.push('<b>' + esc(st.store) + ' stock variance</b> on ' + varc + ' brand(s)');
+        if (theft > 0) flags.push(st.store + ' theft — ' + theft + ' unit(s) flagged');
+        else if (varc > 0) flags.push(st.store + ' stock variance on ' + varc + ' brand(s)');
       });
-      if ((b.qmsSales || 0) === 0 && (b.qmsWalkins || 0) > 0) flags.push('<b>Zero sales</b> despite ' + b.qmsWalkins + ' walk-ins');
-      if ((b.qmsWalkins || 0) >= 10 && (b.qmsConversion || 0) < 20) flags.push('<b>Low conversion ' + (b.qmsConversion || 0) + '%</b> on ' + b.qmsWalkins + ' walk-ins');
-      if ((aging.b16 || 0) > 0) flags.push('<b>Service backlog</b> — ' + aging.b16 + ' case(s) aged 16+ days');
-      if ((b.taxOverdue || 0) > 0) flags.push('<b>' + b.taxOverdue + ' overdue tax item(s)</b>' + (tax.upcoming[0] && tax.upcoming[0].status === 'Overdue' ? ' — ' + esc(tax.upcoming[0].item) : ''));
-      if ((b.groomingTodayChecks || 0) > 0 && (b.groomingTodayAvg || 0) < 60) flags.push('<b>Grooming low</b> — store avg ' + b.groomingTodayAvg + '%');
-      if (b.backupDays != null && b.backupDays > 7) flags.push('<b>Backup overdue</b> — ' + b.backupDays + ' days');
+      if ((b.qmsSales || 0) === 0 && (b.qmsWalkins || 0) > 0) flags.push('Zero sales despite ' + b.qmsWalkins + ' walk-ins');
+      if ((b.qmsWalkins || 0) >= 10 && (b.qmsConversion || 0) < 20) flags.push('Low conversion ' + (b.qmsConversion || 0) + '% on ' + b.qmsWalkins + ' walk-ins');
+      if ((aging.b16 || 0) > 0) flags.push('Service backlog — ' + aging.b16 + ' case(s) aged 16+ days');
+      if ((b.taxOverdue || 0) > 0) flags.push(b.taxOverdue + ' overdue tax item(s)' + (tax.upcoming[0] && tax.upcoming[0].status === 'Overdue' ? ' — ' + tax.upcoming[0].item : ''));
+      if ((b.groomingTodayChecks || 0) > 0 && (b.groomingTodayAvg || 0) < 60) flags.push('Grooming low — store avg ' + b.groomingTodayAvg + '%');
+      if (b.backupDays != null && b.backupDays > 7) flags.push('Backup overdue — ' + b.backupDays + ' days');
 
-      // KPI strip
-      var kpis = kpiRow([
-        { label: 'Net Sales', value: inr(b.qmsSales), sub: (dsr.salesCnt ? num(dsr.salesCnt) + ' bills (DSR)' : ''), subClass: 'neu', hero: true },
+      var blocks = [{ t: 'header', title: 'DAILY OWNER BRIEF', sub: 'Titan World + Helios · Latur', period: longDate(date) }];
+      blocks.push({ t: 'attn', flags: flags });
+      blocks.push({ t: 'kpi', cols: 5, items: [
+        { label: 'Net Sales', value: inr(b.qmsSales), sub: (dsr.salesCnt ? num(dsr.salesCnt) + ' bills (DSR)' : ''), hero: true },
         { label: 'Conversion', value: pct(b.qmsConversion) },
-        { label: 'Walk-ins → Buy', value: num(b.qmsWalkins) + ' → ' + num(b.qmsPurchases), sub: ((b.qmsWalkins || 0) - (b.qmsPurchases || 0)) + ' not converted', subClass: 'neu' },
+        { label: 'Walk-ins → Buy', value: num(b.qmsWalkins) + ' → ' + num(b.qmsPurchases), sub: ((b.qmsWalkins || 0) - (b.qmsPurchases || 0)) + ' not converted' },
         { label: 'Cash', value: cash.rec ? inr(cash.counted) : '—', sub: cash.rec ? (cash.balanced ? 'Reconciled' : 'Mismatch') : 'Not counted', subClass: cash.rec ? (cash.balanced ? 'up' : 'down') : 'neu' },
         { label: 'Open Service', value: num(b.serviceOpen), sub: (aging.b16 || 0) + ' aged 16d+', subClass: (aging.b16 || 0) > 0 ? 'down' : 'neu' }
-      ], 5);
-
-      // sales by CRO
-      var croRows = (qms.byCro || []).slice(0, 8).map(function (c) {
-        return { cro: esc(c.cro), walkins: c.walkins, purchases: c.purchases, conv: c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—', sales: inr(c.sales) };
-      });
-      var croTable = croRows.length ? dataTable(
-        [{ key: 'cro', label: 'CRO' }, { key: 'walkins', label: 'Walk-ins', align: 'r' }, { key: 'purchases', label: 'Purchases', align: 'r' }, { key: 'conv', label: 'Conv %', align: 'r' }, { key: 'sales', label: 'Sales ₹', align: 'r' }],
-        croRows,
-        { totals: { cro: 'Total', walkins: num(qms.total), purchases: num(qms.purchases), conv: pct(qms.conversion), sales: inr(qms.sales) } }
-      ) : '<div class="empty">No walk-ins recorded today</div>';
-
-      // cash card
-      var cashCard = cash.rec ? kvList([
-        ['Opening cash', inr(cash.opening)], ['+ Cash receipts', inr(cash.cashIn)], ['− Cash payments', inr(cash.cashOut)],
-        ['Expected closing', inr(cash.expected), 'big'], ['Counted (physical)', inr(cash.counted)],
-        ['Variance', cash.balanced ? '<span class="pill ok">₹0 · Balanced</span>' : '<span class="pill bad">' + inr(cash.variance) + '</span>'],
-        ['Status', cash.closed ? (cash.approved ? 'Locked & approved' : 'Closed, awaiting approval') : 'Open']
-      ]) : '<div class="empty">Cash sheet not filled for ' + longDate(date).split(',')[0] + '</div>';
-
-      // stock card
+      ] });
+      blocks.push({ t: 'section', title: 'Sales & Conversion — by CRO' });
+      var croRows = (qms.byCro || []).slice(0, 8);
+      if (croRows.length) {
+        blocks.push({ t: 'table',
+          head: [['CRO', 'Walk-ins', 'Purchases', 'Conv %', 'Sales ₹']],
+          body: croRows.map(function (c) { return [c.cro, num(c.walkins), num(c.purchases), (c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—'), inr(c.sales)]; }),
+          money: [4],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 70, halign: 'right' }, 4: { cellWidth: 110, halign: 'right' } },
+          foot: [['Total', num(qms.total), num(qms.purchases), pct(qms.conversion), inr(qms.sales)]] });
+      } else { blocks.push({ t: 'empty', text: 'No walk-ins recorded today.' }); }
+      blocks.push({ t: 'section', title: 'Cash Position', tag: cash.rec ? (cash.balanced ? { cls: 'ok', txt: 'Reconciled' } : { cls: 'bad', txt: 'Mismatch' }) : { cls: 'warn', txt: 'Pending' } });
+      if (cash.rec) {
+        blocks.push({ t: 'kv', cols: 2, pairs: [
+          ['Opening cash', inr(cash.opening)], ['+ Cash receipts', inr(cash.cashIn)],
+          ['− Cash payments', inr(cash.cashOut)], ['Expected closing', inr(cash.expected), 'big'],
+          ['Counted (physical)', inr(cash.counted)], ['Variance', cash.balanced ? '₹0 · Balanced' : inr(cash.variance)]
+        ] });
+      } else { blocks.push({ t: 'empty', text: 'Cash sheet not filled today.' }); }
       var stockPairs = [];
       stores.forEach(function (st) {
-        if (!st.posted) { stockPairs.push([st.store, '<span class="pill bad">Not posted</span>']); return; }
+        if (!st.posted) { stockPairs.push([st.store, 'Not posted']); return; }
         var theft = st.totals.theft, varc = st.rows.filter(function (r) { return r.variance != null && r.variance !== 0; }).length;
-        stockPairs.push([st.store, theft > 0 ? '<span class="pill bad">' + theft + ' units theft</span>' : varc > 0 ? '<span class="pill warn">' + varc + ' brand variance</span>' : '<span class="pill ok">Posted · no variance</span>']);
+        stockPairs.push([st.store, theft > 0 ? (theft + ' units theft') : varc > 0 ? (varc + ' brand variance') : 'Posted · no variance']);
       });
       stockPairs.push(['Sales units (day)', num(stores.reduce(function (a, s) { return a + (s.posted ? s.totals.sales : 0); }, 0))]);
       var stockAlerts = stores.reduce(function (a, s) { return a + (s.posted ? (s.totals.theft > 0 ? 1 : 0) : 1); }, 0);
-
-      // staff card
-      var leaveStr = leave.items.length ? leave.items.map(function (l) { return esc(l.name) + ' (' + esc(l.type) + ')'; }).join(', ') : 'None';
-      var staffCard = kvList([
+      blocks.push({ t: 'section', title: 'Stock — Both Stores', tag: stockAlerts ? { cls: 'bad', txt: stockAlerts + ' alert' } : { cls: 'ok', txt: 'Clean' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: stockPairs });
+      var leaveStr = leave.items.length ? leave.items.map(function (l) { return l.name + ' (' + l.type + ')'; }).join(', ') : 'None';
+      blocks.push({ t: 'section', title: 'Staff & Grooming', tag: (b.groomingTodayAvg || 100) < 80 ? { cls: 'warn', txt: (b.groomingTodayAvg || 0) + '% avg' } : { cls: 'ok', txt: (b.groomingTodayAvg || 0) + '% avg' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [
         ['Present today', num(dsr.present)], ['On leave', leaveStr],
         ['Grooming average', (b.groomingTodayChecks ? b.groomingTodayAvg + '% · ' + b.groomingTodayPass + '/' + b.groomingTodayChecks + ' pass' : '—')],
         ['Expenses today', inr(b.expenseTodayAmount) + ' · ' + num(b.expenseToday) + ' entries']
-      ]);
-
-      // compliance/service card
+      ] });
       var nextTax = (tax.upcoming || [])[0];
-      var compCard = kvList([
-        ['Tax overdue', (b.taxOverdue || 0) > 0 ? '<span class="pill bad">' + b.taxOverdue + (nextTax && nextTax.status === 'Overdue' ? ' · ' + esc(nextTax.item) : '') + '</span>' : '<span class="pill ok">0</span>'],
-        ['Due this week', num(b.taxDueWeek)],
-        ['Open service cases', num(b.serviceOpen)],
-        ['Aged 16+ days', (aging.b16 || 0) > 0 ? '<span class="pill bad">' + aging.b16 + '</span>' : '0'],
-        ['Last data backup', (b.backupDays == null ? '—' : b.backupDays === 0 ? 'Today' : b.backupDays + ' days ago')]
-      ]);
-
-      var page = lhead('DAILY OWNER BRIEF', 'Titan World + Helios · Latur', longDate(date))
-        + attn(flags) + kpis
-        + '<div class="grid">'
-        + card('Sales & Conversion — by CRO', null, { p0: true, html: croTable }, true)
-        + card('Cash Position', cash.rec ? (cash.balanced ? { cls: 'ok', txt: 'Reconciled' } : { cls: 'bad', txt: 'Mismatch' }) : { cls: 'warn', txt: 'Pending' }, cashCard)
-        + card('Stock — Both Stores', stockAlerts ? { cls: 'bad', txt: stockAlerts + ' alert' } : { cls: 'ok', txt: 'Clean' }, kvList(stockPairs))
-        + card('Staff & Grooming', (b.groomingTodayAvg || 100) < 80 ? { cls: 'warn', txt: b.groomingTodayAvg + '% avg' } : { cls: 'ok', txt: (b.groomingTodayAvg || 0) + '% avg' }, staffCard)
-        + card('Compliance & Service', ((b.taxOverdue || 0) > 0 || (aging.b16 || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' }, compCard)
-        + '</div>' + foot(1, 1);
-      return { orientation: 'portrait', pages: [page] };
+      blocks.push({ t: 'section', title: 'Compliance & Service', tag: ((b.taxOverdue || 0) > 0 || (aging.b16 || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [
+        ['Tax overdue', (b.taxOverdue || 0) > 0 ? (b.taxOverdue + (nextTax && nextTax.status === 'Overdue' ? ' · ' + nextTax.item : '')) : '0'],
+        ['Due this week', num(b.taxDueWeek)], ['Open service cases', num(b.serviceOpen)],
+        ['Aged 16+ days', String(aging.b16 || 0)], ['Last data backup', (b.backupDays == null ? '—' : b.backupDays === 0 ? 'Today' : b.backupDays + ' days ago')]
+      ] });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== DAILY CASH STATEMENT (portrait, 1 page) ===== */
@@ -599,15 +585,24 @@
     groomingDaily: function (o) {
       var date = o.date || curDate(); var g = G('computeGroomingDay', function () { return { checks: 0, pass: 0, avg: 0, list: [] }; })(date);
       var arr = J('saagar_grooming_' + date, []) || [];
-      if (!g.checks) return { orientation: 'portrait', pages: [lhead('DAILY GROOMING AUDIT', 'Saagar Traders', longDate(date)) + '<div class="empty" style="margin-top:60px">No grooming audit recorded for this date.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'DAILY GROOMING AUDIT', sub: 'Titan World + Helios · Latur', period: longDate(date) };
+      if (!g.checks) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No grooming audit recorded for this date.' }] };
       var perfect = arr.filter(function (r) { return Number(r.pct) === 100; }).length, below = arr.filter(function (r) { return (Number(r.pct) || 0) < 80; }).length;
-      var kpis = kpiRow([
-        { label: 'CROs Checked', value: num(g.checks) }, { label: 'Passed ≥80%', value: num(g.pass), subClass: 'up' },
-        { label: 'Below 80%', value: num(below), subClass: below ? 'down' : 'up' }, { label: 'Perfect 100%', value: num(perfect) }, { label: 'Day Average', value: g.avg + '%', hero: true }
-      ], 5);
-      var rows = arr.slice().sort(function (a, b) { return (Number(a.pct) || 0) - (Number(b.pct) || 0); }).map(function (r) { var failed = (Array.isArray(r.items) ? r.items.filter(function (i) { return i && !i.passed; }).map(function (i) { return i.label; }) : []).filter(Boolean); return { name: esc(r.name || '—'), gender: r.gender === 'f' ? 'Female' : 'Male', pct: (Number(r.pct) || 0) + '%', passed: (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—'), time: esc(r.time || '—'), failed: failed.length ? esc(failed.join(', ')) : 'All passed', __flag: (Number(r.pct) || 0) < 80 }; });
-      var tbl = dataTable([{ key: 'name', label: 'CRO' }, { key: 'gender', label: 'Gender' }, { key: 'pct', label: 'Score', align: 'r' }, { key: 'passed', label: 'Passed', align: 'c' }, { key: 'time', label: 'Time' }, { key: 'failed', label: 'Failed Parameters' }], rows);
-      return { orientation: 'portrait', pages: [lhead('DAILY GROOMING AUDIT', 'Titan World + Helios · Latur', longDate(date)) + kpis + '<div style="margin-top:14px">' + card('CRO Grooming Checks', below ? { cls: 'warn', txt: below + ' below 80%' } : { cls: 'ok', txt: 'All ≥80%' }, { p0: true, html: tbl }, true) + '</div>' + foot()] };
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'CROs Checked', value: num(g.checks) },
+        { label: 'Passed >=80%', value: num(g.pass), subClass: 'up' },
+        { label: 'Below 80%', value: num(below), subClass: below ? 'down' : 'up' },
+        { label: 'Perfect 100%', value: num(perfect) },
+        { label: 'Day Average', value: g.avg + '%', hero: true }
+      ] }];
+      blocks.push({ t: 'section', title: 'CRO Grooming Checks', tag: below ? { cls: 'warn', txt: below + ' below 80%' } : { cls: 'ok', txt: 'All >=80%' } });
+      var rows = arr.slice().sort(function (a, b) { return (Number(a.pct) || 0) - (Number(b.pct) || 0); });
+      blocks.push({ t: 'table',
+        head: [['CRO', 'Gender', 'Score', 'Passed', 'Time', 'Failed Parameters']],
+        body: rows.map(function (r) { var failed = (Array.isArray(r.items) ? r.items.filter(function (i) { return i && !i.passed; }).map(function (i) { return i.label; }) : []).filter(Boolean); var fstr = failed.length ? (failed.length + ' failed: ' + failed[0] + (failed.length > 1 ? ' +' + (failed.length - 1) : '')) : 'All passed'; return [trunc(r.name || '—', 22), r.gender === 'f' ? 'Female' : 'Male', (Number(r.pct) || 0) + '%', (r.checked != null ? r.checked : '—') + ' / ' + (r.total != null ? r.total : '—'), r.time || '—', fstr]; }),
+        flagRows: rows.map(function (r) { return (Number(r.pct) || 0) < 80; }),
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 66 }, 2: { cellWidth: 54, halign: 'right' }, 3: { cellWidth: 66, halign: 'center' }, 4: { cellWidth: 64 }, 5: { cellWidth: 'auto' } } });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== GROOMING — MONTHLY TREND (portrait) ===== */
@@ -616,15 +611,24 @@
       var cm = {};
       for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('saagar_grooming_' + month) === 0) { var arr = J(k, []); (Array.isArray(arr) ? arr : []).forEach(function (r) { var nm = (r.name || '').trim(); if (!nm) return; var key = nm.toLowerCase(); if (!cm[key]) cm[key] = { name: nm, gender: r.gender, sum: 0, n: 0, best: 0, low: 100, pass: 0 }; var pc = Number(r.pct) || 0; cm[key].sum += pc; cm[key].n++; cm[key].best = Math.max(cm[key].best, pc); cm[key].low = Math.min(cm[key].low, pc); if (pc >= 80) cm[key].pass++; }); } }
       var cros = Object.keys(cm).map(function (k) { var c = cm[k]; return { name: c.name, gender: c.gender, n: c.n, avg: Math.round(c.sum / c.n), best: c.best, low: c.low, cons: Math.round(c.pass / c.n * 100) }; }).sort(function (a, b) { return b.avg - a.avg; });
-      if (!cros.length) return { orientation: 'portrait', pages: [lhead('MONTHLY GROOMING TREND', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:60px">No grooming audits recorded for this month.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'MONTHLY GROOMING TREND', sub: 'Saagar Traders · Latur', period: monthLong(month) };
+      if (!cros.length) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No grooming audits recorded for this month.' }] };
       var best = cros[0];
-      var kpis = kpiRow([
-        { label: 'CROs', value: num(cros.length) }, { label: 'Check-ins', value: num(gm.totalChecks) }, { label: 'Month Average', value: gm.avg + '%', hero: true },
-        { label: 'Best CRO', value: esc(best.name), sub: best.avg + '%', subClass: 'up' }, { label: 'Days Audited', value: num(gm.daysWithData) }
-      ], 5);
-      var rows = cros.map(function (c, i) { return { rank: i + 1, name: esc(c.name), gender: c.gender === 'f' ? 'F' : 'M', n: c.n, avg: c.avg + '%', best: c.best + '%', low: c.low + '%', cons: c.cons + '%', __flag: c.avg < 80 }; });
-      var tbl = dataTable([{ key: 'rank', label: 'Rank', align: 'c' }, { key: 'name', label: 'CRO' }, { key: 'gender', label: 'G', align: 'c' }, { key: 'n', label: 'Check-ins', align: 'r' }, { key: 'avg', label: 'Avg', align: 'r' }, { key: 'best', label: 'Best', align: 'r' }, { key: 'low', label: 'Low', align: 'r' }, { key: 'cons', label: 'Consistency', align: 'r' }], rows);
-      return { orientation: 'portrait', pages: [lhead('MONTHLY GROOMING TREND', 'Saagar Traders · Latur', monthLong(month)) + kpis + '<div style="margin-top:14px">' + card('CRO Leaderboard', null, { p0: true, html: tbl }, true) + '</div>' + '<div style="margin-top:10px;font-size:11px;color:#64748b">Month average ' + gm.avg + '% across ' + gm.totalChecks + ' check-ins · ' + gm.daysWithData + ' days audited.</div>' + foot()] };
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'CROs', value: num(cros.length) },
+        { label: 'Check-ins', value: num(gm.totalChecks) },
+        { label: 'Month Average', value: gm.avg + '%', hero: true },
+        { label: 'Best CRO', value: best.name, sub: best.avg + '%', subClass: 'up' },
+        { label: 'Days Audited', value: num(gm.daysWithData) }
+      ] }];
+      blocks.push({ t: 'section', title: 'CRO Leaderboard' });
+      blocks.push({ t: 'table',
+        head: [['Rank', 'CRO', 'G', 'Check-ins', 'Avg', 'Best', 'Low', 'Consistency']],
+        body: cros.map(function (c, i) { return [String(i + 1), trunc(c.name, 24), c.gender === 'f' ? 'F' : 'M', num(c.n), c.avg + '%', c.best + '%', c.low + '%', c.cons + '%']; }),
+        flagRows: cros.map(function (c) { return c.avg < 80; }),
+        colStyles: { 0: { cellWidth: 40, halign: 'center' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 30, halign: 'center' }, 3: { cellWidth: 72, halign: 'right' }, 4: { cellWidth: 56, halign: 'right' }, 5: { cellWidth: 56, halign: 'right' }, 6: { cellWidth: 56, halign: 'right' }, 7: { cellWidth: 86, halign: 'right' } } });
+      blocks.push({ t: 'note', text: 'Month average ' + gm.avg + '% across ' + gm.totalChecks + ' check-ins · ' + gm.daysWithData + ' days audited.' });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== EXPENSE — MONTHLY P&L SUMMARY (portrait) ===== */
@@ -668,16 +672,25 @@
     /* ===== TAX — COMPLIANCE DUE REPORT (portrait) ===== */
     taxReport: function (o) {
       var t = G('computeTaxStatus', function () { return { overdue: 0, dueWeek: 0, dueMonth: 0, done: 0, upcoming: [] }; })();
-      var kpis = kpiRow([
+      var blocks = [{ t: 'header', title: 'TAX COMPLIANCE — DUE REPORT', sub: 'Saagar Traders · Latur', period: longDate(curDate()) }];
+      blocks.push({ t: 'kpi', cols: 5, items: [
         { label: 'Overdue', value: num(t.overdue), hero: true, subClass: t.overdue ? 'down' : 'up', sub: t.overdue ? 'act now' : 'clear' },
-        { label: 'Due This Week', value: num(t.dueWeek) }, { label: 'Due This Month', value: num(t.dueMonth) },
-        { label: 'Completed', value: num(t.done), subClass: 'up' }, { label: 'Upcoming', value: num((t.upcoming || []).length) }
-      ], 5);
-      var rows = (t.upcoming || []).slice(0, 40).map(function (u) { return { firm: esc(u.firm), item: esc(u.item), due: esc(u.due), status: u.status, __flag: u.status === 'Overdue' }; });
-      var tbl = rows.length ? dataTable([{ key: 'firm', label: 'Firm' }, { key: 'item', label: 'Compliance Item' }, { key: 'due', label: 'Due Date', align: 'r' }, { key: 'status', label: 'Status', align: 'c', fmt: function (v) { var c = v === 'Overdue' ? 'bad' : v === 'This week' ? 'warn' : 'ok'; return '<span class="pill ' + c + '">' + v + '</span>'; } }], rows) : '<div class="empty">No upcoming compliance items.</div>';
-      var page = lhead('TAX COMPLIANCE — DUE REPORT', 'Saagar Traders · Latur', longDate(curDate())) + kpis
-        + '<div style="margin-top:14px">' + card('Upcoming & Overdue Filings', t.overdue ? { cls: 'bad', txt: t.overdue + ' overdue' } : { cls: 'ok', txt: 'On track' }, { p0: true, html: tbl }, true) + '</div>' + foot();
-      return { orientation: 'portrait', pages: [page] };
+        { label: 'Due This Week', value: num(t.dueWeek) },
+        { label: 'Due This Month', value: num(t.dueMonth) },
+        { label: 'Completed', value: num(t.done), subClass: 'up' },
+        { label: 'Upcoming', value: num((t.upcoming || []).length) }
+      ] });
+      blocks.push({ t: 'section', title: 'Upcoming & Overdue Filings', tag: t.overdue ? { cls: 'bad', txt: t.overdue + ' overdue' } : { cls: 'ok', txt: 'On track' } });
+      var rows = (t.upcoming || []);
+      if (rows.length) {
+        blocks.push({ t: 'table',
+          head: [['Firm', 'Compliance Item', 'Due Date', 'Status']],
+          body: rows.map(function (u) { return [trunc(u.firm, 22), trunc(u.item, 40), u.due, u.status]; }),
+          flagRows: rows.map(function (u) { return u.status === 'Overdue'; }),
+          pills: [3],
+          colStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 92, halign: 'right' }, 3: { cellWidth: 92, halign: 'center' } } });
+      } else { blocks.push({ t: 'empty', text: 'No upcoming compliance items.' }); }
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== SERVICE — OPEN CASES AGING (portrait) ===== */
@@ -711,19 +724,28 @@
     serviceJobCard: function (o) {
       var arr = J('saagar_wsf_v2', []); arr = Array.isArray(arr) ? arr : [];
       var j = o.id ? arr.filter(function (x) { return x.id === o.id; })[0] : (arr.filter(function (x) { return String(x.status || '').toLowerCase() !== 'closed'; })[0] || arr[0]);
-      if (!j) return { orientation: 'portrait', pages: [lhead('WATCH SERVICE — JOB CARD', 'Saagar Traders', longDate(curDate())) + '<div class="empty" style="margin-top:60px">No service cases.</div>' + foot()] };
-      var info = kvList([['Service Order', esc(j.id || '—')], ['Date Received', esc(j.dateRec || '—')], ['Advisor', esc(j.advisor || '—')], ['Expected Delivery', esc(j.expDel || '—')], ['Status', esc(j.status || 'open')]]);
-      var cust = kvList([['Customer', esc(j.custName || '—')], ['Mobile', esc(j.custMobile || '—')], ['Email', esc(j.custEmail || '—')]]);
-      var watch = kvList([['Brand', esc(j.brand || '—')], ['Model', esc(j.model || '—')], ['Reference No', esc(j.refNo || '—')], ['Serial No', esc(j.serialNo || '—')]]);
+      var hdr = { t: 'header', title: 'WATCH SERVICE — JOB CARD', sub: 'Saagar Traders · Latur', period: longDate(curDate()) };
+      if (!j) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No service cases.' }] };
+      var blocks = [{ t: 'header', title: 'WATCH SERVICE — JOB CARD', sub: 'Service Order ' + (j.id || ''), period: longDate(j.dateRec || curDate()) }];
+      blocks.push({ t: 'section', title: 'Case' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Service Order', j.id || '—'], ['Date Received', j.dateRec || '—'], ['Advisor', j.advisor || '—'], ['Expected Delivery', j.expDel || '—'], ['Status', j.status || 'open']] });
+      blocks.push({ t: 'section', title: 'Customer' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Customer', j.custName || '—'], ['Mobile', j.custMobile || '—'], ['Email', j.custEmail || '—']] });
+      blocks.push({ t: 'section', title: 'Watch Details' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Brand', j.brand || '—'], ['Model', j.model || '—'], ['Reference No', j.refNo || '—'], ['Serial No', j.serialNo || '—']] });
       var items = Array.isArray(j.lineItems) ? j.lineItems.filter(function (l) { return l && (l.desc || l.description); }) : [];
-      var itemTbl = items.length ? dataTable([{ key: 'd', label: 'Description' }, { key: 'q', label: 'Qty', align: 'r' }, { key: 'u', label: 'Unit ₹', align: 'r' }, { key: 't', label: 'Total ₹', align: 'r' }], items.map(function (l) { return { d: esc(l.desc || l.description || '—'), q: l.qty || 1, u: inr(l.unit || 0), t: inr(l.total || 0) }; }), { totals: { d: 'Total Estimate', q: '', u: '', t: inr(j.estTotal || 0) } }) : '<div style="padding:11px 13px">Estimated Total: <b>' + inr(j.estTotal || 0) + '</b></div>';
-      var page = lhead('WATCH SERVICE — JOB CARD', 'Service Order ' + esc(j.id || ''), longDate(j.dateRec || curDate()))
-        + '<div class="grid">' + card('Case', null, info) + card('Customer', null, cust) + card('Watch Details', null, watch, true)
-        + card('Estimate', { cls: 'ok', txt: inr(j.estTotal || 0) }, { p0: !!items.length, html: itemTbl }, true) + '</div>'
-        + (j.diagnosis ? '<div style="margin-top:12px;font-size:11.5px"><b>Diagnosis:</b> ' + esc(j.diagnosis) + '</div>' : '')
-        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Customer Signature<b>' + esc(j.custName || '') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(j.advisor || 'Authorised') + '</b></div></div>'
-        + foot();
-      return { orientation: 'portrait', pages: [page] };
+      blocks.push({ t: 'section', title: 'Estimate', tag: { cls: 'ok', txt: inr(j.estTotal || 0) } });
+      if (items.length) {
+        blocks.push({ t: 'table',
+          head: [['Description', 'Qty', 'Unit ₹', 'Total ₹']],
+          body: items.map(function (l) { return [trunc(l.desc || l.description || '—', 44), num(l.qty || 1), inr(l.unit || 0), inr(l.total || 0)]; }),
+          money: [3],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 50, halign: 'right' }, 2: { cellWidth: 92, halign: 'right' }, 3: { cellWidth: 100, halign: 'right' } },
+          foot: [['Total Estimate', '', '', inr(j.estTotal || 0)]] });
+      } else { blocks.push({ t: 'kv', cols: 1, pairs: [['Estimated Total', inr(j.estTotal || 0), 'big']] }); }
+      if (j.diagnosis) blocks.push({ t: 'note', text: 'Diagnosis: ' + j.diagnosis });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Customer Signature', name: j.custName || '' }, { role: 'For Saagar Traders', name: j.advisor || 'Authorised' }] });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== ⭐ OWNER MONTHLY BRIEF (portrait) ===== */
@@ -736,32 +758,39 @@
       var grossPay = Number(pay.gross) || 0;
       var opSurplus = qm.sales - e.expTot - grossPay; // revenue = actual retail sales (QMS), not the partial expense-ledger income
       var flags = [];
-      if (opSurplus < 0) flags.push('<b>Costs exceed sales</b> — operating surplus ' + inr(opSurplus));
-      if (qm.walkins >= 50 && qm.conversion < 25) flags.push('<b>Low monthly conversion</b> ' + qm.conversion + '%');
-      if (tax.overdue > 0) flags.push('<b>' + tax.overdue + ' overdue tax filing(s)</b>');
-      if (aging.b16 > 0) flags.push('<b>' + aging.b16 + ' service cases aged 16+ days</b>');
-      if (gm.avg && gm.avg < 80) flags.push('<b>Grooming avg ' + gm.avg + '%</b> below standard');
-      if (qm.sales && grossPay / qm.sales > 0.4) flags.push('<b>Payroll ' + Math.round(grossPay / qm.sales * 100) + '% of sales</b> — high cost ratio');
-      var kpis = kpiRow([
-        { label: 'Retail Sales', value: inr(qm.sales), hero: true }, { label: 'Conversion', value: pct(qm.conversion) },
+      if (opSurplus < 0) flags.push('Costs exceed sales — operating surplus ' + inr(opSurplus));
+      if (qm.walkins >= 50 && qm.conversion < 25) flags.push('Low monthly conversion ' + qm.conversion + '%');
+      if (tax.overdue > 0) flags.push(tax.overdue + ' overdue tax filing(s)');
+      if (aging.b16 > 0) flags.push(aging.b16 + ' service cases aged 16+ days');
+      if (gm.avg && gm.avg < 80) flags.push('Grooming avg ' + gm.avg + '% below standard');
+      if (qm.sales && grossPay / qm.sales > 0.4) flags.push('Payroll ' + Math.round(grossPay / qm.sales * 100) + '% of sales — high cost ratio');
+      var blocks = [{ t: 'header', title: 'OWNER MONTHLY BRIEF', sub: 'Titan World + Helios · Latur', period: monthLong(month) }];
+      blocks.push({ t: 'attn', flags: flags });
+      blocks.push({ t: 'kpi', cols: 6, items: [
+        { label: 'Retail Sales', value: inr(qm.sales), hero: true },
+        { label: 'Conversion', value: pct(qm.conversion) },
         { label: 'Op. Surplus', value: inr(opSurplus), subClass: opSurplus >= 0 ? 'up' : 'down', sub: opSurplus >= 0 ? 'positive' : 'negative' },
-        { label: 'Payroll (gross)', value: inr(grossPay) }, { label: 'Grooming avg', value: (gm.avg || 0) + '%' }, { label: 'Tax overdue', value: num(tax.overdue) }
-      ], 6);
-      var pnl = kvList([['Retail sales (QMS)', inr(qm.sales)], ['Ledger expenses', inr(e.expTot)], ['Payroll (gross)', inr(grossPay)], ['Operating surplus', inr(opSurplus), 'big'], ['Payroll % of sales', qm.sales ? Math.round(grossPay / qm.sales * 100) + '%' : '—']]);
-      var sales = kvList([['Walk-ins (month)', num(qm.walkins)], ['Purchases', num(qm.purchases)], ['Conversion', pct(qm.conversion)], ['QMS sales ₹', inr(qm.sales)]]);
-      var staff = kvList([['Headcount', num(pay.headcount || 0)], ['Payroll gross', inr(pay.gross || 0)], ['Payroll net', inr(pay.net || 0)], ['Payroll run', esc(pay.status || 'draft')], ['Grooming avg', (gm.avg || 0) + '% (' + gm.totalChecks + ' checks)'], ['CRO audit avg', (ca.avg || 0) + '/100 (' + ca.totalAudits + ' audits)']]);
-      var svc = kvList([['Open service cases', num(aging.totalOpen)], ['Aged 16+ days', (aging.b16 || 0) > 0 ? '<span class="pill bad">' + aging.b16 + '</span>' : '0'], ['Tax overdue', (tax.overdue || 0) > 0 ? '<span class="pill bad">' + tax.overdue + '</span>' : '0'], ['Tax due this week', num(tax.dueWeek)]]);
-      var topPerf = perf.slice(0, 8).map(function (r) { return { name: esc(r.name), firm: esc(r.firm || r.role || '—'), groom: (r.groomChecks ? r.groomPct + '%' : '—'), service: num(r.serviceJobs || 0), cash: num(r.cashStatements || 0) }; });
-      var perfTbl = topPerf.length ? dataTable([{ key: 'name', label: 'Employee' }, { key: 'firm', label: 'Role / Firm' }, { key: 'groom', label: 'Grooming', align: 'r' }, { key: 'service', label: 'Service jobs', align: 'r' }, { key: 'cash', label: 'Cash sheets', align: 'r' }], topPerf) : '<div class="empty">No staff performance data.</div>';
-      var page = lhead('OWNER MONTHLY BRIEF', 'Titan World + Helios · Latur', monthLong(month)) + attn(flags) + kpis
-        + '<div class="grid">'
-        + card('Profit & Loss', opSurplus >= 0 ? { cls: 'ok', txt: 'Surplus' } : { cls: 'bad', txt: 'Deficit' }, pnl)
-        + card('Sales & Conversion', null, sales)
-        + card('Staff & Quality', null, staff)
-        + card('Service & Compliance', ((aging.b16 || 0) > 0 || (tax.overdue || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' }, svc)
-        + card('Staff Performance — top contributors', null, { p0: true, html: perfTbl }, true)
-        + '</div>' + foot();
-      return { orientation: 'portrait', pages: [page] };
+        { label: 'Payroll (gross)', value: inr(grossPay) },
+        { label: 'Grooming avg', value: (gm.avg || 0) + '%' },
+        { label: 'Tax overdue', value: num(tax.overdue) }
+      ] });
+      blocks.push({ t: 'section', title: 'Profit & Loss', tag: opSurplus >= 0 ? { cls: 'ok', txt: 'Surplus' } : { cls: 'bad', txt: 'Deficit' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Retail sales (QMS)', inr(qm.sales)], ['Ledger expenses', inr(e.expTot)], ['Payroll (gross)', inr(grossPay)], ['Operating surplus', inr(opSurplus), 'big'], ['Payroll % of sales', qm.sales ? Math.round(grossPay / qm.sales * 100) + '%' : '—']] });
+      blocks.push({ t: 'section', title: 'Sales & Conversion' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Walk-ins (month)', num(qm.walkins)], ['Purchases', num(qm.purchases)], ['Conversion', pct(qm.conversion)], ['QMS sales ₹', inr(qm.sales)]] });
+      blocks.push({ t: 'section', title: 'Staff & Quality' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Headcount', num(pay.headcount || 0)], ['Payroll gross', inr(pay.gross || 0)], ['Payroll net', inr(pay.net || 0)], ['Payroll run', pay.status || 'draft'], ['Grooming avg', (gm.avg || 0) + '% (' + gm.totalChecks + ' checks)'], ['CRO audit avg', (ca.avg || 0) + '/100 (' + ca.totalAudits + ' audits)']] });
+      blocks.push({ t: 'section', title: 'Service & Compliance', tag: ((aging.b16 || 0) > 0 || (tax.overdue || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Open service cases', num(aging.totalOpen)], ['Aged 16+ days', String(aging.b16 || 0)], ['Tax overdue', String(tax.overdue || 0)], ['Tax due this week', num(tax.dueWeek)]] });
+      blocks.push({ t: 'section', title: 'Staff Performance — top contributors' });
+      var topPerf = perf.slice(0, 8);
+      if (topPerf.length) {
+        blocks.push({ t: 'table',
+          head: [['Employee', 'Role / Firm', 'Grooming', 'Service jobs', 'Cash sheets']],
+          body: topPerf.map(function (r) { return [trunc(r.name, 24), trunc(r.firm || r.role || '—', 20), (r.groomChecks ? r.groomPct + '%' : '—'), num(r.serviceJobs || 0), num(r.cashStatements || 0)]; }),
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' }, 4: { cellWidth: 90, halign: 'right' } } });
+      } else { blocks.push({ t: 'empty', text: 'No staff performance data.' }); }
+      return { orientation: 'portrait', blocks: blocks };
     }
   };
 
