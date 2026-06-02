@@ -65,24 +65,72 @@
     return null;
   }
 
-  /* Generate a PDF (Blob) from a document body, sized to the content. */
+  /* html2canvas onclone transform: make the rasterised clone look like the module's
+     designed PRINT document, not the live interactive screen. Three steps:
+       1. Promote every `@media print` rule to an unconditional rule, so each module's
+          own one-page print layout (hide chrome, reveal print headers, compact fonts,
+          scale-to-fit) actually applies — html2canvas renders screen media and would
+          otherwise ignore all of it.
+       2. Remove the shell-injected chrome (home FAB, next chips, grooming save FAB,
+          share chooser) that is only hidden via @media print.
+       3. Drop the mobile single-column skin so the document renders full A4 width. */
+  function applyPrintLook(srcDoc, cloneDoc) {
+    try {
+      var css = '', sheets = srcDoc.styleSheets;
+      for (var i = 0; i < sheets.length; i++) {
+        var rules; try { rules = sheets[i].cssRules; } catch (e) { continue; }
+        if (!rules) continue;
+        for (var j = 0; j < rules.length; j++) {
+          var r = rules[j];
+          if (r.type === 4 && /print/i.test((r.media && r.media.mediaText) || '')) {
+            for (var k = 0; k < r.cssRules.length; k++) css += r.cssRules[k].cssText + '\n';
+          }
+        }
+      }
+      if (css) { var st = cloneDoc.createElement('style'); st.setAttribute('data-share-print', '1'); st.textContent = css; (cloneDoc.head || cloneDoc.documentElement).appendChild(st); }
+    } catch (e) {}
+    ['st-v5-home-fab', 'st-v5-next-chips', 'grm-float-save', '__saagarShareChooser'].forEach(function (id) {
+      var n = cloneDoc.getElementById(id); if (n && n.parentNode) n.parentNode.removeChild(n);
+    });
+    try { cloneDoc.documentElement.classList.remove('bcc-mobile'); } catch (e) {}
+  }
+
+  /* Generate a PDF (Blob) that fits EXACTLY ONE A4 page (scale-to-fit, aspect preserved). */
   function buildPdf(doc) {
-    if (!window.html2pdf) {
-      return Promise.reject(new Error('PDF engine not loaded'));
-    }
+    if (!window.html2pdf) return Promise.reject(new Error('PDF engine not loaded'));
     var el = doc.body || doc.documentElement;
-    var w = Math.max(el.scrollWidth, 760);
+    var W = 794; // A4 content width @96dpi — force desktop document width regardless of UI mode
+    // Cap the canvas on heavy modules so rasterisation + encoding stay fast (a giant canvas can
+    // block the main thread on toDataURL). Scale only sets render crispness; the output is scaled
+    // to one A4 page regardless, so 1× is plenty for a tall/dense document.
+    var nodes = 0; try { nodes = el.getElementsByTagName('*').length; } catch (e) {}
+    var scale = nodes > 2200 ? 1 : (nodes > 1200 ? 1.4 : 2);
     var opt = {
-      margin: [12, 12, 14, 12],
-      image: { type: 'jpeg', quality: 0.96 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: w, logging: false },
-      jsPDF: { unit: 'pt', format: 'a4', orientation: w > 900 ? 'landscape' : 'portrait' },
-      pagebreak: { mode: ['css', 'legacy', 'avoid-all'] }
+      image: { type: 'jpeg', quality: 0.94 },
+      html2canvas: { scale: scale, useCORS: true, backgroundColor: '#ffffff', windowWidth: W, width: W, scrollX: 0, scrollY: 0, logging: false, onclone: function (cd) { applyPrintLook(doc, cd); } },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    return window.html2pdf().set(opt).from(el).toPdf().get('pdf').then(function (pdf) {
+    var worker = window.html2pdf().set(opt).from(el);
+    // toCanvas() runs the onclone transform + rasterises (canvas lands in worker.prop.canvas);
+    // toPdf() builds a jsPDF instance (paginated). The bundled jsPDF v2 is factory-built (its
+    // constructor is plain Object), so we can't `new` it — instead we REUSE this instance:
+    // append one blank A4 page with the whole content scaled to fit, then drop the paginated pages.
+    return worker.toCanvas().toPdf().get('pdf').then(function (pdf) {
+      var canvas = worker.prop && worker.prop.canvas;
+      if (!canvas) return pdf.output('blob'); // fallback: html2pdf's own output
+      var n = pdf.internal.getNumberOfPages();
+      var pageW = 210, pageH = 297, m = 6, availW = pageW - 2 * m, availH = pageH - 2 * m;
+      var iw = canvas.width, ih = canvas.height;
+      var s = Math.min(availW / iw, availH / ih);            // fit ONE page, preserve aspect
+      var w = iw * s, h = ih * s, x = (pageW - w) / 2, y = m;  // centre horizontally, top-align
+      pdf.addPage('a4', 'portrait');                          // fresh blank page (becomes current)
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, y, w, h, undefined, 'FAST');
+      for (var i = 0; i < n; i++) pdf.deletePage(1);          // remove the old paginated pages → single page left
       return pdf.output('blob');
     });
   }
+  // exposed for headless validation (harmless in production)
+  window.SaagarBuildSharePdf = buildPdf;
 
   /* Share a PDF blob: native share sheet in the app, download in a browser. */
   function shareBlob(blob, filename) {
