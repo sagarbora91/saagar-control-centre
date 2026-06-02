@@ -2927,6 +2927,25 @@ function waJSON(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(
 function waItem(c){ return [c&&c.brand, c&&c.model].filter(Boolean).join(' ') || 'watch'; }
 function waLeaveType(t){ return t==='half_day_am' ? 'half-day (morning)' : t==='half_day_pm' ? 'half-day (afternoon)' : 'full-day'; }
 function waKeysWith(prefix){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf(prefix)===0) out.push(k); } }catch(e){} return out; }
+function waRepDate(){ try{ if(typeof repDate!=='undefined' && repDate) return repDate; }catch(e){} return todayIso(); }
+function waLongDate(d){ try{ return new Date((d||todayIso())+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}); }catch(e){ return d||''; } }
+function computeWaExpenseDay(d){ // day income/expense/closing-cash/pending — shell-side (expense module logic not loaded)
+  const rows = waJSON('gm_expenses', []); let inc=0, exp=0, cashIn=0, cashOut=0;
+  (Array.isArray(rows)?rows:[]).forEach(e=>{ if(!e||e.void) return; if(String(e.date||'').slice(0,10)!==d) return;
+    const amt=Number(e.amount)||0, cash=/cash/i.test(e.mode||e.paymentMode||'');
+    if((e.type||'expense')==='income'){ inc+=amt; if(cash) cashIn+=amt; } else { exp+=amt; if(cash) cashOut+=amt; } });
+  const st = waJSON('tanishq_statements', {}); let pending=0, opening=0;
+  if(st && typeof st==='object'){ Object.keys(st).forEach(k=>{ const s=st[k]; if(s && s.closed && !s.approved) pending++; }); const t=st[d]; if(t && t.openingBalance!=null) opening=Number(t.openingBalance)||0; }
+  return { inc, exp, net:inc-exp, closing:opening+cashIn-cashOut, pending };
+}
+function computeWaStockDay(d){ // closing units + theft per store
+  function one(sk){ const sd=waJSON('saagar_stock_'+sk+'_'+d, null); if(!sd||typeof sd!=='object') return null;
+    const cl=sd.closing||{}, mv=sd.movements||{}; let units=0, theft=0, seen=false;
+    Object.keys(cl).forEach(b=>{ const o=cl[b]||{}; ['display','storage','defective','yLoc'].forEach(f=>{ const v=Number(o[f]); if(!isNaN(v)){ units+=v; seen=true; } }); });
+    Object.keys(mv).forEach(b=>{ const t=Number(mv[b]&&mv[b].theft); if(!isNaN(t)) theft+=t; });
+    return (seen||Object.keys(mv).length) ? { units, theft } : null; }
+  return { titanworld: one('titanworld'), helios: one('helios') };
+}
 
 const WA_CFG = {
   service: {
@@ -3008,6 +3027,47 @@ const WA_CFG = {
         build:a=>{ const g=(a.tasks&&a.tasks.t9&&a.tasks.t9.groomingPct); return waSign((a.cro||'')+' — daily scorecard '+(a.date||'')+': '+(a.total!=null?a.total+'/100':'—')+(a.grade?(' ('+a.grade+')'):'')+(g!=null?('. Grooming '+g+'%'):'')+'.'); } },
       { id:'encourage', name:'Encouragement', ok:a=>!!a,
         build:a=>waSign('Hi '+(a.cro||'')+',\nYour '+(a.date||'')+' audit'+(a.store?(' at '+a.store):'')+': '+(a.total!=null?a.total+'/100':'—')+(a.grade?(' — '+a.grade):'')+'. Keep it up! 👏') },
+    ],
+  },
+  dsr: {
+    title: 'Sales (DSR) — owner summary', kind: 'summary',
+    templates: [
+      { id:'sales', name:"Today's sales summary",
+        build:()=>{ const d=waRepDate(), s=computeDsrDay(d), q=computeQmsDay(d);
+          return waSign('*Saagar Traders — Sales*\n'+waLongDate(d)+'\n'+(s.salesCnt||0)+' bills · '+waINR(s.salesAmt)+'\nTop performer: '+((s.staff&&s.staff[0]&&s.staff[0].name)||'—')+'\nWalk-ins not converted: '+(q.nonPurchase||0)); } },
+    ],
+  },
+  expense: {
+    title: 'Cash & expense — owner summary', kind: 'summary',
+    templates: [
+      { id:'cash', name:'Cash position today',
+        build:()=>{ const d=waRepDate(), e=computeWaExpenseDay(d);
+          return waSign('*Saagar Traders — Cash Position*\n'+waLongDate(d)+'\nIncome '+waINR(e.inc)+' · Expense '+waINR(e.exp)+'\nClosing cash: '+waINR(e.closing)+'\n'+(e.pending||0)+' day(s) awaiting approval'); } },
+    ],
+  },
+  stock: {
+    title: 'Stock — owner summary', kind: 'summary',
+    templates: [
+      { id:'stock', name:'Stock position today',
+        build:()=>{ const d=waRepDate(), s=computeWaStockDay(d), lines=[];
+          if(s.titanworld) lines.push('Titan World: closing '+s.titanworld.units+' units'+(s.titanworld.theft?(' · theft '+s.titanworld.theft):''));
+          if(s.helios) lines.push('Helios: closing '+s.helios.units+' units'+(s.helios.theft?(' · theft '+s.helios.theft):''));
+          return waSign('*Saagar Traders — Stock*\n'+waLongDate(d)+'\n'+(lines.length?lines.join('\n'):'No stock posted for this date.')); } },
+    ],
+  },
+  tax: {
+    title: 'Tax compliance — owner summary', kind: 'summary',
+    templates: [
+      { id:'tax', name:'Tax due summary',
+        build:()=>{ const t=computeTaxStatus(), nx=(t.upcoming&&t.upcoming[0]);
+          return waSign('*Saagar Traders — Tax Compliance*\nOverdue: '+(t.overdue||0)+' · This week: '+(t.dueWeek||0)+' · This month: '+(t.dueMonth||0)+(nx?('\nNext: '+(nx.item||'')+' ('+(nx.due||'')+')'):'')); } },
+    ],
+  },
+  reports: {
+    title: 'Owner brief — full day summary', kind: 'summary',
+    templates: [
+      { id:'brief', name:"Today's full brief",
+        build:()=>buildSnapshotText(buildTodayBrief(waRepDate())) },
     ],
   },
 };
