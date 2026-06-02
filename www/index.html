@@ -2925,6 +2925,8 @@ function waSign(s){ return String(s||'').replace(/\s+$/,'') + '\n— ' + WA_PLAC
 function waINR(n){ return '₹'+(Math.round(Number(n)||0)).toLocaleString('en-IN'); }
 function waJSON(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } }
 function waItem(c){ return [c&&c.brand, c&&c.model].filter(Boolean).join(' ') || 'watch'; }
+function waLeaveType(t){ return t==='half_day_am' ? 'half-day (morning)' : t==='half_day_pm' ? 'half-day (afternoon)' : 'full-day'; }
+function waKeysWith(prefix){ const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && k.indexOf(prefix)===0) out.push(k); } }catch(e){} return out; }
 
 const WA_CFG = {
   service: {
@@ -2957,6 +2959,55 @@ const WA_CFG = {
         build:c=>waSign('Namaste '+(c.name||'')+',\nRegarding your service at Saagar Traders, Latur'+(c.jobCardNo?(' (Job Card: '+c.jobCardNo+')'):'')+' — your '+(c.serviceType||'watch')+' is being attended to.'+(c.deliveryDate?(' Expected ready by '+c.deliveryDate+'.'):'')+'\nWe will keep you posted. Reply here for any update.') },
       { id:'winback', name:'We missed you / offer', ok:c=>c&&/non.?purchase/i.test(c.outcome||''),
         build:c=>waSign('Namaste '+(c.name||'')+',\nThank you for visiting Saagar Traders, Latur. We are sorry we could not find the perfect match this time.\nNew arrivals have just come in — we would love a second chance to help you choose. Visit us and ask for a special assisted viewing.') },
+    ],
+  },
+  payroll: {
+    title: 'Payroll — message employee', kind: 'record',
+    load(){ const st = waJSON('payroll_suite_v1_2026', {}); const rows = (st && Array.isArray(st.rows)) ? st.rows : [];
+      const mo = (st && st.meta && st.meta.month) || '', yr = (st && st.meta && st.meta.year) || '';
+      return rows.filter(r=>r && (Number(r.gross)>0 || Number(r.net)>0)).map(r=>{ r.__mo=mo; r.__yr=yr;
+        return { id:(r.empId||r.name), rec:r, label:(r.name||'—')+(r.empId?(' · '+r.empId):'')+' · '+waINR(r.net) }; }); },
+    templates: [
+      { id:'credited', name:'Salary credited', ok:r=>r&&Number(r.net)>0,
+        build:r=>waSign('Salary for '+(r.__mo||'')+' '+(r.__yr||'')+': net '+waINR(r.net)+' has been credited to your account.\nYour payslip will be shared separately. For any query, just message us here.') },
+      { id:'detail', name:'Salary detail', ok:r=>r&&Number(r.net)>0,
+        build:r=>waSign('Hi '+(r.name||'')+',\nYour '+(r.__mo||'')+' '+(r.__yr||'')+' salary is processed.\nNet pay: '+waINR(r.net)+(Number(r.grossPayable)>0?(' (Gross '+waINR(r.grossPayable)+', PF '+waINR(r.pf)+', PT '+waINR(r.pt)+')'):'')+'.') },
+    ],
+  },
+  leave: {
+    title: 'Leave — message employee', kind: 'record',
+    load(){ const d = waJSON('leavedesk_v3', {}); const by = (d && d.leaves) || {}; const seen = {}, out = [];
+      Object.keys(by).sort().reverse().forEach(dk=>{ const arr = by[dk]; if(!Array.isArray(arr)) return;
+        arr.forEach(l=>{ if(!l || !l.name) return; const key=(l.name+'|'+(l.leaveFrom||'')+'|'+(l.leaveTo||'')).toLowerCase(); if(seen[key]) return; seen[key]=1; out.push(l); }); });
+      return out.slice(0,80).map(l=>({ id:(l.name+(l.leaveFrom||'')), rec:l, label:(l.name||'—')+' · '+(l.leaveFrom||'')+(l.leaveTo&&l.leaveTo!==l.leaveFrom?('–'+l.leaveTo):'')+(l.category?(' · '+l.category):'') })); },
+    templates: [
+      { id:'approved', name:'Leave approved', ok:l=>!!l,
+        build:l=>waSign('Your leave '+(l.leaveFrom||'')+(l.leaveTo&&l.leaveTo!==l.leaveFrom?(' to '+l.leaveTo):'')+(l.category?(' ('+l.category+')'):'')+' is approved.'+(l.approvedBy?(' Approved by '+l.approvedBy+'.'):'')) },
+      { id:'detail', name:'Leave confirmation', ok:l=>!!l,
+        build:l=>waSign('Hi '+(l.name||'')+',\nYour '+waLeaveType(l.type)+' leave from '+(l.leaveFrom||'')+' to '+(l.leaveTo||l.leaveFrom||'')+' is confirmed'+(l.approvedBy?(' (approved by '+l.approvedBy+')'):'')+'.'+(l.reason?('\nReason: '+l.reason):'')) },
+    ],
+  },
+  grooming: {
+    title: 'Grooming — message staff', kind: 'record',
+    load(){ const keys = waKeysWith('saagar_grooming_').sort().reverse(); const out = [];
+      keys.forEach(k=>{ const arr = waJSON(k, []); if(Array.isArray(arr)) arr.forEach(r=>{ if(r && r.name) out.push(r); }); });
+      return out.slice(0,80).map(r=>({ id:((r.name||'')+(r.date||'')), rec:r, label:(r.name||'—')+' · '+(r.date||'')+' · '+(r.pct!=null?r.pct+'%':'—') })); },
+    templates: [
+      { id:'result', name:'Grooming result', ok:r=>!!r,
+        build:r=>waSign('Grooming check '+(r.date||'')+': '+(r.pct!=null?r.pct+'%':'—')+' — '+(Number(r.pct)>=80?'Pass ✅':'Needs improvement')+'.'+((r.checked!=null&&r.total!=null)?(' ('+r.checked+'/'+r.total+' parameters met)'):'')) },
+      { id:'improve', name:'Areas to improve', ok:r=>r&&Number(r.pct)<100,
+        build:r=>{ const f=(Array.isArray(r.items)?r.items.filter(i=>i&&!i.passed).map(i=>i.label):[]).filter(Boolean); return waSign('Hi '+(r.name||'')+',\nGrooming '+(r.date||'')+': '+(r.pct!=null?r.pct+'%':'—')+'. To improve: '+(f.length?f.join(', '):'a few parameters')+'.\nLet us aim for 100% tomorrow!'); } },
+    ],
+  },
+  cro_audit: {
+    title: 'CRO Audit — message CRO', kind: 'record',
+    load(){ const arr = waJSON('cro_audits_v3', []); if(!Array.isArray(arr)) return [];
+      return arr.slice(0,80).map(a=>({ id:((a.cro||'')+(a.date||'')), rec:a, label:(a.cro||'—')+' · '+(a.date||'')+' · '+(a.total!=null?a.total+'/100':'—') })); },
+    templates: [
+      { id:'scorecard', name:'Daily scorecard', ok:a=>!!a,
+        build:a=>{ const g=(a.tasks&&a.tasks.t9&&a.tasks.t9.groomingPct); return waSign((a.cro||'')+' — daily scorecard '+(a.date||'')+': '+(a.total!=null?a.total+'/100':'—')+(a.grade?(' ('+a.grade+')'):'')+(g!=null?('. Grooming '+g+'%'):'')+'.'); } },
+      { id:'encourage', name:'Encouragement', ok:a=>!!a,
+        build:a=>waSign('Hi '+(a.cro||'')+',\nYour '+(a.date||'')+' audit'+(a.store?(' at '+a.store):'')+': '+(a.total!=null?a.total+'/100':'—')+(a.grade?(' — '+a.grade):'')+'. Keep it up! 👏') },
     ],
   },
 };
