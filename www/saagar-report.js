@@ -305,48 +305,48 @@
     cashStatement: function (o) {
       var date = o.date || curDate();
       var c = cashDetail(date);
-      if (!c.rec) {
-        return { orientation: 'portrait', pages: [lhead('DAILY CASH STATEMENT', 'Saagar Traders', longDate(date)) + '<div class="empty" style="margin-top:60px">Cash statement not filled for this date.<br>Opening carry-forward: ' + inr(c.opening) + '</div>' + foot(1, 1)] };
-      }
+      var hdr = { t: 'header', title: 'DAILY CASH STATEMENT', sub: 'Saagar Traders · Latur', period: longDate(date) };
+      if (!c.rec) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Cash statement not filled for this date. Opening carry-forward: ' + inr(c.opening) }] };
       var statusTxt = c.closed ? (c.approved ? 'Locked & approved' : 'Closed · awaiting approval') : 'Open';
-      var kpis = kpiRow([
-        { label: 'Opening', value: inr(c.opening) }, { label: 'Cash Receipts', value: inr(c.cashIn) },
-        { label: 'Cash Payments', value: inr(c.cashOut) }, { label: 'Expected Closing', value: inr(c.expected), hero: true },
+      var blocks = [{ t: 'header', title: 'DAILY CASH STATEMENT', sub: 'Saagar Traders · Latur', period: longDate(date), chip: statusTxt, chipKind: (c.balanced && c.closed) ? 'ok' : 'draft' }];
+      blocks.push({ t: 'kpi', cols: 5, items: [
+        { label: 'Opening', value: inr(c.opening) },
+        { label: 'Cash Receipts', value: inr(c.cashIn) },
+        { label: 'Cash Payments', value: inr(c.cashOut) },
+        { label: 'Expected Closing', value: inr(c.expected), hero: true },
         { label: 'Counted', value: inr(c.counted), sub: c.balanced ? 'Balanced' : inr(c.variance), subClass: c.balanced ? 'up' : 'down' }
-      ], 5);
-      // denomination table
-      var denoRows = DEN.filter(function (d) { return (Number(c.physDeno[d]) || 0) || (Number(c.bankDeno[d]) || 0); }).map(function (d) {
-        var pc = Number(c.physDeno[d]) || 0, bc = Number(c.bankDeno[d]) || 0;
-        return { d: inr(d), pc: pc, pv: inr(d * pc), bc: bc, bv: inr(d * bc) };
-      });
-      var denoTbl = denoRows.length ? dataTable(
-        [{ key: 'd', label: 'Denom' }, { key: 'pc', label: 'Phys count', align: 'r' }, { key: 'pv', label: 'Phys value', align: 'r' }, { key: 'bc', label: 'Bank count', align: 'r' }, { key: 'bv', label: 'Bank value', align: 'r' }],
-        denoRows, { totals: { d: 'Total', pc: '', pv: inr(c.counted), bc: '', bv: inr(c.bankDep) } }) : '<div class="empty">No denominations counted</div>';
-      function ledgerTbl(list, label) {
-        if (!list.length) return '<div class="empty">No ' + label + ' today</div>';
-        return dataTable([{ key: 'cat', label: 'Category' }, { key: 'desc', label: 'Description' }, { key: 'who', label: 'Vendor / Source' }, { key: 'amount', label: 'Amount ₹', align: 'r', fmt: inr }],
-          list.map(function (x) { return { cat: esc(x.cat), desc: esc(x.desc || '—'), who: esc(x.who || '—'), amount: x.amount }; }),
-          { totals: { cat: 'Total', desc: '', who: '', amount: inr(list.reduce(function (a, x) { return a + x.amount; }, 0)) } });
+      ] });
+      var denoRows = DEN.filter(function (d) { return (Number(c.physDeno[d]) || 0) || (Number(c.bankDeno[d]) || 0); });
+      blocks.push({ t: 'section', title: 'Denomination Count' });
+      if (denoRows.length) {
+        blocks.push({ t: 'table',
+          head: [['Denom', 'Phys count', 'Phys value', 'Bank count', 'Bank value']],
+          body: denoRows.map(function (d) { var pc = Number(c.physDeno[d]) || 0, bc = Number(c.bankDeno[d]) || 0; return [inr(d), num(pc), inr(d * pc), num(bc), inr(d * bc)]; }),
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 92, halign: 'right' }, 2: { cellWidth: 112, halign: 'right' }, 3: { cellWidth: 92, halign: 'right' }, 4: { cellWidth: 112, halign: 'right' } },
+          foot: [['Total', '', inr(c.counted), '', inr(c.bankDep)]] });
+      } else { blocks.push({ t: 'empty', text: 'No denominations counted.' }); }
+      function ledger(title, list, tag) {
+        blocks.push({ t: 'section', title: title, tag: tag });
+        if (!list.length) { blocks.push({ t: 'empty', text: 'None today.' }); return; }
+        blocks.push({ t: 'table',
+          head: [['Category', 'Description', 'Vendor / Source', 'Amount ₹']],
+          body: list.map(function (x) { return [trunc(x.cat, 22), trunc(x.desc || '—', 40), trunc(x.who || '—', 24), inr(x.amount)]; }),
+          money: [3],
+          colStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 130 }, 3: { cellWidth: 98, halign: 'right' } },
+          foot: [['Total', '', '', inr(list.reduce(function (a, x) { return a + x.amount; }, 0))]] });
       }
-      var recoCard = kvList([
+      ledger('Cash Receipts', c.receipts, { cls: 'ok', txt: inr(c.cashIn) });
+      ledger('Cash Payments', c.payments, { cls: 'warn', txt: inr(c.cashOut) });
+      blocks.push({ t: 'section', title: 'Reconciliation', tag: c.balanced ? { cls: 'ok', txt: 'Balanced' } : { cls: 'bad', txt: 'Mismatch' } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [
         ['Expected closing cash', inr(c.expected), 'big'], ['Counted physical cash', inr(c.counted)],
-        ['Variance', c.balanced ? '<span class="pill ok">₹0 · Balanced</span>' : '<span class="pill bad">' + inr(c.variance) + '</span>'],
-        ['Deposited to bank', inr(c.bankDep)], ['Retained in drawer', inr(c.counted - c.bankDep)],
-        ['Filled by', esc(c.filledBy || '—')], ['Approved by', esc(c.approvedBy || (c.closed ? 'Pending' : '—'))]
-      ]);
-      if (!c.balanced && c.mismatchReason) recoCard += '<div style="margin-top:8px;font-size:11px;color:var(--red)"><b>Mismatch reason:</b> ' + esc(c.mismatchReason) + '</div>';
-
-      var page = lhead('DAILY CASH STATEMENT', 'Saagar Traders · Latur', longDate(date), { chip: statusTxt, chipClass: c.balanced && c.closed ? '' : 'draft' })
-        + kpis
-        + '<div class="grid">'
-        + card('Denomination Count', null, { p0: true, html: denoTbl }, true)
-        + card('Cash Receipts', { cls: 'ok', txt: inr(c.cashIn) }, { p0: true, html: ledgerTbl(c.receipts, 'receipts') })
-        + card('Cash Payments', { cls: 'warn', txt: inr(c.cashOut) }, { p0: true, html: ledgerTbl(c.payments, 'payments') })
-        + card('Reconciliation', c.balanced ? { cls: 'ok', txt: 'Balanced' } : { cls: 'bad', txt: 'Mismatch' }, recoCard, true)
-        + '</div>'
-        + '<div style="margin-top:8px;font-size:10px;color:#94a3b8">Card / UPI / Bank entries appear in the P&L, not in cash reconciliation.</div>'
-        + foot(1, 1);
-      return { orientation: 'portrait', pages: [page] };
+        ['Variance', c.balanced ? '₹0 · Balanced' : inr(c.variance)], ['Deposited to bank', inr(c.bankDep)],
+        ['Retained in drawer', inr(c.counted - c.bankDep)], ['Filled by', c.filledBy || '—'],
+        ['Approved by', c.approvedBy || (c.closed ? 'Pending' : '—')]
+      ] });
+      if (!c.balanced && c.mismatchReason) blocks.push({ t: 'note', text: 'Mismatch reason: ' + c.mismatchReason, color: PAL.RED });
+      blocks.push({ t: 'note', text: 'Card / UPI / Bank entries appear in the P&L, not in cash reconciliation.' });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== DAILY STOCK CLOSING REGISTER (landscape, 1 page per store) ===== */
@@ -630,22 +630,39 @@
     /* ===== EXPENSE — MONTHLY P&L SUMMARY (portrait) ===== */
     expenseMonthly: function (o) {
       var month = o.month || curMonth(); var e = expenseMonth(month);
-      if (!e.incTot && !e.expTot) return { orientation: 'portrait', pages: [lhead('MONTHLY EXPENSE & P&L', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:60px">No ledger entries for this month.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'MONTHLY EXPENSE & P&L', sub: 'Saagar Traders · Latur', period: monthLong(month) };
+      if (!e.incTot && !e.expTot) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No ledger entries for this month.' }] };
       var topExp = ''; var mv = 0; Object.keys(e.exp).forEach(function (k) { if (e.exp[k] > mv) { mv = e.exp[k]; topExp = k; } });
-      var kpis = kpiRow([
-        { label: 'Total Income', value: inr(e.incTot) }, { label: 'Total Expense', value: inr(e.expTot) },
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Total Income', value: inr(e.incTot) },
+        { label: 'Total Expense', value: inr(e.expTot) },
         { label: 'Net P&L', value: inr(e.net), hero: true, subClass: e.net >= 0 ? 'up' : 'down', sub: e.net >= 0 ? 'profit' : 'loss' },
-        { label: 'Net Margin', value: e.incTot ? Math.round(e.net / e.incTot * 100) + '%' : '—' }, { label: 'Top Expense', value: esc(topExp || '—') }
-      ], 5);
-      function catTbl(map, tot) { var arr = Object.keys(map).map(function (k) { return { k: k, v: map[k] }; }).sort(function (a, b) { return b.v - a.v; }); return arr.length ? dataTable([{ key: 'cat', label: 'Category' }, { key: 'amt', label: 'Amount ₹', align: 'r' }, { key: 'pc', label: '%', align: 'r' }], arr.map(function (x) { return { cat: esc(x.k), amt: inr(x.v), pc: tot ? Math.round(x.v / tot * 100) + '%' : '—' }; }), { totals: { cat: 'Total', amt: inr(tot), pc: '' } }) : '<div class="empty">None</div>'; }
-      var firmTbl = e.firms.length ? dataTable([{ key: 'firm', label: 'Firm / Store' }, { key: 'count', label: 'Entries', align: 'r' }, { key: 'amount', label: 'Expense ₹', align: 'r', fmt: inr }], e.firms.map(function (f) { return { firm: esc(f.firm), count: f.count, amount: f.amount }; }), { totals: { firm: 'Total', count: '', amount: inr(e.expTot) } }) : '<div class="empty">—</div>';
-      var page = lhead('MONTHLY EXPENSE & P&L', 'Saagar Traders · Latur', monthLong(month)) + kpis
-        + '<div class="grid">'
-        + card('Income by Category', { cls: 'ok', txt: inr(e.incTot) }, { p0: true, html: catTbl(e.inc, e.incTot) })
-        + card('Expense by Category', { cls: 'warn', txt: inr(e.expTot) }, { p0: true, html: catTbl(e.exp, e.expTot) })
-        + card('Expense by Firm / Store', null, { p0: true, html: firmTbl }, true)
-        + '</div>' + foot();
-      return { orientation: 'portrait', pages: [page] };
+        { label: 'Net Margin', value: e.incTot ? Math.round(e.net / e.incTot * 100) + '%' : '—' },
+        { label: 'Top Expense', value: topExp || '—' }
+      ] }];
+      function catTable(title, map, tot, tag) {
+        blocks.push({ t: 'section', title: title, tag: tag });
+        var arr = Object.keys(map).map(function (k) { return { k: k, v: map[k] }; }).sort(function (a, b) { return b.v - a.v; });
+        if (!arr.length) { blocks.push({ t: 'empty', text: 'None.' }); return; }
+        blocks.push({ t: 'table',
+          head: [['Category', 'Amount ₹', '%']],
+          body: arr.map(function (x) { return [trunc(x.k, 36), inr(x.v), tot ? Math.round(x.v / tot * 100) + '%' : '—']; }),
+          money: [1],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 130, halign: 'right' }, 2: { cellWidth: 70, halign: 'right' } },
+          foot: [['Total', inr(tot), '']] });
+      }
+      catTable('Income by Category', e.inc, e.incTot, { cls: 'ok', txt: inr(e.incTot) });
+      catTable('Expense by Category', e.exp, e.expTot, { cls: 'warn', txt: inr(e.expTot) });
+      blocks.push({ t: 'section', title: 'Expense by Firm / Store' });
+      if (e.firms.length) {
+        blocks.push({ t: 'table',
+          head: [['Firm / Store', 'Entries', 'Expense ₹']],
+          body: e.firms.map(function (f) { return [trunc(f.firm, 40), num(f.count), inr(f.amount)]; }),
+          money: [2],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 90, halign: 'right' }, 2: { cellWidth: 130, halign: 'right' } },
+          foot: [['Total', '', inr(e.expTot)]] });
+      } else { blocks.push({ t: 'empty', text: '—' }); }
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== TAX — COMPLIANCE DUE REPORT (portrait) ===== */
