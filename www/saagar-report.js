@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    SAAGAR REPORT ENGINE — enterprise-grade, data-driven A4 PDF reports (offline)
    ───────────────────────────────────────────────────────────────────────────
-   Pipeline:  module data (existing shell aggregators) → a CLEAN, purpose-built
-   A4 HTML page node → html2canvas(page) → jsPDF.addImage (one image per A4 page)
-   → Blob → OS share sheet. It NEVER screenshots the live module UI, so there is
-   no chrome, no whitespace, no shrink-to-fit, no blank pages, and the layout is
-   the designed document — readable at full A4 size.
-   Libs (all local/offline): html2canvas.min.js + jspdf.umd.min.js.
+   Pipeline:  module data (existing shell aggregators) → typed content blocks →
+   renderDoc(): NATIVE VECTOR text via jsPDF + jspdf-autotable (tables) and raw
+   jsPDF primitives (header/KPI/banner/kv/sign) → Blob → OS share sheet. Text is
+   selectable, crisp, tiny, paginates at row boundaries (never mid-row), and the
+   rupee symbol renders via an embedded DM Sans subset. No screenshots, no chrome.
+   Libs (all local/offline): jspdf.umd.min.js + jspdf.plugin.autotable.min.js +
+   fonts/DMSans-normal.js + fonts/DMSans-bold.js.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -28,119 +29,8 @@
   function monthLong(m) { try { return new Date(m + '-01T00:00:00').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }); } catch (e) { return m || ''; } }
   function stamp() { try { return new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
 
-  /* ---------- design-system CSS (offline font stacks; mirrors the app) ---------- */
-  function CSS(W) {
-    return ''
-      + ":root{--navy:#0d2340;--navy2:#13325c;--gold:#b8923a;--ink:#1a2433;--mut:#64748b;--line:#e3e8f0;--bg:#f7f9fc;--green:#1b8f5a;--amber:#b7791f;--red:#c0392b;--redbg:#fdecea}"
-      + "*{box-sizing:border-box;margin:0;padding:0}"
-      + "body{background:#fff;font-family:'DM Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}"
-      + ".page{width:794px;min-height:1123px;background:#fff;padding:40px 44px 60px;position:relative}"
-      + ".page.land{width:1123px;min-height:794px;padding:34px 40px 52px}"
-      + ".tnum{font-variant-numeric:tabular-nums}"
-      + ".lh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid var(--navy);padding-bottom:13px}"
-      + ".brand{font-family:'DM Serif Display',Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:var(--navy);line-height:1}"
-      + ".brand small{display:block;font-family:'DM Sans',system-ui,sans-serif;font-size:9px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-top:5px}"
-      + ".addr{font-size:10px;color:var(--mut);margin-top:6px}"
-      + ".lh-r{text-align:right}.rtitle{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:.3px}"
-      + ".rsub{font-size:11.5px;color:var(--mut);font-weight:500;margin-top:3px}.rsub.b{font-weight:700;color:var(--ink)}"
-      + ".chip{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 11px;border-radius:20px;margin-top:7px;background:#e6f5ec;color:var(--green);border:1px solid #bfe6cf}"
-      + ".chip.draft{background:#fef3e0;color:var(--amber);border-color:#f0d9ad}"
-      + ".rgen{font-size:9.5px;color:#94a3b8;margin-top:6px}"
-      + ".att{margin:15px 0 4px;border:1.5px solid #f3c5be;background:var(--redbg);border-radius:10px;padding:11px 16px}"
-      + ".att.clear{border-color:#bfe6cf;background:#edf9f1}"
-      + ".att h3{font-size:11px;font-weight:800;letter-spacing:1.4px;color:var(--red);text-transform:uppercase;margin-bottom:7px}"
-      + ".att.clear h3{color:var(--green);margin-bottom:0}"
-      + ".att ul{list-style:none;display:grid;gap:5px}.att li{font-size:12.5px;color:#3a2420;font-weight:500;padding-left:17px;position:relative}"
-      + ".att li::before{content:'\\25CF';position:absolute;left:2px;color:var(--red);font-size:8px;top:4px}"
-      + ".kpis{display:grid;gap:10px;margin:15px 0 4px}"
-      + ".kpi{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px}"
-      + ".kpi .lab{font-size:9px;font-weight:700;letter-spacing:.5px;color:var(--mut);text-transform:uppercase}"
-      + ".kpi .val{font-size:20px;font-weight:800;color:var(--navy);margin-top:5px;line-height:1.05}"
-      + ".kpi .sub{font-size:10px;font-weight:600;margin-top:3px}.up{color:var(--green)}.down{color:var(--red)}.neu{color:var(--mut)}"
-      + ".kpi.hero{background:var(--navy);border-color:var(--navy)}.kpi.hero .lab{color:#b9c6dc}.kpi.hero .val{color:#fff}.kpi.hero .sub{color:#9fe3c0}"
-      + ".grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:16px}"
-      + ".card{border:1px solid var(--line);border-radius:10px;overflow:hidden}.card.full{grid-column:1/-1}"
-      + ".ch{background:#f1f5fb;border-bottom:1px solid var(--line);padding:8px 13px;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--navy);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}"
-      + ".tag{font-size:9.5px;font-weight:700;padding:1px 8px;border-radius:20px}.tag.ok{background:#e6f5ec;color:var(--green)}.tag.warn{background:#fef3e0;color:var(--amber)}.tag.bad{background:var(--redbg);color:var(--red)}"
-      + ".cb{padding:11px 13px}.cb.p0{padding:0}"
-      + "table{width:100%;border-collapse:collapse}"
-      + "th{background:var(--navy);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;padding:7px 10px;text-align:left}th.r,td.r{text-align:right}th.c,td.c{text-align:center}"
-      + "td{font-size:11.5px;padding:5px 10px;border-bottom:1px solid var(--line);color:var(--ink)}"
-      + "tr:nth-child(even) td{background:#fafbfd}"
-      + "td.net{font-weight:800;color:var(--navy)}"
-      + "tr.tot td{font-weight:800;background:#eef2f8 !important;border-top:2px solid var(--navy);color:var(--navy)}"
-      + "tr.flag td{background:#fdf3f1 !important;font-weight:600}"
-      + ".kv{display:grid;grid-template-columns:1fr auto;gap:7px 10px;font-size:12px}.kv .k{color:var(--mut);font-weight:500}.kv .v{font-weight:700;text-align:right}.kv .v.big{font-size:14px;color:var(--navy)}"
-      + ".pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px}.pill.ok{background:#e6f5ec;color:var(--green)}.pill.bad{background:var(--redbg);color:var(--red)}.pill.warn{background:#fef3e0;color:var(--amber)}"
-      + ".empty{padding:40px;text-align:center;color:var(--mut);font-size:13px;font-weight:600}"
-      + ".statline{margin-top:10px;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-size:11.5px;display:flex;gap:22px;flex-wrap:wrap}.statline b{color:var(--navy)}"
-      + ".sign{display:flex;justify-content:space-between;margin-top:18px;padding:0 20px}.sigbox{text-align:center;font-size:11px;color:var(--mut)}.sigbox .ln{width:190px;border-top:1.3px solid var(--ink);margin-bottom:6px}.sigbox b{color:var(--ink);display:block;font-size:12px}"
-      + ".foot{position:absolute;left:44px;right:44px;bottom:22px;border-top:1px solid var(--line);padding-top:8px;display:flex;justify-content:space-between;font-size:9.5px;color:#94a3b8}"
-      + ".page.land .foot{left:40px;right:40px;bottom:18px}";
-  }
-
-  /* ---------- shared layout primitives (HTML strings) ---------- */
-  function lhead(title, sub, period, opt) {
-    opt = opt || {};
-    var chip = opt.chip ? '<div class="chip ' + (opt.chipClass || '') + '">' + esc(opt.chip) + '</div>' : '';
-    return '<div class="lh"><div>'
-      + '<div class="brand">Saagar Traders<small>BUSINESS CONTROL CENTRE</small></div>'
-      + (opt.addr ? '<div class="addr">' + esc(opt.addr) + '</div>' : '')
-      + '</div><div class="lh-r">'
-      + '<div class="rtitle">' + esc(title) + '</div>'
-      + (sub ? '<div class="rsub">' + esc(sub) + '</div>' : '')
-      + '<div class="rsub b">' + esc(period) + '</div>'
-      + chip
-      + '<div class="rgen">' + (ownerNm() ? 'Prepared for ' + esc(ownerNm()) + ' · ' : '') + 'Generated ' + esc(stamp()) + '</div>'
-      + '</div></div>';
-  }
-  function foot(pageNo, pageTot) {
-    var pg = (pageNo != null && pageTot != null) ? (' · Page ' + pageNo + ' of ' + pageTot) : '';
-    return '<div class="foot"><span>Saagar Traders · Latur · Confidential — for owner review</span>'
-      + '<span>Business Control Centre' + pg + '</span></div>';
-  }
-  function kpiRow(items, cols) {
-    return '<div class="kpis" style="grid-template-columns:repeat(' + (cols || items.length) + ',1fr)">'
-      + items.map(function (k) {
-        return '<div class="kpi' + (k.hero ? ' hero' : '') + '"><div class="lab">' + esc(k.label) + '</div>'
-          + '<div class="val tnum">' + k.value + '</div>'
-          + (k.sub ? '<div class="sub ' + (k.subClass || 'neu') + '">' + k.sub + '</div>' : '') + '</div>';
-      }).join('') + '</div>';
-  }
-  function attn(flags) {
-    if (!flags || !flags.length) return '<div class="att clear"><h3>✅ All clear — nothing needs you today</h3></div>';
-    return '<div class="att"><h3>⛔ Needs your attention today</h3><ul>'
-      + flags.map(function (f) { return '<li>' + f + '</li>'; }).join('') + '</ul></div>';
-  }
-  function card(title, tag, body, full) {
-    var t = tag ? '<span class="tag ' + tag.cls + '">' + esc(tag.txt) + '</span>' : '';
-    return '<div class="card' + (full ? ' full' : '') + '"><div class="ch">' + esc(title) + t + '</div>'
-      + '<div class="cb' + (body.p0 ? ' p0' : '') + '">' + (body.html != null ? body.html : body) + '</div></div>';
-  }
-  function kvList(pairs) {
-    return '<div class="kv">' + pairs.map(function (p) {
-      return '<span class="k">' + esc(p[0]) + '</span><span class="v ' + (p[2] || '') + '">' + p[1] + '</span>';
-    }).join('') + '</div>';
-  }
-  function dataTable(cols, rows, opt) {
-    opt = opt || {};
-    var head = '<thead><tr>' + cols.map(function (c) { return '<th class="' + (c.align || '') + '">' + esc(c.label) + '</th>'; }).join('') + '</tr></thead>';
-    var body = rows.map(function (rw) {
-      var cls = rw.__flag ? ' class="flag"' : '';
-      return '<tr' + cls + '>' + cols.map(function (c) {
-        var v = rw[c.key]; v = (c.fmt ? c.fmt(v, rw) : (v == null ? '—' : v));
-        return '<td class="' + (c.align || '') + (c.cell || '') + '">' + v + '</td>';
-      }).join('') + '</tr>';
-    }).join('');
-    var tot = '';
-    if (opt.totals) {
-      tot = '<tr class="tot">' + cols.map(function (c) {
-        var v = opt.totals[c.key];
-        return '<td class="' + (c.align || '') + '">' + (v == null ? '' : v) + '</td>';
-      }).join('') + '</tr>';
-    }
-    return '<table>' + head + '<tbody>' + body + tot + '</tbody></table>';
-  }
+  /* Legacy design-system CSS() + HTML-string primitives (lhead/foot/kpiRow/attn/card/kvList/dataTable)
+     removed in R6.7 — every report now renders as native vector via renderDoc() + its jsPDF primitives. */
 
   /* ---------- shared data helpers ---------- */
   var DEN = [2000, 500, 200, 100, 50, 20, 10, 5, 2, 1];
@@ -1134,47 +1024,7 @@
     if (window.jsPDF) return window.jsPDF;
     return null;
   }
-  function renderPages(pages, orientation) {
-    var portrait = orientation !== 'landscape';
-    var W = portrait ? 794 : 1123, H = portrait ? 1123 : 794;
-    var JsPDF = pdfLib();
-    if (!window.html2canvas || !JsPDF) return Promise.reject(new Error('PDF libs not loaded (html2canvas/jsPDF)'));
-    var ifr = document.createElement('iframe');
-    ifr.setAttribute('aria-hidden', 'true');
-    ifr.style.cssText = 'position:fixed;left:-12000px;top:0;width:' + W + 'px;height:' + H + 'px;border:0;background:#fff;visibility:hidden';
-    document.body.appendChild(ifr);
-    var idoc = ifr.contentDocument || ifr.contentWindow.document;
-    idoc.open(); idoc.write('<!doctype html><html><head><meta charset="utf-8"><style>' + CSS(W) + '</style></head><body></body></html>'); idoc.close();
-    var pdf = new JsPDF({ unit: 'pt', format: 'a4', orientation: portrait ? 'portrait' : 'landscape', compress: true });
-    var pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight();
-    var idx = 0;
-    function step() {
-      if (idx >= pages.length) { try { document.body.removeChild(ifr); } catch (e) {} return pdf.output('blob'); }
-      idoc.body.innerHTML = '<div class="page' + (portrait ? '' : ' land') + '">' + pages[idx] + '</div>';
-      var node = idoc.querySelector('.page');
-      return sleep(70).then(function () {
-        return window.html2canvas(node, { scale: 2, backgroundColor: '#ffffff', useCORS: true, width: W, windowWidth: W, height: node.scrollHeight, logging: false });
-      }).then(function (canvas) {
-        var data = canvas.toDataURL('image/jpeg', 0.92);
-        var imgH = pw * canvas.height / canvas.width; // image height when scaled to page width
-        if (idx > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
-        if (imgH <= ph + 2) {
-          pdf.addImage(data, 'JPEG', 0, 0, pw, imgH, undefined, 'FAST'); // fits one page, top-aligned
-        } else if (imgH <= ph * 1.12) {
-          var sw = pw * (ph / imgH), sx = (pw - sw) / 2; // barely over → gentle ≤12% shrink to one page (no near-empty 2nd page)
-          pdf.addImage(data, 'JPEG', sx, 0, sw, ph, undefined, 'FAST');
-        } else {
-          var slices = Math.ceil((imgH - 2) / ph); // genuinely long → slice into A4 pages 1:1 (no shrink)
-          for (var s = 0; s < slices; s++) {
-            if (s > 0) pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
-            pdf.addImage(data, 'JPEG', 0, -s * ph, pw, imgH, undefined, 'FAST'); // jsPDF clips to page bounds
-          }
-        }
-        idx++; return step();
-      });
-    }
-    return Promise.resolve().then(step);
-  }
+  /* renderPages() (html2canvas raster slicer) removed in R6.7 — every report is now native vector via renderDoc(). */
 
   /* ---------- public API ---------- */
   function buildModel(type, opts) {
@@ -1203,9 +1053,8 @@
 
   window.SaagarReport = {
     build: function (type, opts) {
-      var m = buildModel(type, opts);
-      if (m.blocks) return Promise.resolve(renderDoc(m.blocks, m.orientation).output('blob')); // R6 native vector path
-      return renderPages(m.pages, m.orientation);                                                // legacy raster path (un-converted builders)
+      var m = buildModel(type, opts);                                  // all 16 builders return { orientation, blocks:[...] }
+      return Promise.resolve(renderDoc(m.blocks, m.orientation).output('blob'));
     },
     generate: function (type, opts) {
       try { toast('Preparing report…'); } catch (e) {}
