@@ -501,30 +501,32 @@
     payrollRegister: function (o) {
       var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
       var period = (meta.month || '') + ' ' + (meta.year || '');
-      if (!rows.length) return { orientation: 'landscape', pages: [lhead('PAYROLL — SALARY REGISTER', 'Saagar Traders', period) + '<div class="empty" style="margin-top:50px">No employees in payroll.</div>' + foot()] };
-      var T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 };
-      var rr = rows.map(function (r, i) {
+      if (!rows.length) return { orientation: 'landscape', blocks: [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period }, { t: 'empty', text: 'No employees in payroll.' }] };
+      var T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 }, body = [], raw = [];
+      rows.forEach(function (r, i) {
         var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : (r.netPay || 0)) || 0;
-        var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross)); // OT is in net but not in base gross → derive so Net = Gross+OT−deductions
+        var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross)); // OT is in net but not base gross → derive so Net = Gross+OT−deductions
         T.gross += gross; T.ot += ot; T.pt += pt; T.pf += pf; T.esic += es; T.adv += adv; T.net += net;
-        return { sr: i + 1, empId: esc(r.empId || '—'), name: esc(r.name || '—'), desig: esc(r.designation || '—'), gross: inr(gross), ot: inr(ot), pt: inr(pt), pf: inr(pf), esic: inr(es), adv: inr(adv), net: inr(net) };
+        body.push([String(i + 1), r.empId || '—', trunc(r.name || '—', 22), trunc(r.designation || '—', 16), inr(gross), inr(ot), inr(pt), inr(pf), inr(es), inr(adv), inr(net)]);
+        raw.push([0, 0, 0, 0, gross, ot, pt, pf, es, adv, net]); // exact per-row numerics (OT rounded as printed) → Σraw == foot
       });
       var status = (meta.run && meta.run.status) || ((p.runs && Object.keys(p.runs).length) ? 'locked' : 'draft'), locked = /lock/i.test(status);
-      var kpis = kpiRow([
-        { label: 'Employees', value: num(rows.length) }, { label: 'Gross + OT', value: inr(T.gross + T.ot) },
-        { label: 'Total Deductions', value: inr(T.pt + T.pf + T.esic + T.adv) }, { label: 'Total Advance', value: inr(T.adv) },
+      var blocks = [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period, chip: locked ? 'LOCKED — FINAL' : 'DRAFT', chipKind: locked ? 'locked' : 'draft' }];
+      blocks.push({ t: 'kpi', cols: 5, items: [
+        { label: 'Employees', value: num(rows.length) },
+        { label: 'Gross + OT', value: inr(T.gross + T.ot) },
+        { label: 'Total Deductions', value: inr(T.pt + T.pf + T.esic + T.adv) },
+        { label: 'Total Advance', value: inr(T.adv) },
         { label: 'Net Payable', value: inr(T.net), hero: true }
-      ], 5);
-      var tbl = dataTable([
-        { key: 'sr', label: 'Sr', align: 'c' }, { key: 'empId', label: 'Emp ID' }, { key: 'name', label: 'Employee' }, { key: 'desig', label: 'Designation' },
-        { key: 'gross', label: 'Gross', align: 'r' }, { key: 'ot', label: 'OT', align: 'r' }, { key: 'pt', label: 'PT', align: 'r' }, { key: 'pf', label: 'PF (EE)', align: 'r' }, { key: 'esic', label: 'ESIC (EE)', align: 'r' }, { key: 'adv', label: 'Advance', align: 'r' }, { key: 'net', label: 'Net Pay', align: 'r', cell: ' net' }
-      ], rr, { totals: { sr: '', empId: '', name: 'TOTAL (' + rows.length + ')', desig: '', gross: inr(T.gross), ot: inr(T.ot), pt: inr(T.pt), pf: inr(T.pf), esic: inr(T.esic), adv: inr(T.adv), net: inr(T.net) } });
-      var page = lhead('PAYROLL — SALARY REGISTER', 'Saagar Traders · Latur', period, { chip: locked ? '🔒 LOCKED — FINAL' : '⚠ DRAFT', chipClass: locked ? '' : 'draft', addr: 'Prepared by ' + esc(meta.preparedBy || '—') + ' · Approved by ' + esc(meta.approvedBy || '—') })
-        + kpis + tbl
-        + '<div class="statline"><span><b>Statutory (employee deductions):</b></span><span>PT <b>' + inr(T.pt) + '</b></span><span>PF (EE) <b>' + inr(T.pf) + '</b></span><span>ESIC (EE) <b>' + inr(T.esic) + '</b></span><span>Net paid to staff <b>' + inr(T.net) + '</b></span></div>'
-        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Prepared By<b>' + esc(meta.preparedBy || '—') + '</b></div><div class="sigbox"><div class="ln"></div>Checked By<b>' + esc(meta.checkedBy || '—') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(meta.approvedBy || '—') + '</b></div></div>'
-        + foot();
-      return { orientation: 'landscape', pages: [page] };
+      ] });
+      blocks.push({ t: 'table',
+        head: [['Sr', 'Emp ID', 'Employee', 'Designation', 'Gross', 'OT', 'PT', 'PF (EE)', 'ESIC', 'Advance', 'Net Pay']],
+        body: body, raw: raw, money: [4, 5, 6, 7, 8, 9, 10],
+        colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 56 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 92 }, 4: { cellWidth: 78, halign: 'right' }, 5: { cellWidth: 56, halign: 'right' }, 6: { cellWidth: 54, halign: 'right' }, 7: { cellWidth: 62, halign: 'right' }, 8: { cellWidth: 60, halign: 'right' }, 9: { cellWidth: 70, halign: 'right' }, 10: { cellWidth: 86, halign: 'right' } },
+        foot: [['', '', 'TOTAL (' + rows.length + ')', '', inr(T.gross), inr(T.ot), inr(T.pt), inr(T.pf), inr(T.esic), inr(T.adv), inr(T.net)]] });
+      blocks.push({ t: 'statline', spans: [['Statutory — PT', inr(T.pt)], ['PF (EE)', inr(T.pf)], ['ESIC (EE)', inr(T.esic)], ['Net paid to staff', inr(T.net)]] });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: meta.preparedBy || '—' }, { role: 'Checked By', name: meta.checkedBy || '—' }, { role: 'For Saagar Traders', name: meta.approvedBy || '—' }] });
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== PAYROLL — SALARY SLIP (portrait, per employee) ===== */
@@ -532,24 +534,25 @@
       var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
       var r = o.empId ? rows.filter(function (x) { return x.empId === o.empId; })[0] : (o.empIndex != null ? rows[o.empIndex] : rows[0]);
       var period = (meta.month || '') + ' ' + (meta.year || '');
-      if (!r) return { orientation: 'portrait', pages: [lhead('SALARY SLIP', 'Saagar Traders', period) + '<div class="empty" style="margin-top:60px">Employee not found.</div>' + foot()] };
+      var hdr = { t: 'header', title: 'SALARY SLIP', sub: 'Saagar Traders · Latur', period: 'For ' + period };
+      if (!r) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Employee not found.' }] };
       var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : 0) || 0, ded = pt + pf + es + adv, ot = Math.max(0, Math.round(net + ded - gross));
-      var info = kvList([
-        ['Employee', esc(r.name || '—')], ['Employee ID', esc(r.empId || '—')], ['Designation', esc(r.designation || '—')], ['Pay Period', period],
-        ['Bank', esc(r.bankName || '—')], ['A/C No.', esc(r.accountNo || '—')], ['IFSC', esc(r.ifsc || '—')], ['Payment Mode', esc(r.paidMode || r.payMode || '—')],
+      var blocks = [hdr];
+      blocks.push({ t: 'section', title: 'Employee & Attendance' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [
+        ['Employee', r.name || '—'], ['Employee ID', r.empId || '—'], ['Designation', r.designation || '—'], ['Pay Period', period],
+        ['Bank', r.bankName || '—'], ['A/C No.', r.accountNo || '—'], ['IFSC', r.ifsc || '—'], ['Payment Mode', r.paidMode || r.payMode || '—'],
         ['Days absent', num(r.absent || 0)], ['Half / Leave days', num(r.halfDay || 0) + ' / ' + num(r.leavesApplied || 0)]
-      ]);
-      var earn = kvList([['Gross Salary (payable)', inr(gross)], ['Overtime', inr(ot)], ['Total Earnings', inr(gross + ot), 'big']]);
-      var dedB = kvList([['Professional Tax', inr(pt)], ['PF (Employee)', inr(pf)], ['ESIC (Employee)', inr(es)], ['Advance', inr(adv)], ['Total Deductions', inr(ded), 'big']]);
-      var page = lhead('SALARY SLIP', 'Saagar Traders · Latur', 'For ' + period, { addr: 'Ref GM/SAL/' + (r.empId || '') + '/' + period })
-        + '<div class="grid">' + card('Employee & Attendance', null, info, true)
-        + card('Earnings', { cls: 'ok', txt: inr(gross + ot) }, earn) + card('Deductions', { cls: 'warn', txt: inr(ded) }, dedB) + '</div>'
-        + '<div style="margin-top:16px;text-align:center;background:#0d2340;color:#fff;border-radius:12px;padding:16px"><div style="font-size:11px;letter-spacing:1px;opacity:.8">NET PAY (TAKE HOME)</div><div style="font-size:30px;font-weight:800;margin-top:4px" class="tnum">' + inr(net) + '</div></div>'
-        + (r.salaryRemark ? '<div style="margin-top:10px;font-size:11px;color:#64748b">Remark: ' + esc(r.salaryRemark) + '</div>' : '')
-        + (r.paidRef ? '<div style="margin-top:6px;font-size:11px;color:#64748b">Payment: ' + esc(r.paidMode || '') + ' · Ref ' + esc(r.paidRef) + (r.paidDate ? ' · ' + esc(r.paidDate) : '') + '</div>' : '')
-        + '<div class="sign"><div class="sigbox"><div class="ln"></div>Employee<b>' + esc(r.name || '') + '</b></div><div class="sigbox"><div class="ln"></div>For Saagar Traders<b>' + esc(meta.approvedBy || 'Authorised') + '</b></div></div>'
-        + foot();
-      return { orientation: 'portrait', pages: [page] };
+      ] });
+      blocks.push({ t: 'section', title: 'Earnings', tag: { cls: 'ok', txt: inr(gross + ot) } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Gross Salary (payable)', inr(gross)], ['Overtime', inr(ot)], ['Total Earnings', inr(gross + ot), 'big']] });
+      blocks.push({ t: 'section', title: 'Deductions', tag: { cls: 'warn', txt: inr(ded) } });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Professional Tax', inr(pt)], ['PF (Employee)', inr(pf)], ['ESIC (Employee)', inr(es)], ['Advance', inr(adv)], ['Total Deductions', inr(ded), 'big']] });
+      blocks.push({ t: 'netbox', label: 'Net Pay (Take Home)', value: inr(net) });
+      if (r.salaryRemark) blocks.push({ t: 'note', text: 'Remark: ' + r.salaryRemark });
+      if (r.paidRef) blocks.push({ t: 'note', text: 'Payment: ' + (r.paidMode || '') + ' · Ref ' + r.paidRef + (r.paidDate ? ' · ' + r.paidDate : '') });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Employee', name: r.name || '' }, { role: 'For Saagar Traders', name: meta.approvedBy || 'Authorised' }] });
+      return { orientation: 'portrait', blocks: blocks };
     },
 
     /* ===== LEAVE REGISTER (landscape, month) ===== */
@@ -562,18 +565,26 @@
         var arr = by[dk]; if (!Array.isArray(arr)) return;
         arr.forEach(function (l) { if (!l || !l.name) return; var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: 1 }; seen[key] = rec; out.push(rec); });
       });
-      if (!out.length) return { orientation: 'landscape', pages: [lhead('LEAVE REGISTER', 'Saagar Traders', monthLong(month)) + '<div class="empty" style="margin-top:50px">No leave recorded for this month.</div>' + foot()] };
-      var totDays = 0, full = 0, half = 0, names = {};
-      var rr = out.map(function (r, i) { var ld = r.half ? r.days * 0.5 : r.days; totDays += ld; if (r.half) half++; else full++; names[r.name.toLowerCase()] = 1; var e = empMap[r.name.toLowerCase()] || {}; return { sr: i + 1, empId: esc(e.empId || '—'), name: esc(r.name), dept: esc(e.department || '—'), from: esc(r.from), to: esc(r.to), type: esc(r.type), days: r.days, ld: ld, cat: esc(r.category || '—'), reason: esc(r.reason || '—'), approvedBy: esc(r.approvedBy || '—') }; });
-      var kpis = kpiRow([
-        { label: 'Applications', value: num(out.length) }, { label: 'Leave Days (payroll)', value: totDays, hero: true },
-        { label: 'Full-day', value: num(full) }, { label: 'Half-day', value: num(half) }, { label: 'Employees', value: num(Object.keys(names).length) }
-      ], 5);
-      var tbl = dataTable([
-        { key: 'sr', label: 'Sr', align: 'c' }, { key: 'empId', label: 'Emp ID' }, { key: 'name', label: 'Employee' }, { key: 'dept', label: 'Dept' },
-        { key: 'from', label: 'From' }, { key: 'to', label: 'To' }, { key: 'type', label: 'Type' }, { key: 'days', label: 'Days', align: 'r' }, { key: 'ld', label: 'Leave-Days', align: 'r' }, { key: 'cat', label: 'Category' }, { key: 'reason', label: 'Reason' }, { key: 'approvedBy', label: 'Approved By' }
-      ], rr, { totals: { sr: '', empId: '', name: 'TOTAL (' + out.length + ')', dept: '', from: '', to: '', type: '', days: '', ld: totDays, cat: '', reason: '', approvedBy: '' } });
-      return { orientation: 'landscape', pages: [lhead('LEAVE REGISTER', 'Saagar Traders · Latur', monthLong(month)) + kpis + tbl + foot()] };
+      var hdr = { t: 'header', title: 'LEAVE REGISTER', sub: 'Saagar Traders · Latur', period: monthLong(month) };
+      if (!out.length) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'No leave recorded for this month.' }] };
+      var totDays = 0, full = 0, half = 0, names = {}, body = [], raw = [];
+      out.forEach(function (r, i) { var ld = r.half ? r.days * 0.5 : r.days; totDays += ld; if (r.half) half++; else full++; names[r.name.toLowerCase()] = 1; var e = empMap[r.name.toLowerCase()] || {};
+        body.push([String(i + 1), e.empId || '—', trunc(r.name, 20), trunc(e.department || '—', 12), r.from, r.to, r.type, num(r.days), fmtLD(ld), trunc(r.category || '—', 14), trunc(r.reason || '—', 26), trunc(r.approvedBy || '—', 16)]);
+        raw.push([0, 0, 0, 0, 0, 0, 0, 0, ld, 0, 0, 0]); // leave-days fractional → float-exact carry
+      });
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Applications', value: num(out.length) },
+        { label: 'Leave Days (payroll)', value: fmtLD(totDays), hero: true },
+        { label: 'Full-day', value: num(full) },
+        { label: 'Half-day', value: num(half) },
+        { label: 'Employees', value: num(Object.keys(names).length) }
+      ] }];
+      blocks.push({ t: 'table',
+        head: [['Sr', 'Emp ID', 'Employee', 'Dept', 'From', 'To', 'Type', 'Days', 'Leave-Days', 'Category', 'Reason', 'Appr. By']],
+        body: body, raw: raw, money: [8], fmt: { 8: fmtLD },
+        colStyles: { 0: { cellWidth: 22, halign: 'center' }, 1: { cellWidth: 52 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 64 }, 4: { cellWidth: 64 }, 5: { cellWidth: 64 }, 6: { cellWidth: 58 }, 7: { cellWidth: 40, halign: 'right' }, 8: { cellWidth: 64, halign: 'right' }, 9: { cellWidth: 74 }, 10: { cellWidth: 'auto' }, 11: { cellWidth: 80 } },
+        foot: [['', '', 'TOTAL (' + out.length + ')', '', '', '', '', '', fmtLD(totDays), '', '', '']] });
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== GROOMING — DAILY AUDIT (portrait) ===== */
@@ -1027,7 +1038,7 @@
       drawRunningHeader(doc,pageW,M,hdr, p>1 && hdr.cont);
     }
     var y=M.top;
-    blocks.forEach(function(blk){
+    blocks.forEach(function(blk, _i){
       switch(blk.t){
         case 'header': break;
         case 'spacer': y+=(blk.h||10); break;
@@ -1047,7 +1058,7 @@
           y=doc.lastAutoTable.finalY + 8;
           break;
       }
-      y=maybeBreak(doc,y,M,pageFurniture);
+      if (_i < blocks.length - 1) y = maybeBreak(doc, y, M, pageFurniture);   // never add a trailing empty page after the last block
     });
     var tot=doc.internal.getNumberOfPages();
     for(var p=1;p<=tot;p++){
