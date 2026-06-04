@@ -41,17 +41,17 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 1.2 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 1.2 -version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
-          # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
+          # Remove unused INTERNET permission (app is fully offline) -BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
-          # Bump version — BUILD_NOTES step 3
+          # Bump version -BUILD_NOTES step 3
           sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 2/' "$GR" || true
           sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "1.2"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
-          grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
+          grep -n "uses-permission" "$MF" || echo "(no uses-permission lines -INTERNET removed)"
           echo "----- versioning -----"
           grep -nE "versionCode|versionName" "$GR" || true
           # Disable Android force-dark so WebView cannot invert module text (API 29-32;
@@ -93,28 +93,27 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: sqlite-test
-          name: "Saagar CC — SQLite-Primary TEST (flag ON) ⚠ DUMMY DATA ONLY"
+          name: "Saagar CC -SQLite-Primary TEST (flag ON) DUMMY DATA ONLY"
           prerelease: true
           make_latest: false
           body: |
-            ⚠ **TEST BUILD — do NOT put real shop data in this yet.** This build flips on the new
+            **TEST BUILD -do NOT put real shop data in this yet.** This build flips on the new
             **SQLite-primary storage engine** (escapes the old 5 MB limit). It is for the on-device
             gauntlet only. Your stable build (APK #43, flag OFF) stays at the **latest** release.
 
-            **About screen will show build `1.2-SQLITE-TEST`** — that confirms you are on this build.
+            **About screen will show build `1.2-SQLITE-TEST`** -that confirms you are on this build.
 
             **Install:** uninstall the existing app first (debug builds use a fresh signature, so an
             in-place update is refused), then install **SaagarControlCentre-sqlite-test.apk**. On first
             launch it seeds 6 months of dummy data through the new engine (brief splash while it boots).
 
-            **Gauntlet — try to break it (dummy data, so nothing is lost):**
+            **Gauntlet -try to break it (dummy data, so nothing is lost):**
             1. Use every module; confirm everything looks/works like #43. Open a few Reports (PDF).
-            2. Add/edit records, then **force-close the app** (swipe from recents) and reopen → data intact?
-            3. **Settings → Backup** → download the JSON. **Settings → Restore** it back → all data returns?
-            4. **Factory Reset** (type RESET) → app empties cleanly, no leftovers, and does NOT re-seed.
-            5. Leave it open a while, add a lot of records (push past what 5 MB allowed before) → still smooth?
+            2. Add/edit records, then **force-close the app** (swipe from recents) and reopen ->data intact?
+            3. **Settings ->Backup** ->download the JSON. **Settings ->Restore** it back ->all data returns?
+            4. **Factory Reset** (type RESET) ->app empties cleanly, no leftovers, and does NOT re-seed.
+            5. Leave it open a while, add a lot of records (push past what 5 MB allowed before) ->still smooth?
 
             If anything misbehaves, note what you did and tell me. To roll back: uninstall this, reinstall
             the **latest** release (APK #43).
           files: out/*.apk
-          make_latest: false
