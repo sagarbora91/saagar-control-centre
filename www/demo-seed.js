@@ -352,4 +352,7 @@
   // mark seeded LAST so a crash mid-seed re-runs cleanly next launch
   set('saagar_demo_seeded', 'v2_6mo');
   try { console.log('[demo-seed] seeded ' + DSTR.length + ' days · ' + qCustomers.length + ' QMS · ' + WSC.length + ' service · ' + payRows.length + ' payroll · ' + audits.length + ' CRO audits'); } catch (e) {}
+  /* Option C: force a durable persist after this synchronous ~1500-key burst so a crash within the
+     ~6 s debounce window can't lose it. No-op when the storage-core engine is OFF (SaagarStore absent). */
+  try { if (window.SaagarStore && typeof window.SaagarStore.flush === 'function') window.SaagarStore.flush(); } catch (e) {}
 })();

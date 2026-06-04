@@ -21,6 +21,13 @@
 (function () {
   'use strict';
 
+  // Option C: when storage-core is the authoritative engine, it owns the DB + Storage.prototype.
+  // Stand down so we never double-override Storage.prototype or run two sql.js DBs against one file.
+  // storage-core.js loads FIRST and, when enabled, synchronously sets window.SaagarStore.enabled=true
+  // before this file runs, so this guard fires reliably. When the flag is OFF, window.SaagarStore is
+  // undefined → guard is a no-op → sqlite-store runs exactly as today (the active Design-A mirror).
+  try { if (window.SaagarStore && window.SaagarStore.enabled) { console.log('[sqlite-store] storage-core active — standing down'); return; } } catch (e) {}
+
   var DB_FILE = 'bcc.sqlite';
   var SAVE_DEBOUNCE = 3000;
   var LOG_KEY = 'saagar_sqlite_log';

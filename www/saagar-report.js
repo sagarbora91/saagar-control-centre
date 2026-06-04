@@ -615,7 +615,7 @@
       var arr = J('saagar_wsf_v2', []); var closedW = ['delivered', 'closed', 'complete', 'completed', 'cancelled', 'canceled'];
       var open = (Array.isArray(arr) ? arr : []).filter(function (j) { var s = String(j.status || j.stage || '').toLowerCase(); return !closedW.some(function (w) { return s.indexOf(w) >= 0; }); });
       var now = Date.now();
-      open.forEach(function (j) { var ds = String(j.bookingDate || j.dateRec || j.date || j.createdAt || '').slice(0, 10); var dt = ds ? new Date(ds) : null; j.__days = dt && !isNaN(+dt) ? Math.max(0, Math.round((now - +dt) / 86400000)) : 0; j.__date = ds; });
+      open.forEach(function (j) { var ds = String(j.bookingDate || j.dateRec || j.date || j.createdAt || '').slice(0, 10); var dt = ds ? new Date(ds + 'T00:00:00') : null; j.__days = dt && !isNaN(+dt) ? Math.max(0, Math.floor((now - +dt) / 86400000)) : 0; j.__date = ds; });   // bug-hunt #2: local-midnight + floor (match computeServiceAging; was Math.round → buckets/SLA flag tripped ~12h early)
       open.sort(function (x, y) { return y.__days - x.__days; });
       var hdr = { t: 'header', title: 'SERVICE — OPEN CASES AGING', sub: 'Watch Service · Latur', period: longDate(curDate()) };
       var blocks = [hdr, { t: 'kpi', cols: 5, items: [
