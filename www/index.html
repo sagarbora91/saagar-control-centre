@@ -704,10 +704,29 @@ html.bcc-mobile .main{max-width:560px;margin-left:auto;margin-right:auto}
    .main and got clipped by overflow-x:hidden → the "3 cards cut off"). */
 html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
 </style>
-<!-- DEMO DATA SEEDER (verification build) — seeds ~30 days of dummy data once, before the shell/bridge read storage. Delete this one line for a clean (no-demo) build. -->
-<script src="demo-seed.js"></script>
+<!-- sql.js (WASM) — defines initSqlJs. Loaded in <head> BEFORE storage-core so its async
+     boot (DOM-ready) can find it. When the flag is OFF, storage-core early-returns and this is
+     unused here (sqlite-store.js below is the active engine and also uses the same initSqlJs). -->
+<script src="sql-wasm.js"></script>
+<!-- STORAGE CORE (Option C) — flag-gated SQLite-primary storage layer. Default OFF = pure no-op (app behaves exactly as today). Loaded before demo-seed/bridge so its override installs first when enabled. -->
+<script src="storage-core.js"></script>
+<!-- PHOTO STORE (Option C — mechanism only) — Filesystem-backed photo API; attaches .photo to
+     SaagarStore (or stashes __SaagarPhoto when the flag is OFF). Never synthesizes a truthy engine. -->
+<script src="photo-store.js"></script>
+<!-- DEMO DATA SEEDER (verification build) — seeds ~180 days (6 months) of dummy data once, before the shell/bridge read storage. Delete this one line for a clean (no-demo) build.
+     Gated on SaagarStore.whenReady when the engine is ON (so the saagar_demo_seeded guard is correct in fresh/normal/recovery cases — it runs only after MEM hydrates from the DB); loads immediately when the flag is OFF (today's behavior). No change to demo-seed.js logic. -->
+<script>(function(){
+if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='demo-seed.js';document.head.appendChild(s);});}
+else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag (no async injection) */
+})();</script>
 </head>
 <body>
+
+<!-- Option C boot splash (§13.6) — covers the ~100–300 ms async DB hydrate when the engine is ON.
+     display:none by default; shown only if SaagarStore exists AND is not yet ready; hidden on
+     whenReady OR a 2 s hard timeout. When the flag is OFF (no SaagarStore) it stays hidden = today. -->
+<div id="st-v5-boot-splash" style="display:none;position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',Arial,sans-serif"><div style="font-size:44px;font-weight:800;letter-spacing:2px;margin-bottom:14px">ST</div><div style="opacity:.85">Loading Saagar Traders…</div></div>
+<script>(function(){var s=document.getElementById('st-v5-boot-splash');if(!s||!window.SaagarStore||!window.SaagarStore.whenReady)return;if(!window.SaagarStore.ready||!window.SaagarStore.ready()){s.style.display='flex';var hide=function(){s.style.display='none';};window.SaagarStore.whenReady(hide);setTimeout(hide,2000);}})();</script>
 
 <div class="app">
 
@@ -1189,7 +1208,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "1.2";
+const APK_BUILD = "1.2-SQLITE-TEST";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -1292,7 +1311,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,"saagar_owner_name"]; }
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,"saagar_owner_name"]; }   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings)
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
 function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
@@ -2828,8 +2847,8 @@ function computeServiceAging(){
     const stat = String(j.status||j.stage||'').toLowerCase();
     if(closedW.some(w=>stat.includes(w))) return;
     const dStr = String(j.bookingDate||j.date||j.createdAt||'').slice(0,10);
-    const dt = dStr ? new Date(dStr) : null;
-    const days = dt && !isNaN(+dt) ? Math.max(0, Math.round((now - +dt)/86400000)) : 0;
+    const dt = dStr ? new Date(dStr + 'T00:00:00') : null;   // bug-hunt #2: parse as LOCAL midnight
+    const days = dt && !isNaN(+dt) ? Math.max(0, Math.floor((now - +dt)/86400000)) : 0;   // floor: a same-day job reads 0, buckets flip at local midnight (was Math.round → ~12h early)
     out.totalOpen++;
     if(days<=3) out.b0_3++;
     else if(days<=7) out.b4_7++;
@@ -3421,10 +3440,45 @@ function exportBackupPreview(){
 }
 function exportBackupConfirmed(){
   const payload = window.__stBackupPayload || backupPayload();
-  setLastBackup();
-  auditLog('backup.export',{keys:Object.keys(payload.localStorage).length, scope:payload.scope});
-  downloadText(`Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`, JSON.stringify(payload,null,2), 'application/json');
-  closeModal(); renderHome(); toast('Backup downloaded');
+  // §15 PHOTO BACKUP — fold Filesystem-backed photos into the JSON bundle, but ONLY when storage-core
+  // owns the DB (flag ON ⇒ window.SaagarStore.enabled). When the flag is OFF, SaagarStore is absent so
+  // __photoApi is null → we NEVER call photo-store and the ORIGINAL synchronous download path runs,
+  // byte-identical to APK #43. [review fix: previously fell back to window.__SaagarPhoto — which
+  // photo-store ALWAYS stashes — so snapshot() ran and the download went async even with the flag OFF.]
+  var __photoApi = (window.SaagarStore && window.SaagarStore.enabled && window.SaagarStore.photo) ? window.SaagarStore.photo : null;
+  var __emit = function(photos){
+    if(photos && typeof photos==='object' && Object.keys(photos).length){ payload.photos = photos; }
+    setLastBackup();
+    var __ale = {keys:Object.keys(payload.localStorage).length, scope:payload.scope};
+    if(payload.photos) __ale.photos = Object.keys(payload.photos).length;   // OFF path adds no 'photos' field → audit entry unchanged
+    auditLog('backup.export', __ale);
+    downloadText(`Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`, JSON.stringify(payload,null,2), 'application/json');
+    // Option C (Decision §12.3): when storage-core owns the DB, ALSO offer the binary bcc.sqlite as a
+    // safety net alongside the JSON. Fully guarded → inert when the flag is OFF (no SaagarStore.enabled /
+    // engine not ready) so shipping builds are unchanged. JSON export above is untouched in all cases.
+    try{
+      // Option-C-ON test = SaagarStore.enabled (storage-core owns the DB; sqlite-store does NOT set it, so
+      // this stays inert when the flag is OFF — sqlite-store also exposes SaagarDB, hence .enabled not bare DB).
+      // NOTE: bcc.sqlite is the TEXT store ONLY — it does NOT contain photos; the JSON above now carries them.
+      if(window.SaagarStore && window.SaagarStore.enabled && window.SaagarDB && window.SaagarDB.ready && window.SaagarDB.ready() && window.SaagarDB.raw){
+        var __db = window.SaagarDB.raw();
+        if(__db && typeof __db.export === 'function'){
+          var __bytes = __db.export();
+          var __blob = new Blob([__bytes], {type:'application/octet-stream'});
+          var __url = URL.createObjectURL(__blob);
+          var __a = document.createElement('a'); __a.href = __url; __a.download = `Saagar_Traders_${todayIso()}.sqlite`;
+          document.body.appendChild(__a); __a.click(); __a.remove();
+          setTimeout(function(){ URL.revokeObjectURL(__url); }, 5000);
+        }
+      }
+    }catch(e){}
+    closeModal(); renderHome(); toast('Backup downloaded');
+  };
+  if(__photoApi && typeof __photoApi.snapshot==='function'){
+    Promise.resolve(__photoApi.snapshot()).catch(function(){return null;}).then(__emit);   // flag ON: photos ride along (async)
+  } else {
+    __emit(null);   // flag OFF / no engine: SYNCHRONOUS, byte-identical to APK #43 (no photo-store call)
+  }
 }
 /* P: one-file backup → Android share sheet (Google Drive / WhatsApp / email). Keeps the app
    fully offline — the OS does the upload; the app never touches the network. Desktop → download. */
@@ -3489,6 +3543,9 @@ function handleRestoreFile(file){
       const parsed = JSON.parse(reader.result);
       const data = parsed.localStorage && typeof parsed.localStorage==='object' ? parsed.localStorage : parsed;
       if(!data || typeof data!=='object' || Array.isArray(data)){ toast('Invalid backup format'); return; }
+      // §15: photos ride as a top-level sibling of localStorage ({photoId:dataUrl}). Set unconditionally
+      // each load so a stale value from a previously-previewed file can never leak into this restore.
+      window.__stRestorePhotos = (parsed && parsed.photos && typeof parsed.photos==='object' && Object.keys(parsed.photos).length) ? parsed.photos : null;
       const review = validateRestoreData(data);
       const keys = Object.keys(review.valid);
       if(!keys.length){ toast('No usable keys found in backup'); return; }
@@ -3500,6 +3557,7 @@ function handleRestoreFile(file){
           <div class="emp-pill green"><b>${keys.length}</b><span>To restore</span></div>
           <div class="emp-pill"><b>${review.rejected.length}</b><span>Rejected</span></div>
           <div class="emp-pill"><b>${review.invalid.length}</b><span>Invalid</span></div>
+          ${window.__stRestorePhotos?`<div class="emp-pill"><b>${Object.keys(window.__stRestorePhotos).length}</b><span>Photos</span></div>`:''}
         </div>
         <div class="table-wrap" style="max-height:240px;overflow:auto"><table class="data-table small">
           <thead><tr><th>Key</th><th>Module</th><th class="num">Size</th></tr></thead>
@@ -3528,7 +3586,22 @@ function restoreValidatedBackup(){
   renderConfigBackup(); renderHome();
   // persist restored keys into the SQLite mirror, then reload so every module re-reads them
   try{ if(window.SaagarDB && window.SaagarDB.ready && window.SaagarDB.ready() && window.SaagarDB.save) window.SaagarDB.save(); }catch(e){}
-  setTimeout(function(){ try{ location.reload(); }catch(e){} }, 1000);
+  // §15 PHOTO RESTORE: re-materialize Filesystem-backed photos from the bundle (async), THEN reload so
+  // every module re-reads them — but ONLY when storage-core owns the DB (flag ON ⇒ SaagarStore.enabled).
+  // When the flag is OFF, __rPhotoApi is null → we skip straight to the existing 1s reload, behavior
+  // unchanged. [review fix: previously fell back to window.__SaagarPhoto, so restoring a future flag-ON
+  // backup (with a photos key) onto a flag-OFF build would have written photos via photo-store — a
+  // flag-OFF inertness violation. A flag-OFF build can't display photos anyway, so it must not write them.]
+  var __rPhotos = window.__stRestorePhotos;
+  var __rPhotoApi = (window.SaagarStore && window.SaagarStore.enabled && window.SaagarStore.photo) ? window.SaagarStore.photo : null;
+  var __doReload = function(){ setTimeout(function(){ try{ location.reload(); }catch(e){} }, 1000); };
+  if(__rPhotos && __rPhotoApi && typeof __rPhotoApi.restoreAll==='function'){
+    Promise.resolve(__rPhotoApi.restoreAll(__rPhotos)).catch(function(){return 0;}).then(function(n){
+      try{ auditLog('restore.photos',{restored:n||0}); }catch(e){}
+      toast('Restored '+(n||0)+' photo(s) — reloading…');
+      __doReload();
+    });
+  } else { __doReload(); }
 }
 function resetSelectedModule(){
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
@@ -3552,22 +3625,37 @@ function resetSelectedModule(){
    Auto-exports a backup first; requires admin + typed confirmation. */
 function factoryReset(){
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
-  const APP_RE = /^(saagar_|gm_|st_v2_|st_v5_|payroll_suite|leavedesk_|taxcal|retail_queue_management|tanishq_statements|cro_s_v3|cro_audits_v3|cro_audit)/;
+  const APP_RE = /^(saagar_|gm_|st_v\d+_|payroll_suite|leavedesk_|taxcal|retail_queue_management|tanishq_statements|cro_s_v3|cro_audits_v3|cro_audit)/;   // bug-hunt #1: st_v\d+_ covers st_v2_..st_v5_ + future (was missing st_v3_/st_v4_ → activity/audit/rollback survived reset)
   let keys=[]; for(let n=0;n<localStorage.length;n++){ const k=localStorage.key(n); if(k && APP_RE.test(k)) keys.push(k); }
   if(!keys.length){ toast('No app data to clear — already clean.'); return; }
   if(!confirm('Factory reset will permanently delete ALL saved data for every module ('+keys.length+' keys) on this device.\n\nA JSON backup is exported first. Continue?')) return;
   if(prompt('Type RESET to confirm clearing all data:') !== 'RESET'){ toast('Factory reset cancelled.'); return; }
   try{ exportBackup(); }catch(e){}
-  let done=0; keys.forEach(k=>{ if(safeRemove(k)) done++; });
+  const done = keys.length;
+  // Option C (§13.5): when storage-core owns the store, do an ATOMIC, AWAITED wipe of MEM +
+  // bcc.sqlite(+.bak/.tmp) + WAL + 'migrated' marker + photos + native LS (and re-stamp the demo
+  // guard) via SaagarStore._reset(), and reload ONLY after it resolves — so a debounced persist or
+  // the recovery path can NEVER resurrect deleted data. (_reset sets _resetting, cancels the save
+  // timer, and clears native LS + WAL through the captured native methods — not the override.)
+  if(window.SaagarStore && window.SaagarStore.enabled && typeof window.SaagarStore._reset==='function'){
+    try{ auditLog('app.factory_reset',{keysCleared:done,engine:'storage-core'}); }catch(e){}
+    toast('Resetting — wiping all stores…');
+    const fin=function(){ setTimeout(function(){ try{ location.reload(); }catch(e){} }, 300); };
+    window.SaagarStore._reset().then(function(){ toast(done+' keys cleared — app reset. Reloading…'); fin(); },
+                                     function(){ toast('Reset finished (with warnings) — reloading…'); fin(); });
+    return;
+  }
+  // Legacy (Option C flag OFF) — byte-for-byte today's behavior (sqlite-store durable mirror):
+  let cleared=0; keys.forEach(k=>{ if(safeRemove(k)) cleared++; });
   // Demo build: leave a marker so the first-launch seeder does NOT repopulate after a reset
   // (the seed flag itself matches saagar_* and was just cleared, so re-stamp it as 'cleared').
   try{ localStorage.setItem('saagar_demo_seeded','cleared'); }catch(e){}
-  // Persist the deletions to the SQLite file NOW (write-through only schedules a 3s debounced save,
+  // Persist the deletions to the SQLite mirror NOW (write-through only schedules a debounced save,
   // but we reload in 900ms — without this the wiped keys linger in bcc.sqlite AND would be
   // resurrected by the recovery path on next launch).
   try{ if(window.SaagarDB && window.SaagarDB.ready && window.SaagarDB.ready() && window.SaagarDB.save) window.SaagarDB.save(); }catch(e){}
-  try{ auditLog('app.factory_reset',{keysCleared:done}); }catch(e){}
-  toast(done+' keys cleared — app reset. Reloading…');
+  try{ auditLog('app.factory_reset',{keysCleared:cleared}); }catch(e){}
+  toast(cleared+' keys cleared — app reset. Reloading…');
   setTimeout(function(){ try{ location.reload(); }catch(e){} }, 900);
 }
 
@@ -3868,16 +3956,23 @@ function openModule(id){
     try{ __f.addEventListener('load', __hide, { once:true }); }catch(e){}
     setTimeout(__hide, 4000);
     try{
-      __f.srcdoc = injectSafetyNet(
-        injectMobileMode(
-          injectUniformCSS(
-            injectModuleAuditBridge(
-              injectEmployeeAssist(
-                injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
-                mod.id
-              ), mod.id
-            )
-          ), mod.id
+      // Option C: injectIframeShim is the OUTERMOST wrapper so its script element is prepended to
+      // the iframe <head> LAST — making it the FIRST executed script, ahead of injectMobileMode's boot
+      // and ahead of the audit bridge. That guarantees module code + the audit bridge's instance-
+      // level localStorage override both see the shimmed Storage.prototype already in place. The
+      // shim self-guards on parent.SaagarStore.enabled, so when the flag is OFF it is a pure no-op.
+      __f.srcdoc = injectIframeShim(
+        injectSafetyNet(
+          injectMobileMode(
+            injectUniformCSS(
+              injectModuleAuditBridge(
+                injectEmployeeAssist(
+                  injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
+                  mod.id
+                ), mod.id
+              )
+            ), mod.id
+          )
         )
       );
     }catch(e){
@@ -3919,6 +4014,18 @@ function __injBeforeBodyEnd(html, frag){
   var idx = html.toLowerCase().lastIndexOf('</body>');
   if(idx >= 0) return html.slice(0, idx) + frag + '\n' + html.slice(idx);
   return html + frag;
+}
+/* Option C (Phase 3) — iframe storage shim. Injected as the FIRST script of every module
+   srcdoc (prepended to <head>), so it runs before module scripts AND before the audit bridge.
+   It delegates the iframe's Storage.prototype to parent.SaagarStore (synchronous, same-origin),
+   making MEM the working store for module reads/writes too. SELF-GUARDING: if parent.SaagarStore
+   is absent or not enabled (flag OFF) it is a no-op → module iframes use the shared native
+   localStorage exactly as today. The shim is injected UNCONDITIONALLY (it self-guards). */
+function injectIframeShim(html){
+  var shim = '<scr'+'ipt id="st-v5-iframe-shim">(function(){try{var P=window.parent&&window.parent.SaagarStore;if(!P||!P.enabled)return;var SP=Storage.prototype;SP.getItem=function(k){return P.get(k);};SP.setItem=function(k,v){return P.set(k,v);};SP.removeItem=function(k){return P.remove(k);};SP.clear=function(){try{console.warn("[st-shim] localStorage.clear() ignored inside a module (shared store)");}catch(e){}};SP.key=function(i){return P.keys()[i]||null;};try{Object.defineProperty(SP,"length",{configurable:true,get:function(){return P.length();}});}catch(e){}}catch(e){}})();<\/scr'+'ipt>';
+  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+shim);   // FIRST in <head>
+  if(/<\/head>/i.test(html))    return html.replace(/<\/head>/i, shim+'\n</head>');
+  return shim + html;
 }
 /* Rec #7: contextual "next-step" chips per module (1-2 each), mirroring Sagar's daily flow
    QMS→DSR→Stock + the bridge's own QMS→DSR/WSC links. Chips post ST_OPEN_MODULE (guarded). */
@@ -4305,28 +4412,37 @@ function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop') return; try{ saf
 function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 
 (function init(){
-  // Restore admin mode from session
+  // Restore admin mode from session — kept SYNCHRONOUS (before the whenReady gate) so the
+  // shell chrome paints immediately under the boot splash. safeGet reads MEM in C-mode (already
+  // hydrated from native at Step 0) or native localStorage in the OFF/fallback path.
   isAdmin = safeGet(ADMIN_MODE_KEY)==='true';
   applyMode();
   reflectUiModeUI();
 
-  // Validate modules array
+  // Validate modules array (no storage dependency — synchronous build-error guard).
   if(!Array.isArray(MODULES) || !MODULES.length){
     document.body.innerHTML = '<div style="padding:30px;font-family:DM Sans,sans-serif"><h2 style="font-family:DM Serif Display,serif;color:#0d2340">Build error</h2><p>No modules were injected into this build. The build pipeline must replace the <code>/*__MODULES_INJECT__*/</code> placeholder with the modules array before packaging.</p></div>';
     return;
   }
 
-  // First render
-  populateResetSelect();
-  switchView('home');
+  // The first render reads business data (home dashboard, reconciliation, diagnostics) so it must
+  // run AFTER the store hydrates MEM from the DB when the engine is ON. Gate it on whenReady; when
+  // the flag is OFF (no SaagarStore) it runs synchronously, identical to today.
+  function doFirstRender(){
+    // First render
+    populateResetSelect();
+    switchView('home');
 
-  // Re-render home every 60s while idle
-  setInterval(()=>{
-    if(!activeModuleId && activeView==='home') renderHome();
-  }, 60000);
+    // Re-render home every 60s while idle
+    setInterval(()=>{
+      if(!activeModuleId && activeView==='home') renderHome();
+    }, 60000);
 
-  // Run silent diagnostics on startup so any failure is in audit/log
-  try{ runDiagnostics(false); }catch(e){ startupErrors.push({type:'init', message:e.message}); }
+    // Run silent diagnostics on startup so any failure is in audit/log
+    try{ runDiagnostics(false); }catch(e){ startupErrors.push({type:'init', message:e.message}); }
+  }
+  if(window.SaagarStore && typeof window.SaagarStore.whenReady === 'function') window.SaagarStore.whenReady(doFirstRender);
+  else doFirstRender();
 })();
 </script>
 
@@ -4344,13 +4460,22 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 <script src="fonts/DMSans-bold.js"></script>
 <script src="saagar-report.js"></script>
 
-<!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════ -->
-<script src="integration-bridge.js"></script>
+<!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════
+     Gated on SaagarStore.whenReady when the engine is ON (so it reconciles AFTER MEM hydrates
+     from the DB); loads immediately when the flag is OFF (today's behavior). Its 'storage'
+     listener now also receives the synthetic StorageEvent storage-core dispatches in MEM-mode. -->
+<script>(function(){
+if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='integration-bridge.js';document.body.appendChild(s);});}
+else{document.write('<scr'+'ipt src="integration-bridge.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag */
+})();</script>
 
 <!-- ════ APK build addition: SQLite durable backing store (Design A — durable mirror + fallback).
-     sql.js (WASM) must load first; sqlite-store.js attaches localStorage to a bcc.sqlite file.
-     If either is unavailable the app silently stays on pure localStorage (no regression). ════ -->
-<script src="sql-wasm.js"></script>
+     sql.js (WASM) is now loaded once in <head> (before storage-core). When the Option C flag is
+     OFF (default), sqlite-store.js is the ACTIVE engine (durable mirror + Storage.prototype owner)
+     exactly as before. When the flag is ON, storage-core sets SaagarStore.enabled=true first and
+     sqlite-store.js stands down (its top-of-IIFE guard early-returns) so there is exactly ONE
+     owner of Storage.prototype. If sql.js/Capacitor is unavailable the app stays on pure
+     localStorage (no regression). ════ -->
 <script src="sqlite-store.js"></script>
 
 </body>

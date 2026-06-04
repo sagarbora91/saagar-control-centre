@@ -77,31 +77,44 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build1.2-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-SQLITE-TEST-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             out/SaagarControlCentre-latest.apk
+             out/SaagarControlCentre-sqlite-test.apk
           ls -lh out
 
       - name: Upload APK as build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: SaagarControlCentre-APK
+          name: SaagarControlCentre-SQLITE-TEST-APK
           path: out/*.apk
           retention-days: 90
 
       - name: Publish APK as a downloadable Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest
-          name: "Saagar Control Centre — V5 (build 1.2)"
+          tag_name: sqlite-test
+          name: "Saagar CC — SQLite-Primary TEST (flag ON) ⚠ DUMMY DATA ONLY"
+          prerelease: true
+          make_latest: false
           body: |
-            Fully offline Android build — Control Centre **V5 shell, build 1.2**.
-            New: DM Serif/Sans + navy-gold UI, bottom nav, Today's Brief, Reports
-            tab, action-only attention list. Includes the rebuilt Expense Manager
-            (central ledger). INTERNET permission removed (fully offline).
-            Existing data is preserved on update.
+            ⚠ **TEST BUILD — do NOT put real shop data in this yet.** This build flips on the new
+            **SQLite-primary storage engine** (escapes the old 5 MB limit). It is for the on-device
+            gauntlet only. Your stable build (APK #43, flag OFF) stays at the **latest** release.
 
-            Download **SaagarControlCentre-latest.apk** below, copy it to the
-            phone, and tap to install (allow "install from unknown sources").
+            **About screen will show build `1.2-SQLITE-TEST`** — that confirms you are on this build.
+
+            **Install:** uninstall the existing app first (debug builds use a fresh signature, so an
+            in-place update is refused), then install **SaagarControlCentre-sqlite-test.apk**. On first
+            launch it seeds 6 months of dummy data through the new engine (brief splash while it boots).
+
+            **Gauntlet — try to break it (dummy data, so nothing is lost):**
+            1. Use every module; confirm everything looks/works like #43. Open a few Reports (PDF).
+            2. Add/edit records, then **force-close the app** (swipe from recents) and reopen → data intact?
+            3. **Settings → Backup** → download the JSON. **Settings → Restore** it back → all data returns?
+            4. **Factory Reset** (type RESET) → app empties cleanly, no leftovers, and does NOT re-seed.
+            5. Leave it open a while, add a lot of records (push past what 5 MB allowed before) → still smooth?
+
+            If anything misbehaves, note what you did and tell me. To roll back: uninstall this, reinstall
+            the **latest** release (APK #43).
           files: out/*.apk
-          make_latest: true
+          make_latest: false
