@@ -722,7 +722,7 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
 var DEMO_SEED_ENABLED = true;   /* TEST BRANCH `test/year-data` — seeds 365 days @ ~50 walk-ins/day. main stays false (clean). */
 try{ if(window.__FORCE_DEMO_SEED === true) DEMO_SEED_ENABLED = true; }catch(e){}   /* test harnesses (e.g. _6mo_qa) force-enable seeding */
 if(!DEMO_SEED_ENABLED) return;   /* clean build: no dummy data is ever loaded */
-try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 50; }catch(e){}   /* 1-year scale when seeding is on (any harness override already set wins) */
+try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 10; }catch(e){}   /* full year of DAYS at a LIGHT footfall (~10/day ≈ 5 MB) so it fits a phone's RAM; the 50/day year (~17 MB) overflows until storage moves on-disk */
 if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='demo-seed.js';document.head.appendChild(s);});}
 else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag */
 })();</script>
@@ -1215,7 +1215,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.1-1YR-TEST";
+const APK_BUILD = "2.1-1YR-LITE";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },

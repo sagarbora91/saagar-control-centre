@@ -97,12 +97,13 @@ jobs:
           prerelease: true
           make_latest: false
           body: |
-            TEST BUILD - DUMMY DATA. Pre-loaded with a FULL YEAR of fake data (365 days,
-            ~50 walk-ins/day, 15 employees -> ~15,000 queue records, ~17 MB) so you can feel the
-            real speed and scrolling at scale. About screen shows build **2.1-1YR-TEST**.
+            TEST BUILD - DUMMY DATA, sized to FIT a phone's memory. A FULL YEAR of days (365) at a
+            LIGHTER footfall (~10 walk-ins/day, 15 employees -> ~3,000 queue records, ~5 MB) - heavy
+            enough to feel the speed fixes, small enough not to run out of memory. (The full 50/day
+            year is ~17 MB and overflows a phone's RAM - that needs the on-disk storage move.)
+            About screen shows build **2.1-1YR-LITE**.
 
-            First launch seeds the whole year - this takes a while (a one-time ~30-60 s on the
-            phone); let it finish without closing the app. Then exercise it hard:
+            First launch seeds the year - one-time, a few seconds; let it finish. Then exercise it:
             - Open Expense -> the ledger should scroll smoothly (it shows the 200 most-recent rows).
             - Open the Queue, Reports, and the Home dashboard - should feel responsive, not frozen.
             - Move around, open a few PDF reports, switch modules.
