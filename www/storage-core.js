@@ -58,7 +58,11 @@
     var LOG_KEY = 'saagar_sqlite_log';
     var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_sqlite_log': 1 };
     var SAVE_DEBOUNCE = 6000;           /* whole-file export is heavy */
-    var BOOT_TIMEOUT_MS = 1800;         /* §13.6 hard timeout */
+    var BOOT_TIMEOUT_MS = 6000;         /* §13.6 hard timeout — generous so a SLOW device loads the real DB
+                                           before falling back (was 1800; the flag-ON audit found a slow-boot
+                                           stale-data race). Healthy devices boot ~0.3s, so this only raises the
+                                           worst-case splash, never the normal one. Test override below. */
+    try { if (typeof window !== 'undefined' && window.__BOOT_TIMEOUT_MS) BOOT_TIMEOUT_MS = window.__BOOT_TIMEOUT_MS; } catch (e) {}
     var WAL_BIG = 50000;                /* §13.1 'set' values larger than this are journaled as a pointer (forces a prompt persist) */
     var WAL_MAX = 512000;               /* §13.1 byte cap on the WAL JSON so it can never approach the native-LS quota */
 
@@ -303,10 +307,17 @@
             });
           });
         }).then(function () {
-          if (_ready) return;   /* timeout fired mid-load → honour fallback */
+          /* §13.6 LATE-HEAL: if the boot-timeout fallback already fired (slow device), do NOT abandon the
+             freshly-loaded DB. Replay the WAL + reconcile so MEM converges from the stale native-LS fallback
+             to the REAL DB data (DB-WINS; any write made in the brief stale window is preserved by the WAL
+             replay above-via-reconcile). setReady() is idempotent. This stops a slow boot from running the
+             whole session on stale data + diverging from the loaded DB (the prior code did `if(_ready)return`,
+             which abandoned the load and left MEM permanently stale). */
+          var lateHeal = _ready;
           db.run('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)');
           replayWAL();
           var rc = reconcile();
+          if (lateHeal) log('late DB load after boot-timeout fallback — MEM healed from DB (was on native-LS fallback)');
           setReady();
           if (FS) {
             flush().then(function (ok) {

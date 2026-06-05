@@ -100,8 +100,9 @@ jobs:
             **TEST BUILD -do NOT put real shop data in this yet.** This build flips on the new
             **SQLite-primary storage engine** (escapes the old 5 MB limit). It is for the on-device
             gauntlet only. Your stable build (APK #43, flag OFF) stays at the **latest** release.
+            (Build 2: re-built after a pre-test audit caught and fixed a slow-boot data-timing issue.)
 
-            **About screen will show build `1.2-SQLITE-TEST`** -that confirms you are on this build.
+            **About screen will show build `1.2-SQLITE-TEST2`** -that confirms you are on this build.
 
             **Install:** uninstall the existing app first (debug builds use a fresh signature, so an
             in-place update is refused), then install **SaagarControlCentre-sqlite-test.apk**. On first
