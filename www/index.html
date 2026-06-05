@@ -726,7 +726,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
      display:none by default; shown only if SaagarStore exists AND is not yet ready; hidden on
      whenReady OR a 2 s hard timeout. When the flag is OFF (no SaagarStore) it stays hidden = today. -->
 <div id="st-v5-boot-splash" style="display:none;position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',Arial,sans-serif"><div style="font-size:44px;font-weight:800;letter-spacing:2px;margin-bottom:14px">ST</div><div style="opacity:.85">Loading Saagar Traders…</div></div>
-<script>(function(){var s=document.getElementById('st-v5-boot-splash');if(!s||!window.SaagarStore||!window.SaagarStore.whenReady)return;if(!window.SaagarStore.ready||!window.SaagarStore.ready()){s.style.display='flex';var hide=function(){s.style.display='none';};window.SaagarStore.whenReady(hide);setTimeout(hide,2000);}})();</script>
+<script>(function(){var s=document.getElementById('st-v5-boot-splash');if(!s||!window.SaagarStore||!window.SaagarStore.whenReady)return;if(!window.SaagarStore.ready||!window.SaagarStore.ready()){s.style.display='flex';var hide=function(){s.style.display='none';};window.SaagarStore.whenReady(hide);setTimeout(hide,6500);}})();</script>
 
 <div class="app">
 
