@@ -22,8 +22,9 @@
 (function () {
   'use strict';
 
-  /* ── Build-time flag (Option C). Flip to true ONLY after the §14 gauntlet. ── */
-  var STORAGE_CORE_ENABLED = false;
+  /* ── Build-time flag (Option C). Flip to true ONLY after the §14 gauntlet. ──
+     ⚠ ON in this commit — TEST BRANCH `test/sqlite-on` ONLY (on-device gauntlet build). main stays false. */
+  var STORAGE_CORE_ENABLED = true;
   /* test/staging override hook — harnesses set window.__FORCE_STORAGE_CORE; never set in production */
   try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_CORE === true) STORAGE_CORE_ENABLED = true; } catch (e) {}
   if (!STORAGE_CORE_ENABLED) return;   /* ← DEFAULT PATH: do nothing, app == today */
