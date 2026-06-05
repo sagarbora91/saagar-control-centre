@@ -29,7 +29,7 @@
 
   /* ── date helpers: last N calendar days, noon-anchored so the YYYY-MM-DD is
         stable whether a module slices it as local or UTC ── */
-  var DAYS = 180;   // 6 months of daily entries (was 30 = 1 month)
+  var DAYS = (typeof window !== 'undefined' && window.__SEED_DAYS) || 180;   // default 180 days (all harnesses calibrate to this); the 1-year TEST BUILD sets window.__SEED_DAYS=365
   var today = new Date(); today.setHours(12, 0, 0, 0);
   function dayN(k) { var d = new Date(today); d.setDate(d.getDate() - k); d.setHours(12, 0, 0, 0); return d; }
   function ymd(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
@@ -113,7 +113,7 @@
   var dsrByDay = {};                    // dateStr -> croName -> [sales]
   DSTR.forEach(function (ds, di) {
     if (isWeekend(new Date(ds + 'T12:00:00'))) return;   // store closed Sundays (no walk-ins)
-    var count = ri(7, 12);
+    var count = (typeof window !== 'undefined' && window.__SEED_WALK) ? ri(Math.max(1, window.__SEED_WALK - 5), window.__SEED_WALK + 5) : ri(7, 12);   // original ~9/day default; the 1-year TEST BUILD sets window.__SEED_WALK=50
     for (var c = 0; c < count; c++) {
       var cro = qCros[(di + c) % qCros.length];        // rotation
       var roll = rnd();

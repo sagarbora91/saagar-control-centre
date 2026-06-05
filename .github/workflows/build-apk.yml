@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 2.0 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 2.1 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 4/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.0"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 5/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.1"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.0-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build2.1-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,25 +93,26 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.0) - SQLite engine ON"
+          name: "Saagar Control Centre - V5 (build 2.1) - CLEAN (empty, real-data ready)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.0**.
+            Fully offline Android build - Control Centre **V5 shell, build 2.1 (CLEAN)**.
 
-            This build switches ON the new **SQLite-primary storage engine** - your data is
-            no longer limited by the old ~5 MB browser cap. Expense bill photos are now stored
-            as separate files (kept out of the database). Includes the slow-boot fix.
+            This is a **clean, empty production build** - it starts with NO data, ready for your
+            real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap), plus this
+            release's performance work for large datasets:
+            - Much faster once a lot of data builds up (fixed the slowdown that grew with months
+              of entries - large key scans are no longer O(n^2)).
+            - Smoother scrolling in long lists (the Expense ledger now shows the 200 most-recent
+              rows with a "filter to narrow" notice instead of painting thousands at once).
+            - The Home dashboard no longer re-parses the big Queue blob on every refresh.
+            - Expense bill photos stored as separate files (kept out of the database).
 
-            **IMPORTANT - keep using DUMMY data for a few days first.** This is the first build
-            where the new engine runs on a real phone. Please:
-            - Use every module; open a few PDF reports.
-            - Add an Expense entry WITH a bill photo; confirm it saves.
-            - Add/edit records, then force-close the app and reopen -> data still there?
-            - Settings -> Backup, then Settings -> Restore -> everything (incl. photos) returns?
-            - Factory Reset (type RESET) -> empties cleanly, does not re-seed.
-            Only switch to real shop data once you are satisfied it is solid.
+            A separate **1-year test build** (pre-loaded with a full year of dummy data) is on its
+            own release - use it to feel the speed/scrolling at scale before trusting this build
+            with real data.
 
-            To roll back: uninstall and reinstall the previous build from this release's asset
-            history. Existing data is preserved on a normal update.
+            Backups: Settings -> Backup / Restore as usual. To roll back, reinstall a previous
+            build from this release's asset history.
 
             Download **SaagarControlCentre-latest.apk** below, copy it to the phone, and tap
             to install (allow "install from unknown sources").

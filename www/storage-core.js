@@ -209,13 +209,22 @@
       } catch (e) {}
     }
 
+    /* ── §perf: lazily-cached ORDERED key list. SP.key(i)/keys() previously rebuilt Array.from(MEM.keys())
+       on EVERY call, so a module loop `for(i=0;i<localStorage.length;i++) key(i)` was O(n²) (~11M ops at
+       3,300 keys → multi-second stalls + scroll jank). The cache is NULLED on every MEM set(new)/delete/
+       clear — over-invalidation is harmless because a read loop performs no writes mid-loop, so the cache
+       builds once and serves the whole O(n) loop. It can never be stale (any key-set change drops it). ── */
+    var _keysCache = null;
+    function memKeys() { if (_keysCache === null) _keysCache = Array.from(MEM.keys()); return _keysCache; }
+
     /* ── §3.2 overrides: MEM authoritative once _ready; native passthrough before ── */
     SP.getItem = function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); };
     SP.setItem = function (k, v) {
       k = String(k); v = String(v);
+      var _isNew = !MEM.has(k);                         /* only a NEW key changes the key list */
       appendWAL('set', k, v);                          /* §13.1 synchronous journal FIRST */
-      if (_ready) { MEM.set(k, v); kvUpsert(k, v); scheduleSave(); _notify(k, undefined, v); }
-      else { var r = nSet.call(ls, k, v); MEM.set(k, v); return r; }   /* pre-ready: today's path + mirror */
+      if (_ready) { MEM.set(k, v); if (_isNew) _keysCache = null; kvUpsert(k, v); scheduleSave(); _notify(k, undefined, v); }
+      else { var r = nSet.call(ls, k, v); MEM.set(k, v); if (_isNew) _keysCache = null; return r; }   /* pre-ready: today's path + mirror */
     };
     SP.removeItem = function (k) {
       k = String(k);
@@ -224,8 +233,8 @@
          the last-ditch catastrophic safety copy; if we never propagated deletes, a key the user deleted
          in C-mode could resurrect when ALL DB files are lost. Deletes only SHRINK native (sets stay
          MEM-only), so the 5 MB cap stays gone. */
-      if (_ready) { MEM.delete(k); kvDelete(k); try { nRemove.call(ls, k); } catch (e) {} scheduleSave(); _notify(k, undefined, null); }
-      else { var r = nRemove.call(ls, k); MEM.delete(k); return r; }
+      if (_ready) { MEM.delete(k); _keysCache = null; kvDelete(k); try { nRemove.call(ls, k); } catch (e) {} scheduleSave(); _notify(k, undefined, null); }
+      else { var r = nRemove.call(ls, k); MEM.delete(k); _keysCache = null; return r; }
     };
     SP.clear = function () {
       if (_ready) {
@@ -234,11 +243,11 @@
            so the catastrophic re-migration finds no zombies. Synchronous + crash-safe (the WAL sentinel
            handles a crash before persist). */
         try { var ks = []; MEM.forEach(function (_v, k) { if (!INTERNAL[k]) ks.push(k); }); for (var ci = 0; ci < ks.length; ci++) { try { nRemove.call(ls, ks[ci]); } catch (e) {} } } catch (e) {}
-        MEM.clear(); try { db && db.run('DELETE FROM kv'); } catch (e) {} dirtyKeys.clear();
+        MEM.clear(); _keysCache = null; try { db && db.run('DELETE FROM kv'); } catch (e) {} dirtyKeys.clear();
         _dirty = true; flush();                        /* force a persist — clear durability must not ride the debounce */
-      } else { var r = nClear.call(ls); MEM.clear(); return r; }
+      } else { var r = nClear.call(ls); MEM.clear(); _keysCache = null; return r; }
     };
-    SP.key = function (i) { return _ready ? (Array.from(MEM.keys())[i] || null) : nKey.call(ls, i); };  /* §13.7 ordered */
+    SP.key = function (i) { return _ready ? (memKeys()[i] || null) : nKey.call(ls, i); };  /* §13.7 ordered, O(1) via cache */
     try { Object.defineProperty(SP, 'length', { configurable: true, get: function () { return _ready ? MEM.size : nLen.call(ls); } }); } catch (e) {}
 
     /* ── §13.3 reconcile() — marker-gated migration. Returns {firstBoot, verified}. ──
@@ -317,6 +326,7 @@
           db.run('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)');
           replayWAL();
           var rc = reconcile();
+          _keysCache = null;                 /* MEM rebuilt by replayWAL + reconcile — drop any cached key list */
           if (lateHeal) log('late DB load after boot-timeout fallback — MEM healed from DB (was on native-LS fallback)');
           setReady();
           if (FS) {
@@ -340,7 +350,7 @@
     /* ── §13.5 full Factory-Reset wipe — atomic + awaited (called by index.html factoryReset) ── */
     function resetAll() {
       _resetting = true; clearTimeout(_saveTimer); clearTimeout(_bootTimer);
-      try { MEM.clear(); } catch (e) {}
+      try { MEM.clear(); _keysCache = null; } catch (e) {}
       try { if (db) db.run('DELETE FROM kv'); } catch (e) {}
       _dirty = false; dirtyKeys.clear();
       try { nClear.call(ls); } catch (e) {}                                  /* native LS (incl. WAL + marker) */
@@ -359,7 +369,7 @@
       get: function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); },
       set: function (k, v) { return SP.setItem.call(ls, k, v); },
       remove: function (k) { return SP.removeItem.call(ls, k); },
-      keys: function () { if (_ready) return Array.from(MEM.keys()); var a = [], n = nLen.call(ls); for (var i = 0; i < n; i++) a.push(nKey.call(ls, i)); return a; },
+      keys: function () { if (_ready) return memKeys().slice(); var a = [], n = nLen.call(ls); for (var i = 0; i < n; i++) a.push(nKey.call(ls, i)); return a; },
       length: function () { return _ready ? MEM.size : nLen.call(ls); },
       ready: function () { return _ready; },
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
@@ -383,7 +393,7 @@
       save: function () { _dirty = true; return flush(); },
       allKeys: function () { return _ready ? Object.keys(kvAll()).filter(function (k) { return !INTERNAL[k]; }) : []; },
       query: function (sql, params) { if (!_ready || !db) return null; try { return db.exec(sql, params || []); } catch (e) { _lastError = e.message; return null; } },
-      pruneKeys: function (keys) { if (!_ready || !db || !keys || !keys.length) return 0; var n = 0; keys.forEach(function (k) { try { db.run('DELETE FROM kv WHERE k=?', [String(k)]); MEM.delete(String(k)); n++; } catch (e) {} }); if (n) { _dirty = true; flush(); } return n; },
+      pruneKeys: function (keys) { if (!_ready || !db || !keys || !keys.length) return 0; var n = 0; keys.forEach(function (k) { try { db.run('DELETE FROM kv WHERE k=?', [String(k)]); MEM.delete(String(k)); n++; } catch (e) {} }); if (n) { _keysCache = null; _dirty = true; flush(); } return n; },
       raw: function () { return db; }
     };
 
