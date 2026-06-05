@@ -252,6 +252,27 @@ image on restore or device migration.
   **2 real defects** → both FIXED: photo `snapshot()`/`restoreAll()` were reachable via the `__SaagarPhoto`
   fallback even with the flag OFF (a forward-compat inertness violation) → re-gated on `SaagarStore.enabled`
   so a flag-OFF build NEVER touches photo-store; proven by `_photo_backup.js` 21/21.
-- **REMAINING before the flag is ever flipped ON:** the §14 on-device gauntlet (device-only — real
-  kill-mid-write/rename, corrupt-file→.bak, backup→reset→restore incl. photos, 6-month durability). Only
-  the owner can run it on a real device. Flag stays OFF; nothing committed/pushed.
+## 17. Go-live — build 2.0 (engine ON for the daily build) + Expense photo offload
+- **Flag-ON per-module audit** (`wf_9fa5e2fc`, 30 agents, 5 module-groups × adversarial verify + photo
+  design): 23 findings → 11 confirmed. Headline = a SLOW-BOOT stale-data race: if the async DB load
+  exceeded the 1800 ms hard timeout, the fallback marked ready on stale native-LS data AND abandoned the
+  late DB load (`if(_ready)return`), so the session ran on stale data. FIXED in storage-core:
+  `BOOT_TIMEOUT_MS` 1800→6000 + `window.__BOOT_TIMEOUT_MS` test override + LATE-HEAL (load + reconcile
+  even after the fallback fired — never abandon). Splash cap 2000→6500. Proven by `_v/_boot_heal.js` 8/8.
+  The "iteration skips keys under concurrent mutation" findings were DISCOUNTED (single-threaded JS — a
+  sync loop can't be interrupted mid-iteration); the normal path was already safe (first render is
+  whenReady-gated; modules only open on user click, post-ready).
+- **Photo rewire (Expense only).** `injectIframeShim` now also exposes `window.SaagarPhoto` into each
+  iframe (forwards to parent `SaagarStore.photo`; defined ONLY when enabled + a photo facade exists →
+  flag-OFF leaves it undefined → modules take the legacy base64 path). Expense `addEntry` offloads the
+  bill photo via `photo.put()` and stores a small `'@photo:'+id` ref in the ledger; flag-OFF / put-failure
+  / no-photo → inline base64 exactly as before. Expense shows only a 📎 (no `<img>`), so no display
+  rewire. Module bytes/sha256 recomputed (`_v/_fix_mod_meta.js`). Proven: `_v/_photo_rewire_check.js` 8/8.
+- **DSR photo rewire DEFERRED:** transient/auto-pruned photos + the rewire needs risky async-`<img>`
+  changes in the report/print path that can't be validated off-device. The engine stores DSR's inline
+  base64 fine. Build-ready design captured in the audit workflow result for a later device-validated pass.
+- **Build 2.0 shipped to `latest`** (the daily build): `STORAGE_CORE_ENABLED=true`, `APK_BUILD "2.0"`,
+  versionCode 4. The flag-OFF baseline remains in git history (build 1.3, `eb0dc20`) for rollback (reinstall
+  an earlier asset). Owner's chosen rollout: KEEP DUMMY DATA, shake out on the real phone (camera capture,
+  app-kill persistence, backup→restore incl. the bill photo, factory reset), THEN switch to real data. The
+  §14 durability gauntlet remains the owner's to run on-device — that is the last gate before real data.
