@@ -77,44 +77,41 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.1-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-1YR-TEST-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             out/SaagarControlCentre-latest.apk
+             out/SaagarControlCentre-1yr-test.apk
           ls -lh out
 
       - name: Upload APK as build artifact
         uses: actions/upload-artifact@v7
         with:
-          name: SaagarControlCentre-APK
+          name: SaagarControlCentre-1YR-TEST-APK
           path: out/*.apk
           retention-days: 90
 
       - name: Publish APK as a downloadable Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.1) - CLEAN (empty, real-data ready)"
+          tag_name: year-test
+          name: "Saagar CC - 1-YEAR TEST DATA (feel the speed/scroll) - DUMMY DATA"
+          prerelease: true
+          make_latest: false
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.1 (CLEAN)**.
+            TEST BUILD - DUMMY DATA. Pre-loaded with a FULL YEAR of fake data (365 days,
+            ~50 walk-ins/day, 15 employees -> ~15,000 queue records, ~17 MB) so you can feel the
+            real speed and scrolling at scale. About screen shows build **2.1-1YR-TEST**.
 
-            This is a **clean, empty production build** - it starts with NO data, ready for your
-            real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap), plus this
-            release's performance work for large datasets:
-            - Much faster once a lot of data builds up (fixed the slowdown that grew with months
-              of entries - large key scans are no longer O(n^2)).
-            - Smoother scrolling in long lists (the Expense ledger now shows the 200 most-recent
-              rows with a "filter to narrow" notice instead of painting thousands at once).
-            - The Home dashboard no longer re-parses the big Queue blob on every refresh.
-            - Expense bill photos stored as separate files (kept out of the database).
+            First launch seeds the whole year - this takes a while (a one-time ~30-60 s on the
+            phone); let it finish without closing the app. Then exercise it hard:
+            - Open Expense -> the ledger should scroll smoothly (it shows the 200 most-recent rows).
+            - Open the Queue, Reports, and the Home dashboard - should feel responsive, not frozen.
+            - Move around, open a few PDF reports, switch modules.
+            This build carries build 2.1's performance fixes (no more O(n^2) key scans, capped
+            ledger render, memoized Home). Tell me anything that still feels slow or janky.
 
-            A separate **1-year test build** (pre-loaded with a full year of dummy data) is on its
-            own release - use it to feel the speed/scrolling at scale before trusting this build
-            with real data.
+            This is SEPARATE from your daily build - it does NOT replace "latest". Your clean
+            build 2.1 (for real shop data) stays on the main "latest" release.
 
-            Backups: Settings -> Backup / Restore as usual. To roll back, reinstall a previous
-            build from this release's asset history.
-
-            Download **SaagarControlCentre-latest.apk** below, copy it to the phone, and tap
-            to install (allow "install from unknown sources").
+            Install: uninstall any existing app first, then install
+            **SaagarControlCentre-1yr-test.apk** below (allow "install from unknown sources").
           files: out/*.apk
-          make_latest: true
