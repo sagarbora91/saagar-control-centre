@@ -779,6 +779,25 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 .btn.small.pdf:active{background:var(--gold-pale)}
 .rcard>summary small{font-size:12.5px;color:var(--gray-600)}
 @media(max-width:560px){.hub-row .scope{display:none}}
+/* ---- exact-PDF report preview ---- */
+.modal.pdf-sheet{max-width:760px}
+@media(max-width:599px){.modal.pdf-sheet{max-width:100%;max-height:100vh;height:100dvh;border-radius:0;display:flex;flex-direction:column}.modal.pdf-sheet .modal-body{flex:1 1 auto;min-height:0;padding:0;display:flex;overflow:hidden}}
+.pp-wrap{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;width:100%}
+.pp-scroll{flex:1 1 auto;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--gray-100);padding:14px;text-align:center}
+.pp-scroll canvas{max-width:100%;height:auto;background:#fff;box-shadow:var(--shadow);margin:0 auto 12px;display:block;border:1px solid var(--gray-200)}
+.pp-status{padding:34px 16px;text-align:center;color:var(--gray-500);font-size:13px}
+.pp-note{margin:12px 14px 0;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:600;background:var(--amber-pale);color:var(--amber);border:1px solid #fde68a}
+.pp-bar{flex:0 0 auto;display:flex;gap:8px;padding:10px 14px calc(10px + var(--safe-bottom));background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08)}
+.pp-bar .btn{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700}
+.pp-bar .btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+@media print{
+  body{visibility:hidden}
+  #modalBackdrop,#modalBackdrop *{visibility:visible}
+  #modalBackdrop{position:absolute!important;inset:0;background:#fff!important;display:block!important}
+  .pp-bar,.modal-head,.modal-close,.pp-note{display:none!important}
+  .pp-scroll{overflow:visible!important;background:#fff!important;padding:0!important}
+  .pp-scroll canvas{box-shadow:none!important;border:0!important;page-break-after:always;max-width:100%}
+}
 </style>
 </head>
 <body>
@@ -1269,7 +1288,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.5";
+const APK_BUILD = "2.6";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -2457,7 +2476,7 @@ function decorateRepCards(){
     if(!t || !(window.SaagarReport&&window.SaagarReport.generate)) return;
     var actions=card.querySelector('.r-actions'); if(!actions || actions.querySelector('.pdf')) return;
     var b=document.createElement('button'); b.className='btn small pdf'; b.type='button'; b.textContent='PDF';
-    b.addEventListener('click', (function(rt){ return function(){ try{ window.SaagarReport.generate(rt,{date:d,month:m}); }catch(e){} }; })(t));
+    b.addEventListener('click', (function(rt){ return function(){ try{ window.SaagarReport.preview(rt,{date:d,month:m}); }catch(e){} }; })(t));
     actions.appendChild(b);
   });
 }
@@ -4570,7 +4589,7 @@ function injectSafetyNet(html){
    MODAL
    ═══════════════════════════════════════════════════════════════════════ */
 function openModal(){ $('modalBackdrop').classList.remove('hidden'); }
-function closeModal(){ $('modalBackdrop').classList.add('hidden'); }
+function closeModal(){ $('modalBackdrop').classList.add('hidden'); try{ var mc=document.querySelector('.modal'); if(mc) mc.classList.remove('hub-sheet','pdf-sheet'); }catch(e){} }
 
 /* Rec #7: module switcher — chevron on the module-bar opens a sheet (recent-first) to hop
    module→module without bouncing to Home. Routes through navigateToModule (the #5 dirty guard). */
@@ -4700,6 +4719,9 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 <script src="jspdf.plugin.autotable.min.js"></script>
 <script src="fonts/DMSans-normal.js"></script>
 <script src="fonts/DMSans-bold.js"></script>
+<!-- pdf.js (vendored, offline) — renders the generated report PDF for the in-app exact preview -->
+<script src="pdf.min.js"></script>
+<script>try{ if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.min.js'; } }catch(e){}</script>
 <script src="saagar-report.js"></script>
 
 <!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════

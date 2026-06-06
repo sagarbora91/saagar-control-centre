@@ -1089,6 +1089,79 @@
         return self.build(type, opts).then(function (blob) { return shareBlob(blob, filename(type, opts)); });
       }).catch(function (e) { try { toast('Could not build report: ' + (e && e.message || e)); } catch (_) {} });
     },
+    /* ── REPORT PREVIEW (exact PDF via pdf.js) + Save / Send / Print. Generation (build/buildModel/renderDoc)
+       is unchanged — this only renders the same blob on-screen and adds save/print delivery. ── */
+    preview: function (type, opts) {
+      var self = this, el = function (i) { return document.getElementById(i); };
+      self._pp = { type: type, opts: opts, blob: null, fname: filename(type, opts) };
+      var title = (META[type] ? META[type].title : 'Report');
+      if (el('modalTitle')) el('modalTitle').textContent = title + ' — preview';
+      if (el('modalBody')) el('modalBody').innerHTML =
+        '<div class="pp-wrap"><div class="pp-scroll" id="ppScroll"><div class="pp-status">Building report…</div></div>'
+        + '<div class="pp-bar">'
+        + '<button class="btn small" type="button" onclick="SaagarReport.printPreview()">🖨️ Print</button>'
+        + '<button class="btn small" type="button" onclick="SaagarReport.savePreview()">💾 Save</button>'
+        + '<button class="btn small primary" type="button" onclick="SaagarReport.sharePreview()">Send ↗</button>'
+        + '</div></div>';
+      var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('hub-sheet'); mc.classList.add('pdf-sheet'); }
+      if (window.openModal) window.openModal();
+      this.build(type, opts).then(function (blob) {
+        self._pp.blob = blob; self._renderPdf(blob, type, opts);
+      }).catch(function (e) {
+        var s = el('ppScroll'); if (s) s.innerHTML = '<div class="pp-status">Could not build report: ' + esc((e && e.message) || e) + '</div>';
+      });
+    },
+    _renderPdf: function (blob, type, opts) {
+      var scroll = document.getElementById('ppScroll'); if (!scroll) return;
+      var note = this._readinessNote(type, opts);
+      if (!window.pdfjsLib || !pdfjsLib.getDocument) { scroll.innerHTML = (note ? '<div class="pp-note">' + esc(note) + '</div>' : '') + '<div class="pp-status">Preview not available on this device — use Save or Send to get the PDF.</div>'; return; }
+      var url = URL.createObjectURL(blob);
+      pdfjsLib.getDocument(url).promise.then(function (pdf) {
+        scroll.innerHTML = note ? '<div class="pp-note">' + esc(note) + '</div>' : '';
+        var n = pdf.numPages;
+        function page(i) {
+          pdf.getPage(i).then(function (pg) {
+            var dpr = window.devicePixelRatio || 1;
+            var base = pg.getViewport({ scale: 1 });
+            var targetW = Math.min(720, (scroll.clientWidth || 360) - 28);
+            var v = pg.getViewport({ scale: (targetW / base.width) * dpr });
+            var c = document.createElement('canvas'); c.width = v.width; c.height = v.height; c.style.width = (v.width / dpr) + 'px';
+            scroll.appendChild(c);
+            pg.render({ canvasContext: c.getContext('2d'), viewport: v }).promise.then(function () {
+              if (i < n) page(i + 1); else { try { URL.revokeObjectURL(url); } catch (e) {} }
+            });
+          });
+        }
+        page(1);
+      }).catch(function (e) {
+        scroll.innerHTML = (note ? '<div class="pp-note">' + esc(note) + '</div>' : '') + '<div class="pp-status">Preview failed (' + esc((e && e.message) || e) + ') — use Save or Send.</div>';
+        try { URL.revokeObjectURL(url); } catch (_) {}
+      });
+    },
+    savePreview: function () { if (this._pp && this._pp.blob) return this._saveBlob(this._pp.blob, this._pp.fname); },
+    sharePreview: function () { var p = this._pp; if (p && p.blob) { try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {} return shareBlob(p.blob, p.fname); } },
+    printPreview: function () { try { window.print(); } catch (e) {} },
+    _saveBlob: function (blob, fname) {
+      var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
+      if (c && c.FS) {
+        return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(blob); })
+          .then(function (b64) { return c.FS.writeFile({ path: 'SaagarBCC-Reports/' + fname, data: b64, directory: 'DOCUMENTS', recursive: true }); })
+          .then(function () { try { toast('Saved to Documents › SaagarBCC-Reports › ' + fname); } catch (e) {} })
+          .catch(function (e) { try { toast('Save failed: ' + ((e && e.message) || e)); } catch (_) {} });
+      }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+      try { toast('Report downloaded'); } catch (e) {}
+      return Promise.resolve();
+    },
+    _readinessNote: function (type, opts) {
+      try {
+        var d = (opts && opts.date) || curDate();
+        if (type === 'cashStatement') { var st = (JSON.parse(localStorage.getItem('tanishq_statements') || '{}'))[d]; if (!st) return 'No cash statement for this day yet — the report may be blank.'; if (!st.closed) return 'This day’s cash is not closed yet — figures may be provisional.'; }
+        if (type === 'dsrRegister') { var any = false; for (var i = 0; i < localStorage.length; i++) { if ((localStorage.key(i) || '').indexOf('saagar_dsr_' + d) === 0) { any = true; break; } } if (!any) return 'No staff register entries for this day yet.'; }
+      } catch (e) {}
+      return '';
+    },
     list: function () { return Object.keys(META).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
     forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
     /* ── REDESIGN "Find & Send": full-screen thumb sheet, search, recents, period stepper.
@@ -1192,9 +1265,7 @@
         arr = [type].concat(arr.filter(function (x) { return x !== type; })).slice(0, 3);
         localStorage.setItem('saagar_rpt_recent', JSON.stringify(arr));
       } catch (e) {}
-      var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('hub-sheet');
-      if (window.closeModal) window.closeModal();
-      return this.generate(type, { date: d, month: m });
+      return this.preview(type, { date: d, month: m });   // tap → PREVIEW (then Save / Send / Print)
     },
     _buildModel: buildModel, // for tests
     _renderDoc: function (type, opts) { var m = buildModel(type, opts); if (!m.blocks) throw new Error('not block-based: ' + type); return renderDoc(m.blocks, m.orientation); }, // test seam → jsPDF doc
