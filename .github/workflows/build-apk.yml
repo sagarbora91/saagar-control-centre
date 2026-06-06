@@ -41,7 +41,7 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 2.3 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 2.3 YEAR-TEST — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
@@ -49,7 +49,7 @@ jobs:
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
           sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 7/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.3"/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.3-year-test"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,9 +77,9 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.3-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build2.3-YEARTEST-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             out/SaagarControlCentre-latest.apk
+             out/SaagarControlCentre-year-test.apk
           ls -lh out
 
       - name: Upload APK as build artifact
@@ -92,40 +92,31 @@ jobs:
       - name: Publish APK as a downloadable Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.3) - CLEAN (handles years of data)"
+          tag_name: year-test
+          prerelease: true
+          name: "Saagar Control Centre — 1-YEAR TEST build (a full year of demo data @ 50/day)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.3 (CLEAN)**.
+            TEST BUILD — pre-loaded with a FULL YEAR of dummy data so you can feel how the app
+            behaves after a year of real use. **This is NOT your production app** — keep using the
+            **CLEAN** `latest` build for real shop data.
 
-            This is a **clean, empty production build** - it starts with NO data, ready for your
-            real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+            What's inside:
+            - One full year (~365 days) at ~50 walk-ins/day across all 10 modules — 15 employees,
+              ~15,000 Queue customers, a year of sales, service jobs, expenses, grooming, CRO audits,
+              stock counts, leaves and tax compliance.
+            - The Queue is in its realistic "after a year" shape: the recent ~90 days are LIVE; the
+              older ~11,000 customers are tucked into the archive file automatically, so the app
+              stays fast (this is exactly what the 2.3 archival does on a real device over time).
+            - First launch shows a short **"Preparing one year of demo data…"** progress bar while it
+              builds the data in the background — it no longer freezes / force-closes like before.
 
-            **New in 2.3 - the app now handles years of data without slowing down or running out
-            of memory.** As the Queue Management list builds up a lot of OLD, already-closed
-            customers (older than ~3 months), the app automatically moves them into a safe archive
-            file kept on the phone. The live screens stay small and fast, even after years of use.
-            - **Nothing is ever deleted.** Archived customers are written to the archive file FIRST
-              (and only then removed from the live list), so a crash can never lose anything.
-            - The archive **rides along in every backup** and comes back on Restore - so moving to a
-              new phone keeps your full history.
-            - Today / this-week / this-month Queue screens, reports and follow-ups are unaffected
-              (they already only look at recent data).
+            Use it to: scroll the long lists, open every module + report, and confirm everything
+            stays smooth at a year's scale. To get back to a clean app: Settings → Factory Reset,
+            or reinstall the CLEAN `latest` build.
 
-            Also included (performance work for large datasets):
-            - Much faster once a lot of data builds up (large key scans are no longer O(n^2)).
-            - Smoother scrolling in long lists (Expense ledger and CRO Audit history now show the
-              most-recent rows with a "filter to narrow" notice instead of painting thousands at once).
-            - The Home dashboard no longer re-parses the big Queue blob on every refresh.
-            - Backup / Restore of a large dataset no longer freezes (writes apply in one fast bulk pass).
-            - Expense bill photos stored as separate files (kept out of the database).
-
-            **Before you install:** open the app you have now, go to Settings -> Backup and save a
-            backup first. Because these test builds are signed freshly each time, Android may ask you
-            to uninstall the old app before installing this one - so keep that backup safe, then
-            Restore it after installing. To roll back, reinstall a previous build from this release's
-            asset history.
-
-            Download **SaagarControlCentre-latest.apk** below, copy it to the phone, and tap
-            to install (allow "install from unknown sources").
+            **Install:** Android may ask you to uninstall the current app first (these test builds
+            are signed freshly). Download **SaagarControlCentre-year-test.apk** below, copy it to the
+            phone, and tap to install (allow "install from unknown sources"). This will NOT overwrite
+            your CLEAN `latest` release — it is published separately under the `year-test` tag.
           files: out/*.apk
-          make_latest: true
+          make_latest: false
