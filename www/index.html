@@ -1215,7 +1215,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.2";
+const APK_BUILD = "2.3";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -3459,12 +3459,16 @@ function exportBackupConfirmed(){
   // __photoApi is null → we NEVER call photo-store and the ORIGINAL synchronous download path runs,
   // byte-identical to APK #43. [review fix: previously fell back to window.__SaagarPhoto — which
   // photo-store ALWAYS stashes — so snapshot() ran and the download went async even with the flag OFF.]
-  var __photoApi = (window.SaagarStore && window.SaagarStore.enabled && window.SaagarStore.photo) ? window.SaagarStore.photo : null;
-  var __emit = function(photos){
-    if(photos && typeof photos==='object' && Object.keys(photos).length){ payload.photos = photos; }
+  var __engineOn = !!(window.SaagarStore && window.SaagarStore.enabled);
+  var __photoApi = (__engineOn && window.SaagarStore.photo) ? window.SaagarStore.photo : null;
+  var __emit = function(extras){
+    extras = extras || {};
+    if(extras.photos && typeof extras.photos==='object' && Object.keys(extras.photos).length){ payload.photos = extras.photos; }
+    if(extras.qmsArchive && extras.qmsArchive.length){ payload.qmsArchive = extras.qmsArchive; }   // §archival: archived QMS history rides along (engine ON only)
     setLastBackup();
     var __ale = {keys:Object.keys(payload.localStorage).length, scope:payload.scope};
     if(payload.photos) __ale.photos = Object.keys(payload.photos).length;   // OFF path adds no 'photos' field → audit entry unchanged
+    if(payload.qmsArchive) __ale.qmsArchive = payload.qmsArchive.length;
     auditLog('backup.export', __ale);
     downloadText(`Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`, JSON.stringify(payload,null,2), 'application/json');
     // Option C (Decision §12.3): when storage-core owns the DB, ALSO offer the binary bcc.sqlite as a
@@ -3488,10 +3492,14 @@ function exportBackupConfirmed(){
     }catch(e){}
     closeModal(); renderHome(); toast('Backup downloaded');
   };
-  if(__photoApi && typeof __photoApi.snapshot==='function'){
-    Promise.resolve(__photoApi.snapshot()).catch(function(){return null;}).then(__emit);   // flag ON: photos ride along (async)
+  if(__engineOn){
+    // flag ON: gather photos + the on-disk QMS archive in parallel, then emit ONE self-contained bundle (async)
+    Promise.all([
+      (__photoApi && typeof __photoApi.snapshot==='function') ? Promise.resolve(__photoApi.snapshot()).catch(function(){return null;}) : Promise.resolve(null),
+      qmsReadArchiveForBackup()
+    ]).then(function(r){ __emit({photos:r[0], qmsArchive:r[1]}); });
   } else {
-    __emit(null);   // flag OFF / no engine: SYNCHRONOUS, byte-identical to APK #43 (no photo-store call)
+    __emit(null);   // flag OFF / no engine: SYNCHRONOUS, byte-identical to APK #43 (no photo-store / no FS call)
   }
 }
 /* P: one-file backup → Android share sheet (Google Drive / WhatsApp / email). Keeps the app
@@ -3560,6 +3568,9 @@ function handleRestoreFile(file){
       // §15: photos ride as a top-level sibling of localStorage ({photoId:dataUrl}). Set unconditionally
       // each load so a stale value from a previously-previewed file can never leak into this restore.
       window.__stRestorePhotos = (parsed && parsed.photos && typeof parsed.photos==='object' && Object.keys(parsed.photos).length) ? parsed.photos : null;
+      // §archival: archived QMS customers ride as a top-level sibling array; set unconditionally so a stale
+      // value from a previously-previewed file can never leak into this restore.
+      window.__stRestoreQmsArchive = (parsed && Array.isArray(parsed.qmsArchive) && parsed.qmsArchive.length) ? parsed.qmsArchive : null;
       const review = validateRestoreData(data);
       const keys = Object.keys(review.valid);
       if(!keys.length){ toast('No usable keys found in backup'); return; }
@@ -3572,6 +3583,7 @@ function handleRestoreFile(file){
           <div class="emp-pill"><b>${review.rejected.length}</b><span>Rejected</span></div>
           <div class="emp-pill"><b>${review.invalid.length}</b><span>Invalid</span></div>
           ${window.__stRestorePhotos?`<div class="emp-pill"><b>${Object.keys(window.__stRestorePhotos).length}</b><span>Photos</span></div>`:''}
+          ${window.__stRestoreQmsArchive?`<div class="emp-pill"><b>${window.__stRestoreQmsArchive.length}</b><span>Archived QMS</span></div>`:''}
         </div>
         <div class="table-wrap" style="max-height:240px;overflow:auto"><table class="data-table small">
           <thead><tr><th>Key</th><th>Module</th><th class="num">Size</th></tr></thead>
@@ -3612,14 +3624,26 @@ function restoreValidatedBackup(){
   // flag-OFF inertness violation. A flag-OFF build can't display photos anyway, so it must not write them.]
   var __rPhotos = window.__stRestorePhotos;
   var __rPhotoApi = (window.SaagarStore && window.SaagarStore.enabled && window.SaagarStore.photo) ? window.SaagarStore.photo : null;
+  var __rQmsArchive = window.__stRestoreQmsArchive;
   var __doReload = function(){ setTimeout(function(){ try{ location.reload(); }catch(e){} }, 1000); };
-  if(__rPhotos && __rPhotoApi && typeof __rPhotoApi.restoreAll==='function'){
-    Promise.resolve(__rPhotoApi.restoreAll(__rPhotos)).catch(function(){return 0;}).then(function(n){
-      try{ auditLog('restore.photos',{restored:n||0}); }catch(e){}
-      toast('Restored '+(n||0)+' photo(s) — reloading…');
-      __doReload();
+  var __afterArchive = function(){
+    if(__rPhotos && __rPhotoApi && typeof __rPhotoApi.restoreAll==='function'){
+      Promise.resolve(__rPhotoApi.restoreAll(__rPhotos)).catch(function(){return 0;}).then(function(n){
+        try{ auditLog('restore.photos',{restored:n||0}); }catch(e){}
+        toast('Restored '+(n||0)+' photo(s) — reloading…');
+        __doReload();
+      });
+    } else { __doReload(); }
+  };
+  // §archival RESTORE: re-materialize the QMS archive file from the bundle FIRST (engine ON only), merge-dedup
+  // with any on-device archive, THEN run the photo restore + reload. When the flag is OFF, __rQmsArchive write
+  // is skipped (qmsRestoreArchive self-gates) and we fall straight through to __afterArchive — behavior unchanged.
+  if(__rQmsArchive && window.SaagarStore && window.SaagarStore.enabled){
+    Promise.resolve(qmsRestoreArchive(__rQmsArchive)).catch(function(){return 0;}).then(function(n){
+      try{ auditLog('restore.qms_archive',{restored:n||0}); }catch(e){}
+      __afterArchive();
     });
-  } else { __doReload(); }
+  } else { __afterArchive(); }
 }
 function resetSelectedModule(){
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
@@ -3724,6 +3748,78 @@ async function archiveOldData(){
   try{ auditLog('app.archive',{before:cutoff, archived:done}); }catch(e){}
   toast(done+' old day-record(s) archived to '+fname+' and removed. Keep that file safe.');
   try{ renderConfigBackup(); }catch(e){}
+}
+/* ── §archival — keep the live Queue (QMS) small so a multi-year dataset can't fill the phone's memory.
+   Moves OLD + CLOSED customers (entry/closed date older than QMS_KEEP_DAYS) out of the in-memory blob into a
+   durable archive file (DATA/saagar_qms_archive.json, which the backup includes). Recent + open + ambiguous
+   customers are NEVER archived. Export-first then shrink → ZERO data loss even if the app is killed mid-prune;
+   idempotent (dedup by id). Runs once on boot when the engine is ON. ── */
+var QMS_KEEP_DAYS = 90, QMS_ARCHIVE_MIN = 500, QMS_ARCHIVE_FILE = 'saagar_qms_archive.json', QMS_KEY = 'retail_queue_management_v1';
+async function qmsArchiveOldCustomers(){
+  try{
+    if(!(window.SaagarStore && window.SaagarStore.enabled)) return 'engine-off';
+    var FS = fsPluginShell(); if(!FS) return 'no-fs';
+    var raw = safeGet(QMS_KEY); if(!raw) return 'no-data';
+    var q; try{ q = JSON.parse(raw); }catch(e){ return 'parse-err'; }
+    if(!q || !Array.isArray(q.customers)) return 'no-customers';
+    var cutoff = (function(){ var c = new Date(); c.setDate(c.getDate() - QMS_KEEP_DAYS); return c.toISOString().slice(0,10); })();
+    var keep = [], old = [];
+    q.customers.forEach(function(c){
+      var d = String((c && (c.closedAt || c.entryTime)) || '').slice(0,10);
+      if(d && d < cutoff && (c.status === 'Closed' || c.outcome)) old.push(c);   // archive ONLY clearly-old AND clearly-closed
+      else keep.push(c);                                                          // keep recent / open / ambiguous
+    });
+    if(old.length < QMS_ARCHIVE_MIN) return 'below-threshold';                    // avoid churn on small datasets
+    var arch = [];
+    try{ var r = await FS.readFile({ path: QMS_ARCHIVE_FILE, directory: 'DATA', encoding: 'utf8' }); var p = JSON.parse(r.data); if(Array.isArray(p)) arch = p; }catch(e){ arch = []; }
+    var seen = {}; arch.forEach(function(c){ if(c && c.id) seen[c.id] = 1; });
+    old.forEach(function(c){ if(c && c.id){ if(!seen[c.id]){ arch.push(c); seen[c.id] = 1; } } else if(c){ arch.push(c); } });   // merge, dedup by id
+    try{
+      await FS.writeFile({ path: QMS_ARCHIVE_FILE + '.tmp', data: JSON.stringify(arch), directory: 'DATA', encoding: 'utf8', recursive: true });
+      await FS.rename({ from: QMS_ARCHIVE_FILE + '.tmp', to: QMS_ARCHIVE_FILE, directory: 'DATA' });
+    }catch(e){ return 'archive-write-failed'; }                                   // archive not durable → do NOT shrink → zero loss
+    // RACE GUARD: if a module iframe opened during the async archive write, it now holds the FULL blob in
+    // memory and its next save() would re-write (un-archive) everything. The archive is already durable, so
+    // skip the shrink this round and let the next boot retry (idempotent — dedup-by-id). typeof-guarded so
+    // the validation harness, which has no activeModuleId, is unaffected.
+    try{ if(typeof activeModuleId !== 'undefined' && activeModuleId !== null) return 'deferred-module-open'; }catch(e){}
+    q.customers = keep;                                                           // ONLY now shrink the live blob
+    safeSet(QMS_KEY, JSON.stringify(q));
+    try{ if(window.SaagarStore && window.SaagarStore.flush) window.SaagarStore.flush(); }catch(e){}
+    try{ auditLog('qms.archive', { archived: old.length, kept: keep.length, archiveTotal: arch.length }); }catch(e){}
+    return 'archived:' + old.length;
+  }catch(e){ return 'error'; }
+}
+/* §archival backup bridge — the archived customers live ONLY in the on-disk archive file, so a restore onto
+   a NEW phone (or after a factory reset that drops the file) would lose them unless the portable JSON backup
+   carries them. These fold the archive into the backup and re-materialize it on restore. Engine-ON only; both
+   return Promises that resolve to null/0 when the flag is OFF / no FS / no file → the OFF path stays sync. */
+function qmsReadArchiveForBackup(){
+  try{
+    if(!(window.SaagarStore && window.SaagarStore.enabled)) return Promise.resolve(null);
+    var FS = fsPluginShell(); if(!FS) return Promise.resolve(null);
+    return FS.readFile({ path: QMS_ARCHIVE_FILE, directory:'DATA', encoding:'utf8' })
+      .then(function(r){ var p = JSON.parse(r.data); return (Array.isArray(p) && p.length) ? p : null; })
+      .catch(function(){ return null; });   // no archive file yet → nothing to add
+  }catch(e){ return Promise.resolve(null); }
+}
+function qmsRestoreArchive(arr){
+  try{
+    if(!(Array.isArray(arr) && arr.length)) return Promise.resolve(0);
+    if(!(window.SaagarStore && window.SaagarStore.enabled)) return Promise.resolve(0);
+    var FS = fsPluginShell(); if(!FS) return Promise.resolve(0);
+    // MERGE with any on-device archive, dedup by id — the archive is append-only history; never drop either set.
+    return FS.readFile({ path: QMS_ARCHIVE_FILE, directory:'DATA', encoding:'utf8' })
+      .then(function(r){ try{ var p = JSON.parse(r.data); return Array.isArray(p) ? p : []; }catch(e){ return []; } }, function(){ return []; })
+      .then(function(existing){
+        var seen = {}, out = existing.slice();
+        existing.forEach(function(c){ if(c && c.id) seen[c.id] = 1; });
+        arr.forEach(function(c){ if(c && c.id){ if(!seen[c.id]){ out.push(c); seen[c.id] = 1; } } else if(c){ out.push(c); } });
+        return FS.writeFile({ path: QMS_ARCHIVE_FILE + '.tmp', data: JSON.stringify(out), directory:'DATA', encoding:'utf8', recursive:true })
+          .then(function(){ return FS.rename({ from: QMS_ARCHIVE_FILE + '.tmp', to: QMS_ARCHIVE_FILE, directory:'DATA' }); })
+          .then(function(){ return out.length; });
+      });
+  }catch(e){ return Promise.resolve(0); }
 }
 function populateResetSelect(){
   const el = $('resetModuleSelect'); if(!el) return;
@@ -4462,6 +4558,17 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 
     // Run silent diagnostics on startup so any failure is in audit/log
     try{ runDiagnostics(false); }catch(e){ startupErrors.push({type:'init', message:e.message}); }
+
+    // §archival — opportunistically shrink the QMS live blob so a multi-year dataset can't fill RAM.
+    // ENGINE ON only (qmsArchiveOldCustomers also self-gates). Deferred 4 s so it never competes with first
+    // paint, and fired ONLY while on Home with NO module iframe mounted (activeModuleId===null) — so it can
+    // never race a live QMS iframe's in-memory state. Fire-and-forget; below-threshold datasets are untouched;
+    // self-heals on the next boot if skipped. Inert + byte-identical when the flag is OFF.
+    try{
+      if(window.SaagarStore && window.SaagarStore.enabled){
+        setTimeout(function(){ try{ if(!activeModuleId) qmsArchiveOldCustomers(); }catch(e){} }, 4000);
+      }
+    }catch(e){}
   }
   if(window.SaagarStore && typeof window.SaagarStore.whenReady === 'function') window.SaagarStore.whenReady(doFirstRender);
   else doFirstRender();

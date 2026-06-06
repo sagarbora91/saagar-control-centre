@@ -30,14 +30,27 @@ Validated at scale: `_runall` 30/30, `_6mo_qa` 35/35, `_r6_reports` 118/118, `_k
 Many of the 40 perf findings are **already resolved by the key-cache** above. What's left:
 
 **A. Per-module scroll caps (same pattern as the expense fix — cap/paginate long renders):**
-- `cro_audit` `renderHistory()` — all ~1,256 audits inline.
-- `tax` — GSTR/CMP/TDS cards over 365 days of history.
-- `stock` — full register / all brands as inline inputs.
-- `grooming` daily-cards (60+), `leave` staff list / calendar chips.
+- `cro_audit` `renderHistory()` — all ~1,256 audits inline. ✅ **DONE (build 2.2):** capped to the 150
+  most-recent, with a "filter to narrow" notice; stats still cover all.
+- `tax` — GSTR/CMP/TDS cards over 365 days of history. *(still open — lower impact)*
+- `stock` — full register / all brands as inline inputs. *(still open)*
+- `grooming` daily-cards (60+), `leave` staff list / calendar chips. *(still open — assessed small/partial-capped)*
 
-**B. QMS 8 MB blob (the deepest one):** every QMS action re-stringifies the whole 8 MB `customers` array +
-triggers a full DB export. Real fix = archive/split closed customers out of the live array (the app already
-has a 12-month archive feature). **Larger, riskier change — do deliberately, with on-device validation.**
+**B. QMS 8 MB blob (the deepest one).** ✅ **RESOLVED (build 2.3) — the safer path: archival, not a sync
+disk engine** (Route B was rejected in design review: backing the modules' SYNCHRONOUS localStorage API with
+an ASYNC disk DB risks null reads → crash + silent read-modify-write corruption, and isn't cleanly
+reversible). Instead, `qmsArchiveOldCustomers()` (index.html) moves OLD + CLOSED customers (older than
+`QMS_KEEP_DAYS=90`, only past the `QMS_ARCHIVE_MIN=500` threshold) out of the live blob into a durable
+archive file (`DATA/saagar_qms_archive.json`):
+- **Export-first then shrink** (write archive `.tmp`→rename, *then* trim the live array) ⇒ zero loss even if
+  killed mid-prune; **idempotent** (dedup by id); **crash-safe** (archive-write failure → live untouched).
+- **Auto-runs on boot** (engine ON only, deferred 4 s, Home-only) with a **race guard** (`activeModuleId` /
+  pre-shrink re-check) so a mounted QMS iframe's in-memory `state` can never re-bloat the blob.
+- **Rides in every backup** (`payload.qmsArchive`) and **re-materializes on restore** (merge-dedup) → history
+  survives a wipe / new phone. Recent screens (today/week/month/reports/follow-ups) are unaffected by design.
+- Cross-reference safety verified by reading the QMS module: `audit` already capped at 600; `followups` are
+  self-contained (denormalized name/mobile/queueNo/croId); `customerById` only ever hits today's queue.
+- Proof: `_v/_qms_archive.js` (jsdom, 23/23) + `_v/_qms_archive_e2e.js` (real Chrome engine+iframe+race, 14/14).
 
 **C. Per-module recompute-on-render (O(n), not O(n²) — lower impact):** payroll `calcGM`/`slipRecords`
 per row/tab, service full-parse per search keystroke, stock full re-render per field edit, tax
@@ -49,6 +62,9 @@ builds 15 PDFs sequentially; WAL big-value path. Mostly fine on modern phones; w
 **E. Tiny functional nits:** leave allows past-date entries (UX), QMS mobile-lookup is a linear scan.
 
 ## Build artifacts
-- **Clean build 2.1** (empty, real-data ready) → `latest` release. `DEMO_SEED_ENABLED=false`.
+- **Clean build 2.3** (empty, real-data ready; QMS archival + render caps; *handles years of data*) →
+  `latest` release. `DEMO_SEED_ENABLED=false`, engine ON. Supersedes 2.1/2.2.
+- **Clean build 2.1** (empty, real-data ready) → earlier `latest`. `DEMO_SEED_ENABLED=false`.
 - **1-year test build** (365 days of dummy data) → `year-test` pre-release, for feeling speed/scroll
-  on-device. `DEMO_SEED_ENABLED=true` on branch `test/year-data`.
+  on-device. `DEMO_SEED_ENABLED=true` on branch `test/year-data`. *(Not yet rebuilt with 2.3 archival —
+  optional next step to demonstrate auto-archive firing at scale.)*
