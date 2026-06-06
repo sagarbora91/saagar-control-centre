@@ -2801,9 +2801,9 @@ function computeEmployeePerformance(month){
   const service = tryJSON(safeGet('saagar_wsf_v2'))||[];
   const svcMap = {};
   if(Array.isArray(service)) service.forEach(j=>{
-    const d = String(j.bookingDate||j.date||j.createdAt||'').slice(0,7);
+    const d = String(j.dateRec||j.bookingDate||j.date||j.createdAt||'').slice(0,7);   // audit: prefer dateRec (intake month)
     if(d!==month) return;
-    [j.ackBy,j.techName,j.delTech].forEach(n=>{
+    [j.ackBy,j.techName,(j.delivery&&j.delivery.delTechName)].forEach(n=>{   // audit: delivery tech is delivery.delTechName, not j.delTech (was never credited)
       const nm = normLower(n||''); if(!nm) return;
       svcMap[nm] = (svcMap[nm]||0)+1;
     });
@@ -2860,7 +2860,7 @@ function computeServiceAging(){
   arr.forEach(j=>{
     const stat = String(j.status||j.stage||'').toLowerCase();
     if(closedW.some(w=>stat.includes(w))) return;
-    const dStr = String(j.bookingDate||j.date||j.createdAt||'').slice(0,10);
+    const dStr = String(j.dateRec||j.bookingDate||j.date||j.createdAt||'').slice(0,10);   // audit: Service writes dateRec (intake) — was missing → aged off createdAt
     const dt = dStr ? new Date(dStr + 'T00:00:00') : null;   // bug-hunt #2: parse as LOCAL midnight
     const days = dt && !isNaN(+dt) ? Math.max(0, Math.floor((now - +dt)/86400000)) : 0;   // floor: a same-day job reads 0, buckets flip at local midnight (was Math.round → ~12h early)
     out.totalOpen++;
@@ -2868,7 +2868,7 @@ function computeServiceAging(){
     else if(days<=7) out.b4_7++;
     else if(days<=15) out.b8_15++;
     else out.b16++;
-    out.oldest.push({ customer:j.custName||j.customer||j.name, brand:j.brand, item:j.item||j.itemDesc, date:dStr, days, status:j.status||j.stage||'open' });
+    out.oldest.push({ customer:j.custName||j.customer||j.name, brand:j.brand, item:j.item||j.itemDesc||[j.brand,j.model].filter(Boolean).join(' '), date:dStr, days, status:j.status||j.stage||'open' });   // audit: Service writes brand/model, not item/itemDesc
   });
   out.oldest.sort((a,b)=>b.days-a.days);
   out.oldest = out.oldest.slice(0,8);
