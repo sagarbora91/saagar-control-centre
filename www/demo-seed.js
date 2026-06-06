@@ -15,6 +15,7 @@
     if (localStorage.getItem('saagar_demo_seeded')) return;       // already seeded or reset
   } catch (e) { return; }
 
+  var __runSeed = function () {
   var LS = localStorage;
   function set(k, v) { try { LS.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch (e) {} }
   var FIRSTN = ['Amol', 'Sunita', 'Rohit', 'Sneha', 'Prakash', 'Vaishali', 'Ganesh', 'Pooja', 'Nilesh', 'Swati', 'Sachin', 'Rupali', 'Mahesh', 'Anita', 'Kiran', 'Deepak', 'Manisha', 'Suraj', 'Jyoti', 'Ramesh', 'Vandana', 'Sagar', 'Komal', 'Vishal'];
@@ -352,7 +353,13 @@
   // mark seeded LAST so a crash mid-seed re-runs cleanly next launch
   set('saagar_demo_seeded', 'v2_6mo');
   try { console.log('[demo-seed] seeded ' + DSTR.length + ' days · ' + qCustomers.length + ' QMS · ' + WSC.length + ' service · ' + payRows.length + ' payroll · ' + audits.length + ' CRO audits'); } catch (e) {}
-  /* Option C: force a durable persist after this synchronous ~1500-key burst so a crash within the
-     ~6 s debounce window can't lose it. No-op when the storage-core engine is OFF (SaagarStore absent). */
-  try { if (window.SaagarStore && typeof window.SaagarStore.flush === 'function') window.SaagarStore.flush(); } catch (e) {}
+  };  /* ── end __runSeed ── */
+  /* Option C (perf): run the WHOLE seed as ONE bulk write. The ~thousands of setItems would otherwise
+     journal to the WAL + re-export the DB per write — that was ~60 s+ of frozen main thread on a phone
+     (it force-closed). bulk() suspends per-write WAL/flush, runs the seed, then does ONE durable persist.
+     Falls back to a plain run (+ flush when the engine is ON) when bulk() is unavailable / engine OFF. */
+  try {
+    if (window.SaagarStore && typeof window.SaagarStore.bulk === 'function') { window.SaagarStore.bulk(__runSeed); }
+    else { __runSeed(); try { if (window.SaagarStore && typeof window.SaagarStore.flush === 'function') window.SaagarStore.flush(); } catch (e) {} }
+  } catch (e) { try { __runSeed(); } catch (_) {} }
 })();

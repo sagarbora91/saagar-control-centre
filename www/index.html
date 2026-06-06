@@ -1215,7 +1215,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.1";
+const APK_BUILD = "2.2";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -3593,7 +3593,11 @@ function restoreValidatedBackup(){
   keys.forEach(k => rollback.keys[k] = safeGet(k));
   safeSet(rollbackKey, JSON.stringify(rollback));
   let written = 0;
-  keys.forEach(k => { if(safeSet(k, review.valid[k])) written++; });
+  // §bulk: write the restored keys as ONE bulk operation. A large backup can be thousands of keys, and
+  // per-write WAL journaling + DB re-export would freeze the app exactly like the first-boot seed did.
+  // bulk() suspends that and does a single durable persist at the end. Falls back to a plain loop (engine OFF).
+  var __writeRestore = () => { keys.forEach(k => { if(safeSet(k, review.valid[k])) written++; }); };
+  if(window.SaagarStore && typeof window.SaagarStore.bulk === 'function'){ window.SaagarStore.bulk(__writeRestore); } else { __writeRestore(); }
   auditLog('restore.apply',{written, rejected:review.rejected.length, invalid:review.invalid.length, rollbackKey});
   closeModal();
   toast(`Restore complete: ${written} key(s) written — reloading…`);

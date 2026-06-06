@@ -47,7 +47,7 @@
        ════════════════════════════════════════════════════════════════════════ */
 
     /* ── module-level state + constants ── */
-    var SQL = null, db = null, _ready = false, _dirty = false, _saveTimer = null, _resetting = false;
+    var SQL = null, db = null, _ready = false, _dirty = false, _bulk = false, _saveTimer = null, _resetting = false;
     var _whenReadyCbs = [], _bootTimer = null, _lastError = '', _lastSavedAt = null, _dbFromFile = false;
     var _persisting = false, _persistAgain = false, _persistP = null;   /* §13.2 persist mutex — serialize whole-file FS writes so concurrent flushes never race on the temp files */
     var dirtyKeys = new Set();          /* §13.4 retry set — failed kv writes stay here for retry */
@@ -161,7 +161,7 @@
        Order: promote CURRENT good live → .bak (atomic via .bak.tmp+rename) FIRST,
        THEN write new live (.tmp+rename). At any kill point either (live old, bak
        old/older) or (live new, bak = previous good) — never two bad files. */
-    function scheduleSave() { if (_resetting) return; clearTimeout(_saveTimer); _saveTimer = setTimeout(function () { flush(); }, SAVE_DEBOUNCE); }
+    function scheduleSave() { if (_resetting || _bulk) return; clearTimeout(_saveTimer); _saveTimer = setTimeout(function () { flush(); }, SAVE_DEBOUNCE); }
     function persist() {
       if (_resetting || !_ready || !db || !FSplugin()) return Promise.resolve(false);
       /* MUTEX (§13.2): only one whole-file write at a time. A flush requested mid-persist sets a
@@ -189,6 +189,7 @@
       return _persistP;
     }
     function flush() {
+      if (_bulk) return Promise.resolve(false);   /* §bulk: suspend all persistence until endBulk does the single durable write */
       if (db && dirtyKeys.size) { dirtyKeys.forEach(function (k) { try { var v = MEM.get(k); if (v !== undefined) { db.run('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v', [k, v]); } else { db.run('DELETE FROM kv WHERE k=?', [k]); } dirtyKeys.delete(k); } catch (e) { log('retry failed ' + k + ': ' + (e && e.message)); } }); }
       return persist();
     }
@@ -221,6 +222,7 @@
     SP.getItem = function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); };
     SP.setItem = function (k, v) {
       k = String(k); v = String(v);
+      if (_bulk && _ready) { if (!MEM.has(k)) _keysCache = null; MEM.set(k, v); kvUpsert(k, v); return; }   /* §bulk: MEM + in-memory DB only — no per-write WAL/flush; one durable persist at endBulk (seed/large restore) */
       var _isNew = !MEM.has(k);                         /* only a NEW key changes the key list */
       appendWAL('set', k, v);                          /* §13.1 synchronous journal FIRST */
       if (_ready) { MEM.set(k, v); if (_isNew) _keysCache = null; kvUpsert(k, v); scheduleSave(); _notify(k, undefined, v); }
@@ -374,6 +376,18 @@
       ready: function () { return _ready; },
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
       flush: function () { _dirty = true; return flush(); },
+      /* §bulk — run a burst of writes (first-boot seed / large restore) WITHOUT per-write WAL journaling
+         + DB export (that per-write cost froze the app for ~60s+ on a phone). Suspends them, runs fn()
+         (MEM + in-memory DB only), then does ONE durable persist. try/finally guarantees _bulk is cleared
+         even if fn throws — so normal single writes can NEVER be silently left without durability. Seed +
+         restore are re-runnable (re-seed / re-import), so skipping per-write WAL inside the burst is safe. */
+      bulk: function (fn) {
+        if (typeof fn !== 'function') return Promise.resolve(false);
+        if (!_ready) { try { fn(); } catch (e) {} return (db ? flush() : Promise.resolve(false)); }
+        _bulk = true;
+        try { fn(); } finally { _bulk = false; }
+        _dirty = true; return flush();
+      },
       _reset: function () { return resetAll(); },                            /* §13.5 awaited full wipe */
       /* ── diagnostics ── */
       _phase: 2,
