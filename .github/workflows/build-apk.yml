@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 2.6 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 2.7 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 10/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.6"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 11/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.7"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.6-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build2.7-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,12 +93,17 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.6) - CLEAN (report preview, save & print)"
+          name: "Saagar Control Centre - V5 (build 2.7) - CLEAN (report packs + history)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.6 (CLEAN)**.
+            Fully offline Android build - Control Centre **V5 shell, build 2.7 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your
             real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+
+            **New in 2.7 - report packs + history (report content unchanged).**
+            - **End-of-day pack / Month-end pack** - one tap builds all that period's reports; Save them all
+              to your phone or Send them together on WhatsApp.
+            - **Report history** - see what you generated/sent and when, and re-open any of them in one tap.
 
             **New in 2.6 - preview, save & print every report (report content unchanged).**
             - Tapping a report now opens an exact **preview** of the PDF on screen first.

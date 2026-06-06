@@ -1094,6 +1094,7 @@
     preview: function (type, opts) {
       var self = this, el = function (i) { return document.getElementById(i); };
       self._pp = { type: type, opts: opts, blob: null, fname: filename(type, opts) };
+      try { self._logReport(type, 'view', opts); } catch (e) {}
       var title = (META[type] ? META[type].title : 'Report');
       if (el('modalTitle')) el('modalTitle').textContent = title + ' — preview';
       if (el('modalBody')) el('modalBody').innerHTML =
@@ -1138,8 +1139,8 @@
         try { URL.revokeObjectURL(url); } catch (_) {}
       });
     },
-    savePreview: function () { if (this._pp && this._pp.blob) return this._saveBlob(this._pp.blob, this._pp.fname); },
-    sharePreview: function () { var p = this._pp; if (p && p.blob) { try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {} return shareBlob(p.blob, p.fname); } },
+    savePreview: function () { if (this._pp && this._pp.blob) { try { this._logReport(this._pp.type, 'save', this._pp.opts); } catch (e) {} return this._saveBlob(this._pp.blob, this._pp.fname); } },
+    sharePreview: function () { var p = this._pp; if (p && p.blob) { try { this._logReport(p.type, 'send', p.opts); } catch (e) {} try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {} return shareBlob(p.blob, p.fname); } },
     printPreview: function () { try { window.print(); } catch (e) {} },
     _saveBlob: function (blob, fname) {
       var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
@@ -1161,6 +1162,96 @@
         if (type === 'dsrRegister') { var any = false; for (var i = 0; i < localStorage.length; i++) { if ((localStorage.key(i) || '').indexOf('saagar_dsr_' + d) === 0) { any = true; break; } } if (!any) return 'No staff register entries for this day yet.'; }
       } catch (e) {}
       return '';
+    },
+    /* ── BATCH PACKS — build a whole period's reports at once, then Save-all / Send-all.
+       Reuses build() per report (generation unchanged); just bundles delivery. ── */
+    _packTypes: { daily: ['ownerBrief', 'cashStatement', 'dsrRegister', 'qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging'], monthly: ['ownerMonthly', 'payrollRegister', 'leaveRegister', 'groomingMonthly', 'expenseMonthly', 'taxReport'] },
+    pack: function (scope) {
+      var self = this, el = function (i) { return document.getElementById(i); };
+      var d = (el('rptDate') && el('rptDate').value) || curDate();
+      var m = (el('rptMonth') && el('rptMonth').value) || curMonth();
+      var types = this._packTypes[scope === 'monthly' ? 'monthly' : 'daily'];
+      var label = (scope === 'monthly') ? ('Month-end pack · ' + m) : ('End-of-day pack · ' + d);
+      if (el('modalTitle')) el('modalTitle').textContent = label;
+      if (el('modalBody')) el('modalBody').innerHTML = '<div class="pp-wrap"><div class="pp-scroll" id="ppScroll"><div class="pp-status">Building ' + types.length + ' reports…</div></div>'
+        + '<div class="pp-bar"><button class="btn small" type="button" onclick="SaagarReport.packSave()">💾 Save all</button><button class="btn small primary" type="button" onclick="SaagarReport.packSend()">Send all ↗</button></div></div>';
+      var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('hub-sheet'); mc.classList.add('pdf-sheet'); }
+      if (window.openModal) window.openModal();
+      self._pack = { items: [], scope: scope, d: d, m: m };
+      var i = 0;
+      function next() {
+        if (i >= types.length) { self._renderPackList(); return; }
+        var t = types[i++];
+        self.build(t, { date: d, month: m }).then(function (blob) {
+          self._pack.items.push({ type: t, title: (META[t] ? META[t].title : t), blob: blob, fname: filename(t, { date: d, month: m }) });
+          var s = el('ppScroll') && el('ppScroll').querySelector('.pp-status'); if (s) s.textContent = 'Building ' + i + ' of ' + types.length + '…';
+          next();
+        }).catch(function () { next(); });
+      }
+      next();
+    },
+    _renderPackList: function () {
+      var scroll = document.getElementById('ppScroll'); if (!scroll) return;
+      var items = (this._pack && this._pack.items) || [];
+      scroll.innerHTML = '<div class="hub-sec" style="margin-top:6px">' + items.map(function (it) {
+        return '<div class="hub-row" style="cursor:default"><span class="ico">' + (META[it.type] ? META[it.type].icon : '📄') + '</span><span class="ttl">' + esc(it.title) + '</span><span class="go" style="color:var(--green)">✓</span></div>';
+      }).join('') + '</div><p class="hub-help">' + items.length + ' reports ready. <b>Save all</b> writes them to your phone, or <b>Send all</b> shares them together on WhatsApp.</p>';
+      this._logReport('pack_' + (this._pack ? this._pack.scope : ''), 'view', { date: this._pack && this._pack.d, month: this._pack && this._pack.m });
+    },
+    packSave: function () {
+      var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
+      var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
+      if (!(c && c.FS)) { items.forEach(function (it) { var a = document.createElement('a'); a.href = URL.createObjectURL(it.blob); a.download = it.fname; a.click(); }); try { toast(items.length + ' reports downloaded'); } catch (e) {} return Promise.resolve(); }
+      var n = 0;
+      return items.reduce(function (p, it) {
+        return p.then(function () {
+          return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(it.blob); })
+            .then(function (b64) { return c.FS.writeFile({ path: 'SaagarBCC-Reports/' + it.fname, data: b64, directory: 'DOCUMENTS', recursive: true }); })
+            .then(function () { n++; });
+        });
+      }, Promise.resolve()).then(function () { try { toast('Saved ' + n + ' reports to Documents › SaagarBCC-Reports'); } catch (e) {} });
+    },
+    packSend: function () {
+      var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
+      var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
+      if (!(c && c.Share && c.FS)) { return this.packSave(); }
+      var uris = [];
+      return items.reduce(function (p, it) {
+        return p.then(function () {
+          return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(it.blob); })
+            .then(function (b64) { return c.FS.writeFile({ path: it.fname, data: b64, directory: 'CACHE' }); })
+            .then(function () { return c.FS.getUri({ directory: 'CACHE', path: it.fname }); })
+            .then(function (r) { uris.push(r.uri); });
+        });
+      }, Promise.resolve()).then(function () {
+        try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {}
+        return c.Share.share({ title: 'Saagar Traders reports', text: 'Saagar Traders — report pack', files: uris, dialogTitle: 'Share reports' });
+      }).catch(function (e) { var msg = (e && e.message) || String(e); if (!/cancel/i.test(msg)) { try { toast('Share failed: ' + msg); } catch (_) {} } });
+    },
+    /* ── REPORT HISTORY — a log of what was generated/sent and when, with one-tap re-open. ── */
+    _logReport: function (type, action, opts) {
+      try {
+        var log = JSON.parse(localStorage.getItem('saagar_rpt_log') || '[]') || [];
+        log.unshift({ t: type, a: action, ts: Date.now(), d: (opts && opts.date) || null, m: (opts && opts.month) || null });
+        localStorage.setItem('saagar_rpt_log', JSON.stringify(log.slice(0, 40)));
+      } catch (e) {}
+    },
+    history: function () {
+      var el = function (i) { return document.getElementById(i); };
+      var log = []; try { log = JSON.parse(localStorage.getItem('saagar_rpt_log') || '[]') || []; } catch (e) {}
+      function rel(ts) { var s = Math.max(0, (Date.now() - ts) / 1000); if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return Math.floor(s / 86400) + 'd ago'; }
+      var ACT = { view: 'opened', save: 'saved', send: 'sent' };
+      var rows = log.filter(function (e) { return META[e.t]; }).slice(0, 25).map(function (e) {
+        var d = e.d || '', m = e.m || '';
+        return '<button class="hub-row" type="button" onclick="SaagarReport.preview(\'' + e.t + '\',{date:\'' + d + '\',month:\'' + m + '\'})">'
+          + '<span class="ico">' + META[e.t].icon + '</span><span class="ttl">' + esc(META[e.t].title) + '<small>' + (ACT[e.a] || e.a) + ' · ' + rel(e.ts) + (d ? ' · ' + d : '') + '</small></span><span class="go">↗</span></button>';
+      }).join('');
+      if (el('modalTitle')) el('modalTitle').textContent = 'Report history';
+      if (el('modalBody')) el('modalBody').innerHTML = '<div class="hub-wrap"><div class="hub-list">'
+        + (rows ? '<section class="hub-sec">' + rows + '</section>' : '<div class="hub-empty" style="display:block">No reports generated yet — open one from the report list first.</div>')
+        + '</div></div>';
+      var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('pdf-sheet'); mc.classList.add('hub-sheet'); }
+      if (window.openModal) window.openModal();
     },
     list: function () { return Object.keys(META).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
     forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
@@ -1203,9 +1294,14 @@
         return '<section class="hub-sec"><h4 class="hub-sec-h">' + esc(g.h) + '</h4>'
           + g.types.map(function (t) { return row(t, false); }).join('') + '</section>';
       }).join('');
+      var packHtml = '<section class="hub-sec hub-packs">'
+        + '<button class="hub-pack" type="button" onclick="SaagarReport.pack(\'daily\')"><span class="ico">📦</span><span class="ttl">End-of-day pack<small>All daily reports for the date</small></span><span class="go">→</span></button>'
+        + '<button class="hub-pack" type="button" onclick="SaagarReport.pack(\'monthly\')"><span class="ico">📦</span><span class="ttl">Month-end pack<small>All monthly reports</small></span><span class="go">→</span></button>'
+        + '<button class="hub-hist" type="button" onclick="SaagarReport.history()">🕘 Report history</button>'
+        + '</section>';
       var body = '<div class="hub-wrap">'
         + '<div class="hub-list" id="hubList">'
-        + recentHtml + groupHtml
+        + packHtml + recentHtml + groupHtml
         + '<div class="hub-empty" id="hubEmpty" hidden>No report matches that search.</div>'
         + '<p class="hub-help">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p>'
         + '</div>'
@@ -1251,6 +1347,7 @@
         if (hit && !r.classList.contains('recent')) shown++;
       });
       document.querySelectorAll('#hubList .hub-sec').forEach(function (sec) {
+        if (!sec.querySelector('.hub-row')) return;   // keep non-report sections (packs) always visible
         sec.style.display = sec.querySelector('.hub-row:not([style*="display: none"])') ? '' : 'none';
       });
       var empty = document.getElementById('hubEmpty'); if (empty) empty.hidden = shown > 0;

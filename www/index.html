@@ -754,6 +754,14 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 .hub-row .scope{font-size:10px;font-weight:700;color:var(--gray-500);background:var(--gray-100);border:1px solid var(--gray-200);border-radius:999px;padding:2px 8px;flex:none}
 .hub-row .go{color:var(--gold);font-size:15px;flex:none}
 .hub-row.recent .ico{background:var(--navy);border-color:var(--navy);color:var(--gold-light)}
+.hub-packs{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.hub-pack{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:56px;padding:10px 13px;background:var(--navy);border:1px solid var(--navy);border-radius:12px;color:#fff;box-shadow:var(--shadow-sm);cursor:pointer}
+.hub-pack:active{transform:scale(.985)}
+.hub-pack .ico{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:17px;background:rgba(255,255,255,.12)}
+.hub-pack .ttl{flex:1;min-width:0;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;line-height:1.25}
+.hub-pack .ttl small{font-weight:500;font-size:11px;opacity:.82;margin-top:1px}
+.hub-pack .go{color:var(--gold-light);font-size:16px;flex:none}
+.hub-hist{align-self:flex-start;background:none;border:0;color:var(--navy-light);font:600 12.5px 'DM Sans',sans-serif;padding:6px 2px;cursor:pointer;text-decoration:underline}
 .hub-empty{padding:22px 8px;text-align:center;color:var(--gray-500);font-size:13px}
 .hub-help{font-size:12px;color:var(--gray-500);line-height:1.5;padding:12px 0 16px;margin:0}
 .hub-bar{flex:0 0 auto;background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08);padding:10px 16px calc(10px + var(--safe-bottom));display:flex;flex-direction:column;gap:9px}
@@ -1288,7 +1296,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.6";
+const APK_BUILD = "2.7";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
