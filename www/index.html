@@ -719,7 +719,7 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
      Gated on SaagarStore.whenReady when the engine is ON (so the saagar_demo_seeded guard runs only after
      MEM hydrates from the DB); loads immediately when the flag is OFF. No change to demo-seed.js logic. -->
 <script>(function(){
-var DEMO_SEED_ENABLED = false;   /* BUILD FLAG: false = CLEAN build (empty, ready for real shop data). The 1-year TEST build flips this to true. */
+var DEMO_SEED_ENABLED = true;   /* TEST BRANCH `test/year-2.5` — seeds a FULL YEAR @ 50/day via ONE bulkAsync (one durable flush, no per-chunk DB rewrite → no phone freeze). main stays false (CLEAN). */
 try{ if(window.__FORCE_DEMO_SEED === true) DEMO_SEED_ENABLED = true; }catch(e){}   /* test harnesses (e.g. _6mo_qa) force-enable seeding */
 if(!DEMO_SEED_ENABLED) return;   /* clean build: no dummy data is ever loaded */
 try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 50; }catch(e){}   /* 1-year scale when seeding is on (any harness override already set wins) */
