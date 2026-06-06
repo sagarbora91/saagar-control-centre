@@ -388,6 +388,20 @@
         try { fn(); } finally { _bulk = false; }
         _dirty = true; return flush();
       },
+      /* §bulkAsync — like bulk() but holds the no-flush window across an ASYNC fn (one that yields to the UI
+         between chunks). Used by the 1-year demo seed: it generates ~3,300 keys progressively, and WITHOUT
+         this each chunk's debounced save would re-export + rewrite the whole growing DB (~50+ multi-MB disk
+         writes + a multi-second synchronous serialize → phone ANR/force-close). This suspends all of that and
+         does exactly ONE durable persist at the end. _bulk is always cleared (success or throw). */
+      bulkAsync: function (fn) {
+        if (typeof fn !== 'function') return Promise.resolve(false);
+        if (!_ready) { return Promise.resolve().then(fn).then(function () { return db ? flush() : false; }); }
+        _bulk = true;
+        return Promise.resolve().then(fn).then(
+          function () { _bulk = false; _dirty = true; return flush(); },
+          function (e) { _bulk = false; _dirty = true; return flush().then(function () { throw e; }); }
+        );
+      },
       _reset: function () { return resetAll(); },                            /* §13.5 awaited full wipe */
       /* ── diagnostics ── */
       _phase: 2,

@@ -371,11 +371,17 @@
          keeping the memory peak well under the 1-year OOM ceiling;
        • adds coverage the light seed lacks (Queue rotations, follow-ups, OPEN walk-ins for today).
      ════════════════════════════════════════════════════════════════════════════ */
-  async function __runSeedBig() {
+  async function __runSeedBig(inBulk) {
     var LS = localStorage;
     function set(k, v) { try { LS.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch (e) {} }
     function yieldUI() { return new Promise(function (r) { setTimeout(r, 0); }); }
-    function writeBulk(fn) { try { if (window.SaagarStore && typeof window.SaagarStore.bulk === 'function') return Promise.resolve(window.SaagarStore.bulk(fn)); } catch (e) {} try { fn(); } catch (e) {} return Promise.resolve(); }
+    // inBulk: the whole seed runs inside ONE bulkAsync — writes go straight to memory and ONE durable flush
+    // happens at the very end (no per-chunk DB re-export/rewrite, which was ~56 multi-MB disk writes + a
+    // multi-second synchronous serialize = phone freeze). Fallback (old engine): a bulk() per call.
+    function writeBulk(fn) {
+      if (inBulk) { try { fn(); } catch (e) {} return Promise.resolve(); }
+      try { if (window.SaagarStore && typeof window.SaagarStore.bulk === 'function') return Promise.resolve(window.SaagarStore.bulk(fn)); } catch (e) {} try { fn(); } catch (e) {} return Promise.resolve();
+    }
 
     /* ── progress overlay (covers the on-device first-boot seed; removed at the end) ── */
     var ov = null, bar = null, lbl = null;
@@ -689,7 +695,7 @@
      and the catch fallback is window-free so a thrown dispatch still seeds via the light path. */
   var HASW = (typeof window !== 'undefined');
   try {
-    if (BIG) { __runSeedBig(); }
+    if (BIG) { if (HASW && window.SaagarStore && typeof window.SaagarStore.bulkAsync === 'function') { window.SaagarStore.bulkAsync(function () { return __runSeedBig(true); }); } else { __runSeedBig(false); } }
     else if (HASW && window.SaagarStore && typeof window.SaagarStore.bulk === 'function') { window.SaagarStore.bulk(__runSeed); }
     else { __runSeed(); try { if (HASW && window.SaagarStore && typeof window.SaagarStore.flush === 'function') window.SaagarStore.flush(); } catch (e) {} }
   } catch (e) { try { __runSeed(); } catch (_) {} }
