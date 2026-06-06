@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 2.4 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 2.5 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 8/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.4"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 9/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.5"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.4-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build2.5-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,12 +93,22 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.4) - CLEAN (handles years of data)"
+          name: "Saagar Control Centre - V5 (build 2.5) - CLEAN (redesigned Reports)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.4 (CLEAN)**.
+            Fully offline Android build - Control Centre **V5 shell, build 2.5 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your
             real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+
+            **New in 2.5 - redesigned Reports (same reports, brand-new screen).** The report list and the
+            in-app report dashboard were rebuilt for one-handed phone use - the report PDFs themselves are
+            unchanged:
+            - The "Generate Report" picker is now a full-screen sheet with big tap rows, grouped by area,
+              a search box, a < date > stepper, and your recently-used reports pinned on top.
+            - The in-app Reports tab gets the same search + period stepper (kept in thumb reach), brand
+              serif numerals on the KPI tiles, and a "PDF" button on every card to send that report.
+            - Nothing about how a report is calculated changed (verified: all 16 reports still generate
+              byte-identical PDFs).
 
             **Build 2.4 - fixes from the full 1-year function audit:**
             - Service reports now use the real intake date + credit the delivering technician.

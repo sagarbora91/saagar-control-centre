@@ -726,6 +726,60 @@ try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) w
 if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='demo-seed.js';document.head.appendChild(s);});}
 else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag */
 })();</script>
+<style id="rpt-redesign">
+/* ===== REPORTS REDESIGN — "Find & Send" (UI only; report generation untouched) ===== */
+.rpt-search{position:relative;display:block}
+.rpt-search input{width:100%;min-height:44px;font-size:16px;font-family:'DM Sans',sans-serif;font-weight:600;color:var(--navy);padding:10px 12px 10px 38px;border:1px solid var(--gray-200);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm)}
+.rpt-search input::placeholder{color:var(--gray-400);font-weight:500}
+.rpt-search input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,42,.12)}
+.rpt-search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--gray-400);pointer-events:none}
+.rpt-count{font-size:12px;font-weight:700;color:var(--gray-600)}
+.rpt-period{display:flex;align-items:center;gap:8px}
+.rpt-step{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);color:var(--navy);font-size:20px;line-height:1;cursor:pointer}
+.rpt-step:active{transform:scale(.96)}
+.rpt-period .valwrap{position:relative;flex:1;display:flex}
+.rpt-period .val{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;background:var(--gold-pale);border:1px solid #efe2b8;color:var(--navy);font-family:'DM Serif Display',serif;font-size:17px;line-height:1;text-align:center;padding:0 8px}
+.rpt-period .valwrap input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px;border:0}
+@media(max-width:599px){.modal.hub-sheet{max-width:100%;max-height:100vh;height:100dvh;border-radius:0;overflow:hidden;display:flex;flex-direction:column}.modal.hub-sheet .modal-head{flex:0 0 auto}.modal.hub-sheet .modal-body{flex:1 1 auto;min-height:0;padding:0;display:flex;overflow:hidden}}
+.hub-wrap{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;width:100%}
+.hub-list{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 4px}
+.hub-sec{margin-top:14px}
+.hub-sec:first-child{margin-top:6px}
+.hub-sec-h{display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-500);margin:0 0 8px}
+.hub-sec-h::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--gold)}
+.hub-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:52px;padding:9px 12px;margin-bottom:8px;background:#fff;border:1px solid var(--gray-200);border-radius:12px;box-shadow:var(--shadow-sm);color:var(--navy);cursor:pointer}
+.hub-row:active{transform:scale(.985);background:var(--gray-50)}
+.hub-row .ico{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--gold-pale);border:1px solid #efe2b8}
+.hub-row .ttl{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;line-height:1.2}
+.hub-row .scope{font-size:10px;font-weight:700;color:var(--gray-500);background:var(--gray-100);border:1px solid var(--gray-200);border-radius:999px;padding:2px 8px;flex:none}
+.hub-row .go{color:var(--gold);font-size:15px;flex:none}
+.hub-row.recent .ico{background:var(--navy);border-color:var(--navy);color:var(--gold-light)}
+.hub-empty{padding:22px 8px;text-align:center;color:var(--gray-500);font-size:13px}
+.hub-help{font-size:12px;color:var(--gray-500);line-height:1.5;padding:12px 0 16px;margin:0}
+.hub-bar{flex:0 0 auto;background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08);padding:10px 16px calc(10px + var(--safe-bottom));display:flex;flex-direction:column;gap:9px}
+@media(min-width:600px){.hub-list{max-height:48vh}.hub-bar{position:static;box-shadow:none}}
+.rep-stick{position:sticky;top:0;z-index:5;background:var(--cream);margin:-16px -16px 12px;padding:14px 16px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow-sm)}
+.rep-stick .subtabs{margin-bottom:0}
+.rcard.is-hidden{display:none}
+.rcard>summary .stat{margin-left:auto;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;line-height:1.3;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200)}
+.rcard>summary::after{margin-left:8px}
+.stat.green{color:var(--green);background:var(--green-pale);border-color:var(--green-mid)}
+.stat.amber{color:var(--amber);background:var(--amber-pale);border-color:#fde68a}
+.stat.red{color:var(--red);background:var(--red-pale);border-color:#fecaca}
+.age-card b,.exp-total b{font-family:'DM Serif Display',serif;font-weight:400}
+.age-card b{font-size:24px}
+.exp-total b{font-size:21px}
+.r-breakdown{margin-top:10px;border-top:1px dashed var(--gray-200);padding-top:8px}
+.r-breakdown>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px;min-height:36px}
+.r-breakdown>summary::-webkit-details-marker{display:none}
+.r-breakdown>summary::after{content:'⌄';color:var(--gold);transition:transform .2s}
+.r-breakdown[open]>summary::after{transform:rotate(180deg)}
+.r-breakdown[open]>summary{color:var(--navy)}
+.btn.small.pdf{color:var(--gold);border-color:var(--gold);background:#fff}
+.btn.small.pdf:active{background:var(--gold-pale)}
+.rcard>summary small{font-size:12.5px;color:var(--gray-600)}
+@media(max-width:560px){.hub-row .scope{display:none}}
+</style>
 </head>
 <body>
 
@@ -1215,7 +1269,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.4";
+const APK_BUILD = "2.5";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -2330,24 +2384,83 @@ function renderReports(){
   const host = $('reportsList'); if(!host) return;
   if(!repDate) repDate = todayIso();
   if(!repMonth) repMonth = monthIso();
+  const isDaily = repScope==='daily';
+  const label = isDaily ? repDateLabel(repDate) : repMonthLabel(repMonth);
   const header = `
-    <div class="rep-controls">
+    <div class="rep-stick">
       <div class="subtabs">
-        <button class="subtab ${repScope==='daily'?'active':''}" onclick="setReportScope('daily')">Today</button>
-        <button class="subtab ${repScope==='monthly'?'active':''}" onclick="setReportScope('monthly')">This month</button>
+        <button class="subtab ${isDaily?'active':''}" onclick="setReportScope('daily')">Today</button>
+        <button class="subtab ${!isDaily?'active':''}" onclick="setReportScope('monthly')">This month</button>
       </div>
-      ${repScope==='daily'
-        ? `<label class="sub">Date&nbsp;<input type="date" value="${repDate}" max="${todayIso()}" onchange="setRepDate(this.value)"></label>`
-        : `<label class="sub">Month&nbsp;<input type="month" value="${repMonth}" max="${monthIso()}" onchange="setRepMonth(this.value)"></label>`}
+      <label class="rpt-search"><span class="ic">🔍</span>
+        <input id="repSearch" type="text" inputmode="search" placeholder="Find a report — cash, queue, leave" oninput="filterRepCards(this.value)"></label>
+      <div class="rpt-period">
+        <button class="rpt-step" type="button" onclick="stepRepPeriod(-1)" aria-label="Previous">‹</button>
+        <div class="valwrap">
+          <div class="val" id="repPeriodLabel">${escapeHtml(label)}</div>
+          ${isDaily
+            ? `<input type="date"  value="${repDate}"  max="${todayIso()}" onchange="setRepDate(this.value)">`
+            : `<input type="month" value="${repMonth}" max="${monthIso()}" onchange="setRepMonth(this.value)">`}
+        </div>
+        <button class="rpt-step" type="button" onclick="stepRepPeriod(1)" aria-label="Next">›</button>
+      </div>
+      <div class="rpt-count" id="repCount"></div>
     </div>`;
   let cards = '';
-  try{ cards = repScope==='daily' ? dailyReportsHTML(repDate) : monthlyReportsHTML(repMonth); }
+  try{ cards = isDaily ? dailyReportsHTML(repDate) : monthlyReportsHTML(repMonth); }
   catch(e){ cards = '<div class="empty"><span class="em">⚠️</span>Could not build report — '+escapeHtml(e.message)+'</div>'; }
   host.innerHTML = header + cards;
+  try{ decorateRepCards(); }catch(e){}
+  updateRepCount();
 }
 function setReportScope(s){ repScope = (s==='monthly')?'monthly':'daily'; renderReports(); }
 function setRepDate(v){ if(v) repDate = v; renderReports(); }
 function setRepMonth(v){ if(v) repMonth = v; renderReports(); }
+/* ── Reports redesign: search-filter the on-screen cards + a thumb-zone period stepper (UI only) ── */
+function filterRepCards(q){
+  q=(q||'').trim().toLowerCase();
+  document.querySelectorAll('#reportsList .rcard').forEach(function(c){
+    var s=c.querySelector('summary'); var hay=(c.getAttribute('data-tags')||'')+' '+((s&&s.textContent||'').toLowerCase());
+    c.classList.toggle('is-hidden', !!q && hay.indexOf(q)<0);
+  });
+  updateRepCount(q);
+}
+function updateRepCount(q){
+  var all=document.querySelectorAll('#reportsList .rcard');
+  var vis=0; all.forEach(function(c){ if(!c.classList.contains('is-hidden')) vis++; });
+  var el=document.getElementById('repCount'); if(!el) return;
+  el.textContent=(q&&q.trim())?(vis+' of '+all.length):(all.length+(all.length===1?' report':' reports'));
+}
+function stepRepPeriod(delta){
+  if(repScope==='daily'){
+    var base=new Date(repDate+'T12:00:00'); base.setDate(base.getDate()+delta);
+    var max=new Date(todayIso()+'T12:00:00'); if(base>max) return;
+    setRepDate(base.toISOString().slice(0,10));
+  } else {
+    var p=repMonth.split('-'), y=+p[0], m=+p[1]; var base=new Date(y,(m-1)+delta,1);
+    var nm=base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0'); if(nm>monthIso()) return;
+    setRepMonth(nm);
+  }
+}
+/* ── Reports redesign: post-render pass — tag each live card for search + add a "PDF" pill that launches
+   the matching A4 report via the UNCHANGED engine (SaagarReport.generate). No edits to the card templates. ── */
+function decorateRepCards(){
+  var host=document.getElementById('reportsList'); if(!host) return;
+  var DAILY=[['business today','ownerBrief'],['day snapshot','ownerBrief'],['cash','cashStatement'],['queue','qmsReport'],['staff register','dsrRegister'],['stock','stockRegister'],['grooming','groomingDaily'],['leave','leaveRegister']];
+  var MONTHLY=[['employee','ownerMonthly'],['payroll','payrollRegister'],['expense','expenseMonthly'],['cro audit','croAudit'],['grooming','groomingMonthly'],['service','serviceAging'],['tax','taxReport']];
+  var map=(repScope==='daily')?DAILY:MONTHLY;
+  var d=repDate, m=repMonth;
+  host.querySelectorAll('.rcard').forEach(function(card){
+    var sum=card.querySelector('summary'); var lc=((sum&&sum.textContent)||'').toLowerCase();
+    card.setAttribute('data-tags', lc);
+    var t=null; for(var i=0;i<map.length;i++){ if(lc.indexOf(map[i][0])>=0){ t=map[i][1]; break; } }
+    if(!t || !(window.SaagarReport&&window.SaagarReport.generate)) return;
+    var actions=card.querySelector('.r-actions'); if(!actions || actions.querySelector('.pdf')) return;
+    var b=document.createElement('button'); b.className='btn small pdf'; b.type='button'; b.textContent='PDF';
+    b.addEventListener('click', (function(rt){ return function(){ try{ window.SaagarReport.generate(rt,{date:d,month:m}); }catch(e){} }; })(t));
+    actions.appendChild(b);
+  });
+}
 function shareDayBrief(){ shareText(buildSnapshotText(buildTodayBrief(repDate), repDate), 'Saagar_Brief_'+repDate); }
 function copyDayBrief(){ copyToClipboard(buildSnapshotText(buildTodayBrief(repDate), repDate)); }
 

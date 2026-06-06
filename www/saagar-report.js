@@ -1091,23 +1091,108 @@
     },
     list: function () { return Object.keys(META).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
     forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
+    /* ── REDESIGN "Find & Send": full-screen thumb sheet, search, recents, period stepper.
+       Selection/presentation only — META, generate(), buildModel(), renderDoc() are untouched. ── */
     openHub: function () {
       var el = function (i) { return document.getElementById(i); };
-      var groups = { Daily: [], Monthly: [] };
-      Object.keys(META).forEach(function (k) { (META[k].scope === 'monthly' ? groups.Monthly : groups.Daily).push({ type: k, t: META[k].title, i: META[k].icon }); });
-      function btns(arr) { return arr.map(function (r) { return '<button onclick="SaagarReport.fromHub(\'' + r.type + '\')" style="display:flex;align-items:center;gap:9px;text-align:left;padding:11px 13px;border:1px solid #e3e8f0;border-radius:10px;background:#fff;font:600 13px inherit;color:#0d2340;cursor:pointer;width:100%"><span style="font-size:17px">' + r.i + '</span>' + esc(r.t) + '</button>'; }).join(''); }
-      var body = '<div>'
-        + '<div style="display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap;font-size:12px;color:#475569"><label>Date <input id="rptDate" type="date" value="' + curDate() + '" style="padding:6px 8px;border:1px solid #cbd6e4;border-radius:8px;font:inherit"></label><label>Month <input id="rptMonth" type="month" value="' + curMonth() + '" style="padding:6px 8px;border:1px solid #cbd6e4;border-radius:8px;font:inherit"></label></div>'
-        + '<div style="font:800 11px inherit;letter-spacing:.5px;color:#64748b;text-transform:uppercase;margin:4px 0 8px">Daily reports</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + btns(groups.Daily) + '</div>'
-        + '<div style="font:800 11px inherit;letter-spacing:.5px;color:#64748b;text-transform:uppercase;margin:16px 0 8px">Monthly reports</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">' + btns(groups.Monthly) + '</div>'
-        + '<p style="font-size:11px;color:#8295ad;margin-top:14px">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p></div>';
+      var GROUPS = [
+        { h: 'Daily · Owner',                types: ['ownerBrief', 'cashStatement', 'dsrRegister'] },
+        { h: 'Daily · Floor & Service',      types: ['qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging', 'serviceJobCard'] },
+        { h: 'Monthly · People',             types: ['payrollRegister', 'payrollSlip', 'leaveRegister', 'groomingMonthly'] },
+        { h: 'Monthly · Money & Compliance', types: ['expenseMonthly', 'taxReport', 'ownerMonthly'] }
+      ];
+      var TAGS = {
+        ownerBrief: 'owner brief summary digest day', cashStatement: 'cash money statement till',
+        dsrRegister: 'dsr sales register daily', qmsReport: 'queue conversion footfall walkin qms',
+        croAudit: 'cro audit scorecard checklist', stockRegister: 'stock closing inventory grn',
+        groomingDaily: 'grooming daily audit appearance', serviceAging: 'service open cases aging sla repair',
+        serviceJobCard: 'service job card repair watch', payrollRegister: 'payroll salary register wages',
+        payrollSlip: 'payroll salary slip payslip', leaveRegister: 'leave absent holiday register',
+        groomingMonthly: 'grooming monthly trend', expenseMonthly: 'expense pnl profit loss money',
+        taxReport: 'tax compliance gst tds due', ownerMonthly: 'owner monthly brief summary'
+      };
+      function row(t, recent) {
+        var m = META[t]; if (!m) return '';
+        return '<button class="hub-row' + (recent ? ' recent' : '') + '" data-type="' + t + '" data-tags="' + esc(m.title.toLowerCase() + ' ' + (TAGS[t] || '')) + '" '
+          + 'onclick="SaagarReport.fromHub(\'' + t + '\')">'
+          + '<span class="ico">' + m.icon + '</span>'
+          + '<span class="ttl">' + esc(m.title) + '</span>'
+          + '<span class="scope">' + (m.scope === 'monthly' ? 'Monthly' : 'Daily') + '</span>'
+          + '<span class="go">↗</span></button>';
+      }
+      var recents = [];
+      try { recents = JSON.parse(localStorage.getItem('saagar_rpt_recent') || '[]'); } catch (e) {}
+      recents = (recents || []).filter(function (t) { return META[t]; }).slice(0, 3);
+      var recentHtml = recents.length
+        ? '<section class="hub-sec" data-recent><h4 class="hub-sec-h">Recent</h4>' + recents.map(function (t) { return row(t, true); }).join('') + '</section>'
+        : '';
+      var groupHtml = GROUPS.map(function (g) {
+        return '<section class="hub-sec"><h4 class="hub-sec-h">' + esc(g.h) + '</h4>'
+          + g.types.map(function (t) { return row(t, false); }).join('') + '</section>';
+      }).join('');
+      var body = '<div class="hub-wrap">'
+        + '<div class="hub-list" id="hubList">'
+        + recentHtml + groupHtml
+        + '<div class="hub-empty" id="hubEmpty" hidden>No report matches that search.</div>'
+        + '<p class="hub-help">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p>'
+        + '</div>'
+        + '<div class="hub-bar">'
+        + '<div class="rpt-count" id="hubCount">' + (Object.keys(META).length) + ' reports</div>'
+        + '<div class="rpt-period">'
+        + '<button class="rpt-step" type="button" onclick="SaagarReport.hubStep(-1)" aria-label="Previous">‹</button>'
+        + '<div class="valwrap"><div class="val" id="hubPeriodLabel"></div>'
+        + '<input id="rptDate" type="date" value="' + curDate() + '">'
+        + '<input id="rptMonth" type="month" value="' + curMonth() + '" style="display:none"></div>'
+        + '<button class="rpt-step" type="button" onclick="SaagarReport.hubStep(1)" aria-label="Next">›</button>'
+        + '</div>'
+        + '<label class="rpt-search"><span class="ic">🔍</span>'
+        + '<input id="hubSearch" type="text" inputmode="search" placeholder="Search reports — try cash, tax, payroll" oninput="SaagarReport.hubFilter(this.value)"></label>'
+        + '</div></div>';
+      var mc = document.querySelector('.modal'); if (mc) mc.classList.add('hub-sheet');
       if (el('modalTitle')) el('modalTitle').textContent = 'Generate Report (PDF)';
       if (el('modalBody')) el('modalBody').innerHTML = body;
       if (window.openModal) window.openModal();
+      this.hubSyncLabel();
+    },
+    hubStep: function (delta) {
+      var d = document.getElementById('rptDate'); if (!d || !d.value) return;
+      var base = new Date(d.value + 'T12:00:00'); base.setDate(base.getDate() + delta);
+      var max = new Date(curDate() + 'T12:00:00'); if (base > max) base = max;
+      d.value = base.toISOString().slice(0, 10);
+      var mo = document.getElementById('rptMonth'); if (mo) mo.value = d.value.slice(0, 7);
+      this.hubSyncLabel();
+    },
+    hubSyncLabel: function () {
+      var d = document.getElementById('rptDate'), lab = document.getElementById('hubPeriodLabel');
+      if (!d || !lab) return;
+      var dt = new Date(d.value + 'T12:00:00');
+      lab.textContent = isNaN(dt) ? d.value : dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    },
+    hubFilter: function (q) {
+      q = (q || '').trim().toLowerCase();
+      var shown = 0;
+      document.querySelectorAll('#hubList .hub-row').forEach(function (r) {
+        var hay = (r.getAttribute('data-tags') || '') + ' ' + r.textContent.toLowerCase();
+        var hit = !q || hay.indexOf(q) >= 0;
+        r.style.display = hit ? '' : 'none';
+        if (hit && !r.classList.contains('recent')) shown++;
+      });
+      document.querySelectorAll('#hubList .hub-sec').forEach(function (sec) {
+        sec.style.display = sec.querySelector('.hub-row:not([style*="display: none"])') ? '' : 'none';
+      });
+      var empty = document.getElementById('hubEmpty'); if (empty) empty.hidden = shown > 0;
+      var cnt = document.getElementById('hubCount');
+      if (cnt) cnt.textContent = q ? (shown + ' of ' + Object.keys(META).length) : (Object.keys(META).length + ' reports');
     },
     fromHub: function (type) {
       var el = function (i) { return document.getElementById(i); };
       var d = (el('rptDate') && el('rptDate').value) || curDate(), m = (el('rptMonth') && el('rptMonth').value) || curMonth();
+      try {
+        var arr = JSON.parse(localStorage.getItem('saagar_rpt_recent') || '[]') || [];
+        arr = [type].concat(arr.filter(function (x) { return x !== type; })).slice(0, 3);
+        localStorage.setItem('saagar_rpt_recent', JSON.stringify(arr));
+      } catch (e) {}
+      var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('hub-sheet');
       if (window.closeModal) window.closeModal();
       return this.generate(type, { date: d, month: m });
     },
