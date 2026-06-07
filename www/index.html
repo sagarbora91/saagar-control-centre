@@ -1302,7 +1302,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.8";
+const APK_BUILD = "2.9";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -1374,6 +1374,8 @@ function roleCanOpen(id){ if(isAdmin) return true; const m=loadRoleAccess(); con
    STATE
    ═══════════════════════════════════════════════════════════════════════ */
 let activeView = "home";
+let viewHistory = [];   // tabs the user navigated through (most-recent last) — drives Android hardware-back
+let _backSkipHistory = false;   // set true by the back handler so switchView doesn't re-push the popped entry
 let activeConfigTab = "employees";
 let repScope = "daily"; let repDate = ""; let repMonth = "";
 let activeCategory = "All";
@@ -1919,6 +1921,14 @@ function saveOwnerName(){
    ═══════════════════════════════════════════════════════════════════════ */
 function switchView(name){
   if(activeModuleId) return;
+  // Hardware-back support: remember the tab we're leaving so back can return to it. Skip the push
+  // when the back handler called us (it's restoring history, not adding to it) and when re-entering
+  // the same tab (re-renders shouldn't pollute history).
+  if (!_backSkipHistory && activeView && activeView !== name) {
+    viewHistory.push(activeView);
+    if (viewHistory.length > 12) viewHistory.shift();
+  }
+  _backSkipHistory = false;
   activeView = name;
   ['home','modules','reports','config'].forEach(v=>{
     const el = $(v+'View'); if(el) el.classList.toggle('active', v===name);
@@ -4090,8 +4100,50 @@ function showMainView(){
   $('moduleScreen').classList.add('hidden');
   $('mainContent').style.removeProperty('display');
   $('botnav').classList.remove('hidden');
+  // returning to the tab we were on — don't push the current "home placeholder" onto history
+  _backSkipHistory = true;
   switchView(activeView||'home');
 }
+
+/* ── Android HARDWARE BACK BUTTON — walk the navigation stack instead of exiting the app.
+   Without this, every press of the system Back triggers Capacitor's default = exit-app
+   (which is the "tap Back → goes straight to Home/exits" bug the owner reported).
+   Levels, top-most wins:
+     L3 modal open      → close the modal, stay on screen
+     L2 module open     → return to the tab the user came from (showMainView)
+     L1 non-home tab    → previous tab from viewHistory, else Home
+     L0 Home tab        → "Press back again to exit" (2-second window, like WhatsApp)        */
+(function () {
+  var lastExitPrompt = 0;
+  function isModalOpen() { var b = document.getElementById('modalBackdrop'); return !!(b && !b.classList.contains('hidden')); }
+  function handleBack() {
+    if (isModalOpen()) { try { closeModal(); } catch (e) {} return; }
+    if (activeModuleId) { try { showMainView(); } catch (e) {} return; }
+    if (activeView !== 'home') {
+      var prev = viewHistory.length ? viewHistory.pop() : 'home';
+      _backSkipHistory = true;
+      try { switchView(prev); } catch (e) {}
+      return;
+    }
+    // On Home — second press within 2 s exits the app.
+    var now = new Date().getTime();
+    if (now - lastExitPrompt < 2000) {
+      try {
+        var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+        if (App && App.exitApp) App.exitApp();
+      } catch (e) {}
+      return;
+    }
+    lastExitPrompt = now;
+    try { toast('Press Back again to exit'); } catch (e) {}
+  }
+  try {
+    var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if (App && App.addListener) App.addListener('backButton', handleBack);
+  } catch (e) {}
+  // Browser/preview fallback so the same flow can be tested without Capacitor.
+  window.__saagarBack = handleBack;
+})();
 
 /* ── Rec #5: guarded module→module navigation ──────────────────────────────
    navigateToModule() is the SINGLE entry point for programmatic module hops

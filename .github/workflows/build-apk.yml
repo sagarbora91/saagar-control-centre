@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 2.8 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 2.9 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 12/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.8"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 13/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.9"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.8-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build2.9-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,12 +93,22 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.8) - CLEAN (Period Summary report)"
+          name: "Saagar Control Centre - V5 (build 2.9) - CLEAN (Android Back button fix)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 2.8 (CLEAN)**.
+            Fully offline Android build - Control Centre **V5 shell, build 2.9 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your
             real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+
+            **Fix in 2.9 - the Android Back button now walks the screen stack instead of exiting.**
+            Earlier the system Back button would jump straight to Home (or exit the app) no matter
+            where you were. It now behaves like every native Android app:
+            - If a popup/modal is open -> Back closes the popup.
+            - If you're inside a module -> Back returns to the tab you opened it from
+              (Modules / Reports / etc.), not Home.
+            - If you're on a tab other than Home -> Back returns to the previous tab you were on.
+            - If you're already on Home -> first Back shows "Press Back again to exit", a second
+              press within 2 seconds exits the app. No more accidental closes.
 
             **New in 2.8 - Period Summary report (your 16 existing reports are unchanged).**
             - A brand-new **Period Summary** in the Generate Report screen: pick **This week**,
