@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 3.0 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 3.1 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 14/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "3.0"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 15/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "3.1"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build3.0-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build3.1-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,12 +93,23 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 3.0) - CLEAN (one unified Reports tab)"
+          name: "Saagar Control Centre - V5 (build 3.1) - CLEAN (smoother scrolling)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 3.0 (CLEAN)**.
+            Fully offline Android build - Control Centre **V5 shell, build 3.1 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your
             real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+
+            **New in 3.1 - performance pass for smoother scrolling, especially on a busy phone.**
+            Nothing about how the app works or how reports are calculated changed - this is purely
+            about speed and smoothness:
+            - The heavy PDF tools (~3 MB) are no longer loaded the moment the app starts. They now
+              load only the first time you actually build, preview or share a PDF. That keeps the
+              app's memory use much lower, so the whole app scrolls more smoothly and starts faster.
+            - Lighter card/shadow drawing and off-screen cards that skip drawing while you scroll.
+            - Modal popups no longer do an expensive background blur on the phone.
+            - Reduced background work inside each module screen while you type or scroll.
+            - (All 17 report PDFs verified byte-for-byte identical to before.)
 
             **New in 3.0 - there is now ONE "Reports", not two.** Earlier the app had a Reports
             tab (on-screen numbers) AND a separate "Reports" button that opened the PDF generator -

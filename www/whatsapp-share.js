@@ -197,7 +197,8 @@
     if (rType && window.SaagarReport) { window.SaagarReport.generate(rType, {}); return; }
     notify('Preparing PDF for WhatsApp…');
     setTimeout(function () {
-      buildPdf(doc)
+      (window.SaagarLib && window.SaagarLib.ensure ? window.SaagarLib.ensure('h2p') : Promise.resolve())
+        .then(function () { return buildPdf(doc); })
         .then(function (blob) { return shareBlob(blob, activeModuleName(doc)); })
         .catch(function (e) { notify('Could not create PDF: ' + (e && e.message || e)); });
     }, 60);

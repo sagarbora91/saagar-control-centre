@@ -1142,8 +1142,13 @@
 
   window.SaagarReport = {
     build: function (type, opts) {
-      var m = buildModel(type, opts);                                  // all 16 builders return { orientation, blocks:[...] }
-      return Promise.resolve(renderDoc(m.blocks, m.orientation).output('blob'));
+      // Ensure jsPDF + autotable + fonts are loaded (lazy on device; instant no-op when already
+      // present — e.g. the JSDOM validators that pre-load jsPDF, or any re-entrant call).
+      var ready = (window.SaagarLib && window.SaagarLib.ensure) ? window.SaagarLib.ensure('gen') : Promise.resolve();
+      return ready.then(function () {
+        var m = buildModel(type, opts);                                // all 17 builders return { orientation, blocks:[...] }
+        return renderDoc(m.blocks, m.orientation).output('blob');
+      });
     },
     generate: function (type, opts) {
       try { toast('Preparing report…'); } catch (e) {}
@@ -1170,7 +1175,11 @@
       var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('hub-sheet'); mc.classList.add('pdf-sheet'); }
       if (window.openModal) window.openModal();
       this.build(type, opts).then(function (blob) {
-        self._pp.blob = blob; self._renderPdf(blob, type, opts);
+        self._pp.blob = blob;
+        // Ensure pdf.js for the on-screen preview (lazy on device). _renderPdf already degrades to
+        // "use Save / Send" if pdf.js is unavailable, so a load failure is non-fatal.
+        var ev = (window.SaagarLib && window.SaagarLib.ensure) ? window.SaagarLib.ensure('view').catch(function () {}) : Promise.resolve();
+        return ev.then(function () { self._renderPdf(blob, type, opts); });
       }).catch(function (e) {
         var s = el('ppScroll'); if (s) s.innerHTML = '<div class="pp-status">Could not build report: ' + esc((e && e.message) || e) + '</div>';
       });
