@@ -774,8 +774,11 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 .period-go:active{transform:scale(.985)}
 .hub-bar{flex:0 0 auto;background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08);padding:10px 16px calc(10px + var(--safe-bottom));display:flex;flex-direction:column;gap:9px}
 @media(min-width:600px){.hub-list{max-height:48vh}.hub-bar{position:static;box-shadow:none}}
-.rep-stick{position:sticky;top:0;z-index:5;background:var(--cream);margin:-16px -16px 12px;padding:14px 16px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow-sm)}
+.rep-stick{position:sticky;top:0;z-index:5;background:var(--cream);margin:-16px -16px 12px;padding:14px 16px 10px;display:flex;flex-direction:column;gap:9px}
 .rep-stick .subtabs{margin-bottom:0}
+/* build 3.2: flatten the in-tab search + date bar so it sits flush (no raised "floating card" shadows) */
+.rep-stick .rpt-search input,
+.rep-stick .rpt-step{box-shadow:none}
 /* Reports tab Summary/Generate toggle + the inline PDF catalogue (build 3.0 merge) */
 .rep-mode{margin:0 0 12px}
 .rep-mode .subtab{flex:1;justify-content:center;text-align:center}
@@ -1313,7 +1316,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "3.1";
+const APK_BUILD = "3.2";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
