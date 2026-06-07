@@ -41,15 +41,15 @@ jobs:
       - name: Add Android platform
         run: npx --no-install cap add android
 
-      - name: Patch Android project (V5 build 3.3 — version bump + offline hygiene)
+      - name: Patch Android project (V5 build 3.4 — version bump + offline hygiene)
         run: |
           MF=android/app/src/main/AndroidManifest.xml
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 17/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "3.3"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 18/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "3.4"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -77,7 +77,7 @@ jobs:
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build3.3-$(date +%Y%m%d).apk"
+             "out/SaagarControlCentre-v5-build3.4-$(date +%Y%m%d).apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk \
              out/SaagarControlCentre-latest.apk
           ls -lh out
@@ -93,12 +93,16 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 3.3) - CLEAN (scroll-freeze fix)"
+          name: "Saagar Control Centre - V5 (build 3.4) - CLEAN (scroll-freeze fix + scroll test)"
           body: |
-            Fully offline Android build - Control Centre **V5 shell, build 3.3 (CLEAN)**.
+            Fully offline Android build - Control Centre **V5 shell, build 3.4 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your
             real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
+
+            **New in 3.4 - a built-in Scroll smoothness test** (Settings -> Diagnostics). Tap "Test
+            scroll", wait ~2 seconds, then "Share" the result. It reports this phone's specs and where
+            frames drop, so any remaining scroll lag can be diagnosed from real data on this device.
 
             **Fix in 3.3 - removed the scroll freezing/stutter introduced in 3.1.** Build 3.1 added a
             browser feature ("content-visibility") that skipped drawing off-screen cards. On the phone
