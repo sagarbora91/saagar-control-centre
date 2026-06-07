@@ -707,6 +707,65 @@
           colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' }, 4: { cellWidth: 90, halign: 'right' } } });
       } else { blocks.push({ t: 'empty', text: 'No staff performance data.' }); }
       return { orientation: 'portrait', blocks: blocks };
+    },
+    /* ── PERIOD SUMMARY — NEW aggregated report over a date range (week / quarter / custom).
+       Additive: the 16 existing reports are unchanged. Totals are summed from the SAME raw data the
+       daily reports read, so the numbers reconcile. (Queue figures use the live ~90-day window.) ── */
+    periodSummary: function (o) {
+      var start = o.start || curDate(), end = o.end || curDate();
+      if (start > end) { var sw = start; start = end; end = sw; }
+      function inRange(d) { d = String(d || '').slice(0, 10); return d && d >= start && d <= end; }
+      function sd(d) { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return d; } }
+      var days = Math.round((new Date(end + 'T12:00:00') - new Date(start + 'T12:00:00')) / 86400000) + 1;
+      var agg = { sales: 0, walkins: 0, purchases: 0, byCro: {}, income: 0, expense: 0, svcRec: 0, svcClosed: 0 };
+      try {
+        var q = JSON.parse(localStorage.getItem('retail_queue_management_v1') || 'null');
+        var nameById = {}; (q && q.cros || []).forEach(function (c) { if (c && c.id) nameById[c.id] = c.name; });
+        (q && q.customers || []).forEach(function (c) {
+          if (!inRange(c.entryTime)) return;
+          agg.walkins++;
+          var cn = nameById[c.assignedCroId] || '—';
+          var r = agg.byCro[cn] || (agg.byCro[cn] = { cro: cn, walkins: 0, purchases: 0, sales: 0 });
+          r.walkins++;
+          if (c.outcome === 'Purchase') { var amt = +c.purchaseAmount || 0; agg.purchases++; agg.sales += amt; r.purchases++; r.sales += amt; }
+        });
+      } catch (e) {}
+      try {
+        (JSON.parse(localStorage.getItem('gm_expenses') || '[]') || []).forEach(function (e) {
+          if (e && e.void) return; if (!inRange(e.date)) return;
+          if (String(e.type || 'expense').toLowerCase() === 'income') agg.income += (+e.amount || 0); else agg.expense += (+e.amount || 0);
+        });
+      } catch (e) {}
+      try {
+        (JSON.parse(localStorage.getItem('saagar_wsf_v2') || '[]') || []).forEach(function (j) {
+          if (inRange(j.dateRec || j.createdAt)) agg.svcRec++;
+          if (j.status === 'closed' && inRange(j.closedAt)) agg.svcClosed++;
+        });
+      } catch (e) {}
+      var conv = agg.walkins ? Math.round(agg.purchases / agg.walkins * 100) : 0, net = agg.income - agg.expense;
+      var blocks = [{ t: 'header', title: 'PERIOD SUMMARY', sub: 'Titan World + Helios · Latur', period: sd(start) + ' – ' + sd(end) + ' · ' + days + ' day' + (days === 1 ? '' : 's') }];
+      blocks.push({ t: 'kpi', cols: 5, items: [
+        { label: 'Net Sales', value: inr(agg.sales), sub: num(agg.purchases) + ' purchases', hero: true },
+        { label: 'Conversion', value: pct(conv), sub: num(agg.walkins) + ' walk-ins' },
+        { label: 'Income', value: inr(agg.income) },
+        { label: 'Expenses', value: inr(agg.expense) },
+        { label: 'Net P&L', value: inr(net), sub: net >= 0 ? 'Profit' : 'Loss', subClass: net >= 0 ? 'up' : 'down' }
+      ] });
+      blocks.push({ t: 'section', title: 'Sales & Conversion — by CRO' });
+      var rows = Object.keys(agg.byCro).map(function (k) { return agg.byCro[k]; }).sort(function (a, b) { return b.sales - a.sales; });
+      if (rows.length) {
+        blocks.push({ t: 'table',
+          head: [['CRO', 'Walk-ins', 'Purchases', 'Conv %', 'Sales ₹']],
+          body: rows.map(function (c) { return [trunc(c.cro, 24), num(c.walkins), num(c.purchases), (c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—'), inr(c.sales)]; }),
+          money: [4],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 70, halign: 'right' }, 4: { cellWidth: 110, halign: 'right' } },
+          foot: [['Total', num(agg.walkins), num(agg.purchases), pct(conv), inr(agg.sales)]] });
+      } else { blocks.push({ t: 'empty', text: 'No Queue walk-ins recorded in this range (the live Queue holds the most recent ~90 days).' }); }
+      blocks.push({ t: 'section', title: 'Money — Profit & Loss', tag: net >= 0 ? { cls: 'ok', txt: 'Profit ' + inr(net) } : { cls: 'bad', txt: 'Loss ' + inr(-net) } });
+      blocks.push({ t: 'kv', cols: 3, pairs: [['Total income', inr(agg.income)], ['Total expenses', inr(agg.expense)], ['Net P&L', inr(net)]] });
+      blocks.push({ t: 'section', title: 'Service Centre' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Jobs received', num(agg.svcRec)], ['Jobs closed', num(agg.svcClosed)]] });
+      return { orientation: 'portrait', blocks: blocks };
     }
   };
 
@@ -726,7 +785,8 @@
     taxReport: { title: 'Tax Compliance — Due Report', scope: 'monthly', icon: '⚖️' },
     serviceAging: { title: 'Service — Open Cases Aging', scope: 'daily', icon: '🛠️' },
     serviceJobCard: { title: 'Service — Job Card', scope: 'daily', icon: '📋' },
-    ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' }
+    ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' },
+    periodSummary: { title: 'Period Summary', scope: 'range', icon: '📈' }
   };
 
   /* ============================================================================
@@ -1058,6 +1118,9 @@
     return b(opts || {});
   }
   function filename(type, opts) {
+    if (type === 'periodSummary' && opts && opts.start) {
+      return 'Saagar_PeriodSummary_' + opts.start + '_to_' + (opts.end || opts.start) + '.pdf';
+    }
     var d = (opts && opts.date) || curDate();
     return 'Saagar_' + type + '_' + d + '.pdf';
   }
@@ -1232,7 +1295,7 @@
     _logReport: function (type, action, opts) {
       try {
         var log = JSON.parse(localStorage.getItem('saagar_rpt_log') || '[]') || [];
-        log.unshift({ t: type, a: action, ts: Date.now(), d: (opts && opts.date) || null, m: (opts && opts.month) || null });
+        log.unshift({ t: type, a: action, ts: Date.now(), d: (opts && opts.date) || null, m: (opts && opts.month) || null, s: (opts && opts.start) || null, f: (opts && opts.end) || null });
         localStorage.setItem('saagar_rpt_log', JSON.stringify(log.slice(0, 40)));
       } catch (e) {}
     },
@@ -1243,6 +1306,11 @@
       var ACT = { view: 'opened', save: 'saved', send: 'sent' };
       var rows = log.filter(function (e) { return META[e.t]; }).slice(0, 25).map(function (e) {
         var d = e.d || '', m = e.m || '';
+        if (e.t === 'periodSummary') {
+          var s = e.s || curDate(), f = e.f || s, lbl = s + ' → ' + f;
+          return '<button class="hub-row" type="button" onclick="SaagarReport.preview(\'periodSummary\',{start:\'' + s + '\',end:\'' + f + '\'})">'
+            + '<span class="ico">' + META.periodSummary.icon + '</span><span class="ttl">' + esc(META.periodSummary.title) + '<small>' + (ACT[e.a] || e.a) + ' · ' + rel(e.ts) + ' · ' + lbl + '</small></span><span class="go">↗</span></button>';
+        }
         return '<button class="hub-row" type="button" onclick="SaagarReport.preview(\'' + e.t + '\',{date:\'' + d + '\',month:\'' + m + '\'})">'
           + '<span class="ico">' + META[e.t].icon + '</span><span class="ttl">' + esc(META[e.t].title) + '<small>' + (ACT[e.a] || e.a) + ' · ' + rel(e.ts) + (d ? ' · ' + d : '') + '</small></span><span class="go">↗</span></button>';
       }).join('');
@@ -1297,6 +1365,7 @@
       var packHtml = '<section class="hub-sec hub-packs">'
         + '<button class="hub-pack" type="button" onclick="SaagarReport.pack(\'daily\')"><span class="ico">📦</span><span class="ttl">End-of-day pack<small>All daily reports for the date</small></span><span class="go">→</span></button>'
         + '<button class="hub-pack" type="button" onclick="SaagarReport.pack(\'monthly\')"><span class="ico">📦</span><span class="ttl">Month-end pack<small>All monthly reports</small></span><span class="go">→</span></button>'
+        + '<button class="hub-pack" type="button" onclick="SaagarReport.periodPicker()"><span class="ico">📈</span><span class="ttl">Period Summary<small>One report: a week, a quarter, or any range</small></span><span class="go">→</span></button>'
         + '<button class="hub-hist" type="button" onclick="SaagarReport.history()">🕘 Report history</button>'
         + '</section>';
       var body = '<div class="hub-wrap">'
@@ -1363,6 +1432,37 @@
         localStorage.setItem('saagar_rpt_recent', JSON.stringify(arr));
       } catch (e) {}
       return this.preview(type, { date: d, month: m });   // tap → PREVIEW (then Save / Send / Print)
+    },
+    /* ── PERIOD SUMMARY range picker — week / quarter / custom from–to → preview('periodSummary',{start,end}). ── */
+    periodPicker: function () {
+      var el = function (i) { return document.getElementById(i); };
+      var today = curDate();
+      var body = '<div class="hub-wrap"><div class="hub-list" style="padding-bottom:18px">'
+        + '<section class="hub-sec hub-packs">'
+        + '<button class="hub-pack" type="button" onclick="SaagarReport.periodGo(\'week\')"><span class="ico">📅</span><span class="ttl">This week<small>The last 7 days up to today</small></span><span class="go">→</span></button>'
+        + '<button class="hub-pack" type="button" onclick="SaagarReport.periodGo(\'quarter\')"><span class="ico">📅</span><span class="ttl">This quarter<small>The last 90 days up to today</small></span><span class="go">→</span></button>'
+        + '</section>'
+        + '<section class="hub-sec"><h4 class="hub-sec-h">Custom range</h4>'
+        + '<div class="period-custom">'
+        + '<label>From<input id="prFrom" type="date" max="' + today + '" value="' + today + '"></label>'
+        + '<label>To<input id="prTo" type="date" max="' + today + '" value="' + today + '"></label>'
+        + '<button class="period-go" type="button" onclick="SaagarReport.periodGo(\'custom\')">Build summary →</button>'
+        + '</div></section>'
+        + '<p class="hub-help">One combined PDF for the whole range — total sales &amp; conversion, profit &amp; loss, service, and CRO leaderboard. (Queue figures cover the live ~90-day window.)</p>'
+        + '</div></div>';
+      var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('pdf-sheet'); mc.classList.add('hub-sheet'); }
+      if (el('modalTitle')) el('modalTitle').textContent = 'Period Summary';
+      if (el('modalBody')) el('modalBody').innerHTML = body;
+      if (window.openModal) window.openModal();
+    },
+    periodGo: function (kind) {
+      var el = function (i) { return document.getElementById(i); };
+      var today = curDate(), start, end = today, base;
+      if (kind === 'week') { base = new Date(today + 'T12:00:00'); base.setDate(base.getDate() - 6); start = base.toISOString().slice(0, 10); }
+      else if (kind === 'quarter') { base = new Date(today + 'T12:00:00'); base.setDate(base.getDate() - 89); start = base.toISOString().slice(0, 10); }
+      else { start = (el('prFrom') && el('prFrom').value) || today; end = (el('prTo') && el('prTo').value) || today; }
+      if (start > end) { var sw = start; start = end; end = sw; }
+      return this.preview('periodSummary', { start: start, end: end });
     },
     _buildModel: buildModel, // for tests
     _renderDoc: function (type, opts) { var m = buildModel(type, opts); if (!m.blocks) throw new Error('not block-based: ' + type); return renderDoc(m.blocks, m.orientation); }, // test seam → jsPDF doc
