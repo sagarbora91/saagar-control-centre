@@ -1325,8 +1325,10 @@
     forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
     /* ── REDESIGN "Find & Send": full-screen thumb sheet, search, recents, period stepper.
        Selection/presentation only — META, generate(), buildModel(), renderDoc() are untouched. ── */
-    openHub: function () {
-      var el = function (i) { return document.getElementById(i); };
+    /* ── Shared catalogue body: packs + recents + grouped report rows + empty/help.
+       Single source of truth used by BOTH the modal hub (openHub, opened from inside a
+       module) AND the inline Reports-tab "Generate / Send" mode (renderInline). ── */
+    _hubSectionsHtml: function () {
       var GROUPS = [
         { h: 'Daily · Owner',                types: ['ownerBrief', 'cashStatement', 'dsrRegister'] },
         { h: 'Daily · Floor & Service',      types: ['qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging', 'serviceJobCard'] },
@@ -1368,11 +1370,17 @@
         + '<button class="hub-pack" type="button" onclick="SaagarReport.periodPicker()"><span class="ico">📈</span><span class="ttl">Period Summary<small>One report: a week, a quarter, or any range</small></span><span class="go">→</span></button>'
         + '<button class="hub-hist" type="button" onclick="SaagarReport.history()">🕘 Report history</button>'
         + '</section>';
+      return packHtml + recentHtml + groupHtml
+        + '<div class="hub-empty" id="hubEmpty" hidden>No report matches that search.</div>'
+        + '<p class="hub-help">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p>';
+    },
+    openHub: function () {
+      var el = function (i) { return document.getElementById(i); };
+      // Drop any inline copy first so its duplicate ids (hubList/rptDate/…) can't shadow the modal's.
+      var ig = document.getElementById('reportsGen'); if (ig) ig.innerHTML = '';
       var body = '<div class="hub-wrap">'
         + '<div class="hub-list" id="hubList">'
-        + packHtml + recentHtml + groupHtml
-        + '<div class="hub-empty" id="hubEmpty" hidden>No report matches that search.</div>'
-        + '<p class="hub-help">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p>'
+        + this._hubSectionsHtml()
         + '</div>'
         + '<div class="hub-bar">'
         + '<div class="rpt-count" id="hubCount">' + (Object.keys(META).length) + ' reports</div>'
@@ -1390,6 +1398,29 @@
       if (el('modalTitle')) el('modalTitle').textContent = 'Generate Report (PDF)';
       if (el('modalBody')) el('modalBody').innerHTML = body;
       if (window.openModal) window.openModal();
+      this.hubSyncLabel();
+    },
+    /* ── INLINE generate mode — the SAME catalogue rendered straight into the Reports
+       tab (no modal). Reuses the hub ids so hubFilter / hubStep / hubSyncLabel / fromHub
+       all work unchanged. Tapping a report still opens the preview → Save / Print / Send. ── */
+    renderInline: function (hostId) {
+      var host = document.getElementById(hostId); if (!host) return;
+      var body = '<div class="rep-stick">'
+        + '<label class="rpt-search"><span class="ic">🔍</span>'
+        + '<input id="hubSearch" type="text" inputmode="search" placeholder="Search reports — try cash, tax, payroll" oninput="SaagarReport.hubFilter(this.value)"></label>'
+        + '<div class="rpt-period">'
+        + '<button class="rpt-step" type="button" onclick="SaagarReport.hubStep(-1)" aria-label="Previous">‹</button>'
+        + '<div class="valwrap"><div class="val" id="hubPeriodLabel"></div>'
+        + '<input id="rptDate" type="date" value="' + curDate() + '">'
+        + '<input id="rptMonth" type="month" value="' + curMonth() + '" style="display:none"></div>'
+        + '<button class="rpt-step" type="button" onclick="SaagarReport.hubStep(1)" aria-label="Next">›</button>'
+        + '</div>'
+        + '<div class="rpt-count" id="hubCount">' + (Object.keys(META).length) + ' reports</div>'
+        + '</div>'
+        + '<div class="hub-list hub-inline" id="hubList">'
+        + this._hubSectionsHtml()
+        + '</div>';
+      host.innerHTML = body;
       this.hubSyncLabel();
     },
     hubStep: function (delta) {

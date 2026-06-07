@@ -774,6 +774,10 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 @media(min-width:600px){.hub-list{max-height:48vh}.hub-bar{position:static;box-shadow:none}}
 .rep-stick{position:sticky;top:0;z-index:5;background:var(--cream);margin:-16px -16px 12px;padding:14px 16px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow-sm)}
 .rep-stick .subtabs{margin-bottom:0}
+/* Reports tab Summary/Generate toggle + the inline PDF catalogue (build 3.0 merge) */
+.rep-mode{margin:0 0 12px}
+.rep-mode .subtab{flex:1;justify-content:center;text-align:center}
+.hub-list.hub-inline{padding:8px 0 24px;overflow:visible;flex:none}
 .rcard.is-hidden{display:none}
 .rcard>summary .stat{margin-left:auto;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;line-height:1.3;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200)}
 .rcard>summary::after{margin-left:8px}
@@ -870,7 +874,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
               <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
               PDF
             </button>
-            <button class="brief-share" onclick="if(window.SaagarReport)SaagarReport.openHub();else shareTodayBrief()" title="Open Reports hub — generate any report as PDF">
+            <button class="brief-share" onclick="if(window.SaagarReport)openReportsGen();else shareTodayBrief()" title="Open the Reports tab to build &amp; send a PDF">
               <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
               Reports
             </button>
@@ -931,9 +935,14 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
     <section class="view" id="reportsView">
       <div class="page-head">
         <h2>Reports</h2>
-        <p class="sub">Cross-module rollups computed from your saved data. Tap a card to expand.</p>
+        <p class="sub">Glance at the numbers, or build &amp; send a PDF — both in one place.</p>
+      </div>
+      <div class="subtabs rep-mode" id="repModeTabs">
+        <button class="subtab active" data-mode="summary" onclick="setReportMode('summary')">📊 Summary</button>
+        <button class="subtab" data-mode="generate" onclick="setReportMode('generate')">📄 Generate / Send</button>
       </div>
       <div id="reportsList"></div>
+      <div id="reportsGen" hidden></div>
     </section>
 
     <!-- ────── SETTINGS ────── -->
@@ -1302,7 +1311,7 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-05-17";
 const APP_VERSION = "V5";
-const APK_BUILD = "2.9";
+const APK_BUILD = "3.0";
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2"], prefix: [] },
@@ -1377,7 +1386,7 @@ let activeView = "home";
 let viewHistory = [];   // tabs the user navigated through (most-recent last) — drives Android hardware-back
 let _backSkipHistory = false;   // set true by the back handler so switchView doesn't re-push the popped entry
 let activeConfigTab = "employees";
-let repScope = "daily"; let repDate = ""; let repMonth = "";
+let repScope = "daily"; let repDate = ""; let repMonth = ""; let repMode = "summary";
 let activeCategory = "All";
 let activeModuleId = null;
 let isAdmin = false;
@@ -2425,6 +2434,17 @@ function repDateLabel(d){ try{ return new Date(d+'T00:00:00').toLocaleDateString
 
 function renderReports(){
   const host = $('reportsList'); if(!host) return;
+  const gen = $('reportsGen');
+  /* Reports tab has two modes: Summary (on-screen rollup cards) and Generate (the PDF
+     factory rendered inline). Reflect the toggle, then route to the right renderer. */
+  document.querySelectorAll('#repModeTabs .subtab').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-mode')===repMode); });
+  if(repMode==='generate'){
+    host.hidden = true;
+    if(gen){ gen.hidden = false; if(window.SaagarReport && SaagarReport.renderInline) SaagarReport.renderInline('reportsGen'); }
+    return;
+  }
+  host.hidden = false;
+  if(gen){ gen.hidden = true; gen.innerHTML = ''; }   /* clear inline copy so its ids can't shadow the modal hub */
   if(!repDate) repDate = todayIso();
   if(!repMonth) repMonth = monthIso();
   const isDaily = repScope==='daily';
@@ -2457,6 +2477,8 @@ function renderReports(){
   updateRepCount();
 }
 function setReportScope(s){ repScope = (s==='monthly')?'monthly':'daily'; renderReports(); }
+function setReportMode(m){ repMode = (m==='generate')?'generate':'summary'; renderReports(); }
+function openReportsGen(){ repMode = 'generate'; switchView('reports'); }
 function setRepDate(v){ if(v) repDate = v; renderReports(); }
 function setRepMonth(v){ if(v) repMonth = v; renderReports(); }
 /* ── Reports redesign: search-filter the on-screen cards + a thumb-zone period stepper (UI only) ── */
@@ -4109,16 +4131,22 @@ function showMainView(){
    Without this, every press of the system Back triggers Capacitor's default = exit-app
    (which is the "tap Back → goes straight to Home/exits" bug the owner reported).
    Levels, top-most wins:
-     L3 modal open      → close the modal, stay on screen
-     L2 module open     → return to the tab the user came from (showMainView)
-     L1 non-home tab    → previous tab from viewHistory, else Home
-     L0 Home tab        → "Press back again to exit" (2-second window, like WhatsApp)        */
+     L3 modal open          → close the modal, stay on screen
+     L2 module open         → return to the tab the user came from (showMainView)
+     L1b Reports/Generate   → return to the Reports Summary view (not out of the tab)
+     L1 non-home tab        → previous tab from viewHistory, else Home
+     L0 Home tab            → "Press back again to exit" (2-second window, like WhatsApp)    */
 (function () {
   var lastExitPrompt = 0;
   function isModalOpen() { var b = document.getElementById('modalBackdrop'); return !!(b && !b.classList.contains('hidden')); }
   function handleBack() {
     if (isModalOpen()) { try { closeModal(); } catch (e) {} return; }
     if (activeModuleId) { try { showMainView(); } catch (e) {} return; }
+    // Reports tab in Generate mode → Back returns to the Summary view, not out of the tab.
+    if (activeView === 'reports' && typeof repMode !== 'undefined' && repMode === 'generate') {
+      try { setReportMode('summary'); } catch (e) {}
+      return;
+    }
     if (activeView !== 'home') {
       var prev = viewHistory.length ? viewHistory.pop() : 'home';
       _backSkipHistory = true;
