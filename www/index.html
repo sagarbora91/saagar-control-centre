@@ -4188,6 +4188,32 @@ function seedModuleFromMaster(id){
     }
   }catch(e){}
 }
+/* Perf: building a module's iframe document = base64-decode (up to ~180 KB) +
+   seven string-rewrite passes. That output is deterministic per module (mobile
+   vs desktop is a runtime class toggle, and live data is read from storage at
+   iframe boot — neither is baked in), so build it once and reuse it. This turns
+   every later open / switch / reload into a cache hit; the iframe still re-mounts
+   each time, so the module always boots with fresh data. */
+const __moduleSrcCache = Object.create(null);
+function buildModuleSrc(mod){
+  if(__moduleSrcCache[mod.id]) return __moduleSrcCache[mod.id];
+  const built = injectIframeShim(
+    injectSafetyNet(
+      injectMobileMode(
+        injectUniformCSS(
+          injectModuleAuditBridge(
+            injectEmployeeAssist(
+              injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
+              mod.id
+            ), mod.id
+          )
+        ), mod.id
+      )
+    )
+  );
+  __moduleSrcCache[mod.id] = built;
+  return built;
+}
 function openModule(id){
   const mod = moduleById(id); if(!mod) return;
   if(!ensureModuleAccess(id)) return;
@@ -4215,20 +4241,9 @@ function openModule(id){
       // and ahead of the audit bridge. That guarantees module code + the audit bridge's instance-
       // level localStorage override both see the shimmed Storage.prototype already in place. The
       // shim self-guards on parent.SaagarStore.enabled, so when the flag is OFF it is a pure no-op.
-      __f.srcdoc = injectIframeShim(
-        injectSafetyNet(
-          injectMobileMode(
-            injectUniformCSS(
-              injectModuleAuditBridge(
-                injectEmployeeAssist(
-                  injectModuleHideCSS(injectBackHome(decodeHtml(mod.html_b64), mod.title, mod.id), mod.id),
-                  mod.id
-                ), mod.id
-              )
-            ), mod.id
-          )
-        )
-      );
+      // buildModuleSrc memoises this whole chain per module (see above): first open pays the cost,
+      // every later open / switch / reload is a cache hit.
+      __f.srcdoc = buildModuleSrc(mod);
     }catch(e){
       __f.srcdoc = `<h1 style="font-family:DM Sans,sans-serif;color:#b91c1c">Could not open module</h1><p>${escapeHtml(e.message)}</p>`;
       __hide();
@@ -4645,6 +4660,40 @@ document.addEventListener('keydown', e => {
   if((e.ctrlKey||e.metaKey) && e.key==='4'){ e.preventDefault(); switchView('config'); }
 });
 
+/* ── Hardware back button (Android) ─────────────────────────────────────────
+   Without a backButton listener, Capacitor exits the whole app on every
+   hardware / gesture Back. Walk a priority stack instead so Back behaves the
+   way users expect: close an open sheet → leave an open module to Home →
+   switch to the Home tab → press Back twice to send the app to the background.
+   (Deep "back one screen" INSIDE a module is a later step — it needs each
+   module to acknowledge an ST_BACK message; until then, Back from any module
+   reliably lands on Home instead of dumping the user out of the app.) */
+let __lastBackPress = 0;
+function handleHardwareBack(){
+  // 1) Shell modal / bottom-sheet open? close it.
+  var mb = document.getElementById('modalBackdrop');
+  if(mb && !mb.classList.contains('hidden')){ try{ closeModal(); }catch(e){} return; }
+  // 2) A module is open? return to Home.
+  if(activeModuleId){ try{ showMainView(); }catch(e){} return; }
+  // 3) Not on the Home tab? go Home.
+  if(activeView && activeView !== 'home'){ try{ switchView('home'); }catch(e){} return; }
+  // 4) Home root: press Back twice within 1.5 s to background the app.
+  var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+  if(Date.now() - __lastBackPress < 1500){
+    try{ if(App && App.minimizeApp) App.minimizeApp(); else if(App && App.exitApp) App.exitApp(); }catch(e){}
+  } else {
+    __lastBackPress = Date.now();
+    try{ toast('Press back again to exit'); }catch(e){}
+  }
+}
+function installHardwareBack(){
+  try{
+    var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+    if(!App || !App.addListener) return;            // not inside the APK (e.g. browser) — no-op
+    App.addListener('backButton', function(){ handleHardwareBack(); });
+  }catch(e){}
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════════════════════════════ */
@@ -4676,6 +4725,7 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
   isAdmin = safeGet(ADMIN_MODE_KEY)==='true';
   applyMode();
   reflectUiModeUI();
+  installHardwareBack();
 
   // Validate modules array (no storage dependency — synchronous build-error guard).
   if(!Array.isArray(MODULES) || !MODULES.length){
@@ -4729,7 +4779,7 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 <script src="fonts/DMSans-bold.js"></script>
 <!-- pdf.js (vendored, offline) — renders the generated report PDF for the in-app exact preview -->
 <script src="pdf.min.js"></script>
-<script>try{ if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc='pdf.worker.min.js'; } }catch(e){}</script>
+<script>try{ if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdf.worker.min.js', document.baseURI || location.href).href; } }catch(e){}</script>
 <script src="saagar-report.js"></script>
 
 <!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════

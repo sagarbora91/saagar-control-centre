@@ -1117,7 +1117,7 @@
       var note = this._readinessNote(type, opts);
       if (!window.pdfjsLib || !pdfjsLib.getDocument) { scroll.innerHTML = (note ? '<div class="pp-note">' + esc(note) + '</div>' : '') + '<div class="pp-status">Preview not available on this device — use Save or Send to get the PDF.</div>'; return; }
       var url = URL.createObjectURL(blob);
-      pdfjsLib.getDocument(url).promise.then(function (pdf) {
+      function paint(pdf) {
         scroll.innerHTML = note ? '<div class="pp-note">' + esc(note) + '</div>' : '';
         var n = pdf.numPages;
         function page(i) {
@@ -1134,9 +1134,18 @@
           });
         }
         page(1);
-      }).catch(function (e) {
+      }
+      function fail(e) {
         scroll.innerHTML = (note ? '<div class="pp-note">' + esc(note) + '</div>' : '') + '<div class="pp-status">Preview failed (' + esc((e && e.message) || e) + ') — use Save or Send.</div>';
         try { URL.revokeObjectURL(url); } catch (_) {}
+      }
+      // Try the normal web-worker path first; if the worker can't start in the
+      // offline WebView, retry once on the main thread before giving up — so the
+      // preview (and the Print that renders these canvases) works regardless of
+      // how the device handles the pdf.js worker.
+      pdfjsLib.getDocument({ url: url }).promise.then(paint).catch(function () {
+        try { pdfjsLib.getDocument({ url: url, disableWorker: true }).promise.then(paint).catch(fail); }
+        catch (e2) { fail(e2); }
       });
     },
     savePreview: function () { if (this._pp && this._pp.blob) { try { this._logReport(this._pp.type, 'save', this._pp.opts); } catch (e) {} return this._saveBlob(this._pp.blob, this._pp.fname); } },
