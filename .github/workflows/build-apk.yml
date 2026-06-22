@@ -47,9 +47,12 @@ jobs:
           GR=android/app/build.gradle
           # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
+          # Disable Android auto-backup so payroll/customer data is never copied out
+          sed -i -E 's/android:allowBackup="true"/android:allowBackup="false"/' "$MF" || true
+          echo "----- allowBackup disabled in $MF -----"
           # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 11/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.7"/' "$GR" || true
+          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 12/' "$GR" || true
+          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.8"/' "$GR" || true
           echo "----- AndroidManifest permissions -----"
           grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
           echo "----- versioning -----"
@@ -93,8 +96,14 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.7) - CLEAN (report packs + history)"
+          name: "Saagar Control Centre - V5 (build 2.8) - CLEAN (report packs + history)"
           body: |
+            **New in 2.8 - reliability fixes:**
+            - The phone Back button now moves back within the app instead of closing it.
+            - Report & Payroll PDFs preview and print correctly offline (pdf.js worker fix) — Save now opens the PDF.
+            - Opening and switching modules is much faster (each module is now cached, not rebuilt every time).
+            - Data backup is disabled for privacy (payroll/customer data no longer copied out by Android backup).
+
             Fully offline Android build - Control Centre **V5 shell, build 2.7 (CLEAN)**.
 
             This is a **clean, empty production build** - it starts with NO data, ready for your

@@ -1093,6 +1093,13 @@
        is unchanged — this only renders the same blob on-screen and adds save/print delivery. ── */
     preview: function (type, opts) {
       var self = this, el = function (i) { return document.getElementById(i); };
+      opts = opts || {};
+      // Salary slip needs ONE employee. fromHub('payrollSlip') passes no empId/empIndex,
+      // so without a pick we'd silently emit the first employee — instead show a chooser
+      // and let the tap re-enter preview() with the chosen empId.
+      if (type === 'payrollSlip' && !opts.empId && opts.empIndex == null) {
+        return this._payrollChooser(opts);
+      }
       self._pp = { type: type, opts: opts, blob: null, fname: filename(type, opts) };
       try { self._logReport(type, 'view', opts); } catch (e) {}
       var title = (META[type] ? META[type].title : 'Report');
@@ -1111,6 +1118,35 @@
       }).catch(function (e) {
         var s = el('ppScroll'); if (s) s.innerHTML = '<div class="pp-status">Could not build report: ' + esc((e && e.message) || e) + '</div>';
       });
+    },
+    /* Salary-slip employee chooser — rendered inside the preview modal when no employee
+       was specified. Picking a row re-enters preview('payrollSlip', {…opts, empId}). */
+    _payrollChooser: function (opts) {
+      var self = this, el = function (i) { return document.getElementById(i); };
+      var rows = [];
+      try { var p = JSON.parse(localStorage.getItem('payroll_suite_v1_2026')); rows = (p && Array.isArray(p.rows)) ? p.rows : []; } catch (e) {}
+      self._ppPick = opts;   // forward the (date/month/etc.) opts to the chosen-employee preview
+      if (el('modalTitle')) el('modalTitle').textContent = 'Salary Slip — choose employee';
+      var listHtml = !rows.length
+        ? '<p class="hub-help">No employees found in this month’s payroll.</p>'
+        : '<div class="hub-sec" style="margin-top:6px">' + rows.map(function (r, i) {
+            var key = (r && r.empId != null && r.empId !== '') ? String(r.empId) : '';
+            var arg = key ? ("'" + key.replace(/'/g, "\\'") + "'") : i;   // empId when present, else row index
+            return '<div class="hub-row" role="button" tabindex="0" onclick="SaagarReport._payrollPick(' + arg + ')">'
+              + '<span class="ico">🧾</span>'
+              + '<span class="ttl">' + esc((r && r.name) || 'Employee ' + (i + 1)) + '</span>'
+              + '<span class="go" style="color:var(--muted)">' + esc((r && r.empId) || '—') + '</span></div>';
+          }).join('') + '</div><p class="hub-help">Tap an employee to build their salary slip.</p>';
+      if (el('modalBody')) el('modalBody').innerHTML = '<div class="pp-wrap"><div class="pp-scroll" id="ppScroll">' + listHtml + '</div></div>';
+      var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('hub-sheet'); mc.classList.add('pdf-sheet'); }
+      if (window.openModal) window.openModal();
+    },
+    _payrollPick: function (sel) {
+      var opts = this._ppPick || {};
+      var next = (typeof sel === 'number') ? { empIndex: sel } : { empId: sel };
+      var merged = {}; for (var k in opts) { if (Object.prototype.hasOwnProperty.call(opts, k)) merged[k] = opts[k]; }
+      merged.empIndex = next.empIndex; merged.empId = next.empId;
+      return this.preview('payrollSlip', merged);
     },
     _renderPdf: function (blob, type, opts) {
       var scroll = document.getElementById('ppScroll'); if (!scroll) return;
@@ -1157,7 +1193,11 @@
         return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(blob); })
           .then(function (b64) { return c.FS.writeFile({ path: 'SaagarBCC-Reports/' + fname, data: b64, directory: 'DOCUMENTS', recursive: true }); })
           .then(function () { try { toast('Saved to Documents › SaagarBCC-Reports › ' + fname); } catch (e) {} })
-          .catch(function (e) { try { toast('Save failed: ' + ((e && e.message) || e)); } catch (_) {} });
+          // No file-opener plugin offline — hand the saved file to the OS share sheet
+          // so the user can open it in their PDF viewer (or share it onward).
+          .then(function () { return c.FS.getUri({ directory: 'DOCUMENTS', path: 'SaagarBCC-Reports/' + fname }); })
+          .then(function (r) { return c.Share.share({ title: fname, text: fname, files: [r.uri], dialogTitle: 'Open or share the PDF' }); })
+          .catch(function (e) { var m = (e && e.message) || String(e); if (!/cancel/i.test(m)) { try { toast('Save failed: ' + m); } catch (_) {} } });
       }
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
