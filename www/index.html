@@ -852,6 +852,9 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
         <div id="actingAsWrap" class="sub" style="margin-top:7px"></div>
       </div>
 
+      <!-- Date switcher (view a previous day's data; read-only when in the past) -->
+      <div id="homeDateBar"></div>
+
       <!-- Today's Brief -->
       <div class="brief">
         <div class="brief-head">
@@ -1385,6 +1388,47 @@ function toast(msg){
 }
 function todayIso(){ return new Date().toISOString().slice(0,10); }
 function monthIso(){ return new Date().toISOString().slice(0,7); }
+/* ── DATE NAVIGATION (Phase 0 foundation) ──────────────────────────────────
+   App-level "selected date" so the shell (and, in later phases, each module)
+   can show a PREVIOUS day's data. Local-time (not UTC) to match how modules
+   day-stamp their records, avoiding an off-by-one near midnight. Persisted so
+   it survives reloads; always clamped to today (no future). Past dates are
+   VIEW-ONLY by design — the read surfaces below just re-render for the date. */
+function localIso(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function localMonth(){ return localIso().slice(0,7); }
+const SELECTED_DATE_KEY='saagar_selected_date';
+let appSelectedDate=(function(){ try{ var v=safeGet(SELECTED_DATE_KEY); return /^\d{4}-\d{2}-\d{2}$/.test(v||'')?v:localIso(); }catch(e){ return localIso(); } })();
+function viewDate(){ return appSelectedDate||localIso(); }
+function isViewingToday(){ return viewDate()===localIso(); }
+function setSelectedDate(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d||'')) return;
+  if(d>localIso()) d=localIso();                 // clamp: never the future
+  appSelectedDate=d;
+  try{ safeSet(SELECTED_DATE_KEY,d); }catch(e){}
+  try{ reflectSelectedDate(); }catch(e){}        // refresh the switcher chrome
+  try{ applyDateToFrame(); }catch(e){}           // tell an open module iframe
+  if(!activeModuleId && activeView==='home'){ try{ renderHome(); }catch(e){} }
+}
+function stepSelectedDate(delta){ var b=new Date(viewDate()+'T12:00:00'); b.setDate(b.getDate()+delta); var s=b.getFullYear()+'-'+String(b.getMonth()+1).padStart(2,'0')+'-'+String(b.getDate()).padStart(2,'0'); if(s>localIso()) return; setSelectedDate(s); }
+function resetSelectedToday(){ setSelectedDate(localIso()); }
+function selectedDateLabel(){ try{ return new Date(viewDate()+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:(viewDate().slice(0,4)!==localIso().slice(0,4)?'numeric':undefined)}); }catch(e){ return viewDate(); } }
+/* Render the Home date switcher (reuses the Reports stepper's .rpt-period look). When a
+   PAST date is selected the bar turns amber + shows "Back to today" — the unmissable
+   read-only signal. The whole centre is a tap target over a native date picker (max=today). */
+function reflectSelectedDate(){
+  var host=document.getElementById('homeDateBar'); if(!host) return;
+  var today=isViewingToday();
+  host.className='rpt-period';
+  host.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:12px'+(today?'':';background:var(--amber-pale);border:1px solid #fde68a;border-radius:12px;padding:8px 10px');
+  host.innerHTML=
+    '<button class="rpt-step" type="button" onclick="stepSelectedDate(-1)" aria-label="Previous day">‹</button>'+
+    '<div class="valwrap" style="flex:1">'+
+      '<div class="val" id="selDateLabel">'+(today?'📅 Today':'🔒 '+escapeHtml(selectedDateLabel())+' · viewing past')+'</div>'+
+      '<input type="date" value="'+viewDate()+'" max="'+localIso()+'" onchange="setSelectedDate(this.value)" aria-label="Pick a date to view">'+
+    '</div>'+
+    '<button class="rpt-step" type="button" onclick="stepSelectedDate(1)" aria-label="Next day"'+(today?' disabled':'')+'>›</button>'+
+    (today?'':'<button class="btn small" type="button" onclick="resetSelectedToday()" style="white-space:nowrap">Back to today</button>');
+}
 function fmtDate(v){ if(!v) return 'Never'; try { return new Date(v).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}); } catch(e){ return String(v); } }
 function fmtDateShort(v){ try { return new Date(v).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); } catch(e){ return String(v||'').slice(0,10); } }
 function fmtSyncTime(v){ if(!v) return '—'; try { return new Date(v).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); } catch(e){ return ''; } }
@@ -2192,7 +2236,7 @@ const EXC_AREA_TO_MODULE = { 'Floor gate':'grooming', 'QMS':'qms', 'Stock':'stoc
    .rcard collapsible + buildTodayBrief() so almost no new reads. Each row taps into its module. */
 function renderTodayRun(){
   const host = $('todayRunHost'); if(!host) return;
-  const t = todayIso();
+  const t = viewDate();
   const b = buildTodayBrief(t);
   let gate=null; try{ gate=(window.SaagarBridge&&SaagarBridge.status&&SaagarBridge.status().gate)||null; }catch(e){}
   if(!gate) gate = tryJSON(safeGet('saagar_gate_status')) || {blocked:[]};
@@ -2231,8 +2275,9 @@ function renderHome(){
   applyMode();
 
   // Brief
-  const b = buildTodayBrief();
-  if($('briefDate')) $('briefDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short', day:'2-digit', month:'short'});
+  reflectSelectedDate();
+  const b = buildTodayBrief(viewDate());
+  if($('briefDate')) $('briefDate').textContent = new Date(viewDate()+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short', day:'2-digit', month:'short'});
   const briefStats = [
     [b.serviceOpen, 'open jobs', 'service'],
     [b.groomingTodayChecks, 'grooming checks', 'grooming'],
@@ -4115,6 +4160,7 @@ function isModuleDirty(){
 }
 function navigateToModule(id, date){
   if(!id) return;
+  if(date && /^\d{4}-\d{2}-\d{2}$/.test(date)) setSelectedDate(date);   // finish the deep-link date rail
   if(id===activeModuleId){ openModule(id); return; }
   if(activeModuleId && isModuleDirty()){
     if(!confirm('Leave this screen? Unsaved entries will be lost.')) return;
@@ -4233,7 +4279,7 @@ function openModule(id){
     // Hide the loader when the iframe ACTUALLY finishes loading (heavy modules like Payroll keep
     // painting well past a fixed 300ms timer — the old fixed timeout caused a blank/half-rendered
     // flash that felt like a freeze). 4s safety net in case no load event fires.
-    try{ __f.addEventListener('load', __hide, { once:true }); }catch(e){}
+    try{ __f.addEventListener('load', function(){ __hide(); try{ applyDateToFrame(); }catch(_){} }, { once:true }); }catch(e){}
     setTimeout(__hide, 4000);
     try{
       // Option C: injectIframeShim is the OUTERMOST wrapper so its script element is prepended to
@@ -4564,7 +4610,7 @@ html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
 function injectMobileMode(html, moduleId){
   const mid = JSON.stringify(String(moduleId));
   const css = '<style id="st-v5-mobile-css">'+MOBILE_CSS+'</style>';
-  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});window.addEventListener("message",function(e){if(e&&e.data&&e.data.type==="ST_UI_MODE")ap(e.data.mode);});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
+  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
   const frag = css + boot;
   if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+frag);
   if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, frag+'\n</head>');
@@ -4709,6 +4755,11 @@ function applyUiModeToFrame(){
     if(d&&d.documentElement) d.documentElement.classList.toggle('bcc-mobile', getUiMode()==='mobile');
     try{ if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_UI_MODE',mode:getUiMode()},'*'); }catch(e){}
   }catch(e){}
+}
+/* Phase 0 date rail — broadcast the viewed date to an open module iframe. Modules opt in
+   later (Phases 1-3) via window.__stAsOf / the 'st-date' event; dormant no-op until then. */
+function applyDateToFrame(){
+  try{ var f=$('moduleFrame'); if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_SET_DATE',date:viewDate()},'*'); }catch(e){}
 }
 function reflectUiModeUI(){ var m=getUiMode();
   try{ document.documentElement.classList.toggle('bcc-mobile', m==='mobile'); }catch(e){}
