@@ -734,7 +734,13 @@ html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
 <script>(function(){
 var DEMO_SEED_ENABLED = false;   /* BUILD FLAG: false = CLEAN build (empty, ready for real shop data). The 1-year TEST build flips this to true. */
 try{ if(window.__FORCE_DEMO_SEED === true) DEMO_SEED_ENABLED = true; }catch(e){}   /* test harnesses (e.g. _6mo_qa) force-enable seeding */
-if(!DEMO_SEED_ENABLED) return;   /* clean build: no dummy data is ever loaded */
+/* HARD PRODUCTION SEED-GUARD (additive): collapse the flag to a strict boolean and ONLY ever proceed when it
+   is explicitly true. Demo data in a production build must be structurally impossible even if the flag/override
+   were set to a truthy non-boolean (1, "true", {}). This changes NO seeding behavior — the TEST build still sets
+   DEMO_SEED_ENABLED=true (a real boolean) and seeds exactly as before; it only slams the door on every other value. */
+var __DEMO_SEED_ACTIVE = (DEMO_SEED_ENABLED === true);
+try{ window.__DEMO_SEED_ACTIVE = __DEMO_SEED_ACTIVE; }catch(e){}   /* read-only marker for the in-app build badge / About (additive) */
+if(!__DEMO_SEED_ACTIVE) return;   /* clean / production build: no dummy data is ever loaded — the ONLY path that continues is flag===true */
 try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 50; }catch(e){}   /* 1-year scale when seeding is on (any harness override already set wins) */
 if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='demo-seed.js';document.head.appendChild(s);});}
 else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag */
@@ -970,6 +976,49 @@ html.bcc-mobile body[data-view="home"] .main{display:block}
 html.bcc-mobile body[data-view="home"] #todayView{position:static;display:none;max-height:none;overflow:visible}
 html.bcc-mobile #todayView.active{display:block}
 </style>
+<style id="st-shell-features">
+/* ═══════════════════════════════════════════════════════════════════════
+   ADDITIVE SHELL FEATURES — build badge, universal feature-search results,
+   module-load error affordance. Tokens only (navy/gold/grays/radius/fonts).
+   Nothing here overrides a redesign rule; all selectors are new ids/classes.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Build badge (topbar corner) */
+.build-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;
+  font:800 10px/1 var(--font-sans);letter-spacing:.07em;text-transform:uppercase;flex:none;
+  border:1px solid transparent;box-shadow:var(--shadow-sm);user-select:none}
+.build-badge[hidden]{display:none}
+.build-badge.demo{background:var(--gold-pale);color:var(--gold);border-color:#efe2b8}
+.build-badge.test{background:var(--navy);color:var(--gold-light);border-color:var(--navy)}
+.build-badge.prod{background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200)}
+@media(max-width:380px){.build-badge{display:none}}   /* keep tiny phones uncluttered */
+
+/* Universal feature-search results — grouped, beneath the module tiles */
+.feat-group{margin-top:6px}
+.feat-group .feat-count{display:inline-block;margin-left:6px;font:800 11px var(--font-sans);color:var(--gold);
+  background:var(--gold-pale);border:1px solid #efe2b8;border-radius:999px;padding:1px 7px;vertical-align:middle}
+.feat-modgrp{margin:0 0 10px}
+.feat-modgrp-h{font:800 11px/1 var(--font-sans);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--gray-500);margin:8px 2px 6px}
+.feat-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;min-height:48px;
+  padding:9px 12px;margin-bottom:7px;background:var(--paper);border:1px solid var(--gray-200);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);color:var(--navy);font:inherit;cursor:pointer;
+  transition:transform .12s,border-color .12s}
+.feat-row:hover{border-color:var(--gold)}
+.feat-row:active{transform:scale(.99);background:var(--gray-50)}
+.feat-row .feat-ic{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;
+  font-size:16px;background:var(--gold-pale);border:1px solid #efe2b8}
+.feat-row .feat-lbl{flex:1;min-width:0;font:600 14px var(--font-sans);line-height:1.25}
+.feat-row .feat-go{flex:none;color:var(--gold);font-size:18px;line-height:1}
+
+/* Module-load error affordance — overlays the frame exactly where the loader sat */
+.mod-load-error{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;gap:12px;
+  align-items:center;justify-content:center;width:100%;height:100%;
+  background:var(--cream);border:0;cursor:pointer;font:inherit;color:var(--navy);padding:24px;text-align:center}
+.mod-load-error.on{display:flex}
+.mod-load-error .mle-ic{font-size:34px;line-height:1}
+.mod-load-error .mle-txt{font:700 15px var(--font-sans);color:var(--navy)}
+.mod-load-error::after{content:'Tap anywhere to try again';font:600 12px var(--font-sans);color:var(--gray-500)}
+</style>
 </head>
 <body>
 
@@ -991,6 +1040,7 @@ html.bcc-mobile #todayView.active{display:block}
       </div>
     </div>
     <div class="top-actions">
+      <span id="buildBadge" class="build-badge" title="Build flavor" hidden></span>
       <select id="roleSelect" class="role-select" onchange="setCurrentRole(this.value)" title="Current role (device)" aria-label="Current role"></select>
       <button class="icon-btn" id="uiModeBtn" onclick="toggleUiMode()" title="Switch Mobile / Desktop layout"><span id="uiModeIcon">📱</span></button>
       <button class="icon-btn" onclick="shareTodayBrief()" title="Share today's brief">
@@ -1372,6 +1422,7 @@ html.bcc-mobile #todayView.active{display:block}
           App ID: <code>com.saagartraders.bcc</code><br>
           Shell version: <span id="aboutShell">V5</span><br>
           APK build: <span id="aboutBuild">1.2</span><br>
+          Build flavor: <span id="aboutFlavor">—</span><br>
           Modules: <span id="aboutModuleCount">—</span> embedded<br>
           Build date: <span id="aboutDate">—</span></p>
         </div>
@@ -2655,6 +2706,91 @@ function renderCategoryTabs(){
   ).join('');
 }
 function setCategory(c){ activeCategory = c; renderCategoryTabs(); renderModuleCards(); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   UNIVERSAL FEATURE SEARCH (v1) — additive. The Modules search still filters
+   the module TILES (unchanged); on top of that it now ALSO surfaces FEATURES
+   that live INSIDE modules, grouped/labelled by module. Tapping a feature
+   result opens its module via navigateToModule(); when a `target` is set we
+   forward it (window.__stTarget + an ST_OPEN_FEATURE post on the iframe) for
+   later deep-linking, mirroring the date-rail mechanism. Full per-module target
+   consumption is a LATER pass — for now opening the module (landing on the tab
+   where trivial) is enough. This index is hand-curated; keep labels human.
+   ═══════════════════════════════════════════════════════════════════════ */
+const FEATURE_INDEX = [
+  // ── Payroll ──
+  {label:'Salary advance voucher', keywords:['advance','loan','voucher','salary advance'], module:'payroll', target:'advance'},
+  {label:'Pay-run (process salary)', keywords:['pay run','payrun','process','run payroll','disburse'], module:'payroll', target:'payrun'},
+  {label:'Salary slip / payslip', keywords:['slip','payslip','salary slip','pay slip'], module:'payroll', target:'slip'},
+  {label:'Statutory — PT / PF / ESIC', keywords:['statutory','pt','pf','esic','professional tax','provident'], module:'payroll', target:'statutory'},
+  {label:'Attendance', keywords:['attendance','present','absent','muster','days worked'], module:'payroll', target:'attendance'},
+  {label:'Employees / salary master', keywords:['employee','staff','ctc','gross','salary master','wages'], module:'payroll', target:'employees'},
+  // ── Expense ──
+  {label:'Cash statement', keywords:['cash statement','cash book','cashbook','daybook','day book'], module:'expense', target:'cash'},
+  {label:'Petty cash', keywords:['petty','petty cash','imprest'], module:'expense', target:'petty'},
+  {label:'Month close', keywords:['month close','close month','closing','period close','lock month'], module:'expense', target:'close'},
+  {label:'Budgets', keywords:['budget','budgets','limit','cap','planned spend'], module:'expense', target:'budget'},
+  {label:'Ledger', keywords:['ledger','account','accounts','party ledger'], module:'expense', target:'ledger'},
+  {label:'Vendors', keywords:['vendor','vendors','payee','supplier'], module:'expense', target:'vendors'},
+  // ── Tax ──
+  {label:'GST returns', keywords:['gst','gstr','return','returns','gstr1','gstr3b','3b'], module:'tax', target:'gst'},
+  {label:'Advance tax', keywords:['advance tax','advance','installment','instalment'], module:'tax', target:'advance'},
+  {label:'TDS', keywords:['tds','tcs','deducted at source','challan'], module:'tax', target:'tds'},
+  {label:'Compliance calendar', keywords:['compliance','calendar','due date','due','deadline','filing'], module:'tax', target:'calendar'},
+  // ── Stock ──
+  {label:'Opening stock', keywords:['opening','opening stock','open balance'], module:'stock', target:'opening'},
+  {label:'Closing stock', keywords:['closing','closing stock','close balance'], module:'stock', target:'closing'},
+  {label:'Variance', keywords:['variance','difference','shortage','excess','mismatch'], module:'stock', target:'variance'},
+  {label:'Lock day', keywords:['lock','lock day','freeze','seal','finalise'], module:'stock', target:'lock'},
+  {label:'Inward / sale / transfer', keywords:['inward','sale','transfer','return','movement'], module:'stock', target:'movement'},
+  // ── DSR / CRO Login ──
+  {label:'Daily register', keywords:['daily','register','daily register','dsr','log'], module:'dsr', target:'register'},
+  {label:'Scoring', keywords:['score','scoring','rating','points','performance'], module:'dsr', target:'scoring'},
+  // ── QMS ──
+  {label:'Walk-in', keywords:['walk in','walkin','walk-in','footfall','visitor'], module:'qms', target:'walkin'},
+  {label:'Rotation', keywords:['rotation','rotate','queue','turn','assign'], module:'qms', target:'rotation'},
+  {label:'Follow-ups', keywords:['follow up','followup','follow-up','callback','pending'], module:'qms', target:'followups'},
+  // ── Grooming ──
+  {label:'Grooming checklist', keywords:['checklist','grooming','uniform','appearance','dress'], module:'grooming', target:'checklist'},
+  {label:'Monthly grooming', keywords:['monthly','month','grooming month','summary'], module:'grooming', target:'monthly'},
+  // ── CRO Audit / Store Manager ──
+  {label:'Audit', keywords:['audit','inspection','check','review'], module:'cro_audit', target:'audit'},
+  {label:'Audit dashboard', keywords:['dashboard','overview','audit dashboard','scorecard'], module:'cro_audit', target:'dashboard'},
+  {label:'Audit history', keywords:['history','past','previous','audit history','records'], module:'cro_audit', target:'history'},
+  // ── Leave ──
+  {label:'Leave calendar', keywords:['calendar','leave calendar','schedule','off'], module:'leave', target:'calendar'},
+  {label:'Agendas', keywords:['agenda','agendas','plan','note','reminder'], module:'leave', target:'agendas'},
+  // ── Service ──
+  {label:'New case', keywords:['new case','new job','create case','open case','job card'], module:'service', target:'new'},
+  {label:'Estimate', keywords:['estimate','quote','quotation','cost','charges'], module:'service', target:'estimate'},
+  {label:'Case status', keywords:['status','track','progress','case status','pendency'], module:'service', target:'status'}
+];
+/* Open a feature result: route through navigateToModule (keeps the #5 dirty guard + PIN gating intact),
+   then forward the optional target. Forwarding reuses the date-rail channel: stash __stTargetPending so the
+   freshly-built iframe picks it up on boot, AND post ST_OPEN_FEATURE for an already-open same module.
+   Best-effort only — a module that doesn't yet consume the target simply ignores it (graceful no-op). */
+let __stTargetPending = null;
+function navigateToFeature(moduleId, target){
+  if(!moduleId) return;
+  __stTargetPending = target || null;
+  try{ window.__stTarget = __stTargetPending; }catch(e){}
+  navigateToModule(moduleId);              // opens (or re-opens) the module behind the usual guards
+  if(__stTargetPending) forwardFeatureTarget(__stTargetPending);   // best-effort live post + tab-switch
+}
+function forwardFeatureTarget(target){
+  if(!target) return;
+  try{
+    var f = $('moduleFrame');
+    if(f && f.contentWindow){
+      try{ f.contentWindow.__stTarget = target; }catch(e){}                          // direct ref (same-origin srcdoc)
+      try{ f.contentWindow.postMessage({type:'ST_OPEN_FEATURE', target:target}, '*'); }catch(e){}
+      // Where a module already exposes a tab switcher, best-effort call it by a few common names.
+      try{ var w=f.contentWindow; var fn = w.stOpenFeature || w.switchTab || w.showTab || w.gotoTab;
+        if(typeof fn==='function') fn(target); }catch(e){}
+    }
+  }catch(e){}
+}
+
 /* MODULES TILE GRID — 3-per-row tappable tiles grouped under light category headers.
    Display labels honour the registry renames (cro_audit→Store Manager, dsr→CRO Login).
    Filtering kept simple: name/keyword over title+short+subtitle+summary+category. The
@@ -2675,6 +2811,33 @@ function moduleTileHTML(m){
       <span class="mt-dot"></span>
     </button>`;
 }
+/* Build the "Features" result block for the universal search. Returns '' when there is no query.
+   A feature matches when the query hits its label or any keyword; its module must also pass the
+   active-category filter so a category tab still scopes results. Grouped under each module's name. */
+function featureResultsHTML(q){
+  if(!q) return '';
+  const hits = FEATURE_INDEX.filter(f=>{
+    const m = moduleById(f.module);
+    if(!m) return false;
+    if(!(activeCategory==='All' || m.category===activeCategory)) return false;
+    if(f.label.toLowerCase().includes(q)) return true;
+    return (f.keywords||[]).some(k=>k.indexOf(q)>=0 || q.indexOf(k)>=0);
+  });
+  if(!hits.length) return '';
+  // Group hits by module, preserving the MODULES order for a stable layout.
+  const byMod = {};
+  hits.forEach(f=>{ (byMod[f.module]=byMod[f.module]||[]).push(f); });
+  const blocks = MODULES.filter(m=>byMod[m.id]).map(m=>{
+    const rows = byMod[m.id].map(f=>
+      `<button class="feat-row" type="button" onclick="navigateToFeature('${f.module}',${f.target?`'${escapeHtml(f.target)}'`:'null'})">
+         <span class="feat-ic">${m.icon}</span>
+         <span class="feat-lbl">${escapeHtml(f.label)}</span>
+         <span class="feat-go">›</span>
+       </button>`).join('');
+    return `<div class="feat-modgrp"><div class="feat-modgrp-h">${escapeHtml(m.short||m.title)}</div>${rows}</div>`;
+  }).join('');
+  return `<div class="mod-group feat-group"><div class="mod-group-h">Features <span class="feat-count">${hits.length}</span></div>${blocks}</div>`;
+}
 function renderModuleCards(){
   const host = $('moduleGrid'); if(!host) return;
   host.classList.add('tilegrid');
@@ -2682,12 +2845,17 @@ function renderModuleCards(){
   const match = m => (!q || (m.title+' '+m.subtitle+' '+m.short+' '+m.summary+' '+m.category).toLowerCase().includes(q))
                   && (activeCategory==='All' || m.category===activeCategory);
   const list = MODULES.filter(match);
+  const featHtml = featureResultsHTML(q);   // universal search: matching in-module features (grouped)
   if($('moduleCountSub')) $('moduleCountSub').textContent = `${MODULES.length} embedded tools · ${list.length} shown`;
-  if(!list.length){ host.innerHTML = `<div class="empty"><span class="em">🔍</span>No modules match your search.</div>`; return; }
+  if(!list.length){
+    // No module TILE matched — still surface any matching features so the search never dead-ends.
+    host.innerHTML = featHtml || `<div class="empty"><span class="em">🔍</span>No modules or features match your search.</div>`;
+    return;
+  }
   // Grouped view only in the default state (All + no search); otherwise a single flat group.
   const grouped = (activeCategory==='All' && !q);
   if(!grouped){
-    host.innerHTML = `<div class="mod-group"><div class="mod-group-h">${q?'Results':escapeHtml(activeCategory)}</div><div class="mod-tiles">${list.map(moduleTileHTML).join('')}</div></div>`;
+    host.innerHTML = `<div class="mod-group"><div class="mod-group-h">${q?'Modules':escapeHtml(activeCategory)}</div><div class="mod-tiles">${list.map(moduleTileHTML).join('')}</div></div>` + featHtml;
     return;
   }
   const seen = {};
@@ -2700,7 +2868,7 @@ function renderModuleCards(){
   // Safety net: any module not covered by a group (e.g. a future id) still shows up.
   const rest = MODULES.filter(m=>!seen[m.id]);
   if(rest.length) htmlOut += `<div class="mod-group"><div class="mod-group-h">More</div><div class="mod-tiles">${rest.map(moduleTileHTML).join('')}</div></div>`;
-  host.innerHTML = htmlOut;
+  host.innerHTML = htmlOut + featHtml;   // featHtml is '' when no search is active → default grouped view unchanged
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -4375,6 +4543,7 @@ function renderAbout(){
   if($('aboutModuleCount')) $('aboutModuleCount').textContent = MODULES.length;
   if($('aboutDate')) $('aboutDate').textContent = BUILD_TIME;
   if($('ownerNameInput')) $('ownerNameInput').value = ownerName();
+  try{ reflectBuildBadge(); }catch(e){}   // keep the About "Build flavor" row + topbar badge in sync
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -4382,6 +4551,7 @@ function renderAbout(){
    ═══════════════════════════════════════════════════════════════════════ */
 function showMainView(){
   activeModuleId = null;
+  try{ hideModuleLoadError(); }catch(e){}
   $('moduleFrame').srcdoc = '';
   $('moduleScreen').classList.add('hidden');
   $('mainContent').style.removeProperty('display');
@@ -4528,6 +4698,7 @@ function openModule(id){
   $('mainContent').style.setProperty('display','none');
   $('moduleScreen').classList.remove('hidden');
   $('botnav').classList.add('hidden');
+  hideModuleLoadError();   // clear any stale "couldn't open" affordance from a previous attempt
   $('loader').classList.remove('hidden');
   setTimeout(()=>{
     const __f = $('moduleFrame');
@@ -4535,9 +4706,15 @@ function openModule(id){
     const __hide=()=>{ if(__hidden)return; __hidden=true; $('loader').classList.add('hidden'); };
     // Hide the loader when the iframe ACTUALLY finishes loading (heavy modules like Payroll keep
     // painting well past a fixed 300ms timer — the old fixed timeout caused a blank/half-rendered
-    // flash that felt like a freeze). 4s safety net in case no load event fires.
-    try{ __f.addEventListener('load', function(){ __hide(); try{ applyDateToFrame(); }catch(_){} }, { once:true }); }catch(e){}
-    setTimeout(__hide, 4000);
+    // flash that felt like a freeze). The normal hide path is the load event below; it is unchanged.
+    try{ __f.addEventListener('load', function(){ if(__safetyTO) clearTimeout(__safetyTO); __hide(); try{ applyDateToFrame(); }catch(_){} try{ __stTargetPending=null; }catch(_){} }, { once:true }); }catch(e){}
+    // Loader fix: the old 4000ms timer SILENTLY revealed a possibly-blank frame, masking a missing load.
+    // Cut the safety net to ~1200ms and, if the load event still hasn't fired by then, surface a real
+    // error affordance ("Couldn't open — tap to retry") instead of pretending it loaded. A genuine load
+    // clears this timer (above), so a normal — even slow-painting — open never trips it.
+    let __safetyTO = setTimeout(function(){ if(__hidden) return; __hide(); showModuleLoadError(id); }, 1200);
+    // A hard iframe error (rare for srcdoc, but cheap to honour) trips the same affordance immediately.
+    try{ __f.addEventListener('error', function(){ if(__hidden) return; if(__safetyTO) clearTimeout(__safetyTO); __hide(); showModuleLoadError(id); }, { once:true }); }catch(e){}
     try{
       // Option C: injectIframeShim is the OUTERMOST wrapper so its script element is prepended to
       // the iframe <head> LAST — making it the FIRST executed script, ahead of injectMobileMode's boot
@@ -4548,11 +4725,30 @@ function openModule(id){
       // every later open / switch / reload is a cache hit.
       __f.srcdoc = buildModuleSrc(mod);
     }catch(e){
+      if(__safetyTO) clearTimeout(__safetyTO);
       __f.srcdoc = `<h1 style="font-family:DM Sans,sans-serif;color:#b91c1c">Could not open module</h1><p>${escapeHtml(e.message)}</p>`;
       __hide();
     }
   }, 50);
 }
+/* Loader error affordance (additive): a brief, dismiss-on-retry overlay shown ONLY when an open never
+   produced a load event within the safety window (or the iframe errored). Retry re-runs openModule for
+   the same id. Lives inside .frame-wrap (created lazily) so it overlays exactly where the loader did. */
+function showModuleLoadError(id){
+  try{
+    const wrap = document.querySelector('#moduleScreen .frame-wrap'); if(!wrap) return;
+    let box = $('moduleLoadError');
+    if(!box){
+      box = document.createElement('button');
+      box.id = 'moduleLoadError'; box.type = 'button'; box.className = 'mod-load-error';
+      wrap.appendChild(box);
+    }
+    box.innerHTML = `<span class="mle-ic">⚠️</span><span class="mle-txt">Couldn't open — tap to retry</span>`;
+    box.onclick = function(){ hideModuleLoadError(); try{ openModule(id); }catch(e){} };
+    box.classList.add('on');
+  }catch(e){}
+}
+function hideModuleLoadError(){ try{ const b=$('moduleLoadError'); if(b){ b.classList.remove('on'); b.onclick=null; } }catch(e){} }
 function reloadModule(){ if(activeModuleId) openModule(activeModuleId); }
 function printModule(){
   try{ $('moduleFrame').contentWindow.focus(); $('moduleFrame').contentWindow.print(); }
@@ -4926,7 +5122,7 @@ html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
 function injectMobileMode(html, moduleId){
   const mid = JSON.stringify(String(moduleId));
   const css = '<style id="st-v5-mobile-css">'+MOBILE_CSS+'</style>';
-  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
+  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
   const frag = css + boot;
   if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+frag);
   if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, frag+'\n</head>');
@@ -5085,6 +5281,32 @@ function reflectUiModeUI(){ var m=getUiMode();
 function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop') return; try{ safeSet(UI_MODE_KEY, mode); }catch(e){} reflectUiModeUI(); applyUiModeToFrame(); try{ toast((mode==='mobile'?'📱 Mobile':'🖥 Desktop')+' layout'); }catch(e){} }
 function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 
+/* ── BUILD BADGE (additive) — reads ONLY existing flags, invents none ──────────
+   DEMO → the demo seeder ran (window.__DEMO_SEED_ACTIVE, published by the seed IIFE
+          from the explicit DEMO_SEED_ENABLED===true flag).
+   TEST → the storage-core engine is forced/active (window.__FORCE_STORAGE_CORE, or
+          SaagarStore.enabled — the runtime signal that storage-core.js's
+          STORAGE_CORE_ENABLED test branch is live). DEMO wins if both are set.
+   PROD → neither. The topbar badge stays hidden for PROD (unobtrusive); About still
+          spells out "Production" for clarity. */
+function buildFlavor(){
+  try{ if(window.__DEMO_SEED_ACTIVE === true) return 'DEMO'; }catch(e){}
+  try{ if(window.__FORCE_STORAGE_CORE === true) return 'TEST'; }catch(e){}
+  try{ if(window.SaagarStore && window.SaagarStore.enabled === true) return 'TEST'; }catch(e){}
+  return 'PROD';
+}
+function reflectBuildBadge(){
+  var fl = buildFlavor();
+  try{
+    var b = $('buildBadge');
+    if(b){
+      if(fl==='PROD'){ b.hidden = true; b.textContent=''; }           // unobtrusive: no chrome in production
+      else{ b.hidden = false; b.textContent = fl; b.className = 'build-badge ' + fl.toLowerCase(); b.title = 'Build flavor: '+fl; }
+    }
+  }catch(e){}
+  try{ var a = $('aboutFlavor'); if(a) a.textContent = (fl==='PROD'?'Production':(fl==='DEMO'?'Demo (seeded sample data)':'Test (storage engine)')); }catch(e){}
+}
+
 (function init(){
   // Restore admin mode from session — kept SYNCHRONOUS (before the whenReady gate) so the
   // shell chrome paints immediately under the boot splash. safeGet reads MEM in C-mode (already
@@ -5092,6 +5314,7 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
   isAdmin = safeGet(ADMIN_MODE_KEY)==='true';
   applyMode();
   reflectUiModeUI();
+  try{ reflectBuildBadge(); }catch(e){}   // show the DEMO/TEST build badge (hidden for PROD)
   installHardwareBack();
 
   // Validate modules array (no storage dependency — synchronous build-error guard).
@@ -5106,6 +5329,7 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
   function doFirstRender(){
     // First render
     populateResetSelect();
+    try{ reflectBuildBadge(); }catch(e){}   // re-evaluate after whenReady (SaagarStore.enabled may finalize here → TEST)
     switchView('home');
 
     // Re-render home every 60s while idle
@@ -5126,6 +5350,29 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
       if(window.SaagarStore && window.SaagarStore.enabled){
         setTimeout(function(){ try{ if(!activeModuleId) qmsArchiveOldCustomers(); }catch(e){} }, 4000);
       }
+    }catch(e){}
+
+    // ── PRE-WARM HEAVY MODULES (additive perf) ──────────────────────────────
+    // After boot, during idle, pre-build the memoised srcdoc for the 2-3 heaviest modules so the user's
+    // FIRST open is a cache hit (buildModuleSrc = base64-decode + 7 rewrite passes; see __moduleSrcCache).
+    // This calls the EXISTING buildModuleSrc cache only — it never changes that function, never mounts an
+    // iframe, and never touches storage. Fully fire-and-forget: any failure is swallowed and simply means
+    // the first open pays the build cost as it does today. requestIdleCallback when available, else a lazy
+    // setTimeout — and each build is sliced into its own idle/timeout tick so we never stall a frame.
+    try{
+      var __warmIds = ['payroll','tax','dsr'];
+      var __warmOne = function(){
+        if(!__warmIds.length) return;
+        var id = __warmIds.shift();
+        try{ var m = moduleById(id); if(m && !__moduleSrcCache[id]) buildModuleSrc(m); }catch(e){}
+        __schedWarm();   // chain the next one on a fresh idle slice
+      };
+      var __schedWarm = function(){
+        if(!__warmIds.length) return;
+        if(typeof window.requestIdleCallback === 'function') window.requestIdleCallback(__warmOne, { timeout: 4000 });
+        else setTimeout(__warmOne, 1500);
+      };
+      __schedWarm();
     }catch(e){}
   }
   if(window.SaagarStore && typeof window.SaagarStore.whenReady === 'function') window.SaagarStore.whenReady(doFirstRender);
