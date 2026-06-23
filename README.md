@@ -1,14 +1,23 @@
-# Saagar Traders — Business Control Centre V4 → Offline Android APK
+# Saagar Traders — Business Control Centre → Offline Android APK
 
-This project packages **`Saagar_Traders_Business_Control_Centre_V4.html`** (with all 9
-modules embedded) into a **fully offline Android app** that stores business data for
-months and writes an automatic daily backup to the phone's **Documents** folder.
+This project packages the **Business Control Centre shell** (`www/index.html`, with all
+**10** business modules base64-embedded) into a **fully offline Android app** that stores
+business data for months and writes an automatic daily backup to the phone's **Documents**
+folder.
 
-- 100% offline — no internet ever required (V4 has zero external resources).
-- All data stays on the phone in the app's private WebView storage (`localStorage`).
+- 100% offline — no internet ever required (the shell has zero external resources).
+- All data stays on the phone in the app's private WebView storage. The app ships with the
+  **SQLite-primary storage engine ("Option C", `storage-core.js`) LIVE** on `main`: an
+  in-memory `Map` is the synchronous source of truth, persisted to an on-device SQLite file
+  via the Capacitor Filesystem plugin, so the old ~5 MB `localStorage` ceiling is gone. See
+  section 5 and **`ARCHITECTURE.md`** for the full storage stack.
 - A dated JSON backup is written every day to `Documents/SaagarBCC-Backups/`
   as a safety net (recover after uninstall / move to a new phone).
-- Nothing about V4's behaviour changes — it is the same app, wrapped natively.
+- The 10 modules behave as they always did — they still call the synchronous `localStorage`
+  API; the storage engine transparently backs that API with SQLite.
+
+> See **`ARCHITECTURE.md`** for how the shell, the base64-embedded modules, the `postMessage`
+> rail, the storage stack, and the cross-module integration bus fit together.
 
 ---
 
@@ -96,16 +105,50 @@ Bundle / APK** wizard does the same thing with a UI.)
 ## 5. Data storage & durability (this is the important part)
 
 **Where the data lives.** Everything you enter (stock, payroll, expenses, staff,
-service jobs, leave, tax, etc.) is stored by V4 in the WebView's `localStorage`,
-inside the app's private data directory. This is **not** browser cache — Android
-treats it as app data, so it survives:
+service jobs, leave, tax, etc.) is stored inside the app's private data directory.
 
-- closing the app, phone restarts, app updates (the origin is pinned to
-  `https://localhost` in `capacitor.config.json` so updates keep the same data),
-- weeks and months of daily use.
+The storage engine is **`storage-core.js` ("Option C", SQLite-primary), and it is LIVE
+on `main`** (`STORAGE_CORE_ENABLED = true`). Once it has booted, the working store is an
+**in-memory `Map` (`MEM`) that is the source of truth**, and the durable persistence layer
+is a **SQLite database** (`sql.js` WebAssembly, exported to a `bcc.sqlite` file via the
+Capacitor Filesystem plugin). Native `localStorage` is no longer the live store after
+boot — modules still call the synchronous `localStorage` API, but the engine overrides
+`Storage.prototype` so those reads/writes hit `MEM`/SQLite. Because the data no longer
+lives in `localStorage` proper, **the old ~5 MB `localStorage` quota no longer applies.**
 
-It is only lost if the app is **uninstalled** or the user taps
-**Settings → Apps → Saagar Control Centre → Storage → Clear storage**.
+Durability / data-safety properties of the engine (see `ARCHITECTURE.md` and the
+`storage-core.js` header for detail):
+
+- **WAL journaling** — every set/remove/clear is written to a small, sequenced
+  synchronous native-`localStorage` write-ahead log first, so a crash before the next
+  SQLite export loses nothing; it is replayed on the next boot.
+- **Atomic file writes** — the SQLite blob is written `.tmp` → rename, and the previous
+  good file is promoted to `.bak` first, so an interrupted write never leaves two bad
+  files. The whole-file export is debounced and also flushed on pause/visibility-hidden.
+- **Corrupt-DB recovery chain** — on boot the engine validates each candidate file with
+  `PRAGMA quick_check` and falls through `live → .tmp → .bak → fresh` so a torn file is
+  rejected rather than adopted. A hard boot timeout falls back to (and later self-heals
+  from) the data hydrated at startup.
+
+`sqlite-store.js` (the older "Design A" durable-mirror engine) **stands down** whenever
+`storage-core.js` is enabled — it detects `window.SaagarStore.enabled` and returns early,
+so only one engine owns `Storage.prototype` and the `bcc.sqlite` file at a time.
+
+> **Flag-comment discrepancy to resolve (surfaced, not judged).** In `storage-core.js`
+> the value is `var STORAGE_CORE_ENABLED = true;`, but the adjacent in-file comment says
+> *"ON in this commit — TEST BRANCH `test/sqlite-on` ONLY … main stays false."* The code
+> value (engine ON) and the comment (claims it should be a test-branch-only flag with
+> `main` false) disagree. This README documents the **actual** value (`true` = engine
+> live). Someone should reconcile the comment with the value — this note only flags the
+> mismatch and does not assert which one is correct.
+
+Like any app data, the on-device data is lost only if the app is **uninstalled** or the
+user taps **Settings → Apps → Saagar Control Centre → Storage → Clear storage** (which
+also clears the `bcc.sqlite` file and the WAL). It otherwise survives closing the app,
+phone restarts, and app updates (the origin is pinned to `https://localhost` in
+`capacitor.config.json` so updates keep the same data), across months of daily use.
+A full device-local **Factory Reset** is exposed via `window.SaagarStore._reset()`
+(awaited, wipes `MEM` + SQLite files + WAL).
 
 **The safety net.** Because those two actions wipe data, the app writes an
 automatic backup every day:
@@ -120,11 +163,11 @@ so they survive an app uninstall and can be copied to a PC or a new phone.
 
 **To restore** (new phone, or after a reset): install the app, open it, go to
 **Configuration → Data & Backup → Restore from JSON**, and pick any
-`backup-….json` file. (V4 already has this Restore feature built in.)
+`backup-….json` file. (The app already has this Restore feature built in.)
 
 **Manual backup any time:** the dev/console command `SaagarBackup.now()` forces an
 immediate backup; `SaagarBackup.status()` shows the last backup date and log.
-The on-screen **Backup** button in V4 also still works.
+The on-screen **Backup** button in the app also still works.
 
 > Tip: once a month, copy the `SaagarBCC-Backups` folder off the phone (USB,
 > Google Drive, WhatsApp to yourself). That is your true long-term archive.
@@ -147,11 +190,13 @@ you simply lose the external safety-net copy, not the live data.
 
 ---
 
-## 7. Updating the app later (new V4 build)
+## 7. Updating the app later (new shell build)
 
-1. Replace `www\index.html` with the new V4 file.
-2. Keep the line `<script src="auto-backup.js"></script>` just before `</body>`
-   (re-add it if the new file doesn't have it).
+1. Replace `www\index.html` with the new shell file (the 10 modules are base64-embedded
+   into its `MODULES` array by the build pipeline).
+2. Keep the storage + backup scripts wired in the same load order (see `ARCHITECTURE.md`):
+   `sql-wasm.js` and `storage-core.js` in `<head>`, and `auto-backup.js` /
+   `sqlite-store.js` near the end of `<body>`. Re-add them if a new file is missing them.
 3. Run `npm run build:apk` and reinstall.
 
 Because the app origin is pinned, **existing on-device data is preserved** across
@@ -164,14 +209,23 @@ the update.
 ```
 SaagarBCC-Android/
 ├── www/
-│   ├── index.html        ← V4 (all 9 modules embedded) + 1 backup line
-│   └── auto-backup.js     ← daily offline backup safety net
-├── capacitor.config.json  ← app id, pinned origin (do not change hostname)
-├── package.json           ← build scripts
-├── build.bat              ← double-click to build the APK
+│   ├── index.html         ← shell (all 10 modules base64-embedded) + storage/backup scripts
+│   ├── storage-core.js    ← LIVE storage engine (Option C: SQLite-primary, MEM source-of-truth)
+│   ├── sqlite-store.js    ← older Design-A mirror engine; stands down when storage-core is on
+│   ├── photo-store.js     ← Filesystem-backed photo API (mechanism only; dormant — not yet wired)
+│   ├── integration-bridge.js ← cross-module event bus (saagar_bus) reconciling the 10 modules
+│   ├── auto-backup.js      ← daily offline JSON backup safety net
+│   └── sql-wasm.js / sql-wasm.wasm ← sql.js WebAssembly (defines initSqlJs)
+├── capacitor.config.json   ← app id, pinned origin (do not change hostname)
+├── package.json            ← build scripts
+├── build.bat               ← double-click to build the APK
+├── ARCHITECTURE.md         ← shell / module / postMessage / storage / bus architecture
 ├── .gitignore
-└── README.md              ← this file
+└── README.md               ← this file
 ```
+
+> The list above shows the load-bearing files for the architecture; `www/` also contains
+> the PDF/report/WhatsApp helper scripts and fonts referenced near the end of `index.html`.
 
 `android/` and `node_modules/` are generated by the build commands and are not
 shipped in this folder.
