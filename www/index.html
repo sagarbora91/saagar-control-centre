@@ -3842,18 +3842,124 @@ function waSend(){
   closeModal();
 }
 
-/* Use Capacitor Share through whatsapp-share.js if present; fallback to download */
-function shareText(text, fileBase){
-  try{
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share){
-      window.Capacitor.Plugins.Share.share({ title:'Saagar Traders', text }).catch(()=>downloadText(fileBase+'.txt', text));
-      return;
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFIED SHELL SHARE HELPER  —  SaagarShare.share(opts)
+   ───────────────────────────────────────────────────────────────────────────
+   One reusable entry point for every SHELL-level share (owner-brief text, the
+   WhatsApp composer, and any future report/file share). Fallback chain, in order:
+
+     1. Capacitor Share plugin   (window.Capacitor.Plugins.Share present — the
+        installed APK). When a file Blob is supplied AND Capacitor Filesystem is
+        available, the file is written to CACHE and attached via Share.share({ files })
+        so the OS share sheet can hand the actual PDF/file to WhatsApp/Drive/etc.;
+        otherwise a text/URL share. A user-cancel is silent (not an error); a real
+        failure falls through to the download/copy step.
+     2. navigator.share          (a browser/WebView that supports Web Share). Shares
+        the file when navigator.canShare({files}) is true, else text/URL. Cancel is
+        silent; failure falls through to download.
+     3. download / copy          (desktop browser, or both of the above unavailable):
+        a Blob/text file is downloaded — today's exact behavior.
+
+   No capability → step 3 → byte-identical to before. This standardises the shell's
+   sharing; it deliberately does NOT touch the in-module payroll whatsapp://wa.me
+   deep links (cross-frame, handled separately) or the modules' own iframe PDF paths.
+
+   opts: { text?, title?, fileBase?, file?, fileName?, toastOnDownload? }
+     - text         : message body (text share / fallback file contents)
+     - title        : share-sheet title (default 'Saagar Traders')
+     - fileBase     : base filename (no extension) for the text-download fallback
+     - file         : a Blob to attach (PDF/JSON/etc.) — when present, step 1/2 try
+                      to share the FILE, and the fallback downloads that blob
+     - fileName     : filename to use for an attached `file` (with extension)
+   Returns a Promise that always resolves (never rejects) so callers stay simple.
+   ═══════════════════════════════════════════════════════════════════════════ */
+window.SaagarShare = (function(){
+  'use strict';
+  function caps(){
+    try {
+      var C = window.Capacitor;
+      if (C && C.Plugins && C.Plugins.Share) {
+        return { Share: C.Plugins.Share, FS: (C.Plugins.Filesystem || null) };
+      }
+    } catch(e){}
+    return null;
+  }
+  function isCancel(e){ var m = (e && e.message) ? e.message : String(e || ''); return /cancel|abort|dismiss/i.test(m); }
+  function blobToB64(blob){
+    return new Promise(function(res, rej){
+      var r = new FileReader();
+      r.onloadend = function(){ var s = String(r.result || ''); var i = s.indexOf(','); res(i >= 0 ? s.slice(i+1) : s); };
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+  }
+  function downloadFallback(opts){
+    try {
+      if (opts.file) {
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(opts.file);
+        a.download = opts.fileName || ((opts.fileBase || 'Saagar') + '.bin');
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ try { URL.revokeObjectURL(a.href); } catch(e){} }, 5000);
+        try { toast('File downloaded'); } catch(e){}
+      } else {
+        downloadText((opts.fileBase || 'Saagar') + '.txt', opts.text || '');
+        if (opts.toastOnDownload !== false) { try { toast('Saved as text file'); } catch(e){} }
+      }
+    } catch(e){}
+    return Promise.resolve();
+  }
+  function share(opts){
+    opts = opts || {};
+    var title = opts.title || 'Saagar Traders';
+    var text  = opts.text || '';
+
+    // ── Step 1: Capacitor Share plugin (installed app) ──────────────────────
+    var c = caps();
+    if (c) {
+      // 1a: attach a real file when we have a Blob AND Filesystem to stage it.
+      if (opts.file && c.FS) {
+        var fname = opts.fileName || ((opts.fileBase || 'Saagar') + '.bin');
+        return blobToB64(opts.file)
+          .then(function(b64){ return c.FS.writeFile({ path: fname, data: b64, directory: 'CACHE' }); })
+          .then(function(){ return c.FS.getUri({ directory: 'CACHE', path: fname }); })
+          .then(function(r){ return c.Share.share({ title: title, text: text, files: [r.uri], dialogTitle: title }); })
+          .catch(function(e){ if (isCancel(e)) return; return downloadFallback(opts); });
+      }
+      // 1b: text/URL share.
+      return Promise.resolve(c.Share.share({ title: title, text: text }))
+        .catch(function(e){ if (isCancel(e)) return; return downloadFallback(opts); });
     }
-  }catch(e){}
-  // Web fallback
-  if(navigator.share){ navigator.share({ title:'Saagar Traders', text }).catch(()=>downloadText(fileBase+'.txt', text)); return; }
-  downloadText(fileBase+'.txt', text);
-  toast('Saved as text file');
+
+    // ── Step 2: Web Share API ───────────────────────────────────────────────
+    try {
+      if (navigator.share) {
+        if (opts.file && typeof File === 'function' && navigator.canShare) {
+          try {
+            var f = new File([opts.file], (opts.fileName || ((opts.fileBase || 'Saagar') + '.bin')), { type: opts.file.type || 'application/octet-stream' });
+            if (navigator.canShare({ files: [f] })) {
+              return Promise.resolve(navigator.share({ title: title, text: text, files: [f] }))
+                .catch(function(e){ if (isCancel(e)) return; return downloadFallback(opts); });
+            }
+          } catch(e){ /* fall through to text share */ }
+        }
+        return Promise.resolve(navigator.share({ title: title, text: text }))
+          .catch(function(e){ if (isCancel(e)) return; return downloadFallback(opts); });
+      }
+    } catch(e){}
+
+    // ── Step 3: download / copy (today's exact behavior) ────────────────────
+    return downloadFallback(opts);
+  }
+  return { share: share };
+})();
+
+/* Thin back-compat wrapper — every existing shell caller (shareTodayBrief, the
+   WhatsApp composer's waSend, …) keeps calling shareText(); it now routes through
+   the unified SaagarShare chain above. Behavior with no Capacitor/Web-Share is the
+   same download-as-.txt as before. */
+function shareText(text, fileBase){
+  return window.SaagarShare.share({ text: text, fileBase: fileBase, title: 'Saagar Traders' });
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -5383,19 +5489,196 @@ function reflectBuildBadge(){
 <!-- ════ APK build addition: offline daily auto-backup safety net ════ -->
 <script src="auto-backup.js"></script>
 
-<!-- ════ APK build addition: WhatsApp / PDF share for every print ════ -->
-<script src="html2pdf.bundle.min.js"></script>
+<!-- ════ APK build addition: LAZY PDF/CANVAS LIBS (load on first use) ════
+     The heavy report/PDF libraries (~2.9 MB: jspdf, jspdf-autotable, the DM Sans
+     PDF font subsets, pdf.js + its worker, and html2pdf which itself bundles
+     html2canvas) used to load EAGERLY here as parser-blocking <script src> tags.
+     They are only needed when the owner actually generates a report / owner-brief
+     PDF or shares a module's print output — i.e. via SaagarReport.* (saagar-report.js)
+     or SaagarShareCurrent (whatsapp-share.js). Booting them eagerly cost startup
+     time and memory on every launch for a feature most launches never touch.
+
+     They now load ON FIRST USE through __SaagarPdfLibs.ensure(), which injects the
+     same local <script> files dynamically and resolves a cached Promise when they
+     are ready. Every shell-level report/PDF/preview/share entry point first
+     `await`s ensure() (see the wrapper block after saagar-report.js loads). If
+     injection or load FAILS, the Promise rejects, a clear error is shown, the
+     cache is cleared so a second attempt RETRIES, and nothing else breaks — the
+     app behaves exactly as before, just without that one report.
+
+     IMPORTANT: the 10 modules each ship their OWN PDF libs inside their iframes
+     (e.g. payroll's salary slip). That in-iframe path is untouched and out of
+     scope — only the SHELL's top-level eager tags move to lazy here. -->
+<script>
+(function(){
+  'use strict';
+  // The exact files that used to be eager top-level <script src> tags, in load order.
+  // Order matters: jspdf first, then the autotable plugin (augments jsPDF's prototype),
+  // then the two DM Sans PDF font subsets (they register into jsPDF at load and early-return
+  // harmlessly if jsPDF isn't there yet — so jspdf MUST precede them, as it does here), then
+  // pdf.js. html2pdf is OPTIONAL: it is only the legacy "screenshot the module's print view"
+  // fallback inside whatsapp-share.js's buildPdf(); the SaagarReport vector engine never needs
+  // it. So a html2pdf load failure must NOT break the report engine — it is loaded best-effort
+  // and excluded from the report-readiness gate (matching a device where it simply isn't there:
+  // whatsapp-share.js already degrades to its "PDF engine not loaded" toast in that case).
+  var CORE_FILES = [
+    'jspdf.umd.min.js',
+    'jspdf.plugin.autotable.min.js',
+    'fonts/DMSans-normal.js',
+    'fonts/DMSans-bold.js',
+    'pdf.min.js'
+  ];
+  var OPTIONAL_FILES = [
+    'html2pdf.bundle.min.js'   // bundles html2canvas + its own jsPDF; optional (whatsapp-share.js buildPdf)
+  ];
+  var _promise = null;
+
+  function injectOne(src){
+    return new Promise(function(resolve, reject){
+      // If a tag for this src already exists and loaded, reuse it.
+      try {
+        var existing = document.querySelector('script[data-saagar-pdf-lib="' + src + '"]');
+        if (existing && existing.getAttribute('data-loaded') === '1') { resolve(); return; }
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing); // stale/failed → re-add
+      } catch(e){}
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = false;                 // preserve execution order across the set
+      s.setAttribute('data-saagar-pdf-lib', src);
+      s.onload = function(){ try { s.setAttribute('data-loaded','1'); } catch(e){} resolve(); };
+      s.onerror = function(){ reject(new Error('Failed to load ' + src)); };
+      (document.body || document.documentElement).appendChild(s);
+    });
+  }
+
+  function setWorker(){
+    try {
+      if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdf.worker.min.js', document.baseURI || location.href).href;
+      }
+    } catch(e){}
+  }
+
+  // Report engine readiness: jsPDF (+ autotable/fonts, which load in the same gated batch) and
+  // pdf.js (for the on-screen preview). html2pdf is intentionally NOT required here.
+  function ready(){
+    return !!( (window.jspdf && window.jspdf.jsPDF) || window.jsPDF ) && !!window.pdfjsLib;
+  }
+
+  function ensure(){
+    if (ready()) { setWorker(); return Promise.resolve(); }
+    if (_promise) return _promise;
+    // 1) Load the CORE set sequentially; any failure here means the report engine can't run,
+    //    so reject (and clear the cache so the next tap retries cleanly).
+    var core = CORE_FILES.reduce(function(chain, src){
+      return chain.then(function(){ return injectOne(src); });
+    }, Promise.resolve());
+    // 2) Then load the OPTIONAL set best-effort: a failure is swallowed so it never blocks or
+    //    breaks the report engine. (whatsapp-share.js handles a missing html2pdf gracefully.)
+    _promise = core.then(function(){
+      return OPTIONAL_FILES.reduce(function(chain, src){
+        return chain.then(function(){ return injectOne(src).catch(function(){ /* optional: ignore */ }); });
+      }, Promise.resolve());
+    }).then(function(){
+      setWorker();
+      if (!ready()) throw new Error('PDF core libraries failed to initialise');  // defensive: scripts loaded but globals missing
+    }).catch(function(err){
+      _promise = null;   // CRITICAL: clear the cache so the NEXT invocation retries cleanly
+      throw err;
+    });
+    return _promise;
+  }
+
+  window.__SaagarPdfLibs = { ensure: ensure, ready: ready };
+})();
+</script>
+
+<!-- ════ APK build addition: WhatsApp / PDF share for every print ════
+     whatsapp-share.js + saagar-report.js stay eager: they only DEFINE the APIs and
+     reference the heavy libs at CALL time (never at load), so they are cheap. The
+     wrapper block below makes their public entry points await __SaagarPdfLibs.ensure()
+     before they touch jsPDF / html2pdf / pdf.js. -->
 <script src="whatsapp-share.js"></script>
 
 <!-- ════ APK build addition: enterprise report engine (data → native vector A4 PDF) ════ -->
-<script src="jspdf.umd.min.js"></script>
-<script src="jspdf.plugin.autotable.min.js"></script>
-<script src="fonts/DMSans-normal.js"></script>
-<script src="fonts/DMSans-bold.js"></script>
-<!-- pdf.js (vendored, offline) — renders the generated report PDF for the in-app exact preview -->
-<script src="pdf.min.js"></script>
-<script>try{ if(window.pdfjsLib){ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdf.worker.min.js', document.baseURI || location.href).href; } }catch(e){}</script>
 <script src="saagar-report.js"></script>
+
+<!-- ════ Gate every SHELL report/PDF/preview/share entry point on the lazy libs ════
+     SaagarReport.* and SaagarShareCurrent are defined above but reference jsPDF /
+     jspdf-autotable / pdf.js / html2pdf only inside their methods. We wrap the
+     library-dependent public methods so the FIRST report/PDF/preview/share invocation
+     transparently injects the libs (with a brief "Preparing…" toast), then proceeds
+     exactly as before. On load failure we surface a clear message and do NOT proceed;
+     because ensure() clears its cache on failure, a second tap retries. Methods that
+     only operate on an ALREADY-built blob (savePreview/sharePreview/printPreview,
+     packSave/packSend, the hub UI helpers) are left untouched — by the time they run,
+     ensure() has already succeeded for that flow. -->
+<script>
+(function(){
+  'use strict';
+  function ensure(){ return window.__SaagarPdfLibs ? window.__SaagarPdfLibs.ensure() : Promise.resolve(); }
+  function ready(){ return window.__SaagarPdfLibs ? window.__SaagarPdfLibs.ready() : true; }
+  function note(){ try { toast('Preparing report…'); } catch(e){} }
+  function failMsg(){ try { toast('Could not load the PDF engine — check the app and try again'); } catch(e){} }
+
+  // Wrap a method so it awaits the libs first. The original method's own return value
+  // (a Promise, in every case here) is preserved/chained so callers still work.
+  function gate(obj, name){
+    if (!obj || typeof obj[name] !== 'function' || obj['__gated_' + name]) return;
+    var orig = obj[name];
+    obj['__gated_' + name] = true;
+    obj[name] = function(){
+      var self = this, args = arguments;
+      if (ready()) return orig.apply(self, args);   // libs already in memory → zero overhead, identical behavior
+      note();
+      return ensure().then(function(){
+        return orig.apply(self, args);
+      }).catch(function(err){
+        failMsg();
+        // Swallow so a failed lazy-load never throws an unhandled rejection into the UI;
+        // the cache was cleared in ensure(), so the next tap retries.
+        try { console.warn('[SaagarPdfLibs] load failed:', err); } catch(e){}
+      });
+    };
+  }
+
+  if (window.SaagarReport) {
+    // Library-dependent entry points. fromHub()/_payrollPick()/history() all route through
+    // preview(); pack() builds; generate()/build() build; preview() builds + renders via pdf.js.
+    ['generate','build','preview','pack'].forEach(function(m){ gate(window.SaagarReport, m); });
+    // openHub() shows the chooser UI with no libs of its own, but every action inside it needs
+    // them — so warm the libs in the background when the hub opens (non-blocking; the gated
+    // preview()/build() above remain the hard safety net if warming hasn't finished).
+    if (typeof window.SaagarReport.openHub === 'function' && !window.SaagarReport.__gated_openHub) {
+      var origHub = window.SaagarReport.openHub;
+      window.SaagarReport.__gated_openHub = true;
+      window.SaagarReport.openHub = function(){
+        try { if (!ready()) ensure().catch(function(){}); } catch(e){}  // pre-warm, ignore errors here
+        return origHub.apply(this, arguments);
+      };
+    }
+  }
+
+  // whatsapp-share.js: SaagarShareCurrent({mode:'share'}) builds a PDF (html2pdf) or routes to
+  // SaagarReport.generate. mode:'print' needs no libs. Gate only the share path.
+  if (typeof window.SaagarShareCurrent === 'function' && !window.__gatedSaagarShareCurrent) {
+    var origShare = window.SaagarShareCurrent;
+    window.__gatedSaagarShareCurrent = true;
+    window.SaagarShareCurrent = function(opt){
+      opt = opt || {};
+      if (opt.mode === 'print' || ready()) return origShare.call(this, opt);  // print = no libs; ready = no wait
+      var self = this;
+      note();
+      return ensure().then(function(){
+        return origShare.call(self, opt);
+      }).catch(function(err){
+        failMsg();
+        try { console.warn('[SaagarPdfLibs] share load failed:', err); } catch(e){}
+      });
+    };
+  }
+})();
+</script>
 
 <!-- ════ APK build addition: cross-module integration bridge (5 hard links) ════
      Gated on SaagarStore.whenReady when the engine is ON (so it reconciles AFTER MEM hydrates
