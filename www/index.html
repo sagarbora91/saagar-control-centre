@@ -1408,6 +1408,11 @@ html.bcc-mobile #todayView.active{display:block}
           <div id="diagResults" style="margin-top:12px"></div>
         </div>
         <div class="card card-pad">
+          <h4><span class="em">💾</span> Storage engine</h4>
+          <p>Live engine health &amp; on-device footprint (read-only).</p>
+          <div id="storageEngineBox" style="margin-top:10px"></div>
+        </div>
+        <div class="card card-pad">
           <h4><span class="em">📜</span> Audit trail</h4>
           <p>Every write &amp; admin action is logged on this device.</p>
           <div id="auditTrailBox" style="margin-top:10px"></div>
@@ -4610,6 +4615,20 @@ function renderDiagnostics(){
     <div class="table-wrap"><table class="data-table small">
       <thead><tr><th>Check</th><th>Status</th><th>Details</th></tr></thead>
       <tbody>${checks.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${c.pass?'<span class="dot green"></span>Pass':'<span class="dot amber"></span>Check'}</td><td><small>${escapeHtml(c.detail)}</small></td></tr>`).join('')}</tbody></table></div>`;
+  // Storage engine readout (READ-ONLY: calls the existing _status()/_walLen() getters + sums localStorage; no writes, no boot/init touch)
+  try {
+    const eng = (window.SaagarStore && window.SaagarStore.enabled) ? window.SaagarStore : null;
+    let bytes = 0, keys = 0;
+    try { for (let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); const v=localStorage.getItem(k); bytes += (k?k.length:0)+(v?v.length:0); keys++; } } catch(e){}
+    const mb = (bytes/1048576).toFixed(2);
+    const rows = [['Engine flag', eng ? 'ON (SQLite)' : 'OFF (plain localStorage)'], ['Footprint', mb+' MB across '+keys+' keys']];
+    if(eng && typeof eng._status==='function'){
+      const s = eng._status();
+      rows.push(['Ready', String(s.ready)], ['DB from file', String(s.dbFromFile)], ['Rows in DB', String(s.rows)], ['Migrated', String(s.migrated)], ['Has Filesystem', String(s.hasFS)], ['Last saved', s.lastSavedAt?fmtDate(s.lastSavedAt):'—'], ['Dirty keys', String(s.dirtyKeys)], ['Last error', s.lastError?s.lastError:'none']);
+      if(typeof eng._walLen==='function') rows.push(['WAL entries', String(eng._walLen())]);
+    }
+    if($('storageEngineBox')) $('storageEngineBox').innerHTML = '<div class="table-wrap"><table class="data-table small"><tbody>'+rows.map(r=>'<tr><td>'+escapeHtml(r[0])+'</td><td><b>'+escapeHtml(r[1])+'</b></td></tr>').join('')+'</tbody></table></div>';
+  } catch(e){ if($('storageEngineBox')) $('storageEngineBox').innerHTML = '<small>Storage readout error: '+escapeHtml(String((e&&e.message)||e))+'</small>'; }
   // Audit
   const log = tryJSON(safeGet(AUDIT_LOG_KEY))||[];
   const s = auditStats();
