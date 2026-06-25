@@ -606,6 +606,22 @@ body.admin-on .admin-dot{display:block}
   display:grid;place-items:center;
 }
 .module-bar .m-action svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
+/* Toolbar overflow — DESKTOP: render everything inline (menu is just a transparent
+   wrapper, the "…" toggle is hidden), so desktop behaviour is unchanged. */
+.m-overflow{display:contents}
+.m-overflow-toggle{display:none}
+.m-overflow-menu{display:contents}
+.m-overflow-menu .m-ovi span{display:none}
+/* Toolbar overflow — MOBILE: keep BACK + title + primary Share visible; collapse the
+   rest into a "…" dropdown. Actions are MOVED (not display:none), still fully clickable. */
+html.bcc-mobile .m-overflow{display:block;position:relative}
+html.bcc-mobile .m-overflow-toggle{display:grid}
+html.bcc-mobile .m-overflow-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:188px;background:#fff;color:var(--navy);border:1px solid var(--gray-200);border-radius:12px;box-shadow:0 12px 32px rgba(13,35,64,.28);padding:6px;z-index:120}
+html.bcc-mobile .m-overflow.open .m-overflow-menu{display:block}
+html.bcc-mobile .m-overflow-menu .m-ovi{display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;border-radius:8px;padding:9px 11px;background:none;color:var(--navy)}
+html.bcc-mobile .m-overflow-menu .m-ovi svg{width:17px;height:17px;stroke:var(--navy)}
+html.bcc-mobile .m-overflow-menu .m-ovi span{display:inline;font:600 13px var(--font-sans);white-space:nowrap}
+html.bcc-mobile .m-overflow-menu .m-ovi:active{background:var(--gray-100)}
 .frame-wrap{position:relative;overflow:hidden;background:#fff;min-width:0;max-width:100%;box-sizing:border-box}
 .module-frame{width:100%;height:100%;border:0;display:block;min-width:0;max-width:100%;box-sizing:border-box}
 .loader{
@@ -1491,21 +1507,34 @@ html.bcc-mobile #todayView.active{display:block}
         <span style="min-width:0;flex:1"><h3 id="activeTitle">Module</h3><p id="activeSub">Working area</p></span>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.8"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
-      <button class="m-action" onclick="reloadModule()" title="Reload">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      </button>
-      <button class="m-action" onclick="SaagarShareCurrent({mode:'share'})" title="Share this module's report (PDF) on WhatsApp">
+      <!-- Primary action kept visible on mobile: Share this module's report (PDF) on WhatsApp -->
+      <button class="m-action m-action-primary" onclick="SaagarShareCurrent({mode:'share'})" title="Share this module's report (PDF) on WhatsApp">
         <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
       </button>
-      <button class="m-action" onclick="if(window.SaagarReport)SaagarReport.openHub()" title="Generate any report (PDF)">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-      </button>
-      <button class="m-action" onclick="openWAComposer()" title="Send a WhatsApp message">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
-      <button class="m-action" onclick="printModule()" title="Print">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      </button>
+      <!-- Overflow: remaining actions MOVED here (not hidden) — fully clickable from the menu on mobile, inline on desktop -->
+      <div class="m-overflow" id="moduleOverflow">
+        <button class="m-action m-overflow-toggle" type="button" aria-haspopup="true" aria-expanded="false" title="More actions" onclick="toggleModuleOverflow(event)">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        </button>
+        <div class="m-overflow-menu" id="moduleOverflowMenu" role="menu">
+          <button class="m-action m-ovi" role="menuitem" onclick="reloadModule();closeModuleOverflow()" title="Reload">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Reload</span>
+          </button>
+          <button class="m-action m-ovi" role="menuitem" onclick="if(window.SaagarReport)SaagarReport.openHub();closeModuleOverflow()" title="Generate any report (PDF)">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+            <span>Report</span>
+          </button>
+          <button class="m-action m-ovi" role="menuitem" onclick="openWAComposer();closeModuleOverflow()" title="Send a WhatsApp message">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>Send WhatsApp</span>
+          </button>
+          <button class="m-action m-ovi" role="menuitem" onclick="printModule();closeModuleOverflow()" title="Print">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            <span>Print</span>
+          </button>
+        </div>
+      </div>
     </header>
     <div class="frame-wrap">
       <div class="loader hidden" id="loader"><div class="loader-card"><div class="spin"></div><span>Opening module…</span></div></div>
@@ -4883,6 +4912,31 @@ function printModule(){
   catch(e){ toast('Print could not be opened'); }
 }
 
+/* Toolbar overflow menu (mobile): open/close the "…" dropdown of moved actions.
+   The actions inside remain real buttons with their original onclick handlers —
+   they are MOVED into the menu, never hidden/disabled. Defensive + no-throw. */
+function closeModuleOverflow(){
+  try{
+    var w=document.getElementById('moduleOverflow'); if(w) w.classList.remove('open');
+    var t=document.getElementById('moduleOverflow'); var tg=t&&t.querySelector('.m-overflow-toggle');
+    if(tg) tg.setAttribute('aria-expanded','false');
+  }catch(e){}
+}
+function toggleModuleOverflow(ev){
+  try{
+    if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+    var w=document.getElementById('moduleOverflow'); if(!w) return;
+    var open=w.classList.toggle('open');
+    var tg=w.querySelector('.m-overflow-toggle'); if(tg) tg.setAttribute('aria-expanded',open?'true':'false');
+    if(open && !toggleModuleOverflow._bound){
+      toggleModuleOverflow._bound=true;
+      document.addEventListener('click',function(e){
+        try{ var ww=document.getElementById('moduleOverflow'); if(ww && !ww.contains(e.target)) closeModuleOverflow(); }catch(_){}
+      },true);
+    }
+  }catch(e){}
+}
+
 /* Insert a fragment before the LAST </body> (the real document close).
    Modules like Payroll/CRO-Audit contain </body> inside JS print/letterhead
    strings BEFORE the real one — replacing the first </body> corrupted them. */
@@ -5246,11 +5300,44 @@ html.bcc-mobile[data-mod="tax"] .mb-row.header{display:none !important}
 html.bcc-mobile[data-mod="tax"] .mb-row .mb-num:last-child{display:block !important}
 html.bcc-mobile[data-mod="tax"] .view-tabs,html.bcc-mobile[data-mod="tax"] .q-tabs{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch}
 html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
+/* ─────────────────────────────────────────────────────────────────────────
+   SHARED MOBILE UTILITIES (additive, html.bcc-mobile-scoped, opt-in via class
+   except where noted). Provide reusable hooks modules can adopt incrementally.
+   ───────────────────────────────────────────────────────────────────────── */
+/* 1.3 Containment — keep wide children from forcing horizontal overflow.
+   Limited to these explicit hooks so it never collapses real flex/grid tracks. */
+html.bcc-mobile .contain,html.bcc-mobile [class*=grid],html.bcc-mobile .wrap,html.bcc-mobile .content > *{min-width:0;box-sizing:border-box;max-width:100%}
+/* 1.1 Tab chip strip utility — opt-in horizontally-scrollable chip row. */
+html.bcc-mobile .tab-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}
+html.bcc-mobile .tab-chips::-webkit-scrollbar{display:none}
+html.bcc-mobile .tab-chips>*{flex:0 0 auto;white-space:nowrap}
+/* 1.1 App-wide: turn EXISTING tab strips from squeeze-to-fit-and-overprint into
+   clean horizontal scrollers (class names confirmed present across modules/shell). */
+html.bcc-mobile .tab-nav,html.bcc-mobile .tabs,html.bcc-mobile .subtabs,html.bcc-mobile .cat-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+html.bcc-mobile .tab-nav::-webkit-scrollbar,html.bcc-mobile .tabs::-webkit-scrollbar,html.bcc-mobile .subtabs::-webkit-scrollbar,html.bcc-mobile .cat-tabs::-webkit-scrollbar{display:none}
+html.bcc-mobile .tab-nav>*,html.bcc-mobile .tabs>*,html.bcc-mobile .subtabs>*,html.bcc-mobile .cat-tabs>*{flex:0 0 auto;white-space:nowrap}
+/* 1.2 Table scroll boundary — opt-in wrapper to keep a wide table inside the column. */
+html.bcc-mobile .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+html.bcc-mobile .tbl-scroll td.sticky-col,html.bcc-mobile .tbl-scroll th.sticky-col{position:sticky;left:0;background:inherit;z-index:1}
+/* 1.2 Table-as-card base styles (rendered into a .card-list container by the boot helper). */
+html.bcc-mobile .card-list{display:block}
+html.bcc-mobile .bcc-card{display:block;border:1px solid var(--gray-200,#e5e7eb);border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#fff;box-shadow:0 1px 3px rgba(13,35,64,.06)}
+html.bcc-mobile .bcc-card-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px;line-height:1.35}
+html.bcc-mobile .bcc-card-row+.bcc-card-row{border-top:1px solid var(--gray-100,#f3f4f6)}
+html.bcc-mobile .bcc-card-label{color:var(--gray-500,#6b7280);font-weight:600;flex:0 0 auto;max-width:50%}
+html.bcc-mobile .bcc-card-val{text-align:right;min-width:0;word-break:break-word}
+/* 1.5 Sticky action bar base — modules add the markup later; class provides the chrome. */
+html.bcc-mobile .sticky-actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--gray-200,#e5e7eb);padding:8px 12px calc(8px + var(--safe-bottom,0px));display:flex;gap:8px;z-index:40}
+/* 1.6 Accordion base — minimal collapse; modules add markup later. */
+html.bcc-mobile .accordion-panel[hidden]{display:none}
+html.bcc-mobile .accordion-header{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+html.bcc-mobile .accordion-header::after{content:"⌄";font-size:14px;line-height:1;opacity:.6;transition:transform .2s}
+html.bcc-mobile .accordion-header[aria-expanded="true"]::after{transform:rotate(180deg)}
 `;
 function injectMobileMode(html, moduleId){
   const mid = JSON.stringify(String(moduleId));
   const css = '<style id="st-v5-mobile-css">'+MOBILE_CSS+'</style>';
-  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}}catch(e){}})();<\/scr'+'ipt>';
+  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return x==="desktop"?"desktop":"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if('+mid+'==="qms"){var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var sb=document.querySelector(".sidebar")||document.getElementById("sidebar");if(sb)sb.classList.toggle("open");};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}var ON=function(){try{return document.documentElement.classList.contains("bcc-mobile");}catch(e){return false;}};function chipCenter(){try{if(!ON())return;var sel=".tab-chips .active,.tab-chips [aria-selected=true],.tab-nav .active,.tab-nav [aria-selected=true],.tabs .active,.tabs [aria-selected=true]";var el=document.querySelector(sel);if(el&&el.scrollIntoView)el.scrollIntoView({inline:"center",block:"nearest"});}catch(e){}}function buildCards(){try{if(!ON())return;var tbls=document.querySelectorAll("table.card-list:not([data-bcc-cards])");for(var t=0;t<tbls.length;t++){(function(tbl){try{tbl.setAttribute("data-bcc-cards","1");var heads=[];var ths=tbl.querySelectorAll("thead th");for(var h=0;h<ths.length;h++)heads.push((ths[h].textContent||"").trim());var rows=tbl.querySelectorAll("tbody tr");if(!rows.length)rows=tbl.querySelectorAll("tr");var box=document.createElement("div");box.className="card-list bcc-card-wrap";for(var r=0;r<rows.length;r++){var cells=rows[r].querySelectorAll("td");if(!cells.length)continue;var card=document.createElement("div");card.className="bcc-card";for(var c=0;c<cells.length;c++){var lbl=cells[c].getAttribute("data-label")||heads[c]||"";var row=document.createElement("div");row.className="bcc-card-row";if(lbl){var ls=document.createElement("span");ls.className="bcc-card-label";ls.textContent=lbl;row.appendChild(ls);}var vs=document.createElement("span");vs.className="bcc-card-val";vs.innerHTML=cells[c].innerHTML;row.appendChild(vs);card.appendChild(row);}box.appendChild(card);}tbl.style.display="none";if(tbl.parentNode)tbl.parentNode.insertBefore(box,tbl.nextSibling);}catch(e){}})(tbls[t]);}}catch(e){}}var bound=false;function bindDelegates(){try{if(bound||!document.body)return;bound=true;document.addEventListener("click",function(ev){try{if(!ON())return;var t=ev&&ev.target;if(!t)return;var ah=t.closest&&t.closest(".accordion-header");if(ah){var panel=ah.nextElementSibling;while(panel&&!(panel.classList&&panel.classList.contains("accordion-panel")))panel=panel.nextElementSibling;if(panel){var open=panel.hasAttribute("hidden");if(open)panel.removeAttribute("hidden");else panel.setAttribute("hidden","");ah.setAttribute("aria-expanded",open?"true":"false");}return;}var chip=t.closest&&t.closest(".tab-chips>*,.tab-nav>*,.tabs>*");if(chip)setTimeout(chipCenter,0);}catch(e){}},true);}catch(e){}}function boot(){try{bindDelegates();chipCenter();buildCards();}catch(e){}}if(document.readyState!=="loading")boot();else document.addEventListener("DOMContentLoaded",boot);window.addEventListener("load",function(){try{chipCenter();buildCards();}catch(e){}});}catch(e){}})();<\/scr'+'ipt>';
   const frag = css + boot;
   if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+frag);
   if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, frag+'\n</head>');
