@@ -173,13 +173,49 @@
   });
   set('saagar_dsr_staff', Object.keys(dsrStaff));
 
+  /* Seed a few illustrative watch photos into the shell IndexedDB (SaagarEvidence),
+     keyed wsf|<caseId> — exactly what the Service module reads on open/print. Drawn on a
+     canvas (small JPEG) so no large base64 sits in the bundle. Fully guarded: any failure
+     just skips that photo (the case shows no photo, never crashes). DEMO build only. */
+  function __seedWatchPics(list){
+    try{
+      var ev=(typeof window!=='undefined')&&window.SaagarEvidence;
+      if(!ev||typeof ev.put!=='function'||typeof document==='undefined')return;
+      var ACCENTS=['#c9a227','#2563eb','#0ea371','#b91c1c','#7c3aed','#0891b2'];
+      (list||[]).forEach(function(w,i){
+        try{
+          var cv=document.createElement('canvas');cv.width=360;cv.height=360;
+          var x=cv.getContext('2d');if(!x)return;var ac=ACCENTS[i%ACCENTS.length];
+          var bg=x.createLinearGradient(0,0,360,360);bg.addColorStop(0,'#1f2733');bg.addColorStop(1,'#0d1117');x.fillStyle=bg;x.fillRect(0,0,360,360);
+          var cx=180,cy=168,R=108;
+          x.fillStyle='#11161d';x.fillRect(cx-46,16,92,312);
+          x.beginPath();x.arc(cx,cy,R+14,0,7);x.fillStyle='#2b3442';x.fill();
+          x.beginPath();x.arc(cx,cy,R+8,0,7);x.fillStyle=ac;x.fill();
+          x.beginPath();x.arc(cx,cy,R,0,7);x.fillStyle='#0b0f14';x.fill();
+          x.strokeStyle='#e8eaed';x.lineWidth=3;
+          for(var t=0;t<12;t++){var a=t*Math.PI/6;x.beginPath();x.moveTo(cx+Math.sin(a)*(R-14),cy-Math.cos(a)*(R-14));x.lineTo(cx+Math.sin(a)*(R-4),cy-Math.cos(a)*(R-4));x.stroke();}
+          var hm=(i*37)%360,mm=(i*113)%360;
+          x.strokeStyle='#fff';x.lineWidth=6;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.sin(hm*Math.PI/180)*(R*0.5),cy-Math.cos(hm*Math.PI/180)*(R*0.5));x.stroke();
+          x.lineWidth=4;x.strokeStyle=ac;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.sin(mm*Math.PI/180)*(R*0.78),cy-Math.cos(mm*Math.PI/180)*(R*0.78));x.stroke();
+          x.beginPath();x.arc(cx,cy,6,0,7);x.fillStyle=ac;x.fill();
+          x.fillStyle='#e8eaed';x.textAlign='center';x.font='bold 20px sans-serif';x.fillText(String(w.brand||'Watch').slice(0,16),cx,cy-34);
+          x.font='13px sans-serif';x.fillStyle='#aab4c0';x.fillText(String(w.model||'').slice(0,18),cx,cy+48);
+          x.fillStyle=ac;x.font='bold 12px sans-serif';x.fillText('DEMO • '+String(w.id||''),cx,348);
+          var key='wsf|'+w.id;
+          if(cv.toBlob){cv.toBlob(function(b){if(b){try{ev.put(key,b,'watch.jpg');}catch(e){}}},'image/jpeg',0.72);}
+        }catch(e){}
+      });
+    }catch(e){}
+  }
   /* ════════════════════ SERVICE  (saagar_wsf_v2)  — 600 cases, 80 open / 520 closed ════════════════════ */
-  var WSC = []; var BRANDS_ALL = BR_T.concat(BR_H, ['Titan', 'Casio', 'Fossil', 'Rolex (genuine?)']);
+  var WSC = []; var WPHOTOS = []; var BRANDS_ALL = BR_T.concat(BR_H, ['Titan', 'Casio', 'Fossil', 'Rolex (genuine?)']);
   var SVC_OPEN = 80, SVC_CLOSED = 520, SVC_TOTAL = SVC_OPEN + SVC_CLOSED;   // 6-month service book
   var svcRecent = Math.min(21, DSTR.length - 1);      // open cases land in the last ~3 weeks -> realistic 0-21d aging
   for (var s = 0; s < SVC_TOTAL; s++) {
     var open = s >= SVC_CLOSED;                         // the last SVC_OPEN cases are still open
     var di2 = open ? (DSTR.length - 1 - ri(0, svcRecent)) : ri(0, DSTR.length - 1);
+    var __pidx = open ? (s - SVC_CLOSED) : -1;   // the first few OPEN cases carry a demo watch photo
+    if (__pidx >= 0 && __pidx < 6) di2 = Math.max(0, DSTR.length - 1 - __pidx);   // push them to the newest dates (top of the open list)
     var ds2 = DSTR[di2];
     var closed = !open;
     var amt = ri(2, 30) * 100;
@@ -188,9 +224,11 @@
       brand: pick(BRANDS_ALL), model: pick(['Edge', 'Raga', 'Classic', 'G-Shock', 'Chronograph', 'Automatic']), advisor: pick(CRO_NAMES), techName: pick(TECHS), ackBy: pick(CRO_NAMES),
       subTotal: String(amt), gst: '0', estTotal: String(amt), lineItems: [{ desc: pick(['Battery', 'Full Service', 'Glass', 'Strap', 'Polish']), qty: '1', unit: String(amt), total: String(amt) }] };
     if (closed) { wc.closedAt = ds2 + 'T17:00:00.000Z'; wc.delivery = { finalAmt: String(amt), payMode: pick(['Cash', 'UPI', 'Card']), delTechName: wc.techName, delCustSig: wc.custName }; }
+    if (__pidx >= 0 && __pidx < 6) { wc.watchPhoto = true; WPHOTOS.push({ id: wc.id, brand: wc.brand, model: wc.model }); }
     WSC.push(wc);
   }
   set('saagar_wsf_v2', WSC);
+  __seedWatchPics(WPHOTOS);   // write the demo watch photos into the shell IndexedDB (async, guarded)
 
   /* ════════════════════ EXPENSE  (all tabs) ════════════════════ */
   set('gm_settings', { migratedV2: true, gstRate: 3 });
