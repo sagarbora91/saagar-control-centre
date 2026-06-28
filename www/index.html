@@ -4728,7 +4728,7 @@ async function archiveOldData(){
    durable archive file (DATA/saagar_qms_archive.json, which the backup includes). Recent + open + ambiguous
    customers are NEVER archived. Export-first then shrink → ZERO data loss even if the app is killed mid-prune;
    idempotent (dedup by id). Runs once on boot when the engine is ON. ── */
-var QMS_KEEP_DAYS = 90, QMS_ARCHIVE_MIN = 500, QMS_ARCHIVE_FILE = 'saagar_qms_archive.json', QMS_KEY = 'retail_queue_management_v1';
+var QMS_KEEP_DAYS = 45, QMS_ARCHIVE_MIN = 300, QMS_ARCHIVE_FILE = 'saagar_qms_archive.json', QMS_KEY = 'retail_queue_management_v1';
 async function qmsArchiveOldCustomers(){
   try{
     if(!(window.SaagarStore && window.SaagarStore.enabled)) return 'engine-off';

@@ -141,9 +141,17 @@
       qCustomers.push(cust);
     }
   });
+  // QMS LIVE store: keep only the most recent ~31 days of walk-ins. Seeding ALL of the
+  // history (~1000 rows over 83 days) into the live blob bloated it to ~1.9 MB, which pressured
+  // the device WebView (idle-in-QMS native crash). QMS already ships old-customer archival for
+  // exactly this reason; the light seed had bypassed it. The dashboard shows today and the
+  // reports cover the last 7/31 days, so a 31-day live window loses nothing on screen. DSR
+  // seeding above is built from dsrByDay (full history) and is unaffected.
+  var _qmsKeep = {}; DSTR.slice(-31).forEach(function (d) { _qmsKeep[d] = 1; });
+  var qLiveCustomers = qCustomers.filter(function (c) { return _qmsKeep[(c.entryTime || '').slice(0, 10)]; });
   set('retail_queue_management_v1', {
     settings: { storeName: 'Saagar Traders', queuePrefix: 'Q', waitAlertMins: 10, autoAllocate: true, requireBillForPurchase: true, requireJobForService: true, allowGreeterClose: false, smCanGiveNextOpportunity: true, lockEditsAfterEOD: true },
-    role: 'SM', cros: qCros, rotations: [], customers: qCustomers, followups: [], audit: [], lastBackup: null
+    role: 'SM', cros: qCros, rotations: [], customers: qLiveCustomers, followups: [], audit: [], lastBackup: null
   });
 
   /* ════════════════════ DSR  (saagar_dsr_<date>_<Name>) ════════════════════

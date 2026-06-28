@@ -41,6 +41,16 @@
   var CFG='saagar_bridge_config';
   var MK_BRANDS='saagar_master_brands', MK_VENDORS='saagar_master_vendors', MK_CUSTOMERS='saagar_master_customers';
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
+  /* ── Bounding so the cross-module reconcile stays cheap regardless of total history. ──
+     Producers only emit events whose ACTION date is within RECENT_DAYS (a closed lead is bounded by its
+     CLOSE date so a late-closed old visit still flows; an open lead by its entry date). The bus is pruned
+     to BUS_TTL_DAYS by the SAME business-date axis the producer filters on (BUS_TTL>RECENT so a consumed
+     event is never re-emitted then re-pruned). The bus + CRO feed are written ONLY when they actually
+     change, so an idle reconcile writes nothing — this is what stops the ~750KB whole-DB-persist burst
+     that ANR-crashed QMS on device. Cutoffs are UTC to match the toISOString() timestamps compared. */
+  var RECENT_DAYS=7, BUS_TTL_DAYS=14, FEED_KEEP_DAYS=60, Q2D_KEEP_DAYS=14;
+  function cutoffIso(n){ var d=new Date(); d.setUTCDate(d.getUTCDate()-n); return d.toISOString().slice(0,10); }
+  var _busDirty=false;   // set by emit()/consume(); gates the per-cycle bus write
   function cfg(){ var c=L(CFG,null)||{}; return {
     failPct: (typeof c.failPct==='number'&&c.failPct>=0&&c.failPct<=100)?c.failPct:60,
     leaveGates: c.leaveGates!==false,
@@ -57,12 +67,27 @@
 
   /* ── EVENT BUS ─────────────────────────────────────────────────────── */
   function busLoad(){var b=L(BUS,null);return Array.isArray(b)?b:[];}
-  function busSave(b){if(b.length>BUS_CAP)b=b.slice(b.length-BUS_CAP);S(BUS,b);}
-  function emit(bus,type,idSuffix,payload,src){
+  function busDate(e){ if(e&&e.rd) return String(e.rd).slice(0,10); return (e&&e.payload&&e.payload.date)?String(e.payload.date).slice(0,10):(e&&e.at?String(e.at).slice(0,10):''); }
+  /* Prune the bus IN PLACE by business date (same axis the producer filters on, so an aged-out event is
+     never re-emitted), then cap. Returns # removed; a non-zero return means the bus changed → write it. */
+  function busPrune(b){
+    var cut=cutoffIso(BUS_TTL_DAYS), kept=[], removed=0;
+    for(var i=0;i<b.length;i++){ var e=b[i], ed=busDate(e); if(ed && ed<cut){ removed++; } else kept.push(e); }
+    if(kept.length>BUS_CAP){ removed+=(kept.length-BUS_CAP); kept=kept.slice(kept.length-BUS_CAP); }
+    b.length=0; for(var j=0;j<kept.length;j++) b.push(kept[j]);
+    return removed;
+  }
+  function busSave(b){S(BUS,b);}
+  function emit(bus,type,idSuffix,payload,src,rdate){
     var id=type+':'+idSuffix;
     for(var i=bus.length-1;i>=0 && i>bus.length-400;i--){ if(bus[i].id===id) return false; }
     if(bus.some(function(e){return e.id===id;})) return false;
-    bus.push({id:id,type:type,at:new Date().toISOString(),src:src||'',payload:payload||{},consumed:{}});
+    // rd = recency axis used for bus pruning. It MUST equal the date the producer gates emission on, so an
+    // aged-out event is never re-emitted then re-pruned. For most events that is payload.date; for a QMS
+    // CLOSED lead the gate is the CLOSE date (passed in) while payload.date stays the visit day for filing.
+    var rd=String(rdate||(payload&&payload.date)||'').slice(0,10);
+    bus.push({id:id,type:type,at:new Date().toISOString(),src:src||'',payload:payload||{},consumed:{},rd:rd});
+    _busDirty=true;
     return true;
   }
   function consume(bus,type,who,fn){
@@ -71,14 +96,14 @@
       if(e.type!==type) return;
       e.consumed=e.consumed||{};
       if(e.consumed[who]) return;
-      try{ if(fn(e)!==false){ e.consumed[who]=true; n++; } }catch(err){}
+      try{ if(fn(e)!==false){ e.consumed[who]=true; _busDirty=true; n++; } }catch(err){}
     });
     return n;
   }
 
   /* ── PRODUCERS ─────────────────────────────────────────────────────── */
   function produce(bus){
-    var emitted=0,d=today();
+    var emitted=0,d=today(),rc=cutoffIso(RECENT_DAYS);
     // grooming today → GROOMING_RESULT
     try{ (L(GROOM+d,[])||[]).forEach(function(r){
       if(r&&r.name) emitted+=emit(bus,'GROOMING_RESULT',d+':'+kk(r.name),{name:nm(r.name),pct:Number(r.pct)||0,date:d},'grooming')?1:0;
@@ -90,34 +115,40 @@
         q.customers.forEach(function(c){
           if(!c) return; var out=(c.outcome||'').toLowerCase();
           var cid=c.id||c.mobile; if(!cid) return;
-          var t=(c.exitTime||c.entryTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):d;
+          var t=(c.exitTime||c.entryTime||c.walkInTime||'')+''; var dt=t?t.slice(0,10):'';   // visit/filing day; '' when undated → skipped (never default to today, else undated rows flood the bus)
           var cro=cros[c.assignedCroId]||cros[c.allocatedCroId]||cros[c.croId]||c.croName||c.allocatedCroName||'';
           var isClosed=/closed/i.test(String(c.status||''));
-          // O1: allocated-but-not-closed → DSR Visitors tab (staff marks purchase/non-purchase there)
-          if(!out && !isClosed && cro){ emitted+=emit(bus,'QMS_ALLOCATED',String(cid),{cid:cid,cro:cro,date:dt,cust:c.name||'',mobile:c.mobile||'',queueNo:c.queueNo||'',visit:c.visitType||'',prod:c.productInterest||''},'qms')?1:0; }
+          // O1: allocated-but-not-closed → DSR Visitors tab. Bound on the entry/visit day; an 8-day-old still-open lead is stale.
+          if(!out && !isClosed && cro && dt && dt>=rc){ emitted+=emit(bus,'QMS_ALLOCATED',String(cid),{cid:cid,cro:cro,date:dt,cust:c.name||'',mobile:c.mobile||'',queueNo:c.queueNo||'',visit:c.visitType||'',prod:c.productInterest||''},'qms')?1:0; }
           if(!out&&!isClosed) return; if(!out) return;
+          // CLOSED → bound on the CLOSE/action day (a sale closed today for an old visit must still flow); file under the visit day (dt).
+          var rcDate=String(c.closedAt||c.exitTime||c.entryTime||c.walkInTime||'').slice(0,10);
+          if(!rcDate || rcDate<rc) return;
           var type= out==='purchase'?'SALE_CLOSED' : out==='service'?'SERVICE_CLOSED' : 'NONPURCHASE_CLOSED';
-          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:dt,amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCardNo||c.jobCard||'',prod:c.purchaseCategory||c.productInterest||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms')?1:0;
+          emitted+=emit(bus,type,String(cid),{cid:cid,cro:cro,date:(dt||rcDate),amount:Number(c.purchaseAmount||c.amount)||0,bill:c.billNo||c.jobCardNo||c.jobCard||'',prod:c.purchaseCategory||c.productInterest||'',cust:c.name||'',mobile:c.mobile||'',reason:c.lostReason||c.reason||''},'qms',rcDate)?1:0;
         });
       } }catch(e){}
     // leave approved (today + tomorrow window) → LEAVE_APPROVED
     try{ var lv=L(LEAVE,null);
       if(lv&&lv.leaves){ Object.keys(lv.leaves).forEach(function(dk){
+        if(String(dk).slice(0,10)<rc) return;   // skip leaves older than RECENT_DAYS (today + upcoming kept) — else prune/re-emit loop
         (lv.leaves[dk]||[]).forEach(function(l){ var n=nm(l.staffName||l.name||l.empId||''); if(!n) return;
           emitted+=emit(bus,'LEAVE_APPROVED',dk+':'+kk(n),{name:n,date:dk,type:l.type||'full_day'},'leave')?1:0; });
       }); } }catch(e){}
     // DSR submitted → DSR_SUBMITTED
     try{ for(var i=0;i<localStorage.length;i++){ var lk=localStorage.key(i);
       var m=lk&&lk.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_(.+)$/); if(!m) continue;
+      if(m[1]<rc) continue;   // recent days only — old DSR keys must not re-flood the bus every cycle
       var r=L(lk,null); if(r&&r.submitted) emitted+=emit(bus,'DSR_SUBMITTED',m[1]+':'+kk(m[2].replace(/_/g,' ')),{date:m1(m),name:nm((r.staffName||m[2].replace(/_/g,' '))),score:(r.audit&&r.audit.score)||null},'dsr')?1:0;
     } function m1(x){return x[1];} }catch(e){}
     // stock closing locked → STOCK_LOCKED
     try{ for(var j=0;j<localStorage.length;j++){ var sk=localStorage.key(j); var sm=sk&&sk.match(STOCK_RE); if(!sm) continue;
+      if(sm[2]<rc) continue;   // recent days only
       var sb=L(sk,null); if(sb&&sb.closingLocked) emitted+=emit(bus,'STOCK_LOCKED',sm[1]+':'+sm[2],{store:sm[1],date:sm[2]},'stock')?1:0;
     } }catch(e){}
     // cash statement closed → CASH_CLOSED (read-only; Expense untouched)
     try{ var st=L(EXP_STMT,null);
-      if(st&&typeof st==='object') Object.keys(st).forEach(function(dk){ var s=st[dk]; if(s&&s.closed) emitted+=emit(bus,'CASH_CLOSED',(s.date||dk),{date:s.date||dk},'expense')?1:0; });
+      if(st&&typeof st==='object') Object.keys(st).forEach(function(dk){ var s=st[dk]; if(!s||!s.closed) return; var cd=String(s.date||dk).slice(0,10); if(cd<rc) return; emitted+=emit(bus,'CASH_CLOSED',(s.date||dk),{date:s.date||dk},'expense')?1:0; });
     }catch(e){}
     // payroll month present → PAYROLL_MONTH
     try{ var pb=L(PAYROLL,null); if(pb&&pb.meta&&pb.meta.month) emitted+=emit(bus,'PAYROLL_MONTH',pb.meta.year+'-'+pb.meta.month,{month:pb.meta.month,year:pb.meta.year},'payroll')?1:0; }catch(e){}
@@ -153,7 +184,14 @@
     n+=consume(bus,'SALE_CLOSED','dsr',function(e){return handle(e,'sale');});
     n+=consume(bus,'SERVICE_CLOSED','dsr',function(e){return handle(e,'service');});
     n+=consume(bus,'NONPURCHASE_CLOSED','dsr',function(e){return handle(e,'np');});
-    if(n){ S(Q2D,track); blog('QMS→DSR auto-filled '+n); }
+    if(n){
+      // Prune stale trackers (keep entries with no .at). The producer never re-emits >RECENT_DAYS-old
+      // events and hasRef() on the live DSR record is the real idempotency guard, so an aged-out tracker
+      // can never cause a double-add. Q2D_KEEP_DAYS(14) > RECENT_DAYS(7) leaves a safe margin.
+      var tcut=cutoffIso(Q2D_KEEP_DAYS);
+      Object.keys(track).forEach(function(cid){ var a=track[cid]&&track[cid].at; if(a && String(a).slice(0,10)<tcut) delete track[cid]; });
+      S(Q2D,track); blog('QMS→DSR auto-filled '+n);
+    }
     return n;
   }
 
@@ -242,15 +280,21 @@
   function consumeCroAuditFeed(bus){
     var feed=L(CRO_FEED,{}); if(typeof feed!=='object'||!feed)feed={};
     function slot(date,name){ feed[date]=feed[date]||{}; var k=kk(name); feed[date][k]=feed[date][k]||{cro:nm(name),date:date,groomingPct:null,qmsSales:0,qmsSalesAmt:0,qmsNonPurch:0,dsrSubmitted:false,dsrScore:null}; return feed[date][k]; }
-    consume(bus,'GROOMING_RESULT','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;slot(p.date,p.name).groomingPct=Math.round(p.pct||0);return true;});
-    consume(bus,'SALE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;var s=slot(p.date,p.cro);s.qmsSales++;s.qmsSalesAmt+=p.amount||0;return true;});
-    consume(bus,'NONPURCHASE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;slot(p.date,p.cro).qmsNonPurch++;return true;});
-    consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;
+    var n=0;
+    n+=consume(bus,'GROOMING_RESULT','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;slot(p.date,p.name).groomingPct=Math.round(p.pct||0);return true;});
+    n+=consume(bus,'SALE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;var s=slot(p.date,p.cro);s.qmsSales++;s.qmsSalesAmt+=p.amount||0;return true;});
+    n+=consume(bus,'NONPURCHASE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;slot(p.date,p.cro).qmsNonPurch++;return true;});
+    n+=consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;
       try{ var rr=L(dsrKey(p.date,p.name),null); if(rr){ var sc=0,sa=0; (rr.sales||[]).forEach(function(x){ sc++; sa+=Number(x.amount)||0; }); s.dsrSalesCount=sc; s.dsrSalesAmt=sa; s.dsrNonPurch=(rr.nonpurch||[]).length; } }catch(_e){}
       return true;});
-    feed._note='Auto-derived CRO audit inputs (grooming %, QMS sales/non-purchase, DSR submit/score). SM confirms in CRO Daily Audit.';
-    feed._generatedAt=new Date().toISOString();
-    S(CRO_FEED,feed);
+    // Prune day-slots older than FEED_KEEP_DAYS. Explicit YYYY-MM-DD test so _note/_generatedAt survive.
+    var fcut=cutoffIso(FEED_KEEP_DAYS), removed=0;
+    Object.keys(feed).forEach(function(k){ if(/^\d{4}-\d{2}-\d{2}$/.test(k) && k<fcut){ delete feed[k]; removed++; } });
+    if(n>0 || removed>0){   // write only when the feed actually changed (idle cycle = no write = no forced persist)
+      feed._note='Auto-derived CRO audit inputs (grooming %, QMS sales/non-purchase, DSR submit/score). SM confirms in CRO Daily Audit.';
+      feed._generatedAt=new Date().toISOString();
+      S(CRO_FEED,feed);
+    }
   }
 
   /* ── LINK 2: QMS service lead → Watch Service Centre stub case ── */
@@ -452,6 +496,7 @@
   }
   function cycle(){
     _lastCycle=Date.now();   // rec #18: stamp every reconcile (all entry paths) for the freshness indicator
+    _busDirty=false;
     var bus=busLoad();
     produce(bus);
     consumeQmsToDsr(bus);
@@ -461,7 +506,8 @@
     consumeCroAuditFeed(bus);
     consumeQmsServiceToWsc(bus);
     computeGate(bus);
-    busSave(bus);
+    var pruned=busPrune(bus);
+    if(_busDirty || pruned>0) busSave(bus);   // write the bus ONLY when it changed — an idle reconcile writes nothing (no forced whole-DB persist → no ANR)
     reconcileEmployeeMaster();
     reconcileMasters();
     publishOrg();
