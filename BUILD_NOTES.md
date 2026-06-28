@@ -1,3 +1,5 @@
+> ⚠ HISTORICAL — this describes the early V5 / 7-module / pre-SQLite build and is SUPERSEDED. For current facts see README.md '## Current build facts', ARCHITECTURE.md, and SCHEMA.md. Kept for history only.
+
 # Saagar Control Centre — V5 Build Notes
 
 **File**: `index_v5.html` (147 KB, drop-in replacement for `assets/public/index.html`)

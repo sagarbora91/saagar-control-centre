@@ -241,6 +241,10 @@ of case objects. Bridge appends stub cases from QMS service leads.
 | `delivery` | object | (closed) `{ finalAmt, payMode, delTechName, delCustSig }`. |
 | `source` / `sourceRef` | string | `"qms"` + QMS customer id for bridge-created cases. |
 | `_bridgeStub` | bool | Present on auto-created stubs (need intake completion). |
+| `watchPhoto` | bool | (Jun-27) `true` when a "received condition" photo exists for this case. **The image bytes are NOT in this JSON** — only this boolean ref. The image lives in the `SaagarEvidence` IndexedDB store under key `wsf|<caseId>` (see §12). |
+| `watchPhotoAfter` | bool | (Jun-28 before/after-photos feature) `true` when an "after service" photo exists. Same as above — image bytes live in `SaagarEvidence` under key `wsf|<caseId>|after`, not here. |
+
+**New settings key `saagar_wsf_settings_v1`** (single-blob, Service-owned): `{ watchPhotoMandatory: bool }` — admin policy toggle. When `true`, a case **cannot be saved without a received-condition watch photo** (the `wsf|<caseId>` evidence record must exist).
 
 ---
 
@@ -273,7 +277,7 @@ Owner: `expense.html`. This module keeps the legacy `gm_` prefix and the outlier
 | `vendor` | string | (may be `""`). |
 | `firm` | string | `"Saagar Traders"` / `"Helios by Saagar"`. |
 | `description` / `notes` | string | |
-| `billPhoto` | string\|null | data-URI of the bill image (used in missing-voucher check). |
+| `billPhoto` | string\|null | data-URI of the bill image (used in missing-voucher check). **Note:** this inline-data-URI pattern is the *legacy* approach — newer modules (Service, Tax) instead store image bytes in the `SaagarEvidence` IndexedDB store (§12) and keep only a boolean ref in the record. Expense still uses the inline data-URI today. |
 | `source` / `sourceRef` | string\|null | `"petty"` for petty disbursements (+ a petty id). |
 | `void` | bool | Soft-void flag. |
 | `createdAt` / `createdBy` | ISO / string | |
@@ -365,7 +369,13 @@ Value: `{ firms[], activeFirmId, fyStartYear, compliance{} }`.
 - `firms[]`: `{ id (firm_1 | org_*), name, pan, gstin, entity, type (both|…), notes }`.
 - `compliance`: `{ <firmId>: { <FY-year>: { <taskKey>: { done, dueDate, filedOn?, notes? } } } }`.
   Task keys seen: `gstr3b_prev, gstr1_ovd, gstr3b_wk, tds_wk, ptrc_mo, advtax_mo`. `dueDate` drives
-  the overdue/due-this-week/due-this-month Reports.
+  the overdue/due-this-week/due-this-month Reports. STATE.compliance was already firm-keyed at the
+  top level.
+  - **Per-firm custom obligations (Jun-27/28 multi-client change):** a *custom* compliance item now
+    carries an optional `firmId` field inside the item: **absent/`null` = applies to all firms**; a
+    firm id = that firm only. (The outer `<firmId>` key still partitions which firm's calendar the
+    item is stored under; this inner `firmId` lets a custom obligation be scoped or shared across the
+    client base.)
 
 ---
 
@@ -399,7 +409,47 @@ of the server schema.
 
 ---
 
-## 12. Quick index — every key pattern → owning module
+## 12. SaagarEvidence — binary/image store  (IndexedDB, NOT localStorage)
+
+Owner: **Shell** (shell-origin). New as of Jun-27/28. This is the only **IndexedDB** store in the
+app — everything else is localStorage. It holds the raw image bytes that modules used to inline as
+data-URIs, so that case/record JSON stays small.
+
+- **Database:** `saagar_evidence` · **objectStore:** `files`.
+- **Origin gotcha:** the store lives on the **shell origin**. Module pages run inside an `srcdoc`
+  iframe with an **opaque origin**, so they cannot open this IndexedDB directly — they reach it via
+  **`parent.SaagarEvidence`** (the shell exposes the API on `window.SaagarEvidence`). A PHP rebuild
+  replaces this with a normal server-side file/blob table keyed by `itemKey`.
+
+**`files` record shape:**
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | number (autoincrement) | objectStore primary key. |
+| `itemKey` | string | The logical grouping key (see formats below). Indexed via `byKey`. |
+| `name` | string | Original file name. |
+| `type` | string | MIME type (e.g. `image/jpeg`). |
+| `size` | number | Bytes. |
+| `blob` | Blob | The actual image bytes. |
+| `addedAt` | ISO | When stored. |
+
+Index **`byKey`** on `itemKey` (a single `itemKey` may map to **multiple** file records).
+
+**`itemKey` formats:**
+| Producer | Key format | Multiplicity |
+|---|---|---|
+| Service — received-condition watch photo | `wsf\|<caseId>` | one (referenced by `watchPhoto` in §5) |
+| Service — after-service watch photo | `wsf\|<caseId>\|after` | one (referenced by `watchPhotoAfter` in §5) |
+| Tax/compliance — obligation evidence | `<firmId>\|<FY>\|<itemId>` | **multiple files per key allowed** |
+
+> **Manual JSON backup:** the manual backup now includes this store as a top-level **`evidence`**
+> array: `[{ itemKey, name, type, addedAt, dataURL }]` — note the blob is serialised to a **`dataURL`**
+> for transport (vs. the live `blob`). Restore re-inflates these back into the `files` objectStore.
+
+> **Factory Reset** wipes the `saagar_evidence` IndexedDB database along with the localStorage keys.
+
+---
+
+## 13. Quick index — every key pattern → owning module
 
 | Key pattern | Namespace | Owner | Shape |
 |---|---|---|---|
@@ -411,7 +461,7 @@ of the server schema.
 | `retail_queue_management_v1` | C | QMS | object |
 | `saagar_dsr_<date>_<StaffName>` · `saagar_dsr_staff` | A | DSR | object · array |
 | `saagar_stock_<storeKey>_<date>` | A | Stock | object |
-| `saagar_wsf_v2` | A | Service | array |
+| `saagar_wsf_v2` · `saagar_wsf_settings_v1` | A | Service | array · object |
 | `gm_expenses` · `tanishq_statements` · `gm_petty` · `gm_budgets` · `gm_tax_feed` · `gm_audit` · `gm_settings` · `gm_vendors` · `gm_role` | B | Expense | mixed |
 | `saagar_grooming_<date>` | A | Grooming | array |
 | `cro_audits_v3` · `cro_s_v3` | C | CRO Audit | array · object |
@@ -420,6 +470,7 @@ of the server schema.
 | `taxcal_v2` | C | Tax | object |
 | `saagar_bus` · `saagar_bridge_log` · `saagar_gate_status` · `saagar_bridge_qms2dsr` · `saagar_payroll_attendance_feed` · `saagar_cro_audit_feed` · `saagar_tax_payable` · `saagar_exceptions` · `saagar_bridge_config` | A | Integration bridge | mixed |
 | `saagar_qms_archive.json` (file, not LS) | A | QMS/seed | array |
+| `saagar_evidence` (IndexedDB, store `files`; not LS) | A | Shell | blob records |
 
 ---
 

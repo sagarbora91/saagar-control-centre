@@ -1,8 +1,8 @@
 {
   "name": "saagar-bcc-android",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Saagar Traders — Business Control Centre V4, packaged as a fully offline Android app with daily auto-backup.",
+  "description": "Saagar Traders — Business Control Centre (V5), packaged as a fully offline Android app with SQLite-primary storage + daily auto-backup. NOTE: the authoritative build identity is the in-app constants APP_VERSION / APK_BUILD in www/index.html — this npm version is just the build wrapper and is not published.",
   "scripts": {
     "postinstall": "echo Dependencies installed. Next: npm run add:android",
     "add:android": "cap add android",

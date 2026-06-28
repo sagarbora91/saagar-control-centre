@@ -21,6 +21,29 @@ folder.
 
 ---
 
+## Current build facts
+
+These are the **authoritative** values and where they live in code. Treat the named
+constants/files as the single source of truth — prose elsewhere can drift, the constants can't.
+
+| Fact | Value | Source of truth |
+|---|---|---|
+| App version | `APP_VERSION` → **V5** | `www/index.html` (~line 1636) |
+| APK build | `APK_BUILD` → **2.7** | `www/index.html` (~line 1636) |
+| In-app About page | (shows the two above) | populated via JS in `www/index.html` (~line 5014) |
+| Storage engine | `STORAGE_CORE_ENABLED` → **LIVE on `main`** | `www/storage-core.js` |
+| Module count | **10** | the files in `_extracted_modules/` |
+| QMS archival window / threshold | `QMS_KEEP_DAYS` / `QMS_ARCHIVE_MIN` → **45 / 300** | `www/index.html` (~line 4731) |
+
+`APP_VERSION` and `APK_BUILD` are the two constants in `www/index.html`; the in-app About page
+reads them through JS rather than hardcoding, so the screen can never disagree with the constants.
+`_extracted_modules/` is produced by `extract-modules.js` (one decoded HTML per embedded module),
+so its file count *is* the module count.
+
+> Prose elsewhere should reference these constants by name, not copy the literal value.
+
+---
+
 ## 1. What you need (one-time setup on a Windows PC)
 
 | Tool | Version | Link |
@@ -134,13 +157,9 @@ Durability / data-safety properties of the engine (see `ARCHITECTURE.md` and the
 `storage-core.js` is enabled — it detects `window.SaagarStore.enabled` and returns early,
 so only one engine owns `Storage.prototype` and the `bcc.sqlite` file at a time.
 
-> **Flag-comment discrepancy to resolve (surfaced, not judged).** In `storage-core.js`
-> the value is `var STORAGE_CORE_ENABLED = true;`, but the adjacent in-file comment says
-> *"ON in this commit — TEST BRANCH `test/sqlite-on` ONLY … main stays false."* The code
-> value (engine ON) and the comment (claims it should be a test-branch-only flag with
-> `main` false) disagree. This README documents the **actual** value (`true` = engine
-> live). Someone should reconcile the comment with the value — this note only flags the
-> mismatch and does not assert which one is correct.
+> **Historical note (now reconciled).** Earlier `storage-core.js` carried a stale in-file
+> comment implying `STORAGE_CORE_ENABLED` should be a test-branch-only flag with `main` false;
+> the flag is now `true` and the engine is **LIVE on `main`**, which is the authoritative state.
 
 Like any app data, the on-device data is lost only if the app is **uninstalled** or the
 user taps **Settings → Apps → Saagar Control Centre → Storage → Clear storage** (which

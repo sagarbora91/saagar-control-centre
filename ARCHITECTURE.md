@@ -94,6 +94,18 @@ Because the module runs inside the `srcdoc` iframe, shell and module talk over
   state changes into the shell's central audit log (and the home view re-renders if it is
   showing). `sqlite-store.js`, when it is the active engine, also listens for `ST_AUDIT` to
   mirror in-iframe writes into its DB.
+- **`ST_PRINT`** `{ title, css, html, orientation? }` → `stPrintBridge(...)`. Renders the
+  module's posted print HTML in a top-level on-screen print-preview overlay (`#st-print-host`)
+  with Print / Save-PDF / Share actions (Save/Share rasterise via `html2pdf`), wrapped in the
+  shared `.stp-*` print theme so module print bodies stay lean and consistent (`index.html`
+  ~5707/5769).
+- **`ST_SHARE`** `{ file?, text?, fileName, title }` → `stShareBridge(...)`. Routes a module's
+  CSV/data export to `window.SaagarShare` (Capacitor Share on device, file download on desktop).
+- **`ST_WA`** `{ module?, recordId }` → `openWAComposer(...)`. Opens the shell's WhatsApp
+  composer for a module record.
+
+These three exist mainly to work around the `srcdoc` **opaque origin**: a framed module can't
+reliably trigger a file download or open the OS share sheet itself, so it asks the shell to do it.
 
 ### Shell → module (posted into `moduleFrame.contentWindow`)
 
@@ -110,6 +122,11 @@ Because the module runs inside the `srcdoc` iframe, shell and module talk over
 - **`ST_UI_MODE`** `{ mode }` — broadcast mobile/desktop UI mode (`applyUiModeToFrame()`);
   the same in-iframe boot script toggles the `bcc-mobile` class. (In-iframe it also still
   honours a `storage` event on `saagar_ui_mode` as a fallback.)
+- **`ST_OPEN_FEATURE`** `{ target }` — deep-link into a specific feature inside the open
+  module (universal feature search; `forwardFeatureTarget()`). Best-effort: a module that
+  doesn't yet consume the target simply ignores it.
+- **`ST_WA_SENT`** `{ recordId, text }` — posted into the frame after a WhatsApp send so the
+  module can mark that record as messaged.
 
 > Note (from `storage-core.js` §13.8): when the SQLite engine is live, native `localStorage`
 > is no longer written after boot, so the browser's cross-frame `storage` event no longer
@@ -181,12 +198,10 @@ Model:
   anything throws, the engine touches nothing and the app runs on native `localStorage`
   exactly as before.
 
-> **Flag-comment discrepancy (surfaced, not judged).** The value is
-> `var STORAGE_CORE_ENABLED = true;` (engine ON), but the in-file comment beside it says
-> *"ON in this commit — TEST BRANCH `test/sqlite-on` ONLY … main stays false."* The value
-> and the comment disagree about whether this should be on `main`. This doc records the
-> **actual** value (`true`). The mismatch should be reconciled; this note does not assert
-> which side is correct.
+> **Flag-comment note (historical).** `var STORAGE_CORE_ENABLED = true;` and the in-file
+> comment now agree: the engine is **LIVE on `main` since build 2.0** (the comment used to say
+> "test branch only / main stays false" from before the gauntlet shipped — it has since been
+> reconciled to the shipped value).
 
 ### `sqlite-store.js` — DORMANT when storage-core is on (older "Design A")
 
@@ -199,17 +214,34 @@ synchronously sets `enabled = true`, only one engine ever owns `Storage.prototyp
 single `bcc.sqlite` file. When the flag is OFF, `SaagarStore` is undefined and this file is
 the active mirror engine.
 
-### `photo-store.js` — DORMANT (mechanism only)
+### `photo-store.js` — WIRED for Expense bills (plus two more photo stores)
 
 Provides a Filesystem-backed photo API (photos as `DATA/saagar-photos/{id}.{ext}` files,
-loaded lazily) so large image blobs stay out of `MEM` and the text SQLite DB. It is
-explicitly **mechanism only**: per its own header, **none of the 10 modules are wired to it
-yet** — that is a flagged follow-up gated on backup/restore learning to carry photo bytes.
-Today photos are still base64 inside `localStorage` JSON values (so the JSON backup covers
-them). It self-guards on the Filesystem plugin being absent and never synthesises a truthy
-`SaagarStore.enabled` (so it cannot break `sqlite-store.js`'s stand-down guard): it attaches
-`.photo` to an existing `SaagarStore`, or stashes `window.__SaagarPhoto` for storage-core to
-adopt.
+loaded lazily) so large image blobs stay out of `MEM` and the text SQLite DB. It self-guards
+on the Filesystem plugin being absent and never synthesises a truthy `SaagarStore.enabled` (so
+it cannot break `sqlite-store.js`'s stand-down guard): it attaches `.photo` to an existing
+`SaagarStore`, or stashes `window.__SaagarPhoto` for storage-core to adopt.
+
+It is **no longer dormant**: the Expense module is wired to it for bill photos (`expense.html`
+calls `window.SaagarPhoto.put → @photo:` refs), and those bytes are folded into the **manual**
+JSON backup via `photo.snapshot()`. (The file's own header still reads "mechanism only" — that
+comment predates the Expense wiring.)
+
+There are now **three** photo/file stores in the app:
+
+- **(a)** legacy **base64-in-`localStorage`** — photos kept inline in module JSON values (the
+  original path; covered by any backup that snapshots `localStorage`);
+- **(b)** **`photo-store.js`** — Capacitor Filesystem files, used by Expense bill photos;
+- **(c)** **`SaagarEvidence`** — a shell-origin **IndexedDB** store (`saagar_evidence`,
+  defined in `index.html`) used by **Service** watch photos (key `wsf|caseId`) and **Tax**
+  compliance evidence (key `firmId|FY|itemId`). It is engine-independent (it lives outside
+  storage-core).
+
+As of the **Jun-28 photo-safety work**, both (b) and (c) are now included in the **manual**
+JSON backup/restore — `photo.snapshot()` → `payload.photos`, `SaagarEvidence.snapshotAll()` →
+`payload.evidence` — and `SaagarEvidence` is wiped by Factory Reset. The **daily auto-backup
+stays text-only by design** (it snapshots only `localStorage` keys), so the 90 rolling daily
+files are not bloated with base64 photo bytes.
 
 ### `sql.js` WASM (`sql-wasm.js` / `sql-wasm.wasm`)
 
@@ -236,6 +268,21 @@ data across modules. It was previously undocumented; this section is the referen
   they have not already marked, and stamp `consumed[who] = true` when done (idempotent
   consumers). The bus is therefore the single audit trail of every cross-module flow — and,
   per the file header, the same shape an eventual PHP rebuild would reuse.
+
+> **Jun-28 rewrite (QMS ANR fix).** The bridge was rewritten to stop forcing a whole-DB
+> persist on every cycle. `cycle()` now writes the bus and the CRO audit feed **only when they
+> actually changed** (a `_busDirty` flag set by `emit()`/`consume()`, plus a non-zero prune
+> count), so an idle reconcile writes nothing. Every producer is bounded to **`RECENT_DAYS = 7`**
+> (a closed lead is bounded by its *close* date so a late-closed old visit still flows; an
+> *undated* lead is skipped, never defaulted to today), and the bus is pruned to
+> **`BUS_TTL_DAYS = 14`** on a **business-date axis** (the same axis producers filter on, so an
+> aged-out event is never re-emitted then re-pruned); `BUS_CAP` is still 2000.
+> Previously, `cycle()` rewrote `saagar_bus` (~552 KB), `saagar_cro_audit_feed`, and
+> `saagar_bridge_qms2dsr` **unconditionally every cycle** — i.e. on the 60 s tick *and* on every
+> module open. Each value is >50 KB, and under the live SQLite engine any `localStorage` write
+> forces an immediate whole-DB `sql.js` export on the **main thread**; doing three of them per
+> cycle blocked the UI thread long enough to trip Android's ANR force-close (reproduced opening
+> QMS).
 
 ### What it wires (producers → consumers)
 
@@ -310,11 +357,12 @@ returns the last backup date, native flag, folder, and recent log. Because these
 live in normal Documents storage, they survive an app uninstall and can be copied to a PC or a
 new phone, then restored via the shell's Configuration → Data & Backup → Restore.
 
-> Caveat tied to the deferred photo work (§3): the JSON backup carries photos **only** while
-> they remain base64 inside `localStorage` values. If a module is ever rewired to move photos
-> into `photo-store.js`'s Filesystem refs, this backup (and the `bcc.sqlite` safety-net, which
-> is text-only) would no longer contain the image bytes — so photo snapshot/restore must be
-> added to the backup path *before* that rewire.
+> Caveat (photos, see §3): this **daily auto-backup is text-only by design** — it snapshots
+> `localStorage` keys only, so it does *not* carry the Filesystem-backed Expense bill photos
+> (`photo-store.js`) or the `SaagarEvidence` watch/compliance photos, and the `bcc.sqlite`
+> safety-net is text-only too. That is intentional: keeping image bytes out of the 90 rolling
+> daily files avoids bloating them. Photo coverage lives in the **manual** JSON backup instead
+> (§3 — `payload.photos` + `payload.evidence`), which is the path to use before a device migration.
 
 ---
 

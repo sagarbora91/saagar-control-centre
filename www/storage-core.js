@@ -22,8 +22,11 @@
 (function () {
   'use strict';
 
-  /* ── Build-time flag (Option C). Flip to true ONLY after the §14 gauntlet. ──
-     ⚠ ON in this commit — TEST BRANCH `test/sqlite-on` ONLY (on-device gauntlet build). main stays false. */
+  /* ── Build-time flag (Option C). ──
+     ENGINE LIVE ON `main` since build 2.0 (passed the §14 gauntlet; see SQLITE_PRIMARY_PLAN.md §17 +
+     README §5). The in-memory Map is the source of truth, persisted to bcc.sqlite. Rollback = set false
+     (pure no-op → native localStorage). [Historical: this comment used to say "test branch only / main
+     stays false" from before the gauntlet shipped — reconciled to the shipped value.] */
   var STORAGE_CORE_ENABLED = true;
   /* test/staging override hook — harnesses set window.__FORCE_STORAGE_CORE; never set in production */
   try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_CORE === true) STORAGE_CORE_ENABLED = true; } catch (e) {}

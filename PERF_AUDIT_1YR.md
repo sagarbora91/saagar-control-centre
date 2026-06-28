@@ -40,8 +40,10 @@ Many of the 40 perf findings are **already resolved by the key-cache** above. Wh
 disk engine** (Route B was rejected in design review: backing the modules' SYNCHRONOUS localStorage API with
 an ASYNC disk DB risks null reads → crash + silent read-modify-write corruption, and isn't cleanly
 reversible). Instead, `qmsArchiveOldCustomers()` (index.html) moves OLD + CLOSED customers (older than
-`QMS_KEEP_DAYS=90`, only past the `QMS_ARCHIVE_MIN=500` threshold) out of the live blob into a durable
-archive file (`DATA/saagar_qms_archive.json`):
+`QMS_KEEP_DAYS=45`, only past the `QMS_ARCHIVE_MIN=300` threshold) out of the live blob into a durable
+archive file (`DATA/saagar_qms_archive.json`). *(The DEMO seed also caps the QMS LIVE store to the last
+**31 days** of walk-ins — `demo-seed.js` — so seeding a full year never bloats the live blob on device;
+older days ride in the archive file. On-screen reports cover the last 7/31 days, so nothing is lost.)*
 - **Export-first then shrink** (write archive `.tmp`→rename, *then* trim the live array) ⇒ zero loss even if
   killed mid-prune; **idempotent** (dedup by id); **crash-safe** (archive-write failure → live untouched).
 - **Auto-runs on boot** (engine ON only, deferred 4 s, Home-only) with a **race guard** (`activeModuleId` /
@@ -61,7 +63,19 @@ builds 15 PDFs sequentially; WAL big-value path. Mostly fine on modern phones; w
 
 **E. Tiny functional nits:** leave allows past-date entries (UX), QMS mobile-lookup is a linear scan.
 
+**F. Integration-bridge ANR fix — RESOLVED (Jun-28).** The cross-module reconcile was the last
+on-device force-close: `cycle()` (integration-bridge.js) persisted the bus + CRO feed unconditionally
+every cycle — an unbounded ~750 KB whole-DB persist burst that ANR-crashed QMS while idle in the module.
+Fix: `cycle()` now **change-gates** the bus/CRO-feed writes (an idle reconcile writes nothing), **bounds
+producers** to `RECENT_DAYS=7` (only recent-dated events are emitted), and **prunes** the bus to
+`BUS_TTL_DAYS=14`. This closed the QMS on-device force-close.
+
 ## Build artifacts
+- **Builds 2.4–2.7** (incremental, atop 2.3; current `APK_BUILD=2.7`, engine ON):
+  - **2.4** — print preview.
+  - **2.5** — QMS allocation.
+  - **2.6** — compliance multi-client.
+  - **2.7** — watch-photo toggle + photo-safety backup.
 - **Clean build 2.3** (empty, real-data ready; QMS archival + render caps; *handles years of data*) →
   `latest` release. `DEMO_SEED_ENABLED=false`, engine ON. Supersedes 2.1/2.2.
 - **Clean build 2.1** (empty, real-data ready) → earlier `latest`. `DEMO_SEED_ENABLED=false`.
