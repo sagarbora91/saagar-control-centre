@@ -383,21 +383,37 @@
 
     /* ===== PAYROLL — SALARY REGISTER (landscape) ===== */
     payrollRegister: function (o) {
-      var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
-      var period = (meta.month || '') + ' ' + (meta.year || '');
-      if (!rows.length) return { orientation: 'landscape', blocks: [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period }, { t: 'empty', text: 'No employees in payroll.' }] };
-      var T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 }, body = [], raw = [];
-      rows.forEach(function (r, i) {
-        var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : (r.netPay || 0)) || 0;
-        var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross)); // OT is in net but not base gross → derive so Net = Gross+OT−deductions
-        T.gross += gross; T.ot += ot; T.pt += pt; T.pf += pf; T.esic += es; T.adv += adv; T.net += net;
-        body.push([String(i + 1), r.empId || '—', trunc(r.name || '—', 22), trunc(r.designation || '—', 16), inr(gross), inr(ot), inr(pt), inr(pf), inr(es), inr(adv), inr(net)]);
-        raw.push([0, 0, 0, 0, gross, ot, pt, pf, es, adv, net]); // exact per-row numerics (OT rounded as printed) → Σraw == foot
+      o = o || {};
+      // Prefer EXACT figures passed live from the payroll module (opts.rows). Fall back to the
+      // mirrored localStorage snapshot when called with no data (e.g. the shell Reports hub) —
+      // that path is byte-for-byte the original behaviour.
+      var period, locked, T, body = [], raw = [], items, fromOpts = Array.isArray(o.rows);
+      if (fromOpts) {
+        period = o.period || ''; locked = !!o.locked;
+        items = o.rows.map(function (r) { return { empId: r.empId || '—', name: r.name || '—', designation: r.designation || '—', gross: Number(r.gross) || 0, ot: Number(r.ot) || 0, pt: Number(r.pt) || 0, pf: Number(r.pf) || 0, esic: Number(r.esic) || 0, advance: Number(r.advance) || 0, net: Number(r.net) || 0 }; });
+        var ot0 = o.totals || {};
+        T = { gross: Number(ot0.gross) || 0, ot: Number(ot0.ot) || 0, pt: Number(ot0.pt) || 0, pf: Number(ot0.pf) || 0, esic: Number(ot0.esic) || 0, adv: Number(ot0.advance) || 0, net: Number(ot0.net) || 0 };
+      } else {
+        var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
+        period = (meta.month || '') + ' ' + (meta.year || '');
+        var status = (meta.run && meta.run.status) || ((p.runs && Object.keys(p.runs).length) ? 'locked' : 'draft'); locked = /lock/i.test(status);
+        T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 }; items = [];
+        rows.forEach(function (r) {
+          var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : (r.netPay || 0)) || 0;
+          var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross));
+          T.gross += gross; T.ot += ot; T.pt += pt; T.pf += pf; T.esic += es; T.adv += adv; T.net += net;
+          items.push({ empId: r.empId || '—', name: r.name || '—', designation: r.designation || '—', gross: gross, ot: ot, pt: pt, pf: pf, esic: es, advance: adv, net: net });
+        });
+        o.preparedBy = meta.preparedBy; o.checkedBy = meta.checkedBy; o.approvedBy = meta.approvedBy;
+      }
+      if (!items.length) return { orientation: 'landscape', blocks: [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period }, { t: 'empty', text: 'No employees in payroll.' }] };
+      items.forEach(function (r, i) {
+        body.push([String(i + 1), r.empId, trunc(r.name, 22), trunc(r.designation, 16), inr(r.gross), inr(r.ot), inr(r.pt), inr(r.pf), inr(r.esic), inr(r.advance), inr(r.net)]);
+        raw.push([0, 0, 0, 0, r.gross, r.ot, r.pt, r.pf, r.esic, r.advance, r.net]); // exact per-row numerics → Σraw == foot
       });
-      var status = (meta.run && meta.run.status) || ((p.runs && Object.keys(p.runs).length) ? 'locked' : 'draft'), locked = /lock/i.test(status);
       var blocks = [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period, chip: locked ? 'LOCKED — FINAL' : 'DRAFT', chipKind: locked ? 'locked' : 'draft' }];
       blocks.push({ t: 'kpi', cols: 5, items: [
-        { label: 'Employees', value: num(rows.length) },
+        { label: 'Employees', value: num(items.length) },
         { label: 'Gross + OT', value: inr(T.gross + T.ot) },
         { label: 'Total Deductions', value: inr(T.pt + T.pf + T.esic + T.adv) },
         { label: 'Total Advance', value: inr(T.adv) },
@@ -407,14 +423,16 @@
         head: [['Sr', 'Emp ID', 'Employee', 'Designation', 'Gross', 'OT', 'PT', 'PF (EE)', 'ESIC', 'Advance', 'Net Pay']],
         body: body, raw: raw, money: [4, 5, 6, 7, 8, 9, 10],
         colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 56 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 92 }, 4: { cellWidth: 78, halign: 'right' }, 5: { cellWidth: 56, halign: 'right' }, 6: { cellWidth: 54, halign: 'right' }, 7: { cellWidth: 62, halign: 'right' }, 8: { cellWidth: 60, halign: 'right' }, 9: { cellWidth: 70, halign: 'right' }, 10: { cellWidth: 86, halign: 'right' } },
-        foot: [['', '', 'TOTAL (' + rows.length + ')', '', inr(T.gross), inr(T.ot), inr(T.pt), inr(T.pf), inr(T.esic), inr(T.adv), inr(T.net)]] });
+        foot: [['', '', 'TOTAL (' + items.length + ')', '', inr(T.gross), inr(T.ot), inr(T.pt), inr(T.pf), inr(T.esic), inr(T.adv), inr(T.net)]] });
       blocks.push({ t: 'statline', spans: [['Statutory — PT', inr(T.pt)], ['PF (EE)', inr(T.pf)], ['ESIC (EE)', inr(T.esic)], ['Net paid to staff', inr(T.net)]] });
-      blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: meta.preparedBy || '—' }, { role: 'Checked By', name: meta.checkedBy || '—' }, { role: 'For Saagar Traders', name: meta.approvedBy || '—' }] });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: o.preparedBy || '—' }, { role: 'Checked By', name: o.checkedBy || '—' }, { role: 'For Saagar Traders', name: o.approvedBy || '—' }] });
       return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== PAYROLL — SALARY SLIP (portrait, per employee) ===== */
     payrollSlip: function (o) {
+      o = o || {};
+      if (o.slip) return { orientation: 'portrait', blocks: [{ t: 'header', title: 'SALARY SLIP', sub: 'Saagar Traders · Latur', period: 'For ' + (o.slip.period || '') }].concat(slipBlocks(o.slip, 'Employee & Attendance')) };
       var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
       var r = o.empId ? rows.filter(function (x) { return x.empId === o.empId; })[0] : (o.empIndex != null ? rows[o.empIndex] : rows[0]);
       var period = (meta.month || '') + ' ' + (meta.year || '');
@@ -436,6 +454,78 @@
       if (r.salaryRemark) blocks.push({ t: 'note', text: 'Remark: ' + r.salaryRemark });
       if (r.paidRef) blocks.push({ t: 'note', text: 'Payment: ' + (r.paidMode || '') + ' · Ref ' + r.paidRef + (r.paidDate ? ' · ' + r.paidDate : '') });
       blocks.push({ t: 'sign', boxes: [{ role: 'Employee', name: r.name || '' }, { role: 'For Saagar Traders', name: meta.approvedBy || 'Authorised' }] });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== PAYROLL — STATUTORY SUMMARY (portrait) =====
+       Figures come live from the payroll module via opts.totals (employer PF/ESIC are NOT mirrored to
+       localStorage, and rounding each side independently means they can't be derived — so they must be
+       passed in). Falls back to a clear "open the module" note when called with no totals. */
+    statutorySummary: function (o) {
+      o = o || {};
+      var t = o.totals || null;
+      var period = o.period || '';
+      var hdr = { t: 'header', title: 'STATUTORY SUMMARY', sub: 'Saagar Traders · Latur', period: period };
+      if (!t) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Open the Payroll module → Reports tab to generate the statutory summary.' }] };
+      var pfEE = Number(t.pfEE) || 0, pfER = Number(t.pfER) || 0, esEE = Number(t.esEE) || 0, esER = Number(t.esER) || 0, pt = Number(t.pt) || 0, net = Number(t.net) || 0, emp = Number(t.emp) || 0;
+      var totEE = pfEE + esEE + pt, totER = pfER + esER, grand = totEE + totER;
+      var blocks = [hdr];
+      blocks.push({ t: 'kpi', cols: 4, items: [
+        { label: 'Employees', value: num(emp) },
+        { label: 'Employee Deductions', value: inr(totEE) },
+        { label: 'Employer Contribution', value: inr(totER) },
+        { label: 'Total Statutory', value: inr(grand), hero: true }
+      ] });
+      blocks.push({ t: 'section', title: 'Contributions — PF / ESIC / PT' });
+      blocks.push({ t: 'table',
+        head: [['Component', 'Employee', 'Employer', 'Total']],
+        body: [
+          ['Provident Fund (PF)', inr(pfEE), inr(pfER), inr(pfEE + pfER)],
+          ['ESIC', inr(esEE), inr(esER), inr(esEE + esER)],
+          ['Professional Tax (PT)', inr(pt), inr(0), inr(pt)]
+        ],
+        raw: [[0, pfEE, pfER, pfEE + pfER], [0, esEE, esER, esEE + esER], [0, pt, 0, pt]], money: [1, 2, 3],
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 120, halign: 'right' }, 2: { cellWidth: 120, halign: 'right' }, 3: { cellWidth: 120, halign: 'right' } },
+        foot: [['TOTAL', inr(totEE), inr(totER), inr(grand)]] });
+      blocks.push({ t: 'statline', spans: [['Net paid to staff', inr(net)], ['Total remittance (PF+ESIC+PT)', inr(grand)]] });
+      blocks.push({ t: 'note', text: 'Employer PF/ESIC are the exact per-employee totals from the payroll sheet. Verify against your challans before remittance.' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: o.preparedBy || '—' }, { role: 'For Saagar Traders', name: o.approvedBy || 'Authorised Signatory' }] });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== PAYROLL — ADVANCE VOUCHER (portrait) — data passed live from the module ===== */
+    advanceVoucher: function (o) {
+      o = o || {};
+      var v = o.voucher || null;
+      var hdr = { t: 'header', title: 'ADVANCE VOUCHER', sub: 'Saagar Traders · Latur', period: (v && v.date) ? ('Date ' + v.date) : '' };
+      if (!v) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No voucher data — open the Payroll module → Advances.' }] };
+      var blocks = [hdr, { t: 'section', title: 'Salary Advance — Payment Receipt' }];
+      blocks.push({ t: 'kv', cols: 2, pairs: [
+        ['Voucher No.', v.voucherNo || '—'], ['Date', v.date || '—'],
+        ['Employee', v.empName || '—'], ['Employee ID', v.empId || '—'],
+        ['Advance Amount', inr(v.amount)], ['Recovery From', ((v.deductMonth || '') + ' ' + (v.deductYear || '')).trim() || '—'],
+        ['Recovery Plan', v.recoveryPlan || '—'], ['Outstanding', inr(v.outstanding)],
+        ['Mode of Payment', v.mode || 'Cash'], ['Reference No.', v.refNo || '—'],
+        ['Reason', v.reason || '—'], ['Approved By', v.approvedBy || '—']
+      ] });
+      blocks.push({ t: 'netbox', label: 'Advance Paid', value: inr(v.amount) });
+      blocks.push({ t: 'note', text: 'In words: Rupees ' + (v.amountWords || '') + ' Only.' });
+      blocks.push({ t: 'para', text: 'I acknowledge receipt of the above advance from Saagar Traders and authorise its deduction from my salary for ' + ((v.deductMonth || '') + ' ' + (v.deductYear || '')).trim() + '.' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Employee Signature', name: v.empName || '' }, { role: 'Approved / For Saagar Traders', name: v.approvedBy || 'Authorised Signatory' }] });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== PAYROLL — HR LETTER (portrait) — prose paragraphs passed live from the module ===== */
+    hrLetter: function (o) {
+      o = o || {};
+      var L = o.letter || null;
+      var hdr = { t: 'header', title: (L && L.type) ? String(L.type).toUpperCase() : 'HR LETTER', sub: 'Saagar Traders · Latur', period: (L && L.dateNice) ? ('Date ' + L.dateNice) : '' };
+      if (!L) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No letter data — open the Payroll module → HR Letters.' }] };
+      var blocks = [hdr];
+      if (L.ref) blocks.push({ t: 'note', text: 'Ref: ' + L.ref });
+      (L.paras || []).forEach(function (p) { if (p) blocks.push({ t: 'para', text: p }); });
+      blocks.push({ t: 'para', text: L.closing || 'Yours sincerely,' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'For Saagar Traders', name: 'Authorised Signatory' }, { role: 'Employee Acknowledgement', name: L.name || '' }] });
       return { orientation: 'portrait', blocks: blocks };
     },
 
@@ -719,6 +809,9 @@
     croAudit: { title: 'CRO Audit Scorecard', scope: 'daily', icon: '✅' },
     payrollRegister: { title: 'Payroll — Salary Register', scope: 'monthly', icon: '💼' },
     payrollSlip: { title: 'Payroll — Salary Slip', scope: 'monthly', icon: '🧾' },
+    statutorySummary: { title: 'Payroll — Statutory Summary', scope: 'monthly', icon: '🏛️' },
+    advanceVoucher: { title: 'Payroll — Advance Voucher', scope: 'monthly', icon: '🧾' },
+    hrLetter: { title: 'Payroll — HR Letter', scope: 'monthly', icon: '📜' },
     leaveRegister: { title: 'Leave Register', scope: 'monthly', icon: '🌴' },
     groomingDaily: { title: 'Grooming — Daily Audit', scope: 'daily', icon: '✨' },
     groomingMonthly: { title: 'Grooming — Monthly Trend', scope: 'monthly', icon: '📈' },
@@ -894,6 +987,11 @@
     _setf(doc,'normal',FZ.note); _txt(doc, color||PAL.MUT);
     var lines=doc.splitTextToSize(SAN.text(text), w); doc.text(lines, x, y+9); return y + lines.length*11 + 6;
   }
+  // Body prose paragraph (wrapped) — for free-form documents like HR letters.
+  function paraLine(doc, x, y, w, text){
+    _setf(doc,'normal',FZ.tableBody); _txt(doc, PAL.INK);
+    var lines=doc.splitTextToSize(SAN.text(text), w); doc.text(lines, x, y+11); return y + lines.length*13 + 6;
+  }
   function emptyMsg(doc, x, y, w, text){
     y+=40; _setf(doc,'normal',FZ.empty); _txt(doc,PAL.MUT); doc.text(SAN.text(text), x+w/2, y, {align:'center'}); return y+30;
   }
@@ -991,6 +1089,38 @@
   }
 
   /* ---- the renderer ---- */
+  /* Body blocks for ONE salary slip (no header) — shared by the single-slip builder and the
+     batch builders, so a slip looks identical whether exported alone, zipped, or combined. */
+  function slipBlocks(s, leadTitle){
+    var b = [{ t: 'section', title: leadTitle || 'Employee & Attendance' }];
+    b.push({ t: 'kv', cols: 2, pairs: [
+      ['Employee', s.name || '—'], ['Employee ID', s.empId || '—'],
+      ['Gender', s.gender || '—'], ['Pay Period', s.period || '—'],
+      ['Total Days', s.totalDays != null ? String(s.totalDays) : '—'], ['Salary Days', s.salaryDays != null ? String(s.salaryDays) : '—'],
+      ['Deduction Days', s.deductionDays != null ? String(s.deductionDays) : '—'], ['Overtime Days', s.otDays != null ? String(s.otDays) : '—'],
+      ['Bank', s.bankName || '—'], ['A/C No.', s.accountNo || '—'],
+      ['IFSC', s.ifsc || '—'], ['Payment Mode', s.paidMode || '—']
+    ] });
+    b.push({ t: 'table',
+      head: [['Earnings', 'Amount (₹)', 'Deductions', 'Amount (₹)']],
+      body: [
+        ['Basic', inr(s.basic), 'Professional Tax', inr(s.pt)],
+        ['HRA', inr(s.hra), 'PF (Employee)', inr(s.pf)],
+        ['Washing Allowance', inr(s.washing), 'ESIC (Employee)', inr(s.esic)],
+        ['Overtime', inr(s.ot), 'Advance Deduction', inr(s.advance)]
+      ],
+      raw: [[0, s.basic, 0, s.pt], [0, s.hra, 0, s.pf], [0, s.washing, 0, s.esic], [0, s.ot, 0, s.advance]], money: [1, 3],
+      colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96, halign: 'right' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 96, halign: 'right' } },
+      foot: [['Gross Payable + OT' + (s.showRes ? ' *' : ''), inr(s.earnings), 'Total Deductions', inr(s.deductions)]] });
+    b.push({ t: 'netbox', label: 'Net Pay (Take Home)', value: inr(s.net) });
+    b.push({ t: 'note', text: 'In words: Rupees ' + (s.netWords || '') + ' Only.' });
+    if (s.showRes) b.push({ t: 'note', text: '* Gross Salary Payable (' + inr(s.grossPayable) + ') is the pro-rated gross per the agreed pay structure and includes all applicable allowances over and above the components listed (Special Allowance: ' + inr(s.residual) + ').' });
+    if (s.salaryRemark) b.push({ t: 'note', text: 'Remark: ' + s.salaryRemark });
+    if (s.paidRef) b.push({ t: 'note', text: 'Payment: ' + (s.paidMode || '') + ' · Ref/UTR ' + s.paidRef + (s.paidDate ? ' · Paid on ' + s.paidDate : '') });
+    b.push({ t: 'sign', boxes: [{ role: 'Employee Signature', name: s.name || '' }, { role: 'For Saagar Traders', name: s.approvedBy || 'Authorised Signatory' }] });
+    return b;
+  }
+
   function renderDoc(blocks, orientation){
     var portrait = orientation!=='landscape';
     var JsPDF=pdfLib(); if(!JsPDF) throw new Error('R6: jsPDF not loaded');
@@ -1012,6 +1142,8 @@
       switch(blk.t){
         case 'header': break;
         case 'spacer': y+=(blk.h||10); break;
+        case 'pagebreak': doc.addPage(); pageFurniture(); y=M.top; break;
+        case 'para': y=paraLine(doc,M.left,y,contentW,blk.text); break;
         case 'attn': y=attnBanner(doc,M,y,contentW,blk.flags,pageFurniture); break;
         case 'kpi': y=kpiTiles(doc,M.left,y,contentW,blk.items,blk.cols); break;
         case 'section': y=sectionTitle(doc,M.left,y,contentW,blk.title,blk.tag); break;
@@ -1076,11 +1208,56 @@
     try { toast('Report downloaded'); } catch (e) {}
     return Promise.resolve();
   }
+  // JSZip is only needed for the per-employee ZIP export — load it on demand (it is NOT in the
+  // report-engine core gate, so a missing/failed JSZip never blocks normal reports).
+  function ensureZip() {
+    if (window.JSZip) return Promise.resolve();
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script'); s.src = 'jszip.min.js';
+      s.onload = function () { res(); }; s.onerror = function () { rej(new Error('JSZip failed to load')); };
+      (document.body || document.documentElement).appendChild(s);
+    });
+  }
 
   window.SaagarReport = {
     build: function (type, opts) {
       var m = buildModel(type, opts);                                  // all 16 builders return { orientation, blocks:[...] }
       return Promise.resolve(renderDoc(m.blocks, m.orientation).output('blob'));
+    },
+    /* BATCH salary slips (native vector, no screenshots). mode 'combined' = one PDF, one slip per page;
+       mode 'zip' = one PDF per employee in a ZIP. `slips` is the array of gmSlipData objects from the
+       payroll module (exact figures). buildBatch returns the Blob; batchSlips also delivers it. */
+    buildBatch: function (mode, slips) {
+      slips = Array.isArray(slips) ? slips : [];
+      var libs = (window.__SaagarPdfLibs && window.__SaagarPdfLibs.ensure) ? window.__SaagarPdfLibs.ensure() : Promise.resolve();
+      return libs.then(function () {
+        if (mode === 'combined') {
+          var blocks = [{ t: 'header', title: 'SALARY SLIPS', sub: 'Saagar Traders · Latur', period: 'For ' + ((slips[0] && slips[0].period) || '') }];
+          slips.forEach(function (s, i) {
+            blocks = blocks.concat(slipBlocks(s, (s.name || '—') + ' · ' + (s.empId || '')));
+            if (i < slips.length - 1) blocks.push({ t: 'pagebreak' });
+          });
+          return renderDoc(blocks, 'portrait').output('blob');
+        }
+        return ensureZip().then(function () {
+          var zip = new window.JSZip();
+          slips.forEach(function (s, i) {
+            var doc = renderDoc([{ t: 'header', title: 'SALARY SLIP', sub: 'Saagar Traders · Latur', period: 'For ' + (s.period || '') }].concat(slipBlocks(s, 'Employee & Attendance')), 'portrait');
+            var nm = String(i + 1).padStart(3, '0') + '_' + String(s.empId || ('GM' + (i + 1))).replace(/[^A-Za-z0-9]+/g, '') + '_' + String(s.name || '').replace(/[^A-Za-z0-9]+/g, '_').slice(0, 40) + '.pdf';
+            zip.file(nm, doc.output('blob'));
+          });
+          return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 5 } });
+        });
+      });
+    },
+    batchSlips: function (mode, slips, fileBase) {
+      slips = Array.isArray(slips) ? slips : [];
+      if (!slips.length) { try { toast('No employees selected.'); } catch (e) {} return Promise.resolve(); }
+      try { toast('Preparing ' + slips.length + ' slip(s)…'); } catch (e) {}
+      var base = fileBase || 'Salary_Slips';
+      return this.buildBatch(mode, slips)
+        .then(function (blob) { return shareBlob(blob, base + (mode === 'zip' ? '.zip' : '.pdf')); })
+        .catch(function (e) { try { toast('Could not build slips: ' + ((e && e.message) || e)); } catch (_) {} });
     },
     generate: function (type, opts) {
       try { toast('Preparing report…'); } catch (e) {}
@@ -1097,7 +1274,7 @@
       // Salary slip needs ONE employee. fromHub('payrollSlip') passes no empId/empIndex,
       // so without a pick we'd silently emit the first employee — instead show a chooser
       // and let the tap re-enter preview() with the chosen empId.
-      if (type === 'payrollSlip' && !opts.empId && opts.empIndex == null) {
+      if (type === 'payrollSlip' && !opts.slip && !opts.empId && opts.empIndex == null) {
         return this._payrollChooser(opts);
       }
       self._pp = { type: type, opts: opts, blob: null, fname: filename(type, opts) };
