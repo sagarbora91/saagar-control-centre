@@ -1110,7 +1110,7 @@ html.bcc-mobile #todayView.active{display:block}
       <div class="mark">ST</div>
       <div class="brand-meta">
         <h1 id="brandName">Saagar Traders</h1>
-        <p>Business Control Centre <span class="version-pill">V5</span></p>
+        <p>Business Control Centre <span class="version-pill">V5.5</span></p>
       </div>
     </div>
     <div class="top-actions">
@@ -1499,7 +1499,7 @@ html.bcc-mobile #todayView.active{display:block}
           <h4><span class="em">📱</span> About</h4>
           <p><b>Saagar Traders — Business Control Centre</b><br>
           App ID: <code>com.saagartraders.bcc</code><br>
-          Shell version: <span id="aboutShell">V5</span><br>
+          Shell version: <span id="aboutShell">V5.5</span><br>
           APK build: <span id="aboutBuild">2.7</span><br>
           Build flavor: <span id="aboutFlavor">—</span><br>
           Modules: <span id="aboutModuleCount">—</span> embedded<br>
@@ -1514,19 +1514,31 @@ html.bcc-mobile #todayView.active{display:block}
           </div>
         </div>
         <div class="card card-pad">
-          <h4><span class="em">🌟</span> What's new in V5</h4>
+          <h4><span class="em">🌟</span> What's new in V5.5</h4>
           <ul style="font-size:13px;color:var(--gray-700);padding-left:18px;line-height:1.7">
-            <li>Bottom-nav layout, native-app feel</li>
-            <li>"Today's Brief" daily summary card</li>
-            <li>Reports tab with cross-module rollups</li>
-            <li>Employee performance view</li>
-            <li>Share Today's Brief to WhatsApp (text or PDF)</li>
-            <li>Unified design system (DM Serif + DM Sans, navy &amp; gold)</li>
-            <li>Plain-language labels (no more developer jargon)</li>
-            <li>Time-aware greeting with owner name</li>
-            <li>Restore-from-snapshot one-tap helper</li>
+            <li>All reports &amp; payroll documents now print as crisp, selectable PDFs — no more screenshots</li>
+            <li>On-screen print preview everywhere, with Save to Documents and Send to WhatsApp</li>
+            <li>Payroll: native salary slips, salary register, statutory summary, advance vouchers &amp; HR letters (single, ZIP, or one combined PDF)</li>
+            <li>Compliance calendar: multiple firms + updated FY 2026-27 statutory due dates</li>
+            <li>Queue (QMS): fair CRO allocation &amp; rotation, pre-claims, and fairness reports</li>
+            <li>View past-date records across modules (read-only)</li>
+            <li>Watch "before &amp; after" photos on service job cards</li>
+            <li>Mobile-friendly layouts across all modules</li>
+            <li>Stability: fixed a Queue-screen crash on the phone</li>
           </ul>
         </div>
+        <details class="card card-pad" id="changelogCard">
+          <summary style="cursor:pointer;font-weight:600;color:var(--navy)">📋 Detailed change log (V5.5)</summary>
+          <style>
+            #changelogBody{margin-top:10px;max-height:440px;overflow:auto;font-size:12.5px;line-height:1.6;color:var(--gray-700);-webkit-overflow-scrolling:touch}
+            #changelogBody h3{font-size:14px;color:var(--navy);margin:0 0 6px}
+            #changelogBody h4{font-size:13px;color:var(--navy);margin:12px 0 4px}
+            #changelogBody h5{font-size:12.5px;color:var(--gray-800);margin:9px 0 3px}
+            #changelogBody ul{padding-left:18px;margin:4px 0}#changelogBody li{margin:2px 0}#changelogBody p{margin:4px 0}
+            #changelogBody code{background:var(--gray-100);padding:0 3px;border-radius:3px;font-size:11.5px}#changelogBody strong{color:var(--gray-800)}
+          </style>
+          <div id="changelogBody" class="changelog-body"></div>
+        </details>
       </div>
 
     </section>
@@ -1633,9 +1645,258 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
 /* ═══════════════════════════════════════════════════════════════════════
    CONSTANTS — IDENTICAL TO V4 SO ALL EXISTING USER DATA IS PRESERVED
    ═══════════════════════════════════════════════════════════════════════ */
-const BUILD_TIME = "2026-05-17";
-const APP_VERSION = "V5";
+const BUILD_TIME = "2026-06-29";
+const APP_VERSION = "V5.5";
 const APK_BUILD = "2.7";
+/* In-app change log (Settings -> About -> Detailed change log). Plain Markdown — to update for a new
+   release, edit the text below; renderMdLite() turns it into the on-screen log. */
+const CHANGELOG_MD = `# Saagar Control Centre — Detailed Code Change Log
+
+Prepared on: 29 June 2026
+
+Scope: old ZIP export compared with latest APK HTML export. Static code comparison only.
+
+## Executive Summary
+
+- The application still contains 10 embedded business modules, but the embedded module code expanded by 235,086 B (+20.7%).
+- The main shell HTML increased from 1,924,172 B to 2,288,872 B, a net increase of 364,700 B.
+- The most important new shell capability is a top-level Android-safe print preview bridge. Modules now post ST_PRINT, ST_REPORT, ST_REPORT_BATCH, ST_SHARE and ST_WA events to the shell instead of relying only on iframe/window.print behavior.
+- A new shell-level IndexedDB evidence store, SaagarEvidence, supports watch photos and compliance evidence files, and has been wired into backup, restore and factory reset.
+- Service Centre, Tax Compliance, QMS and Payroll show the largest functional changes. Stock, DSR, Grooming, CRO Audit, Expense and Leave show focused usability/control improvements.
+- No embedded business module was removed. No common localStorage key was removed in the shell-level scan, which is a positive sign for backward compatibility.
+
+## Package-Level Summary
+
+- **ZIP file size:** old 1,934,010 B -> new 2,043,106 B (109,096 B)
+- **File count:** old 27 -> new 27 (0)
+- **Main shell HTML:** old 1,924,172 B -> new 2,288,872 B (364,700 B)
+- **Decoded module HTML total:** old 1,136,650 B -> new 1,371,736 B (235,086 B)
+- **Embedded modules:** old 10 -> new 10 (0)
+- **Common identical files:** old 20 -> new 20 (—)
+
+## Changed Files
+
+- RUN_LOCAL_SERVER_WINDOWS.bat — Changed — old 98 B / new 220 B / delta 122 B
+- demo-seed.js — Changed — old 66,116 B / new 70,633 B / delta 4,517 B
+- integration-bridge.js — Changed — old 37,144 B / new 41,320 B / delta 4,176 B
+- saagar-report.js — Changed — old 115,700 B / new 129,127 B / delta 13,427 B
+- README.txt — Only in old — old 1,772 B / new — / delta Removed/renamed
+- Saagar_Control_Centre_v5.html — Only in old — old 1,924,172 B / new — / delta Removed/renamed
+- run_local_server_mac_linux.sh — Only in old — old 59 B / new — / delta Removed/renamed
+- FILE_INVENTORY.txt — Only in new — old — / new 478 B / delta Added/renamed
+- README_OPEN_FIRST.txt — Only in new — old — / new 974 B / delta Added/renamed
+- index.html — Only in new — old — / new 2,288,872 B / delta Added/renamed
+
+## Module Changes
+
+### Stock Register
+Code movement: saagar_stock_register_v3_fixed.html — 116,807 B -> 136,599 B (19,792 B, +16.9%); lines 2,303 -> 2,606; diff +363/-60.
+**Summary:** The stock module has moved from a data-entry register to a more complete daily control register with completion meters, printable registers, and mobile card-style row behavior.
+**Major additions / changes:**
+- Opening and Closing count completion meters showing counted brands and percentage progress.
+- Print buttons for Opening Register, Movements Register, Closing Register, and A4 summary via the new shell print preview bridge.
+- Mobile-friendly table-card behavior using data-label attributes so wide stock rows remain readable on phone screens.
+- More explicit required indicators for CRO names and brand list management.
+- Register print helper functions: printOpeningReg, printMovementsReg, printClosingReg and printSummaryReg.
+**Business impact:**
+- Store manager can immediately see whether physical counting is complete.
+- Printed stock records become more consistent and less dependent on raw browser print behavior.
+- Phone use improves because wide tables no longer need impractical horizontal squashing.
+**Compatibility / rollout risk:**
+- No localStorage key was removed; data compatibility appears safe.
+- Because table layout changed on mobile, physical testing on 360px Android screens is recommended.
+**New bridge events:** ST_PRINT
+**New localStorage keys referenced:** None
+**Representative functions:** printClosingReg, printMovementsReg, printOpeningReg, printSummaryReg, stEsc, stHead, stMeta, stPrintDoc, stStoreFull, stVar, updateCountMeter
+
+### Watch Service Centre
+Code movement: Watch Service Centre V2.html — 113,879 B -> 190,149 B (76,270 B, +67.0%); lines 2,658 -> 3,889; diff +1,393/-162.
+**Summary:** This is the largest functional upgrade. The service module now supports watch-condition photo evidence, before/after image handling, proforma invoice generation, follow-up tracking, better dashboard filtering, and stronger closing/payment controls.
+**Major additions / changes:**
+- Received-condition watch photo capture/upload, plus after-service photo capture/upload. Photos are stored outside the case JSON in shell IndexedDB through SaagarEvidence and referenced by flags on the case record.
+- Optional Super-Admin setting to make the received-condition watch photo mandatory before saving a service case.
+- Proforma Invoice printing from the delivery form and from closed case cards. Proforma includes before/after photos when available.
+- Follow-up modal per service case with due date, type, outcome and remarks. WhatsApp messages can be logged back into case follow-ups.
+- Dashboard filters for all/open/closed cases, stage chips, overdue flags, follow-up-due chips, and separate CSV exports for open, closed and all cases.
+- Cash-denomination grid for delivery payment, now shown only when Cash is selected.
+- Central master integration for employees/technicians and point-remark brands.
+- Validation hardening around closure amount and mobile number handling.
+**Business impact:**
+- Creates proper evidence of watch condition at receipt and delivery, reducing future customer dispute risk.
+- Makes service follow-up operational rather than informal.
+- Makes service printouts more professional and shareable.
+- Allows management to review open backlog, delivered cases, overdue cases and follow-up-due cases separately.
+**Compatibility / rollout risk:**
+- Requires backup/restore testing because photos are now in IndexedDB, not only localStorage/SQLite JSON.
+- Largest code expansion; low-end Android WebView testing is important.
+- If watch-photo mandatory mode is enabled, users must be trained before rollout.
+**New bridge events:** ST_PRINT, ST_WA
+**New localStorage keys referenced:** saagar_employee_master_v1, saagar_master_brands, st_v2_admin_mode
+
+### Queue Management / QMS
+Code movement: QMS-V2.1.html — 89,157 B -> 117,661 B (28,504 B, +32.0%); lines 485 -> 633; diff +173/-25.
+**Summary:** QMS now handles more realistic floor allocation: pre-claims, busy/free/off-floor status, waiting customer reallocation, manual allocation, better reporting and employee-master merging.
+**Major additions / changes:**
+- Pre-Claims screen where a CRO can reserve an expected customer by name and mobile for the same day.
+- Auto-routing of a matching walk-in to the pre-claimed CRO when possible; missed/held/expired status handling when the CRO is unavailable or EOD closes.
+- Busy/free/off-floor detection based on open leads and CRO status.
+- Manual allocation dropdown on customer entry for SM/Admin use.
+- Waiting queue logic to fill older waiting customers when a CRO becomes free.
+- New reports print path through ST_PRINT and expanded performance reporting including pre-claim honored/missed counts and skip/waiting summaries.
+- Load cleanup that removes old demo CROs and merges active employees from the central employee master.
+**Business impact:**
+- Reduces unfair rotation errors and improves control when a known customer comes for a specific CRO.
+- Queue pressure becomes visible, especially when all CROs are busy.
+- CRO performance reports become more useful because they include pre-claim and availability context.
+**Compatibility / rollout risk:**
+- Because allocation rules changed, operational UAT should include edge cases: busy CRO, half-day CRO, pre-claimed mobile, skipped turn, EOD close and waiting reallocation.
+**New bridge events:** ST_PRINT
+**New localStorage keys referenced:** None
+
+### Daily Staff Register
+Code movement: Daily Staff Register v3.html — 140,755 B -> 145,679 B (4,924 B, +3.5%); lines 2,769 -> 2,868; diff +104/-5.
+**Summary:** DSR is mostly a usability upgrade. It now shows a header completion meter and mobile accordion behavior for long sections.
+**Major additions / changes:**
+- Header completion meter showing completed sections and completion percentage.
+- Mobile accordion headers/panels for long daily register sections.
+- Desktop/print safeguards so collapsed mobile sections do not disappear in desktop or print output.
+**Business impact:**
+- Staff can see how much of the daily register remains incomplete.
+- Long forms become easier to complete on phone screens.
+**Compatibility / rollout risk:**
+- No major data schema change detected. Test that all accordion sections print/export correctly.
+**New bridge events:** None
+**New localStorage keys referenced:** None
+
+### Expense Manager
+Code movement: expense_manager_v2.html — 74,164 B -> 90,419 B (16,255 B, +21.9%); lines 1,021 -> 1,218; diff +217/-20.
+**Summary:** Expense Manager now has stronger control over cash and ledger entries, including approval locking, Super-Admin audit access, shareable entries and printable cash statements.
+**Major additions / changes:**
+- Super-Admin-only audit tab visibility and audit export.
+- Pending/approved entry status, with approved entries locked against edit/void.
+- Approve entry workflow for Super-Admin.
+- Share entry function for WhatsApp/share style communication.
+- Cash Statement print/WhatsApp output through ST_PRINT.
+- Additional approval messaging for closed but not approved statements.
+**Business impact:**
+- Improves maker-checker control over expenses and cash statements.
+- Reduces risk that approved entries are altered later.
+- Cash statements become easier to print/share from the app.
+**Compatibility / rollout risk:**
+- Approval status is additive; legacy entries remain editable unless explicitly approved. Management should define who gets Super-Admin access.
+**New bridge events:** ST_PRINT
+**New localStorage keys referenced:** None
+
+### Grooming Checklist
+Code movement: grooming_checklist_v3.html — 58,684 B -> 63,811 B (5,127 B, +8.7%); lines 968 -> 1,038; diff +102/-32.
+**Summary:** Grooming has received progress/readability improvements rather than major workflow changes.
+**Major additions / changes:**
+- Live grooming completion meter above the checklist.
+- Day Average and Month Average supporting text now shows checked/total basis.
+- Mobile report table improvements including sticky/scrollable handling and right-edge scroll hint.
+- Mini average bars in monthly report rows.
+**Business impact:**
+- Compliance score becomes easier to understand because users see both percentage and underlying checked/total count.
+- Monthly report is more usable on phones.
+**Compatibility / rollout risk:**
+- No major data key change detected. Verify monthly table horizontal scroll on narrow devices.
+**New bridge events:** None
+**New localStorage keys referenced:** None
+
+### CRO Daily Audit
+Code movement: CRO_Daily_Audit_v3.html — 104,085 B -> 107,425 B (3,340 B, +3.2%); lines 1,915 -> 1,956; diff +60/-19.
+**Summary:** CRO Daily Audit now has a completion meter and print-preview based audit output.
+**Major additions / changes:**
+- Completion meter for the audit form based on rated tasks.
+- Print/save PDF path through ST_PRINT with shared print theme classes.
+- Mobile safeguards for per-metric progress bars.
+**Business impact:**
+- Store manager can see audit completion before finalizing.
+- Audit output should be more reliable in Android WebView.
+**Compatibility / rollout risk:**
+- No core storage-key change detected. Verify all metric bars remain visible on mobile.
+**New bridge events:** ST_PRINT
+**New localStorage keys referenced:** None
+
+### Payroll Suite
+Code movement: Payroll_Suite_V2.html — 205,491 B -> 219,644 B (14,153 B, +6.9%); lines 2,902 -> 3,116; diff +482/-268.
+**Summary:** Payroll has expanded reporting and month-review capabilities. It integrates more tightly with the shell report engine and adds archive viewing, statutory reporting, advance vouchers and HR letters.
+**Major additions / changes:**
+- Read-only archived pay-run selector and archive rendering for locked prior months.
+- Payroll register export through the shell report engine using live rows.
+- Statutory Summary PDF/CSV reporting, with employer-side totals passed live from payroll.
+- Salary slip report engine support for single slip, ZIP batch, and combined PDF batch.
+- Advance Voucher PDF flow and HR Letter PDF flow through the shared report engine.
+- Bank CSV export from employee master bank details.
+- Toast feedback and live/archived approval panel separation.
+**Business impact:**
+- Management can review old locked months without disturbing the current editable month.
+- Salary slips, statutory reports, bank transfer CSV, advance vouchers and HR letters become more standardized.
+- Report figures are less likely to drift because live payroll rows are passed directly to the report engine.
+**Compatibility / rollout risk:**
+- Payroll output should be verified against accountant-approved calculations, especially PF/ESIC/PT rounding and advance deductions.
+- JSZip is used for ZIP batch slips; confirm availability in offline APK and browser export.
+**New bridge events:** ST_PRINT, ST_REPORT, ST_REPORT_BATCH
+**New localStorage keys referenced:** None
+
+### Staff Leave Calendar
+Code movement: staff leave calendar.html — 96,014 B -> 105,353 B (9,339 B, +9.7%); lines 1,939 -> 2,142; diff +218/-15.
+**Summary:** Leave Calendar now integrates more directly with the central employee master and the shared print bridge.
+**Major additions / changes:**
+- Employee ID selector helpers: getCentralEmployees, fillEmpIdSelect and onEmpIdSelect.
+- Read from central employee master key saagar_employee_master_v1.
+- Print output routed through ST_PRINT.
+**Business impact:**
+- Leave entry can be linked to central employee IDs instead of only free-text staff names.
+- Leave calendar print/export is more reliable inside WebView.
+**Compatibility / rollout risk:**
+- Employee master data quality now affects leave selection quality. Existing leave data appears backward compatible.
+**New bridge events:** ST_PRINT
+**New localStorage keys referenced:** saagar_employee_master_v1
+
+### Tax Compliance Calendar
+Code movement: Tax_Compliance_Calendar_India_v4.html — 137,614 B -> 194,996 B (57,382 B, +41.7%); lines 2,043 -> 2,954; diff +968/-57.
+**Summary:** Tax Compliance Calendar has changed from a fixed calendar into a compliance operating system: action center, custom compliance master, evidence files, NA handling, firm payroll applicability, archives and CSV/export support.
+**Major additions / changes:**
+- Action Center across firms/months for overdue and due-soon items.
+- Manage Compliance modal to add/edit custom obligations, select months, configure risk, owner, reviewer, buffer days, checklist, workflow and evidence pack.
+- Archive built-in or custom obligations and whole categories without deleting source rules.
+- Not Applicable flag at item level so non-applicable obligations can be excluded from scores.
+- Firm-level Has Employees flag to hide payroll-linked PF/ESIC/PT/LWF filings when a firm has no employees, while keeping business-level shop/PT items.
+- Evidence attachment/list/view/delete support through parent.SaagarEvidence IndexedDB store.
+- Compliance CSV export and ST_SHARE support.
+- Additional Maharashtra Shops & Establishment obligations and Income-tax Act form renumbering render function.
+- Print output through ST_PRINT with same visible items as calendar.
+**Business impact:**
+- This is a major control upgrade: the user can make the compliance calendar fit each firm instead of treating every firm as identical.
+- Evidence and reviewer notes make the module more audit-ready.
+- Action Center gives management a single pending/overdue view.
+**Compatibility / rollout risk:**
+- Tax-law text/form-renumbering should be legally reviewed before relying on it.
+- Evidence backup/restore must be tested because files live outside ordinary JSON records.
+- Custom obligations and archive status are additive fields; old data should load, but UAT should include old backups.
+**New bridge events:** ST_PRINT, ST_SHARE
+**New localStorage keys referenced:** None
+
+## Recommended Testing Checklist
+
+- **Shell:** Open each module, switch Mobile/Desktop layout, open overflow actions, verify Back/Home works and no horizontal scroll appears on phone width.
+- **Print/PDF:** For every module with ST_PRINT, open print preview, Save PDF, Share and normal Print. Test Android WebView and desktop Chrome.
+- **Backup/Restore:** Create service watch photos and tax evidence, export backup, factory reset, restore backup, confirm files return.
+- **Service Centre:** Create case with photo, edit case, close case with after-service photo, print job card, print proforma, add WhatsApp follow-up, export open/closed/all CSV.
+- **QMS:** Test rotation, pre-claim, busy CRO, half-day CRO, manual allocation, skipped turn, waiting reallocation and EOD expiry.
+- **Payroll:** Lock month, view archive, export register/statutory summary, generate single slip, combined slips, ZIP slips, advance voucher, HR letter and bank CSV.
+- **Tax:** Add custom obligation, archive/unarchive, attach evidence, mark NA, set firm as no-employees, check action center and CSV.
+- **Expense:** Create pending entry, approve it as Super-Admin, verify edit/void lock, print cash statement and audit export.
+- **Mobile UX:** Check Stock, Service, DSR, Grooming, Tax and Payroll on 360px and 412px widths.
+- **Data migration:** Load a copy of old live data/backups into the new build and verify all modules render without reset.
+
+## Technical Observations
+
+- The embedded MODULES metadata fields bytes and sha256 do not match the decoded embedded HTML in either build; regenerate metadata in the build pipeline.
+- The old package included a Mac/Linux launcher; the new package does not.
+- Tax statutory wording/form changes should be reviewed by a tax professional.
+- Service and Tax modules are substantially larger; test on target Android devices.`;
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2","saagar_wsf_settings_v1"], prefix: [] },
@@ -5011,12 +5272,32 @@ function runDiagnostics(showModal=false){
   return checks;
 }
 
+/* Minimal Markdown -> HTML for the in-app change log: # / ## / ### headings, **bold**, `code`,
+   - bullets, and paragraphs. All text is HTML-escaped first, so the log content is inert. */
+function renderMdLite(md){
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function inl(s){ return esc(s).replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>'); }
+  var out=[], inList=false;
+  function closeList(){ if(inList){ out.push('</ul>'); inList=false; } }
+  String(md).split('\n').forEach(function(raw){
+    var t=raw.replace(/\s+$/,'');
+    if(/^### /.test(t)){ closeList(); out.push('<h5>'+inl(t.slice(4))+'</h5>'); }
+    else if(/^## /.test(t)){ closeList(); out.push('<h4>'+inl(t.slice(3))+'</h4>'); }
+    else if(/^# /.test(t)){ closeList(); out.push('<h3>'+inl(t.slice(2))+'</h3>'); }
+    else if(/^[-*] /.test(t)){ if(!inList){ out.push('<ul>'); inList=true; } out.push('<li>'+inl(t.slice(2))+'</li>'); }
+    else if(t===''){ closeList(); }
+    else { closeList(); out.push('<p>'+inl(t)+'</p>'); }
+  });
+  closeList();
+  return out.join('');
+}
 function renderAbout(){
   if($('aboutShell')) $('aboutShell').textContent = APP_VERSION;
   if($('aboutBuild')) $('aboutBuild').textContent = APK_BUILD;
   if($('aboutModuleCount')) $('aboutModuleCount').textContent = MODULES.length;
   if($('aboutDate')) $('aboutDate').textContent = BUILD_TIME;
   if($('ownerNameInput')) $('ownerNameInput').value = ownerName();
+  try{ if($('changelogBody') && typeof CHANGELOG_MD!=='undefined' && !$('changelogBody').dataset.rendered){ $('changelogBody').innerHTML = renderMdLite(CHANGELOG_MD); $('changelogBody').dataset.rendered='1'; } }catch(e){}
   try{ reflectBuildBadge(); }catch(e){}   // keep the About "Build flavor" row + topbar badge in sync
 }
 
