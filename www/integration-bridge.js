@@ -559,9 +559,13 @@
       // module is immediately usable.
       var doc=f.contentDocument||(f.contentWindow&&f.contentWindow.document);
       if(doc){
+        // Match by the shell's module id (activeModuleId is a shell global; the bridge runs in the
+        // same page). Title regex kept only as fallback — DSR's title is "CRO Login", so the old
+        // /daily staff register/ test never matched and the banner never showed in DSR.
+        var mid=''; try{ mid=activeModuleId||''; }catch(e){}
         var t=(doc.title||'')+' '+((document.getElementById('activeTitle')||{}).textContent||'');
-        if(/queue management|qms/i.test(t)) gateBanner(doc,'Queue Management');
-        else if(/daily staff register/i.test(t)) gateBanner(doc,'Daily Staff Register');
+        if(mid==='qms'||/queue management|qms/i.test(t)) gateBanner(doc,'Queue Management');
+        else if(mid==='dsr'||/daily staff register/i.test(t)) gateBanner(doc,'Daily Staff Register');
       }
       // DEFER + DEBOUNCE the full reconcile. Previously this ran cycle() synchronously inside the
       // iframe 'load' handler, so opening a module blocked the main thread for the whole reconcile —
