@@ -16,6 +16,7 @@
      • QMS → DSR auto-fill .............. SALE/SERVICE/NONPURCHASE_CLOSED
      • DSR → Stock roll-up (feed) ....... DSR_SUBMITTED
      • DSR/Leave → Payroll (feed) ....... DSR_SUBMITTED + LEAVE_APPROVED
+     • WSC delivery → Expense income .... SERVICE_DELIVERED (central ledger)
      • Organisation publish ............. seeds Payroll firm + Tax firms
    Honest boundary: best-effort offline reconciliation; true transactional
    enforcement is the server rebuild. Every write is idempotent, labelled,
@@ -132,7 +133,8 @@
     try{ var lv=L(LEAVE,null);
       if(lv&&lv.leaves){ Object.keys(lv.leaves).forEach(function(dk){
         if(String(dk).slice(0,10)<rc) return;   // skip leaves older than RECENT_DAYS (today + upcoming kept) — else prune/re-emit loop
-        (lv.leaves[dk]||[]).forEach(function(l){ var n=nm(l.staffName||l.name||l.empId||''); if(!n) return;
+        (lv.leaves[dk]||[]).forEach(function(l){ if(l&&l.status&&l.status!=='approved') return;   /* W2-4: pending/rejected never reach the floor gate or payroll; rows with NO status are legacy-approved */
+          var n=nm(l.staffName||l.name||l.empId||''); if(!n) return;
           emitted+=emit(bus,'LEAVE_APPROVED',dk+':'+kk(n),{name:n,date:dk,type:l.type||'full_day'},'leave')?1:0; });
       }); } }catch(e){}
     // DSR submitted → DSR_SUBMITTED
@@ -140,6 +142,19 @@
       var m=lk&&lk.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_(.+)$/); if(!m) continue;
       if(m[1]<rc) continue;   // recent days only — old DSR keys must not re-flood the bus every cycle
       var r=L(lk,null); if(r&&r.submitted) emitted+=emit(bus,'DSR_SUBMITTED',m[1]+':'+kk(m[2].replace(/_/g,' ')),{date:m1(m),name:nm((r.staffName||m[2].replace(/_/g,' '))),score:(r.audit&&r.audit.score)||null},'dsr')?1:0;
+      // W2-3: DSR visitor marked "Purchase" AND billed (qms-visitor sale row with bill+amount saved via
+      // saveSale) → DSR_PURCHASE. QMS reads these off the bus at render time and flags the open lead
+      // "purchased in DSR — confirm & close" (see consumeDsrPurchaseAck + the qms.html reader).
+      // Emitted only once bill AND amount exist: an event payload is frozen at first emit, so emitting
+      // at mark-time would freeze empty bill/amount and the QMS pre-fill would be useless. Gated by the
+      // record date (m[1], already >= rc here) and rd=m[1], so a pruned event is never re-emitted.
+      // Rows with source 'qms' (pushed INTO DSR by a QMS close) never match — no echo at the source.
+      if(r&&Array.isArray(r.sales)) r.sales.forEach(function(s){
+        if(!s||s.source!=='qms-visitor'||!s.sourceRef) return;
+        var _bill=String(s.billNo||'').trim(), _amt=Number(s.amount)||0;
+        if(!_bill||_amt<=0) return;
+        emitted+=emit(bus,'DSR_PURCHASE',String(s.sourceRef),{cid:String(s.sourceRef),bill:_bill,amount:_amt,date:m[1],cro:nm(r.staffName||m[2].replace(/_/g,' ')),product:s.product||'',cust:s.customer||'',mobile:s.mobile||''},'dsr',m[1])?1:0;
+      });
     } function m1(x){return x[1];} }catch(e){}
     // stock closing locked → STOCK_LOCKED
     try{ for(var j=0;j<localStorage.length;j++){ var sk=localStorage.key(j); var sm=sk&&sk.match(STOCK_RE); if(!sm) continue;
@@ -149,6 +164,21 @@
     // cash statement closed → CASH_CLOSED (read-only; Expense untouched)
     try{ var st=L(EXP_STMT,null);
       if(st&&typeof st==='object') Object.keys(st).forEach(function(dk){ var s=st[dk]; if(!s||!s.closed) return; var cd=String(s.date||dk).slice(0,10); if(cd<rc) return; emitted+=emit(bus,'CASH_CLOSED',(s.date||dk),{date:s.date||dk},'expense')?1:0; });
+    }catch(e){}
+    // WSC case delivered (closed with payment) → SERVICE_DELIVERED. Bounded on the CLOSE day like
+    // SALE_CLOSED (rd = closedAt), so only cases closed in the last RECENT_DAYS flow automatically;
+    // older history stays available via Expense's manual Sync tab. Zero/invalid finalAmt is NEVER
+    // emitted (not consume-and-skip) so a later corrected re-close can still produce the income event.
+    try{ var wl=L(WSC,null);
+      if(Array.isArray(wl)) wl.forEach(function(c){
+        if(!c||c.status!=='closed'||!c.id||!c.delivery) return;
+        var wrc=String(c.closedAt||'').slice(0,10);
+        if(!wrc||wrc<rc) return;
+        var wamt=parseFloat(c.delivery.finalAmt); if(!(wamt>0)) return;
+        var wfd=String(c.delivery.collectDate||'').slice(0,10);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(wfd)) wfd=wrc;   // file under the collection day; fall back to the close day
+        emitted+=emit(bus,'SERVICE_DELIVERED',String(c.id),{cid:String(c.id),date:wfd,amount:wamt,mode:c.delivery.payMode||'',ref:c.delivery.payRef||'',cust:c.custName||'',brand:c.brand||'',model:c.model||'',advisor:c.advisor||''},'wsc',wrc)?1:0;
+      });
     }catch(e){}
     // payroll month present → PAYROLL_MONTH
     try{ var pb=L(PAYROLL,null); if(pb&&pb.meta&&pb.meta.month) emitted+=emit(bus,'PAYROLL_MONTH',pb.meta.year+'-'+pb.meta.month,{month:pb.meta.month,year:pb.meta.year},'payroll')?1:0; }catch(e){}
@@ -168,10 +198,17 @@
 
   function consumeQmsToDsr(bus){
     var track=L(Q2D,{}); if(typeof track!=='object'||!track)track={};
+    // W2-3 anti-echo: a close whose sale ALREADY lives in DSR (the CRO marked it in the Visitors tab
+    // and billed it — i.e. a DSR_PURCHASE event exists on this same bus) must NOT be pushed back into
+    // DSR. hasRef() below only guards the SAME-DAY record; this set also covers a cross-day close
+    // (entry yesterday → visitor row in yesterday's DSR record, but SALE_CLOSED files under the exit
+    // day = today → different record key) and a reassigned-CRO close (different staff record).
+    var dsrPurch={}; bus.forEach(function(e){ if(e&&e.type==='DSR_PURCHASE'&&e.payload&&e.payload.cid) dsrPurch[String(e.payload.cid)]=1; });
     function handle(e,kind){
       var p=e.payload||{}; if(!p.cro||!p.date) return false;
       var ed=ensureDsr(p.date,p.cro);
       if(kind==='sale'||kind==='service'){
+        if(dsrPurch[String(p.cid)]) { track[p.cid]=track[p.cid]||{at:e.at,dsrOrigin:true}; return true; }
         if(hasRef(ed.r.sales,p.cid)) { track[p.cid]=track[p.cid]||{at:e.at}; return true; }
         ed.r.sales.push({amount:p.amount||0,billNo:p.bill||'',product:p.prod||(kind==='service'?'Service':'QMS Sale'),customer:p.cust||'',mobile:p.mobile||'',type:kind==='service'?'service':'sale',source:'qms',sourceRef:p.cid,_confirmed:false});
       } else {
@@ -212,6 +249,29 @@
       S(ed.k,r); return true;
     });
     if(n) blog('QMS allocated → DSR visitors '+n);
+    return n;
+  }
+
+  /* W2-3: DSR→QMS write-back ACK (reverse direction of consumeQmsToDsr). The QMS module itself READS
+     DSR_PURCHASE events off the bus at render time to flag open leads "purchased in DSR — confirm &
+     close". The bridge must NEVER write into the QMS blob: QMS keeps its whole state in memory and
+     saves it wholesale (save()/addAudit()), so a bridge-written field would be clobbered by the next
+     QMS save — and would not render until reload anyway (QMS never re-loads from storage). This
+     consumer only closes the loop on the bus: an event is marked consumed('qms') once the matching
+     lead is Closed in QMS (any outcome — the SM's close is authoritative) or when no matching lead
+     exists (silent no-op). While the lead stays open the event stays UNconsumed, so the QMS flag
+     survives re-boots without ever duplicating (it is derived, not stored). */
+  function consumeDsrPurchaseAck(bus){
+    var q=L(QMS,null), byId={};
+    if(q&&Array.isArray(q.customers)) q.customers.forEach(function(c){ if(c&&c.id) byId[String(c.id)]=c; });
+    var n=consume(bus,'DSR_PURCHASE','qms',function(e){
+      var p=e.payload||{}; if(!p.cid) return true;                 // malformed → consume as no-op
+      var c=byId[String(p.cid)];
+      if(!c) return true;                                          // no matching QMS lead → silent no-op
+      if(/closed/i.test(String(c.status||''))) return true;        // lead closed → loop complete, ack
+      return false;                                                // still open → keep the flag live
+    });
+    if(n) blog('DSR purchase → QMS ack '+n);
     return n;
   }
 
@@ -256,24 +316,61 @@
   }
 
   function consumeAttendanceFeed(bus){
-    var m=ym(today()), feed=L(ATT,{}); if(typeof feed!=='object'||!feed)feed={};
-    var month=feed[m]||{};
+    /* W2-1 FIX: bucket each event by ITS OWN month (payload.date), not ym(today()).
+       The old code returned true (consumed) on ANY month mismatch, so a leave approved
+       28-Jun for 3-Jul was marked consumed['payroll'] in June and never reached July's
+       feed; a late DSR/leave straggler dated last month was silently dropped too.
+       Chosen predicate: CONSUME EVERY DATED EVENT EXACTLY ONCE into feed[<its month>].
+       - future-dated leave lands in its target month's bucket immediately (payroll
+         reads it when that month is selected) — consumed once, never retried;
+       - past-month stragglers land in their own month (advisory only if locked);
+       - nothing is ever left unconsumed to churn every cycle or be evicted by the
+         BUS_CAP slice while still pending (which 'return false for future periods'
+         would risk: rd=payload.date is future, so busPrune never ages it out).
+       Idempotency unchanged: deterministic event ids + consumed['payroll'] flag. */
+    var feed=L(ATT,{}); if(typeof feed!=='object'||!feed)feed={};
+    /* One-time repair: pre-fix builds wrongly consumed future-month LEAVE_APPROVED
+       events. Any such event dated in a month AFTER the current month that is already
+       consumed can only have been DROPPED (its month has never been current), so
+       un-consume it for re-processing. Guarded by a persisted flag so it runs once —
+       post-fix future events that WERE bucketed are never un-consumed (double-count safe:
+       flag and buckets live in the same blob/write). */
+    var repaired=false;
+    if(!feed._futureLeaveRepaired){
+      var curM=ym(today());
+      bus.forEach(function(e){
+        if(e.type==='LEAVE_APPROVED'&&e.consumed&&e.consumed.payroll&&e.payload&&e.payload.date&&String(e.payload.date).slice(0,7)>curM){ delete e.consumed.payroll; _busDirty=true; }
+      });
+      feed._futureLeaveRepaired=true; repaired=true;
+    }
+    var touched={};
+    function slot(em,name){
+      var mo=feed[em]; if(!mo||typeof mo!=='object'){mo={};feed[em]=mo;}
+      touched[em]=1;
+      var o=mo[name]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
+      mo[name]=o; return o;
+    }
     consume(bus,'DSR_SUBMITTED','payroll',function(e){
-      var p=e.payload||{}; if(!p.date||p.date.slice(0,7)!==m) return true;
-      var o=month[nm(p.name)]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
+      var p=e.payload||{}; if(!p.date) return true;   // undated — consume & drop (unchanged behaviour)
+      var o=slot(String(p.date).slice(0,7),nm(p.name));
       o.present++; o.dsrDays++; if(p.score!=null){o.scoreSum+=Number(p.score)||0;o.scoreN++;}
-      month[nm(p.name)]=o; return true;
+      return true;
     });
     consume(bus,'LEAVE_APPROVED','payroll',function(e){
-      var p=e.payload||{}; if(!p.date||p.date.slice(0,7)!==m) return true;
-      var o=month[nm(p.name)]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
+      var p=e.payload||{}; if(!p.date) return true;
+      var o=slot(String(p.date).slice(0,7),nm(p.name));
       if((p.type||'full_day')==='full_day') o.leave++; else o.half++;
-      month[nm(p.name)]=o; return true;
+      return true;
     });
-    Object.keys(month).forEach(function(n){ var o=month[n]; o.avgScore=o.scoreN?Math.round(o.scoreSum/o.scoreN):null; });
-    feed[m]=month; feed._generatedAt=new Date().toISOString();
-    feed._note='DSR present-days + SM avgScore + LeaveDesk leave-days. Payroll maker reconciles before lock.';
-    S(ATT,feed);
+    Object.keys(touched).forEach(function(em){
+      var mo=feed[em];
+      Object.keys(mo).forEach(function(n){ var o=mo[n]; if(o&&typeof o==='object'){ o.avgScore=o.scoreN?Math.round(o.scoreSum/o.scoreN):null; } });
+    });
+    if(Object.keys(touched).length||repaired){
+      feed._generatedAt=new Date().toISOString();
+      feed._note='DSR present-days + SM avgScore + LeaveDesk leave-days, bucketed by event month. Payroll maker reconciles before lock.';
+      S(ATT,feed);   // write only when something changed — idle cycles no longer rewrite the feed blob
+    }
   }
 
   /* ── LINK 1: DSR/QMS/Grooming → CRO Daily Audit (derived-inputs feed) ── */
@@ -316,6 +413,41 @@
     if(added){ S(WSC,arr); blog('QMS→WSC stub +'+added); }
   }
 
+  /* ── LINK 6: WSC delivered case → Expense central ledger (service income) ──
+     Consumes SERVICE_DELIVERED as exactly ONE gm_expenses income row (the shape Expense's own
+     normEntry() re-normalises on read, so every renderer/total just works). Durable dedupe =
+     ledger sourceRef 'wsc_<caseId>' — the SAME ref Expense's manual Sync tab uses, so a row
+     posted by either path is seen as posted by the other, in either order, forever.
+     Expense forbids new entries on a locked day (addEntry checks stmt.closed), so we honour it:
+     file under the collection day; if locked, under today; if today is ALSO locked, leave the
+     event unconsumed and retry next cycle (it posts on the next open day). */
+  function consumeServiceIncomeToLedger(bus){
+    var cur=L(EXP_LEDGER,null);
+    if(cur!=null && !Array.isArray(cur)) return;            // unknown shape — never corrupt
+    var arr=Array.isArray(cur)?cur:[];
+    var have={}; arr.forEach(function(x){ if(x&&x.sourceRef) have[x.sourceRef]=1; });
+    var stmts=L(EXP_STMT,null)||{}; if(typeof stmts!=='object') stmts={};
+    var d=today(), added=0;
+    consume(bus,'SERVICE_DELIVERED','expense',function(e){
+      var p=e.payload||{}; if(!p.cid) return true;
+      var ref='wsc_'+p.cid;
+      if(have[ref]) return true;                            // already in the ledger (bridge OR manual Sync) — mark done
+      var amt=Number(p.amount)||0; if(!(amt>0)) return true;
+      var fd=String(p.date||'').slice(0,10)||d;
+      if(stmts[fd]&&stmts[fd].closed) fd=d;
+      if(stmts[fd]&&stmts[fd].closed) return false;         // today locked too → retry next cycle, do NOT consume
+      var md=p.mode||'Cash';                                // counter default = Cash (same as Sync tab)
+      if(md!=='Cash'&&md!=='UPI'&&md!=='Card'&&md!=='Bank') md=(/bank/i.test(md)?'Bank':/upi/i.test(md)?'UPI':/card/i.test(md)?'Card':'Cash');
+      var desc='Service delivered '+p.cid+(p.cust?' — '+p.cust:'')+(p.brand?' ('+p.brand+(p.model?' '+p.model:'')+')':'')+((p.date&&fd!==String(p.date).slice(0,10))?' · collected '+String(p.date).slice(0,10):'');
+      arr.push({id:'e_wsc_'+String(p.cid).replace(/[^A-Za-z0-9_-]/g,''),type:'income',date:fd,amount:amt,
+        category:'Service Income',mode:md,vendor:'',firm:'',description:desc,
+        notes:p.ref?('Pay ref: '+p.ref):'',billPhoto:null,source:'wsc',sourceRef:ref,void:false,
+        createdAt:new Date().toISOString(),createdBy:'bridge',editLog:[]});
+      have[ref]=1; added++; return true;
+    });
+    if(added){ S(EXP_LEDGER,arr); blog('WSC delivered → ledger income +'+added); }
+  }
+
   /* ── LINK 4: Payroll statutory + Expense GST → Tax "amount payable" ── */
   function buildTaxPayable(){
     try{
@@ -342,7 +474,7 @@
       var g=L(GATE,{blocked:[]}); (g.blocked||[]).forEach(function(b){ ex.push({sev:'high',area:'Floor gate',msg:b.name+' — '+b.why+' (blocked from floor)',at:d}); });
       // QMS open leads today
       try{ var q=L(QMS,null); if(q&&Array.isArray(q.customers)){
-        var open=q.customers.filter(function(c){var t=(c.walkInTime||'')+'';return t.slice(0,10)===d && !(c.outcome) && c.status!=='closed';}).length;
+        var open=q.customers.filter(function(c){var t=(c.exitTime||c.entryTime||c.walkInTime||'')+'';return t.slice(0,10)===d && !(c.outcome) && !/closed/i.test(String(c.status||''));}).length;
         if(open) ex.push({sev:'med',area:'QMS',msg:open+' open lead(s) not closed today',at:d});
       } }catch(e){}
       // Stock not locked today
@@ -501,10 +633,12 @@
     produce(bus);
     consumeQmsToDsr(bus);
     consumeQmsAllocatedToDsr(bus);
+    consumeDsrPurchaseAck(bus);
     consumeDsrToStock(bus);
     consumeAttendanceFeed(bus);
     consumeCroAuditFeed(bus);
     consumeQmsServiceToWsc(bus);
+    consumeServiceIncomeToLedger(bus);
     computeGate(bus);
     var pruned=busPrune(bus);
     if(_busDirty || pruned>0) busSave(bus);   // write the bus ONLY when it changed — an idle reconcile writes nothing (no forced whole-DB persist → no ANR)

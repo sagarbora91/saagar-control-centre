@@ -493,6 +493,50 @@
       return { orientation: 'portrait', blocks: blocks };
     },
 
+    /* ===== QMS — END OF DAY OWNER SUMMARY (portrait) =====
+       Figures come live from the QMS module via opts (same calcStats()/croPerfRows() that paint the
+       Dashboard & Reports on screen) — payroll statutorySummary pattern. Falls back to a clear
+       "open the module" note when called with no data (e.g. re-opened from report history). */
+    qmsEodSummary: function (o) {
+      o = o || {};
+      var date = o.date || curDate();
+      var hdr = { t: 'header', title: 'QMS — END OF DAY SUMMARY', sub: (o.store || 'Saagar Traders') + ' · Latur', period: longDate(date), chip: o.closedAt ? 'EOD CLOSED' : 'DAY OPEN', chipKind: o.closedAt ? 'locked' : 'draft' };
+      var k = o.kpi || null;
+      if (!k) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Open the QMS module → Reports → Share Day Summary to generate this report.' }] };
+      var lost = Array.isArray(o.lostReasons) ? o.lostReasons : [];
+      var topReason = lost[0] ? (lost[0].reason + ' (' + lost[0].count + ')') : 'None';
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Walk-ins', value: num(k.walkins) },
+        { label: 'Purchases', value: num(k.purchases), sub: num(k.service) + ' service · ' + num(k.non) + ' non-purchase' },
+        { label: 'Conversion', value: pct(k.conv), hero: true },
+        { label: 'Sales', value: inr(k.sales) },
+        { label: 'Lost', value: inr(k.lost), sub: trunc(topReason, 26), subClass: (Number(k.lost) || 0) > 0 ? 'down' : 'up' }
+      ] }];
+      var cros = Array.isArray(o.cros) ? o.cros : [];
+      blocks.push({ t: 'section', title: 'CRO Performance — turns, conversion, sales, skips' });
+      if (cros.length) {
+        var T = cros.reduce(function (a, r) { a.turns += Number(r.turns) || 0; a.assigned += Number(r.assigned) || 0; a.pur += Number(r.purchases) || 0; a.sales += Number(r.sales) || 0; a.skips += Number(r.skips) || 0; return a; }, { turns: 0, assigned: 0, pur: 0, sales: 0, skips: 0 });
+        blocks.push({ t: 'table',
+          head: [['CRO', 'Turns', 'Assigned', 'Purchases', 'Conv %', 'Sales ₹', 'Skips']],
+          body: cros.map(function (r) { return [trunc(r.name, 22), num(r.turns), num(r.assigned), num(r.purchases), (Number(r.assigned) ? (Number(r.conv) || 0) + '%' : '—'), inr(r.sales), num(r.skips)]; }),
+          money: [5],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 62, halign: 'right' }, 2: { cellWidth: 76, halign: 'right' }, 3: { cellWidth: 82, halign: 'right' }, 4: { cellWidth: 66, halign: 'right' }, 5: { cellWidth: 100, halign: 'right' }, 6: { cellWidth: 58, halign: 'right' } },
+          foot: [['Total', num(T.turns), num(T.assigned), num(T.pur), (T.assigned ? Math.round(T.pur / T.assigned * 100) + '%' : '—'), inr(T.sales), num(T.skips)]] });
+      } else { blocks.push({ t: 'empty', text: 'No CROs on this day\'s rotation.' }); }
+      blocks.push({ t: 'section', title: 'Lost Sales — by reason', tag: lost.length ? { cls: 'warn', txt: inr(k.lost) } : { cls: 'ok', txt: '0' } });
+      if (lost.length) {
+        blocks.push({ t: 'table',
+          head: [['Reason', 'Count', 'Est. Lost ₹']],
+          body: lost.map(function (x) { return [trunc(x.reason, 48), num(x.count), inr(x.value)]; }),
+          money: [2],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 90, halign: 'right' }, 2: { cellWidth: 150, halign: 'right' } },
+          foot: [['Total', num(k.non), inr(k.lost)]] });
+      } else { blocks.push({ t: 'empty', text: 'No lost-sale reasons logged.' }); }
+      if (o.closedAt) blocks.push({ t: 'note', text: 'EOD closed ' + (function () { try { return new Date(o.closedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); } catch (e) { return String(o.closedAt); } })() + (o.closedBy ? ' by ' + o.closedBy : '') + ' · Generated ' + stamp() });
+      else blocks.push({ t: 'note', text: 'Day not yet EOD-closed when this summary was generated · ' + stamp() });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
     /* ===== PAYROLL — ADVANCE VOUCHER (portrait) — data passed live from the module ===== */
     advanceVoucher: function (o) {
       o = o || {};
@@ -537,7 +581,7 @@
       var seen = {}, out = [];
       Object.keys(by).filter(function (dk) { return dk.slice(0, 7) === month; }).sort().forEach(function (dk) {
         var arr = by[dk]; if (!Array.isArray(arr)) return;
-        arr.forEach(function (l) { if (!l || !l.name) return; var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: 1 }; seen[key] = rec; out.push(rec); });
+        arr.forEach(function (l) { if (!l || !l.name) return; if (l.status && l.status !== 'approved') return; /* pending/rejected excluded — mirrors the bridge LEAVE_APPROVED guard; legacy status-less rows count as approved */ var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: 1 }; seen[key] = rec; out.push(rec); });
       });
       var hdr = { t: 'header', title: 'LEAVE REGISTER', sub: 'Saagar Traders · Latur', period: monthLong(month) };
       if (!out.length) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'No leave recorded for this month.' }] };
@@ -807,6 +851,7 @@
     dsrRegister: { title: 'Daily Sales Register (DSR)', scope: 'daily', icon: '🧾' },
     qmsReport: { title: 'Queue & Conversion (QMS)', scope: 'daily', icon: '🎯' },
     croAudit: { title: 'CRO Audit Scorecard', scope: 'daily', icon: '✅' },
+    qmsEodSummary: { title: 'QMS — End of Day Summary', scope: 'daily', icon: '🌙' },
     payrollRegister: { title: 'Payroll — Salary Register', scope: 'monthly', icon: '💼' },
     payrollSlip: { title: 'Payroll — Salary Slip', scope: 'monthly', icon: '🧾' },
     statutorySummary: { title: 'Payroll — Statutory Summary', scope: 'monthly', icon: '🏛️' },
