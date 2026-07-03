@@ -8,8 +8,9 @@
     "add:android": "cap add android",
     "sync": "cap sync android",
     "open": "cap open android",
-    "build:apk": "cap sync android && cd android && gradlew.bat assembleDebug",
-    "build:release": "cap sync android && cd android && gradlew.bat assembleRelease"
+    "apply-overrides": "node build-overrides/apply-overrides.js",
+    "build:apk": "cap sync android && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleDebug",
+    "build:release": "cap sync android && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",

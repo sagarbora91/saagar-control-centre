@@ -98,7 +98,8 @@
       if(e.type!==type) return;
       e.consumed=e.consumed||{};
       if(e.consumed[who]) return;
-      try{ if(fn(e)!==false){ e.consumed[who]=true; _busDirty=true; n++; } }catch(err){}
+      try{ if(fn(e)!==false){ e.consumed[who]=true; _busDirty=true; n++; } }
+      catch(err){ /* bug bridge-05: a persistently-throwing handler used to be retried every cycle until it pruned out (up to 14 days of churn). Give up after 3 tries so a poison event stops re-processing; deterministic ids still prevent any double-apply on paths that DO succeed. */ e._err=e._err||{}; e._err[who]=(e._err[who]||0)+1; if(e._err[who]>=3){ e.consumed[who]=true; _busDirty=true; } }
     });
     return n;
   }
@@ -286,7 +287,10 @@
     });
     if(C.leaveGates) bus.forEach(function(e){
       if(e.type==='LEAVE_APPROVED' && e.payload && e.payload.date===d){
-        var n=e.payload.name; if(!seen[kk(n)]){ blocked.push({name:n,why:'on leave'}); seen[kk(n)]=1; }
+        /* bug bridge-03: only a FULL-day leave bars a person from the floor all day. Half-day-leave staff
+           are present for half the day, so they belong in the "unavailable"/half-day map below — not the
+           red floor-gate blocked[] banner ("do not assign / expect on floor until resolved"). */
+        if((e.payload.type||'full_day')==='full_day'){ var n=e.payload.name; if(!seen[kk(n)]){ blocked.push({name:n,why:'on leave'}); seen[kk(n)]=1; } }
       }
     });
     // J: per-name "unavailable today" map so consumers filter dropdowns in one lookup. Leave
@@ -344,12 +348,35 @@
       });
       feed._futureLeaveRepaired=true; repaired=true;
     }
+    /* bug bridge-02 one-time migration: collapse any existing case-variant name buckets in each month into
+       a single lowercased key (summing counts), so switching the bucket key to kk (below) never splits a
+       person's present/leave days mid-month. Runs exactly once (guarded); avgScore recomputed after. */
+    if(!feed._nameKeyKk){
+      Object.keys(feed).forEach(function(em){
+        if(em.charAt(0)==='_') return; var mo=feed[em]; if(!mo||typeof mo!=='object') return;
+        var merged={};
+        Object.keys(mo).forEach(function(k2){
+          var o2=mo[k2]; if(!o2||typeof o2!=='object') return;
+          var lk=kk(k2), t=merged[lk];
+          if(!t){ t={present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0,display:nm(k2)}; merged[lk]=t; }
+          t.present+=Number(o2.present)||0; t.leave+=Number(o2.leave)||0; t.half+=Number(o2.half)||0;
+          t.dsrDays+=Number(o2.dsrDays)||0; t.scoreSum+=Number(o2.scoreSum)||0; t.scoreN+=Number(o2.scoreN)||0;
+        });
+        Object.keys(merged).forEach(function(lk){ var t=merged[lk]; t.avgScore=t.scoreN?Math.round(t.scoreSum/t.scoreN):null; });
+        feed[em]=merged;
+      });
+      feed._nameKeyKk=true; repaired=true;   // reuse the "changed" flag so the migrated feed is persisted this cycle
+    }
     var touched={};
+    /* bug bridge-02: bucket by the LOWERCASED name (kk). DSR and LeaveDesk store the same person with
+       independent casing, so keying by the raw name split 'Amit Kumar'/'amit kumar' into two buckets and
+       payroll (which lowercases feed keys on read, last-wins) then under-counted. Carry a display name. */
     function slot(em,name){
       var mo=feed[em]; if(!mo||typeof mo!=='object'){mo={};feed[em]=mo;}
       touched[em]=1;
-      var o=mo[name]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
-      mo[name]=o; return o;
+      var key=kk(name), o=mo[key]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
+      if(!o.display) o.display=nm(name);
+      mo[key]=o; return o;
     }
     consume(bus,'DSR_SUBMITTED','payroll',function(e){
       var p=e.payload||{}; if(!p.date) return true;   // undated — consume & drop (unchanged behaviour)
@@ -521,11 +548,13 @@
       });
       var union=Object.keys(by).map(function(k){return by[k];}).sort(function(a,b){return a.name.localeCompare(b.name);});
       if(JSON.stringify(union)!==JSON.stringify(master)){ S(EMP_MASTER,union); blog('emp-master cleaned '+union.length); }
-      // master → QMS roster (dedupe by name)
-      var q=L(QMS,null);
-      if(q&&Array.isArray(q.cros)){var h={};q.cros.forEach(function(c){if(c&&c.name)h[kk(c.name)]=1;});var add=0;
-        union.forEach(function(u){if(!h[kk(u.name)]){q.cros.push({id:'emp_'+kk(u.name).replace(/[^a-z0-9]/g,''),name:u.name,active:true});add++;}});
-        if(add){S(QMS,q);blog('seeded '+add+' → QMS roster');}}
+      // master → QMS roster: DO NOT write the QMS blob from here (bug bridge-01). QMS runs in an iframe and
+      // saves its whole state wholesale, so a bridge write from the shell could clobber an in-flight QMS
+      // save (lost-update race silently dropping a just-added customer / audit / allocation). QMS already
+      // UNIONS the Employee Master into its own cros at load time (qms.html load() reads
+      // saagar_employee_master_v1) — the same read-time-union pattern Stock uses for brands — so seeding
+      // the roster from here is both redundant and unsafe. (The DSR list + saagar_cros writes below target
+      // plain standalone keys, not an in-memory-wholesale-saved blob, so they carry no such race and stay.)
       // master → DSR staff list (dedupe by name)
       var ds=L(DSR_STAFF,null), da=Array.isArray(ds)?ds.slice():[],dh={};
       da.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
@@ -586,7 +615,7 @@
         var by=cm.byMobile, cmCh=false;
         function touchCust(name,mobile,src){ var m10=norm10(mobile); if(!m10) return; var e=by[m10];
           if(!e){ e={custId:'c_'+m10,mobile:m10,names:[],sources:{}}; by[m10]=e; cmCh=true; }
-          var nn=nm(name); if(nn && e.names.indexOf(nn)<0 && e.names.length<6){ e.names.push(nn); cmCh=true; }
+          var nn=nm(name); if(nn){ var _lk=kk(nn); if(!e.names.some(function(x){return kk(x)===_lk;}) && e.names.length<6){ e.names.push(nn); cmCh=true; } }   /* bug bridge-04: dedup names case-insensitively so 'Ravi'/'RAVI' don't both fill the 6-name cap and crowd out a genuinely distinct name */
           if(!e.sources[src]){ e.sources[src]=true; cmCh=true; } }
         var q2=L(QMS,null); if(q2&&Array.isArray(q2.customers)) q2.customers.forEach(function(c){ if(c&&c.mobile) touchCust(c.name,c.mobile,'qms'); });
         var w2=L(WSC,null); if(Array.isArray(w2)) w2.forEach(function(c){ if(c&&c.custMobile) touchCust(c.custName,c.custMobile,'service'); });
