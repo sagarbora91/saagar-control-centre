@@ -41,6 +41,7 @@
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
   var CFG='saagar_bridge_config';
   var MK_BRANDS='saagar_master_brands', MK_VENDORS='saagar_master_vendors', MK_CUSTOMERS='saagar_master_customers';
+  var CUST_MASTER='saagar_customer_master_v1';   // Wave 3: derived mobile-keyed identity index (Customer 360 / Udhaar foundation)
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
   /* ── Bounding so the cross-module reconcile stays cheap regardless of total history. ──
      Producers only emit events whose ACTION date is within RECENT_DAYS (a closed lead is bounded by its
@@ -576,6 +577,20 @@
         var q=L(QMS,null); if(q&&Array.isArray(q.customers)) q.customers.forEach(function(c){ if(c&&c.name)addCust(c.name,c.mobile); });
         var w=L(WSC,null); if(Array.isArray(w)) w.forEach(function(c){ if(c&&c.custName)addCust(c.custName,c.custMobile); });
         if(mcCh){ S(MK_CUSTOMERS,mc); blog('harvested customers → master'); } }catch(e){}
+      /* Wave 3 — DERIVED customer identity index, mobile-keyed with a stable custId. Read-only rollup of the
+         SAME QMS+Service sources (never mutates a module record). Mobile normalises to its last 10 digits;
+         rows without a usable mobile stay module-local (unmatched). Feeds Customer 360 (Home search / repeat
+         flag) and gives Udhaar receivables a stable customer key. Writes only on an actual change. */
+      try{ var norm10=function(m){ var d=String(m||'').replace(/\D/g,''); return d.length>=10?d.slice(-10):''; };
+        var cm=L(CUST_MASTER,null); if(!cm||typeof cm!=='object'||!cm.byMobile||typeof cm.byMobile!=='object') cm={version:1,byMobile:{}};
+        var by=cm.byMobile, cmCh=false;
+        function touchCust(name,mobile,src){ var m10=norm10(mobile); if(!m10) return; var e=by[m10];
+          if(!e){ e={custId:'c_'+m10,mobile:m10,names:[],sources:{}}; by[m10]=e; cmCh=true; }
+          var nn=nm(name); if(nn && e.names.indexOf(nn)<0 && e.names.length<6){ e.names.push(nn); cmCh=true; }
+          if(!e.sources[src]){ e.sources[src]=true; cmCh=true; } }
+        var q2=L(QMS,null); if(q2&&Array.isArray(q2.customers)) q2.customers.forEach(function(c){ if(c&&c.mobile) touchCust(c.name,c.mobile,'qms'); });
+        var w2=L(WSC,null); if(Array.isArray(w2)) w2.forEach(function(c){ if(c&&c.custMobile) touchCust(c.custName,c.custMobile,'service'); });
+        if(cmCh){ cm.version=1; cm.updatedAt=new Date().toISOString(); S(CUST_MASTER,cm); blog('customer master: '+Object.keys(by).length+' mobiles'); } }catch(e){}
     }catch(e){}
   }
 

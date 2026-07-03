@@ -798,6 +798,57 @@
       return { orientation: 'portrait', blocks: blocks };
     },
 
+    /* ===== GST TAX INVOICE (portrait, per service case) — Wave 3 =====
+       Scope: service-centre & non-franchise sales ONLY (never replaces Titan World POS bills).
+       GST rate is the owner-entered per-case value (j.gst) — never invented/hardcoded; a local
+       intra-state sale is shown as CGST + SGST (half each). The sequential invoice number is
+       stamped by the Service module and passed as o.invoiceNo (falls back to the case id). */
+    serviceTaxInvoice: function (o) {
+      var arr = J('saagar_wsf_v2', []); arr = Array.isArray(arr) ? arr : [];
+      var j = o.id ? arr.filter(function (x) { return x.id === o.id; })[0] : arr[0];
+      var hdr0 = { t: 'header', title: 'TAX INVOICE', sub: 'Saagar Traders · Latur', period: longDate(curDate()) };
+      if (!j) return { orientation: 'portrait', blocks: [hdr0, { t: 'empty', text: 'No service case selected.' }] };
+      var org = J('saagar_org_master_v1', null);
+      var firm = (org && Array.isArray(org.firms)) ? (org.firms.filter(function (f) { return f && f.active !== false && f.name; })[0] || org.firms[0]) : null;
+      var firmName = (firm && firm.name) || 'Saagar Traders';
+      var gstin = (firm && (firm.gstin || firm.gstIn || firm.GSTIN)) || '';
+      var firmAddr = (firm && (firm.address || firm.addr)) || 'Latur, Maharashtra';
+      var del = j.delivery || {};
+      var invNo = o.invoiceNo || j.invoiceNo || ('WS-' + (j.id || ''));
+      var invDate = del.collectDate || (j.closedAt ? String(j.closedAt).slice(0, 10) : curDate());
+      var sub = parseFloat(j.subTotal) || 0;
+      var gstPct = parseFloat(j.gst) || 0;
+      var gstAmt = sub * gstPct / 100;
+      var finalAmt = parseFloat(del.finalAmt) || (sub + gstAmt);
+      var blocks = [{ t: 'header', title: 'TAX INVOICE', sub: firmName + (gstin ? (' · GSTIN ' + gstin) : ''), period: firmAddr, chip: invNo, chipKind: 'locked' }];
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Invoice No', invNo], ['Invoice Date', invDate], ['Service Order', j.id || '—'], ['Delivery Date', del.collectDate || '—']] });
+      blocks.push({ t: 'section', title: 'Bill To' });
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Customer', j.custName || '—'], ['Mobile', j.custMobile || '—'], ['Address', j.custAddr || '—'], ['Watch', [j.brand, j.model].filter(Boolean).join(' ') || '—']] });
+      var items = Array.isArray(j.lineItems) ? j.lineItems.filter(function (l) { return l && (l.desc || l.description); }) : [];
+      blocks.push({ t: 'section', title: 'Particulars' });
+      if (items.length) {
+        blocks.push({ t: 'table',
+          head: [['Description', 'Qty', 'Rate ₹', 'Amount ₹']],
+          body: items.map(function (l) { return [trunc(l.desc || l.description || '—', 46), num(l.qty || 1), inr(l.unit || 0), inr(l.total || 0)]; }),
+          money: [3],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 46, halign: 'right' }, 2: { cellWidth: 90, halign: 'right' }, 3: { cellWidth: 98, halign: 'right' } },
+          foot: [['Taxable Value', '', '', inr(sub)]] });
+      } else {
+        blocks.push({ t: 'table', head: [['Description', 'Amount ₹']], body: [['Service charges', inr(sub)]], money: [1], foot: [['Taxable Value', inr(sub)]] });
+      }
+      blocks.push({ t: 'section', title: 'Tax Summary' });
+      var taxPairs = [];
+      if (gstPct > 0) { taxPairs.push(['CGST @ ' + (gstPct / 2) + '%', inr(gstAmt / 2)]); taxPairs.push(['SGST @ ' + (gstPct / 2) + '%', inr(gstAmt / 2)]); }
+      else { taxPairs.push(['GST', 'Not applicable']); }
+      taxPairs.push(['Taxable Value', inr(sub)]); taxPairs.push(['Total GST', inr(gstAmt)]);
+      blocks.push({ t: 'kv', cols: 2, pairs: taxPairs });
+      blocks.push({ t: 'kv', cols: 1, pairs: [['Total Payable', inr(finalAmt), 'big']] });
+      if (del.warrantyTill) blocks.push({ t: 'note', text: 'Service warranty valid until ' + del.warrantyTill + (del.warrantyMonths ? (' (' + del.warrantyMonths + ' months)') : '') + '. Warranty covers only the work carried out.' });
+      blocks.push({ t: 'note', text: 'Payment ' + (del.payMode ? ('via ' + del.payMode) : 'received') + (del.payRef ? (' · Ref ' + del.payRef) : '') + '. Computer-generated tax invoice for service-centre / non-franchise sales.' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Customer', name: j.custName || '' }, { role: 'For ' + firmName, name: 'Authorised Signatory' }] });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
     /* ===== ⭐ OWNER MONTHLY BRIEF (portrait) ===== */
     ownerMonthly: function (o) {
       var month = o.month || curMonth();
@@ -864,6 +915,7 @@
     taxReport: { title: 'Tax Compliance — Due Report', scope: 'monthly', icon: '⚖️' },
     serviceAging: { title: 'Service — Open Cases Aging', scope: 'daily', icon: '🛠️' },
     serviceJobCard: { title: 'Service — Job Card', scope: 'daily', icon: '📋' },
+    serviceTaxInvoice: { title: 'Service — GST Tax Invoice', scope: 'daily', icon: '🧾' },
     ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' }
   };
 
