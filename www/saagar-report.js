@@ -578,10 +578,12 @@
       var month = o.month || curMonth();
       var d = J('leavedesk_v3', {}) || {}, by = (d && d.leaves) || {}, emps = Array.isArray(d.employees) ? d.employees : [];
       var empMap = {}; emps.forEach(function (e) { empMap[(e.name || '').toLowerCase()] = e; });
+      /* Audit fix bug-01: inclusive local-midnight day span between two ISO dates (floor, min 1). */
+      function leaveDaySpan(fromISO, toISO){ try{ var a=String(fromISO).slice(0,10).split('-'), b=String(toISO).slice(0,10).split('-'); if(a.length!==3||b.length!==3) return 1; var da=new Date(+a[0],+a[1]-1,+a[2]), db=new Date(+b[0],+b[1]-1,+b[2]); var n=Math.floor((db-da)/86400000)+1; return n>=1?n:1; }catch(e){ return 1; } }
       var seen = {}, out = [];
       Object.keys(by).filter(function (dk) { return dk.slice(0, 7) === month; }).sort().forEach(function (dk) {
         var arr = by[dk]; if (!Array.isArray(arr)) return;
-        arr.forEach(function (l) { if (!l || !l.name) return; if (l.status && l.status !== 'approved') return; /* pending/rejected excluded — mirrors the bridge LEAVE_APPROVED guard; legacy status-less rows count as approved */ var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: 1 }; seen[key] = rec; out.push(rec); });
+        arr.forEach(function (l) { if (!l || !l.name) return; if (l.status && l.status !== 'approved') return; /* pending/rejected excluded — mirrors the bridge LEAVE_APPROVED guard; legacy status-less rows count as approved */ var key = (l.name + '|' + (l.leaveFrom || dk) + '|' + (l.leaveTo || dk) + '|' + (l.type || '')).toLowerCase(); if (seen[key]) { if (!seen[key]._spanned) seen[key].days++; return; } var lt = l.type === 'half_day_am' ? 'Half (AM)' : l.type === 'half_day_pm' ? 'Half (PM)' : 'Full day'; var __span = (l.leaveFrom && l.leaveTo && l.leaveFrom !== l.leaveTo) ? leaveDaySpan(l.leaveFrom, l.leaveTo) : 1; var rec = { name: l.name, type: lt, half: /half/i.test(lt), from: l.leaveFrom || dk, to: l.leaveTo || dk, category: l.category || '', reason: l.reason || '', approvedBy: l.approvedBy || '', days: __span, _spanned: __span > 1 }; seen[key] = rec; out.push(rec); });
       });
       var hdr = { t: 'header', title: 'LEAVE REGISTER', sub: 'Saagar Traders · Latur', period: monthLong(month) };
       if (!out.length) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'No leave recorded for this month.' }] };
@@ -838,9 +840,20 @@
       }
       blocks.push({ t: 'section', title: 'Tax Summary' });
       var taxPairs = [];
-      if (gstPct > 0) { taxPairs.push(['CGST @ ' + (gstPct / 2) + '%', inr(gstAmt / 2)]); taxPairs.push(['SGST @ ' + (gstPct / 2) + '%', inr(gstAmt / 2)]); }
+      /* Audit fix bug-02: inr() rounds to whole rupees, so rounding gstAmt/2 twice independently could make
+         CGST+SGST show ₹1 more/less than Total GST. Derive SGST as (roundedTotalGST − roundedCGST) so the
+         two halves ALWAYS sum to the displayed Total GST. */
+      var totGst = Math.round(gstAmt);
+      var cgst = Math.round(gstAmt / 2);
+      var sgst = totGst - cgst;
+      if (gstPct > 0) { taxPairs.push(['CGST @ ' + (gstPct / 2) + '%', inr(cgst)]); taxPairs.push(['SGST @ ' + (gstPct / 2) + '%', inr(sgst)]); }
       else { taxPairs.push(['GST', 'Not applicable']); }
-      taxPairs.push(['Taxable Value', inr(sub)]); taxPairs.push(['Total GST', inr(gstAmt)]);
+      taxPairs.push(['Taxable Value', inr(sub)]); taxPairs.push(['Total GST', inr(totGst)]);
+      /* Audit fix bug-03: a GST tax invoice must reconcile (Taxable + Total GST [+ round-off] = Total Payable).
+         When the owner-entered final amount differs from taxable+GST, show the gap as a Round Off line so the
+         printed arithmetic is self-consistent instead of a silent mismatch. */
+      var roundOff = Math.round(finalAmt) - Math.round(sub) - totGst;
+      if (roundOff !== 0) taxPairs.push(['Round Off', inr(roundOff)]);
       blocks.push({ t: 'kv', cols: 2, pairs: taxPairs });
       blocks.push({ t: 'kv', cols: 1, pairs: [['Total Payable', inr(finalAmt), 'big']] });
       if (del.warrantyTill) blocks.push({ t: 'note', text: 'Service warranty valid until ' + del.warrantyTill + (del.warrantyMonths ? (' (' + del.warrantyMonths + ' months)') : '') + '. Warranty covers only the work carried out.' });
