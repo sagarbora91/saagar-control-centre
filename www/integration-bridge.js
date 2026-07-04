@@ -56,7 +56,8 @@
   function cfg(){ var c=L(CFG,null)||{}; return {
     failPct: (typeof c.failPct==='number'&&c.failPct>=0&&c.failPct<=100)?c.failPct:60,
     leaveGates: c.leaveGates!==false,
-    voucherThreshold: (typeof c.voucherThreshold==='number'&&c.voucherThreshold>=0)?c.voucherThreshold:2000
+    voucherThreshold: (typeof c.voucherThreshold==='number'&&c.voucherThreshold>=0)?c.voucherThreshold:2000,
+    dsrClosingTime: (typeof c.dsrClosingTime==='string'&&/^\d{2}:\d{2}$/.test(c.dsrClosingTime))?c.dsrClosingTime:'20:30'   /* Wave4: EOD cutoff for the unsubmitted-DSR alert; SM-configurable, sane 8:30pm default */
   }; }
 
   function today(){var d=new Date();function p(n){return(n<10?'0':'')+n;}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -107,10 +108,13 @@
   /* ── PRODUCERS ─────────────────────────────────────────────────────── */
   function produce(bus){
     var emitted=0,d=today(),rc=cutoffIso(RECENT_DAYS);
-    // grooming today → GROOMING_RESULT
-    try{ (L(GROOM+d,[])||[]).forEach(function(r){
-      if(r&&r.name) emitted+=emit(bus,'GROOMING_RESULT',d+':'+kk(r.name),{name:nm(r.name),pct:Number(r.pct)||0,date:d},'grooming')?1:0;
-    }); }catch(e){}
+    // grooming today → GROOMING_RESULT (Wave4 re-check: emit the LATEST record per name; the attempt number in
+    // the event id lets an improved re-check post a NEW event past emit()'s dedupe while staying idempotent.)
+    try{ var __grecs=L(GROOM+d,[])||[], __glast={};
+      __grecs.forEach(function(r){ if(r&&r.name) __glast[kk(r.name)]=r; });
+      Object.keys(__glast).forEach(function(gk){ var r=__glast[gk], at=Number(r.attempt)||1;
+        emitted+=emit(bus,'GROOMING_RESULT',d+':'+gk+':'+at,{name:nm(r.name),pct:Number(r.pct)||0,date:d,attempt:at},'grooming')?1:0; });
+    }catch(e){}
     // QMS closed leads → SALE/SERVICE/NONPURCHASE_CLOSED
     try{ var q=L(QMS,null);
       if(q&&Array.isArray(q.customers)){
@@ -279,11 +283,18 @@
 
   function computeGate(bus){
     var d=today(), blocked=[], cleared=[], seen={}, C=cfg();
+    // Wave4 re-check: with attempt-suffixed ids a name can have several GROOMING_RESULT events today. Pick the
+    // LATEST attempt per name and decide the block ONCE, so a passing re-check removes the earlier fail block.
+    var __groom={};
     bus.forEach(function(e){
       if(e.type==='GROOMING_RESULT' && e.payload && e.payload.date===d){
-        var p=e.payload; if(p.pct<C.failPct){ blocked.push({name:p.name,why:'grooming '+Math.round(p.pct)+'%'}); seen[kk(p.name)]=1; }
-        else cleared.push(p.name);
+        var p=e.payload, gk=kk(p.name), at=Number(p.attempt)||1;
+        if(!__groom[gk] || at>=__groom[gk].at) __groom[gk]={name:p.name,pct:p.pct,at:at};
       }
+    });
+    Object.keys(__groom).forEach(function(gk){ var g=__groom[gk];
+      if(g.pct<C.failPct){ blocked.push({name:g.name,why:'grooming '+Math.round(g.pct)+'%'}); seen[gk]=1; }
+      else cleared.push(g.name);
     });
     if(C.leaveGates) bus.forEach(function(e){
       if(e.type==='LEAVE_APPROVED' && e.payload && e.payload.date===d){
@@ -500,6 +511,13 @@
     try{
       var d=today(), ex=[];
       var g=L(GATE,{blocked:[]}); (g.blocked||[]).forEach(function(b){ ex.push({sev:'high',area:'Floor gate',msg:b.name+' — '+b.why+' (blocked from floor)',at:d}); });
+      // Wave4: staff not grooming-checked today (active roster − leave − already-checked). Mirrors the grooming
+      // module's grmEmployees()+grmTodayCounts() predicate so the module panel and this hub count agree.
+      try{ var __em=L(EMP_MASTER,[])||[], __gg=L(GATE,{})||{}, __un=(__gg&&__gg.unavailable)||{};
+        var __grecs=L(GROOM+d,[])||[], __done={}; if(Array.isArray(__grecs)) __grecs.forEach(function(r){ if(r&&r.name) __done[kk(r.name)]=1; });
+        var __pend=0; if(Array.isArray(__em)) __em.forEach(function(e){ if(!e||!e.name||e.active===false) return; var k=kk(e.name); if(__un[k]&&__un[k].leave===true) return; if(!__done[k]) __pend++; });
+        if(__pend) ex.push({sev:'med',area:'Grooming',msg:__pend+' staff not grooming-checked today',at:d});
+      }catch(e){}
       // QMS open leads today
       try{ var q=L(QMS,null); if(q&&Array.isArray(q.customers)){
         var open=q.customers.filter(function(c){var t=(c.exitTime||c.entryTime||c.walkInTime||'')+'';return t.slice(0,10)===d && !(c.outcome) && !/closed/i.test(String(c.status||''));}).length;
@@ -522,6 +540,17 @@
       } }catch(e){}
       // Tax payable due (from our own feed)
       try{ var tp=L(TAXPAY,{})[ym(d)]; if(tp&&(tp.pf||tp.esic||tp.pt||tp.gstEstimate)) ex.push({sev:'low',area:'Tax',msg:'Statutory payable accruing this month (PF/ESIC/PT/GST) — see Tax',at:d}); }catch(e){}
+      // Wave4: staff logged into DSR but not submitted, after the store closing time (cfg.dsrClosingTime, default
+      // 20:30). Skips bridge-created QMS stubs + no-login placeholders; today-only so yesterday never false-fires.
+      try{ var __close=cfg().dsrClosingTime;
+        var __now=(function(){var t=new Date();return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');})();
+        if(__now>=__close){ var __pending=[];
+          for(var __i=0;__i<localStorage.length;__i++){ var __lk=localStorage.key(__i); var __m=__lk&&__lk.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_(.+)$/);
+            if(!__m||__m[1]!==d) continue; var __r=L(__lk,null); if(!__r||typeof __r!=='object') continue;
+            if(__r._noRecord||__r._bridgeCreated) continue; if(__r.submitted===true) continue; if(!__r.loginTime||__r.loginTime==='—') continue;
+            __pending.push(nm(__r.staffName||__m[2].replace(/_/g,' '))); }
+          if(__pending.length) ex.push({sev:'high',area:'DSR',msg:__pending.length+' staff logged in but DSR not submitted (after '+__close+') — '+__pending.slice(0,4).join(', ')+(__pending.length>4?' +'+(__pending.length-4)+' more':''),at:d}); }
+      }catch(e){}
       ex.sort(function(a,b){var o={high:0,med:1,low:2};return o[a.sev]-o[b.sev];});
       S(EXC,{date:d,items:ex,generatedAt:new Date().toISOString()});
     }catch(e){}
