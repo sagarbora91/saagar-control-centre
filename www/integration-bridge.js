@@ -642,11 +642,15 @@
       try{ var norm10=function(m){ var d=String(m||'').replace(/\D/g,''); return d.length>=10?d.slice(-10):''; };
         var cm=L(CUST_MASTER,null); if(!cm||typeof cm!=='object'||!cm.byMobile||typeof cm.byMobile!=='object') cm={version:1,byMobile:{}};
         var by=cm.byMobile, cmCh=false;
-        function touchCust(name,mobile,src){ var m10=norm10(mobile); if(!m10) return; var e=by[m10];
+        function touchCust(name,mobile,src,extra){ var m10=norm10(mobile); if(!m10) return; var e=by[m10];
           if(!e){ e={custId:'c_'+m10,mobile:m10,names:[],sources:{}}; by[m10]=e; cmCh=true; }
           var nn=nm(name); if(nn){ var _lk=kk(nn); if(!e.names.some(function(x){return kk(x)===_lk;}) && e.names.length<6){ e.names.push(nn); cmCh=true; } }   /* bug bridge-04: dedup names case-insensitively so 'Ravi'/'RAVI' don't both fill the 6-name cap and crowd out a genuinely distinct name */
-          if(!e.sources[src]){ e.sources[src]=true; cmCh=true; } }
-        var q2=L(QMS,null); if(q2&&Array.isArray(q2.customers)) q2.customers.forEach(function(c){ if(c&&c.mobile) touchCust(c.name,c.mobile,'qms'); });
+          if(!e.sources[src]){ e.sources[src]=true; cmCh=true; }
+          /* P1-54: carry birthday/anniversary onto the master. FIRST-WINS (set only when absent): two records
+             sharing a mobile with different dates would otherwise flip cmCh every 60s cycle and rewrite the
+             master forever (verify-fix). A blank is never written and an existing date is never overwritten. */
+          if(extra){ if(extra.dob && !e.dob){ e.dob=extra.dob; cmCh=true; } if(extra.anniv && !e.anniv){ e.anniv=extra.anniv; cmCh=true; } } }
+        var q2=L(QMS,null); if(q2&&Array.isArray(q2.customers)) q2.customers.forEach(function(c){ if(c&&c.mobile) touchCust(c.name,c.mobile,'qms',{dob:c.dob,anniv:c.anniv}); });
         var w2=L(WSC,null); if(Array.isArray(w2)) w2.forEach(function(c){ if(c&&c.custMobile) touchCust(c.custName,c.custMobile,'service'); });
         if(cmCh){ cm.version=1; cm.updatedAt=new Date().toISOString(); S(CUST_MASTER,cm); blog('customer master: '+Object.keys(by).length+' mobiles'); } }catch(e){}
     }catch(e){}
