@@ -147,7 +147,7 @@
     try{ for(var i=0;i<localStorage.length;i++){ var lk=localStorage.key(i);
       var m=lk&&lk.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_(.+)$/); if(!m) continue;
       if(m[1]<rc) continue;   // recent days only — old DSR keys must not re-flood the bus every cycle
-      var r=L(lk,null); if(r&&r.submitted) emitted+=emit(bus,'DSR_SUBMITTED',m[1]+':'+kk(m[2].replace(/_/g,' ')),{date:m1(m),name:nm((r.staffName||m[2].replace(/_/g,' '))),score:(r.audit&&r.audit.score)||null},'dsr')?1:0;
+      var r=L(lk,null); if(r&&r.submitted){ var _rev=(typeof r.submitRev==='number'&&r.submitRev>0)?r.submitRev:0; emitted+=emit(bus,'DSR_SUBMITTED',m[1]+':'+kk(m[2].replace(/_/g,' '))+(_rev?':v'+_rev:''),{date:m1(m),name:nm((r.staffName||m[2].replace(/_/g,' '))),score:(r.audit&&r.audit.score)||null,rev:_rev},'dsr')?1:0; }   /* P1-12: a corrected re-submit (submitRev>=1) posts a fresh id past emit() dedupe; rev 0 = identical id to before (no orphaned events) */
       // W2-3: DSR visitor marked "Purchase" AND billed (qms-visitor sale row with bill+amount saved via
       // saveSale) → DSR_PURCHASE. QMS reads these off the bus at render time and flags the open lead
       // "purchased in DSR — confirm & close" (see consumeDsrPurchaseAck + the qms.html reader).
@@ -392,7 +392,21 @@
     consume(bus,'DSR_SUBMITTED','payroll',function(e){
       var p=e.payload||{}; if(!p.date) return true;   // undated — consume & drop (unchanged behaviour)
       var o=slot(String(p.date).slice(0,7),nm(p.name));
-      o.present++; o.dsrDays++; if(p.score!=null){o.scoreSum+=Number(p.score)||0;o.scoreN++;}
+      /* P1-12: a corrected re-submit (new :v<rev> id) posts a SECOND DSR_SUBMITTED for the same day.
+         Guard by a per-(date:name) map so presence is counted ONCE; a re-submit only REPLACES the score. */
+      o._dsrDays=o._dsrDays||{};
+      var dayKey=String(p.date).slice(0,10)+'|'+kk(p.name);
+      var sc=(p.score!=null)?(Number(p.score)||0):null;
+      if(!(dayKey in o._dsrDays)){                        // FIRST submit for this day → count presence once
+        o.present++; o.dsrDays++;
+        if(sc!=null){o.scoreSum+=sc;o.scoreN++;}
+        o._dsrDays[dayKey]=sc;
+      } else {                                            // corrected RE-submit → replace score, do NOT re-count presence
+        var prev=o._dsrDays[dayKey];
+        if(prev!=null){o.scoreSum-=prev;o.scoreN--;}
+        if(sc!=null){o.scoreSum+=sc;o.scoreN++;}
+        o._dsrDays[dayKey]=sc;
+      }
       return true;
     });
     consume(bus,'LEAVE_APPROVED','payroll',function(e){
