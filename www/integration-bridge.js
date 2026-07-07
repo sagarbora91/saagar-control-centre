@@ -194,6 +194,41 @@
 
   /* ── CONSUMERS ─────────────────────────────────────────────────────── */
   function dsrKey(date,name){ return DSR+date+'_'+nm(name).replace(/\s+/g,'_'); }
+  /* P1-8: resolve a DSR record's store CODE. DSR records persist no store field
+     (dsr.html blankRecord), so r.store||r.storeCode is empty today and everything
+     bucketed WLMHW. Consult the employee master (same source dsr.html staffStore()
+     uses; store = 'Titan World'|'Helios'). Fallback unchanged: WLMHW. */
+  function dsrStoreCode(r){
+    var s=String((r&&(r.store||r.storeCode))||'').toUpperCase();
+    if(s==='WLMHW'||s==='HEMW') return s;
+    var who=kk(r&&r.staffName);
+    if(who){ var em=L(EMP_MASTER,[])||[];
+      for(var i=0;i<em.length;i++){ var e=em[i];
+        if(e&&e.active!==false&&kk(e.name)===who){
+          var st2=kk(e.store);
+          if(st2.indexOf('helios')>=0) return 'HEMW';
+          if(st2.indexOf('titan')>=0)  return 'WLMHW';
+          break; } } }
+    return 'WLMHW';
+  }
+  /* P1-8: units sold per the DSR for one store/day, recomputed from ALL of that day's
+     SUBMITTED records (not just this consume batch) so staggered multi-CRO submits and
+     P1-12 corrected re-submits never double- or under-count. A "sale" = a confirmed
+     product bill: Number(amount)>0 (dsr.html's own confirmed-bill convention, L1849/L2962)
+     and not a QMS service job (type!=='service'). NOTE: DSR has no qty per bill, so this
+     counts BILLS — copy in stock says so. */
+  function dsrDaySales(date,code){
+    var n=0, pre=DSR+date+'_';                    // DSR='saagar_dsr_'; 'saagar_dsr_staff' can't match
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i); if(!k||k.indexOf(pre)!==0) continue;
+      var r=L(k,null); if(!r||r.submitted!==true) continue;   // excludes _bridgeCreated stubs too
+      if(dsrStoreCode(r)!==code) continue;
+      var arr=Array.isArray(r.sales)?r.sales:[];
+      for(var j=0;j<arr.length;j++){ var s2=arr[j];
+        if(s2 && s2.type!=='service' && (Number(s2.amount)||0)>0) n++; }
+    }
+    return n;
+  }
   function ensureDsr(date,name){
     var k=dsrKey(date,name), r=L(k,null);
     if(!r||typeof r!=='object') r={date:date,staffName:nm(name),role:'CRO',loginTime:'',submitTime:'',submitted:false,audit:{},opening:{},closing:{},inout:[],sales:[],nonpurch:[],tasks:{},marketing:{},cleaning:{},_bridgeCreated:true};
@@ -319,14 +354,16 @@
     consume(bus,'DSR_SUBMITTED','stock',function(e){
       var p=e.payload||{}; if(!p.date||p.date.slice(0,10)!==d) return true; // only today rolls up; older marked done
       var k=dsrKey(p.date,p.name), r=L(k,null); if(!r) return true;
-      var st=(r.store||r.storeCode||'WLMHW').toUpperCase(), b=agg[st]||agg.WLMHW;
+      var b=agg[dsrStoreCode(r)];   // P1-8: same resolver as salesCount so bucket + count agree
       function sum(o){var t=0;if(o&&typeof o==='object')Object.keys(o).forEach(function(x){var v=Number(o[x]&&(o[x].counted||o[x].physical||o[x].qty)||o[x]);if(!isNaN(v))t+=v;});return t;}
       b.open+=sum(r.opening); b.close+=sum(r.closing); if(r.staffName)b.cros.push(r.staffName); touched=true; return true;
     });
     if(touched) ['WLMHW','HEMW'].forEach(function(sc){
       if(!agg[sc].cros.length) return;
       var sk='saagar_stock_'+skey(sc)+'_'+d, sb=L(sk,null); if(!sb||typeof sb!=='object') sb={};
-      sb._dsrRollup={openingTotal:agg[sc].open,closingTotal:agg[sc].close,cros:agg[sc].cros,source:'dsr',note:'Auto roll-up from DSR — informational; SM count/lock unaffected',at:new Date().toISOString()};
+      sb._dsrRollup={openingTotal:agg[sc].open,closingTotal:agg[sc].close,cros:agg[sc].cros,source:'dsr',
+        salesCount:dsrDaySales(d,sc),   /* P1-8: units (bills) sold per submitted DSRs, day-wide recompute */
+        note:'Auto roll-up from DSR — informational; SM count/lock unaffected',at:new Date().toISOString()};
       S(sk,sb);
     });
   }
@@ -532,20 +569,106 @@
         var __pend=0; if(Array.isArray(__em)) __em.forEach(function(e){ if(!e||!e.name||e.active===false) return; var k=kk(e.name); if(__un[k]&&__un[k].leave===true) return; if(!__done[k]) __pend++; });
         if(__pend) ex.push({sev:'med',area:'Grooming',msg:__pend+' staff not grooming-checked today',at:d});
       }catch(e){}
-      // QMS open leads today
+      // QMS open leads today (+ P1-40: promised call-backs due)
       try{ var q=L(QMS,null); if(q&&Array.isArray(q.customers)){
         var open=q.customers.filter(function(c){var t=(c.exitTime||c.entryTime||c.walkInTime||'')+'';return t.slice(0,10)===d && !(c.outcome) && !/closed/i.test(String(c.status||''));}).length;
         if(open) ex.push({sev:'med',area:'QMS',msg:open+' open lead(s) not closed today',at:d});
-      } }catch(e){}
+      }
+      /* P1-40: Pending follow-ups with dueDate <= today (OVERDUE INCLUDED — a promised call-back stays
+         urgent until made). MIRRORS the QMS module's own navBadgeFu / dashboard predicate
+         (state.followups.filter(f=>f.status==='Pending'&&f.dueDate<=todayISO()), qms.html ~L465/L472),
+         both sides on LOCAL dates, so the hub count always equals the QMS badge. Read-only: the QMS blob
+         is never written. ONE aggregate item; ex[] is rebuilt from scratch every cycle (S(EXC,...) below
+         overwrites wholesale), so no dedup state exists to manage. area 'QMS' rides the existing
+         EXC_AREA_TO_MODULE routing (tap on Home → opens QMS). msg must NEVER match /open lead/i —
+         the shell's buildCloseDaySteps filters area-'QMS' items with that regex for the EOD wizard. */
+      if(q&&Array.isArray(q.followups)){
+        var fuDue=0, fuOver=0;
+        q.followups.forEach(function(f){
+          if(!f || f.status!=='Pending') return;
+          if(typeof f.dueDate!=='string' || !f.dueDate) return;     // missing/empty/non-string dueDate never counts, never throws
+          if(f.dueDate<=d){ fuDue++; if(f.dueDate<d) fuOver++; }    // lexicographic YYYY-MM-DD compare — same as QMS
+        });
+        if(fuDue) ex.push({sev:'med',area:'QMS',msg:fuDue+' follow-up(s) due'+(fuOver?' ('+fuOver+' overdue)':'')+' — see Follow-ups',at:d});
+      }
+      }catch(e){}
       // Stock not locked today
       try{ ['WLMHW','HEMW'].forEach(function(sc){ var sb=L('saagar_stock_'+skey(sc)+'_'+d,null);
         if(sb&&typeof sb==='object'&&!sb.closingLocked) ex.push({sev:'med',area:'Stock',msg:sc+' closing not locked today',at:d});
       }); }catch(e){}
+      // P1-7: unverified theft TODAY — HIGH, actionable. Reads tsb.movements[*].theft + tsb.theftVerified
+      // {by,at} (stamped by stock doLockClosing). closingLocked===true skips ⇒ pre-feature/locked days
+      // exempt; theftVerified.by skips ⇒ already signed off; fires only after movements submit (no mid-entry
+      // noise). TODAY ONLY — past-day theft accountability lives in the Stock module's Monthly Variance &
+      // Shrinkage report (P1-6), the proper home for historical review; the hub is for act-today items, so
+      // this item self-clears the moment the SM verifies & locks closing. (A past-day nag would be
+      // un-actionable — the module makes past days read-only — and would wedge the EOD close-day wizard.)
+      try{
+        ['WLMHW','HEMW'].forEach(function(sc){
+          var tsb=L('saagar_stock_'+skey(sc)+'_'+d,null);
+          if(!tsb||typeof tsb!=='object'||!tsb.movements) return;
+          if(tsb.closingLocked===true) return;
+          if(tsb.theftVerified&&tsb.theftVerified.by) return;
+          if(tsb.movementsSubmitted!==true) return;   // mid-entry today: no noise yet
+          var ttu=0; Object.keys(tsb.movements).forEach(function(b){var m=tsb.movements[b]; var _t=m&&Number(m.theft); ttu+=isFinite(_t)?_t:0;});
+          if(ttu>0) ex.push({sev:'high',area:'Stock',msg:sc+' theft '+ttu+' unit(s) today not SM-verified — verify & lock closing',at:d});
+        });
+      }catch(e){}
       // Cash statement today not closed / mismatch (read-only)
       try{ var stm=L(EXP_STMT,null); if(stm&&stm[d]){ var s=stm[d];
         if(!s.closed) ex.push({sev:'med',area:'Cash',msg:'Cash statement not closed today',at:d});
         if(s.mismatchReason) ex.push({sev:'high',area:'Cash',msg:'Cash mismatch: '+String(s.mismatchReason).slice(0,60),at:d});
       } }catch(e){}
+      // P1-43: QMS cash sales vs CLOSED cash statement — read-only cross-check (the CASH_CLOSED signal,
+      // derived not consumed: exceptions are rebuilt every cycle, consuming would make the flag one-shot).
+      // ONE-SIDED by design: ledger cash income legitimately exceeds QMS cash (WSC service income, udhaar,
+      // misc income), so only "QMS billed MORE cash than the closed statement shows" is flagged.
+      // Whole-business totals (QMS customers carry no store; only the top-level stmt close emits CASH_CLOSED).
+      // Day axis = exitTime||entryTime||walkInTime — the SAME axis Expense's Sync tab files QMS income under
+      // (expense.html L1344), so a Sync-posted day self-heals. COPY CONSTRAINT: msg must NOT contain the
+      // substring "mismatch" — www/index.html buildCloseDaySteps (L3084) regex-blocks EOD step 4 on it.
+      try{
+        var CROSS_DAYS=3, CASH_TOL=1;                       // today + 2 prior LOCAL days; ₹1 rounding tolerance
+        var stq=L(EXP_STMT,null), ledq=L(EXP_LEDGER,null), qq=L(QMS,null);
+        if(stq&&typeof stq==='object' && Array.isArray(ledq) && qq&&Array.isArray(qq.customers)){
+          for(var ci=0;ci<CROSS_DAYS;ci++){
+            var cdD=new Date(); cdD.setDate(cdD.getDate()-ci);
+            var cd=cdD.getFullYear()+'-'+('0'+(cdD.getMonth()+1)).slice(-2)+'-'+('0'+cdD.getDate()).slice(-2);
+            var sD=stq[cd]; if(!sD||!sD.closed) continue;   // only CLOSED days — that is what CASH_CLOSED means
+            var qCash=0, qMixed=0;
+            qq.customers.forEach(function(c){
+              if(!c||String(c.outcome||'').toLowerCase()!=='purchase') return;   // same predicate as produce()
+              var qd=String(c.exitTime||c.entryTime||c.walkInTime||'').slice(0,10);
+              if(qd!==cd) return;
+              if(c.paymentMode==='Mixed'){ qMixed++; return; }
+              if(c.paymentMode!=='Cash') return;            // Card/UPI/missing-mode rows never count as cash
+              var _qn=Number(c.purchaseAmount||c.amount); if(isFinite(_qn)) qCash+=_qn;   // same amount fallback as produce()
+            });
+            if(qMixed||!(qCash>0)) continue;                // split payment on the day → unknowable; zero-cash day → nothing to check
+            // cIn MUST equal Expense computeDay(cd).cashIn. Expense normalises rows at read (getLedger→normEntry,
+            // expense.html L478-490 / L511) so a legacy non-canonical row ('cash'/'Income'/full-ISO date) counts
+            // in the user-visible statement; strict raw-field matching here would MISS it → bridge under-counts
+            // → false "figures don't tally" flag. Mirror normEntry's type/mode/date canonicalisation so the
+            // cross-check compares against exactly the cash total the SM sees.
+            var cIn=0;
+            ledq.forEach(function(x){
+              if(!x||x.void) return;
+              if(String(x.date||'').slice(0,10)!==cd) return;
+              if(String(x.type||'expense').toLowerCase()!=='income') return;
+              var _m=x.mode||x.paymentMode||'Cash';
+              if(['Cash','UPI','Card','Bank'].indexOf(_m)<0) _m=/cash/i.test(_m)?'Cash':'x';   // normEntry L481
+              if(_m!=='Cash') return;
+              var _cn=Number(x.amount); if(isFinite(_cn)) cIn+=_cn;
+            });
+            if(qCash>cIn+CASH_TOL){
+              var _inr=function(n){return '₹'+Math.round(n).toLocaleString('en-IN');};
+              ex.push({sev:'med',area:'Cash',
+                msg:'QMS cash sales '+_inr(qCash)+' vs statement cash income '+_inr(cIn)+(cd===d?'':' ('+cd+')')+" — figures don't tally; verify billing / statement entries",
+                at:cd});
+            }
+          }
+        }
+      }catch(e){}
       // Missing vouchers (Expense ledger today, >2000, no photo) — read-only
       try{ var led=L(EXP_LEDGER,null); if(Array.isArray(led)){
         var vth=cfg().voucherThreshold;
