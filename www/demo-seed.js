@@ -269,11 +269,14 @@
   set('tanishq_statements', stmts);
   set('gm_petty', { float: 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: 5000 }] });
   set('gm_budgets', (function () { var b = {}; b[curYM] = { Inventory: 600000, Rent: 60000, Utilities: 25000, Marketing: 30000, Transport: 15000, Miscellaneous: 10000 }; return b; })());
-  // tax feed (month) so Month & Tax + Tax payable show numbers
-  var incM = 0, expM = 0; gmExp.forEach(function (e) { if (e.date.slice(0, 7) !== curYM) return; if (e.type === 'income') incM += e.amount; else expM += e.amount; });
-  var taxFeed = {}; taxFeed[curYM] = { month: curYM, income: incM, expense: expM, net: incM - expM, gstRate: 3, gstEstimate: Math.round(incM * 0.03), byCategory: {}, generatedAt: TODAY + 'T21:10:00.000Z', by: 'owner' };
+  // tax feed for the PREVIOUS month (Wave-10: a current-month feed would tax-lock the demo's
+  // live month out of the box — every entry would demand an owner override from first launch.
+  // Last month's feed still demos Month & Tax, Tax payable AND the month-lock on backdated edits.)
+  var prevM = (function () { var y = +curYM.slice(0, 4), m = +curYM.slice(5, 7) - 1; if (m < 1) { y--; m = 12; } return y + '-' + (m < 10 ? '0' : '') + m; })();
+  var incM = 0, expM = 0; gmExp.forEach(function (e) { if (e.date.slice(0, 7) !== prevM) return; if (e.type === 'income') incM += e.amount; else expM += e.amount; });
+  var taxFeed = {}; taxFeed[prevM] = { month: prevM, income: incM, expense: expM, net: incM - expM, gstRate: 3, gstEstimate: Math.round(incM * 0.03), byCategory: {}, generatedAt: TODAY + 'T21:10:00.000Z', by: 'owner' };
   set('gm_tax_feed', taxFeed);
-  set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: curYM + ' tax feed generated' }]);
+  set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: prevM + ' tax feed generated' }]);
 
   /* ════════════════════ GROOMING  (saagar_grooming_<date>) ════════════════════ */
   var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied—no oil', 'Sideburns ≤ mid-ear', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Sleeves not rolled', 'Name badge visible', 'Hand gloves worn', 'Shoes black & polished', 'Belt black & visible', 'Watch simple', 'Max one ring/hand', 'Nails clean & trimmed'];
@@ -619,13 +622,15 @@
       stmts[ds] = { date: ds, openingBalance: opening, physDeno: phys, bankDeno: {}, closed: true, closedAt: ds + 'T21:00:00.000Z', closedBy: 'cashier', approved: true, approvedBy: 'owner', approvedAt: ds + 'T21:05:00.000Z', reopenReason: null, mismatchReason: null, monthLocked: false, filledBy: 'cashier', total: expectedClose };
       if (ei % 60 === 59) await yieldUI();
     }
-    var incM = 0, expM = 0; gmExp.forEach(function (e) { if (e.date.slice(0, 7) !== curYM) return; if (e.type === 'income') incM += e.amount; else expM += e.amount; });
-    var taxFeed = {}; taxFeed[curYM] = { month: curYM, income: incM, expense: expM, net: incM - expM, gstRate: 3, gstEstimate: Math.round(incM * 0.03), byCategory: {}, generatedAt: TODAY + 'T21:10:00.000Z', by: 'owner' };
+    /* Wave-10: feed under the PREVIOUS month (see the small-path comment) — keeps the live month unlocked. */
+    var prevM = (function () { var y = +curYM.slice(0, 4), m = +curYM.slice(5, 7) - 1; if (m < 1) { y--; m = 12; } return y + '-' + (m < 10 ? '0' : '') + m; })();
+    var incM = 0, expM = 0; gmExp.forEach(function (e) { if (e.date.slice(0, 7) !== prevM) return; if (e.type === 'income') incM += e.amount; else expM += e.amount; });
+    var taxFeed = {}; taxFeed[prevM] = { month: prevM, income: incM, expense: expM, net: incM - expM, gstRate: 3, gstEstimate: Math.round(incM * 0.03), byCategory: {}, generatedAt: TODAY + 'T21:10:00.000Z', by: 'owner' };
     await writeBulk(function () {
       set('gm_settings', { migratedV2: true, gstRate: 3 }); set('gm_expenses', gmExp); set('tanishq_statements', stmts);
       set('gm_petty', { float: 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: 5000 }] });
       var b = {}; b[curYM] = { Inventory: 600000, Rent: 60000, Utilities: 25000, Marketing: 30000, Transport: 15000, Miscellaneous: 10000 }; set('gm_budgets', b);
-      set('gm_tax_feed', taxFeed); set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: curYM + ' tax feed generated' }]);
+      set('gm_tax_feed', taxFeed); set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: prevM + ' tax feed generated' }]);
     });
     gmExp = null; stmts = null; prog(76, 'expense ledger done'); await yieldUI();
 
