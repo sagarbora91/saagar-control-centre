@@ -688,6 +688,35 @@
             __pending.push(nm(__r.staffName||__m[2].replace(/_/g,' '))); }
           if(__pending.length) ex.push({sev:'high',area:'DSR',msg:__pending.length+' staff logged in but DSR not submitted (after '+__close+') — '+__pending.slice(0,4).join(', ')+(__pending.length>4?' +'+(__pending.length-4)+' more':''),at:d}); }
       }catch(e){}
+      // P1-25: CRO daily audit(s) not submitted after store close (cfg.dsrClosingTime — the SAME
+      // evening boundary as the unsubmitted-DSR alert; the audit is the same EOD discipline).
+      // Eligible = cro_audit's own predicate: croMasterOptions() (master, active!==false) minus
+      // leaveBlockedSet() (gate.unavailable[k].leave===true) — hub count === module datalist.
+      // 'Submitted today' = a cro_audits_v3 record with a.date===d (business date, any store),
+      // CRO matched by kk() like the module's findDupAudit. ONE aggregate item; ex[] is rebuilt
+      // wholesale each cycle (S(EXC,...) below) so no dedup state exists. area 'CRO' is consumed
+      // by NO buildCloseDaySteps filter (safe); routes via EXC_AREA_TO_MODULE['CRO']='cro_audit'.
+      // (__caDone/__cun are plain objects keyed by kk(name) — a '__proto__'-named CRO keys
+      // Object.prototype; read-only truthiness check, same exposure as the grooming block above.)
+      try{
+        var __ct=cfg().dsrClosingTime;
+        var __cn=(function(){var t=new Date();return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');})();
+        if(__cn>=__ct){
+          var __cem=L(EMP_MASTER,[])||[], __cg=L(GATE,{})||{}, __cun=(__cg&&__cg.unavailable)||{};
+          var __cau=L('cro_audits_v3',[]), __caDone={};
+          if(Array.isArray(__cau)) __cau.forEach(function(a){ if(a&&a.date===d&&a.cro) __caDone[kk(a.cro)]=1; });
+          var __cp=[], __celig=0;
+          if(Array.isArray(__cem)) __cem.forEach(function(e){
+            if(!e||!e.name||e.active===false) return;
+            var k=kk(e.name); if(__cun[k]&&__cun[k].leave===true) return;
+            __celig++; if(!__caDone[k]) __cp.push(nm(e.name));
+          });
+          if(__celig>0 && __cp.length)
+            ex.push({sev:'med',area:'CRO',
+              msg:__cp.length+' CRO audit(s) pending today — '+__cp.slice(0,3).join(', ')+(__cp.length>3?' +'+(__cp.length-3)+' more':'')+' (after '+__ct+')',
+              at:d});
+        }
+      }catch(e){}
       ex.sort(function(a,b){var o={high:0,med:1,low:2};return o[a.sev]-o[b.sev];});
       S(EXC,{date:d,items:ex,generatedAt:new Date().toISOString()});
     }catch(e){}

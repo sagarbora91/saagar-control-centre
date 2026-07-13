@@ -465,6 +465,10 @@
       o = o || {};
       var t = o.totals || null;
       var period = o.period || '';
+      if (!t) { // P1-48: pack/hub path — fall back to the statTotals frozen by payroll lockRun()
+        var fb = _payrollLockedTotals(o.month);
+        if (fb) { t = fb.totals; period = period || fb.period; o.preparedBy = o.preparedBy || fb.preparedBy; o.approvedBy = o.approvedBy || fb.approvedBy; }
+      }
       var hdr = { t: 'header', title: 'STATUTORY SUMMARY', sub: 'Saagar Traders · Latur', period: period };
       if (!t) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Open the Payroll module → Reports tab to generate the statutory summary.' }] };
       var pfEE = Number(t.pfEE) || 0, pfER = Number(t.pfER) || 0, esEE = Number(t.esEE) || 0, esER = Number(t.esER) || 0, pt = Number(t.pt) || 0, net = Number(t.net) || 0, emp = Number(t.emp) || 0;
@@ -491,6 +495,38 @@
       blocks.push({ t: 'note', text: 'Employer PF/ESIC are the exact per-employee totals from the payroll sheet. Verify against your challans before remittance.' });
       blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: o.preparedBy || '—' }, { role: 'For Saagar Traders', name: o.approvedBy || 'Authorised Signatory' }] });
       return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== PAYROLL — STATUTORY REGISTER, MEMBER-WISE (landscape) — Wave 11 P1-26 =====
+       Live-opts-only like statutorySummary: employer PF/ESIC and UAN-joined figures are computed in
+       the payroll module and passed via opts.rows; no localStorage fallback is possible. */
+    statutoryRegister: function (o) {
+      o = o || {};
+      var hdr = { t: 'header', title: 'STATUTORY REGISTER — MEMBER-WISE', sub: 'Saagar Traders · Latur', period: o.period || '',
+        chip: o.locked ? 'LOCKED — FINAL' : 'DRAFT', chipKind: o.locked ? 'locked' : 'draft' };
+      if (!Array.isArray(o.rows) || !o.rows.length)
+        return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'Open the Payroll module → Reports tab to generate the member-wise statutory register.' }] };
+      var T = o.totals || {}, body = [], raw = [];
+      o.rows.forEach(function (r, i) {
+        body.push([String(i + 1), r.uan || '—', trunc(r.name || '—', 20), inr(r.pfWages), inr(r.pfEE), inr(r.pfER),
+          r.esicIp || '—', inr(r.esicWages), inr(r.esicEE), inr(r.esicER), inr(r.pt)]);
+        raw.push([0, 0, 0, Number(r.pfWages) || 0, Number(r.pfEE) || 0, Number(r.pfER) || 0, 0,
+          Number(r.esicWages) || 0, Number(r.esicEE) || 0, Number(r.esicER) || 0, Number(r.pt) || 0]);
+      });
+      var blocks = [hdr];
+      blocks.push({ t: 'kpi', cols: 4, items: [
+        { label: 'Employees', value: num(o.rows.length) },
+        { label: 'PF (EE + ER)', value: inr((Number(T.pfEE) || 0) + (Number(T.pfER) || 0)) },
+        { label: 'ESIC (EE + ER)', value: inr((Number(T.esicEE) || 0) + (Number(T.esicER) || 0)) },
+        { label: 'Prof. Tax', value: inr(Number(T.pt) || 0), hero: true } ] });
+      blocks.push({ t: 'table',
+        head: [['Sr', 'UAN', 'Employee', 'PF Wages', 'PF EE', 'PF ER', 'ESIC IP No', 'ESIC Wages', 'ESIC EE', 'ESIC ER', 'PT']],
+        body: body, raw: raw, money: [3, 4, 5, 7, 8, 9, 10],
+        colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 84 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 62, halign: 'right' }, 4: { cellWidth: 54, halign: 'right' }, 5: { cellWidth: 54, halign: 'right' }, 6: { cellWidth: 84 }, 7: { cellWidth: 66, halign: 'right' }, 8: { cellWidth: 56, halign: 'right' }, 9: { cellWidth: 56, halign: 'right' }, 10: { cellWidth: 50, halign: 'right' } },
+        foot: [['', '', 'TOTAL (' + o.rows.length + ')', inr(T.pfWages), inr(T.pfEE), inr(T.pfER), '', inr(T.esicWages), inr(T.esicEE), inr(T.esicER), inr(T.pt)]] });
+      blocks.push({ t: 'note', text: 'PF columns follow the ECR keying order (UAN → wages → EE → ER). Missing UAN / ESIC IP numbers print as "—" — fill them in Employee Master before filing.' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: o.preparedBy || '—' }, { role: 'For Saagar Traders', name: o.approvedBy || 'Authorised Signatory' }] });
+      return { orientation: 'landscape', blocks: blocks };
     },
 
     /* ===== QMS — END OF DAY OWNER SUMMARY (portrait) =====
@@ -570,6 +606,36 @@
       (L.paras || []).forEach(function (p) { if (p) blocks.push({ t: 'para', text: p }); });
       blocks.push({ t: 'para', text: L.closing || 'Yours sincerely,' });
       blocks.push({ t: 'sign', boxes: [{ role: 'For Saagar Traders', name: 'Authorised Signatory' }, { role: 'Employee Acknowledgement', name: L.name || '' }] });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== PAYROLL — FULL & FINAL SETTLEMENT (portrait) — Wave 11 P1-27 =====
+       Record assembled and stored by the payroll module (payroll_fnf_v1) and passed live via
+       opts.fnf — re-prints use the stored numbers verbatim, never recomputed here. */
+    fnfSettlement: function (o) {
+      var F = (o || {}).fnf || null;
+      var hdr = { t: 'header', title: 'FULL & FINAL SETTLEMENT', sub: 'Saagar Traders · Latur', period: F ? (F.period || '') : '' };
+      if (!F) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No settlement data — open Payroll → Letters → Full & Final Settlement.' }] };
+      var blocks = [hdr];
+      if (F.ref) blocks.push({ t: 'note', text: 'Ref: ' + F.ref + (F.generatedAt ? ' · Generated ' + String(F.generatedAt).slice(0, 10) : '') + (F.generatedBy ? ' · By ' + F.generatedBy : '') });
+      blocks.push({ t: 'kv', cols: 2, pairs: [
+        ['Employee', F.name || '—'], ['Employee ID', F.empId || '—'],
+        ['Designation', F.designation || '—'], ['Final Pay Period', F.period || '—'],
+        ['Last Working Day', F.lastDay || '—'], ['Settlement Status', 'Full & Final'] ] });
+      var E = Array.isArray(F.earnings) ? F.earnings : [], R = Array.isArray(F.recoveries) ? F.recoveries : [];
+      var n = Math.max(E.length, R.length), body = [], raw = [];
+      for (var i = 0; i < n; i++) { var e = E[i] || {}, r = R[i] || {};
+        body.push([e.label ? trunc(e.label, 46) : '', e.label ? inr(e.amt) : '', r.label ? trunc(r.label, 46) : '', r.label ? inr(r.amt) : '']);
+        raw.push([0, e.amt || 0, 0, r.amt || 0]); }
+      blocks.push({ t: 'table', head: [['Earnings / Dues', 'Amount (₹)', 'Recoveries / Deductions', 'Amount (₹)']],
+        body: body, raw: raw, money: [1, 3],
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96, halign: 'right' }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 96, halign: 'right' } },
+        foot: [['Total Dues', inr(F.totEarn), 'Total Recoveries', inr(F.totRec)]] });
+      var neg = Number(F.net) < 0;
+      blocks.push({ t: 'netbox', label: neg ? 'Net Recoverable from Employee' : 'Net Payable on Settlement', value: inr(Math.abs(Number(F.net) || 0)) });
+      blocks.push({ t: 'note', text: 'In words: Rupees ' + (F.netWords || '') + ' Only' + (neg ? ' (recoverable)' : '') + '.' });
+      blocks.push({ t: 'para', text: 'This Full & Final Settlement is prepared in respect of the above employee upon cessation of employment with Saagar Traders, Latur. On acceptance of the net amount stated above, the employee confirms that no further dues remain payable by either party, save as required by law.' });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Employee (Received & Accepted)', name: F.name || '' }, { role: 'For Saagar Traders (Owner)', name: 'Authorised Signatory' }] });
       return { orientation: 'portrait', blocks: blocks };
     },
 
@@ -919,8 +985,10 @@
     payrollRegister: { title: 'Payroll — Salary Register', scope: 'monthly', icon: '💼' },
     payrollSlip: { title: 'Payroll — Salary Slip', scope: 'monthly', icon: '🧾' },
     statutorySummary: { title: 'Payroll — Statutory Summary', scope: 'monthly', icon: '🏛️' },
+    statutoryRegister: { title: 'Payroll — Statutory Register (Member-wise)', scope: 'monthly', icon: '🏛️' },
     advanceVoucher: { title: 'Payroll — Advance Voucher', scope: 'monthly', icon: '🧾' },
     hrLetter: { title: 'Payroll — HR Letter', scope: 'monthly', icon: '📜' },
+    fnfSettlement: { title: 'Payroll — Full & Final Settlement', scope: 'monthly', icon: '🤝' },
     leaveRegister: { title: 'Leave Register', scope: 'monthly', icon: '🌴' },
     groomingDaily: { title: 'Grooming — Daily Audit', scope: 'daily', icon: '✨' },
     groomingMonthly: { title: 'Grooming — Monthly Trend', scope: 'monthly', icon: '📈' },
@@ -1294,6 +1362,26 @@
   }
   /* renderPages() (html2canvas raster slicer) removed in R6.7 — every report is now native vector via renderDoc(). */
 
+  /* ---------- P1-48: locked-run statutory totals (Month-end pack fallback) ----------
+     Reads the statTotals the payroll module freezes at lockRun() so statutorySummary can
+     build from storage when live opts are absent (pack path). Hardcoded English month
+     names match payroll's MONTHS/pkey() key format ('2026-07' → 'July-2026') — never
+     toLocaleString. Returns null unless the run is locked AND statTotals is an object;
+     callers then keep the existing "open the module" empty-note. */
+  function _payrollLockedTotals(ym) {           // ym = 'YYYY-MM' from pack()
+    try {
+      var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      var p = String(ym || '').split('-'); if (p.length < 2) return null;
+      var key = MONTHS[Number(p[1]) - 1] + '-' + Number(p[0]);      // 'July-2026' — payroll pkey() format
+      var st = JSON.parse(localStorage.getItem('payroll_suite_v1_2026') || '{}');
+      var run = st.runs && st.runs[key];
+      if (run && run.status === 'locked' && run.statTotals && typeof run.statTotals === 'object'
+          && Number(run.statTotals.emp) > 0)   // a month locked with zero employees carries an all-zero statTotals; treat as no-data so the pack shows the empty-note, not a page of ₹0s
+        return { totals: run.statTotals, preparedBy: run.preparedBy || '', approvedBy: run.approvedBy || '', period: key.replace('-', ' ') };
+    } catch (e) {}
+    return null;
+  }
+
   /* ---------- public API ---------- */
   function buildModel(type, opts) {
     var b = BUILDERS[type]; if (!b) throw new Error('Unknown report: ' + type);
@@ -1501,7 +1589,7 @@
     },
     /* ── BATCH PACKS — build a whole period's reports at once, then Save-all / Send-all.
        Reuses build() per report (generation unchanged); just bundles delivery. ── */
-    _packTypes: { daily: ['ownerBrief', 'cashStatement', 'dsrRegister', 'qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging'], monthly: ['ownerMonthly', 'payrollRegister', 'leaveRegister', 'groomingMonthly', 'expenseMonthly', 'taxReport'] },
+    _packTypes: { daily: ['ownerBrief', 'cashStatement', 'dsrRegister', 'qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging'], monthly: ['ownerMonthly', 'payrollRegister', 'statutorySummary', 'leaveRegister', 'groomingMonthly', 'expenseMonthly', 'taxReport'] },
     pack: function (scope) {
       var self = this, el = function (i) { return document.getElementById(i); };
       var d = (el('rptDate') && el('rptDate').value) || curDate();
