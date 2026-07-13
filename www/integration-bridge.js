@@ -771,7 +771,7 @@
       try{ var lv=L(LEAVE,null);
         if(lv&&typeof lv==='object'){ if(!Array.isArray(lv.employees))lv.employees=[];
           var lh={}; lv.employees.forEach(function(x){var n=x&&(x.name||x); if(n)lh[kk(n)]=1;});
-          var ladd=0; empNames.forEach(function(e){ if(!lh[kk(e.name)]){ lv.employees.push({id:'emp_'+kk(e.name).replace(/[^a-z0-9]/g,''),name:e.name,employeeId:e.empId||'',department:e.dept||''}); ladd++; } });
+          var ladd=0; empNames.forEach(function(e){ if(!lh[kk(e.name)]){ lv.employees.push({id:'emp_'+kk(e.name).replace(/[^a-z0-9]/g,''),name:e.name,employeeId:e.empId||'',department:e.dept||'',store:e.store||''}); ladd++; } });   /* Wave-12 P1-28: carry store onto newly-seeded leave employees (advisory only; the leave module resolves store authoritatively from the central master) */
           if(ladd){ S(LEAVE,lv); blog('seeded '+ladd+' → Leave staff'); } } }catch(e){}
       // brands: union master ↔ saagar_brands {store:[names]}
       try{ var mb=L(MK_BRANDS,[]); if(!Array.isArray(mb))mb=[];
