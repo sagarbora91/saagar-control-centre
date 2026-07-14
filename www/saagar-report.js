@@ -91,6 +91,41 @@
     if (fn) for (var dd = 1; dd <= dim; dd++) { var q = fn(month + '-' + String(dd).padStart(2, '0')); s += q.sales || 0; p += q.purchases || 0; w += q.total || 0; }
     return { sales: s, purchases: p, walkins: w, conversion: w ? Math.round(p / w * 100) : 0 };
   }
+  /* ---------- P1-47 week helpers (LOCAL date math — NEVER toISOString; IST +5:30 shifts the window a day) ---------- */
+  function isoOf(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
+  function isoWeek(anchorIso) {
+    var p = String(anchorIso || todayIsoSafe()).slice(0, 10).split('-');
+    var base = new Date(+p[0], (+p[1] || 1) - 1, +p[2] || 1);
+    var dow = (base.getDay() + 6) % 7;                              // Mon=0 .. Sun=6
+    var mon = new Date(base.getFullYear(), base.getMonth(), base.getDate() - dow);
+    var days = [];
+    for (var i = 0; i < 7; i++) days.push(isoOf(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+    return { start: days[0], end: days[6], days: days };
+  }
+  function weekAgg(days) {
+    var fn = G('computeQmsDay', null);
+    var acc = { walkins: 0, purchases: 0, sales: 0, nonPurchase: 0, conversion: 0, byCro: {}, perDay: [] };
+    (Array.isArray(days) ? days : []).forEach(function (dy) {
+      var q = fn ? (fn(dy) || {}) : {};
+      var w = Number(q.total) || 0, pu = Number(q.purchases) || 0, sa = Number(q.sales) || 0, np = Number(q.nonPurchase) || 0;
+      acc.walkins += w; acc.purchases += pu; acc.sales += sa; acc.nonPurchase += np;
+      (Array.isArray(q.byCro) ? q.byCro : []).forEach(function (c) {
+        var k = c.cro || 'Unassigned';
+        if (!acc.byCro[k]) acc.byCro[k] = { cro: k, walkins: 0, purchases: 0, sales: 0 };
+        acc.byCro[k].walkins += Number(c.walkins) || 0; acc.byCro[k].purchases += Number(c.purchases) || 0; acc.byCro[k].sales += Number(c.sales) || 0;
+      });
+      acc.perDay.push({ date: dy, walkins: w, purchases: pu, sales: sa, conv: w ? Math.round(pu / w * 100) : 0 });
+    });
+    acc.conversion = acc.walkins ? Math.round(acc.purchases / acc.walkins * 100) : 0;   // recomputed on totals, NOT averaged
+    return acc;
+  }
+  function deltaOf(cur, prev) { return { abs: cur - prev, pct: prev ? Math.round((cur - prev) / prev * 100) : null, up: (cur - prev) >= 0 }; }
+  function weekLabel(startIso, endIso) {
+    try {
+      var s = new Date(startIso + 'T00:00:00'), e = new Date(endIso + 'T00:00:00');
+      return s.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) + ' – ' + e.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    } catch (err) { return (startIso || '') + ' – ' + (endIso || ''); }
+  }
 
   /* ---------- per-report builders → { orientation, pages:[innerHtml,...] } ---------- */
   var BUILDERS = {
@@ -971,6 +1006,119 @@
           colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' }, 4: { cellWidth: 90, halign: 'right' } } });
       } else { blocks.push({ t: 'empty', text: 'No staff performance data.' }); }
       return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== LOST WALK-IN CALL SHEET (P1-45 · monthly · portrait) =====
+       Non-purchase walk-ins for the month, deduped by 10-digit mobile (newest visit kept),
+       sorted newest-first. No-number rows are counted + footnoted but excluded from the call
+       list. Reads retail_queue_management_v1 directly (mirrors qmsReport's read; writes nothing). */
+    lostWalkinCallSheet: function (o) {
+      var month = o.month || curMonth();
+      var st = J('retail_queue_management_v1', {}) || {};
+      var custs = Array.isArray(st.customers) ? st.customers : [], cros = Array.isArray(st.cros) ? st.cros : [];
+      var nameOf = function (id) { var c = cros.filter(function (x) { return x.id === id; })[0]; return c ? c.name : 'Unassigned'; };
+      var tel10 = function (m) { var d = String(m == null ? '' : m).replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : ''; };
+      var hdr = { t: 'header', title: 'LOST WALK-IN CALL SHEET', sub: 'Non-purchase follow-ups · Latur', period: monthLong(month) };
+      var lost = custs.filter(function (c) { return c && /non.?purchase/i.test(c.outcome || '') && String(c.entryTime || '').slice(0, 7) === month; });
+      if (!lost.length) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No lost walk-ins logged for this month.' }] };
+      var noNum = 0, byTel = {};
+      lost.forEach(function (c) {
+        var t = tel10(c.mobile);
+        if (!t) { noNum++; return; }
+        var prev = byTel[t];
+        if (!prev || String(c.entryTime || '') > String(prev.entryTime || '')) byTel[t] = c;   // keep the newest (warmest) visit
+      });
+      var rows = Object.keys(byTel).map(function (t) { return byTel[t]; })
+        .sort(function (a, b) { return String(b.entryTime || '').localeCompare(String(a.entryTime || '')); });   // newest first
+      var callable = rows.length;
+      var blocks = [hdr, { t: 'kpi', cols: 3, items: [
+        { label: 'Lost Walk-ins', value: num(lost.length), hero: true },
+        { label: 'Callable (with #)', value: num(callable) },
+        { label: 'No Number', value: num(noNum), sub: noNum ? 'excluded from list' : '', subClass: noNum ? 'down' : 'neu' }
+      ] }];
+      blocks.push({ t: 'section', title: 'Call-back List — newest first', tag: callable ? { cls: 'warn', txt: num(callable) + ' to call' } : { cls: 'ok', txt: '0' } });
+      blocks.push({ t: 'table',
+        head: [['#', 'Name', 'Mobile', 'Visit Date', 'CRO', 'Reason / Notes']],
+        body: rows.map(function (c, i) {
+          var notes = [c.lostReason, c.notes].filter(function (x) { return x != null && String(x).trim() !== ''; }).join(' — ');
+          return [String(i + 1), trunc(c.name || '—', 24), tel10(c.mobile), String(c.entryTime || '').slice(0, 10), trunc(nameOf(c.assignedCroId), 18), trunc(notes || '—', 40)];
+        }),
+        colStyles: { 0: { cellWidth: 30, halign: 'right' }, 1: { cellWidth: 'auto' }, 2: { cellWidth: 84 }, 3: { cellWidth: 80 }, 4: { cellWidth: 'auto' }, 5: { cellWidth: 'auto' } } });
+      if (noNum > 0) blocks.push({ t: 'note', text: num(noNum) + ' more lost walk-in' + (noNum === 1 ? '' : 's') + ' had no phone number and could not be added to the call-back list.' });
+      return { orientation: 'portrait', blocks: blocks };
+    },
+
+    /* ===== WEEKLY BUSINESS SUMMARY (P1-47 · weekly · portrait) =====
+       Mon–Sun ISO week containing o.date. Comparison = week-to-date vs the same span of the
+       previous week (first nDays up to min(weekEnd, today)). QMS walk-in funnel via
+       G('computeQmsDay') per day. Non-buy delta polarity is INVERTED (fewer lost = green). */
+    weeklyBrief: function (o) {
+      var anchor = o.date || curDate();
+      var wk = isoWeek(anchor);
+      var today = todayIsoSafe();
+      var spanEnd = (wk.end > today) ? today : wk.end;
+      var nDays = (spanEnd < wk.start) ? 7 : (wk.days.filter(function (dy) { return dy <= spanEnd; }).length || 1);
+      var partial = nDays < 7;
+      var prevMon = new Date(wk.start + 'T00:00:00'); prevMon.setDate(prevMon.getDate() - 7);
+      var pw = isoWeek(isoOf(prevMon));
+      var cur = weekAgg(wk.days.slice(0, nDays));
+      var prev = weekAgg(pw.days.slice(0, nDays));
+      var hdr = { t: 'header', title: 'WEEKLY BUSINESS SUMMARY', sub: 'Titan World + Helios · Latur', period: weekLabel(wk.start, wk.end) + (partial ? ' · week to date' : '') };
+      if (!cur.walkins && !prev.walkins) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'No walk-in activity recorded for this week.' }] };
+      function subOf(c1, p1, invert) {
+        var dd = deltaOf(c1, p1);
+        var good = invert ? (dd.abs <= 0) : (dd.abs >= 0);
+        var txt = (dd.pct == null)
+          ? (dd.abs === 0 ? 'same as last wk' : ((dd.abs >= 0 ? '+' : '') + num(dd.abs) + ' vs last wk'))
+          : ((dd.pct >= 0 ? '+' : '') + dd.pct + '% vs last wk');
+        return { sub: txt, subClass: dd.abs === 0 ? 'neu' : (good ? 'up' : 'down') };
+      }
+      var convDelta = cur.conversion - prev.conversion;   // percentage-points
+      var convSub = { sub: (convDelta >= 0 ? '+' : '') + convDelta + 'pp vs last wk', subClass: convDelta === 0 ? 'neu' : (convDelta > 0 ? 'up' : 'down') };
+      var kWalk = subOf(cur.walkins, prev.walkins, false), kPur = subOf(cur.purchases, prev.purchases, false),
+          kSal = subOf(cur.sales, prev.sales, false), kNb = subOf(cur.nonPurchase, prev.nonPurchase, true);
+      var blocks = [hdr, { t: 'kpi', cols: 5, items: [
+        { label: 'Walk-ins', value: num(cur.walkins), sub: kWalk.sub, subClass: kWalk.subClass },
+        { label: 'Purchases', value: num(cur.purchases), sub: kPur.sub, subClass: kPur.subClass },
+        { label: 'Conversion', value: pct(cur.conversion), sub: convSub.sub, subClass: convSub.subClass, hero: true },
+        { label: 'Sales ₹', value: inr(cur.sales), sub: kSal.sub, subClass: kSal.subClass },
+        { label: 'Non-buy', value: num(cur.nonPurchase), sub: kNb.sub, subClass: kNb.subClass }
+      ] }];
+      function chgNum(c1, p1) { var d = c1 - p1; return (d >= 0 ? '+' : '') + num(d); }
+      function chgInr(c1, p1) { var d = c1 - p1; return (d >= 0 ? '+' : '-') + inr(Math.abs(d)); }
+      function chgPp(c1, p1) { var d = c1 - p1; return (d >= 0 ? '+' : '') + d + 'pp'; }
+      blocks.push({ t: 'section', title: 'This Week vs Last Week' });
+      blocks.push({ t: 'table',
+        head: [['Metric', 'This week', 'Last week', 'Change']],
+        body: [
+          ['Walk-ins', num(cur.walkins), num(prev.walkins), chgNum(cur.walkins, prev.walkins)],
+          ['Purchases', num(cur.purchases), num(prev.purchases), chgNum(cur.purchases, prev.purchases)],
+          ['Conversion', pct(cur.conversion), pct(prev.conversion), chgPp(cur.conversion, prev.conversion)],
+          ['Sales', inr(cur.sales), inr(prev.sales), chgInr(cur.sales, prev.sales)],
+          ['Non-purchase', num(cur.nonPurchase), num(prev.nonPurchase), chgNum(cur.nonPurchase, prev.nonPurchase)]
+        ],
+        colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96, halign: 'right' }, 2: { cellWidth: 96, halign: 'right' }, 3: { cellWidth: 96, halign: 'right' } } });
+      blocks.push({ t: 'section', title: 'Daily Trend — Mon to Sun' });
+      var DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      blocks.push({ t: 'table',
+        head: [['Day', 'Date', 'Walk-ins', 'Purchases', 'Conv %', 'Sales ₹']],
+        body: cur.perDay.map(function (p, i) { return [DOW[i] || '', String(p.date).slice(5), num(p.walkins), num(p.purchases), (p.walkins ? p.conv + '%' : '—'), inr(p.sales)]; }),
+        raw: cur.perDay.map(function (p) { return [0, 0, 0, 0, 0, p.sales]; }),
+        money: [5],
+        colStyles: { 0: { cellWidth: 56 }, 1: { cellWidth: 64 }, 2: { cellWidth: 78, halign: 'right' }, 3: { cellWidth: 84, halign: 'right' }, 4: { cellWidth: 68, halign: 'right' }, 5: { cellWidth: 'auto', halign: 'right' } },
+        foot: [['Total', '', num(cur.walkins), num(cur.purchases), pct(cur.conversion), inr(cur.sales)]] });
+      blocks.push({ t: 'section', title: 'Sales & Conversion — by CRO' });
+      var croRows = Object.keys(cur.byCro).map(function (k) { return cur.byCro[k]; }).sort(function (a, b) { return b.walkins - a.walkins; }).slice(0, 8);
+      if (croRows.length) {
+        blocks.push({ t: 'table',
+          head: [['CRO', 'Walk-ins', 'Purchases', 'Conv %', 'Sales ₹']],
+          body: croRows.map(function (c) { return [trunc(c.cro, 22), num(c.walkins), num(c.purchases), (c.walkins ? Math.round(c.purchases / c.walkins * 100) + '%' : '—'), inr(c.sales)]; }),
+          money: [4],
+          colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 96, halign: 'right' }, 2: { cellWidth: 96, halign: 'right' }, 3: { cellWidth: 84, halign: 'right' }, 4: { cellWidth: 130, halign: 'right' } } });
+      } else { blocks.push({ t: 'empty', text: 'No CRO activity this week.' }); }
+      var pwEnd = (nDays >= 7) ? pw.end : ((pw.days && pw.days[nDays - 1]) || pw.end);   // label the ACTUAL compared sub-span, not the full prior week
+      blocks.push({ t: 'note', text: 'Walk-in funnel from QMS. Compared against the same ' + nDays + ' day' + (nDays === 1 ? '' : 's') + ' of the previous week (' + weekLabel(pw.start, pwEnd) + '). Days with no entries count as zero.' });
+      return { orientation: 'portrait', blocks: blocks };
     }
   };
 
@@ -997,7 +1145,9 @@
     serviceAging: { title: 'Service — Open Cases Aging', scope: 'daily', icon: '🛠️' },
     serviceJobCard: { title: 'Service — Job Card', scope: 'daily', icon: '📋' },
     serviceTaxInvoice: { title: 'Service — GST Tax Invoice', scope: 'daily', icon: '🧾' },
-    ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' }
+    ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' },
+    weeklyBrief: { title: 'Weekly Business Summary', scope: 'weekly', icon: '📅' },
+    lostWalkinCallSheet: { title: 'Lost Walk-in Call Sheet', scope: 'monthly', icon: '📞' }
   };
 
   /* ============================================================================
@@ -1686,7 +1836,8 @@
       var GROUPS = [
         { h: 'Daily · Owner',                types: ['ownerBrief', 'cashStatement', 'dsrRegister'] },
         { h: 'Daily · Floor & Service',      types: ['qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging', 'serviceJobCard'] },
-        { h: 'Monthly · People',             types: ['payrollRegister', 'payrollSlip', 'leaveRegister', 'groomingMonthly'] },
+        { h: 'Weekly · Owner',               types: ['weeklyBrief'] },
+        { h: 'Monthly · People',             types: ['payrollRegister', 'payrollSlip', 'leaveRegister', 'groomingMonthly', 'lostWalkinCallSheet'] },
         { h: 'Monthly · Money & Compliance', types: ['expenseMonthly', 'taxReport', 'ownerMonthly'] }
       ];
       var TAGS = {
@@ -1697,7 +1848,9 @@
         serviceJobCard: 'service job card repair watch', payrollRegister: 'payroll salary register wages',
         payrollSlip: 'payroll salary slip payslip', leaveRegister: 'leave absent holiday register',
         groomingMonthly: 'grooming monthly trend', expenseMonthly: 'expense pnl profit loss money',
-        taxReport: 'tax compliance gst tds due', ownerMonthly: 'owner monthly brief summary'
+        taxReport: 'tax compliance gst tds due', ownerMonthly: 'owner monthly brief summary',
+        weeklyBrief: 'weekly business summary owner week wtd trend last week comparison',
+        lostWalkinCallSheet: 'lost walk-in call sheet follow-up non purchase callback missed customers qms'
       };
       function row(t, recent) {
         var m = META[t]; if (!m) return '';
@@ -1705,7 +1858,7 @@
           + 'onclick="SaagarReport.fromHub(\'' + t + '\')">'
           + '<span class="ico">' + m.icon + '</span>'
           + '<span class="ttl">' + esc(m.title) + '</span>'
-          + '<span class="scope">' + (m.scope === 'monthly' ? 'Monthly' : 'Daily') + '</span>'
+          + '<span class="scope">' + (m.scope === 'monthly' ? 'Monthly' : (m.scope === 'weekly' ? 'Weekly' : 'Daily')) + '</span>'
           + '<span class="go">↗</span></button>';
       }
       var recents = [];

@@ -133,6 +133,8 @@ body.admin-on .admin-dot{display:block}
   padding:14px 14px 18px;
   background:var(--cream);
 }
+/* Wave-13 P1-39: Text-size "Large" — modest zoom on the chrome scroller only (NOT the fixed topbar/botnav or the module overlay). */
+html.st-textsize-large #mainContent{zoom:1.12}
 .view{display:none;animation:fadeIn .25s ease}
 .view.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -372,6 +374,12 @@ body.admin-on .admin-dot{display:block}
 .attn .dot.red{background:var(--red);box-shadow:0 0 0 4px rgba(185,28,28,.12)}
 .attn-text strong{display:block;font-size:13px;color:var(--navy);font-weight:700;line-height:1.25}
 .attn-text span{display:block;font-size:11px;color:var(--gray-500);margin-top:2px}
+/* Wave-13 P1-38: Attention dismiss/snooze controls (occupy the existing third auto cell of the .attn grid). */
+.attn-acts{display:flex;gap:6px;align-items:center}
+.attn-ico-btn{border:1px solid var(--gray-300);background:#fff;color:var(--gray-600);width:26px;height:26px;border-radius:7px;font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.attn-ico-btn:hover{background:var(--gray-50);color:var(--navy)}
+.attn.snoozed{opacity:.6}
+.attn-csec{font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
 
 /* ── EMPTY STATES ──────────────────────────────────────────────────────── */
 .empty{
@@ -1199,17 +1207,17 @@ html.bcc-mobile #todayView.active{display:block}
 
       <!-- Needs attention -->
       <div class="section-head" id="attentionHead">
-        <h3>Needs attention</h3>
+        <h3 data-i18n="home.needsAttention">Needs attention</h3>
         <a class="link" onclick="renderHome()">Refresh</a>
       </div>
       <div class="card" id="attentionCard"><div id="attentionList"></div></div>
 
       <!-- Quick actions — 6 tiles (2×3) -->
-      <div class="section-head"><h3>Quick actions</h3></div>
+      <div class="section-head"><h3 data-i18n="home.quickActions">Quick actions</h3></div>
       <div class="quick-grid" id="quickGrid"></div>
 
       <!-- Wave 3: Customer 360 — read-only lookup by mobile across QMS purchases + Service history -->
-      <div class="section-head"><h3>Customer lookup</h3></div>
+      <div class="section-head"><h3 data-i18n="home.customerLookup">Customer lookup</h3></div>
       <div class="card card-pad" id="cust360Card">
         <div class="search-bar"><input class="search-input" id="cust360Search" type="tel" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="Enter customer mobile…" oninput="renderCustomer360()"/></div>
         <div id="cust360Result"><div class="empty" style="border:0;padding:8px 2px;text-align:left">Type a customer's mobile number to see their purchases, service history and lifetime value.</div></div>
@@ -1297,15 +1305,32 @@ html.bcc-mobile #todayView.active{display:block}
           <button type="button" class="seg-btn" data-mode="desktop" onclick="setUiMode('desktop')"><span>🖥</span> Desktop</button>
         </div>
       </div>
+      <div class="card card-pad" id="langCard" style="margin-bottom:14px">
+        <h4><span class="em">🌐</span> <span data-i18n="cfg.language">Language</span> / भाषा</h4>
+        <p data-i18n="cfg.languageHelp">Choose the language for the labels on this screen. Saved on this device.</p>
+        <div class="seg" id="langSeg">
+          <button type="button" class="seg-btn" data-lang="en" onclick="setLang('en')">English</button>
+          <button type="button" class="seg-btn" data-lang="mr" onclick="setLang('mr')">मराठी</button>
+          <button type="button" class="seg-btn" data-lang="hi" onclick="setLang('hi')">हिंदी</button>
+        </div>
+      </div>
+      <div class="card card-pad" id="textSizeCard" style="margin-bottom:14px">
+        <h4><span class="em">🔎</span> <span data-i18n="cfg.textSize">Text size</span></h4>
+        <p data-i18n="cfg.textSizeHelp">Make on-screen text larger for easier reading. Saved on this device.</p>
+        <div class="seg" id="textSizeSeg">
+          <button type="button" class="seg-btn" data-textsize="normal" onclick="setTextSize('normal')"><span>A</span> Normal</button>
+          <button type="button" class="seg-btn" data-textsize="large" onclick="setTextSize('large')"><span style="font-size:1.15em">A</span> Large</button>
+        </div>
+      </div>
       <nav class="subtabs" id="configTabs">
-        <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')">People</button>
-        <button class="subtab" data-sub="org" onclick="switchConfigTab('org')">Organisation</button>
-        <button class="subtab" data-sub="masters" onclick="switchConfigTab('masters')">Masters</button>
-        <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')">Roles &amp; access</button>
-        <button class="subtab" data-sub="backup" onclick="switchConfigTab('backup')">Data &amp; backup</button>
-        <button class="subtab" data-sub="sync" onclick="switchConfigTab('sync')">Sync</button>
-        <button class="subtab" data-sub="diagnostics" onclick="switchConfigTab('diagnostics')">Diagnostics</button>
-        <button class="subtab" data-sub="about" onclick="switchConfigTab('about')">About</button>
+        <button class="subtab active" data-sub="employees" onclick="switchConfigTab('employees')" data-i18n="cfg.people">People</button>
+        <button class="subtab" data-sub="org" onclick="switchConfigTab('org')" data-i18n="cfg.org">Organisation</button>
+        <button class="subtab" data-sub="masters" onclick="switchConfigTab('masters')" data-i18n="cfg.masters">Masters</button>
+        <button class="subtab" data-sub="admin" onclick="switchConfigTab('admin')" data-i18n="cfg.roles">Roles &amp; access</button>
+        <button class="subtab" data-sub="backup" onclick="switchConfigTab('backup')" data-i18n="cfg.backup">Data &amp; backup</button>
+        <button class="subtab" data-sub="sync" onclick="switchConfigTab('sync')" data-i18n="cfg.sync">Sync</button>
+        <button class="subtab" data-sub="diagnostics" onclick="switchConfigTab('diagnostics')" data-i18n="cfg.diag">Diagnostics</button>
+        <button class="subtab" data-sub="about" onclick="switchConfigTab('about')" data-i18n="cfg.about">About</button>
       </nav>
 
       <!-- Employees -->
@@ -1610,19 +1635,19 @@ html.bcc-mobile #todayView.active{display:block}
   <nav class="botnav" id="botnav">
     <button class="tab active" data-view="home" onclick="switchView('home')">
       <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1V9.5z"/></svg>
-      Home
+      <span data-i18n="nav.home">Home</span>
     </button>
     <button class="tab" data-view="modules" onclick="switchView('modules')">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Modules
+      <span data-i18n="nav.modules">Modules</span>
     </button>
     <button class="tab" data-view="reports" onclick="switchView('reports')">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg>
-      Reports
+      <span data-i18n="nav.reports">Reports</span>
     </button>
     <button class="tab" data-view="config" onclick="switchView('config')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Settings
+      <span data-i18n="nav.settings">Settings</span>
     </button>
   </nav>
 
@@ -1996,6 +2021,7 @@ function storeKeyForCode(code){ const c=String(code||"").toUpperCase(); return S
 const ACTIVITY_KEY      = "st_v3_activity_log";
 const AUDIT_LOG_KEY     = "st_v4_audit_log";
 const RESTORE_ROLLBACK_PREFIX = "st_v4_restore_rollback_";
+const ATTN_STATE_KEY    = "st_v5_attn_state_v1";   // Wave-13 P1-38: home attention dismiss/snooze state
 const OWNER_NAME_KEY    = "st_v5_owner_name";
 const ROLE_MASTER_KEY = "saagar_role_master_v1";
 const DEFAULT_ROLES = ["Store Manager","Cashier","CRO","Greeter","Technician","Assistant Technician","Trainee","Others"];
@@ -2120,7 +2146,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config"]; }   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size"]; }   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
 /* Audit fix SEC-PIN-04: keys that must NEVER be imported from a backup/migration file — a tampered file
    could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They stay in
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
@@ -2237,6 +2263,57 @@ function logActivity(id){
   safeSet(ACTIVITY_KEY, JSON.stringify(log.slice(0,20)));
 }
 function clearActivity(){ safeRemove(ACTIVITY_KEY); renderActivityLog(); toast('Activity cleared'); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Wave-13 P1-36 — SHELL CHROME i18n (English default · Marathi · Hindi)
+   Additive: static chrome carries data-i18n; applyLang() captures each
+   element's ORIGINAL English once (el.__i18nEn) so en↔mr↔hi round-trips
+   correctly without the dict having to byte-match the DOM. textContent only
+   (XSS-inert). Missing translation → falls back to the captured English.
+   Scope = shell chrome ONLY (never module iframes / reports / user data).
+   Marathi/Hindi strings are best-effort pending native review.
+   ═══════════════════════════════════════════════════════════════════════ */
+const I18N = {
+  en: {},
+  mr: {
+    'nav.home':'मुख्यपृष्ठ','nav.modules':'विभाग','nav.reports':'अहवाल','nav.settings':'सेटिंग्ज',
+    'cfg.people':'कर्मचारी','cfg.org':'संस्था','cfg.masters':'मास्टर्स','cfg.roles':'भूमिका व प्रवेश','cfg.backup':'डेटा व बॅकअप','cfg.sync':'सिंक','cfg.diag':'निदान','cfg.about':'माहिती',
+    'cfg.language':'भाषा','cfg.languageHelp':'या स्क्रीनवरील मजकूर कोणत्या भाषेत दिसावा ते निवडा. या उपकरणावर जतन.',
+    'cfg.textSize':'मजकूर आकार','cfg.textSizeHelp':'वाचन सोपे होण्यासाठी मजकूर मोठा करा. या उपकरणावर जतन.',
+    'home.needsAttention':'लक्ष द्या','home.quickActions':'झटपट क्रिया','home.customerLookup':'ग्राहक शोध',
+    'home.calm':'काही तातडीचे नाही. आजचा दिवस शांत आहे.','home.ownerLine':'आज दुकानात',
+    'hero.netToday':'आजचा निव्वळ','hero.netForDay':'दिवसाचा निव्वळ'
+  },
+  hi: {
+    'nav.home':'होम','nav.modules':'मॉड्यूल','nav.reports':'रिपोर्ट','nav.settings':'सेटिंग्स',
+    'cfg.people':'कर्मचारी','cfg.org':'संगठन','cfg.masters':'मास्टर्स','cfg.roles':'भूमिका व पहुँच','cfg.backup':'डेटा व बैकअप','cfg.sync':'सिंक','cfg.diag':'डायग्नोस्टिक्स','cfg.about':'जानकारी',
+    'cfg.language':'भाषा','cfg.languageHelp':'इस स्क्रीन के लेबल किस भाषा में दिखें चुनें. इस डिवाइस पर सहेजा गया.',
+    'cfg.textSize':'टेक्स्ट आकार','cfg.textSizeHelp':'पढ़ने में आसानी के लिए टेक्स्ट बड़ा करें. इस डिवाइस पर सहेजा गया.',
+    'home.needsAttention':'ध्यान दें','home.quickActions':'त्वरित कार्य','home.customerLookup':'ग्राहक खोज',
+    'home.calm':'कुछ ज़रूरी नहीं. आज का दिन शांत है.','home.ownerLine':'आज दुकान पर',
+    'hero.netToday':'आज का शुद्ध','hero.netForDay':'दिन का शुद्ध'
+  }
+};
+function getLang(){ try{ var v=safeGet('saagar_lang'); if(v==='mr'||v==='hi') return v; }catch(e){} return 'en'; }
+function stT(k){ var l=getLang(); var d=I18N[l]; var s=(d&&d[k]!=null)?d[k]:(I18N.en[k]!=null?I18N.en[k]:null); return s; }   // dict[lang][k] ?? en[k] ?? null
+function applyLang(){
+  var l=getLang();
+  try{ document.documentElement.lang=l; }catch(e){}
+  try{ document.querySelectorAll('[data-i18n]').forEach(function(el){
+    if(el.__i18nEn==null) el.__i18nEn=el.textContent;                         // capture original English once
+    if(l==='en'){ el.textContent=el.__i18nEn; return; }
+    var d=I18N[l], s=(d&&d[el.getAttribute('data-i18n')]);
+    el.textContent=(s!=null)?s:el.__i18nEn;                                   // translation or fall back to English
+  }); }catch(e){}
+  try{ document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    if(el.__i18nPhEn==null) el.__i18nPhEn=el.getAttribute('placeholder')||'';
+    if(l==='en'){ el.setAttribute('placeholder',el.__i18nPhEn); return; }
+    var d=I18N[l], s=(d&&d[el.getAttribute('data-i18n-placeholder')]);
+    el.setAttribute('placeholder',(s!=null)?s:el.__i18nPhEn);
+  }); }catch(e){}
+}
+function reflectLangUI(){ try{ var l=getLang(); document.querySelectorAll('#langSeg .seg-btn').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-lang')===l); }); }catch(e){} }
+function setLang(l){ if(l!=='en'&&l!=='mr'&&l!=='hi') return; try{ safeSet('saagar_lang',l); }catch(e){} applyLang(); reflectLangUI(); try{ if(!activeModuleId && activeView==='home') renderHome(); }catch(e){} try{ toast('भाषा / Language: '+({en:'English',mr:'मराठी',hi:'हिंदी'}[l])); }catch(e){} }
 
 /* ═══════════════════════════════════════════════════════════════════════
    ADMIN PIN
@@ -3149,6 +3226,37 @@ function openCloseDayWizard(){
 /* ── Privacy eye: mask ₹ amounts on Home (additive key ui_hide_amounts; default = visible) ── */
 function amountsHidden(){ return safeGet('ui_hide_amounts')==='1'; }
 function toggleHideAmounts(){ safeSet('ui_hide_amounts', amountsHidden()?'0':'1'); renderHome(); }
+
+/* ── Wave-13 P1-38: home Attention dismiss/snooze state (key st_v5_attn_state_v1) ──
+   dismissed[id] = 'YYYY-MM-DD' → suppressed ONLY on that day (a recurring flag returns
+   next calendar day). snoozed[id] = future 'YYYY-MM-DD' → hidden until that date.
+   High-severity items (it.sev==='high') are capped to a 1-day snooze so critical flags
+   always resurface tomorrow. attnLoadState() self-GCs stale/expired entries. */
+function attnDaysAdd(iso,n){ try{ var d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }catch(e){ return iso; } }   /* LOCAL date (toISOString would shift −5:30 IST → snooze off-by-one / immediate GC) */
+function attnLoadState(){
+  var s; try{ s=tryJSON(safeGet(ATTN_STATE_KEY)); }catch(e){ s=null; }
+  if(!s||typeof s!=='object') s={};
+  var d=(s.dismissed&&typeof s.dismissed==='object')?s.dismissed:{};
+  var z=(s.snoozed&&typeof s.snoozed==='object')?s.snoozed:{};
+  var today=todayIso(), changed=false, ISO=/^\d{4}-\d{2}-\d{2}$/, maxHorizon=attnDaysAdd(today,31);   // UI offers max 1wk; clamp hostile far-future dates
+  Object.keys(d).forEach(function(k){ if(!ISO.test(d[k]) || d[k]!==today){ delete d[k]; changed=true; } });                 // GC yesterday's / malformed dismissals
+  Object.keys(z).forEach(function(k){ if(!ISO.test(z[k]) || !(z[k]>today) || z[k]>maxHorizon){ delete z[k]; changed=true; } });   // GC expired / malformed / hostile-far-future snoozes
+  var out={v:1,dismissed:d,snoozed:z};
+  if(changed){ try{ safeSet(ATTN_STATE_KEY, JSON.stringify(out)); }catch(e){} }
+  return out;
+}
+function attnSaveState(s){ try{ safeSet(ATTN_STATE_KEY, JSON.stringify({v:1,dismissed:s.dismissed||{},snoozed:s.snoozed||{}})); }catch(e){} }
+function attnId(it){ return simpleHash(String((it&&(it.key||it.title))||'')); }
+function attnIsHidden(id,st,today){ return st.dismissed[id]===today || (st.snoozed[id] && today<st.snoozed[id]); }
+function attnDismiss(id){ var s=attnLoadState(); s.dismissed[id]=todayIso(); delete s.snoozed[id]; attnSaveState(s); renderHome(); if(attnModalIsOpen()) openAttention(); }
+function attnSnooze(id,days){
+  var s=attnLoadState(); var items=(window.__attnCache||[]); var it=items.filter(function(x){return x.__id===id;})[0];
+  var d=(it&&(it.sev==='high'||it.color==='red'))?1:Math.max(1,days||1);   // high-sev/red flags cap at 1 day
+  s.snoozed[id]=attnDaysAdd(todayIso(),d); delete s.dismissed[id]; attnSaveState(s); renderHome(); if(attnModalIsOpen()) openAttention();
+}
+function attnRestore(id){ var s=attnLoadState(); delete s.dismissed[id]; delete s.snoozed[id]; attnSaveState(s); renderHome(); if(attnModalIsOpen()) openAttention(); }
+function attnModalIsOpen(){ try{ return !$('modalBackdrop').classList.contains('hidden') && $('modalTitle') && $('modalTitle').textContent==='Needs attention'; }catch(e){ return false; } }
+
 function renderHome(){
   // Home topbar store name — mirror the firm/brand name (org master, else the global brand)
   if($('homeStoreName')){
@@ -3159,7 +3267,7 @@ function renderHome(){
   // Greeting line
   const owner = ownerName();
   if($('greetLine'))  $('greetLine').textContent = timeGreeting() + (owner ? ', '+owner : '');
-  if($('ownerLine'))  $('ownerLine').textContent = "Today at the store";
+  if($('ownerLine'))  $('ownerLine').textContent = stT('home.ownerLine') || "Today at the store";   /* Wave-13 P1-36 */
   if($('todayLine')){
     let __d = new Date().toLocaleDateString('en-IN',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
     try{ const __s=(window.SaagarBridge&&window.SaagarBridge.status&&window.SaagarBridge.status())||{}; if(__s.lastCycleAt) __d += ' · Synced ' + fmtSyncTime(__s.lastCycleAt); }catch(e){}
@@ -3183,7 +3291,7 @@ function renderHome(){
     $('heroEye').setAttribute('aria-label', $('heroEye').title);
   }
   const net = (Number(b.qmsSales)||0) - (Number(b.expenseTodayAmount)||0);
-  if($('heroNetLabel')) $('heroNetLabel').textContent = isViewingToday() ? 'Net today' : 'Net for day';
+  if($('heroNetLabel')) $('heroNetLabel').textContent = isViewingToday() ? (stT('hero.netToday')||'Net today') : (stT('hero.netForDay')||'Net for day');   /* Wave-13 P1-36 */
   if($('heroNet')){ $('heroNet').textContent = heroINR(net); $('heroNet').classList.toggle('neg', net<0 && !hideAmts); }
   // Past-date read-only signal. The date bar (#homeDateBar) already carries the amber
   // state + a "Back to today" action, so the hero just adds a compact read-only pill.
@@ -3268,11 +3376,15 @@ function renderHome(){
     });
   }catch(e){}
 
-  if($('attentionList')) $('attentionList').innerHTML = items.length
-    ? items.slice(0,6).map(x=>`<div class="attn"><span class="dot ${x.color}"></span><div class="attn-text"><strong>${escapeHtml(x.em+'  '+x.title)}</strong><span>${escapeHtml(x.msg)}</span></div><button class="btn tiny" onclick="${x.action}">${escapeHtml(x.cta)}</button></div>`).join('')
-    : `<div class="empty"><span class="em">✓</span>Nothing urgent. Today looks calm.</div>`;
-  // Bell badge reflects whether there is anything to act on
-  const bd=$('homeBellDot'); if(bd) bd.classList.toggle('on', items.length>0);
+  // Wave-13 P1-38: stable id per item + dismiss/snooze filter; the on-home list, empty-state and bell are all driven by the ACTIVE (post-filter) count.
+  let __active = items;
+  try{ const __ast=attnLoadState(), __today=todayIso(); items.forEach(it=>{ it.__id=attnId(it); }); __active=items.filter(it=>!attnIsHidden(it.__id,__ast,__today)); }catch(e){ __active=items; }
+  window.__attnCache=items;
+  if($('attentionList')) $('attentionList').innerHTML = __active.length
+    ? __active.slice(0,6).map(x=>`<div class="attn"><span class="dot ${x.color}"></span><div class="attn-text"><strong>${escapeHtml(x.em+'  '+x.title)}</strong><span>${escapeHtml(x.msg)}</span></div><div class="attn-acts"><button class="btn tiny" onclick="${x.action}">${escapeHtml(x.cta)}</button><button class="attn-ico-btn" title="Snooze 3 days" onclick="attnSnooze('${x.__id}',3)">💤</button><button class="attn-ico-btn" title="Dismiss for today" onclick="attnDismiss('${x.__id}')">✕</button></div></div>`).join('')
+    : `<div class="empty"><span class="em">✓</span>${escapeHtml(stT('home.calm')||'Nothing urgent. Today looks calm.')}</div>`;
+  // Bell badge reflects whether there is anything ACTIVE to act on
+  const bd=$('homeBellDot'); if(bd) bd.classList.toggle('on', __active.length>0);
   try{ renderGreetings(); }catch(e){}   // P1-54: birthday/anniversary greetings card (hidden when no matches)
   try{ renderEodCard(); }catch(e){}   // W2-6: Close-the-day card (host #eodHost, below the hero)
 }
@@ -3341,9 +3453,31 @@ function renderTodayDateBar(){
     (today?'':'<button class="btn small" type="button" onclick="resetSelectedToday()" style="white-space:nowrap">Back to today</button>');
 }
 /* Bell → reveal the Needs-attention card (works on phone + wide rail). */
+/* Wave-13 P1-38: Attention Centre modal — lists ALL active items (not just the home top-6) with
+   per-item snooze/dismiss, plus a Snoozed & dismissed section with Restore + return date. */
 function openAttention(){
-  if(activeView!=='home'){ switchView('home'); }
-  setTimeout(function(){ var el=$('attentionHead')||$('attentionCard'); if(el&&el.scrollIntoView){ try{ el.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){ el.scrollIntoView(); } } }, 30);
+  try{ renderHome(); }catch(e){}                                  // refresh window.__attnCache
+  var items=(window.__attnCache||[]), st=attnLoadState(), today=todayIso();
+  var active=items.filter(function(it){ return !attnIsHidden(it.__id,st,today); });
+  var hidden=items.filter(function(it){ return attnIsHidden(it.__id,st,today); });
+  function row(x){
+    var hi=(x.sev==='high'||x.color==='red');
+    var snz = hi
+      ? '<button class="btn tiny" onclick="attnSnooze(\''+x.__id+'\',1)">💤 1 day</button>'
+      : '<button class="btn tiny" onclick="attnSnooze(\''+x.__id+'\',1)">💤 1d</button><button class="btn tiny" onclick="attnSnooze(\''+x.__id+'\',3)">3d</button><button class="btn tiny" onclick="attnSnooze(\''+x.__id+'\',7)">1wk</button>';
+    return '<div class="attn"><span class="dot '+x.color+'"></span><div class="attn-text"><strong>'+escapeHtml(x.em+'  '+x.title)+'</strong><span>'+escapeHtml(x.msg)+'</span></div></div>'
+      + '<div class="attn-acts" style="margin:-4px 0 12px 21px;flex-wrap:wrap"><button class="btn tiny" onclick="'+x.action+'">'+escapeHtml(x.cta)+'</button>'+snz+'<button class="btn tiny" onclick="attnDismiss(\''+x.__id+'\')">✕ Dismiss</button></div>';
+  }
+  function hrow(x){
+    var ret = st.snoozed[x.__id] ? ('Returns '+st.snoozed[x.__id]) : 'Dismissed for today';
+    return '<div class="attn snoozed"><span class="dot '+x.color+'"></span><div class="attn-text"><strong>'+escapeHtml(x.em+'  '+x.title)+'</strong><span>'+escapeHtml(ret)+'</span></div><div class="attn-acts"><button class="btn tiny" onclick="attnRestore(\''+x.__id+'\')">Restore</button></div></div>';
+  }
+  var html='<div class="attn-csec">Active ('+active.length+')</div>'
+    + (active.length ? active.map(row).join('') : '<div class="empty" style="padding:14px">✓ Nothing active right now.</div>');
+  if(hidden.length) html += '<div class="attn-csec">Snoozed &amp; dismissed ('+hidden.length+')</div>' + hidden.map(hrow).join('');
+  if($('modalTitle')) $('modalTitle').textContent='Needs attention';
+  if($('modalBody')) $('modalBody').innerHTML=html;
+  openModal();
 }
 function renderActivityLog(){
   const host = $('activityLog'); if(!host) return;
@@ -7065,6 +7199,12 @@ function reflectUiModeUI(){ var m=getUiMode();
 }
 function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop') return; try{ safeSet(UI_MODE_KEY, mode); }catch(e){} reflectUiModeUI(); applyUiModeToFrame(); try{ toast((mode==='mobile'?'📱 Mobile':'🖥 Desktop')+' layout'); }catch(e){} }
 function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
+/* Wave-13 P1-39: Text size (Normal / Large) — device-local, mirrors the setUiMode trio. Toggles
+   html.st-textsize-large which zooms #mainContent (chrome scroller) only; nav/topbar/iframe untouched. */
+const TEXT_SIZE_KEY='saagar_text_size';
+function getTextSize(){ try{ var s=safeGet(TEXT_SIZE_KEY); if(s==='large'||s==='normal') return s; }catch(e){} return 'normal'; }
+function reflectTextSizeUI(){ var s=getTextSize(); try{ document.documentElement.classList.toggle('st-textsize-large', s==='large'); }catch(e){} try{ var g=document.querySelectorAll('#textSizeSeg .seg-btn'); for(var i=0;i<g.length;i++){ g[i].classList.toggle('active', g[i].getAttribute('data-textsize')===s); } }catch(e){} }
+function setTextSize(size){ if(size!=='normal'&&size!=='large') return; try{ safeSet(TEXT_SIZE_KEY,size); }catch(e){} reflectTextSizeUI(); try{ toast(size==='large'?'🔎 Large text':'Normal text'); }catch(e){} }
 
 /* ── BUILD BADGE (additive) — reads ONLY existing flags, invents none ──────────
    DEMO → the demo seeder ran (window.__DEMO_SEED_ACTIVE, published by the seed IIFE
@@ -7106,6 +7246,8 @@ function reflectBuildBadge(){
     window.addEventListener('pagehide', function(){ if(adminIdleMinutes()>0){ if(isAdmin) setAdmin(false); if(activeStaff()) signOutStaff(); } });   /* Wave6 SEC-PIN-07: respect the owner's "Never" choice, consistent with visibilitychange */
   }catch(e){}
   reflectUiModeUI();
+  try{ applyLang(); reflectLangUI(); }catch(e){}   // Wave-13 P1-36: apply saved language to shell chrome on boot
+  try{ reflectTextSizeUI(); }catch(e){}            // Wave-13 P1-39: apply saved text size on boot
   try{ reflectBuildBadge(); }catch(e){}   // show the DEMO/TEST build badge (hidden for PROD)
   installHardwareBack();
 
