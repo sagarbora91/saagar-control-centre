@@ -1522,7 +1522,10 @@ html.bcc-mobile #todayView.active{display:block}
             <span class="status-pill" id="staffSignedPill">Shared device</span>
             <button class="btn small" onclick="signOutStaff()">Sign out</button>
           </div>
-          <div class="adminOnly" style="margin-top:10px"><button class="btn small" onclick="manageStaffPins()">Manage staff PINs</button></div>
+          <div class="adminOnly" style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <button class="btn small" onclick="manageStaffPins()">Manage staff PINs</button>
+            <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer" title="R0-W1 SEC-02: when on, a staffer must have a sign-in PIN before they can be selected. The shared/nobody option is always available, so the device is never locked out."><input type="checkbox" id="staffLoginReqChk" onchange="setStaffLoginRequired(this.checked)"> Require a sign-in PIN for each staff member</label>
+          </div>
         </div>
         <div class="card card-pad adminOnly">
           <h4><span class="em">⏱️</span> Auto-lock admin</h4>
@@ -2146,7 +2149,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size"]; }   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY]; }   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
 /* Audit fix SEC-PIN-04: keys that must NEVER be imported from a backup/migration file — a tampered file
    could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They stay in
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
@@ -2214,18 +2217,37 @@ function armIdleLock(){ clearAdminIdle(); if(!isAdmin) return; const mins=adminI
   __adminIdleTimer=setTimeout(function(){ if(isAdmin){ setAdmin(false); try{ auditLog('admin.autolock',{reason:'idle',mins:mins}); }catch(e){} try{ toast('Admin auto-locked after '+mins+' min idle'); }catch(e){} } }, mins*60*1000); }
 function noteAdminActivity(){ if(isAdmin) armIdleLock(); }
 /* #28 — named-staff sign-in. ATTRIBUTION ONLY — must NEVER touch isAdmin or currentRole (the real privilege boundary). */
+/* ── R0-W1 SEC-05 (JML): the employee-master active/archived flag is the SINGLE source of truth for
+   "can this named STAFF member sign in". STAFF-ONLY — never touches the owner path (verifyPin/isAdmin/
+   currentRole). FAIL-OPEN: an unknown/legacy/unreadable id is NOT blocked (attribution only; mirrors the
+   sign-in dropdown, which only omits KNOWN inactive rows). ── */
+function empActiveById(id){ try{ var r=(getEmployeeMaster()||[]).filter(function(e){ return e&&String(e.id)===String(id); })[0]; if(!r) return true; return r.active!==false && !r.archived; }catch(e){ return true; } }
+/* ── R0-W1 SEC-02 (no shared PIN): OWNER policy — require a per-staff PIN before a staffer can be signed in
+   for attribution. DEFAULT ABSENT/OFF = today's fail-open behaviour. Attribution-only: even ON it only
+   restricts named per-staffer sign-in; the "— Shared / nobody —" option always works, so it can NEVER
+   block app launch or module access. ── */
+const STAFF_LOGIN_REQ_KEY = 'saagar_staff_login_required_v1';
+function staffLoginRequired(){ return safeGet(STAFF_LOGIN_REQ_KEY)==='1'; }
+function setStaffLoginRequired(v){ safeSet(STAFF_LOGIN_REQ_KEY, v?'1':'0'); try{ auditLog('security.staffLoginRequired',{on:!!v}); }catch(e){} try{ renderSecurityPanel(); }catch(e){} try{ toast('Staff sign-in PIN: '+(v?'required':'optional')); }catch(e){} }
 function staffPins(){ return tryJSON(safeGet(STAFF_PIN_KEY))||{}; }
 function setStaffPin(id,pin){ const m=staffPins(); m[id]=pinHashV2(pin); safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ auditLog('staff.pin.set',{id}); }catch(e){} }
 function clearStaffPin(id){ const m=staffPins(); delete m[id]; safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ auditLog('staff.pin.clear',{id}); }catch(e){} }
 function hasStaffPin(id){ return !!staffPins()[id]; }
-function verifyStaffPin(id,pin){ const h=staffPins()[id]; return !!h && pinHashV2(pin)===h; }
+function verifyStaffPin(id,pin){ if(!empActiveById(id)) return false;   /* R0-W1 SEC-05: a deactivated/archived staffer's PIN no longer authenticates */
+  const h=staffPins()[id]; return !!h && pinHashV2(pin)===h; }
 function activeStaff(){ const v=tryJSON(safeGet(ACTIVE_STAFF_KEY)); return (v&&v.id)?v:null; }
-function signInStaff(emp){ if(!emp||!emp.id) return; safeSet(ACTIVE_STAFF_KEY,JSON.stringify({id:emp.id,name:emp.name||'',employeeId:emp.employeeId||'',at:new Date().toISOString()})); try{ auditLog('staff.signin',{id:emp.id,name:emp.name}); }catch(e){} applyMode(); }
+function signInStaff(emp){ if(!emp||!emp.id) return;
+  if(!empActiveById(emp.id)){ try{ toast((emp.name||'That staff member')+' is deactivated — cannot sign in'); }catch(e){} return; }   /* R0-W1 SEC-05: refuse sign-in for a deactivated/archived staffer (attribution only; fail-open on unknown id) */
+  safeSet(ACTIVE_STAFF_KEY,JSON.stringify({id:emp.id,name:emp.name||'',employeeId:emp.employeeId||'',at:new Date().toISOString()})); try{ auditLog('staff.signin',{id:emp.id,name:emp.name}); }catch(e){} applyMode(); }
 function signOutStaff(){ const a=activeStaff(); try{ safeRemove(ACTIVE_STAFF_KEY); }catch(e){} if(a){ try{ auditLog('staff.signout',{id:a.id,name:a.name}); }catch(e){} } applyMode(); }
 /* Wave6 UI wiring (Settings → Admin security panel) */
 function setAdminIdle(v){ var n=parseInt(v,10); if(!isFinite(n)||n<0) n=5; safeSet(ADMIN_IDLE_MIN_KEY, String(n)); try{ armIdleLock(); }catch(e){} try{ toast('Auto-lock: '+(n>0?(n+' min'):'Never')); }catch(e){} }
 function activeStaffEmployees(){ try{ return (getEmployeeMaster()||[]).filter(function(e){ return e&&e.name&&e.active!==false&&!e.archived; }); }catch(e){ return []; } }
 function staffSignInPick(val){ if(val===''){ signOutStaff(); return; } var emp=activeStaffEmployees().filter(function(e){ return String(e.id)===String(val); })[0]; if(!emp) return;
+  /* R0-W1 SEC-02: when the owner requires staff sign-in PINs, a staffer with no PIN cannot be signed in for
+     attribution — the owner sets one first. Fail-open: the "— Shared / nobody —" option is unaffected, so this
+     never blocks using the device. Default OFF = unchanged behaviour. */
+  if(staffLoginRequired() && !hasStaffPin(emp.id)){ try{ toast(emp.name+' has no sign-in PIN — ask the owner to set one (Manage staff PINs)'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} return; }
   if(hasStaffPin(emp.id)){ var p=prompt('Enter '+emp.name+' PIN'); if(p===null){ try{ renderSecurityPanel(); }catch(e){} return; } if(!verifyStaffPin(emp.id,p)){ try{ toast('Incorrect PIN'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} return; } }
   signInStaff(emp); }
 function manageStaffPins(){ if(!isAdmin){ try{ toast('Unlock admin to manage staff PINs'); }catch(e){} return; }
@@ -2236,29 +2258,30 @@ function manageStaffPins(){ if(!isAdmin){ try{ toast('Unlock admin to manage sta
   if(hasStaffPin(emp.id)){ if(confirm(emp.name+' already has a PIN.\n\nOK = clear it   ·   Cancel = set a new one')){ clearStaffPin(emp.id); try{ toast(emp.name+' PIN cleared'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} return; } }
   var np=prompt('New PIN for '+emp.name+' (at least 4 characters)'); if(np===null) return; if(String(np).length<4){ try{ toast('PIN must be at least 4 characters'); }catch(e){} return; }
   setStaffPin(emp.id,np); try{ toast(emp.name+' PIN set'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} }
-function renderSecurityPanel(){ var sel=$('staffSignInSel'); if(sel){ var a=activeStaff(); sel.innerHTML='<option value="">— Shared / nobody —</option>'+activeStaffEmployees().map(function(e){ return '<option value="'+escapeHtml(String(e.id))+'"'+((a&&String(a.id)===String(e.id))?' selected':'')+'>'+escapeHtml(e.name)+(hasStaffPin(e.id)?' 🔑':'')+'</option>'; }).join(''); } var ais=$('adminIdleSelect'); if(ais) ais.value=String(adminIdleMinutes()); }
+function renderSecurityPanel(){ var sel=$('staffSignInSel'); if(sel){ var a=activeStaff(); sel.innerHTML='<option value="">— Shared / nobody —</option>'+activeStaffEmployees().map(function(e){ return '<option value="'+escapeHtml(String(e.id))+'"'+((a&&String(a.id)===String(e.id))?' selected':'')+'>'+escapeHtml(e.name)+(hasStaffPin(e.id)?' 🔑':'')+'</option>'; }).join(''); } var ais=$('adminIdleSelect'); if(ais) ais.value=String(adminIdleMinutes()); var slr=$('staffLoginReqChk'); if(slr) slr.checked=staffLoginRequired(); }   /* R0-W1 SEC-02: reflect the staff-login-required policy */
 
 /* ═══════════════════════════════════════════════════════════════════════
    AUDIT + ACTIVITY
    ═══════════════════════════════════════════════════════════════════════ */
 function auditLog(action, detail={}, before=null, after=null){
-  const log = tryJSON(safeGet(AUDIT_LOG_KEY)) || [];
+  const __l = tryJSON(safeGet(AUDIT_LOG_KEY)); const log = Array.isArray(__l) ? __l : [];   /* R0-W1: coerce to array so a corrupted (non-array-but-truthy) store can never make .unshift throw — auditLog must never abort its caller */
   const entry = {
     id:'aud_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),
     at:new Date().toISOString(),
-    actor:isAdmin?'Admin':(activeStaff()?activeStaff().name:'Staff'),
+    actor:isAdmin?(((typeof ownerName==='function'&&ownerName())||'Owner')):(activeStaff()?activeStaff().name:'Staff'),   /* R0-W1 SEC-02: owner actions attribute to the owner's NAME, not a generic 'Admin' */
+    actorRole:isAdmin?'Owner':(activeStaff()?'Staff':'Shared'),                                                          /* R0-W1 SEC-02: keep the level identifiable alongside the person */
     actorId:(!isAdmin&&activeStaff())?activeStaff().id:null,   /* Wave6 #28: attribute to the signed-in staffer when present */
     action,detail,before,after
   };
   log.unshift(entry); safeSet(AUDIT_LOG_KEY, JSON.stringify(log.slice(0,500))); return entry;
 }
 function auditStats(){
-  const log = tryJSON(safeGet(AUDIT_LOG_KEY)) || [];
+  const __l = tryJSON(safeGet(AUDIT_LOG_KEY)); const log = Array.isArray(__l) ? __l : [];   /* R0-W1: array-coerce (defensive) */
   return { total:log.length, last:log[0]?fmtDate(log[0].at):'Never', restore:log.filter(x=>String(x.action).includes('restore')).length };
 }
 function logActivity(id){
   const m = moduleById(id); if(!m) return;
-  const log = tryJSON(safeGet(ACTIVITY_KEY)) || [];
+  const __l = tryJSON(safeGet(ACTIVITY_KEY)); const log = Array.isArray(__l) ? __l : [];   /* R0-W1: coerce so a corrupted store can't make logActivity throw and abort openModule */
   log.unshift({id, icon:m.icon, title:m.title, at:new Date().toISOString()});
   safeSet(ACTIVITY_KEY, JSON.stringify(log.slice(0,20)));
 }
@@ -2320,7 +2343,7 @@ function setLang(l){ if(l!=='en'&&l!=='mr'&&l!=='hi') return; try{ safeSet('saag
    ═══════════════════════════════════════════════════════════════════════ */
 function applyMode(){
   document.body.classList.toggle('admin-on', isAdmin);
-  const pill=$('adminStatePill'); if(pill){ pill.textContent=isAdmin?'Unlocked':'Locked'; pill.className='status-pill '+(isAdmin?'has':''); }
+  const pill=$('adminStatePill'); if(pill){ pill.textContent=isAdmin?('Unlocked · '+(((typeof ownerName==='function'&&ownerName())||'Owner'))):'Locked'; pill.className='status-pill '+(isAdmin?'has':''); }   /* R0-W1 SEC-02: unlocked state shows the OWNER's name, not a generic 'Admin' */
   const btn=$('adminModeBtn'); if(btn) btn.textContent = isAdmin?'Lock admin':'Unlock admin';
   document.querySelectorAll('.adminOnly').forEach(el=>el.classList.toggle('hidden', !isAdmin));
   const n1=$('adminLockedNote'); if(n1) n1.classList.toggle('hidden', isAdmin);
@@ -2383,9 +2406,14 @@ function toggleProtectedModules(){
   toast('Protected modules: ' + (before?'OFF':'ON'));
   applyMode();
 }
+/* R0-W1 SEC-07: sensitive views whose opens/denials are written to the access log. Kept to the two admin-gated
+   money/compliance modules so the 500-entry audit ring is not flooded (security events must not be evicted). */
+const SENSITIVE_VIEWS = ['payroll','tax'];
 function ensureModuleAccess(id){
   if(isAdmin) return true;                       // Owner / super-admin bypasses everything
-  if(!roleCanOpen(id)){ const m=moduleById(id); toast((m?m.short:'This module')+' is not enabled for the '+currentRole()+' role'); return false; }
+  if(!roleCanOpen(id)){ const m=moduleById(id);
+    try{ auditLog('access.denied',{module:id,role:currentRole()}); }catch(e){}   /* R0-W1 SEC-07: attempted-access trail. Guarded — a logging throw must NEVER change the deny decision. */
+    toast((m?m.short:'This module')+' is not enabled for the '+currentRole()+' role'); return false; }
   if(!protectedModulesEnabled()) return true;
   if(!['payroll','tax'].includes(id)) return true;
   toast('Admin PIN required to open this module'); unlockAdmin();
@@ -3224,7 +3252,11 @@ function openCloseDayWizard(){
 }
 
 /* ── Privacy eye: mask ₹ amounts on Home (additive key ui_hide_amounts; default = visible) ── */
-function amountsHidden(){ return safeGet('ui_hide_amounts')==='1'; }
+function amountsHidden(){ var v=safeGet('ui_hide_amounts'); if(v==='1') return true; if(v==='0') return false;
+  /* R0-W1 SEC-07 (minimal role-aware masking): with NO explicit Privacy-eye setting, default-mask the Home ₹
+     tiles for a role that has NO money module (no payroll/expense/dsr access). Owner/admin always exempt.
+     Cosmetic + reversible (the Privacy-eye toggle writes an explicit value that wins); fail-open → SHOW on any error. */
+  try{ if(isAdmin) return false; var m=loadRoleAccess()[currentRole()]||{}; return !(m.payroll||m.expense||m.dsr); }catch(e){ return false; } }
 function toggleHideAmounts(){ safeSet('ui_hide_amounts', amountsHidden()?'0':'1'); renderHome(); }
 
 /* ── Wave-13 P1-38: home Attention dismiss/snooze state (key st_v5_attn_state_v1) ──
@@ -5348,8 +5380,11 @@ function renderConfigEmployees(){
           <td>${e.archived?'<span class="emp-badge archived">Archived</span>':e.active?'<span class="emp-badge active">Yes</span>':'<span class="emp-badge inactive">No</span>'}</td>
           <td><button class="btn tiny" onclick="editEmployee(${i})">✎ Edit</button>
               <button class="btn tiny" onclick="saveEmpRow(${i})">Save</button>
-              <button class="btn tiny ${e.active?'':'green'}" onclick="toggleEmpActive(${i})">${e.active?'Deactivate':'Activate'}</button>
-              ${!e.archived?`<button class="btn tiny red" onclick="archiveEmpRow(${i})">Archive</button>`:''}</td>
+              ${e.archived
+                ? `<button class="btn tiny green" onclick="unarchiveEmpRow(${i})" title="Un-archive: re-enable sign-in. Owner re-sets their PIN.">Restore</button>`
+                : `<button class="btn tiny ${e.active?'':'green'}" onclick="toggleEmpActive(${i})">${e.active?'Deactivate':'Activate'}</button>
+                   <button class="btn tiny red" onclick="archiveEmpRow(${i})">Archive</button>`}</td>   <!-- R0-W1 SEC-05: an archived (leaver) row shows Restore, not a no-op Activate -->
+
         </tr>`).join('')}
       </tbody></table></div>`;
 }
@@ -5429,15 +5464,33 @@ function toggleEmpActive(i){
   list[i].active = !list[i].active;
   saveEmployeeMaster(list);
   auditLog(list[i].active?'employee.activate':'employee.deactivate',{name:list[i].name,employeeId:list[i].employeeId}, before, list[i]);
+  /* R0-W1 SEC-05: immediate revocation — if the just-deactivated staffer is the live signed-in session, sign them out now (not at next reload). */
+  if(!list[i].active){ try{ var a=activeStaff(); if(a && String(a.id)===String(list[i].id)) signOutStaff(); }catch(e){} }
   renderConfigEmployees();
 }
 function archiveEmpRow(i){
   const list = getEmployeeMaster(); if(!list[i]) return;
-  if(!confirm('Archive '+list[i].name+'? They will be hidden from active lists but retained for traceability.')) return;
+  /* R0-W1 SEC-05 leaver checklist: state exactly what offboarding does (signed out · PIN cleared · records retained + attributed). */
+  if(!confirm('Archive '+list[i].name+'?\n\n• Signed out of this device immediately\n• Their sign-in PIN is cleared (access revoked)\n• All their past records are RETAINED and stay attributed to them\n\nProceed?')) return;
   const before = {...list[i]};
+  const empId = list[i].id;
   list[i].active = false; list[i].archived = true; list[i].archivedAt = new Date().toISOString();
   saveEmployeeMaster(list);
   auditLog('employee.archive',{name:list[i].name,employeeId:list[i].employeeId}, before, list[i]);
+  /* R0-W1 SEC-05: true credential revocation — sign out a live session + clear the staff PIN. History is untouched. */
+  try{ var a=activeStaff(); if(a && String(a.id)===String(empId)) signOutStaff(); }catch(e){}
+  try{ if(hasStaffPin(empId)) clearStaffPin(empId); }catch(e){}
+  renderConfigEmployees();
+}
+/* R0-W1 SEC-05: un-archive a leaver who has re-joined — restores sign-in eligibility (empActiveById → true).
+   Their PIN was cleared on archive, so the owner re-sets a fresh sign-in PIN (correct for a re-joiner). */
+function unarchiveEmpRow(i){
+  const list = getEmployeeMaster(); if(!list[i]) return;
+  if(!confirm('Restore '+list[i].name+'?\n\n• Re-enabled for sign-in and active lists\n• Their past records were retained throughout\n• Set a new sign-in PIN via "Manage staff PINs" if needed')) return;
+  const before = {...list[i]};
+  list[i].archived = false; list[i].active = true; list[i].archivedAt = '';
+  saveEmployeeMaster(list);
+  auditLog('employee.restore',{name:list[i].name,employeeId:list[i].employeeId}, before, list[i]);
   renderConfigEmployees();
 }
 function showEmployeeImport(){
@@ -6350,6 +6403,7 @@ function openModule(id){
   if(!ensureModuleAccess(id)) return;
   try{ seedModuleFromMaster(id); }catch(e){}
   logActivity(id);
+  if(SENSITIVE_VIEWS.indexOf(id)>=0){ try{ auditLog('access.open',{module:id,role:currentRole(),admin:isAdmin}); }catch(e){} }   /* R0-W1 SEC-07: log sensitive-view opens (person+role via auditLog actor). Guarded — must never throw/brick module open. */
   activeModuleId = id;
   $('activeTitle').textContent = mod.title;
   $('activeSub').textContent = (mod.category||'')+' · '+(mod.priority||'');
@@ -7248,6 +7302,7 @@ function reflectBuildBadge(){
   reflectUiModeUI();
   try{ applyLang(); reflectLangUI(); }catch(e){}   // Wave-13 P1-36: apply saved language to shell chrome on boot
   try{ reflectTextSizeUI(); }catch(e){}            // Wave-13 P1-39: apply saved text size on boot
+  try{ var __as=activeStaff(); if(__as && !empActiveById(__as.id)) signOutStaff(); }catch(e){}   // R0-W1 SEC-05: belt-and-suspenders — a staffer deactivated/archived while the session persisted (e.g. auto-lock 'Never') is signed out on boot
   try{ reflectBuildBadge(); }catch(e){}   // show the DEMO/TEST build badge (hidden for PROD)
   installHardwareBack();
 
