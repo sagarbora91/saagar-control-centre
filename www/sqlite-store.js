@@ -158,6 +158,11 @@
         ? FS.readFile({ path: DB_FILE, directory: dataDir() }).then(function (res) { return res && res.data ? b64ToBytes(res.data) : null; }).catch(function () { return null; })
         : Promise.resolve(null);
       return loadP.then(function (bytes) {
+        /* R0-W2 guard (E7): an SBCC1-encrypted bcc.sqlite means the Option-C engine owned this file.
+           NEVER open-as-fresh + write-through here — that would overwrite the ciphertext with a
+           plaintext DB built from the stale native-LS snapshot. Stand down entirely (app runs on
+           native localStorage exactly as the flag-off contract promises). */
+        if (bytes && bytes.length > 5 && bytes[0] === 0x53 && bytes[1] === 0x42 && bytes[2] === 0x43 && bytes[3] === 0x43 && bytes[4] === 0x31) { log('encrypted DB file present — Design-A mirror standing down (no overwrite)'); return; }
         try { db = bytes ? new SQL.Database(bytes) : new SQL.Database(); }
         catch (e) { log('open existing DB failed (' + (e && e.message) + ') — starting fresh'); db = new SQL.Database(); }
         db.run('CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)');

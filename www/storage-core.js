@@ -69,6 +69,18 @@
     var WAL_BIG = 50000;                /* §13.1 'set' values larger than this are journaled as a pointer (forces a prompt persist) */
     var WAL_MAX = 512000;               /* §13.1 byte cap on the WAL JSON so it can never approach the native-LS quota */
 
+    /* ── R0-W2 at-rest encryption (whole-file envelope; MEM stays plaintext) ──
+       STORAGE_ENCRYPT_ENABLED gates WRITES only — the reader below ALWAYS sniffs
+       and decrypts SBCC1 envelopes, so flag-off = next persists write plaintext
+       back in place (rollback recipe, no data movement). No marker key: readers
+       trust file CONTENT only (SQLite magic vs SBCC1). W2-S1 ships the reader
+       INERT (flag false, no writer exists yet — no ciphertext can exist). */
+    var STORAGE_ENCRYPT_ENABLED = false;   /* W2-S4 flips to true after the DT matrix passes */
+    try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_ENCRYPT === true) STORAGE_ENCRYPT_ENABLED = true; } catch (e) {}
+    var KEY_FILE = 'bcc.key';
+    var ENV_MAGIC = [0x53, 0x42, 0x43, 0x43, 0x31];   /* "SBCC1" */
+    var SQLITE_MAGIC = 'SQLite format 3';             /* first 15 bytes + \0 */
+
     /* ── ported helpers from sqlite-store.js (copy, do not re-import) ── */
     function FSplugin() { try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) || null; } catch (e) { return null; } }
     function dataDir() { return 'DATA'; }
@@ -80,6 +92,63 @@
 
     function bytesToB64(u8) { var CHUNK = 0x8000, out = ''; for (var i = 0; i < u8.length; i += CHUNK) out += String.fromCharCode.apply(null, u8.subarray(i, i + CHUNK)); return btoa(out); }
     function b64ToBytes(b64) { var bin = atob(b64), u8 = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return u8; }
+
+    /* ── R0-W2 crypto helpers (E2). Reader half is ALWAYS active; writer half (encryptForPersist)
+       is wired in W2-S2 and inert until then. Every failure path is fail-open:
+       encrypt failure → plaintext persist (durability > confidentiality);
+       decrypt failure → null → the existing recovery chain treats it like corruption (distinct log). */
+    function subtleOK() { try { return !!(window.crypto && window.crypto.subtle); } catch (e) { return false; } }
+    function isEnvelope(u8) { if (!u8 || u8.length < 18) return false; for (var i = 0; i < 5; i++) if (u8[i] !== ENV_MAGIC[i]) return false; return true; }
+    function isSqlite(u8) { if (!u8 || u8.length < 16) return false; for (var i = 0; i < 15; i++) if (u8[i] !== SQLITE_MAGIC.charCodeAt(i)) return false; return true; }
+    var _keyP = null;                                  /* memoized CryptoKey promise */
+    function loadKey(createIfMissing) {
+      if (_keyP) return _keyP;
+      var FS = FSplugin();
+      if (!FS || !subtleOK()) return Promise.resolve(null);
+      _keyP = FS.readFile({ path: KEY_FILE, directory: dataDir() })
+        .then(function (r) { return r && r.data ? b64ToBytes(r.data) : null; })
+        .catch(function () { return null; })
+        .then(function (raw) {
+          if (!raw && !createIfMissing) return null;
+          var p = raw ? Promise.resolve(raw)
+            : (function () {                            /* generate + write ATOMICALLY, await BEFORE first ciphertext */
+                var nk = new Uint8Array(32); window.crypto.getRandomValues(nk);
+                return FS.writeFile({ path: KEY_FILE + '.tmp', data: bytesToB64(nk), directory: dataDir() })
+                  .then(function () { return FS.rename({ from: KEY_FILE + '.tmp', to: KEY_FILE, directory: dataDir() }); })
+                  .then(function () { log('encryption key created'); return nk; });
+              })();
+          return p.then(function (bytes) {
+            return window.crypto.subtle.importKey('raw', bytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+          });
+        })
+        .catch(function (e) { _keyP = null; log('key load/create failed: ' + (e && e.message)); return null; });
+      return _keyP;
+    }
+    /* encrypt raw DB bytes → b64 envelope string; ANY failure falls back to PLAINTEXT write (fail-open, logged) */
+    function encryptForPersist(raw) {
+      if (!STORAGE_ENCRYPT_ENABLED || !subtleOK()) return Promise.resolve(bytesToB64(raw));
+      return loadKey(true).then(function (key) {
+        if (!key) { log('encrypt skipped — no key (plaintext persist)'); return bytesToB64(raw); }
+        var iv = new Uint8Array(12); window.crypto.getRandomValues(iv);
+        return window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, raw).then(function (ct) {
+          var c = new Uint8Array(ct), out = new Uint8Array(6 + 12 + c.length);
+          out.set(ENV_MAGIC, 0); out[5] = 0x01; out.set(iv, 6); out.set(c, 18);
+          return bytesToB64(out);
+        });
+      }).catch(function (e) { log('encrypt failed (' + (e && e.message) + ') — plaintext persist'); return bytesToB64(raw); });
+    }
+    /* reader: ALWAYS active. plaintext → pass through; envelope → decrypt; failure → null (recovery chain) */
+    function decryptIfEnveloped(u8, label) {
+      if (!isEnvelope(u8)) return Promise.resolve(u8);   /* plaintext (or junk — open() will reject junk) */
+      if (!subtleOK()) { log('decrypt impossible (no subtle) on ' + label); return Promise.resolve(null); }
+      return loadKey(false).then(function (key) {
+        if (!key) { log('decrypt failed (key missing) on ' + label); return null; }
+        var iv = u8.subarray(6, 18), ct = u8.subarray(18);
+        return window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct)
+          .then(function (pt) { return new Uint8Array(pt); })
+          .catch(function () { log('decrypt failed (tag/key) on ' + label); return null; });
+      }).catch(function () { log('decrypt errored on ' + label); return null; });   /* adversarial S-2 fold: self-contained never-throw guarantee — a synchronous throw inside the .then (partial subtle impl / detached buffer) resolves to null → recovery chain, not an escaping rejection */
+    }
 
     /* kv table ops — on a thrown DB error, queue the key for retry (§13.4, do NOT swallow) */
     function kvUpsert(k, v) {
@@ -303,7 +372,7 @@
       initSqlJs({ locateFile: function (f) { return f; } }).then(function (_SQL) {
         if (_ready) return;
         SQL = _SQL; var FS = FSplugin();
-        function rd(path) { return FS ? FS.readFile({ path: path, directory: dataDir() }).then(function (r) { return r && r.data ? b64ToBytes(r.data) : null; }).catch(function () { return null; }) : Promise.resolve(null); }
+        function rd(path) { return FS ? FS.readFile({ path: path, directory: dataDir() }).then(function (r) { return r && r.data ? decryptIfEnveloped(b64ToBytes(r.data), path) : null; }).catch(function () { return null; }) : Promise.resolve(null); }   /* R0-W2 E4: sniff+decrypt per file; plaintext passes through untouched (zero async cost added — decryptIfEnveloped resolves synchronously-shaped for non-envelopes) */
         /* open + VALIDATE: sql.js does not throw on a corrupt blob at construction — only on first
            access. Probe with PRAGMA so corruption is detected at open time and recovery fires. */
         /* §13.2: PRAGMA quick_check is a FULL page-structure scan (not just page-1 schema_version),
