@@ -2059,7 +2059,7 @@ const LAST_BACKUP_KEY   = "st_v2_last_backup";
 /* Wave 6 (Security & Multi-User) — new OPTIONAL keys (additive; absent => today's exact behavior). */
 const OWNER_SETUP_KEY      = "st_v2_owner_setup_v1";      // SEC-PIN-05: marker that the owner has claimed this device
 const ADMIN_IDLE_MIN_KEY   = "st_v2_admin_idle_min";      // SEC-PIN-07: owner auto-lock minutes; "0" = Never
-const STAFF_PIN_KEY        = "saagar_staff_pins_v1";      // #28: side-map { empId: "v2:<hash>" } of per-staff sign-in PINs
+const STAFF_PIN_KEY        = "saagar_staff_pins_v1";      // #28: side-map { empId: "v3:<salt>:<digest>" } of per-staff sign-in PINs (v2-era entries still verify + migrate to v3 on success)
 const ACTIVE_STAFF_KEY     = "saagar_active_staff_v1";    // #28: who is signed in on the device now (attribution only)
 const ROLE_SWITCH_LOCK_KEY = "saagar_role_switch_lock_v1"; // SEC-PIN-06: owner policy — require PIN to raise the device role
 const LAUNCH_LOCK_KEY      = "st_v2_launch_lock";           // R0-W1 Slice D (P1-37): opt-in launch PIN lock, '1'/'0', default absent=OFF. Exported (appControlKeys) + restore-accepted (NOT restoreBlockedKeys — a restored ON on a PIN-restore-blocked device fails open via the hasAdminPin() AND-guard). Factory reset: existing st_v\d+_ APP_RE covers it. MUST stay in sync with the raw literal in the paint-early IIFE next to #st-v5-launch-lock.
@@ -2246,11 +2246,38 @@ function pinSalt(){
   return s;
 }
 function pinHashV2(pin){ let v = pinSalt()+"|"+String(pin); for(let i=0;i<50000;i++){ v = simpleHash(v+"|"+i); } return "v2:"+v; }
+/* ═══ v3 EMBEDDED-SALT PIN FORMAT (post-Slice-D hygiene, from the orphaned-salt adversarial P1) ═══
+   "v3:<salt>:<digest>" — the salt travels INSIDE the stored value, so hash and salt can never diverge
+   (the v2 brick vector: st_v2_pin_salt lost while the hash survives ⇒ the correct PIN can never verify).
+   Salt is minted fresh PER PIN (base36 — cannot contain ':', so parsing on the first ':' is unambiguous).
+   Digest chain is byte-identical to v2's (50000 × simpleHash) — only the salt SOURCE changes.
+   verifyPinHash accepts v3 + v2 (device-salt) + legacy bare-number; callers migrate older formats to v3 on
+   any successful entry. The v2 orphan-heal sites stay (they protect not-yet-migrated v2 hashes); a v3 hash
+   structurally cannot orphan. PIN_SALT_KEY becomes vestigial once every credential has migrated. */
+function pinMintSalt(){
+  try{ const a=new Uint32Array(4); (self.crypto||window.crypto).getRandomValues(a); return Array.from(a).map(x=>x.toString(36)).join(""); }
+  catch(e){ return simpleHash("salt|"+String((typeof performance!=="undefined"&&performance.now?performance.now():0))+"|"+String(Math.random())); }
+}
+function pinDigest(salt,pin){ let v = String(salt)+"|"+String(pin); for(let i=0;i<50000;i++){ v = simpleHash(v+"|"+i); } return v; }
+function pinHashV3(pin){ const s = pinMintSalt(); return "v3:"+s+":"+pinDigest(s,pin); }
+function verifyPinHash(stored,pin){   /* format-aware compare; never writes (the v2 branch guards on salt presence so pinSalt() can't mint) — migration is the caller's job */
+  if(!stored) return false;
+  if(String(stored).slice(0,3)==="v3:"){
+    const rest=String(stored).slice(3), i=rest.indexOf(":");
+    if(i<=0) return false;                                   /* malformed v3 = no match (fail closed on the compare, callers stay fail-open on no-PIN) */
+    return pinDigest(rest.slice(0,i),pin)===rest.slice(i+1);
+  }
+  if(String(stored).slice(0,3)==="v2:"){
+    if(!safeGet(PIN_SALT_KEY)) return false;                 /* adversarial P1 fold: ORPHANED salt — fail WITHOUT minting one (pinSalt() would safeSet a fresh salt and MASK the orphan from both heal sites: the paint IIFE + reEvalLaunchLock) */
+    return pinHashV2(pin)===stored;
+  }
+  return simpleHash(pin)===stored;                           /* legacy bare-number */
+}
 function verifyPin(pin){
   const stored = safeGet(ADMIN_PIN_KEY); if(!stored) return false;
-  if(stored.slice(0,3)==="v2:") return pinHashV2(pin)===stored;
-  if(simpleHash(pin)===stored){ try{ safeSet(ADMIN_PIN_KEY, pinHashV2(pin)); }catch(e){} return true; }   // legacy hash → verify + migrate
-  return false;
+  if(!verifyPinHash(stored,pin)) return false;
+  if(String(stored).slice(0,3)!=="v3:"){ try{ safeSet(ADMIN_PIN_KEY, pinHashV3(pin)); }catch(e){} }   /* v2/legacy → v3 on successful entry */
+  return true;
 }
 function hasAdminPin(){ return !!safeGet(ADMIN_PIN_KEY); }
 function protectedModulesEnabled(){ const v=safeGet(PROTECTED_MODULES_KEY); return v==null ? true : v==='true'; }
@@ -2385,11 +2412,13 @@ function setLaunchLock(v){   /* R0-W1 Slice D: opt-in launch lock — refuses ON
   try{ toast(v?'Launch lock ON — Admin PIN asked at every app start':'Launch lock off'); }catch(e){}
 }
 function staffPins(){ return tryJSON(safeGet(STAFF_PIN_KEY))||{}; }
-function setStaffPin(id,pin){ const m=staffPins(); m[id]=pinHashV2(pin); safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ auditLog('staff.pin.set',{id}); }catch(e){} }
+function setStaffPin(id,pin){ const m=staffPins(); m[id]=pinHashV3(pin); safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ auditLog('staff.pin.set',{id}); }catch(e){} }   /* v3 embedded-salt */
 function clearStaffPin(id){ const m=staffPins(); delete m[id]; safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ pinAttemptsSet('staff:'+id,null); }catch(e){} try{ auditLog('staff.pin.clear',{id}); }catch(e){} }   /* R0-W1 SEC-03: clear any parked lockout counter so a re-issued PIN starts fresh */
 function hasStaffPin(id){ return !!staffPins()[id]; }
 function verifyStaffPin(id,pin){ if(!empActiveById(id)) return false;   /* R0-W1 SEC-05: a deactivated/archived staffer's PIN no longer authenticates */
-  const h=staffPins()[id]; return !!h && pinHashV2(pin)===h; }
+  const h=staffPins()[id]; if(!h || !verifyPinHash(h,pin)) return false;
+  if(String(h).slice(0,3)!=="v3:"){ try{ const m=staffPins(); m[id]=pinHashV3(pin); safeSet(STAFF_PIN_KEY,JSON.stringify(m)); }catch(e){} }   /* v2 → v3 on successful entry */
+  return true; }
 function activeStaff(){ const v=tryJSON(safeGet(ACTIVE_STAFF_KEY)); return (v&&v.id)?v:null; }
 function signInStaff(emp){ if(!emp||!emp.id) return;
   if(!empActiveById(emp.id)){ try{ toast((emp.name||'That staff member')+' is deactivated — cannot sign in'); }catch(e){} return; }   /* R0-W1 SEC-05: refuse sign-in for a deactivated/archived staffer (attribution only; fail-open on unknown id) */
@@ -2632,7 +2661,7 @@ function promptNewPin(){
   const c = prompt('Confirm Admin PIN');
   if (c !== pin) { toast('PIN confirmation did not match'); return false; }
   const had = hasAdminPin();
-  safeSet(ADMIN_PIN_KEY, pinHashV2(pin));   /* Audit fix SEC-PIN-02: salted+iterated */
+  safeSet(ADMIN_PIN_KEY, pinHashV3(pin));   /* Audit fix SEC-PIN-02: salted+iterated; v3 = per-PIN embedded salt */
   auditLog(had?'admin.pin.change':'admin.pin.create',{pinStored:true});
   if(!had){ try{ markOwnerSetup(); auditLog('admin.owner.setup',{}); }catch(e){} }   /* Wave6 SEC-PIN-05: the first PIN = the owner claiming this device */
   toast('Admin PIN saved'); return true;
