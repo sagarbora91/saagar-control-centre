@@ -1629,6 +1629,16 @@ html.bcc-mobile #todayView.active{display:block}
           <div id="storageEngineBox" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
+          <h4><span class="em">🔐</span> Encryption probe (R0-W2 · S0)</h4>
+          <p>Read-only device capability check for the planned at-rest encryption: WebCrypto availability + a timed
+             AES-256-GCM round-trip on a synthetic 15&nbsp;MB blob. Writes NOTHING to storage.</p>
+          <button class="btn primary" onclick="runEncryptionProbe()" style="margin-top:10px">Run encryption probe</button>
+          <div id="encProbeBox" style="margin-top:12px"></div>
+        </div>
+        <script>/* W2-S0: capture boot-to-ready timing (in-memory only). Registered at parse so it observes the
+           real whenReady moment; harmless if the engine is OFF or already ready. */
+          (function(){try{ if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){ window.SaagarStore.whenReady(function(){ if(window.__stReadyAtMs===undefined) window.__stReadyAtMs=(typeof performance!=='undefined'&&performance.now)?performance.now():0; }); } }catch(e){}})();</script>
+        <div class="card card-pad">
           <h4><span class="em">📜</span> Audit trail</h4>
           <p>Every write &amp; admin action is logged on this device.</p>
           <div id="auditTrailBox" style="margin-top:10px"></div>
@@ -6509,6 +6519,71 @@ function renderDiagnostics(){
     <div class="table-wrap" style="margin-top:10px;max-height:300px;overflow:auto"><table class="data-table small">
       <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Module</th></tr></thead>
       <tbody>${log.slice(0,40).map(e=>`<tr><td><small>${escapeHtml(fmtDate(e.at))}</small></td><td>${escapeHtml(e.actor||'')}</td><td><code>${escapeHtml(e.action||'')}</code></td><td><small>${escapeHtml((e.detail&&(e.detail.module||e.detail.name||e.detail.title))||'')}</small></td></tr>`).join('')||'<tr><td colspan="4" class="empty-cell">No audit events yet.</td></tr>'}</tbody></table></div>`;
+}
+
+/* ═══ R0-W2 · W2-S0 — ENCRYPTION DEVICE PROBE (READ-ONLY) ═══
+   Proves the ONE platform assumption the R0-W2 build contract rests on: AES-256-GCM via crypto.subtle works in
+   THIS device's WebView, fast enough for the whole-file envelope design. Zero writes to any storage surface —
+   the only Filesystem call is a stat() on bcc.sqlite (read-only, try/caught, optional).
+   GATE (per the contract): subtle present AND encrypt+decrypt round-trip < 1000ms on a 15MB blob
+   (comfortably inside the 6000ms BOOT_TIMEOUT_MS budget alongside today's ~0.3s healthy boot). */
+async function runEncryptionProbe(){
+  const box=$('encProbeBox'); if(!box) return;
+  const rows=[]; const esc=escapeHtml;
+  function paint(status){
+    box.innerHTML='<div class="table-wrap"><table class="data-table small"><tbody>'
+      +rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td><b>'+esc(r[1])+'</b></td></tr>').join('')
+      +'</tbody></table></div>'+(status||'');
+  }
+  try{
+    rows.push(['crypto.subtle', (window.crypto&&crypto.subtle)?'present':'ABSENT']);
+    let rndOk=false; try{ crypto.getRandomValues(new Uint8Array(16)); rndOk=true; }catch(e){}
+    rows.push(['getRandomValues', rndOk?'OK':'FAILED']);
+    if(!(window.crypto&&crypto.subtle)){ rows.push(['VERDICT','FAIL — WebCrypto absent; R0-W2 STOPS here (per contract)']); paint(); return; }
+    paint('<small>Generating key + 15 MB blob…</small>');
+    const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},true,['encrypt','decrypt']);
+    rows.push(['AES-256-GCM key','generated']);
+    const SZ=15*1048576;
+    const blob=new Uint8Array(SZ);
+    { const seed=new Uint8Array(65536); crypto.getRandomValues(seed);           // 64KB RNG limit per call — tile it
+      for(let o=0;o<SZ;o+=65536) blob.set(seed.subarray(0,Math.min(65536,SZ-o)),o); }
+    rows.push(['Test blob','15.0 MB synthetic']);
+    paint('<small>Encrypting…</small>');
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    let t0=performance.now();
+    const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,blob);
+    const encMs=Math.round(performance.now()-t0);
+    rows.push(['Encrypt (15 MB)',encMs+' ms · '+(ct.byteLength/1048576).toFixed(2)+' MB ciphertext']);
+    paint('<small>Decrypting…</small>');
+    t0=performance.now();
+    const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,ct);
+    const decMs=Math.round(performance.now()-t0);
+    const ptv=new Uint8Array(pt);
+    let match=(ptv.length===SZ); if(match){ for(let i=0;i<SZ;i+=1048576){ if(ptv[i]!==blob[i]){ match=false; break; } } match=match&&ptv[SZ-1]===blob[SZ-1]; }
+    rows.push(['Decrypt (15 MB)',decMs+' ms']);
+    rows.push(['Round-trip integrity',match?'VERIFIED':'*** MISMATCH ***']);
+    // tamper check: GCM must REJECT a flipped byte (clean failure = the fail-open recovery path is reachable)
+    let tamperOk=false;
+    try{ const bad=new Uint8Array(ct.slice(0)); bad[100]^=0xFF; await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,bad); }
+    catch(e){ tamperOk=true; }
+    rows.push(['Tamper rejection (GCM tag)',tamperOk?'rejects cleanly':'*** ACCEPTED TAMPERED DATA ***']);
+    // context readouts (all read-only)
+    try{
+      const FS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
+      if(FS&&FS.stat){ const st=await FS.stat({path:'bcc.sqlite',directory:'DATA'}); rows.push(['bcc.sqlite on disk',(st.size/1048576).toFixed(2)+' MB']); }
+      else rows.push(['bcc.sqlite on disk','n/a (no Filesystem plugin — browser)']);
+    }catch(e){ rows.push(['bcc.sqlite on disk','stat failed: '+String((e&&e.message)||e)]); }
+    rows.push(['Boot → storage ready',(window.__stReadyAtMs!==undefined)?Math.round(window.__stReadyAtMs)+' ms':'n/a']);
+    const total=encMs+decMs;
+    const pass=match&&tamperOk&&total<1000;
+    rows.push(['VERDICT',pass?('PASS — '+total+' ms round-trip (< 1000 ms gate). W2-S1 may proceed.')
+                             :('FAIL — '+(match?'':'integrity mismatch; ')+(tamperOk?'':'tamper accepted; ')+(total>=1000?total+' ms ≥ 1000 ms gate':'')+' — report to the build contract (OD-7).')]);
+    paint();
+    try{ auditLog('security.encProbe',{encMs:encMs,decMs:decMs,pass:pass}); }catch(e){}
+  }catch(e){
+    rows.push(['VERDICT','FAIL — probe error: '+String((e&&e.message)||e)]);
+    paint();
+  }
 }
 
 function runDiagnostics(showModal=false){
