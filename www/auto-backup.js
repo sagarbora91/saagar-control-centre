@@ -3,32 +3,38 @@
    OFFLINE DAILY AUTO-BACKUP — APK safety net
    ───────────────────────────────────────────────────────────────────────────
    Why this exists:
-     WebView localStorage is durable for months inside an installed app, but it
-     is still lost if the user uninstalls the app or taps "Clear storage".
-     This module writes a dated JSON snapshot of ALL app data to the phone's
-     Documents/SaagarBCC-Backups/ folder once per day, fully offline, so months
-     of business data can always be recovered (or moved to a new phone).
+     WebView localStorage is durable for months inside an installed app. This
+     module writes a dated JSON snapshot of ALL app data once per day, fully
+     offline, as an on-device safety net (recover from a bad in-app operation
+     via Configuration → Data & Backup → "Restore from device backup").
+
+   R0-W3 (2026-07-18) — CHANGED FROM Documents/ TO app-private DATA/:
+     Earlier builds wrote these full-data snapshots to the SHARED
+     Documents/SaagarBCC-Backups/ folder, where ANY file-manager app could read
+     the entire business database in plaintext. That is the flank R0-W3 closes.
+     Snapshots now live in the app-private DATA/ dir (not world-readable, and
+     wiped by uninstall/Clear-storage — which is correct: the auto-backup is an
+     in-app safety net, NOT the uninstall/new-phone migration copy).
+     UNINSTALL / NEW-PHONE MIGRATION is now exclusively the user-initiated,
+     admin-gated MANUAL export/share ("Backup" → Share to Drive), which stays
+     plaintext by the owner's explicit choice. The Home nudge escalates when the
+     last off-device backup is stale.
 
    How it works:
      - Runs ~6s after the app loads (does not block the UI).
      - Snapshots every localStorage key (all V4 + embedded-module data).
-     - Writes Documents/SaagarBCC-Backups/backup-YYYY-MM-DD.json via the
-       Capacitor Filesystem plugin.
+     - Writes DATA/SaagarBCC-Backups/backup-YYYY-MM-DD.json (app-private).
      - Only one write per calendar day (tracked in localStorage).
-     - Keeps the most recent 90 daily files; older ones are pruned.
+     - Keeps the most recent 7 daily files; older ones are pruned.
      - Also keeps a rolling "latest.json" that is always the newest snapshot.
-     - In a plain desktop browser (no Capacitor) it degrades gracefully:
-       it still records the backup marker and logs to console, no error.
-
-   Restore:
-     Open the app → Configuration → Data & Backup → "Restore from JSON",
-     and pick any file from Documents/SaagarBCC-Backups/.
+     - In a plain desktop browser (no Capacitor) it degrades gracefully.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
 
   var FOLDER = 'SaagarBCC-Backups';
-  var KEEP_DAYS = 90;                       // retain ~3 months of daily files
+  var DIR = 'DATA';                         // R0-W3: app-private (was 'DOCUMENTS' — world-readable)
+  var KEEP_DAYS = 7;                         // DATA history is redundant with the live DB; keep a short window
   var MARKER_KEY = 'bcc_autobackup_last';   // YYYY-MM-DD of last successful backup
   var LOG_KEY = 'bcc_autobackup_log';       // small JSON ring of recent results
   var START_DELAY_MS = 6000;                // let the app paint first
@@ -87,7 +93,7 @@
     return FS.writeFile({
       path: FOLDER + '/' + path,
       data: text,
-      directory: 'DOCUMENTS',
+      directory: DIR,
       encoding: 'utf8',
       recursive: true
     });
@@ -95,7 +101,7 @@
 
   function pruneOldFiles(FS) {
     if (!FS.readdir) return Promise.resolve();
-    return FS.readdir({ path: FOLDER, directory: 'DOCUMENTS' })
+    return FS.readdir({ path: FOLDER, directory: DIR })
       .then(function (res) {
         var files = (res && res.files) ? res.files : [];
         // Capacitor may return strings or {name} objects depending on version
@@ -105,7 +111,7 @@
         if (names.length <= KEEP_DAYS) return;
         var toDelete = names.slice(0, names.length - KEEP_DAYS);
         return Promise.all(toDelete.map(function (n) {
-          return FS.deleteFile({ path: FOLDER + '/' + n, directory: 'DOCUMENTS' })
+          return FS.deleteFile({ path: FOLDER + '/' + n, directory: DIR })
             .catch(function () {});
         }));
       })
@@ -131,7 +137,7 @@
       try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
       pushLog({ at: nowIso(), date: today, mode: 'browser-noop', keys: snap.keyCount });
       console.log('[auto-backup] No native filesystem (browser preview). Snapshot ready, '
-        + snap.keyCount + ' keys. In the APK this is written to Documents/' + FOLDER + '/.');
+        + snap.keyCount + ' keys. In the APK this is written to app-private ' + DIR + '/' + FOLDER + '/.');
       return Promise.resolve({ browser: true });
     }
 
@@ -141,7 +147,7 @@
       .then(function () {
         try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
         pushLog({ at: nowIso(), date: today, mode: 'file', keys: snap.keyCount, ok: true });
-        console.log('[auto-backup] Saved Documents/' + FOLDER + '/backup-' + today
+        console.log('[auto-backup] Saved app-private ' + DIR + '/' + FOLDER + '/backup-' + today
           + '.json (' + snap.keyCount + ' keys).');
         return { ok: true, file: 'backup-' + today + '.json' };
       })
@@ -155,15 +161,49 @@
   /* Public manual trigger — can be called from the app or dev console:
        window.SaagarBackup.now()           → force a backup right now
        window.SaagarBackup.status()        → last backup date + recent log   */
+  /* Read the newest on-device auto-backup (app-private DATA — not reachable via the
+     system file picker, so the app offers an explicit "Restore from device backup"). */
+  function readLatest() {
+    var FS = getFS();
+    if (!FS) return Promise.resolve(null);
+    return FS.readFile({ path: FOLDER + '/latest.json', directory: DIR, encoding: 'utf8' })
+      .then(function (r) { return (r && r.data) ? r.data : null; })
+      .catch(function () { return null; });
+  }
+
+  /* R0-W3 S2: one-time purge of the LEGACY world-readable auto-backup files from the
+     shared Documents/ folder. SCOPED to the auto-backup naming ONLY — backup-YYYY-MM-DD.json
+     + latest.json — so it NEVER touches the user's pre-reset-*.json safety backups or the
+     archival day-record exports that legitimately live in the same folder. Idempotent;
+     returns the count deleted. Caller gates this behind an owner confirmation that a fresh
+     off-device backup exists. */
+  function purgeLegacyDocs() {
+    var FS = getFS();
+    if (!FS || !FS.readdir) return Promise.resolve({ deleted: 0, native: !!FS });
+    return FS.readdir({ path: FOLDER, directory: 'DOCUMENTS' })
+      .then(function (res) {
+        var files = (res && res.files) ? res.files : [];
+        var names = files.map(function (f) { return (typeof f === 'string') ? f : f.name; })
+          .filter(function (n) { return n === 'latest.json' || /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n); });
+        return Promise.all(names.map(function (n) {
+          return FS.deleteFile({ path: FOLDER + '/' + n, directory: 'DOCUMENTS' })
+            .then(function () { return true; }).catch(function () { return false; });
+        })).then(function (rs) { return { deleted: rs.filter(Boolean).length, scanned: names.length }; });
+      })
+      .catch(function () { return { deleted: 0, scanned: 0 }; });   /* folder gone / never existed — nothing to purge */
+  }
+
   window.SaagarBackup = {
     now: function () { return runBackup(true); },
+    readLatest: readLatest,
+    purgeLegacyDocs: purgeLegacyDocs,
     status: function () {
       var log = [];
       try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) {}
       return {
         lastBackup: localStorage.getItem(MARKER_KEY) || 'never',
         native: isNativeApp(),
-        folder: 'Documents/' + FOLDER,
+        folder: DIR + '/' + FOLDER + ' (app-private)',
         recent: log
       };
     }

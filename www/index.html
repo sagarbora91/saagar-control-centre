@@ -1508,14 +1508,16 @@ html.bcc-mobile #todayView.active{display:block}
       <div class="sub-section hidden" id="subBackup">
         <div class="card card-pad">
           <h4><span class="em">💾</span> Backup &amp; restore</h4>
-          <p>Manual JSON backup of all module data on this device. The app also writes a daily backup automatically inside this device's Documents/SaagarBCC-Backups/ folder.</p>
+          <p>Manual JSON backup of all module data on this device. The app also keeps a private daily safety copy inside the app's own storage (not readable by other apps). <b>To move to a new phone or survive an uninstall, use “Back up → Share to Drive”</b> — the on-device copy is wiped if the app is removed.</p>
           <div id="backupStatusBox" style="margin:10px 0"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn green" onclick="exportBackup()">Create backup JSON</button>
             <button class="btn gold" onclick="shareBackup()">Back up → Share to Drive</button>
             <button class="btn outline-gold" onclick="document.getElementById('restoreFile').click()">Restore from JSON</button>
+            <button class="btn outline-gold" onclick="restoreFromDeviceBackup()">Restore from device backup</button>
             <input id="restoreFile" class="hidden" type="file" accept="application/json,.json" onchange="handleRestoreFile(this.files&&this.files[0]);this.value=''" />
           </div>
+          <div id="legacyPurgeRow" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
           <h4><span class="em">📦</span> Full migration export</h4>
@@ -2066,6 +2068,7 @@ const PROTECTED_MODULES_KEY = "st_v2_protect_admin_modules";
 const ADMIN_PIN_KEY     = "st_v2_admin_pin_hash";
 const ADMIN_MODE_KEY    = "st_v2_admin_mode";
 const LAST_BACKUP_KEY   = "st_v2_last_backup";
+const OFFDEVICE_BACKUP_KEY = "st_v2_last_offdevice_backup";   /* R0-W3: recency of a TRUE off-device backup (Share to Drive) — the only thing that survives device loss; distinct from LAST_BACKUP_KEY which any local export also stamps */
 /* Wave 6 (Security & Multi-User) — new OPTIONAL keys (additive; absent => today's exact behavior). */
 const OWNER_SETUP_KEY      = "st_v2_owner_setup_v1";      // SEC-PIN-05: marker that the owner has claimed this device
 const ADMIN_IDLE_MIN_KEY   = "st_v2_admin_idle_min";      // SEC-PIN-07: owner auto-lock minutes; "0" = Never
@@ -2213,7 +2216,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY,PIN_POLICY_KEY,LAUNCH_LOCK_KEY]; }   /* R0-W1 Slice D: st_v2_launch_lock exported+restored; effective gate re-ANDs hasAdminPin() at boot so a PIN-restore-blocked device fails open */   /* R0-W1 SEC-03: pin policy exported+restored (clamped at read); st_v2_pin_attempts_v1 DELIBERATELY absent — device-local, never exported (owner-signed rule-bend 2026-07-17) */   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,OFFDEVICE_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY,PIN_POLICY_KEY,LAUNCH_LOCK_KEY]; }   /* R0-W1 Slice D: st_v2_launch_lock exported+restored; effective gate re-ANDs hasAdminPin() at boot so a PIN-restore-blocked device fails open */   /* R0-W1 SEC-03: pin policy exported+restored (clamped at read); st_v2_pin_attempts_v1 DELIBERATELY absent — device-local, never exported (owner-signed rule-bend 2026-07-17) */   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
 /* Audit fix SEC-PIN-04: keys that must NEVER be imported from a backup/migration file — a tampered file
    could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They stay in
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
@@ -2237,6 +2240,7 @@ function decodeHtml(b64){
   return new TextDecoder('utf-8').decode(arr);
 }
 function setLastBackup(){ safeSet(LAST_BACKUP_KEY, new Date().toISOString()); }
+function setOffDeviceBackup(){ safeSet(OFFDEVICE_BACKUP_KEY, new Date().toISOString()); }   /* R0-W3: only shareBackup (Share to Drive) calls this */
 function lastBackup(){ return safeGet(LAST_BACKUP_KEY); }
 function simpleHash(s){ let h=2166136261; s=String(s); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return String(h>>>0); }
 /* Audit fix SEC-PIN-02: the Admin PIN was stored as a single-pass, UNSALTED 32-bit FNV hash — trivially
@@ -3105,11 +3109,12 @@ function buildTodayBrief(dIso){
       });
     }));
   }catch(e){}
-  // Backup recency — newest of manual backup and the daily auto-backup marker
-  const lb = lastBackup();
-  let newest = lb ? new Date(lb).getTime() : NaN;
-  const ab = safeGet('bcc_autobackup_last'); // YYYY-MM-DD written by auto-backup.js
-  if(ab){ const t = new Date(ab+'T12:00:00').getTime(); if(!isNaN(t) && (isNaN(newest) || t>newest)) newest = t; }
+  // Backup recency — OFF-DEVICE backups only (R0-W3). The daily auto-backup lives in app-private storage
+  // and dies with the app; a local "Create backup JSON" writes to on-device Downloads. NEITHER survives a
+  // lost/reset/uninstalled phone, so recency tracks ONLY st_v2_last_offdevice_backup — stamped exclusively
+  // by Share-to-Drive (the one action that actually leaves the device).
+  const odb = safeGet(OFFDEVICE_BACKUP_KEY);
+  const newest = odb ? new Date(odb).getTime() : NaN;
   out.backupDays = !isNaN(newest) ? Math.max(0, Math.round((Date.now()-newest)/86400000)) : null;
   return out;
 }
@@ -3697,8 +3702,8 @@ function renderHome(){
     const _fz=_fs.filter(f=>f&&f.blackout&&f.end&&f.end>=_t&&f.start&&f.start<=_near).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
     if(_fz){ const _active=(_fz.start<=_t&&_t<=_fz.end); items.push({color:'orange', em:'🎊', title:`Leave freeze — ${escapeHtml(_fz.name)}`, msg:_active?`Peak season is on (till ${_fz.end}). Avoid approving staff leave.`:`Starts ${_fz.start}. Plan staffing; avoid new leave approvals in this window.`, action:"openModule('planning')", cta:'Plan'}); }
   }catch(e){}
-  if (b.backupDays != null && b.backupDays > 7) items.push({color:'red', em:'⬇', title:`Backup is ${b.backupDays} days old`, msg:'Auto-backup also writes daily inside Documents/SaagarBCC-Backups/.', action:'exportBackup()', cta:'Backup'});
-  if (b.backupDays == null) items.push({color:'orange', em:'⬇', title:'No manual backup taken yet', msg:'Auto-backup runs in the background; a manual one is also recommended.', action:'exportBackup()', cta:'Backup'});
+  if (b.backupDays != null && b.backupDays > 7) items.push({color:'red', em:'⬇', title:`Off-device backup is ${b.backupDays} days old`, msg:'The on-device daily copy is wiped if the app is removed — Share a backup to Drive so it survives a lost or reset phone.', action:'shareBackup()', cta:'Back up'});
+  if (b.backupDays == null) items.push({color:'red', em:'⬇', title:'No off-device backup yet', msg:'Nothing has left this device. If the phone is lost, reset, or the app is removed, all data is gone — Share a backup to Drive to protect it.', action:'shareBackup()', cta:'Back up'});
 
   // Cross-module Exceptions Hub (event-bus). High-severity flags are prepended.
   try{
@@ -5976,6 +5981,7 @@ function shareBackup(){
   const json = JSON.stringify(payload,null,2);
   const fname = `Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.json`;
   setLastBackup();
+  setOffDeviceBackup();   /* R0-W3: this is the one path that leaves the device — drives the off-device nudge */
   try{ auditLog('backup.share',{keys:Object.keys(payload.localStorage).length, scope:payload.scope}); }catch(e){}
   const c = capsShare();
   if(!c){ downloadText(fname, json, 'application/json'); closeModal(); toast('Backup downloaded (Share to Drive works in the installed app)'); return; }
@@ -5994,7 +6000,7 @@ function validateRestoreKeyValue(k,raw){
   const parsed = parsedRestoreValue(text);
   const owner = restoreKeyOwnerId(k);
   if(owner==='control'){
-    if([ADMIN_PIN_KEY,ADMIN_MODE_KEY,PROTECTED_MODULES_KEY,LAST_BACKUP_KEY,OWNER_NAME_KEY].includes(k)) return {ok:true};
+    if([ADMIN_PIN_KEY,ADMIN_MODE_KEY,PROTECTED_MODULES_KEY,LAST_BACKUP_KEY,OFFDEVICE_BACKUP_KEY,OWNER_NAME_KEY].includes(k)) return {ok:true};
     if(k===EMP_MASTER_KEY) return {ok:Array.isArray(parsed)||(parsed&&Array.isArray(parsed.employees)),reason:'Employee master must be an array or {employees:[]}'};
     if(k===ACTIVITY_KEY||k===AUDIT_LOG_KEY) return {ok:Array.isArray(parsed),reason:'Log keys must contain arrays'};
     if(k===PIN_POLICY_KEY) return {ok:!!(parsed&&typeof parsed==='object'&&!Array.isArray(parsed)),reason:'PIN policy must be an object'};   /* R0-W1 SEC-03: shape-only here — the validator stores raw and cannot rewrite, so field clamping (minLen 4..12, numeric coercion, 300s lock ceiling) lives in the pinPolicy() reader */
@@ -6039,6 +6045,42 @@ function validateRestoreData(data){
     result.valid[k] = raw;
   });
   return result;
+}
+/* R0-W3: restore from the app-private DATA auto-backup (not reachable via the system file
+   picker, so it needs an explicit affordance). Reuses the exact handleRestoreFile validation/
+   preview path by wrapping the JSON text in a Blob (FileReader.readAsText + .size both work). */
+function restoreFromDeviceBackup(){
+  if(!(window.SaagarBackup && typeof SaagarBackup.readLatest==='function')){ toast('Device backup unavailable here'); return; }
+  SaagarBackup.readLatest().then(function(text){
+    if(!text){ toast('No on-device auto-backup found yet'); return; }
+    try{ handleRestoreFile(new Blob([text],{type:'application/json'})); }
+    catch(e){ toast('Could not read the device backup'); }
+  }).catch(function(){ toast('Could not read the device backup'); });
+}
+/* R0-W3 S2: gated one-time purge of the LEGACY world-readable auto-backup files from shared
+   Documents/. Scoped in auto-backup.js to backup-*.json + latest.json ONLY (never the pre-reset
+   safety backups or archival exports). Owner confirms a fresh off-device backup exists first. */
+var LEGACY_PURGE_KEY = 'bcc_docs_purged_v1';
+function renderLegacyPurgeRow(){
+  var box=$('legacyPurgeRow'); if(!box) return;
+  var done=false; try{ done=!!safeGet(LEGACY_PURGE_KEY); }catch(e){}
+  var native = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if(done || !native){ box.innerHTML=''; return; }
+  box.innerHTML = '<p class="sub" style="color:var(--danger,#b3261e);margin:0 0 6px">Older builds saved daily full-data backups to the shared <b>Documents/SaagarBCC-Backups/</b> folder, readable by any file-manager app. Remove them once you have a fresh off-device backup.</p>'
+    + '<button class="btn danger" onclick="runLegacyPurge()">Remove old shared-storage backups</button>';
+}
+function runLegacyPurge(){
+  if(!(window.SaagarBackup && typeof SaagarBackup.purgeLegacyDocs==='function')){ toast('Not available here'); return; }
+  if(!confirm('Remove the old daily backups from the shared Documents/SaagarBCC-Backups/ folder?\n\nThis deletes ONLY the auto-backup files (backup-*.json, latest.json) — your pre-reset safety backups and archived record exports are NOT touched.\n\nConfirm you have a fresh off-device backup (Back up → Share to Drive) first.')) return;
+  SaagarBackup.purgeLegacyDocs().then(function(r){
+    var deleted=(r&&r.deleted)||0, scanned=(r&&r.scanned)||0;
+    var complete = (scanned===0) || (deleted===scanned);   /* adversarial P1-B: only mark done when the flank is actually closed — else keep offering + retry */
+    if(complete){ try{ safeSet(LEGACY_PURGE_KEY, new Date().toISOString()); }catch(e){} }
+    try{ auditLog('backup.legacyDocsPurged',{deleted:deleted,scanned:scanned,complete:complete}); }catch(e){}
+    try{ toast(complete ? ('Removed '+deleted+' old shared-storage backup file(s)')
+                        : ('Removed '+deleted+' of '+scanned+' — some could not be deleted. Tap again to retry.')); }catch(e){}
+    try{ renderLegacyPurgeRow(); }catch(e){}
+  }).catch(function(){ toast('Could not remove old backups'); });
 }
 function handleRestoreFile(file){
   if(!file) return;
@@ -6434,7 +6476,7 @@ function renderConfigBackup(){
   try{
     if(window.SaagarBackup && typeof window.SaagarBackup.status === 'function'){
       const s = window.SaagarBackup.status();
-      if(s) autoLine = `Auto-backup last ran: <b>${escapeHtml((s.lastBackup && s.lastBackup!=='never')?s.lastBackup:'never')}</b><br>Folder: <code>${escapeHtml(s.folder||'Documents/SaagarBCC-Backups')}</code>`;
+      if(s) autoLine = `On-device safety copy last saved: <b>${escapeHtml((s.lastBackup && s.lastBackup!=='never')?s.lastBackup:'never')}</b><br>Location: <code>${escapeHtml(s.folder||'app-private')}</code>`;
     }
   }catch(e){}
   if($('backupStatusBox')) $('backupStatusBox').innerHTML = `
@@ -6444,6 +6486,7 @@ function renderConfigBackup(){
       <div class="note">${lb?fmtDate(lb):'Tap Create backup to start.'}</div>
     </div>
     ${autoLine ? `<div class="note-banner" style="margin-top:8px;font-size:12px">${autoLine}</div>` : ''}`;
+  try{ renderLegacyPurgeRow(); }catch(e){}   /* R0-W3 S2: offer the one-time legacy shared-storage purge */
   // Archive info + SQLite storage meter
   try{
     const cutoff = archiveCutoffIso();
