@@ -1129,6 +1129,54 @@ html.bcc-mobile #todayView.active{display:block}
 <div id="st-v5-boot-splash" style="display:none;position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',Arial,sans-serif"><div style="font-size:44px;font-weight:800;letter-spacing:2px;margin-bottom:14px">ST</div><div style="opacity:.85">Loading Saagar Traders…</div></div>
 <script>(function(){var s=document.getElementById('st-v5-boot-splash');if(!s||!window.SaagarStore||!window.SaagarStore.whenReady)return;if(!window.SaagarStore.ready||!window.SaagarStore.ready()){s.style.display='flex';var hide=function(){s.style.display='none';};window.SaagarStore.whenReady(hide);setTimeout(hide,6500);}})();</script>
 
+<!-- ═══ R0-W1 Slice D (P1-37): app-launch PIN lock ═══
+     VERIFY-ONLY gate on the Admin PIN — dismissing NEVER touches isAdmin (no auto-elevate). Opt-in via
+     st_v2_launch_lock ('1'/'0', default absent = OFF); effective gate = hasAdminPin() && launchLockEnabled(),
+     so a restored ON flag on a PIN-restore-blocked device fails OPEN. Static markup (exists before any
+     script can throw); shown/hidden ONLY via style.display. Distinct id from #st-v5-boot-splash — its hide
+     timer captures that element by id and cannot touch this one. No Esc / tap-outside / back-into-shell
+     dismissal path exists by design; hardware Back minimizes the app (handleHardwareBack step 0).
+     PAINT EARLY (IIFE below, raw native-LS read) → DECIDE LATE (reEvalLaunchLock under whenReady). -->
+<div id="st-v5-launch-lock" tabindex="-1" style="display:none;position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;font-family:'DM Sans',Arial,sans-serif;-webkit-user-select:none;user-select:none">
+  <div style="font-size:44px;font-weight:800;letter-spacing:2px;margin-bottom:6px;margin-top:auto">ST</div>
+  <div style="opacity:.85;margin-bottom:14px;font-size:15px">Enter Admin PIN to open</div>
+  <div id="llDots" style="min-height:28px;font-size:22px;letter-spacing:8px;margin-bottom:4px">&nbsp;</div>
+  <div id="llMsg" style="min-height:20px;font-size:13px;color:#f3c96b;margin-bottom:12px;text-align:center;padding:0 20px">&nbsp;</div>
+  <div style="display:grid;grid-template-columns:repeat(3,72px);gap:10px;justify-content:center">
+    <button type="button" onclick="llKey('1')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">1</button>
+    <button type="button" onclick="llKey('2')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">2</button>
+    <button type="button" onclick="llKey('3')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">3</button>
+    <button type="button" onclick="llKey('4')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">4</button>
+    <button type="button" onclick="llKey('5')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">5</button>
+    <button type="button" onclick="llKey('6')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">6</button>
+    <button type="button" onclick="llKey('7')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">7</button>
+    <button type="button" onclick="llKey('8')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">8</button>
+    <button type="button" onclick="llKey('9')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">9</button>
+    <button type="button" onclick="llKey('bk')" style="width:72px;height:58px;font-size:20px;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font-family:inherit">⌫</button>
+    <button type="button" onclick="llKey('0')" style="width:72px;height:58px;font-size:22px;font-weight:700;border:1px solid rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.08);color:#fff;font-family:inherit">0</button>
+    <button type="button" id="llUnlockBtn" onclick="llSubmit()" style="width:72px;height:58px;font-size:16px;font-weight:800;border:1px solid #b8922a;border-radius:12px;background:#b8922a;color:#fff;font-family:inherit">OK</button>
+  </div>
+  <div style="margin-top:16px;margin-bottom:auto;font-size:12px;opacity:.65;max-width:290px;text-align:center;line-height:1.5">Uses the Admin PIN. Unlocking opens the app only — it does not switch the device into Owner mode.</div>
+</div>
+<script>/* R0-W1 Slice D — PAINT EARLY: synchronous show-decision. Reads RAW storage because the shell consts/
+   helpers are not parsed yet (they live in the main shell script). Literals MUST mirror the consts:
+   'st_v2_admin_pin_hash' = ADMIN_PIN_KEY, 'st_v2_launch_lock' = LAUNCH_LOCK_KEY. Pre-ready, the storage-core
+   getItem patch serves native localStorage — a stale native flag may show the lock here; reEvalLaunchLock()
+   under whenReady re-decides against MEM/DB and hides if the gate is really off.
+   BRICK GUARD: whole body in try/catch defaulting to NOT locking. Gate = PIN-hash present AND flag '1' —
+   never ownerSetupDone, never anything else. */
+(function(){try{
+  var ls=window.localStorage;
+  var h=ls.getItem('st_v2_admin_pin_hash');
+  /* Orphaned-hash mirror (adversarial P1): a v2 hash whose salt is gone can never verify — do not paint a
+     lock no PIN can satisfy; reEvalLaunchLock heals the orphan authoritatively at whenReady. */
+  if(h && h.slice(0,3)==='v2:' && !ls.getItem('st_v2_pin_salt')) h=null;
+  if(h && ls.getItem('st_v2_launch_lock')==='1'){
+    var d=document.getElementById('st-v5-launch-lock');
+    if(d){ d.style.display='flex'; try{ d.focus(); }catch(e){} }
+  }
+}catch(e){/* default: NOT locked */}})();</script>
+
 <div class="app">
 
   <!-- ═══════════════════ TOPBAR ═══════════════════ -->
@@ -1533,6 +1581,11 @@ html.bcc-mobile #todayView.active{display:block}
           <select id="adminIdleSelect" onchange="setAdminIdle(this.value)" style="margin-top:8px;padding:8px 10px;border:1px solid var(--gray-300);border-radius:8px;font-size:13px">
             <option value="1">1 minute</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="0">Never</option>
           </select>
+        </div>
+        <div class="card card-pad adminOnly">
+          <h4><span class="em">🔒</span> Lock app at launch</h4>
+          <p>When on, the app asks for the <b>Admin PIN</b> once every time it starts. It uses the same Admin PIN — there is no separate password, so if the PIN is forgotten the app cannot be opened until the app data is reset. Unlocking only opens the app; it does not switch the device into Owner mode.</p>
+          <label style="display:flex;gap:6px;align-items:center;font-size:12px;cursor:pointer;margin-top:8px" title="R0-W1 Slice D (P1-37): cold-start verify-only gate on the Admin PIN. Needs an Admin PIN to turn on; a device restored without its PIN starts unlocked (fail-open)."><input type="checkbox" id="launchLockChk" onchange="setLaunchLock(this.checked)"> Ask for the Admin PIN when the app starts</label>
         </div>
         <div class="card card-pad">
           <h4><span class="em">🎭</span> Current role (this device)</h4>
@@ -2009,6 +2062,7 @@ const ADMIN_IDLE_MIN_KEY   = "st_v2_admin_idle_min";      // SEC-PIN-07: owner a
 const STAFF_PIN_KEY        = "saagar_staff_pins_v1";      // #28: side-map { empId: "v2:<hash>" } of per-staff sign-in PINs
 const ACTIVE_STAFF_KEY     = "saagar_active_staff_v1";    // #28: who is signed in on the device now (attribution only)
 const ROLE_SWITCH_LOCK_KEY = "saagar_role_switch_lock_v1"; // SEC-PIN-06: owner policy — require PIN to raise the device role
+const LAUNCH_LOCK_KEY      = "st_v2_launch_lock";           // R0-W1 Slice D (P1-37): opt-in launch PIN lock, '1'/'0', default absent=OFF. Exported (appControlKeys) + restore-accepted (NOT restoreBlockedKeys — a restored ON on a PIN-restore-blocked device fails open via the hasAdminPin() AND-guard). Factory reset: existing st_v\d+_ APP_RE covers it. MUST stay in sync with the raw literal in the paint-early IIFE next to #st-v5-launch-lock.
 const EMP_MASTER_KEY    = "saagar_employee_master_v1";
 const ORG_MASTER_KEY    = "saagar_org_master_v1";
 const MK_BRANDS         = "saagar_master_brands";
@@ -2149,7 +2203,7 @@ function storageAvailable(){ try { const k='__st_ping__'; localStorage.setItem(k
 function allStorage(){ const o={}; try { for (let i=0; i<localStorage.length; i++){ const k=localStorage.key(i); if(k) o[k]=localStorage.getItem(k)||''; } } catch(e){} return o; }
 function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
-function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY,PIN_POLICY_KEY]; }   /* R0-W1 SEC-03: pin policy exported+restored (clamped at read); st_v2_pin_attempts_v1 DELIBERATELY absent — device-local, never exported (owner-signed rule-bend 2026-07-17) */   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
+function appControlKeys(){ return [PROTECTED_MODULES_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY,PIN_POLICY_KEY,LAUNCH_LOCK_KEY]; }   /* R0-W1 Slice D: st_v2_launch_lock exported+restored; effective gate re-ANDs hasAdminPin() at boot so a PIN-restore-blocked device fails open */   /* R0-W1 SEC-03: pin policy exported+restored (clamped at read); st_v2_pin_attempts_v1 DELIBERATELY absent — device-local, never exported (owner-signed rule-bend 2026-07-17) */   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
 /* Audit fix SEC-PIN-04: keys that must NEVER be imported from a backup/migration file — a tampered file
    could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They stay in
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
@@ -2323,6 +2377,13 @@ function empActiveById(id){ try{ var r=(getEmployeeMaster()||[]).filter(function
 const STAFF_LOGIN_REQ_KEY = 'saagar_staff_login_required_v1';
 function staffLoginRequired(){ return safeGet(STAFF_LOGIN_REQ_KEY)==='1'; }
 function setStaffLoginRequired(v){ safeSet(STAFF_LOGIN_REQ_KEY, v?'1':'0'); try{ auditLog('security.staffLoginRequired',{on:!!v}); }catch(e){} try{ renderSecurityPanel(); }catch(e){} try{ toast('Staff sign-in PIN: '+(v?'required':'optional')); }catch(e){} }
+function setLaunchLock(v){   /* R0-W1 Slice D: opt-in launch lock — refuses ON without an Admin PIN (it would fail open anyway, but the toggle would be a lie) */
+  if(v && !hasAdminPin()){ try{ toast('Set an Admin PIN first (Settings → Admin)'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} return; }
+  safeSet(LAUNCH_LOCK_KEY, v?'1':'0');
+  try{ auditLog('security.launchLock',{on:!!v}); }catch(e){}
+  try{ renderSecurityPanel(); }catch(e){}
+  try{ toast(v?'Launch lock ON — Admin PIN asked at every app start':'Launch lock off'); }catch(e){}
+}
 function staffPins(){ return tryJSON(safeGet(STAFF_PIN_KEY))||{}; }
 function setStaffPin(id,pin){ const m=staffPins(); m[id]=pinHashV2(pin); safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ auditLog('staff.pin.set',{id}); }catch(e){} }
 function clearStaffPin(id){ const m=staffPins(); delete m[id]; safeSet(STAFF_PIN_KEY,JSON.stringify(m)); try{ pinAttemptsSet('staff:'+id,null); }catch(e){} try{ auditLog('staff.pin.clear',{id}); }catch(e){} }   /* R0-W1 SEC-03: clear any parked lockout counter so a re-issued PIN starts fresh */
@@ -2362,7 +2423,75 @@ function manageStaffPins(){ if(!isAdmin){ try{ toast('Unlock admin to manage sta
   var __ml=pinPolicy().minLen;   /* R0-W1 SEC-03: policy min-length, SET time only */
   var np=prompt('New PIN for '+emp.name+' (at least '+__ml+' characters)'); if(np===null) return; if(String(np).length<__ml){ try{ toast('PIN must be at least '+__ml+' characters'); }catch(e){} return; }
   setStaffPin(emp.id,np); try{ toast(emp.name+' PIN set'); }catch(e){} try{ renderSecurityPanel(); }catch(e){} }
-function renderSecurityPanel(){ var sel=$('staffSignInSel'); if(sel){ var a=activeStaff(); sel.innerHTML='<option value="">— Shared / nobody —</option>'+activeStaffEmployees().map(function(e){ return '<option value="'+escapeHtml(String(e.id))+'"'+((a&&String(a.id)===String(e.id))?' selected':'')+'>'+escapeHtml(e.name)+(hasStaffPin(e.id)?(pinLockRemaining('staff:'+e.id)>0?' ⛔':' 🔑'):'')+'</option>'; }).join(''); } var ais=$('adminIdleSelect'); if(ais) ais.value=String(adminIdleMinutes()); var slr=$('staffLoginReqChk'); if(slr) slr.checked=staffLoginRequired(); }   /* R0-W1 SEC-02: reflect the staff-login-required policy */
+function renderSecurityPanel(){ var sel=$('staffSignInSel'); if(sel){ var a=activeStaff(); sel.innerHTML='<option value="">— Shared / nobody —</option>'+activeStaffEmployees().map(function(e){ return '<option value="'+escapeHtml(String(e.id))+'"'+((a&&String(a.id)===String(e.id))?' selected':'')+'>'+escapeHtml(e.name)+(hasStaffPin(e.id)?(pinLockRemaining('staff:'+e.id)>0?' ⛔':' 🔑'):'')+'</option>'; }).join(''); } var ais=$('adminIdleSelect'); if(ais) ais.value=String(adminIdleMinutes()); var slr=$('staffLoginReqChk'); if(slr) slr.checked=staffLoginRequired(); var llc=$('launchLockChk'); if(llc) llc.checked=launchLockEnabled(); }   /* R0-W1 SEC-02: reflect the staff-login-required policy; Slice D: launch-lock toggle */
+
+/* ═══ R0-W1 Slice D (P1-37) — app-launch PIN lock ═══
+   COLD-START only (re-lock-on-resume is SEC-04 idle-lock's job). VERIFY-ONLY: success dismisses the
+   overlay and leaves isAdmin exactly as the session restore set it. In-memory unlock flag ONLY — never
+   persisted, so every cold boot re-locks. Rate-limit = Slice C escalating backoff at scope='admin'
+   (shared with the admin-unlock prompts; time-bounded ≤300s, NEVER permanent). All helpers are parse-time
+   globals INDEPENDENT of whenReady, so even a wedged storage-core leaves a working keypad + verifyPin
+   against native-LS values (anti-brick). */
+function launchLockEnabled(){ return safeGet(LAUNCH_LOCK_KEY)==='1'; }
+var __llUnlocked=false, __llBuf='', __llTimer=null;   /* per-process only — NEVER persisted */
+function llEl(){ return document.getElementById('st-v5-launch-lock'); }
+function llVisible(){ var d=llEl(); return !!(d && d.style.display!=='none'); }
+function llSetMsg(t){ try{ var m=document.getElementById('llMsg'); if(m) m.textContent=(t||' '); }catch(e){} }
+function llRenderDots(){ try{ var d=document.getElementById('llDots'); if(d) d.textContent=(__llBuf?Array(__llBuf.length+1).join('●'):' '); }catch(e){} }
+function llKey(k){ try{ if(k==='bk') __llBuf=__llBuf.slice(0,-1); else if(__llBuf.length<32) __llBuf+=String(k); llRenderDots(); }catch(e){} }
+function llStopTimer(){ if(__llTimer){ try{ clearInterval(__llTimer); }catch(e){} __llTimer=null; } }
+function llCountdown(){   /* live 'Try again in Xs' — updates the message line, NEVER hides the overlay */
+  llStopTimer();
+  var tick=function(){ var r=0; try{ r=pinLockRemaining('admin'); }catch(e){ r=0; }
+    if(r>0) llSetMsg('Too many wrong PINs — try again in '+r+'s');
+    else { llStopTimer(); llSetMsg(''); } };
+  tick(); __llTimer=setInterval(tick,1000);
+}
+function llDismiss(){ __llUnlocked=true; __llBuf=''; llStopTimer(); try{ var d=llEl(); if(d) d.style.display='none'; }catch(e){} }
+function llSubmit(){
+  var pin=__llBuf;
+  try{
+    var rem=pinLockRemaining('admin');                       /* Slice C: check BEFORE verify — a locked scope never reaches verifyPin */
+    if(rem>0){ __llBuf=''; llRenderDots(); llCountdown(); return; }
+    if(!pin){ llSetMsg('Enter your Admin PIN'); return; }    /* Adversarial P2 fold: an empty OK/Enter must not burn a lockout attempt */
+    if(verifyPin(pin)){
+      try{ recordPinSuccess('admin'); }catch(e){}
+      try{ auditLog('security.launchUnlock',{}); }catch(e){}
+      llDismiss(); return;                                   /* VERIFY-ONLY: isAdmin untouched */
+    }
+    try{ recordPinFail('admin'); }catch(e){}
+    __llBuf=''; llRenderDots();
+    var r2=0; try{ r2=pinLockRemaining('admin'); }catch(e){}
+    if(r2>0) llCountdown(); else llSetMsg('Incorrect PIN');
+  }catch(e){ __llBuf=''; llRenderDots(); llSetMsg('Something went wrong — try again'); }   /* verify-path errors keep the overlay UP (state unknown ≠ unlocked); the SHOW decision is what fails open */
+}
+function llKeydownHandler(e){   /* physical-keyboard path + focus containment; capture phase */
+  if(!llVisible()) return;
+  if(e.key>='0' && e.key<='9'){ e.preventDefault(); llKey(e.key); }
+  else if(e.key==='Backspace'){ e.preventDefault(); llKey('bk'); }
+  else if(e.key==='Enter'){ e.preventDefault(); llSubmit(); }
+  else if(e.key==='Tab'){ e.preventDefault(); }              /* no tabbing into shell controls behind the lock */
+}
+document.addEventListener('keydown', llKeydownHandler, true);
+function reEvalLaunchLock(){   /* DECIDE LATE — runs under whenReady (MEM/DB authoritative) + an 8s backstop; idempotent */
+  try{
+    /* Adversarial P1 fold: ORPHANED-HASH HEAL. If the v2 salt was lost (partial storage eviction) while the
+       hash survived, pinSalt() would silently mint a NEW salt and the correct PIN could never verify again —
+       with the lock armed that is an undismissable overlay. Heal: drop the orphaned hash (all four PIN sites
+       already fail open on no-PIN), audit it, and force honest PIN re-establishment. Runs here (MEM/DB
+       authoritative), BEFORE any interaction can trigger pinSalt() regeneration and mask the orphan. */
+    try{ var __h=safeGet(ADMIN_PIN_KEY); if(__h && __h.slice(0,3)==='v2:' && !safeGet(PIN_SALT_KEY)){ safeRemove(ADMIN_PIN_KEY); try{ auditLog('security.pinHashOrphaned',{}); }catch(e){} } }catch(e){}
+    if(__llUnlocked){ llDismiss(); return; }
+    var on=false;
+    try{ on = hasAdminPin() && launchLockEnabled(); }catch(e){ on=false; }   /* #1 BRICK GUARD: any error => NOT locked */
+    var d=llEl(); if(!d) return;
+    if(!on){ d.style.display='none'; __llBuf=''; llStopTimer(); return; }    /* restore-blocked / toggled-off: fail open */
+    d.style.display='flex';
+    try{ if(document.activeElement && document.activeElement.blur) document.activeElement.blur(); d.focus(); }catch(e){}
+    var r=0; try{ r=pinLockRemaining('admin'); }catch(e){}
+    if(r>0) llCountdown();
+  }catch(e){ try{ var d2=llEl(); if(d2) d2.style.display='none'; }catch(_){} }
+}
 
 /* ═══════════════════════════════════════════════════════════════════════
    AUDIT + ACTIVITY
@@ -5830,6 +5959,7 @@ function validateRestoreKeyValue(k,raw){
     if(k===EMP_MASTER_KEY) return {ok:Array.isArray(parsed)||(parsed&&Array.isArray(parsed.employees)),reason:'Employee master must be an array or {employees:[]}'};
     if(k===ACTIVITY_KEY||k===AUDIT_LOG_KEY) return {ok:Array.isArray(parsed),reason:'Log keys must contain arrays'};
     if(k===PIN_POLICY_KEY) return {ok:!!(parsed&&typeof parsed==='object'&&!Array.isArray(parsed)),reason:'PIN policy must be an object'};   /* R0-W1 SEC-03: shape-only here — the validator stores raw and cannot rewrite, so field clamping (minLen 4..12, numeric coercion, 300s lock ceiling) lives in the pinPolicy() reader */
+    if(k===LAUNCH_LOCK_KEY) return {ok:(['1','0','true','false'].indexOf(String(raw).trim())>=0)||typeof parsed==='boolean',reason:'Launch-lock flag must be boolean-ish'};   /* R0-W1 Slice D: exporter writes '1'/'0'; anything else passes shape but reads as OFF via launchLockEnabled()==='1' — fail-open. Restored ON on a PIN-restore-blocked device also fails open (hasAdminPin AND-guard). */
     return {ok:true};
   }
   if(owner==='expense' && k==='gm_role') return {ok:true};
@@ -7330,6 +7460,10 @@ function stPreviewShare(){
   }).catch(function(e){ __stPreviewBusy(false); try{ toast('Share failed: '+((e&&e.message)||e)); }catch(_){ } });
 }
 document.addEventListener('keydown', e => {
+  /* R0-W1 Slice D: while the launch lock is up, every shell shortcut is dead (Ctrl+S would open the
+     export sheet invisibly under the overlay). Plain return — no preventDefault — so nothing else here
+     runs; the lock's own capture-phase llKeydownHandler owns digits/Enter/Backspace/Tab. */
+  try{ var __lk=document.getElementById('st-v5-launch-lock'); if(__lk && __lk.style.display!=='none') return; }catch(err){}
   if(e.key==='Escape' && document.documentElement.classList.contains('st-preview-open')){ stPreviewClose(); return; }
   if(e.key==='Escape' && activeModuleId){ showMainView(); return; }
   if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s' && !activeModuleId){ e.preventDefault(); exportBackup(); }
@@ -7349,6 +7483,17 @@ document.addEventListener('keydown', e => {
    reliably lands on Home instead of dumping the user out of the app.) */
 let __lastBackPress = 0;
 function handleHardwareBack(){
+  // 0) R0-W1 Slice D: launch lock showing? Back = leave the app. NEVER falls into the shell stack
+  //    (closeModal/showMainView/switchView) while locked. If this guard itself throws, the normal stack
+  //    runs UNDER the overlay — invisible and harmless: nothing in steps 1-3 can dismiss the lock.
+  try{
+    var __lk = document.getElementById('st-v5-launch-lock');
+    if(__lk && __lk.style.display!=='none'){
+      var App0 = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+      try{ if(App0 && App0.minimizeApp) App0.minimizeApp(); else if(App0 && App0.exitApp) App0.exitApp(); }catch(e){}
+      return;
+    }
+  }catch(e){}
   // 1) Shell modal / bottom-sheet open? close it.
   var mb = document.getElementById('modalBackdrop');
   if(mb && !mb.classList.contains('hidden')){ try{ closeModal(); }catch(e){} return; }
@@ -7519,6 +7664,13 @@ function reflectBuildBadge(){
     //    plugin isn't packaged, when permission is denied, or when no tax records exist.
     try{ setTimeout(function(){ try{ scheduleTaxNotifications('boot'); }catch(e){} }, 6000); }catch(e){}
   }
+  /* R0-W1 Slice D: re-evaluate the launch lock once storage is authoritative (mirrors the doFirstRender
+     gate below). whenReady is guaranteed by storage-core's bootTimeoutFallback, but an 8s backstop mirrors
+     the splash's own paranoia — reEvalLaunchLock is idempotent. OFF-engine path runs it synchronously. */
+  try{
+    if(window.SaagarStore && typeof window.SaagarStore.whenReady==='function'){ window.SaagarStore.whenReady(reEvalLaunchLock); setTimeout(reEvalLaunchLock, 8000); }
+    else reEvalLaunchLock();
+  }catch(e){}
   if(window.SaagarStore && typeof window.SaagarStore.whenReady === 'function') window.SaagarStore.whenReady(doFirstRender);
   else doFirstRender();
 })();
