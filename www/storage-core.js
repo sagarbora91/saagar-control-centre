@@ -75,7 +75,7 @@
        back in place (rollback recipe, no data movement). No marker key: readers
        trust file CONTENT only (SQLite magic vs SBCC1). W2-S1 ships the reader
        INERT (flag false, no writer exists yet — no ciphertext can exist). */
-    var STORAGE_ENCRYPT_ENABLED = false;   /* W2-S4 flips to true after the DT matrix passes */
+    var STORAGE_ENCRYPT_ENABLED = true;    /* W2-S3: FLIPPED true 2026-07-18 — DT2 device matrix passed on both devices; owner signed OD-1/OD-8/OD-K2..K5 (OD-K1 minSdk kept at 22 → API<23 fails open to plaintext, honest in Diagnostics). Rollback = set false (DT2-7 proved flag-off reads existing ciphertext then rewrites plaintext, no data loss). */
     try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_ENCRYPT === true) STORAGE_ENCRYPT_ENABLED = true; } catch (e) {}
     var DEK_FILE = 'bcc.dek';   /* R0-W2 W2-S2a: Keystore-WRAPPED DEK (SKW1 blob), NOT raw key material. (Legacy raw 'bcc.key' was never created in production — S1 shipped inert — so any stray test-APK copy is simply ignored.) */
     var ENV_MAGIC = [0x53, 0x42, 0x43, 0x43, 0x31];   /* "SBCC1" */
