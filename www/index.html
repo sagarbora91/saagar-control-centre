@@ -6617,6 +6617,26 @@ async function runEncryptionProbe(){
       else rows.push(['bcc.sqlite on disk','n/a (no Filesystem plugin — browser)']);
     }catch(e){ rows.push(['bcc.sqlite on disk','stat failed: '+String((e&&e.message)||e)]); }
     rows.push(['Boot → storage ready',(window.__stReadyAtMs!==undefined)?Math.round(window.__stReadyAtMs)+' ms':'n/a']);
+    // W2-S2a: hardware Keystore plugin round-trip (DT2-1). Device-only — the plugin is null in a browser.
+    // NOTE: the wrap/unwrap round-trip MINTS the real KEK (saagar_dek_kek_v1) as an owner-initiated side effect;
+    // that is intended (proves minting works; W2-S2b reuses the same KEK). Production auto-boot mints nothing.
+    var ksOk=false;
+    try{
+      var KS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.SaagarKeystore;
+      if(!KS){ rows.push(['Keystore plugin','absent (browser or not stamped) — encryption would fail-open to plaintext']); }
+      else {
+        var av=await KS.available();
+        rows.push(['Keystore available',(av&&av.available?'yes':'NO')+' · backing='+((av&&av.backing)||'?')+' · api='+((av&&av.apiLevel)||'?')]);
+        if(av&&av.available){
+          var testDek=new Uint8Array(32); crypto.getRandomValues(testDek);
+          var b64=btoa(String.fromCharCode.apply(null,testDek));
+          var w=await KS.wrapKey({data:b64});
+          var u=await KS.unwrapKey({wrapped:w.wrapped});
+          ksOk=(u&&u.data===b64);
+          rows.push(['Keystore wrap/unwrap',ksOk?('round-trips ✓ (backing='+(w.backing||'?')+')'):'*** MISMATCH ***']);
+        }
+      }
+    }catch(e){ rows.push(['Keystore probe','error: '+String((e&&e.message)||e)]); }
     const total=encMs+decMs;
     const pass=match&&tamperOk&&total<1000;
     rows.push(['VERDICT',pass?('PASS — '+total+' ms round-trip (< 1000 ms gate). W2-S1 may proceed.')

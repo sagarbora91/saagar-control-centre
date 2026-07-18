@@ -77,7 +77,7 @@
        INERT (flag false, no writer exists yet — no ciphertext can exist). */
     var STORAGE_ENCRYPT_ENABLED = false;   /* W2-S4 flips to true after the DT matrix passes */
     try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_ENCRYPT === true) STORAGE_ENCRYPT_ENABLED = true; } catch (e) {}
-    var KEY_FILE = 'bcc.key';
+    var DEK_FILE = 'bcc.dek';   /* R0-W2 W2-S2a: Keystore-WRAPPED DEK (SKW1 blob), NOT raw key material. (Legacy raw 'bcc.key' was never created in production — S1 shipped inert — so any stray test-APK copy is simply ignored.) */
     var ENV_MAGIC = [0x53, 0x42, 0x43, 0x43, 0x31];   /* "SBCC1" */
     var SQLITE_MAGIC = 'SQLite format 3';             /* first 15 bytes + \0 */
 
@@ -100,34 +100,65 @@
     function subtleOK() { try { return !!(window.crypto && window.crypto.subtle); } catch (e) { return false; } }
     function isEnvelope(u8) { if (!u8 || u8.length < 18) return false; for (var i = 0; i < 5; i++) if (u8[i] !== ENV_MAGIC[i]) return false; return true; }
     function isSqlite(u8) { if (!u8 || u8.length < 16) return false; for (var i = 0; i < 15; i++) if (u8[i] !== SQLITE_MAGIC.charCodeAt(i)) return false; return true; }
-    var _keyP = null;                                  /* memoized CryptoKey promise */
-    function loadKey(createIfMissing) {
-      if (_keyP) return _keyP;
+    /* ── R0-W2 W2-S2a: DEK custody = Android Keystore key-wrapping (replaces the raw bcc.key file).
+       A random 32-byte DEK does the fast WebCrypto AES-GCM on the DB blob (proven ~98ms/15MB); the DEK
+       itself is WRAPPED by a non-exportable hardware KEK in AndroidKeyStore and only the wrapped SKW1 blob
+       lands in DATA/bcc.dek. FAIL-OPEN, LOUD (T1 distinct logs + T2 _encState in Diagnostics): a missing
+       plugin / wrap fail / orphaned KEK degrades to plaintext-that-works, never a brick. */
+    function keystorePlugin() { try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SaagarKeystore) || null; } catch (e) { return null; } }
+    var _encState = STORAGE_ENCRYPT_ENABLED ? 'pending' : 'plaintext-flag-off';
+    function importRawDEK(b64) { return window.crypto.subtle.importKey('raw', b64ToBytes(b64), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
+    /* PRECONDITION-1 fix: memoize ONLY a promise resolving to a REAL CryptoKey; any null resolution CLEARS
+       _dekP so the next call retries — a reader getDEK(false) while bcc.dek is absent must NOT pin a later
+       writer getDEK(true) to null. */
+    var _dekP = null;
+    function getDEK(createIfMissing) {
+     try {                                                          /* adversarial P2 fold: airtight never-throw — a partial FS/KS plugin (missing .readFile) could throw synchronously BEFORE the promise chain forms, escaping the tail rejection guard */
+      /* S2b TODO (adversarial P2, inert while the writer is off): single-flight coalescing conflates intent —
+         a writer getDEK(true) that arrives while a reader getDEK(false) is in flight is handed the reader's
+         promise, which resolves null (no mint) → one plaintext persist before self-healing. Key the cache on
+         intent (separate reader/writer memo, or chain a fresh mint) when the writer path goes live in W2-S2b. */
+      if (_dekP) return _dekP;
       var FS = FSplugin();
-      if (!FS || !subtleOK()) return Promise.resolve(null);
-      _keyP = FS.readFile({ path: KEY_FILE, directory: dataDir() })
-        .then(function (r) { return r && r.data ? b64ToBytes(r.data) : null; })
+      if (!FS || !subtleOK()) return Promise.resolve(null);        /* not cached */
+      var KS = keystorePlugin();
+      var p = FS.readFile({ path: DEK_FILE, directory: dataDir() })
+        .then(function (r) { return (r && r.data) ? r.data : null; })   /* wrapped-DEK b64 or null */
         .catch(function () { return null; })
-        .then(function (raw) {
-          if (!raw && !createIfMissing) return null;
-          var p = raw ? Promise.resolve(raw)
-            : (function () {                            /* generate + write ATOMICALLY, await BEFORE first ciphertext */
-                var nk = new Uint8Array(32); window.crypto.getRandomValues(nk);
-                return FS.writeFile({ path: KEY_FILE + '.tmp', data: bytesToB64(nk), directory: dataDir() })
-                  .then(function () { return FS.rename({ from: KEY_FILE + '.tmp', to: KEY_FILE, directory: dataDir() }); })
-                  .then(function () { log('encryption key created'); return nk; });
-              })();
-          return p.then(function (bytes) {
-            return window.crypto.subtle.importKey('raw', bytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
-          });
-        })
-        .catch(function (e) { _keyP = null; log('key load/create failed: ' + (e && e.message)); return null; });
-      return _keyP;
+        .then(function (wrappedB64) {
+          if (wrappedB64) {                                          /* UNWRAP (reader AND writer) */
+            if (!KS) { log('keystore plugin absent — cannot unwrap DEK; plaintext persist'); _encState = 'plaintext-no-keystore'; return null; }
+            return KS.unwrapKey({ wrapped: wrappedB64 })
+              .then(function (res) { _encState = 'encrypted-keystore'; return importRawDEK(res.data); })
+              .catch(function (e) {
+                var code = (e && (e.code || e.message)) || '';
+                if (String(code).indexOf('E_ORPHAN') >= 0) log('KEK unwrap failed (orphaned) — DEK orphaned; recovery re-migration');
+                else log('DEK unwrap failed: ' + (e && e.message));
+                _encState = 'plaintext-no-keystore';
+                return null;                                         /* → recovery chain */
+              });
+          }
+          if (!createIfMissing) return null;                         /* reader, no file yet → null, NOT cached */
+          if (!KS) { log('keystore plugin absent — DEK not minted; plaintext persist'); _encState = 'plaintext-no-keystore'; return null; }
+          var dek = new Uint8Array(32); window.crypto.getRandomValues(dek);   /* MINT+WRAP+atomic write BEFORE first ciphertext (H3) */
+          return KS.wrapKey({ data: bytesToB64(dek) })
+            .then(function (res) {
+              _encState = res.backing ? ('encrypted-keystore-' + res.backing) : 'encrypted-keystore';
+              return FS.writeFile({ path: DEK_FILE + '.tmp', data: res.wrapped, directory: dataDir() })
+                .then(function () { return FS.rename({ from: DEK_FILE + '.tmp', to: DEK_FILE, directory: dataDir() }); })
+                .then(function () { log('DEK minted + keystore-wrapped (' + _encState + ')'); return importRawDEK(bytesToB64(dek)); });
+            })
+            .catch(function (e) { log('KEK wrap failed (' + (e && e.message) + ') — plaintext persist'); _encState = 'plaintext-no-keystore'; return null; });
+        });
+      _dekP = p.then(function (key) { if (!key) _dekP = null; return key; },
+                     function () { _dekP = null; return null; });
+      return _dekP;
+     } catch (e) { _dekP = null; try { log('getDEK synchronous error — plaintext: ' + (e && e.message)); } catch (e2) {} return Promise.resolve(null); }
     }
     /* encrypt raw DB bytes → b64 envelope string; ANY failure falls back to PLAINTEXT write (fail-open, logged) */
     function encryptForPersist(raw) {
       if (!STORAGE_ENCRYPT_ENABLED || !subtleOK()) return Promise.resolve(bytesToB64(raw));
-      return loadKey(true).then(function (key) {
+      return getDEK(true).then(function (key) {
         if (!key) { log('encrypt skipped — no key (plaintext persist)'); return bytesToB64(raw); }
         var iv = new Uint8Array(12); window.crypto.getRandomValues(iv);
         return window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, key, raw).then(function (ct) {
@@ -140,8 +171,9 @@
     /* reader: ALWAYS active. plaintext → pass through; envelope → decrypt; failure → null (recovery chain) */
     function decryptIfEnveloped(u8, label) {
       if (!isEnvelope(u8)) return Promise.resolve(u8);   /* plaintext (or junk — open() will reject junk) */
+      if (u8[5] !== 0x01) { log('unknown envelope version ' + u8[5] + ' on ' + label + ' — treating as undecryptable'); return Promise.resolve(null); }   /* P2 fold: version-byte dispatch (only 0x01 defined) */
       if (!subtleOK()) { log('decrypt impossible (no subtle) on ' + label); return Promise.resolve(null); }
-      return loadKey(false).then(function (key) {
+      return getDEK(false).then(function (key) {
         if (!key) { log('decrypt failed (key missing) on ' + label); return null; }
         var iv = u8.subarray(6, 18), ct = u8.subarray(18);
         return window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, key, ct)
@@ -431,6 +463,8 @@
       try { nSet.call(ls, 'saagar_demo_seeded', 'cleared'); } catch (e) {}   /* survive the reload so the seeder does NOT repopulate */
       var FS = FSplugin(), ps = [];
       if (FS) ['', '.tmp', '.bak', '.bak.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DB_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });
+      if (FS) ['', '.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DEK_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });   /* R0-W2 E6: wipe the wrapped DEK with the data (Keystore KEK alias is left; a fresh DEK re-wraps under it, or a new KEK mints — either way the old ciphertext is gone) */
+      _dekP = null;
       try { if (window.SaagarStore && window.SaagarStore.photo && window.SaagarStore.photo.clearAll) ps.push(Promise.resolve(window.SaagarStore.photo.clearAll()).catch(function () {})); } catch (e) {}
       return Promise.all(ps);
     }
@@ -478,7 +512,7 @@
       /* ── diagnostics ── */
       _phase: 2,
       _mem: function () { return MEM; },
-      _status: function () { return { ready: _ready, dirty: _dirty, dirtyKeys: dirtyKeys.size, lastSavedAt: _lastSavedAt, lastError: _lastError, hasFS: !!FSplugin(), migrated: !!(function () { try { return nGet.call(ls, MIGRATED_KEY); } catch (e) { return 0; } })(), dbFromFile: _dbFromFile, rows: db ? Object.keys(kvAll()).length : 0 }; },
+      _status: function () { return { ready: _ready, dirty: _dirty, dirtyKeys: dirtyKeys.size, lastSavedAt: _lastSavedAt, lastError: _lastError, hasFS: !!FSplugin(), migrated: !!(function () { try { return nGet.call(ls, MIGRATED_KEY); } catch (e) { return 0; } })(), dbFromFile: _dbFromFile, rows: db ? Object.keys(kvAll()).length : 0, encState: _encState }; },
       _walLen: function () { return walRead().length; },
       _coherent: function () { try { if (_ready) return true; var n = nLen.call(ls); var c = 0; for (var i = 0; i < n; i++) { var k = nKey.call(ls, i); if (INTERNAL[k]) continue; if (MEM.get(k) !== nGet.call(ls, k)) return false; c++; } return MEM.size === c; } catch (e) { return false; } }
     };
