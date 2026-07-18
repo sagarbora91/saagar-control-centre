@@ -107,18 +107,20 @@
        plugin / wrap fail / orphaned KEK degrades to plaintext-that-works, never a brick. */
     function keystorePlugin() { try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SaagarKeystore) || null; } catch (e) { return null; } }
     var _encState = STORAGE_ENCRYPT_ENABLED ? 'pending' : 'plaintext-flag-off';
+    var _encBakDone = false;   /* R0-W2 E5: once-per-boot guard for the post-first-encrypted-persist .bak reseal */
     function importRawDEK(b64) { return window.crypto.subtle.importKey('raw', b64ToBytes(b64), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']); }
-    /* PRECONDITION-1 fix: memoize ONLY a promise resolving to a REAL CryptoKey; any null resolution CLEARS
-       _dekP so the next call retries — a reader getDEK(false) while bcc.dek is absent must NOT pin a later
-       writer getDEK(true) to null. */
-    var _dekP = null;
+    /* PRECONDITION-1 fix + S2b intent-coalescing fix (adversarial P2): TWO memo cells keyed by intent.
+       A writer getDEK(true) can NEVER be handed a reader getDEK(false) promise that resolves null (that
+       would skip encryption → one plaintext persist). Each cell independently single-flights same-intent
+       concurrent callers and independently clears on a null/reject resolution (sticky-null clear). The
+       tails touch DIFFERENT variables, so a null-resolving reader can never clobber an in-flight writer
+       promise (no cross-intent reassignment race). resetAll() clears both. */
+    var _dekReadP = null;    /* in-flight/last getDEK(false) — decrypt readers */
+    var _dekWriteP = null;   /* in-flight/last getDEK(true)  — encrypt writers (the ONLY minting path) */
     function getDEK(createIfMissing) {
-     try {                                                          /* adversarial P2 fold: airtight never-throw — a partial FS/KS plugin (missing .readFile) could throw synchronously BEFORE the promise chain forms, escaping the tail rejection guard */
-      /* S2b TODO (adversarial P2, inert while the writer is off): single-flight coalescing conflates intent —
-         a writer getDEK(true) that arrives while a reader getDEK(false) is in flight is handed the reader's
-         promise, which resolves null (no mint) → one plaintext persist before self-healing. Key the cache on
-         intent (separate reader/writer memo, or chain a fresh mint) when the writer path goes live in W2-S2b. */
-      if (_dekP) return _dekP;
+     try {                                                          /* airtight never-throw: a partial FS/KS plugin (missing .readFile) could throw synchronously BEFORE the promise chain forms, escaping the tail rejection guard */
+      if (createIfMissing) { if (_dekWriteP) return _dekWriteP; }   /* single-flight, per intent — a writer never returns a reader-built promise */
+      else { if (_dekReadP) return _dekReadP; }
       var FS = FSplugin();
       if (!FS || !subtleOK()) return Promise.resolve(null);        /* not cached */
       var KS = keystorePlugin();
@@ -150,10 +152,17 @@
             })
             .catch(function (e) { log('KEK wrap failed (' + (e && e.message) + ') — plaintext persist'); _encState = 'plaintext-no-keystore'; return null; });
         });
-      _dekP = p.then(function (key) { if (!key) _dekP = null; return key; },
-                     function () { _dekP = null; return null; });
-      return _dekP;
-     } catch (e) { _dekP = null; try { log('getDEK synchronous error — plaintext: ' + (e && e.message)); } catch (e2) {} return Promise.resolve(null); }
+      /* sticky-null clear, PER-INTENT cell. Each tail touches ONLY its own cell → a null-resolving reader
+         can never clobber an in-flight writer promise (and vice-versa). */
+      if (createIfMissing) {
+        _dekWriteP = p.then(function (key) { if (!key) _dekWriteP = null; return key; },
+                            function () { _dekWriteP = null; return null; });
+        return _dekWriteP;
+      }
+      _dekReadP = p.then(function (key) { if (!key) _dekReadP = null; return key; },
+                         function () { _dekReadP = null; return null; });
+      return _dekReadP;
+     } catch (e) { if (createIfMissing) _dekWriteP = null; else _dekReadP = null; try { log('getDEK synchronous error — plaintext: ' + (e && e.message)); } catch (e2) {} return Promise.resolve(null); }
     }
     /* encrypt raw DB bytes → b64 envelope string; ANY failure falls back to PLAINTEXT write (fail-open, logged) */
     function encryptForPersist(raw) {
@@ -274,13 +283,14 @@
       if (_persisting) { if (_dirty || dirtyKeys.size) _persistAgain = true; return _persistP; }
       if (!_dirty && !dirtyKeys.size) return Promise.resolve(true);
       _persisting = true;
-      var FS = FSplugin(), dir = dataDir(), through, b64;
-      try { through = _seq; b64 = bytesToB64(db.export()); }
+      var FS = FSplugin(), dir = dataDir(), through, raw;
+      try { through = _seq; raw = db.export(); }                                          /* seq+snapshot stay SYNCHRONOUS before ANY await — clearWALThrough(through) invariant (§13.1/§13.2) depends on it; raw is a detached copy, so the deferred encrypt over it stays consistent with `through` */
       catch (e) { _persisting = false; _lastError = (e && e.message) || 'export'; return Promise.resolve(false); }
       _persistP = FS.copy({ from: DB_FILE, to: DB_FILE + '.bak.tmp', directory: dir })   /* 1) promote current good live → .bak (atomic) */
         .then(function () { return FS.rename({ from: DB_FILE + '.bak.tmp', to: DB_FILE + '.bak', directory: dir }); })
         .catch(function () { return null; })                                              /* no live yet (first persist) → skip; .bak lags live by one */
-        .then(function () { return FS.writeFile({ path: DB_FILE + '.tmp', data: b64, directory: dir }); })   /* 2) write new live atomically */
+        .then(function () { return encryptForPersist(raw); })                             /* R0-W2 E3: async encrypt INSIDE the mutex; flag-off ⇒ Promise.resolve(bytesToB64(raw)); no-key/encrypt-fail ⇒ plaintext b64 (self-catches → NEVER rejects) */
+        .then(function (b64) { return FS.writeFile({ path: DB_FILE + '.tmp', data: b64, directory: dir }); })   /* 2) write new (maybe-encrypted) live atomically */
         .then(function () { return FS.rename({ from: DB_FILE + '.tmp', to: DB_FILE, directory: dir }); })
         .then(function () { var remaining = clearWALThrough(through); _dirty = (remaining > 0) || dirtyKeys.size > 0; _lastSavedAt = new Date().toISOString(); return true; },
               function (e) { _lastError = (e && e.message) || 'persist'; log('persist failed: ' + _lastError + ' — WAL kept'); return false; })
@@ -436,9 +446,23 @@
           if (lateHeal) log('late DB load after boot-timeout fallback — MEM healed from DB (was on native-LS fallback)');
           setReady();
           if (FS) {
+            /* R0-W2 E5 — seal the .bak on the FIRST encrypted boot (the boot where the on-disk DB is still
+               PLAINTEXT). The first ciphertext persist promotes the OLD plaintext live → .bak (a whole-DB
+               plaintext copy) and writes ciphertext live; a SECOND persist promotes the now-ciphertext live →
+               .bak so both files are ciphertext within seconds. Two things are required: (a) force THIS boot's
+               flush to BE the first ciphertext persist — on a clean 2nd+ boot reconcile()/replayWAL() leave
+               nothing dirty, so without _dirty the boot flush is a no-op and the single reseal below would
+               itself become the first (plain→cipher) persist, leaving .bak plaintext; (b) fire ONE more persist
+               after it succeeds. Gated on STORAGE_ENCRYPT_ENABLED (flag-off ⇒ zero extra persist, on-disk bytes
+               identical to S2a) and on the DB NOT already being ciphertext at boot (_encState=='encrypted-keystore'
+               is set by the reader when it decrypts an SBCC1 live) so 2nd+ encrypted boots skip the rewrite. */
+            var _firstEncBoot = STORAGE_ENCRYPT_ENABLED && !_encBakDone && _encState !== 'encrypted-keystore';
+            if (_firstEncBoot) _dirty = true;   /* make the boot flush the first ciphertext persist, not a no-op */
             flush().then(function (ok) {
               /* set the one-way marker ONLY after a verified first-boot migration is durably persisted */
               if (ok && rc && rc.firstBoot && rc.verified) { try { nSet.call(ls, MIGRATED_KEY, '1'); } catch (e) {} }
+              /* E5 reseal: only after that first ciphertext persist SUCCEEDED (ok ⇒ ciphertext live + bcc.dek durable) */
+              if (ok && _firstEncBoot && !_encBakDone) { _encBakDone = true; _dirty = true; flush(); }
             });
           }
         });
@@ -464,7 +488,7 @@
       var FS = FSplugin(), ps = [];
       if (FS) ['', '.tmp', '.bak', '.bak.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DB_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });
       if (FS) ['', '.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DEK_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });   /* R0-W2 E6: wipe the wrapped DEK with the data (Keystore KEK alias is left; a fresh DEK re-wraps under it, or a new KEK mints — either way the old ciphertext is gone) */
-      _dekP = null;
+      _dekReadP = null; _dekWriteP = null;
       try { if (window.SaagarStore && window.SaagarStore.photo && window.SaagarStore.photo.clearAll) ps.push(Promise.resolve(window.SaagarStore.photo.clearAll()).catch(function () {})); } catch (e) {}
       return Promise.all(ps);
     }
@@ -482,6 +506,13 @@
       ready: function () { return _ready; },
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
       flush: function () { _dirty = true; return flush(); },
+      /* ── R0-W3-S3 primitive: whole-blob seal/unseal over the SAME DEK/SBCC1 envelope as the DB.
+         INERT until R0-W3-S3 wires callers (auto-backup seal-on-write + restore sniff). Flag-gated via
+         encryptForPersist: on a flag-off build seal returns PLAINTEXT bytes (correct — R0-W3-S3 seal-on-write
+         is behind the same STORAGE_ENCRYPT_ENABLED gate). unseal's reader is ALWAYS active (content-sniff):
+         SBCC1 → decrypt; plaintext/legacy → pass through; key-miss/tag-fail → null. */
+      seal: function (u8) { return encryptForPersist(u8).then(function (b64) { return b64ToBytes(b64); }); },
+      unseal: function (u8) { return decryptIfEnveloped(u8, 'seal'); },
       /* §bulk — run a burst of writes (first-boot seed / large restore) WITHOUT per-write WAL journaling
          + DB export (that per-write cost froze the app for ~60s+ on a phone). Suspends them, runs fn()
          (MEM + in-memory DB only), then does ONE durable persist. try/finally guarantees _bulk is cleared
