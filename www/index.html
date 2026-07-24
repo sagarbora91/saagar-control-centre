@@ -6055,7 +6055,21 @@ function restoreFromDeviceBackup(){
     if(!text){ toast('No on-device auto-backup found yet'); return; }
     try{ handleRestoreFile(new Blob([text],{type:'application/json'})); }
     catch(e){ toast('Could not read the device backup'); }
-  }).catch(function(){ toast('Could not read the device backup'); });
+  }).catch(function(err){
+    if(err && err.code==='DEVICE_BOUND_BACKUP'){
+      toast('This backup is encrypted for its original device or is damaged. Use a plaintext Share-to-Drive backup to migrate.');
+      return;
+    }
+    if(err && err.code==='BACKUP_READER_UNAVAILABLE'){
+      toast('Encrypted backup reader is unavailable. Restart the app and try again.');
+      return;
+    }
+    if(err && err.code==='BACKUP_TOO_LARGE'){
+      toast('Device backup is too large (>64 MB) — restore aborted.');
+      return;
+    }
+    toast('Could not read the device backup');
+  });
 }
 /* R0-W3 S2: gated one-time purge of the LEGACY world-readable auto-backup files from shared
    Documents/. Scoped in auto-backup.js to backup-*.json + latest.json ONLY (never the pre-reset
@@ -6082,17 +6096,36 @@ function runLegacyPurge(){
     try{ renderLegacyPurgeRow(); }catch(e){}
   }).catch(function(){ toast('Could not remove old backups'); });
 }
+function restoreBytesToText(bytes){
+  if(window.TextDecoder) return new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+  let s=''; for(let i=0;i<bytes.length;i++) s+=String.fromCharCode(bytes[i]);
+  return decodeURIComponent(escape(s));
+}
 function handleRestoreFile(file){
   if(!file) return;
-  /* Audit fix SEC-DATA-04: cap the file size so an accidentally-huge or hostile JSON can't OOM/freeze the
-     WebView during readAsText + JSON.parse. 64MB is generous vs a real migration export (localStorage is
-     ~5-10MB; photos ride separately) while still stopping a pathological file. */
+  /* Audit fix SEC-DATA-04: cap before byte read/decrypt so hostile input cannot OOM the WebView. */
   if(file.size && file.size > 64*1024*1024){ toast('Backup file is too large (>64 MB) — restore aborted.'); return; }
   const reader = new FileReader();
   reader.onerror = ()=>toast('Could not read backup file');
   reader.onload = ()=>{
     try{
-      const parsed = JSON.parse(reader.result);
+      const bytes = new Uint8Array(reader.result);
+      const sealed = bytes.length>=18 && bytes[0]===83 && bytes[1]===66 && bytes[2]===67 && bytes[3]===67 && bytes[4]===49;
+      if(!sealed){ previewRestoreText(restoreBytesToText(bytes)); return; }
+      if(!(window.SaagarStore && typeof window.SaagarStore.unseal==='function')){
+        toast('Encrypted backup reader is unavailable. Restart the app and try again.'); return;
+      }
+      window.SaagarStore.unseal(bytes).then(function(plain){
+        if(!plain){ toast('This backup is encrypted for its original device or is damaged. Use a plaintext Share-to-Drive backup to migrate.'); return; }
+        previewRestoreText(restoreBytesToText(plain));
+      }).catch(function(){ toast('Could not decrypt this backup'); });
+    }catch(e){ toast('Could not read backup file: '+e.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function previewRestoreText(text){
+    try{
+      const parsed = JSON.parse(text);
       const data = parsed.localStorage && typeof parsed.localStorage==='object' ? parsed.localStorage : parsed;
       if(!data || typeof data!=='object' || Array.isArray(data)){ toast('Invalid backup format'); return; }
       // §15: photos ride as a top-level sibling of localStorage ({photoId:dataUrl}). Set unconditionally
@@ -6128,8 +6161,6 @@ function handleRestoreFile(file){
         </div>`;
       openModal();
     } catch(e){ toast('Restore failed: '+e.message); }
-  };
-  reader.readAsText(file);
 }
 function restoreValidatedBackup(){
   const review = window.__stRestoreReview; if(!review) return;
@@ -6476,7 +6507,8 @@ function renderConfigBackup(){
   try{
     if(window.SaagarBackup && typeof window.SaagarBackup.status === 'function'){
       const s = window.SaagarBackup.status();
-      if(s) autoLine = `On-device safety copy last saved: <b>${escapeHtml((s.lastBackup && s.lastBackup!=='never')?s.lastBackup:'never')}</b><br>Location: <code>${escapeHtml(s.folder||'app-private')}</code>`;
+      if(s) autoLine = `On-device safety copy last saved: <b>${escapeHtml((s.lastBackup && s.lastBackup!=='never')?s.lastBackup:'never')}</b><br>Location: <code>${escapeHtml(s.folder||'app-private')}</code>`
+        + (s.plaintextWarning ? '<br><b style="color:var(--danger,#b3261e)">Warning: encryption was unavailable, so a private plaintext fallback exists. Restart after unlocking the device; keep a fresh Share-to-Drive backup.</b>' : '');
     }
   }catch(e){}
   if($('backupStatusBox')) $('backupStatusBox').innerHTML = `

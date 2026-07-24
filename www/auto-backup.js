@@ -84,19 +84,144 @@
   function pushLog(entry) {
     var arr = [];
     try { arr = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { arr = []; }
+    if (!Array.isArray(arr)) arr = [];
     arr.unshift(entry);
     if (arr.length > 30) arr = arr.slice(0, 30);
     try { localStorage.setItem(LOG_KEY, JSON.stringify(arr)); } catch (e) {}
   }
 
-  function writeFile(FS, path, text) {
+  function bytesFromText(text) {
+    if (window.TextEncoder) return new TextEncoder().encode(text);
+    var encoded = unescape(encodeURIComponent(text));
+    var out = new Uint8Array(encoded.length);
+    for (var i = 0; i < encoded.length; i++) out[i] = encoded.charCodeAt(i);
+    return out;
+  }
+
+  function textFromBytes(bytes) {
+    if (window.TextDecoder) return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    var s = '';
+    for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return decodeURIComponent(escape(s));
+  }
+
+  function bytesToBase64(bytes) {
+    var s = '', chunk = 0x8000;
+    for (var i = 0; i < bytes.length; i += chunk) {
+      s += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunk, bytes.length)));
+    }
+    return btoa(s);
+  }
+
+  function base64ToBytes(b64) {
+    var s = atob(b64), out = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+    return out;
+  }
+
+  function isSealed(bytes) {
+    return bytes && bytes.length >= 18 && bytes[0] === 83 && bytes[1] === 66
+      && bytes[2] === 67 && bytes[3] === 67 && bytes[4] === 49; /* SBCC1 */
+  }
+
+  function writeBytes(FS, path, bytes) {
     return FS.writeFile({
       path: FOLDER + '/' + path,
-      data: text,
+      data: bytesToBase64(bytes),
       directory: DIR,
-      encoding: 'utf8',
       recursive: true
     });
+  }
+
+  function readBytes(FS, path) {
+    return FS.readFile({ path: FOLDER + '/' + path, directory: DIR })
+      .then(function (r) {
+        if (!(r && typeof r.data === 'string')) throw new Error('backup file returned no data');
+        /* Native Capacitor returns base64 when encoding is omitted. Capacitor Web
+           may return legacy UTF-8 text directly, so preserve that compatibility. */
+        if (/^\s*[\[{]/.test(r.data)) return bytesFromText(r.data);
+        return base64ToBytes(r.data);
+      });
+  }
+
+  function verifySealedFile(FS, path) {
+    return readBytes(FS, path).then(function (bytes) {
+      if (!isSealed(bytes)) throw new Error('sealed backup verification failed');
+      return bytes;
+    });
+  }
+
+  /* S3 upgrade migration. A .plaintext safety sidecar is created and verified
+     before an old plaintext snapshot is replaced. It is deleted only after the
+     sealed replacement reads back with an SBCC1 envelope. If power/storage fails
+     mid-upgrade, the next launch can retry from the sidecar without losing data. */
+  function hardenExistingSnapshots(FS) {
+    if (!FS.readdir || !(window.SaagarStore && typeof window.SaagarStore.seal === 'function')) {
+      return Promise.resolve({ sealed: 0, fallback: true });
+    }
+    return FS.readdir({ path: FOLDER, directory: DIR }).then(function (res) {
+      var files = (res && res.files) ? res.files : [];
+      var names = files.map(function (f) { return typeof f === 'string' ? f : f.name; });
+      var baseNames = {};
+      names.forEach(function (n) {
+        if (n === 'latest.json' || /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n)) baseNames[n] = true;
+        if (/\.json\.plaintext$/.test(n)) baseNames[n.slice(0, -10)] = true;
+      });
+      var sealedCount = 0, fallback = false;
+      return Object.keys(baseNames).reduce(function (chain, name) {
+        return chain.then(function () {
+          var sidecar = name + '.plaintext';
+          return readBytes(FS, name).then(function (current) {
+            if (isSealed(current)) {
+              if (names.indexOf(sidecar) >= 0 && FS.deleteFile) {
+                return FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {});
+              }
+              return;
+            }
+            return writeBytes(FS, sidecar, current)
+              .then(function () { return readBytes(FS, sidecar); })
+              .then(function (safePlain) {
+                return window.SaagarStore.seal(safePlain).then(function (sealed) {
+                  if (!(sealed instanceof Uint8Array) || !isSealed(sealed)) {
+                    fallback = true;
+                    return;
+                  }
+                  return writeBytes(FS, name, sealed)
+                    .then(function () { return verifySealedFile(FS, name); })
+                    .then(function () {
+                      sealedCount++;
+                      return FS.deleteFile
+                        ? FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {})
+                        : undefined;
+                    });
+                });
+              });
+          }).catch(function () {
+            /* Missing/truncated final after an interrupted replacement: recover
+               from the verified plaintext sidecar when one exists. */
+            return readBytes(FS, sidecar).then(function (safePlain) {
+              return window.SaagarStore.seal(safePlain).then(function (sealed) {
+                if (!(sealed instanceof Uint8Array) || !isSealed(sealed)) { fallback = true; return; }
+                return writeBytes(FS, name, sealed)
+                  .then(function () { return verifySealedFile(FS, name); })
+                  .then(function () {
+                    sealedCount++;
+                    return FS.deleteFile
+                      ? FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {})
+                      : undefined;
+                  });
+              });
+            }).catch(function () { fallback = true; });
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        if (sealedCount || fallback) {
+          pushLog({ at: nowIso(), mode: fallback ? 'migration-plaintext-fallback' : 'migration-sealed',
+            sealed: sealedCount, ok: !fallback });
+        }
+        return { sealed: sealedCount, fallback: fallback };
+      });
+    }).catch(function () { return { sealed: 0, fallback: false }; });
   }
 
   function pruneOldFiles(FS) {
@@ -118,7 +243,7 @@
       .catch(function () { /* folder may not exist yet — ignore */ });
   }
 
-  function runBackup(force) {
+  function runBackupInner(force) {
     var today = todayStr();
     var last = null;
     try { last = localStorage.getItem(MARKER_KEY); } catch (e) {}
@@ -141,21 +266,62 @@
       return Promise.resolve({ browser: true });
     }
 
-    return writeFile(FS, 'backup-' + today + '.json', json)
-      .then(function () { return writeFile(FS, 'latest.json', json); })
+    var plainBytes = bytesFromText(json);
+    var sealPromise;
+    if (window.SaagarStore && typeof window.SaagarStore.seal === 'function') {
+      sealPromise = Promise.resolve().then(function () { return window.SaagarStore.seal(plainBytes); })
+        .then(function (sealed) {
+          if (!(sealed instanceof Uint8Array) || !sealed.length) throw new Error('seal returned no data');
+          return sealed;
+        })
+        .catch(function (err) {
+          console.warn('[auto-backup] Snapshot sealing unavailable; using app-private plaintext fallback:', err);
+          pushLog({ at: nowIso(), date: today, mode: 'file-plaintext-fallback',
+            keys: snap.keyCount, ok: false, pendingWrite: true, error: String(err && err.message || err) });
+          return plainBytes;
+        });
+    } else {
+      console.warn('[auto-backup] Snapshot sealing unavailable; using app-private plaintext fallback.');
+      pushLog({ at: nowIso(), date: today, mode: 'file-plaintext-fallback',
+        keys: snap.keyCount, ok: false, pendingWrite: true, error: 'seal API unavailable' });
+      sealPromise = Promise.resolve(plainBytes);
+    }
+
+    var storedBytes, sealedMode;
+    return sealPromise
+      .then(function (bytes) {
+        storedBytes = bytes;
+        sealedMode = isSealed(bytes);
+        return writeBytes(FS, 'backup-' + today + '.json', storedBytes);
+      })
+      .then(function () { return writeBytes(FS, 'latest.json', storedBytes); })
       .then(function () { return pruneOldFiles(FS); })
       .then(function () {
         try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
-        pushLog({ at: nowIso(), date: today, mode: 'file', keys: snap.keyCount, ok: true });
-        console.log('[auto-backup] Saved app-private ' + DIR + '/' + FOLDER + '/backup-' + today
-          + '.json (' + snap.keyCount + ' keys).');
-        return { ok: true, file: 'backup-' + today + '.json' };
+        pushLog({ at: nowIso(), date: today, mode: sealedMode ? 'file-sealed' : 'file-plaintext-fallback',
+          keys: snap.keyCount, ok: true });
+        console.log('[auto-backup] Saved ' + (sealedMode ? 'sealed' : 'PLAINTEXT FALLBACK')
+          + ' app-private ' + DIR + '/' + FOLDER + '/backup-' + today + '.json ('
+          + snap.keyCount + ' keys).');
+        return { ok: true, file: 'backup-' + today + '.json', sealed: sealedMode };
       })
       .catch(function (err) {
-        pushLog({ at: nowIso(), date: today, mode: 'file', ok: false, error: String(err && err.message || err) });
+        pushLog({ at: nowIso(), date: today, mode: sealedMode ? 'file-sealed' : 'file-plaintext-fallback',
+          ok: false, error: String(err && err.message || err) });
         console.warn('[auto-backup] Backup failed:', err);
         return { ok: false, error: err };
       });
+  }
+
+  function runBackup(force) {
+    var FS = getFS();
+    if (!FS) return runBackupInner(force);
+    return hardenExistingSnapshots(FS).then(function (migration) {
+      if (migration && migration.fallback) {
+        console.warn('[auto-backup] Existing plaintext snapshot hardening is pending; durability is preserved.');
+      }
+      return runBackupInner(force);
+    });
   }
 
   /* Public manual trigger — can be called from the app or dev console:
@@ -166,9 +332,61 @@
   function readLatest() {
     var FS = getFS();
     if (!FS) return Promise.resolve(null);
-    return FS.readFile({ path: FOLDER + '/latest.json', directory: DIR, encoding: 'utf8' })
-      .then(function (r) { return (r && r.data) ? r.data : null; })
-      .catch(function () { return null; });
+    function validateText(text) {
+      var parsed = JSON.parse(text);
+      if (!parsed || typeof parsed !== 'object') throw new Error('invalid backup payload');
+      return text;
+    }
+    function decode(bytes) {
+        var sealed = isSealed(bytes);
+        if (!(window.SaagarStore && typeof window.SaagarStore.unseal === 'function')) {
+          if (!sealed) return validateText(textFromBytes(bytes));
+          var unavailable = new Error('Device-bound backup reader unavailable');
+          unavailable.code = 'BACKUP_READER_UNAVAILABLE';
+          throw unavailable;
+        }
+        return window.SaagarStore.unseal(bytes).then(function (plain) {
+          if (!plain) {
+            var err = new Error('Encrypted for original device');
+            err.code = 'DEVICE_BOUND_BACKUP';
+            throw err;
+          }
+          return validateText(textFromBytes(plain));
+        });
+    }
+    function candidates() {
+      if (!FS.readdir) return Promise.resolve(['latest.json']);
+      return FS.readdir({ path: FOLDER, directory: DIR }).then(function (res) {
+        var files = (res && res.files) ? res.files : [];
+        var dated = files.map(function (f) { return typeof f === 'string' ? f : f.name; })
+          .filter(function (n) { return /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n); })
+          .sort().reverse();
+        return ['latest.json'].concat(dated);
+      }).catch(function () { return ['latest.json']; });
+    }
+    return candidates().then(function (names) {
+      var lastError = null;
+      return names.reduce(function (chain, name) {
+        return chain.then(function (found) {
+          if (found !== null) return found;
+          if (FS.stat) {
+            return FS.stat({ path: FOLDER + '/' + name, directory: DIR }).then(function (st) {
+              if (st && st.size > 64 * 1024 * 1024) {
+                var tooLarge = new Error('Backup exceeds 64 MB');
+                tooLarge.code = 'BACKUP_TOO_LARGE';
+                throw tooLarge;
+              }
+              return readBytes(FS, name);
+            }).then(decode).catch(function (err) { lastError = err; return null; });
+          }
+          return readBytes(FS, name).then(decode).catch(function (err) { lastError = err; return null; });
+        });
+      }, Promise.resolve(null)).then(function (found) {
+        if (found !== null) return found;
+        if (lastError && lastError.code) throw lastError;
+        return null;
+      });
+    });
   }
 
   /* R0-W3 S2: one-time purge of the LEGACY world-readable auto-backup files from the
@@ -200,10 +418,16 @@
     status: function () {
       var log = [];
       try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) {}
+      if (!Array.isArray(log)) log = [];
+      var latestWrite = log.filter(function (e) {
+        return e && (e.mode === 'file-sealed' || e.mode === 'file-plaintext-fallback'
+          || e.mode === 'migration-sealed' || e.mode === 'migration-plaintext-fallback');
+      })[0];
       return {
         lastBackup: localStorage.getItem(MARKER_KEY) || 'never',
         native: isNativeApp(),
         folder: DIR + '/' + FOLDER + ' (app-private)',
+        plaintextWarning: !!(latestWrite && latestWrite.mode !== 'file-sealed'),
         recent: log
       };
     }
