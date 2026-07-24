@@ -37,6 +37,7 @@
   var KEEP_DAYS = 7;                         // DATA history is redundant with the live DB; keep a short window
   var MARKER_KEY = 'bcc_autobackup_last';   // YYYY-MM-DD of last successful backup
   var LOG_KEY = 'bcc_autobackup_log';       // small JSON ring of recent results
+  var WARNING_KEY = 'bcc_autobackup_plaintext_warning'; /* persistent until history + latest write are sealed */
   var START_DELAY_MS = 6000;                // let the app paint first
 
   function todayStr() {
@@ -69,7 +70,7 @@
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
       // do not back up our own transient log
-      if (k === LOG_KEY) continue;
+      if (k === LOG_KEY || k === WARNING_KEY) continue;
       data[k] = localStorage.getItem(k);
     }
     return {
@@ -124,6 +125,34 @@
       && bytes[2] === 67 && bytes[3] === 67 && bytes[4] === 49; /* SBCC1 */
   }
 
+  function hasSealPrefix(bytes) {
+    return bytes && bytes.length >= 5 && bytes[0] === 83 && bytes[1] === 66
+      && bytes[2] === 67 && bytes[3] === 67 && bytes[4] === 49; /* damaged/truncated SBCC1 is ciphertext, never plaintext */
+  }
+
+  function verifyPlainSnapshot(bytes) {
+    var parsed = JSON.parse(textFromBytes(bytes));
+    if (!parsed || typeof parsed !== 'object') throw new Error('plaintext backup payload invalid');
+    return bytes;
+  }
+
+  function bytesEqual(a, b) {
+    if (!(a && b) || a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  function setPlaintextWarning(reason) {
+    try {
+      if (reason) localStorage.setItem(WARNING_KEY, String(reason));
+      else localStorage.removeItem(WARNING_KEY);
+    } catch (e) {}
+  }
+
+  function notifyStatus() {
+    try { window.dispatchEvent(new Event('saagar-backup-status')); } catch (e) {}
+  }
+
   function writeBytes(FS, path, bytes) {
     return FS.writeFile({
       path: FOLDER + '/' + path,
@@ -147,7 +176,15 @@
   function verifySealedFile(FS, path) {
     return readBytes(FS, path).then(function (bytes) {
       if (!isSealed(bytes)) throw new Error('sealed backup verification failed');
-      return bytes;
+      if (!(window.SaagarStore && typeof window.SaagarStore.unseal === 'function')) {
+        throw new Error('sealed backup reader unavailable');
+      }
+      return window.SaagarStore.unseal(bytes).then(function (plain) {
+        if (!plain) throw new Error('sealed backup could not be decrypted');
+        var parsed = JSON.parse(textFromBytes(plain));
+        if (!parsed || typeof parsed !== 'object') throw new Error('sealed backup payload invalid');
+        return bytes;
+      });
     });
   }
 
@@ -156,8 +193,41 @@
      sealed replacement reads back with an SBCC1 envelope. If power/storage fails
      mid-upgrade, the next launch can retry from the sidecar without losing data. */
   function hardenExistingSnapshots(FS) {
-    if (!FS.readdir || !(window.SaagarStore && typeof window.SaagarStore.seal === 'function')) {
+    if (!FS.readdir) {
+      setPlaintextWarning('history');
+      pushLog({ at: nowIso(), mode: 'migration-plaintext-fallback', sealed: 0,
+        ok: false, error: 'backup history inspection unavailable' });
       return Promise.resolve({ sealed: 0, fallback: true });
+    }
+    if (!(window.SaagarStore && typeof window.SaagarStore.seal === 'function')) {
+      return FS.readdir({ path: FOLDER, directory: DIR }).then(function (res) {
+        var files = (res && res.files) ? res.files : [];
+        var names = files.map(function (f) { return typeof f === 'string' ? f : f.name; })
+          .filter(function (n) { return n === 'latest.json' || n === 'latest.json.plaintext'
+            || /^backup-\d{4}-\d{2}-\d{2}\.json(?:\.plaintext)?$/.test(n); });
+        return Promise.all(names.map(function (name) {
+          if (/\.plaintext$/.test(name)) return true;
+          return readBytes(FS, name).then(function (bytes) { return !hasSealPrefix(bytes); }).catch(function () { return true; });
+        })).then(function (states) {
+          var fallback = states.some(Boolean);
+          if (fallback) {
+            setPlaintextWarning('history');
+            pushLog({ at: nowIso(), mode: 'migration-plaintext-fallback', sealed: 0,
+              ok: false, error: 'seal API unavailable' });
+          } else setPlaintextWarning('');
+          return { sealed: 0, fallback: fallback };
+        });
+      }).catch(function (err) {
+        var msg = String(err && err.message || err || '');
+        if (/not found|does not exist|ENOENT/i.test(msg)) {
+          setPlaintextWarning('');
+          return { sealed: 0, fallback: false };
+        }
+        setPlaintextWarning('history');
+        pushLog({ at: nowIso(), mode: 'migration-plaintext-fallback', sealed: 0,
+          ok: false, error: 'backup history inspection failed: ' + msg });
+        return { sealed: 0, fallback: true };
+      });
     }
     return FS.readdir({ path: FOLDER, directory: DIR }).then(function (res) {
       var files = (res && res.files) ? res.files : [];
@@ -168,60 +238,89 @@
         if (/\.json\.plaintext$/.test(n)) baseNames[n.slice(0, -10)] = true;
       });
       var sealedCount = 0, fallback = false;
+      function removeSidecar(sidecar, shouldExist) {
+        if (!shouldExist) return Promise.resolve();
+        if (!FS.deleteFile) {
+          fallback = true;
+          return Promise.resolve();
+        }
+        return FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR })
+          .catch(function () { fallback = true; });
+      }
       return Object.keys(baseNames).reduce(function (chain, name) {
         return chain.then(function () {
           var sidecar = name + '.plaintext';
           return readBytes(FS, name).then(function (current) {
-            if (isSealed(current)) {
-              if (names.indexOf(sidecar) >= 0 && FS.deleteFile) {
-                return FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {});
-              }
-              return;
+            if (hasSealPrefix(current)) {
+              return verifySealedFile(FS, name).then(function () {
+                return removeSidecar(sidecar, names.indexOf(sidecar) >= 0);
+              });
             }
-            return writeBytes(FS, sidecar, current)
-              .then(function () { return readBytes(FS, sidecar); })
-              .then(function (safePlain) {
-                return window.SaagarStore.seal(safePlain).then(function (sealed) {
-                  if (!(sealed instanceof Uint8Array) || !isSealed(sealed)) {
-                    fallback = true;
-                    return;
-                  }
-                  return writeBytes(FS, name, sealed)
-                    .then(function () { return verifySealedFile(FS, name); })
-                    .then(function () {
-                      sealedCount++;
-                      return FS.deleteFile
-                        ? FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {})
-                        : undefined;
+            return Promise.resolve().then(function () { return verifyPlainSnapshot(current); })
+              .then(function () {
+                /* Once current is proven valid plaintext, any refresh/seal/write failure
+                   must preserve it in place. Do NOT fall into the recovery branch below:
+                   an older pre-existing sidecar could otherwise overwrite newer data. */
+                return writeBytes(FS, sidecar, current)
+                  .then(function () { return readBytes(FS, sidecar); })
+                  .then(function (safePlain) {
+                    verifyPlainSnapshot(safePlain);
+                    if (!bytesEqual(safePlain, current)) throw new Error('plaintext sidecar verification mismatch');
+                    return safePlain;
+                  })
+                  .then(function (safePlain) {
+                    return window.SaagarStore.seal(safePlain).then(function (sealed) {
+                      if (!(sealed instanceof Uint8Array) || !isSealed(sealed)) {
+                        fallback = true;
+                        return;
+                      }
+                      return writeBytes(FS, name, sealed)
+                        .then(function () { return verifySealedFile(FS, name); })
+                        .then(function () {
+                          sealedCount++;
+                          return removeSidecar(sidecar, true);
+                        });
                     });
-                });
+                  })
+                  .catch(function () { fallback = true; });
               });
           }).catch(function () {
             /* Missing/truncated final after an interrupted replacement: recover
                from the verified plaintext sidecar when one exists. */
             return readBytes(FS, sidecar).then(function (safePlain) {
+              return verifyPlainSnapshot(safePlain);
+            }).then(function (safePlain) {
               return window.SaagarStore.seal(safePlain).then(function (sealed) {
                 if (!(sealed instanceof Uint8Array) || !isSealed(sealed)) { fallback = true; return; }
                 return writeBytes(FS, name, sealed)
                   .then(function () { return verifySealedFile(FS, name); })
                   .then(function () {
                     sealedCount++;
-                    return FS.deleteFile
-                      ? FS.deleteFile({ path: FOLDER + '/' + sidecar, directory: DIR }).catch(function () {})
-                      : undefined;
+                    return removeSidecar(sidecar, true);
                   });
               });
             }).catch(function () { fallback = true; });
           });
         });
       }, Promise.resolve()).then(function () {
+        setPlaintextWarning(fallback ? 'history' : '');
         if (sealedCount || fallback) {
           pushLog({ at: nowIso(), mode: fallback ? 'migration-plaintext-fallback' : 'migration-sealed',
             sealed: sealedCount, ok: !fallback });
         }
         return { sealed: sealedCount, fallback: fallback };
       });
-    }).catch(function () { return { sealed: 0, fallback: false }; });
+    }).catch(function (err) {
+      var msg = String(err && err.message || err || '');
+      if (/not found|does not exist|ENOENT/i.test(msg)) {
+        setPlaintextWarning('');
+        return { sealed: 0, fallback: false };
+      }
+      setPlaintextWarning('history');
+      pushLog({ at: nowIso(), mode: 'migration-plaintext-fallback', sealed: 0,
+        ok: false, error: 'backup history inspection failed: ' + msg });
+      return { sealed: 0, fallback: true };
+    });
   }
 
   function pruneOldFiles(FS) {
@@ -276,12 +375,14 @@
         })
         .catch(function (err) {
           console.warn('[auto-backup] Snapshot sealing unavailable; using app-private plaintext fallback:', err);
+          setPlaintextWarning('write');
           pushLog({ at: nowIso(), date: today, mode: 'file-plaintext-fallback',
             keys: snap.keyCount, ok: false, pendingWrite: true, error: String(err && err.message || err) });
           return plainBytes;
         });
     } else {
       console.warn('[auto-backup] Snapshot sealing unavailable; using app-private plaintext fallback.');
+      setPlaintextWarning('write');
       pushLog({ at: nowIso(), date: today, mode: 'file-plaintext-fallback',
         keys: snap.keyCount, ok: false, pendingWrite: true, error: 'seal API unavailable' });
       sealPromise = Promise.resolve(plainBytes);
@@ -298,6 +399,9 @@
       .then(function () { return pruneOldFiles(FS); })
       .then(function () {
         try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
+        if (sealedMode) {
+          try { if (localStorage.getItem(WARNING_KEY) !== 'history') setPlaintextWarning(''); } catch (e) {}
+        } else setPlaintextWarning('write');
         pushLog({ at: nowIso(), date: today, mode: sealedMode ? 'file-sealed' : 'file-plaintext-fallback',
           keys: snap.keyCount, ok: true });
         console.log('[auto-backup] Saved ' + (sealedMode ? 'sealed' : 'PLAINTEXT FALLBACK')
@@ -315,13 +419,13 @@
 
   function runBackup(force) {
     var FS = getFS();
-    if (!FS) return runBackupInner(force);
+    if (!FS) return runBackupInner(force).then(function (result) { notifyStatus(); return result; });
     return hardenExistingSnapshots(FS).then(function (migration) {
       if (migration && migration.fallback) {
         console.warn('[auto-backup] Existing plaintext snapshot hardening is pending; durability is preserved.');
       }
       return runBackupInner(force);
-    });
+    }).then(function (result) { notifyStatus(); return result; });
   }
 
   /* Public manual trigger — can be called from the app or dev console:
@@ -397,7 +501,9 @@
      off-device backup exists. */
   function purgeLegacyDocs() {
     var FS = getFS();
-    if (!FS || !FS.readdir) return Promise.resolve({ deleted: 0, native: !!FS });
+    if (!FS) return Promise.resolve({ deleted: 0, scanned: 0, native: false, error: false });
+    if (!FS.readdir) return Promise.resolve({ deleted: 0, scanned: 0, native: true,
+      error: true, message: 'legacy backup inspection unavailable' });
     return FS.readdir({ path: FOLDER, directory: 'DOCUMENTS' })
       .then(function (res) {
         var files = (res && res.files) ? res.files : [];
@@ -408,7 +514,11 @@
             .then(function () { return true; }).catch(function () { return false; });
         })).then(function (rs) { return { deleted: rs.filter(Boolean).length, scanned: names.length }; });
       })
-      .catch(function () { return { deleted: 0, scanned: 0 }; });   /* folder gone / never existed — nothing to purge */
+      .catch(function (err) {
+        var msg = String(err && err.message || err || '');
+        if (/not found|does not exist|ENOENT/i.test(msg)) return { deleted: 0, scanned: 0, error: false };
+        return { deleted: 0, scanned: 0, error: true, message: msg };
+      });
   }
 
   window.SaagarBackup = {
@@ -419,15 +529,11 @@
       var log = [];
       try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) {}
       if (!Array.isArray(log)) log = [];
-      var latestWrite = log.filter(function (e) {
-        return e && (e.mode === 'file-sealed' || e.mode === 'file-plaintext-fallback'
-          || e.mode === 'migration-sealed' || e.mode === 'migration-plaintext-fallback');
-      })[0];
       return {
         lastBackup: localStorage.getItem(MARKER_KEY) || 'never',
         native: isNativeApp(),
         folder: DIR + '/' + FOLDER + ' (app-private)',
-        plaintextWarning: !!(latestWrite && latestWrite.mode !== 'file-sealed'),
+        plaintextWarning: !!localStorage.getItem(WARNING_KEY),
         recent: log
       };
     }

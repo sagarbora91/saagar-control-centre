@@ -158,8 +158,34 @@
     /* §15 BACKUP: snapshot() → { photoId: dataUrl } of EVERY stored photo for the backup bundle.
        Resolves to null when FS is absent or there are no photos (→ backup omits the photos key, stays
        byte-identical to today). */
-    snapshot: function () {
-      var FS = FSplugin(); if (!FS) return Promise.resolve(null);
+    snapshot: function (strict) {
+      var FS = FSplugin(); if (!FS) return strict ? Promise.reject(new Error('photo filesystem unavailable')) : Promise.resolve(null);
+      if (strict) {
+        return FS.readdir({ path: PHOTO_DIR, directory: dataDir() })
+          .catch(function (err) {
+            var msg = String(err && err.message || err || '');
+            if (/not found|does not exist|ENOENT/i.test(msg)) return { files: [] };
+            throw err;
+          })
+          .then(function (res) {
+            var files = (res && res.files) || [];
+            return Promise.all(files.map(function (f) {
+              var nm = String(f && (f.name != null ? f.name : f) || '');
+              if (!nm) throw new Error('photo directory returned an unnamed file');
+              var id = nm.replace(/\.[^.]+$/, ''), ext = (nm.split('.').pop() || 'bin');
+              return FS.readFile({ path: PHOTO_DIR + '/' + nm, directory: dataDir() })
+                .then(function (r) {
+                  if (!(r && r.data)) throw new Error('photo returned no data: ' + id);
+                  return { id: id, d: 'data:' + mimeFromExt(ext) + ';base64,' + r.data };
+                });
+            }));
+          })
+          .then(function (rows) {
+            if (!rows.length) return null;
+            var m = {}; rows.forEach(function (r) { m[r.id] = r.d; });
+            return m;
+          });
+      }
       return photo.listAll().then(function (ids) {
         if (!ids || !ids.length) return null;
         return Promise.all(ids.map(function (id) { return photo.get(id).then(function (d) { return { id: id, d: d }; }); }))
