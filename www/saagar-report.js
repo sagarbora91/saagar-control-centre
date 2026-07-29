@@ -1541,21 +1541,86 @@
     var d = (opts && opts.date) || curDate();
     return 'Saagar_' + type + '_' + d + '.pdf';
   }
-  function shareBlob(blob, fname) {
+  function modelRowCount(model) {
+    return ((model && model.blocks) || []).reduce(function (total, block) {
+      return total + (block && Array.isArray(block.body) ? block.body.length : 0);
+    }, 0);
+  }
+  function reportRowCount(type, opts) {
+    try { return modelRowCount(buildModel(type, opts || {})); } catch (e) { return 0; }
+  }
+  function authorizeExport(meta) {
+    var api = window.SaagarExportControl;
+    if (!api || typeof api.authorize !== 'function') {
+      try { toast('Export control unavailable — report delivery is blocked.'); } catch (e) {}
+      return false;
+    }
+    return api.authorize(meta);
+  }
+  function finishExport(token, outcome) {
+    try { return !!(window.SaagarExportControl && window.SaagarExportControl.recordOutcome(token, outcome)); }
+    catch (e) { return false; }
+  }
+  function beginExport(token) {
+    try { return !!(window.SaagarExportControl && window.SaagarExportControl.beginDelivery(token)); }
+    catch (e) { return false; }
+  }
+  function shareBlob(blob, fname, token) {
+    if (!beginExport(token)) {
+      try { toast('Report delivery blocked — approval token is no longer valid.'); } catch (e) {}
+      return Promise.resolve({ blocked: true });
+    }
     var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
     if (c) {
       return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(blob); })
         .then(function (b64) { return c.FS.writeFile({ path: fname, data: b64, directory: 'CACHE' }); })
         .then(function () { return c.FS.getUri({ directory: 'CACHE', path: fname }); })
         .then(function (r) { return c.Share.share({ title: fname, text: 'Saagar Traders — ' + fname, files: [r.uri], dialogTitle: 'Share report via WhatsApp' }); })
-        .then(function () { try { toast('Pick WhatsApp in the share menu'); } catch (e) {} })
-        .catch(function (e) { var m = (e && e.message) || String(e); if (!/cancel/i.test(m)) { try { toast('Share failed: ' + m); } catch (_) {} } });
+        .then(function () { finishExport(token, 'shared'); try { toast('Pick WhatsApp in the share menu'); } catch (e) {} })
+        .catch(function (e) {
+          var m = (e && e.message) || String(e), cancelled = /cancel|dismiss/i.test(m);
+          finishExport(token, cancelled ? 'cancelled' : 'failed');
+          if (!cancelled) { try { toast('Share failed: ' + m); } catch (_) {} }
+        });
     }
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+    finishExport(token, 'downloaded');
     try { toast('Report downloaded'); } catch (e) {}
     return Promise.resolve();
   }
+  var CSV_REPORTS = {
+    payrollRegister: true,
+    expenseMonthly: true,
+    leaveRegister: true,
+    stockRegister: true
+  };
+  function csvCell(value) {
+    var text = String(value == null ? '' : value);
+    if (/^[\t\r\n ]*[=+\-@]/.test(text)) text = "'" + text;
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+  function blocksToCsv(model) {
+    var rows = [];
+    (model.blocks || []).forEach(function (block) {
+      if (!block || !Array.isArray(block.head) || !Array.isArray(block.body)) return;
+      if (rows.length) rows.push([]);
+      rows.push(block.head);
+      block.body.forEach(function (row) { rows.push(Array.isArray(row) ? row : [row]); });
+      if (Array.isArray(block.foot)) {
+        if (block.foot.length && Array.isArray(block.foot[0])) block.foot.forEach(function (row) { rows.push(row); });
+        else rows.push(block.foot);
+      }
+    });
+    if (!rows.length) throw new Error('This report has no tabular rows for CSV');
+    var text = '\ufeff' + rows.map(function (row) { return row.map(csvCell).join(','); }).join('\r\n');
+    return {
+      text: text,
+      blob: new Blob([text], { type: 'text/csv;charset=utf-8' }),
+      rowCount: modelRowCount(model)
+    };
+  }
+  function modelToCsv(type, opts) { return blocksToCsv(buildModel(type, opts || {})); }
   // JSZip is only needed for the per-employee ZIP export — load it on demand (it is NOT in the
   // report-engine core gate, so a missing/failed JSZip never blocks normal reports).
   function ensureZip() {
@@ -1604,14 +1669,29 @@
       try { toast('Preparing ' + slips.length + ' slip(s)…'); } catch (e) {}
       var base = fileBase || 'Salary_Slips';
       return this.buildBatch(mode, slips)
-        .then(function (blob) { return shareBlob(blob, base + (mode === 'zip' ? '.zip' : '.pdf')); })
+        .then(function (blob) {
+          var fname = base + (mode === 'zip' ? '.zip' : '.pdf');
+          var token = authorizeExport({
+            exportId: 'payroll-slip-batch-share', kind: mode === 'zip' ? 'zip' : 'pdf',
+            scopeId: 'payroll-slip-batch', scopeLabel: 'salary-slip batch', module: 'payroll',
+            rowCount: slips.length, fileName: fname, purposeId: 'payroll-delivery'
+          });
+          return token ? shareBlob(blob, fname, token) : null;
+        })
         .catch(function (e) { try { toast('Could not build slips: ' + ((e && e.message) || e)); } catch (_) {} });
     },
     generate: function (type, opts) {
       try { toast('Preparing report…'); } catch (e) {}
       var self = this;
       return new Promise(function (res) { setTimeout(res, 40); }).then(function () {
-        return self.build(type, opts).then(function (blob) { return shareBlob(blob, filename(type, opts)); });
+        return self.build(type, opts).then(function (blob) {
+          var fname = filename(type, opts), token = authorizeExport({
+            exportId: 'report-generate-share', kind: 'pdf', scopeId: 'report-' + type,
+            scopeLabel: (META[type] ? META[type].title : type) + ' report', module: (META[type] && META[type].module) || 'reports',
+            rowCount: reportRowCount(type, opts), fileName: fname, purposeId: 'management-reporting'
+          });
+          return token ? shareBlob(blob, fname, token) : null;
+        });
       }).catch(function (e) { try { toast('Could not build report: ' + (e && e.message || e)); } catch (_) {} });
     },
     /* ── REPORT PREVIEW (exact PDF via pdf.js) + Save / Send / Print. Generation (build/buildModel/renderDoc)
@@ -1634,6 +1714,7 @@
         + '<div class="pp-bar">'
         + '<button class="btn small" type="button" onclick="SaagarReport.printPreview()">🖨️ Print</button>'
         + '<button class="btn small" type="button" onclick="SaagarReport.savePreview()">💾 Save</button>'
+        + (CSV_REPORTS[type] ? '<button class="btn small" type="button" onclick="SaagarReport.savePreviewCsv()">CSV</button>' : '')
         + '<button class="btn small primary" type="button" onclick="SaagarReport.sharePreview()">Send ↗</button>'
         + '</div></div>';
       var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('hub-sheet'); mc.classList.add('pdf-sheet'); }
@@ -1709,23 +1790,72 @@
         catch (e2) { fail(e2); }
       });
     },
-    savePreview: function () { if (this._pp && this._pp.blob) { try { this._logReport(this._pp.type, 'save', this._pp.opts); } catch (e) {} return this._saveBlob(this._pp.blob, this._pp.fname); } },
-    sharePreview: function () { var p = this._pp; if (p && p.blob) { try { this._logReport(p.type, 'send', p.opts); } catch (e) {} try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {} return shareBlob(p.blob, p.fname); } },
-    printPreview: function () { try { window.print(); } catch (e) {} },
-    _saveBlob: function (blob, fname) {
+    savePreview: function () {
+      var p = this._pp; if (!p || !p.blob) return;
+      var token = authorizeExport({
+        exportId: 'report-preview-save', kind: 'pdf', scopeId: 'report-' + p.type,
+        scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' report', module: 'reports',
+        rowCount: reportRowCount(p.type, p.opts), fileName: p.fname, purposeId: 'management-reporting'
+      });
+      if (!token) return;
+      try { this._logReport(p.type, 'save', p.opts); } catch (e) {}
+      return this._saveBlob(p.blob, p.fname, token);
+    },
+    savePreviewCsv: function () {
+      var p = this._pp; if (!p || !CSV_REPORTS[p.type]) return;
+      try {
+        var artifact = modelToCsv(p.type, p.opts), fname = p.fname.replace(/\.pdf$/i, '.csv');
+        var token = authorizeExport({
+          exportId: 'report-preview-csv', kind: 'csv', scopeId: 'report-' + p.type,
+          scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' CSV', module: 'reports',
+          rowCount: artifact.rowCount, fileName: fname, purposeId: 'register-reporting'
+        });
+        if (!token) return;
+        try { this._logReport(p.type, 'save-csv', p.opts); } catch (e) {}
+        return this._saveBlob(artifact.blob, fname, token);
+      } catch (e) { try { toast('CSV could not be created: ' + ((e && e.message) || e)); } catch (_) {} }
+    },
+    sharePreview: function () {
+      var p = this._pp; if (!p || !p.blob) return;
+      var token = authorizeExport({
+        exportId: 'report-preview-share', kind: 'pdf', scopeId: 'report-' + p.type,
+        scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' report', module: 'reports',
+        rowCount: reportRowCount(p.type, p.opts), fileName: p.fname, purposeId: 'management-reporting'
+      });
+      if (!token) return;
+      try { this._logReport(p.type, 'send', p.opts); } catch (e) {}
+      try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {}
+      return shareBlob(p.blob, p.fname, token);
+    },
+    printPreview: function () {
+      var p = this._pp || {}, token = authorizeExport({
+        exportId: 'report-preview-print', kind: 'print', scopeId: 'report-' + (p.type || 'unknown'),
+        scopeLabel: (META[p.type] ? META[p.type].title : 'report') + ' print', module: 'reports',
+        rowCount: p.type ? reportRowCount(p.type, p.opts) : 0, purposeId: 'hard-copy-business-record'
+      });
+      if (!token) return;
+      if (!beginExport(token)) return;
+      try { window.print(); finishExport(token, 'printed'); } catch (e) { finishExport(token, 'failed'); }
+    },
+    _saveBlob: function (blob, fname, token) {
+      if (!beginExport(token)) {
+        try { toast('Report save blocked — approval token is no longer valid.'); } catch (e) {}
+        return Promise.resolve({ blocked: true });
+      }
       var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
       if (c && c.FS) {
         return new Promise(function (res) { var fr = new FileReader(); fr.onloadend = function () { res(String(fr.result).split(',')[1]); }; fr.readAsDataURL(blob); })
           .then(function (b64) { return c.FS.writeFile({ path: 'SaagarBCC-Reports/' + fname, data: b64, directory: 'DOCUMENTS', recursive: true }); })
-          .then(function () { try { toast('Saved to Documents › SaagarBCC-Reports › ' + fname); } catch (e) {} })
+          .then(function () { finishExport(token, 'downloaded'); try { toast('Saved to Documents › SaagarBCC-Reports › ' + fname); } catch (e) {} })
           // No file-opener plugin offline — hand the saved file to the OS share sheet
           // so the user can open it in their PDF viewer (or share it onward).
           .then(function () { return c.FS.getUri({ directory: 'DOCUMENTS', path: 'SaagarBCC-Reports/' + fname }); })
           .then(function (r) { return c.Share.share({ title: fname, text: fname, files: [r.uri], dialogTitle: 'Open or share the PDF' }); })
-          .catch(function (e) { var m = (e && e.message) || String(e); if (!/cancel/i.test(m)) { try { toast('Save failed: ' + m); } catch (_) {} } });
+          .catch(function (e) { var m = (e && e.message) || String(e); if (!/cancel/i.test(m)) { finishExport(token, 'failed'); try { toast('Save failed: ' + m); } catch (_) {} } });
       }
       var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+      finishExport(token, 'downloaded');
       try { toast('Report downloaded'); } catch (e) {}
       return Promise.resolve();
     },
@@ -1774,8 +1904,15 @@
     },
     packSave: function () {
       var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
+      var token = authorizeExport({
+        exportId: 'report-pack-save', kind: 'pdf', scopeId: 'report-pack-' + ((this._pack && this._pack.scope) || 'period'),
+        scopeLabel: 'report pack', module: 'reports', rowCount: items.length, fileName: 'Saagar-report-pack.pdf',
+        purposeId: 'management-reporting'
+      });
+      if (!token) return Promise.resolve();
+      if (!beginExport(token)) return Promise.resolve({ blocked: true });
       var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
-      if (!(c && c.FS)) { items.forEach(function (it) { var a = document.createElement('a'); a.href = URL.createObjectURL(it.blob); a.download = it.fname; a.click(); }); try { toast(items.length + ' reports downloaded'); } catch (e) {} return Promise.resolve(); }
+      if (!(c && c.FS)) { items.forEach(function (it) { var a = document.createElement('a'); a.href = URL.createObjectURL(it.blob); a.download = it.fname; a.click(); }); finishExport(token, 'downloaded'); try { toast(items.length + ' reports downloaded'); } catch (e) {} return Promise.resolve(); }
       var n = 0;
       return items.reduce(function (p, it) {
         return p.then(function () {
@@ -1783,12 +1920,25 @@
             .then(function (b64) { return c.FS.writeFile({ path: 'SaagarBCC-Reports/' + it.fname, data: b64, directory: 'DOCUMENTS', recursive: true }); })
             .then(function () { n++; });
         });
-      }, Promise.resolve()).then(function () { try { toast('Saved ' + n + ' reports to Documents › SaagarBCC-Reports'); } catch (e) {} });
+      }, Promise.resolve()).then(function () { finishExport(token, 'downloaded'); try { toast('Saved ' + n + ' reports to Documents › SaagarBCC-Reports'); } catch (e) {} })
+        .catch(function (e) { finishExport(token, 'failed'); throw e; });
     },
     packSend: function () {
       var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
+      var token = authorizeExport({
+        exportId: 'report-pack-share', kind: 'pdf', scopeId: 'report-pack-' + ((this._pack && this._pack.scope) || 'period'),
+        scopeLabel: 'report pack', module: 'reports', rowCount: items.length, fileName: 'Saagar-report-pack.pdf',
+        purposeId: 'management-reporting'
+      });
+      if (!token) return Promise.resolve();
+      if (!beginExport(token)) return Promise.resolve({ blocked: true });
       var c = (function () { try { return capsShare(); } catch (e) { return null; } })();
-      if (!(c && c.Share && c.FS)) { return this.packSave(); }
+      if (!(c && c.Share && c.FS)) {
+        items.forEach(function (it) { var a = document.createElement('a'); a.href = URL.createObjectURL(it.blob); a.download = it.fname; a.click(); });
+        finishExport(token, 'downloaded');
+        try { toast(items.length + ' reports downloaded'); } catch (e) {}
+        return Promise.resolve();
+      }
       var uris = [];
       return items.reduce(function (p, it) {
         return p.then(function () {
@@ -1800,7 +1950,8 @@
       }, Promise.resolve()).then(function () {
         try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {}
         return c.Share.share({ title: 'Saagar Traders reports', text: 'Saagar Traders — report pack', files: uris, dialogTitle: 'Share reports' });
-      }).catch(function (e) { var msg = (e && e.message) || String(e); if (!/cancel/i.test(msg)) { try { toast('Share failed: ' + msg); } catch (_) {} } });
+      }).then(function () { finishExport(token, 'shared'); })
+        .catch(function (e) { var msg = (e && e.message) || String(e), cancelled = /cancel|dismiss/i.test(msg); finishExport(token, cancelled ? 'cancelled' : 'failed'); if (!cancelled) { try { toast('Share failed: ' + msg); } catch (_) {} } });
     },
     /* ── REPORT HISTORY — a log of what was generated/sent and when, with one-tap re-open. ── */
     _logReport: function (type, action, opts) {
@@ -1942,6 +2093,9 @@
       return this.preview(type, { date: d, month: m });   // tap → PREVIEW (then Save / Send / Print)
     },
     _buildModel: buildModel, // for tests
+    _blocksToCsv: blocksToCsv,
+    _modelToCsv: modelToCsv,
+    _modelRowCount: modelRowCount,
     _renderDoc: function (type, opts) { var m = buildModel(type, opts); if (!m.blocks) throw new Error('not block-based: ' + type); return renderDoc(m.blocks, m.orientation); }, // test seam → jsPDF doc
     _renderBlocks: function (blocks, orientation) { return renderDoc(blocks, orientation); } // test seam → raw block list
   };

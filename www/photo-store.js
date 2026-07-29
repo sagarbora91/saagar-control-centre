@@ -85,8 +85,9 @@
     refId: refId,
 
     /* put(photoId, dataUrl) → writes the file, returns the photoId (the durable ref) or null */
-    put: function (photoId, dataUrl) {
-      var FS = FSplugin(); if (!FS || !photoId || !dataUrl) return Promise.resolve(null);
+    put: function (photoId, dataUrl, strict) {
+      var FS = FSplugin();
+      if (!FS || !photoId || !dataUrl) return strict ? Promise.reject(new Error('photo write input or filesystem unavailable')) : Promise.resolve(null);
       var ext = extFromDataUrl(dataUrl); var b64 = b64FromDataUrl(dataUrl);
       return FS.mkdir({ path: PHOTO_DIR, directory: dataDir(), recursive: true }).catch(function () { return null; })
         .then(function () {
@@ -98,7 +99,7 @@
         })
         .then(function () { return FS.writeFile({ path: pathFor(photoId, ext), data: b64, directory: dataDir() }); })
         .then(function () { return String(photoId); })
-        .catch(function () { return null; });
+        .catch(function (err) { if (strict) throw err; return null; });
     },
 
     /* get(photoId) → resolves to a data URL (data:<mime>;base64,…) or null */
@@ -148,11 +149,16 @@
     },
 
     /* clearAll() → wipe the whole photo dir (used by Factory Reset). recursive. */
-    clearAll: function () {
-      var FS = FSplugin(); if (!FS) return Promise.resolve(false);
+    clearAll: function (strict) {
+      var FS = FSplugin(); if (!FS) return strict ? Promise.reject(new Error('photo filesystem unavailable')) : Promise.resolve(false);
       return FS.rmdir({ path: PHOTO_DIR, directory: dataDir(), recursive: true })
         .then(function () { return true; })
-        .catch(function () { return false; });
+        .catch(function (err) {
+          var msg = String(err && err.message || err || '');
+          if (/not found|does not exist|ENOENT/i.test(msg)) return true;
+          if (strict) throw err;
+          return false;
+        });
     },
 
     /* §15 BACKUP: snapshot() → { photoId: dataUrl } of EVERY stored photo for the backup bundle.
@@ -195,10 +201,28 @@
 
     /* §15 RESTORE: restoreAll({ photoId: dataUrl }) → re-materialize photos on restore (sequential to
        avoid hammering the FS). Resolves to the number written. No-op (0) if FS absent or map empty. */
-    restoreAll: function (map) {
-      var FS = FSplugin(); if (!FS || !map || typeof map !== 'object') return Promise.resolve(0);
+    restoreAll: function (map, strict) {
+      var FS = FSplugin();
+      if (!FS || !map || typeof map !== 'object' || Array.isArray(map)) {
+        return strict ? Promise.reject(new Error('photo restore input or filesystem unavailable')) : Promise.resolve(0);
+      }
       var ids = Object.keys(map); if (!ids.length) return Promise.resolve(0);
-      return ids.reduce(function (p, id) { return p.then(function (n) { return photo.put(id, map[id]).then(function (r) { return n + (r ? 1 : 0); }); }); }, Promise.resolve(0)).catch(function () { return 0; });
+      return ids.reduce(function (p, id) {
+        return p.then(function (n) {
+          return photo.put(id, map[id], strict).then(function (r) {
+            if (strict && !r) throw new Error('photo write failed: ' + id);
+            return n + (r ? 1 : 0);
+          });
+        });
+      }, Promise.resolve(0)).catch(function (err) { if (strict) throw err; return 0; });
+    },
+
+    /* Exact replacement used by atomic portable restore and its rollback. */
+    replaceAll: function (map, strict) {
+      var next = map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+      return photo.clearAll(strict).then(function () {
+        return Object.keys(next).length ? photo.restoreAll(next, strict) : 0;
+      });
     }
   };
 

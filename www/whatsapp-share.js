@@ -43,6 +43,25 @@
     try { if (typeof window.toast === 'function') { window.toast(msg); return; } } catch (e) {}
     console.log('[whatsapp-share]', msg);
   }
+  function authorizeExport(meta) {
+    try {
+      if (window.SaagarExportControl && typeof window.SaagarExportControl.authorize === 'function') {
+        return window.SaagarExportControl.authorize(meta);
+      }
+    } catch (e) {}
+    notify('Export control unavailable — sharing is blocked');
+    return false;
+  }
+  function finishExport(token, outcome) {
+    try {
+      return !!(window.SaagarExportControl && window.SaagarExportControl.recordOutcome(token, outcome));
+    } catch (e) { return false; }
+  }
+  function beginExport(token) {
+    try {
+      return !!(window.SaagarExportControl && window.SaagarExportControl.beginDelivery(token));
+    } catch (e) { return false; }
+  }
 
   function blobToBase64(blob) {
     return new Promise(function (resolve, reject) {
@@ -133,7 +152,11 @@
   window.SaagarBuildSharePdf = buildPdf;
 
   /* Share a PDF blob: native share sheet in the app, download in a browser. */
-  function shareBlob(blob, filename) {
+  function shareBlob(blob, filename, token) {
+    if (!beginExport(token)) {
+      notify('Share blocked — approval token is no longer valid');
+      return Promise.resolve({ blocked: true });
+    }
     var c = caps();
     if (c) {
       return blobToBase64(blob).then(function (b64) {
@@ -148,11 +171,13 @@
           dialogTitle: 'Share PDF via WhatsApp'
         });
       }).then(function () {
+        finishExport(token, 'shared');
         notify('Pick WhatsApp in the share menu');
       }).catch(function (e) {
         // user cancelling the share sheet also lands here — keep it quiet-ish
         var m = (e && e.message) ? e.message : String(e);
-        if (/cancel/i.test(m)) return;
+        if (/cancel|dismiss/i.test(m)) { finishExport(token, 'cancelled'); return; }
+        finishExport(token, 'failed');
         notify('Share failed: ' + m);
       });
     }
@@ -162,6 +187,7 @@
     a.download = filename;
     a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+    finishExport(token, 'downloaded');
     notify('PDF downloaded — WhatsApp share is active in the installed app');
     return Promise.resolve();
   }
@@ -185,8 +211,15 @@
     if (!doc) { notify('Open a module first, then share its print output'); return; }
     removeChooser(doc);
     if (opt.mode === 'print') {
-      try { (win && win.__saagarOrigPrint ? win.__saagarOrigPrint() : win.print()); }
-      catch (e) { notify('Print is not available here'); }
+      var printToken = authorizeExport({
+        exportId: 'module-print-chooser', kind: 'print', scopeId: 'current-module-print',
+        scopeLabel: 'current module print', module: (typeof activeModuleId !== 'undefined' && activeModuleId) || 'unknown',
+        rowCount: 0, purposeId: 'hard-copy-business-record'
+      });
+      if (!printToken) return;
+      if (!beginExport(printToken)) return;
+      try { (win && win.__saagarOrigPrint ? win.__saagarOrigPrint() : win.print()); finishExport(printToken, 'printed'); }
+      catch (e) { finishExport(printToken, 'failed'); notify('Print is not available here'); }
       return;
     }
     // Prefer the new enterprise report engine: build a clean, data-driven A4 report for the
@@ -198,7 +231,14 @@
     notify('Preparing PDF for WhatsApp…');
     setTimeout(function () {
       buildPdf(doc)
-        .then(function (blob) { return shareBlob(blob, activeModuleName(doc)); })
+        .then(function (blob) {
+          var fname = activeModuleName(doc), token = authorizeExport({
+            exportId: 'module-pdf-share', kind: 'pdf', scopeId: 'current-module-pdf',
+            scopeLabel: 'current module PDF', module: modId || 'unknown', rowCount: 0,
+            fileName: fname, purposeId: 'business-record-export'
+          });
+          return token ? shareBlob(blob, fname, token) : null;
+        })
         .catch(function (e) { notify('Could not create PDF: ' + (e && e.message || e)); });
     }, 60);
   };

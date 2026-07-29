@@ -34,7 +34,9 @@
 
   var FOLDER = 'SaagarBCC-Backups';
   var DIR = 'DATA';                         // R0-W3: app-private (was 'DOCUMENTS' — world-readable)
-  var KEEP_DAYS = 7;                         // DATA history is redundant with the live DB; keep a short window
+  var KEEP_DAYS = 7;
+  var KEEP_WEEKS = 5;
+  var KEEP_MONTHS = 12;                      // private grandfather–father–son recovery generations
   var MARKER_KEY = 'bcc_autobackup_last';   // YYYY-MM-DD of last successful backup
   var LOG_KEY = 'bcc_autobackup_log';       // small JSON ring of recent results
   var WARNING_KEY = 'bcc_autobackup_plaintext_warning'; /* persistent until history + latest write are sealed */
@@ -204,7 +206,7 @@
         var files = (res && res.files) ? res.files : [];
         var names = files.map(function (f) { return typeof f === 'string' ? f : f.name; })
           .filter(function (n) { return n === 'latest.json' || n === 'latest.json.plaintext'
-            || /^backup-\d{4}-\d{2}-\d{2}\.json(?:\.plaintext)?$/.test(n); });
+            || /^(?:backup-\d{4}-\d{2}-\d{2}|weekly-\d{4}-W\d{2}|monthly-\d{4}-\d{2})\.json(?:\.plaintext)?$/.test(n); });
         return Promise.all(names.map(function (name) {
           if (/\.plaintext$/.test(name)) return true;
           return readBytes(FS, name).then(function (bytes) { return !hasSealPrefix(bytes); }).catch(function () { return true; });
@@ -234,7 +236,7 @@
       var names = files.map(function (f) { return typeof f === 'string' ? f : f.name; });
       var baseNames = {};
       names.forEach(function (n) {
-        if (n === 'latest.json' || /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n)) baseNames[n] = true;
+        if (n === 'latest.json' || /^(?:backup-\d{4}-\d{2}-\d{2}|weekly-\d{4}-W\d{2}|monthly-\d{4}-\d{2})\.json$/.test(n)) baseNames[n] = true;
         if (/\.json\.plaintext$/.test(n)) baseNames[n.slice(0, -10)] = true;
       });
       var sealedCount = 0, fallback = false;
@@ -329,17 +331,40 @@
       .then(function (res) {
         var files = (res && res.files) ? res.files : [];
         // Capacitor may return strings or {name} objects depending on version
-        var names = files.map(function (f) { return (typeof f === 'string') ? f : f.name; })
-          .filter(function (n) { return /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n); })
-          .sort();
-        if (names.length <= KEEP_DAYS) return;
-        var toDelete = names.slice(0, names.length - KEEP_DAYS);
+        var all = files.map(function (f) { return (typeof f === 'string') ? f : f.name; });
+        function excess(re, keep) {
+          var names = all.filter(function (n) { return re.test(n); }).sort();
+          return names.length > keep ? names.slice(0, names.length - keep) : [];
+        }
+        var toDelete = excess(/^backup-\d{4}-\d{2}-\d{2}\.json$/, KEEP_DAYS)
+          .concat(excess(/^weekly-\d{4}-W\d{2}\.json$/, KEEP_WEEKS))
+          .concat(excess(/^monthly-\d{4}-\d{2}\.json$/, KEEP_MONTHS));
+        if (!toDelete.length) return;
         return Promise.all(toDelete.map(function (n) {
           return FS.deleteFile({ path: FOLDER + '/' + n, directory: DIR })
             .catch(function () {});
         }));
       })
       .catch(function () { /* folder may not exist yet — ignore */ });
+  }
+
+  function gfsNames(today) {
+    var d = new Date(today + 'T12:00:00Z');
+    var thursday = new Date(d.getTime());
+    thursday.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));
+    var week = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7);
+    return {
+      weekly: 'weekly-' + thursday.getUTCFullYear() + '-W' + String(week).padStart(2, '0') + '.json',
+      monthly: 'monthly-' + today.slice(0, 7) + '.json'
+    };
+  }
+
+  function writeGfsCopies(FS, today, bytes) {
+    var names = gfsNames(today);
+    return writeBytes(FS, names.weekly, bytes).then(function () {
+      return writeBytes(FS, names.monthly, bytes);
+    });
   }
 
   function runBackupInner(force) {
@@ -396,6 +421,7 @@
         return writeBytes(FS, 'backup-' + today + '.json', storedBytes);
       })
       .then(function () { return writeBytes(FS, 'latest.json', storedBytes); })
+      .then(function () { return writeGfsCopies(FS, today, storedBytes); })
       .then(function () { return pruneOldFiles(FS); })
       .then(function () {
         try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
@@ -529,11 +555,24 @@
       var log = [];
       try { log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) {}
       if (!Array.isArray(log)) log = [];
+      var consecutiveFailures = 0, failureSince = null;
+      for (var i = 0; i < log.length; i++) {
+        if (log[i] && log[i].ok === true) break;
+        if (log[i] && log[i].ok === false && !log[i].pendingWrite) {
+          consecutiveFailures++;
+          failureSince = log[i].at || failureSince;
+        }
+      }
+      var failureAgeHours = failureSince ? Math.max(0, (Date.now() - new Date(failureSince).getTime()) / 3600000) : 0;
       return {
         lastBackup: localStorage.getItem(MARKER_KEY) || 'never',
         native: isNativeApp(),
         folder: DIR + '/' + FOLDER + ' (app-private)',
         plaintextWarning: !!localStorage.getItem(WARNING_KEY),
+        consecutiveFailures: consecutiveFailures,
+        failureSince: failureSince,
+        failureThresholdHours: 36,
+        failureEscalated: consecutiveFailures > 0 && failureAgeHours >= 36,
         recent: log
       };
     }
