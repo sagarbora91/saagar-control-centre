@@ -23,9 +23,11 @@ export function loadExportControl(options = {}) {
         throw new Error('injected write failure');
       }
       values.set(key, String(value));
+    },
+    removeItem(key) {
+      values.delete(key);
     }
   };
-
   const root = {
     localStorage,
     hasAdminPin: () => options.hasPin !== false,

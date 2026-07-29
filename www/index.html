@@ -21,7 +21,7 @@
 <style>:root{color-scheme:light only}</style>
 <style>
 /* ═════════════════════════════════════════════════════════════════════════
-   SAAGAR TRADERS — BUSINESS CONTROL CENTRE  V5  (APK build = APK_BUILD const, currently 2.8)
+   SAAGAR TRADERS — BUSINESS CONTROL CENTRE  V5  (APK build = APK_BUILD const, currently 2.9)
    Single-file shell. Drop into assets/public/index.html. (The About page shows the live
    APP_VERSION / APK_BUILD via JS — see ~line 5014; keep those constants as the source of truth.)
    Modules array is injected (same schema as V4).
@@ -819,6 +819,7 @@ html.bcc-mobile,html.bcc-mobile body{overflow-x:hidden}
      boot (DOM-ready) can find it. When the flag is OFF, storage-core early-returns and this is
      unused here (sqlite-store.js below is the active engine and also uses the same initSqlJs). -->
 <script src="sql-wasm.js"></script>
+<script src="persistence-acceptance.js"></script>
 <!-- STORAGE CORE (Option C) — flag-gated SQLite-primary storage layer. Default OFF = pure no-op (app behaves exactly as today). Loaded before demo-seed/bridge so its override installs first when enabled. -->
 <script src="storage-core.js"></script>
 <!-- PHOTO STORE (Option C — mechanism only) — Filesystem-backed photo API; attaches .photo to
@@ -1524,16 +1525,25 @@ html.bcc-mobile #todayView.active{display:block}
       <div class="sub-section hidden" id="subBackup">
         <div class="card card-pad">
           <h4><span class="em">💾</span> Backup &amp; restore</h4>
-          <p>Passphrase-encrypted backup of all module data on this device. The app also keeps a private daily safety copy inside the app's own storage (not readable by other apps). <b>To move to a new phone or survive an uninstall, use “Back up → Share to Drive”</b> — the on-device copy is wiped if the app is removed.</p>
+          <p>Passphrase-encrypted backup of all module data on this device. The app also keeps a private daily safety copy inside its own storage. <b>Set up automatic off-device backup to a Drive/OneDrive provider folder, or use “Back up → Share to Drive”.</b> The private on-device copy is wiped if the app is removed.</p>
           <div id="backupStatusBox" style="margin:10px 0"></div>
+          <div id="offDeviceBackupStatusBox" style="margin:10px 0"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn green" onclick="exportBackup()">Create encrypted backup</button>
+            <button class="btn outline-gold" onclick="configureOffDeviceBackup()">Set up automatic off-device backup</button>
+            <button class="btn outline-gold" onclick="runOffDeviceBackupNow()">Run automatic backup now</button>
             <button class="btn gold" onclick="shareBackup()">Back up → Share to Drive</button>
             <button class="btn outline-gold" onclick="document.getElementById('restoreFile').click()">Restore from file</button>
             <button class="btn outline-gold" onclick="restoreFromDeviceBackup()">Restore from device backup</button>
             <input id="restoreFile" class="hidden" type="file" accept="application/json,.json,.sccbak,application/vnd.saagar.backup+json" onchange="handleRestoreFile(this.files&&this.files[0]);this.value=''" />
           </div>
           <div id="legacyPurgeRow" style="margin-top:10px"></div>
+        </div>
+        <div class="card card-pad">
+          <h4><span class="em">⏱</span> Storage performance acceptance (DAT-02)</h4>
+          <p>Runs five real encrypted database saves on this device and checks the agreed p95 limits for database export, visible frame delay, and total save time. No business data leaves the phone.</p>
+          <div id="dat02StatusBox" class="note-banner" style="margin:8px 0">Not tested on this device.</div>
+          <button class="btn outline-gold" onclick="runDat02Acceptance()">Run DAT-02 device test</button>
         </div>
         <div class="card card-pad">
           <h4><span class="em">📦</span> Full migration export</h4>
@@ -1697,7 +1707,7 @@ html.bcc-mobile #todayView.active{display:block}
           <p><b>Saagar Traders — Business Control Centre</b><br>
           App ID: <code>com.saagartraders.bcc</code><br>
           Shell version: <span id="aboutShell">V5.5</span><br>
-          APK build: <span id="aboutBuild">2.8</span><br>
+          APK build: <span id="aboutBuild">2.9</span><br>
           Build flavor: <span id="aboutFlavor">—</span><br>
           Modules: <span id="aboutModuleCount">—</span> embedded<br>
           Build date: <span id="aboutDate">—</span></p>
@@ -1844,8 +1854,8 @@ const MODULES = [{"id":"stock","title":"Stock Register","short":"Stock","categor
    ═══════════════════════════════════════════════════════════════════════ */
 const BUILD_TIME = "2026-06-29";
 const APP_VERSION = "V5.5";
-const APK_BUILD = "2.8";
-const APP_BUILD_SEQUENCE = 208;
+const APK_BUILD = "2.9";
+const APP_BUILD_SEQUENCE = 209;
 /* In-app change log (Settings -> About -> Detailed change log). Plain Markdown — to update for a new
    release, edit the text below; renderMdLite() turns it into the on-screen log. */
 const CHANGELOG_MD = `# Saagar Control Centre — Detailed Code Change Log
@@ -2112,7 +2122,7 @@ const PROTECTED_MODULES_KEY = "st_v2_protect_admin_modules";
 const ADMIN_PIN_KEY     = "st_v2_admin_pin_hash";
 const ADMIN_MODE_KEY    = "st_v2_admin_mode";
 const LAST_BACKUP_KEY   = "st_v2_last_backup";
-const OFFDEVICE_BACKUP_KEY = "st_v2_last_offdevice_backup";   /* R0-W3: recency of a TRUE off-device backup (Share to Drive) — the only thing that survives device loss; distinct from LAST_BACKUP_KEY which any local export also stamps */
+const OFFDEVICE_BACKUP_KEY = "st_v2_last_offdevice_backup";   /* R0-W3/BKP-03: recency of a verified manual share or automatic provider copy — the only backup class that survives device loss; distinct from LAST_BACKUP_KEY which any local export also stamps */
 const EXPORT_POLICY_KEY = "st_v2_export_policy_v1";            /* R0-W4 SEC-08: disabled by default; owner-controlled export policy */
 const EXPORT_REGISTER_KEY = "st_v2_export_register_v1";        /* R0-W4 SEC-08: sanitised metadata-only export register */
 const RESTORE_DRILL_KEY = "st_v2_restore_drill_accepted_v1";    /* device-local proof that a verified restore was reviewed */
@@ -2308,7 +2318,7 @@ function decodeHtml(b64){
   return new TextDecoder('utf-8').decode(arr);
 }
 function setLastBackup(){ safeSet(LAST_BACKUP_KEY, new Date().toISOString()); }
-function setOffDeviceBackup(){ return safeSet(OFFDEVICE_BACKUP_KEY, new Date().toISOString()); }   /* R0-W3: only owner-confirmed off-device share completion calls this */
+function setOffDeviceBackup(){ return safeSet(OFFDEVICE_BACKUP_KEY, new Date().toISOString()); }   /* R0-W3/BKP-03: called only after owner-confirmed manual delivery or native SHA-256-verified automatic delivery */
 function lastBackup(){ return safeGet(LAST_BACKUP_KEY); }
 function simpleHash(s){ let h=2166136261; s=String(s); for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return String(h>>>0); }
 /* Audit fix SEC-PIN-02: the Admin PIN was stored as a single-pass, UNSALTED 32-bit FNV hash — trivially
@@ -6152,6 +6162,37 @@ function portableContainerText(payload, passphrase){
   if(!(window.SaagarPortableBackup&&typeof window.SaagarPortableBackup.seal==='function')) return Promise.reject(new Error('secure backup service unavailable'));
   return window.SaagarPortableBackup.seal(payload,passphrase).then(function(container){ return JSON.stringify(container,null,2); });
 }
+function configureOffDeviceBackup(){
+  var api=window.SaagarOffDeviceBackup, pass=requestBackupPassphrase(true);
+  if(!pass) return;
+  if(!api){toast('Automatic off-device backup is unavailable in this build.');return;}
+  toast('Choose a Drive or OneDrive folder, then approve the standing backup permission.');
+  api.configure(pass).then(function(){renderConfigBackup();renderHome();toast('Automatic encrypted off-device backup is active and verified.');})
+    .catch(function(e){renderConfigBackup();toast('Automatic backup setup failed: '+String(e&&e.message||e));});
+}
+function runOffDeviceBackupNow(){
+  var api=window.SaagarOffDeviceBackup;
+  if(!api){toast('Automatic off-device backup is unavailable.');return;}
+  toast('Preparing and verifying the off-device backup…');
+  api.run(true).then(function(r){renderConfigBackup();renderHome();toast(r&&r.verified?'Off-device backup verified.':'Automatic backup is not configured.');})
+    .catch(function(e){renderConfigBackup();toast('Off-device backup failed: '+String(e&&e.message||e));});
+}
+function disableOffDeviceBackup(){
+  var api=window.SaagarOffDeviceBackup;
+  if(!api||!confirm('Disable automatic off-device backup and remove this folder permission? Existing backup files will remain in the selected provider.')) return;
+  api.disable().then(function(){renderConfigBackup();toast('Automatic off-device backup disabled.');})
+    .catch(function(e){renderConfigBackup();toast('Could not disable automatic backup: '+String(e&&e.message||e));});
+}
+function runDat02Acceptance(){
+  var store=window.SaagarStore;
+  if(!store||typeof store.runPersistenceAcceptance!=='function'){toast('DAT-02 device test is unavailable.');return;}
+  if(!confirm('Run five real encrypted database saves now? Keep this screen open for about one minute.')) return;
+  toast('Running DAT-02 storage test…');
+  store.runPersistenceAcceptance().then(function(result){
+    renderConfigBackup();
+    toast(result&&result.accepted?'DAT-02 accepted on this device.':'DAT-02 did not meet the device limits.');
+  }).catch(function(e){renderConfigBackup();toast('DAT-02 test failed: '+String(e&&e.message||e));});
+}
 function exportBackup(){ exportBackupPreview(); }   /* R0-W4: preview is local-only; the central gate runs immediately before delivery. */
 /* Wave 3 — FULL MIGRATION EXPORT. The manual backup PLUS a manifest (app/APK version,
    per-key record counts, employee name→id map, module key counts) that turns the backup
@@ -7076,6 +7117,28 @@ function renderConfigBackup(){
       <div class="note">${lb?fmtDate(lb):'Tap Create backup to start.'}</div>
     </div>
     ${autoLine ? `<div class="note-banner" style="margin-top:8px;font-size:12px">${autoLine}</div>` : ''}`;
+  try{
+    var off=window.SaagarOffDeviceBackup&&window.SaagarOffDeviceBackup.status(), offBox=$('offDeviceBackupStatusBox');
+    if(offBox){
+      if(!off||!off.configured){
+        offBox.innerHTML='<div class="note-banner warn"><b>Automatic off-device backup:</b> '+(off&&off.damaged?'configuration damaged — set it up again.':'not set up. Choose a Drive, OneDrive, or another provider-backed folder once.')+'</div>';
+      }else{
+        var offWhen=off.lastSuccessAt?fmtDate(off.lastSuccessAt):'verification pending';
+        offBox.innerHTML='<div class="note-banner '+(off.failureEscalated?'warn':'')+'"><b>Automatic off-device backup:</b> '+(off.failureEscalated?'ACTION REQUIRED':'active')+'<br>Folder: '+escapeHtml(off.destinationLabel||'Off-device folder')+'<br>Last verified: '+escapeHtml(offWhen)+(off.lastError?'<br>Last error: '+escapeHtml(off.lastError):'')+'<div style="margin-top:8px"><button class="btn outline-gold" onclick="disableOffDeviceBackup()">Disable automatic backup</button></div></div>';
+      }
+    }
+  }catch(e){}
+  try{
+    var dat=window.SaagarStore&&typeof window.SaagarStore.persistenceAcceptance==='function'?window.SaagarStore.persistenceAcceptance():null, datBox=$('dat02StatusBox');
+    if(datBox){
+      if(!dat) datBox.textContent='Not tested on this device.';
+      else if(dat.damaged) datBox.textContent='Previous DAT-02 result is damaged — run the test again.';
+      else {
+        var dm=dat.metrics||{};
+        datBox.innerHTML='<b>'+(dat.accepted?'Accepted':'Not accepted')+'</b> on '+escapeHtml(fmtDate(dat.at||''))+' · export p95 '+Number(dm.exportP95Ms||0).toFixed(0)+' ms · frame p95 '+Number(dm.frameGapP95Ms||0).toFixed(0)+' ms · total p95 '+Number(dm.totalP95Ms||0).toFixed(0)+' ms';
+      }
+    }
+  }catch(e){}
   try{ renderLegacyPurgeRow(); }catch(e){}   /* R0-W3 S2: offer the one-time legacy shared-storage purge */
   // Archive info + SQLite storage meter
   try{
@@ -7110,7 +7173,7 @@ function renderExportPolicy(){
   if(chk){ chk.disabled=false; chk.checked=!!(p&&p.enabled); }
   if(box){
     var count=Array.isArray(rows)?rows.length:0;
-    box.textContent=(p&&p.damaged?'Policy damaged — exports blocked.':(p&&p.enabled?'Enabled · fresh owner approval required every time':'Disabled · no file or bulk-data export can leave the app'))+' · '+count+' registered attempt'+(count===1?'':'s');
+    box.textContent=(p&&p.damaged?'Policy damaged — exports blocked.':(p&&p.enabled?'Enabled · fresh approval for manual exports; bound standing approval for automatic backup':'Disabled · no file or bulk-data export can leave the app'))+' · '+count+' registered attempt'+(count===1?'':'s');
   }
 }
 function setExportPolicy(on){
@@ -8537,6 +8600,7 @@ function reflectBuildBadge(){
 </script>
 
 <!-- ════ APK build addition: offline daily auto-backup safety net ════ -->
+<script src="offdevice-backup.js"></script>
 <script src="auto-backup.js"></script>
 
 <!-- ════ APK build addition: LAZY PDF/CANVAS LIBS (load on first use) ════

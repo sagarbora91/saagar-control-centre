@@ -59,7 +59,7 @@ public class SaagarSecurityPlugin extends Plugin {
             out.put("rootArtifact", rootArtifact);
             out.put("installerKnown", !installer.isEmpty());
             out.put("installerPackage", installer);
-            out.put("productionEligible", !debuggable && !debugger && !testKeys && !rootArtifact);
+            out.put("productionEligible", Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !debuggable && !debugger && !testKeys && !rootArtifact);
             call.resolve(out);
         } catch (Throwable t) {
             call.reject("posture check failed", "E_POSTURE");

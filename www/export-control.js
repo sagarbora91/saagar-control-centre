@@ -3,7 +3,8 @@
  *
  * All bulk/file exports must call authorize() immediately before data leaves the
  * app. The policy is disabled by default, requires an Admin PIN, re-authenticates
- * the owner on every export, and records a sanitised register entry before the
+ * the owner on every manual export, supports a destination-bound standing owner
+ * grant for scheduled encrypted backup, and records a sanitised register entry before the
  * caller is allowed to continue.
  *
  * The register deliberately stores metadata only: no customer names, mobile
@@ -14,6 +15,7 @@
 
   var POLICY_KEY = 'st_v2_export_policy_v1';
   var REGISTER_KEY = 'st_v2_export_register_v1';
+  var SCHEDULE_KEY = 'st_v2_export_schedule_v1';
   var MAX_ENTRIES = 750;
 
   function nowIso() { return new Date().toISOString(); }
@@ -39,6 +41,14 @@
       if (!root.localStorage) return false;
       root.localStorage.setItem(key, value);
       return root.localStorage.getItem(key) === String(value);
+    } catch (_) { return false; }
+  }
+  function removeRaw(key) {
+    try {
+      if (typeof root.safeRemove === 'function') return root.safeRemove(key) !== false;
+      if (!root.localStorage) return false;
+      root.localStorage.removeItem(key);
+      return root.localStorage.getItem(key) === null;
     } catch (_) { return false; }
   }
   function parseObject(raw) {
@@ -126,7 +136,7 @@
       purposeId: cleanCode(meta.purposeId, 'business-operation', 60)
     };
   }
-  function registerAttempt(status, reason, detail) {
+  function registerAttempt(status, reason, detail, approvalMode) {
     var token = 'exp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
     var entry = {
       id: token,
@@ -143,6 +153,7 @@
       purposeId: detail.purposeId,
       status: status
     };
+    if (approvalMode) entry.approvalMode = cleanCode(approvalMode, 'fresh-owner-reauth', 40);
     if (reason) entry.reason = cleanCode(reason, 'denied', 40);
     return persistEntry(entry) ? { token: token, entry: entry } : null;
   }
@@ -195,7 +206,7 @@
       notify('Export cancelled — owner approval was not completed.');
       return deny('owner-approval-denied', detail);
     }
-    var saved = registerAttempt('approved', '', detail);
+    var saved = registerAttempt('approved', '', detail, 'fresh-owner-reauth');
     if (!saved) {
       notify('Export blocked because the export register could not be saved.');
       return deny('register-write-failed', detail);
@@ -209,6 +220,74 @@
       rowCount: saved.entry.rowCount
     });
     return saved.token;
+  }
+  function readScheduledGrant() {
+    var raw = getRaw(SCHEDULE_KEY);
+    if (!raw) return null;
+    var value = parseObject(raw);
+    if (!value || value.enabled !== true || !value.destinationId || !value.scopeId) return { damaged: true };
+    return {
+      enabled: true,
+      destinationId: cleanCode(value.destinationId, '', 80),
+      scopeId: cleanCode(value.scopeId, '', 80),
+      approvedAt: cleanLabel(value.approvedAt, 40),
+      approvedBy: cleanLabel(value.approvedBy, 80)
+    };
+  }
+  function postureAllowsScheduled() {
+    try {
+      if (root.SaagarDeviceSecurity && typeof root.SaagarDeviceSecurity.allowSensitive === 'function' &&
+          !root.SaagarDeviceSecurity.allowSensitive('scheduled-export')) {
+        notify('Automatic backup blocked: this production device has an unsafe or unavailable security posture.');
+        return false;
+      }
+      return true;
+    } catch (_) {
+      notify('Automatic backup blocked: device security status could not be verified.');
+      return false;
+    }
+  }
+  function approveScheduled(meta) {
+    var detail = safeMeta(meta), destinationId = cleanCode(meta && meta.destinationId, '', 80);
+    if (!destinationId) { notify('Choose a verified off-device backup folder first.'); return false; }
+    if (!postureAllowsScheduled()) return false;
+    var policy = readPolicy();
+    if (policy.damaged || !policy.enabled) { notify('Enable file and bulk-data exports before setting up automatic backup.'); return false; }
+    if (!hasPin()) { notify('Set an Admin PIN before setting up automatic backup.'); return false; }
+    if (!reauth('Approve automatic encrypted backup to the selected off-device folder')) return false;
+    var grant = {
+      enabled: true,
+      destinationId: destinationId,
+      scopeId: detail.scopeId,
+      approvedAt: nowIso(),
+      approvedBy: ownerActor()
+    };
+    if (!setRaw(SCHEDULE_KEY, JSON.stringify(grant))) { notify('Automatic-backup approval could not be saved.'); return false; }
+    audit('export.schedule.approved', { scopeId: grant.scopeId, approvedBy: grant.approvedBy });
+    return grant;
+  }
+  function authorizeScheduled(meta) {
+    var detail = safeMeta(meta), destinationId = cleanCode(meta && meta.destinationId, '', 80);
+    if (!postureAllowsScheduled()) return deny('device-posture-unsafe', detail);
+    var policy = readPolicy();
+    if (policy.damaged) return deny('policy-damaged', detail);
+    if (!policy.enabled) return deny('policy-disabled', detail);
+    if (!hasPin()) return deny('admin-pin-required', detail);
+    var grant = readScheduledGrant();
+    if (!grant || grant.damaged) return deny(grant && grant.damaged ? 'schedule-damaged' : 'schedule-missing', detail);
+    if (!destinationId || grant.destinationId !== destinationId) return deny('schedule-destination-mismatch', detail);
+    if (grant.scopeId !== detail.scopeId) return deny('schedule-scope-mismatch', detail);
+    var saved = registerAttempt('approved', '', detail, 'standing-owner-grant');
+    if (!saved) return deny('register-write-failed', detail);
+    audit('export.schedule.authorized', { exportId: saved.token, scopeId: detail.scopeId, module: detail.module, rowCount: detail.rowCount });
+    return saved.token;
+  }
+  function revokeScheduled() {
+    if (!hasPin()) { notify('Set an Admin PIN before changing automatic backup.'); return false; }
+    if (!reauth('Disable automatic encrypted off-device backup')) return false;
+    if (!removeRaw(SCHEDULE_KEY)) { notify('Automatic-backup approval could not be removed.'); return false; }
+    audit('export.schedule.revoked', { updatedBy: ownerActor() });
+    return true;
   }
   function recordOutcome(token, outcome) {
     token = cleanLabel(token, 80);
@@ -249,13 +328,18 @@
       return false;
     }
     audit(enabled ? 'export.policy.enabled' : 'export.policy.disabled', { updatedBy: policy.updatedBy });
-    notify(enabled ? 'Exports enabled — every export still needs owner approval.' : 'Exports disabled.');
+    notify(enabled ? 'Exports enabled — manual exports need fresh approval; automatic backup needs a destination-bound standing approval.' : 'Exports disabled.');
     return true;
   }
   root.SaagarExportControl = {
     POLICY_KEY: POLICY_KEY,
     REGISTER_KEY: REGISTER_KEY,
+    SCHEDULE_KEY: SCHEDULE_KEY,
     authorize: authorize,
+    approveScheduled: approveScheduled,
+    authorizeScheduled: authorizeScheduled,
+    revokeScheduled: revokeScheduled,
+    scheduledGrant: readScheduledGrant,
     beginDelivery: beginDelivery,
     recordOutcome: recordOutcome,
     setEnabled: setEnabled,

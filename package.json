@@ -9,9 +9,9 @@
     "sync": "node -r ./scripts/node-userinfo-shim.cjs ./node_modules/@capacitor/cli/bin/capacitor sync android",
     "open": "cap open android",
     "apply-overrides": "node build-overrides/apply-overrides.js",
-    "test:security": "node --test tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/export-sinks.test.mjs tests/portable-backup.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs",
+    "test:security": "node --test tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/export-sinks.test.mjs tests/portable-backup.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs tests/offdevice-backup.test.mjs tests/persistence-acceptance.test.mjs",
     "test:reports": "node --test tests/report-csv.test.mjs tests/financial-golden.test.mjs",
-    "test:offline": "node --test tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/export-sinks.test.mjs tests/report-csv.test.mjs tests/portable-backup.test.mjs tests/financial-golden.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs",
+    "test:offline": "node --test tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/export-sinks.test.mjs tests/report-csv.test.mjs tests/portable-backup.test.mjs tests/financial-golden.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs tests/offdevice-backup.test.mjs tests/persistence-acceptance.test.mjs",
     "build:apk": "npm run sync && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleDebug",
     "build:release": "npm run sync && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleRelease",
     "register:release": "node scripts/release-register.mjs"

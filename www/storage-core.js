@@ -52,14 +52,16 @@
     /* ── module-level state + constants ── */
     var SQL = null, db = null, _ready = false, _dirty = false, _bulk = false, _saveTimer = null, _resetting = false;
     var _whenReadyCbs = [], _bootTimer = null, _lastError = '', _lastSavedAt = null, _dbFromFile = false;
-    var _persisting = false, _persistAgain = false, _persistP = null;   /* §13.2 persist mutex — serialize whole-file FS writes so concurrent flushes never race on the temp files */
+    var _persisting = false, _persistAgain = false, _persistP = null;
+    var _persistPerf = [], _persistCounter = 0;   /* §13.2 persist mutex — serialize whole-file FS writes so concurrent flushes never race on the temp files */
     var dirtyKeys = new Set();          /* §13.4 retry set — failed kv writes stay here for retry */
     var _seq = 0;                       /* §13.1 monotonic WAL sequence — makes clear race-free */
     var DB_FILE = 'bcc.sqlite';
     var WAL_KEY = 'saagar_storage_wal';   /* §13.1 synchronous native-LS journal */
     var MIGRATED_KEY = 'saagar_storage_migrated';  /* §13.3 one-way marker: DB is authoritative */
     var LOG_KEY = 'saagar_sqlite_log';
-    var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_sqlite_log': 1 };
+    var DAT02_KEY = 'saagar_dat02_acceptance_v1';
+    var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_sqlite_log': 1, 'saagar_dat02_acceptance_v1': 1 };
     var SAVE_DEBOUNCE = 6000;           /* whole-file export is heavy */
     var BOOT_TIMEOUT_MS = 6000;         /* §13.6 hard timeout — generous so a SLOW device loads the real DB
                                            before falling back (was 1800; the flag-ON audit found a slow-boot
@@ -75,7 +77,7 @@
        back in place (rollback recipe, no data movement). No marker key: readers
        trust file CONTENT only (SQLite magic vs SBCC1). W2-S1 ships the reader
        INERT (flag false, no writer exists yet — no ciphertext can exist). */
-    var STORAGE_ENCRYPT_ENABLED = true;    /* W2-S3: FLIPPED true 2026-07-18 — DT2 device matrix passed on both devices; owner signed OD-1/OD-8/OD-K2..K5 (OD-K1 minSdk kept at 22 → API<23 fails open to plaintext, honest in Diagnostics). Rollback = set false (DT2-7 proved flag-off reads existing ciphertext then rewrites plaintext, no data loss). */
+    var STORAGE_ENCRYPT_ENABLED = true;    /* W2-S3: FLIPPED true 2026-07-18 — DT2 device matrix passed on both devices; owner signed OD-1/OD-8/OD-K2..K5 (API-22 exception retired in build 2.9: production minSdk is 23 and all supported devices have Android Keystore). Rollback = set false (DT2-7 proved flag-off reads existing ciphertext then rewrites plaintext, no data loss). */
     try { if (typeof window !== 'undefined' && window.__FORCE_STORAGE_ENCRYPT === true) STORAGE_ENCRYPT_ENABLED = true; } catch (e) {}
     var DEK_FILE = 'bcc.dek';   /* R0-W2 W2-S2a: Keystore-WRAPPED DEK (SKW1 blob), NOT raw key material. (Legacy raw 'bcc.key' was never created in production — S1 shipped inert — so any stray test-APK copy is simply ignored.) */
     var ENV_MAGIC = [0x53, 0x42, 0x43, 0x43, 0x31];   /* "SBCC1" */
@@ -274,6 +276,11 @@
        Order: promote CURRENT good live → .bak (atomic via .bak.tmp+rename) FIRST,
        THEN write new live (.tmp+rename). At any kill point either (live old, bak
        old/older) or (live new, bak = previous good) — never two bad files. */
+    function perfNow() { try { return performance.now(); } catch (e) { return Date.now(); } }
+    function recordPersistPerf(id, ok, exportMs, totalMs) {
+      _persistPerf.push({ id: id, at: new Date().toISOString(), ok: ok === true, exportMs: Math.max(0, exportMs || 0), totalMs: Math.max(0, totalMs || 0) });
+      if (_persistPerf.length > 40) _persistPerf = _persistPerf.slice(-40);
+    }
     function scheduleSave() { if (_resetting || _bulk) return; clearTimeout(_saveTimer); _saveTimer = setTimeout(function () { flush(); }, SAVE_DEBOUNCE); }
     function persist() {
       if (_resetting || !_ready || !db || !FSplugin()) return Promise.resolve(false);
@@ -283,9 +290,9 @@
       if (_persisting) { if (_dirty || dirtyKeys.size) _persistAgain = true; return _persistP; }
       if (!_dirty && !dirtyKeys.size) return Promise.resolve(true);
       _persisting = true;
-      var FS = FSplugin(), dir = dataDir(), through, raw;
-      try { through = _seq; raw = db.export(); }                                          /* seq+snapshot stay SYNCHRONOUS before ANY await — clearWALThrough(through) invariant (§13.1/§13.2) depends on it; raw is a detached copy, so the deferred encrypt over it stays consistent with `through` */
-      catch (e) { _persisting = false; _lastError = (e && e.message) || 'export'; return Promise.resolve(false); }
+      var FS = FSplugin(), dir = dataDir(), through, raw, persistStarted = perfNow(), exportStarted = perfNow(), exportMs = 0, perfId = ++_persistCounter;
+      try { through = _seq; raw = db.export(); exportMs = perfNow() - exportStarted; }                                          /* seq+snapshot stay SYNCHRONOUS before ANY await — clearWALThrough(through) invariant (§13.1/§13.2) depends on it; raw is a detached copy, so the deferred encrypt over it stays consistent with `through` */
+      catch (e) { _persisting = false; _lastError = (e && e.message) || 'export'; recordPersistPerf(perfId, false, perfNow() - exportStarted, perfNow() - persistStarted); return Promise.resolve(false); }
       _persistP = FS.copy({ from: DB_FILE, to: DB_FILE + '.bak.tmp', directory: dir })   /* 1) promote current good live → .bak (atomic) */
         .then(function () { return FS.rename({ from: DB_FILE + '.bak.tmp', to: DB_FILE + '.bak', directory: dir }); })
         .catch(function () { return null; })                                              /* no live yet (first persist) → skip; .bak lags live by one */
@@ -295,6 +302,7 @@
         .then(function () { var remaining = clearWALThrough(through); _dirty = (remaining > 0) || dirtyKeys.size > 0; _lastSavedAt = new Date().toISOString(); return true; },
               function (e) { _lastError = (e && e.message) || 'persist'; log('persist failed: ' + _lastError + ' — WAL kept'); return false; })
         .then(function (r) {                                                              /* release mutex; re-run once if a write landed during the in-flight persist */
+          recordPersistPerf(perfId, r === true, exportMs, perfNow() - persistStarted);
           _persisting = false;
           if (_persistAgain) { _persistAgain = false; return persist(); }
           if (_dirty || dirtyKeys.size) scheduleSave();
@@ -306,6 +314,48 @@
       if (_bulk) return Promise.resolve(false);   /* §bulk: suspend all persistence until endBulk does the single durable write */
       if (db && dirtyKeys.size) { dirtyKeys.forEach(function (k) { try { var v = MEM.get(k); if (v !== undefined) { db.run('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v', [k, v]); } else { db.run('DELETE FROM kv WHERE k=?', [k]); } dirtyKeys.delete(k); } catch (e) { log('retry failed ' + k + ': ' + (e && e.message)); } }); }
       return persist();
+    }
+
+    function readPersistenceAcceptance() {
+      try {
+        var raw = nGet.call(ls, DAT02_KEY);
+        if (!raw) return null;
+        var value = JSON.parse(raw);
+        return value && value.contract === 'DAT-02-v1' ? value : { damaged: true };
+      } catch (e) { return { damaged: true }; }
+    }
+    function runPersistenceAcceptance() {
+      var contract = window.SaagarPersistenceAcceptance;
+      if (!_ready || !db || !FSplugin()) return Promise.reject(new Error('SQLite persistence is not ready on this device.'));
+      if (!contract || typeof contract.evaluate !== 'function' || typeof window.requestAnimationFrame !== 'function') return Promise.reject(new Error('DAT-02 measurement service is unavailable.'));
+      var samples = [];
+      function oneSample() {
+        return new Promise(function (resolve) {
+          window.requestAnimationFrame(function (frameStart) {
+            var beforeId = _persistCounter, totalStart = perfNow();
+            _dirty = true;
+            var save = flush();
+            window.requestAnimationFrame(function (frameEnd) {
+              Promise.resolve(save).then(function (ok) {
+                var perf = null;
+                for (var i = 0; i < _persistPerf.length; i++) if (_persistPerf[i].id > beforeId) { perf = _persistPerf[i]; break; }
+                resolve({ ok: ok === true && !!perf && perf.ok === true, exportMs: perf ? perf.exportMs : Infinity, frameGapMs: Math.max(0, frameEnd - frameStart), totalMs: Math.max(0, perfNow() - totalStart) });
+              }, function () { resolve({ ok: false, exportMs: Infinity, frameGapMs: Math.max(0, frameEnd - frameStart), totalMs: Math.max(0, perfNow() - totalStart) }); });
+            });
+          });
+        });
+      }
+      var chain = Promise.resolve(_persistP).catch(function () {});
+      for (var n = 0; n < contract.THRESHOLDS.samples; n++) chain = chain.then(oneSample).then(function (sample) { samples.push(sample); });
+      return chain.then(function () {
+        var result = contract.evaluate(samples);
+        try {
+          nSet.call(ls, DAT02_KEY, JSON.stringify(result));
+          if (nGet.call(ls, DAT02_KEY) !== JSON.stringify(result)) throw new Error('verification mismatch');
+        } catch (e) { throw new Error('DAT-02 result could not be saved.'); }
+        log('DAT-02 ' + (result.accepted ? 'accepted' : 'rejected') + ': export p95=' + result.metrics.exportP95Ms + 'ms, frame p95=' + result.metrics.frameGapP95Ms + 'ms, total p95=' + result.metrics.totalP95Ms + 'ms');
+        return result;
+      });
     }
 
     /* ── §13.8 _notify — synthetic StorageEvent for PARENT-window listeners only ──
@@ -506,6 +556,8 @@
       ready: function () { return _ready; },
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
       flush: function () { _dirty = true; return flush(); },
+      runPersistenceAcceptance: runPersistenceAcceptance,
+      persistenceAcceptance: readPersistenceAcceptance,
       /* ── R0-W3-S3 primitive: whole-blob seal/unseal over the SAME DEK/SBCC1 envelope as the DB.
          INERT until R0-W3-S3 wires callers (auto-backup seal-on-write + restore sniff). Flag-gated via
          encryptForPersist: on a flag-off build seal returns PLAINTEXT bytes (correct — R0-W3-S3 seal-on-write
@@ -545,6 +597,7 @@
       _mem: function () { return MEM; },
       _status: function () { return { ready: _ready, dirty: _dirty, dirtyKeys: dirtyKeys.size, lastSavedAt: _lastSavedAt, lastError: _lastError, hasFS: !!FSplugin(), migrated: !!(function () { try { return nGet.call(ls, MIGRATED_KEY); } catch (e) { return 0; } })(), dbFromFile: _dbFromFile, rows: db ? Object.keys(kvAll()).length : 0, encState: _encState }; },
       _walLen: function () { return walRead().length; },
+      _performance: function () { return _persistPerf.slice(); },
       _coherent: function () { try { if (_ready) return true; var n = nLen.call(ls); var c = 0; for (var i = 0; i < n; i++) { var k = nKey.call(ls, i); if (INTERNAL[k]) continue; if (MEM.get(k) !== nGet.call(ls, k)) return false; c++; } return MEM.size === c; } catch (e) { return false; } }
     };
 

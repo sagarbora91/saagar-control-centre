@@ -67,6 +67,34 @@ test('manifest tampering fails authentication and control totals are determinist
   await assert.rejects(portable.open(changed, passphrase), { code: 'DECRYPT_FAILED' });
 });
 
+test('scheduled portable backup uses a random key recoverable only with the passphrase', async () => {
+  const recovery = await portable.createRecoveryProfile(passphrase, { iterations: 100000 });
+  assert.match(recovery.keyBase64, /^[A-Za-z0-9+/]+={0,2}$/);
+  assert.doesNotMatch(JSON.stringify(recovery.profile), /correct horse|battery staple/i);
+  const container = await portable.sealWithKey(payload, recovery.keyBase64, recovery.profile);
+  assert.equal(container.version, portable.VERSION);
+  assert.equal(container.keyMode, 'wrapped-random-key');
+  assert.doesNotMatch(JSON.stringify(container), /PLAINTEXT-CANARY|CANARY-QMS|proof\.png|saagar_demo/);
+  assert.deepEqual((await portable.open(container, passphrase)).payload, payload);
+});
+
+test('scheduled portable backup fails closed for wrong passphrase or changed recovery envelope', async () => {
+  const recovery = await portable.createRecoveryProfile(passphrase, { iterations: 100000 });
+  const container = await portable.sealWithKey(payload, recovery.keyBase64, recovery.profile);
+  await assert.rejects(portable.open(container, 'this passphrase is incorrect'), { code: 'DECRYPT_FAILED' });
+  const changed = structuredClone(container);
+  const i = Math.floor(changed.recovery.wrappedKey.length / 2);
+  changed.recovery.wrappedKey = changed.recovery.wrappedKey.slice(0, i) + (changed.recovery.wrappedKey[i] === 'A' ? 'B' : 'A') + changed.recovery.wrappedKey.slice(i + 1);
+  await assert.rejects(portable.open(changed, passphrase), { code: 'DECRYPT_FAILED' });
+});
+
+test('scheduled container cannot be sealed with a different random key', async () => {
+  const recovery = await portable.createRecoveryProfile(passphrase, { iterations: 100000 });
+  const other = await portable.createRecoveryProfile('another correct recovery phrase', { iterations: 100000 });
+  const container = await portable.sealWithKey(payload, other.keyBase64, recovery.profile);
+  await assert.rejects(portable.open(container, passphrase), { code: 'DECRYPT_FAILED' });
+});
+
 test('restore coordinator verifies success', async () => {
   const state = { value: 'before' };
   const result = await restoreEngine.run({

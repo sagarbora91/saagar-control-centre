@@ -26,8 +26,11 @@ const PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarKeystorePlugin.java');
 const PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarKeystorePlugin.java');   /* filename MUST match the public class name (Java rule) */
 const SECURITY_PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarSecurityPlugin.java');
 const SECURITY_PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarSecurityPlugin.java');
+const OFFDEVICE_PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarOffDevicePlugin.java');
+const OFFDEVICE_PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarOffDevicePlugin.java');
 const MAIN_ACTIVITY = path.join(ANDROID_PKG_DIR, 'MainActivity.java');
 const BUILD_GRADLE = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
+const ANDROID_VARIABLES = path.join(__dirname, '..', 'android', 'variables.gradle');
 
 /* The exact MainActivity form that registers the in-app plugin (Capacitor 6: registerPlugin BEFORE super.onCreate). */
 const MAIN_ACTIVITY_REGISTERED =
@@ -41,6 +44,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(SaagarKeystorePlugin.class);
         registerPlugin(SaagarSecurityPlugin.class);
+        registerPlugin(SaagarOffDevicePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
@@ -65,11 +69,13 @@ function applyNativePlugins() {
   // (a) copy canonical plugin sources byte-for-byte over regenerated/stale copies
   stampPlugin(PLUGIN_SRC, PLUGIN_DST, 'SaagarKeystorePlugin.java');
   stampPlugin(SECURITY_PLUGIN_SRC, SECURITY_PLUGIN_DST, 'SaagarSecurityPlugin.java');
+  stampPlugin(OFFDEVICE_PLUGIN_SRC, OFFDEVICE_PLUGIN_DST, 'SaagarOffDevicePlugin.java');
   // (b) register the plugin in MainActivity — idempotent: only rewrite if not already the registered form
   if (fs.existsSync(MAIN_ACTIVITY)) {
     const cur = fs.readFileSync(MAIN_ACTIVITY, 'utf8');
     if (cur.indexOf('registerPlugin(SaagarKeystorePlugin.class)') === -1 ||
-        cur.indexOf('registerPlugin(SaagarSecurityPlugin.class)') === -1) {
+        cur.indexOf('registerPlugin(SaagarSecurityPlugin.class)') === -1 ||
+        cur.indexOf('registerPlugin(SaagarOffDevicePlugin.class)') === -1) {
       fs.writeFileSync(MAIN_ACTIVITY, MAIN_ACTIVITY_REGISTERED);
       console.log('[apply-overrides] patched MainActivity to register Saagar native plugins');
     } else {
@@ -90,8 +96,8 @@ function applyReleaseHardening() {
     process.exit(1);
   }
   let gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
-  gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 208');
-  gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "2.8"');
+  gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 209');
+  gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "2.9"');
 
   if (gradle.indexOf('SAAGAR_RELEASE_SIGNING_BEGIN') === -1) {
     const signing = `
@@ -131,7 +137,18 @@ function applyReleaseHardening() {
     );
   }
   fs.writeFileSync(BUILD_GRADLE, gradle);
-  console.log('[apply-overrides] enforced versionCode 208, versionName 2.8 and fail-closed release signing');
+  if (!fs.existsSync(ANDROID_VARIABLES)) {
+    console.error('[apply-overrides] FATAL: variables.gradle missing — minSdk 23 cannot be enforced:', ANDROID_VARIABLES);
+    process.exit(1);
+  }
+  let variables = fs.readFileSync(ANDROID_VARIABLES, 'utf8');
+  if (!/minSdkVersion\s*=\s*\d+/.test(variables)) {
+    console.error('[apply-overrides] FATAL: minSdkVersion missing from variables.gradle');
+    process.exit(1);
+  }
+  variables = variables.replace(/minSdkVersion\s*=\s*\d+/, 'minSdkVersion = 23');
+  fs.writeFileSync(ANDROID_VARIABLES, variables);
+  console.log('[apply-overrides] enforced versionCode 209, versionName 2.9, minSdk 23 and fail-closed release signing');
 }
 
 function main() {

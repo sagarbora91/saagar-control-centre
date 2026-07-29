@@ -443,17 +443,27 @@
       });
   }
 
-  function runBackup(force) {
-    var FS = getFS();
-    if (!FS) return runBackupInner(force).then(function (result) { notifyStatus(); return result; });
-    return hardenExistingSnapshots(FS).then(function (migration) {
-      if (migration && migration.fallback) {
-        console.warn('[auto-backup] Existing plaintext snapshot hardening is pending; durability is preserved.');
+  function finishRun(result, force) {
+    notifyStatus();
+    try {
+      if (window.SaagarOffDeviceBackup && typeof window.SaagarOffDeviceBackup.run === 'function') {
+        return window.SaagarOffDeviceBackup.run(!!force).catch(function (err) {
+          console.warn('[auto-backup] Off-device delivery pending:', err && err.message || err);
+          return null;
+        }).then(function () { notifyStatus(); return result; });
       }
-      return runBackupInner(force);
-    }).then(function (result) { notifyStatus(); return result; });
+    } catch (err) { console.warn('[auto-backup] Off-device scheduler unavailable:', err); }
+    return Promise.resolve(result);
   }
 
+  function runBackup(force) {
+    var FS = getFS();
+    if (!FS) return runBackupInner(force).then(function (result) { return finishRun(result, force); });
+    return hardenExistingSnapshots(FS).then(function (migration) {
+      if (migration && migration.fallback) console.warn('[auto-backup] Existing plaintext snapshot hardening is pending; durability is preserved.');
+      return runBackupInner(force);
+    }).then(function (result) { return finishRun(result, force); });
+  }
   /* Public manual trigger — can be called from the app or dev console:
        window.SaagarBackup.now()           → force a backup right now
        window.SaagarBackup.status()        → last backup date + recent log   */

@@ -10,6 +10,9 @@ const index = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
 const autoBackup = fs.readFileSync(path.join(root, 'www/auto-backup.js'), 'utf8');
 const overrides = fs.readFileSync(path.join(root, 'build-overrides/apply-overrides.js'), 'utf8');
 const nativeSecurity = fs.readFileSync(path.join(root, 'build-overrides/native/SaagarSecurityPlugin.java'), 'utf8');
+const nativeOffDevice = fs.readFileSync(path.join(root, 'build-overrides/native/SaagarOffDevicePlugin.java'), 'utf8');
+const offDevice = fs.readFileSync(path.join(root, 'www/offdevice-backup.js'), 'utf8');
+const storageCore = fs.readFileSync(path.join(root, 'www/storage-core.js'), 'utf8');
 
 test('all inline shell scripts parse and the clean source seed stays disabled', () => {
   const withoutHtmlComments = index.replace(/<!--[\s\S]*?-->/g, '');
@@ -75,7 +78,37 @@ test('SEC-09/10/11/12/13 release controls are permanent source gates', () => {
   assert.match(nativeSecurity, /FLAG_DEBUGGABLE/);
   assert.match(nativeSecurity, /rootArtifact/);
   assert.match(overrides, /SAAGAR_KEYSTORE_FILE/);
-  assert.match(overrides, /versionCode 208/);
+  assert.match(overrides, /versionCode 209/);
   assert.match(overrides, /buildTypes\\s\*\\\{[\s\S]*signingConfig/);
   assert.match(overrides, /SaagarSecurityPlugin/);
+  assert.match(overrides, /ANDROID_VARIABLES/);
+  assert.match(overrides, /SaagarOffDevicePlugin/);
+  assert.match(nativeSecurity, /Build\.VERSION\.SDK_INT >= Build\.VERSION_CODES\.M/);
+});
+test('BKP-03 automatic delivery is provider-bound, encrypted, verified, and GFS-pruned', () => {
+  const appKeys = index.match(/function appControlKeys\(\)\{[\s\S]*?\}/)?.[0] || '';
+  assert.doesNotMatch(appKeys, /st_v2_offdevice_backup_config_v1|st_v2_export_schedule_v1/);
+  assert.match(offDevice, /SaagarPortableBackup\.sealWithKey/);
+  assert.match(offDevice, /SaagarKeystore/);
+  assert.match(offDevice, /authorizeScheduled/);
+  assert.match(offDevice, /copied\.verified !== true/);
+  assert.match(nativeOffDevice, /ACTION_OPEN_DOCUMENT_TREE/);
+  assert.match(nativeOffDevice, /takePersistableUriPermission/);
+  assert.match(nativeOffDevice, /com\.android\.externalstorage\.documents/);
+  assert.match(nativeOffDevice, /readback-hash-mismatch/);
+  assert.match(nativeOffDevice, /prune\(folder, "backup-/);
+  assert.match(nativeOffDevice, /prune\(folder, "week-/);
+  assert.match(nativeOffDevice, /prune\(folder, "month-/);
+  assert.ok(index.indexOf('<script src="offdevice-backup.js"></script>') < index.indexOf('<script src="auto-backup.js"></script>'));
+});
+
+test('DAT-02 real-device gate and API-23 production floor are permanent', () => {
+  assert.ok(index.indexOf('<script src="persistence-acceptance.js"></script>') < index.indexOf('<script src="storage-core.js"></script>'));
+  assert.match(storageCore, /runPersistenceAcceptance/);
+  assert.match(storageCore, /requestAnimationFrame/);
+  assert.match(storageCore, /exportMs/);
+  assert.match(storageCore, /saagar_dat02_acceptance_v1/);
+  assert.match(overrides, /minSdkVersion = 23/);
+  assert.match(index, /const APP_BUILD_SEQUENCE = 209/);
+  assert.match(index, /const APK_BUILD = "2\.9"/);
 });

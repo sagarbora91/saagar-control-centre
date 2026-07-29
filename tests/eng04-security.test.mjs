@@ -118,3 +118,29 @@ test('SEC-12 unsafe production-device posture blocks export before owner prompti
   assert.equal(h.reauthCalls(), 0);
   assert.equal(h.readRegister()[0].reason, 'device-posture-unsafe');
 });
+test('BKP-03 standing owner grant authorizes only the bound destination without daily prompting', () => {
+  const h = loadExportControl({ seed: { [POLICY]: enabledPolicy } });
+  const scheduled = request({ exportId: 'backup-auto-daily', kind: 'sccbak', scopeId: 'full-portable-backup', destinationId: 'aabbcc001122' });
+  const grant = h.api.approveScheduled(scheduled);
+  assert.equal(grant.destinationId, 'aabbcc001122');
+  assert.equal(h.reauthCalls(), 1);
+
+  const first = h.api.authorizeScheduled(scheduled);
+  const second = h.api.authorizeScheduled(scheduled);
+  assert.match(first, /^exp_/);
+  assert.match(second, /^exp_/);
+  assert.equal(h.reauthCalls(), 1);
+  assert.equal(h.readRegister()[0].approvalMode, 'standing-owner-grant');
+  assert.equal(h.readRegister()[1].approvalMode, 'standing-owner-grant');
+});
+
+test('BKP-03 standing grant fails closed for a changed destination or disabled export policy', () => {
+  const h = loadExportControl({ seed: { [POLICY]: enabledPolicy } });
+  const scheduled = request({ scopeId: 'full-portable-backup', destinationId: 'approved-destination' });
+  assert.ok(h.api.approveScheduled(scheduled));
+  assert.equal(h.api.authorizeScheduled({ ...scheduled, destinationId: 'other-destination' }), false);
+  assert.equal(h.readRegister()[0].reason, 'schedule-destination-mismatch');
+  assert.equal(h.api.setEnabled(false), true);
+  assert.equal(h.api.authorizeScheduled(scheduled), false);
+  assert.equal(h.readRegister()[0].reason, 'policy-disabled');
+});
