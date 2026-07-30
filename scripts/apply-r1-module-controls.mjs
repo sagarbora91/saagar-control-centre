@@ -25,6 +25,14 @@ function replaceOnce(source, before, after, label) {
 function patchFile(name, transforms) {
   const file = path.join(decodedDir, `${name}.html`);
   let source = fs.readFileSync(file, 'utf8');
+  if (name === 'qms' && source.includes('D2-QMS-2026-07-30')) {
+    process.stdout.write('R1 controls already carried by D2 QMS; no duplicate patch applied\n');
+    return;
+  }
+  if (name === 'service' && source.includes('D3-SERVICE-RUNTIME-2026-07-30')) {
+    process.stdout.write('R1 controls already carried by D3 Service; no duplicate patch applied\n');
+    return;
+  }
   for (const transform of transforms) {
     source = replaceOnce(source, transform.before, transform.after, `${name}/${transform.label}`);
   }

@@ -28,6 +28,8 @@ const SECURITY_PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarSecurityPlugin
 const SECURITY_PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarSecurityPlugin.java');
 const OFFDEVICE_PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarOffDevicePlugin.java');
 const OFFDEVICE_PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarOffDevicePlugin.java');
+const NATIVE_STORE_PLUGIN_SRC = path.join(__dirname, 'native', 'SaagarNativeStorePlugin.java');
+const NATIVE_STORE_PLUGIN_DST = path.join(ANDROID_PKG_DIR, 'SaagarNativeStorePlugin.java');
 const MAIN_ACTIVITY = path.join(ANDROID_PKG_DIR, 'MainActivity.java');
 const BUILD_GRADLE = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
 const ANDROID_VARIABLES = path.join(__dirname, '..', 'android', 'variables.gradle');
@@ -45,6 +47,7 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(SaagarKeystorePlugin.class);
         registerPlugin(SaagarSecurityPlugin.class);
         registerPlugin(SaagarOffDevicePlugin.class);
+        registerPlugin(SaagarNativeStorePlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
@@ -70,12 +73,14 @@ function applyNativePlugins() {
   stampPlugin(PLUGIN_SRC, PLUGIN_DST, 'SaagarKeystorePlugin.java');
   stampPlugin(SECURITY_PLUGIN_SRC, SECURITY_PLUGIN_DST, 'SaagarSecurityPlugin.java');
   stampPlugin(OFFDEVICE_PLUGIN_SRC, OFFDEVICE_PLUGIN_DST, 'SaagarOffDevicePlugin.java');
+  stampPlugin(NATIVE_STORE_PLUGIN_SRC, NATIVE_STORE_PLUGIN_DST, 'SaagarNativeStorePlugin.java');
   // (b) register the plugin in MainActivity — idempotent: only rewrite if not already the registered form
   if (fs.existsSync(MAIN_ACTIVITY)) {
     const cur = fs.readFileSync(MAIN_ACTIVITY, 'utf8');
     if (cur.indexOf('registerPlugin(SaagarKeystorePlugin.class)') === -1 ||
         cur.indexOf('registerPlugin(SaagarSecurityPlugin.class)') === -1 ||
-        cur.indexOf('registerPlugin(SaagarOffDevicePlugin.class)') === -1) {
+        cur.indexOf('registerPlugin(SaagarOffDevicePlugin.class)') === -1 ||
+        cur.indexOf('registerPlugin(SaagarNativeStorePlugin.class)') === -1) {
       fs.writeFileSync(MAIN_ACTIVITY, MAIN_ACTIVITY_REGISTERED);
       console.log('[apply-overrides] patched MainActivity to register Saagar native plugins');
     } else {
