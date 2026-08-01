@@ -1,9 +1,9 @@
 # SAAGAR Android - Phase 0 closure status and evidence pack
 
-**Prepared:** 2026-08-02 (Asia/Calcutta)  
-**Branch:** `agent/storage-recovery-p0`  
-**HEAD:** `4177701f8fe4cab46de1ff2e7597ccb52e0cda5a`  
-**Tree:** intentionally dirty; no acceptance commit exists  
+**Prepared:** 2026-08-02 (Asia/Calcutta)
+**Branch:** `agent/storage-recovery-p0`
+**Engineering commit:** `d485fba`
+**Tree:** provisional E1 and user-owned files remain intentionally untracked
 **Formal Phase 0 status:** **OPEN - repository engineering ready; physical and operational acceptance pending**
 
 ## 1. Repository engineering completed

@@ -1,9 +1,10 @@
 # SAAGAR Android - Phase 0 engineering publish handoff
 
-**Prepared:** 2026-08-02 (Asia/Calcutta)  
-**Branch:** `agent/storage-recovery-p0`  
-**Parent before publish:** `4177701f8fe4cab46de1ff2e7597ccb52e0cda5a`  
-**Scope:** completed Phase 0 repository engineering only  
+**Prepared:** 2026-08-02 (Asia/Calcutta)
+**Branch:** `agent/storage-recovery-p0`
+**Parent before publish:** `4177701f8fe4cab46de1ff2e7597ccb52e0cda5a`
+**Engineering commit:** `d485fba` (`Complete Phase 0 storage and access hardening`)
+**Scope:** completed Phase 0 repository engineering only
 **Formal Phase 0 acceptance:** **PENDING**
 
 ## Published engineering scope
