@@ -19,15 +19,20 @@ function memoryStorage(initial = {}) {
   };
 }
 
-function backupContext(filesystem, initialStorage = {}) {
+function backupContext(filesystem, initialStorage = {}, now = '2026-08-02T00:15:00.000Z') {
   const localStorage = memoryStorage(initialStorage);
+  const NativeDate = Date;
+  class FixedDate extends NativeDate {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return new NativeDate(now).getTime(); }
+  }
   const context = {
     localStorage,
     document: { readyState: 'loading', addEventListener() {} },
     TextEncoder,
     TextDecoder,
     Uint8Array,
-    Date,
+    Date: FixedDate,
     Math,
     JSON,
     Promise,
@@ -84,7 +89,7 @@ test('ENG-02 full-disk backup failure keeps business data and never marks succes
   assert.equal(status.recent[0].ok, false);
   assert.deepEqual(
     writes,
-    ['SaagarBCC-Backups/backup-' + new Date().toISOString().slice(0, 10) + '.json']
+    ['SaagarBCC-Backups/backup-2026-08-02.json']
   );
 });
 

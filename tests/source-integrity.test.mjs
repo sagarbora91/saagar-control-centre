@@ -78,7 +78,7 @@ test('SEC-09/10/11/12/13 release controls are permanent source gates', () => {
   assert.match(nativeSecurity, /FLAG_DEBUGGABLE/);
   assert.match(nativeSecurity, /rootArtifact/);
   assert.match(overrides, /SAAGAR_KEYSTORE_FILE/);
-  assert.match(overrides, /versionCode 209/);
+  assert.match(overrides, /BUILD_IDENTITY\.versionCode/);
   assert.match(overrides, /buildTypes\\s\*\\\{[\s\S]*signingConfig/);
   assert.match(overrides, /SaagarSecurityPlugin/);
   assert.match(overrides, /ANDROID_VARIABLES/);
@@ -104,11 +104,13 @@ test('BKP-03 automatic delivery is provider-bound, encrypted, verified, and GFS-
 
 test('DAT-02 real-device gate and API-23 production floor are permanent', () => {
   assert.ok(index.indexOf('<script src="persistence-acceptance.js"></script>') < index.indexOf('<script src="storage-core.js"></script>'));
+  assert.ok(index.indexOf('<script src="storage-recovery-policy.js"></script>') < index.indexOf('<script src="storage-core.js"></script>'));
+  assert.match(index, /__nativeAuthority\?null:localStorage\.getItem\('saagar_ui_mode'\)/);
   assert.match(storageCore, /runPersistenceAcceptance/);
   assert.match(storageCore, /requestAnimationFrame/);
   assert.match(storageCore, /exportMs/);
   assert.match(storageCore, /saagar_dat02_acceptance_v1/);
-  assert.match(overrides, /minSdkVersion = 23/);
-  assert.match(index, /const APP_BUILD_SEQUENCE = 209/);
-  assert.match(index, /const APK_BUILD = "2\.9"/);
+  assert.match(overrides, /BUILD_IDENTITY\.minSdk/);
+  assert.match(index, /const APP_BUILD_SEQUENCE = window\.SaagarBuildIdentity\.versionCode/);
+  assert.match(index, /const APK_BUILD = window\.SaagarBuildIdentity\.versionName/);
 });

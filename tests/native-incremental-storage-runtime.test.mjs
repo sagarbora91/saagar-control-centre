@@ -62,8 +62,10 @@ test('runtime flush writes only changed records in bounded native batches', asyn
       return { cleared: true };
     }
   };
+  const testDekB64 = Buffer.alloc(32, 7).toString('base64');
   const filesystem = {
-    async readFile() {
+    async readFile(request) {
+      if (request.path === 'bcc.dek') return { data: 'test-wrapped-key' };
       throw new Error('not found');
     },
     async writeFile() {},
@@ -72,6 +74,9 @@ test('runtime flush writes only changed records in bounded native batches', asyn
     async deleteFile() {}
   };
   const keystore = {
+    async unwrapKey() {
+      return { data: testDekB64 };
+    },
     async wrapKey() {
       return { wrapped: 'test-wrapped-key', backing: 'test' };
     }

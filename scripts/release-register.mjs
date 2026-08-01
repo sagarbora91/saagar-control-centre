@@ -2,6 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const BUILD_IDENTITY = require('../www/build-identity.js');
 
 const apkArg = process.argv[2];
 if (!apkArg) {
@@ -46,10 +50,10 @@ const register = {
   format: 'saagar-android-release-register',
   version: 1,
   createdAt: new Date().toISOString(),
-  packageId: 'com.saagartraders.bcc',
-  appVersion: 'V5.5',
-  apkBuild: '2.7',
-  versionCode: 207,
+  packageId: BUILD_IDENTITY.packageId,
+  appVersion: BUILD_IDENTITY.appVersion,
+  apkBuild: BUILD_IDENTITY.versionName,
+  versionCode: BUILD_IDENTITY.versionCode,
   fileName: path.basename(apk),
   bytes: bytes.length,
   sha256: crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase(),

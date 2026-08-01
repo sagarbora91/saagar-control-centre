@@ -19,6 +19,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const BUILD_IDENTITY = require('../www/build-identity.js');
 
 const ANDROID_PKG_DIR = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'java', 'com', 'saagartraders', 'bcc');
 const MANIFEST = path.join(__dirname, '..', 'android', 'app', 'src', 'main', 'AndroidManifest.xml');
@@ -101,8 +102,8 @@ function applyReleaseHardening() {
     process.exit(1);
   }
   let gradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
-  gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode 209');
-  gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "2.9"');
+  gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode ' + BUILD_IDENTITY.versionCode);
+  gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "' + BUILD_IDENTITY.versionName + '"');
 
   if (gradle.indexOf('SAAGAR_RELEASE_SIGNING_BEGIN') === -1) {
     const signing = `
@@ -151,9 +152,9 @@ function applyReleaseHardening() {
     console.error('[apply-overrides] FATAL: minSdkVersion missing from variables.gradle');
     process.exit(1);
   }
-  variables = variables.replace(/minSdkVersion\s*=\s*\d+/, 'minSdkVersion = 23');
+  variables = variables.replace(/minSdkVersion\s*=\s*\d+/, 'minSdkVersion = ' + BUILD_IDENTITY.minSdk);
   fs.writeFileSync(ANDROID_VARIABLES, variables);
-  console.log('[apply-overrides] enforced versionCode 209, versionName 2.9, minSdk 23 and fail-closed release signing');
+  console.log('[apply-overrides] enforced versionCode ' + BUILD_IDENTITY.versionCode + ', versionName ' + BUILD_IDENTITY.versionName + ', minSdk ' + BUILD_IDENTITY.minSdk + ' and fail-closed release signing');
 }
 
 function main() {

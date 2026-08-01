@@ -122,3 +122,17 @@ gates therefore remain pending.
 
 The owner approved committing and pushing the reviewed Android changes. No
 PHP/platform work was started.
+## Subsequent secure-storage recovery hardening
+
+A later owner review displayed the fail-closed recovery screen. P0 engineering
+now quarantines native-authoritative data synchronously, contains native plugin
+open/transaction failures, reports stable safe reason codes, converts hung
+native calls to `STORE_TIMEOUT`, and provides hard-reload Retry plus sanitized
+diagnostics copy. Local evidence is 17/17 focused tests, 170/170 permanent
+offline tests, and a successful Android debug build.
+
+This is not physical-device acceptance and does not mark a recovery drill,
+DAT-02, or release gate passed. Universal restore from an unopenable/corrupt
+store or unavailable key is still pending a separate atomic recovery design.
+The controlled continuation handoff is
+`verification/STORAGE-RECOVERY-P0-HANDOFF-2026-07-30.md`.

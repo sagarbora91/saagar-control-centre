@@ -3,8 +3,15 @@ package com.saagartraders.bcc;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteDiskIOException;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteFullException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteReadOnlyDatabaseException;
+import android.os.StatFs;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -16,18 +23,20 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 /*
  * Incremental durable store for the synchronous JavaScript localStorage facade.
  *
- * The native database never receives plaintext business keys or values:
+ * The native db never receives plaintext business keys or values:
  * JavaScript sends a SHA-256 key id and a per-record AES-GCM envelope. Writes
  * are bounded and transactional, so changing one app key never exports or
- * rewrites the full multi-year database.
+ * rewrites the full multi-year db.
  */
 @CapacitorPlugin(name = "SaagarNativeStore")
 public class SaagarNativeStorePlugin extends Plugin {
+    private static final int CONTRACT_VERSION = 1;
     private static final int MAX_BATCH_OPS = 64;
     private static final int MAX_BATCH_BYTES = 16 * 1024 * 1024;
     private static final int DEFAULT_PAGE_ROWS = 32;
@@ -44,202 +53,291 @@ public class SaagarNativeStorePlugin extends Plugin {
 
     @PluginMethod
     public void status(PluginCall call) {
+        JSObject out = null;
+        Throwable failure = null;
         try {
             SQLiteDatabase db = db();
-            JSObject out = new JSObject();
+            String integrity = quickCheck(db);
+            out = new JSObject();
+            out.put("contractVersion", CONTRACT_VERSION);
             out.put("available", true);
             out.put("schemaVersion", db.getVersion());
             out.put("rows", rowCount(db));
+            out.put("stagedRows", rowCount(db, "kv_stage"));
             out.put("migrated", "1".equals(meta(db, "migrated")));
-            out.put("integrity", quickCheck(db));
-            call.resolve(out);
+            out.put("integrity", "ok".equalsIgnoreCase(integrity) ? "ok" : "failed");
+            out.put("storage", storageSnapshot());
         } catch (Throwable t) {
-            call.reject("Native store status failed: " + safeMessage(t), "E_NATIVE_STATUS");
+            failure = t;
         }
+        if (failure != null) {
+            rejectNative(call, "status", failure);
+            return;
+        }
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void storageInfo(PluginCall call) {
+        call.resolve(storageSnapshot());
     }
 
     @PluginMethod
     public void beginMigration(PluginCall call) {
-        SQLiteDatabase db = db();
-        db.beginTransaction();
+        SQLiteDatabase db = null;
+        boolean transactionStarted = false;
+        JSObject out = null;
+        Throwable failure = null;
         try {
+            db = db();
+            db.beginTransaction();
+            transactionStarted = true;
             db.delete("kv_stage", null, null);
             putMeta(db, "expected_rows", "");
             db.setTransactionSuccessful();
-            JSObject out = new JSObject();
+            out = new JSObject();
             out.put("ready", true);
-            call.resolve(out);
         } catch (Throwable t) {
-            call.reject("Native migration could not start: " + safeMessage(t), "E_NATIVE_MIGRATION");
+            failure = t;
         } finally {
-            db.endTransaction();
+            failure = finishTransaction(db, transactionStarted, failure);
         }
+        if (failure != null) {
+            rejectNative(call, "beginMigration", failure);
+            return;
+        }
+        call.resolve(out);
     }
 
     @PluginMethod
     public void finishMigration(PluginCall call) {
-        int expected = call.getInt("expectedRows", -1);
-        if (expected < 0) {
-            call.reject("Invalid expected row count", "E_ARGS");
+        Integer expectedValue = call.getInt("expectedRows");
+        if (expectedValue == null || expectedValue < 0) {
+            rejectArgument(call, "finishMigration");
             return;
         }
-        SQLiteDatabase db = db();
-        db.beginTransaction();
+        final int expected = expectedValue;
+        SQLiteDatabase db = null;
+        boolean transactionStarted = false;
+        JSObject out = null;
+        Throwable failure = null;
         try {
+            db = db();
+            db.beginTransaction();
+            transactionStarted = true;
             long actual = rowCount(db, "kv_stage");
             if (actual != expected) {
-                throw new IllegalStateException("row-count-mismatch:" + actual + "/" + expected);
+                throw new NativeStoreFailure("ROW_COUNT_MISMATCH", true);
             }
-            if (!"ok".equals(quickCheck(db))) {
-                throw new IllegalStateException("integrity-check-failed");
+            if (!"ok".equalsIgnoreCase(quickCheck(db))) {
+                throw new NativeStoreFailure("INTEGRITY_FAILED", false);
             }
             db.delete("kv", null, null);
             db.execSQL("INSERT INTO kv(key_id,payload,updated_seq) SELECT key_id,payload,updated_seq FROM kv_stage");
-            if (rowCount(db) != expected) throw new IllegalStateException("publish-row-count-mismatch");
+            if (rowCount(db) != expected) {
+                throw new NativeStoreFailure("ROW_COUNT_MISMATCH", true);
+            }
             db.delete("kv_stage", null, null);
             putMeta(db, "expected_rows", String.valueOf(expected));
             putMeta(db, "migrated", "1");
             db.setTransactionSuccessful();
-            JSObject out = new JSObject();
+            out = new JSObject();
             out.put("migrated", true);
             out.put("rows", actual);
-            call.resolve(out);
         } catch (Throwable t) {
-            call.reject("Native migration verification failed: " + safeMessage(t), "E_NATIVE_VERIFY");
+            failure = t;
         } finally {
-            db.endTransaction();
+            failure = finishTransaction(db, transactionStarted, failure);
         }
+        if (failure != null) {
+            rejectNative(call, "finishMigration", failure);
+            return;
+        }
+        call.resolve(out);
     }
 
     @PluginMethod
     public void readPage(PluginCall call) {
-        String after = call.getString("afterKeyId", "");
-        int limit = clamp(call.getInt("limit", DEFAULT_PAGE_ROWS), 1, MAX_PAGE_ROWS);
-        int maxBytes = clamp(call.getInt("maxBytes", DEFAULT_PAGE_BYTES), 64 * 1024, MAX_PAGE_BYTES);
-        SQLiteDatabase db = db();
+        String after = call.getString("afterKeyId");
+        if (after == null) {
+            if (call.getData().has("afterKeyId")) {
+                rejectArgument(call, "readPage");
+                return;
+            }
+            after = "";
+        }
+        if (!after.isEmpty() && !after.matches("[a-f0-9]{64}")) {
+            rejectArgument(call, "readPage");
+            return;
+        }
+        Integer limitValue = call.getInt("limit");
+        if (limitValue == null && call.getData().has("limit")) {
+            rejectArgument(call, "readPage");
+            return;
+        }
+        Integer maxBytesValue = call.getInt("maxBytes");
+        if (maxBytesValue == null && call.getData().has("maxBytes")) {
+            rejectArgument(call, "readPage");
+            return;
+        }
+        int limit = limitValue == null ? DEFAULT_PAGE_ROWS : limitValue;
+        int maxBytes = maxBytesValue == null ? DEFAULT_PAGE_BYTES : maxBytesValue;
+        if (limit < 1 || limit > MAX_PAGE_ROWS || maxBytes < 64 * 1024 || maxBytes > MAX_PAGE_BYTES) {
+            rejectArgument(call, "readPage");
+            return;
+        }
+
         JSArray rows = new JSArray();
         String last = after;
         int used = 0;
         boolean hasMore = false;
+        JSObject out = null;
+        Throwable failure = null;
         String sql = "SELECT key_id,payload,updated_seq FROM kv WHERE key_id>? ORDER BY key_id LIMIT ?";
-        try (Cursor cursor = db.rawQuery(sql, new String[] { after, String.valueOf(limit + 1) })) {
-            while (cursor.moveToNext()) {
-                String id = cursor.getString(0);
-                String payload = cursor.getString(1);
-                int bytes = payload == null ? 0 : payload.getBytes(StandardCharsets.UTF_8).length;
-                if (rows.length() >= limit || (rows.length() > 0 && used + bytes > maxBytes)) {
-                    hasMore = true;
-                    break;
+        try {
+            SQLiteDatabase db = db();
+            try (Cursor cursor = db.rawQuery(sql, new String[] { after, String.valueOf(limit + 1) })) {
+                while (cursor.moveToNext()) {
+                    String id = cursor.getString(0);
+                    String payload = cursor.getString(1);
+                    int bytes = payload == null ? 0 : payload.getBytes(StandardCharsets.UTF_8).length;
+                    if (rows.length() >= limit || (rows.length() > 0 && used + bytes > maxBytes)) {
+                        hasMore = true;
+                        break;
+                    }
+                    JSObject row = new JSObject();
+                    row.put("keyId", id);
+                    row.put("payload", payload);
+                    row.put("seq", cursor.getLong(2));
+                    rows.put(row);
+                    last = id;
+                    used += bytes;
                 }
-                JSObject row = new JSObject();
-                row.put("keyId", id);
-                row.put("payload", payload);
-                row.put("seq", cursor.getLong(2));
-                rows.put(row);
-                last = id;
-                used += bytes;
+                if (!hasMore && cursor.moveToNext()) {
+                    hasMore = true;
+                }
             }
-            if (!hasMore && cursor.moveToNext()) hasMore = true;
+            out = new JSObject();
+            out.put("rows", rows);
+            out.put("afterKeyId", last);
+            out.put("done", !hasMore);
+            out.put("bytes", used);
         } catch (Throwable t) {
-            call.reject("Native page read failed: " + safeMessage(t), "E_NATIVE_READ");
+            failure = t;
+        }
+        if (failure != null) {
+            rejectNative(call, "readPage", failure);
             return;
         }
-        JSObject out = new JSObject();
-        out.put("rows", rows);
-        out.put("afterKeyId", last);
-        out.put("done", !hasMore);
-        out.put("bytes", used);
         call.resolve(out);
     }
 
     @PluginMethod
     public void applyBatch(PluginCall call) {
         JSArray input = call.getArray("ops");
-        boolean clear = call.getBoolean("clear", false);
-        boolean stage = call.getBoolean("stage", false);
+        if (input == null && call.getData().has("ops")) {
+            rejectArgument(call, "applyBatch");
+            return;
+        }
+        if (input == null) {
+            input = new JSArray();
+        }
+        Boolean clearValue = call.getBoolean("clear");
+        if (clearValue == null && call.getData().has("clear")) {
+            rejectArgument(call, "applyBatch");
+            return;
+        }
+        Boolean stageValue = call.getBoolean("stage");
+        if (stageValue == null && call.getData().has("stage")) {
+            rejectArgument(call, "applyBatch");
+            return;
+        }
+        boolean clear = clearValue != null && clearValue;
+        boolean stage = stageValue != null && stageValue;
         String table = stage ? "kv_stage" : "kv";
-        if (input == null) input = new JSArray();
         JSONArray ops = input;
-        if (ops.length() > MAX_BATCH_OPS) {
-            call.reject("Native batch exceeds " + MAX_BATCH_OPS + " operations", "E_BATCH_LIMIT");
-            return;
-        }
-        int bytes = 0;
         try {
-            for (int i = 0; i < ops.length(); i++) {
-                JSONObject op = ops.getJSONObject(i);
-                bytes += utf8Length(op.optString("keyId", ""));
-                bytes += utf8Length(op.optString("payload", ""));
-            }
+            validateBatch(ops);
         } catch (Throwable t) {
-            call.reject("Native batch is malformed", "E_ARGS");
-            return;
-        }
-        if (bytes > MAX_BATCH_BYTES) {
-            call.reject("Native batch exceeds byte limit", "E_BATCH_LIMIT");
+            rejectNative(call, "applyBatch", t);
             return;
         }
 
-        SQLiteDatabase db = db();
-        db.beginTransaction();
+        SQLiteDatabase db = null;
+        boolean transactionStarted = false;
         int changed = 0;
+        JSObject out = null;
+        Throwable failure = null;
         try {
-            if (clear) db.delete(table, null, null);
+            db = db();
+            db.beginTransaction();
+            transactionStarted = true;
+            if (clear) {
+                db.delete(table, null, null);
+            }
             for (int i = 0; i < ops.length(); i++) {
                 JSONObject op = ops.getJSONObject(i);
-                String type = op.optString("type", "");
-                String keyId = op.optString("keyId", "");
-                long seq = op.optLong("seq", 0);
-                if (!keyId.matches("[a-f0-9]{64}")) {
-                    throw new IllegalArgumentException("invalid-key-id");
-                }
+                String type = op.getString("type");
+                String keyId = op.getString("keyId");
+                long seq = ((Number) op.get("seq")).longValue();
                 if ("remove".equals(type)) {
                     changed += db.delete(table, "key_id=?", new String[] { keyId });
-                } else if ("set".equals(type)) {
-                    String payload = op.optString("payload", "");
-                    if (payload.isEmpty()) throw new IllegalArgumentException("empty-payload");
+                } else {
                     ContentValues values = new ContentValues();
                     values.put("key_id", keyId);
-                    values.put("payload", payload);
+                    values.put("payload", op.getString("payload"));
                     values.put("updated_seq", seq);
-                    db.insertWithOnConflict(table, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                    long rowId = db.insertWithOnConflict(table, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                    if (rowId == -1) {
+                        throw new NativeStoreFailure("DB_IO_FAILED", true);
+                    }
                     changed++;
-                } else {
-                    throw new IllegalArgumentException("invalid-operation");
                 }
             }
             db.setTransactionSuccessful();
-            JSObject out = new JSObject();
+            out = new JSObject();
             out.put("ok", true);
             out.put("changed", changed);
             out.put("rows", clear ? rowCount(db, table) : -1);
-            call.resolve(out);
         } catch (Throwable t) {
-            call.reject("Native batch failed: " + safeMessage(t), "E_NATIVE_WRITE");
+            failure = t;
         } finally {
-            db.endTransaction();
+            failure = finishTransaction(db, transactionStarted, failure);
         }
+        if (failure != null) {
+            rejectNative(call, "applyBatch", failure);
+            return;
+        }
+        call.resolve(out);
     }
 
     @PluginMethod
     public void reset(PluginCall call) {
-        SQLiteDatabase db = db();
-        db.beginTransaction();
+        SQLiteDatabase db = null;
+        boolean transactionStarted = false;
+        JSObject out = null;
+        Throwable failure = null;
         try {
+            db = db();
+            db.beginTransaction();
+            transactionStarted = true;
             db.delete("kv", null, null);
             db.delete("kv_stage", null, null);
             db.delete("meta", null, null);
             db.setTransactionSuccessful();
-            JSObject out = new JSObject();
+            out = new JSObject();
             out.put("cleared", true);
-            call.resolve(out);
         } catch (Throwable t) {
-            call.reject("Native store reset failed: " + safeMessage(t), "E_NATIVE_RESET");
+            failure = t;
         } finally {
-            db.endTransaction();
+            failure = finishTransaction(db, transactionStarted, failure);
         }
+        if (failure != null) {
+            rejectNative(call, "reset", failure);
+            return;
+        }
+        call.resolve(out);
     }
-
     private SQLiteDatabase db() {
         if (helper == null) {
             helper = new StoreDb(getContext());
@@ -278,21 +376,209 @@ public class SaagarNativeStorePlugin extends Plugin {
         db.insertWithOnConflict("meta", null, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
-    private int clamp(Integer value, int min, int max) {
-        int number = value == null ? min : value;
-        return Math.max(min, Math.min(max, number));
+    private Throwable finishTransaction(SQLiteDatabase db, boolean transactionStarted, Throwable failure) {
+        if (!transactionStarted || db == null) {
+            return failure;
+        }
+        try {
+            db.endTransaction();
+        } catch (Throwable endFailure) {
+            if (failure == null) {
+                return endFailure;
+            }
+        }
+        return failure;
+    }
+
+    private void validateBatch(JSONArray ops) {
+        if (ops.length() > MAX_BATCH_OPS) {
+            throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+        }
+        long bytes = 0;
+        try {
+            for (int i = 0; i < ops.length(); i++) {
+                JSONObject op = ops.getJSONObject(i);
+                Object typeValue = op.opt("type");
+                Object keyValue = op.opt("keyId");
+                Object seqValue = op.opt("seq");
+                if (!(typeValue instanceof String) || !(keyValue instanceof String) || !(seqValue instanceof Number)) {
+                    throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+                }
+                String type = (String) typeValue;
+                String keyId = (String) keyValue;
+                if (!("set".equals(type) || "remove".equals(type)) || !keyId.matches("[a-f0-9]{64}")) {
+                    throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+                }
+                double seqNumber = ((Number) seqValue).doubleValue();
+                if (Double.isNaN(seqNumber) || Double.isInfinite(seqNumber) || seqNumber < 0 || seqNumber > Long.MAX_VALUE || seqNumber != Math.rint(seqNumber)) {
+                    throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+                }
+                bytes += utf8Length(keyId);
+                if ("set".equals(type)) {
+                    Object payloadValue = op.opt("payload");
+                    if (!(payloadValue instanceof String) || ((String) payloadValue).isEmpty()) {
+                        throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+                    }
+                    bytes += utf8Length((String) payloadValue);
+                }
+                if (bytes > MAX_BATCH_BYTES) {
+                    throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+                }
+            }
+        } catch (NativeStoreFailure failure) {
+            throw failure;
+        } catch (Throwable ignored) {
+            throw new NativeStoreFailure("INVALID_ARGUMENT", false);
+        }
+    }
+
+    private void rejectArgument(PluginCall call, String operation) {
+        rejectNative(call, operation, new NativeStoreFailure("INVALID_ARGUMENT", false));
+    }
+
+    private void rejectNative(PluginCall call, String operation, Throwable failure) {
+        String reason = reasonFor(operation, failure);
+        boolean retryable = retryableFor(reason, failure);
+        JSObject data = new JSObject();
+        data.put("contractVersion", CONTRACT_VERSION);
+        data.put("reason", reason);
+        data.put("operation", operation);
+        data.put("retryable", retryable);
+        data.put("storage", storageSnapshot());
+        call.reject(publicMessage(reason), reason, data);
+    }
+
+    private String reasonFor(String operation, Throwable failure) {
+        if (failure instanceof NativeStoreFailure) {
+            return ((NativeStoreFailure) failure).reason;
+        }
+        if (failure instanceof SQLiteDatabaseCorruptException) {
+            return "INTEGRITY_FAILED";
+        }
+        if (failure instanceof SQLiteFullException) {
+            return "NO_SPACE";
+        }
+        if (failure instanceof SQLiteCantOpenDatabaseException) {
+            return "DB_OPEN_FAILED";
+        }
+        if (failure instanceof SQLiteDiskIOException) {
+            return "DB_IO_FAILED";
+        }
+        if (failure instanceof SQLiteReadOnlyDatabaseException) {
+            return "DB_READ_ONLY";
+        }
+        if (failure instanceof SQLiteException) {
+            return "readPage".equals(operation) ? "DB_READ_FAILED" : "DB_IO_FAILED";
+        }
+        if (failure instanceof IllegalArgumentException) {
+            return "INVALID_ARGUMENT";
+        }
+        return "STORE_UNAVAILABLE";
+    }
+
+    private boolean retryableFor(String reason, Throwable failure) {
+        if (failure instanceof NativeStoreFailure) {
+            return ((NativeStoreFailure) failure).retryable;
+        }
+        return "NO_SPACE".equals(reason)
+            || "DB_OPEN_FAILED".equals(reason)
+            || "DB_IO_FAILED".equals(reason)
+            || "DB_READ_FAILED".equals(reason)
+            || "ROW_COUNT_MISMATCH".equals(reason)
+            || "MIGRATION_INCOMPLETE".equals(reason)
+            || "STORE_UNAVAILABLE".equals(reason);
+    }
+
+    private String publicMessage(String reason) {
+        if ("NO_SPACE".equals(reason)) return "Device storage does not have enough free space.";
+        if ("DB_OPEN_FAILED".equals(reason)) return "Secure storage could not be opened.";
+        if ("INTEGRITY_FAILED".equals(reason)) return "Secure storage integrity verification failed.";
+        if ("DB_IO_FAILED".equals(reason)) return "Secure storage input/output failed.";
+        if ("DB_READ_FAILED".equals(reason)) return "Secure storage could not be read.";
+        if ("DB_READ_ONLY".equals(reason)) return "Secure storage is read-only.";
+        if ("SCHEMA_UNSUPPORTED".equals(reason)) return "This secure storage version is not supported.";
+        if ("ROW_COUNT_MISMATCH".equals(reason)) return "Secure storage migration verification failed.";
+        if ("MIGRATION_INCOMPLETE".equals(reason)) return "Secure storage migration is incomplete.";
+        if ("INVALID_ARGUMENT".equals(reason)) return "The secure storage request was invalid.";
+        return "Secure storage is unavailable.";
+    }
+
+    private JSObject storageSnapshot() {
+        long totalBytes = 0;
+        long availableBytes = 0;
+        long freeBytes = 0;
+        File databaseFile = null;
+        try {
+            Context context = getContext();
+            databaseFile = context.getDatabasePath(StoreDb.NAME);
+            File volume = databaseFile.getParentFile();
+            if (volume == null) {
+                volume = context.getFilesDir();
+            }
+            StatFs stats = new StatFs(volume.getAbsolutePath());
+            totalBytes = stats.getTotalBytes();
+            availableBytes = stats.getAvailableBytes();
+            freeBytes = stats.getFreeBytes();
+        } catch (Throwable ignored) {
+            // Diagnostics must never hide the underlying storage error.
+        }
+        long databaseBytes = fileBytes(databaseFile);
+        long walBytes = sidecarBytes(databaseFile, "-wal");
+        long shmBytes = sidecarBytes(databaseFile, "-shm");
+        long journalBytes = sidecarBytes(databaseFile, "-journal");
+        long nativeStoreBytes = saturatingAdd(databaseBytes, walBytes, shmBytes, journalBytes);
+        JSObject storage = new JSObject();
+        storage.put("totalBytes", totalBytes);
+        storage.put("availableBytes", availableBytes);
+        storage.put("freeBytes", freeBytes);
+        storage.put("databaseBytes", databaseBytes);
+        storage.put("walBytes", walBytes);
+        storage.put("shmBytes", shmBytes);
+        storage.put("journalBytes", journalBytes);
+        storage.put("nativeStoreBytes", nativeStoreBytes);
+        return storage;
+    }
+
+    private long fileBytes(File file) {
+        try {
+            return file != null && file.isFile() ? Math.max(0, file.length()) : 0;
+        } catch (Throwable ignored) {
+            return 0;
+        }
+    }
+
+    private long sidecarBytes(File databaseFile, String suffix) {
+        if (databaseFile == null) {
+            return 0;
+        }
+        return fileBytes(new File(databaseFile.getPath() + suffix));
+    }
+
+    private long saturatingAdd(long... values) {
+        long total = 0;
+        for (long value : values) {
+            if (value > Long.MAX_VALUE - total) {
+                return Long.MAX_VALUE;
+            }
+            total += Math.max(0, value);
+        }
+        return total;
     }
 
     private int utf8Length(String value) {
         return value == null ? 0 : value.getBytes(StandardCharsets.UTF_8).length;
     }
 
-    private String safeMessage(Throwable t) {
-        String message = t == null ? "unknown" : t.getMessage();
-        if (message == null || message.trim().isEmpty()) message = t.getClass().getSimpleName();
-        return message.replaceAll("[\\p{Cntrl}]", " ").trim();
-    }
+    private static final class NativeStoreFailure extends RuntimeException {
+        private final String reason;
+        private final boolean retryable;
 
+        NativeStoreFailure(String reason, boolean retryable) {
+            super(reason);
+            this.reason = reason;
+            this.retryable = retryable;
+        }
+    }
     private static final class StoreDb extends SQLiteOpenHelper {
         private static final String NAME = "saagar-native-kv.db";
         private static final int VERSION = 2;
@@ -321,7 +607,7 @@ public class SaagarNativeStorePlugin extends Plugin {
                 db.execSQL("CREATE TABLE IF NOT EXISTS kv_stage (key_id TEXT PRIMARY KEY NOT NULL, payload TEXT NOT NULL, updated_seq INTEGER NOT NULL)");
                 return;
             }
-            throw new IllegalStateException("Unsupported native store schema upgrade " + oldVersion + " -> " + newVersion);
+            throw new NativeStoreFailure("SCHEMA_UNSUPPORTED", false);
         }
     }
 }

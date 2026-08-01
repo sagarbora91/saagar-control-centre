@@ -10,6 +10,7 @@ const plugin = fs.readFileSync(
   path.join(root, 'build-overrides/native/SaagarNativeStorePlugin.java'),
   'utf8'
 );
+const shell = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
 const overrides = fs.readFileSync(
   path.join(root, 'build-overrides/apply-overrides.js'),
   'utf8'
@@ -55,12 +56,71 @@ test('native startup is paged and migration becomes authoritative only after ver
   assert.match(core, /beginMigration\(\{\}\)/);
   assert.match(core, /finishMigration\(\{ expectedRows: snapshots\.length \}\)/);
   assert.match(core, /Native migration verification did not complete/);
-  assert.match(core, /persistenceMode: _nativeMode \? 'native-incremental'/);
+  assert.match(core, /_nativeMode \? 'native-incremental' : 'legacy-snapshot'/);
 });
-test('native authority marker fails closed instead of opening stale legacy data', () => {
+test('native authority marker quarantines stale data and exposes bounded recovery actions', () => {
   assert.match(core, /NATIVE_MIGRATED_KEY = 'saagar_native_store_migrated_v1'/);
-  assert.match(core, /if \(!plugin\) \{ if \(wasNative\) blockNativeStore\('plugin-missing'\)/);
-  assert.match(core, /if \(wasNative\) \{ blockNativeStore\('native-status-invalid'\)/);
-  assert.match(core, /Authoritative native storage is unavailable/);
-  assert.match(core, /storageBlocked: _storageBlocked/);
+  assert.match(core, /_authorityPending = nGet\.call\(ls, NATIVE_MIGRATED_KEY\) === '1'/);
+  assert.match(core, /if \(!_authorityPending\) \(function hydrate/);
+  assert.match(core, /if \(!plugin\) \{ if \(wasNative\) blockNativeStore\('PLUGIN_MISSING'/);
+  assert.match(core, /blockNativeStore\('STORE_TIMEOUT'/);
+  assert.match(core, /error\.code = 'STORAGE_BLOCKED'/);
+  assert.match(core, /persistenceMode: _storageBlocked \? 'blocked'/);
+  assert.match(core, /copyRecoveryDiagnostics/);
+  assert.match(core, /retryRecovery/);
+});
+test('native failures are caught through transaction cleanup and expose only stable diagnostics', () => {
+  for (const [method, nextMethod] of [
+    ['beginMigration', 'finishMigration'],
+    ['finishMigration', 'readPage'],
+    ['applyBatch', 'reset']
+  ]) {
+    const start = plugin.indexOf(`public void ${method}`);
+    const end = plugin.indexOf(`public void ${nextMethod}`, start + 1);
+    const body = plugin.slice(start, end);
+    assert.ok(start >= 0 && end > start, `${method} body should be present`);
+    assert.ok(
+      body.indexOf('failure = finishTransaction') < body.indexOf('call.resolve(out)'),
+      `${method} must finish its transaction before resolving`
+    );
+  }
+  assert.match(plugin, /SQLiteFullException/);
+  assert.match(plugin, /SQLiteCantOpenDatabaseException/);
+  assert.match(plugin, /SQLiteDatabaseCorruptException/);
+  assert.match(plugin, /SQLiteDiskIOException/);
+  assert.match(plugin, /SQLiteReadOnlyDatabaseException/);
+  assert.match(plugin, /call\.reject\(publicMessage\(reason\), reason, data\)/);
+  assert.match(plugin, /data\.put\("reason", reason\)/);
+  assert.match(plugin, /new StatFs/);
+  assert.match(plugin, /storage\.put\("nativeStoreBytes", nativeStoreBytes\)/);
+  assert.doesNotMatch(plugin, /safeMessage/);
+});
+
+test('settings storage refresh is lightweight and never opens or verifies SQLite', () => {
+  const storageInfoStart = plugin.indexOf('public void storageInfo');
+  const storageInfoEnd = plugin.indexOf('@PluginMethod', storageInfoStart + 1);
+  assert.ok(
+    storageInfoStart >= 0 && storageInfoEnd > storageInfoStart,
+    'storageInfo method should be present'
+  );
+  assert.match(
+    plugin.slice(Math.max(0, storageInfoStart - 40), storageInfoStart),
+    /@PluginMethod\s*$/
+  );
+  const storageInfoBody = plugin.slice(storageInfoStart, storageInfoEnd);
+  assert.match(storageInfoBody, /call\.resolve\(storageSnapshot\(\)\)/);
+  assert.doesNotMatch(
+    storageInfoBody,
+    /\bdb\(\)|quickCheck|rowCount|rawQuery|getWritableDatabase/
+  );
+
+  const statusStart = plugin.indexOf('public void status');
+  const statusBody = plugin.slice(statusStart, storageInfoStart);
+  assert.match(statusBody, /quickCheck\(db\)/);
+});
+
+test('capacity allowlist loads before storage-core installs its public API', () => {
+  const policyAt = shell.indexOf('<script src="storage-capacity-policy.js"></script>');
+  const coreAt = shell.indexOf('<script src="storage-core.js"></script>');
+  assert.ok(policyAt >= 0 && coreAt > policyAt);
 });

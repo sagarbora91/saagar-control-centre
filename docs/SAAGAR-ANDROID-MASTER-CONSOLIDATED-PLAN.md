@@ -1487,3 +1487,128 @@ production signing gate, or release gate is marked passed.
 
 The owner approved committing and pushing the reviewed Android changes. No
 PHP/platform work was started.
+### 2026-07-30 - P0 secure-storage recovery hardening
+
+**State:** engineering complete and locally verified; physical-device and
+release acceptance remain **PENDING**.
+
+Owner review exposed a fail-closed recovery screen and an incorrect assumption
+that every blocked native-store state could immediately offer the normal
+portable restore workflow. The highest-priority dependency was therefore the
+storage authority/recovery boundary, before Owner/PIN or Settings UI changes.
+
+Implemented:
+
+- synchronous authority-pending quarantine from the native migration marker,
+  preventing stale business/Admin/session data from being read or mutated
+  before the asynchronous native check completes;
+- stable recovery reasons, reason-specific safe wording, a hard-reload Retry
+  action, and copied allowlisted diagnostics with no raw errors, paths, PINs,
+  record envelopes, customer/staff data, or business payloads;
+- fail-closed status/page timeouts and protection against late native results
+  reopening a blocked store;
+- typed key, record-authentication, format, cursor, and row-count failures;
+- native SQLite open/query/transaction/cleanup exception containment with
+  callbacks only after cleanup; and
+- API-23-compatible device capacity plus native SQLite DB/WAL/SHM/journal byte
+  metrics for the later Settings storage panel.
+
+Evidence:
+
+- focused P0 native/policy/runtime tests **17/17 passed**;
+- permanent offline suite **170/170 passed**;
+- JavaScript syntax and diff checks passed;
+- Capacitor sync, native Java compile, and Android debug assembly passed;
+- local debug APK 7,617,642 bytes, SHA-256
+  `8D3D450FCACC763BD868DEC0F6084364D510A694BEF8C54BA79C436A6DBC2605`.
+
+The normal restore UI is deliberately not exposed while the store is blocked.
+It requires readable current state and is not safe for an unopenable/corrupt
+SQLite file or unavailable/orphaned key. Universal blocked-mode restore remains
+a separate design requiring a staged recovery database, verified atomic
+publication, versioned key activation, and interruption testing.
+
+Next authorized modules from the owner-approved plan are: (1) repair Owner/PIN
+entry and add all-off-by-default module PIN controls in Settings; then (2) add
+the Windows-style device used/free storage bar and clearly labelled SAAGAR
+native-database size. No device-only row, DAT-02 gate, production-signing gate,
+or release gate changed status. Full evidence is in
+`verification/STORAGE-RECOVERY-P0-HANDOFF-2026-07-30.md`. No PHP/platform work
+was started. These changes remain uncommitted and unpushed pending owner review.
+
+### 2026-08-01 - Owner/PIN controls and Settings storage capacity
+
+**State:** engineering complete and locally verified; physical-device and
+release acceptance remain **PENDING**.
+
+The two authorized Settings modules following secure-storage recovery are now
+implemented:
+
+- explicit Owner selection with authoritative post-`whenReady` session
+  recomputation;
+- a versioned 11-module entry-PIN policy with every switch defaulting OFF and
+  one-use verify-only module entry that never elevates the session;
+- a frozen read-only Owner/role bridge for embedded modules, token-compatible
+  Service/Expense controls, Stock/DSR role downgrade revocation, and removal
+  of the raw bundled legacy `Gold` credential;
+- handler-level authorization for Service's Owner-only watch-photo setting;
+- lightweight native `storageInfo()` and fail-isolated
+  `SaagarStore.refreshStorageInfo()` with a strict three-field allowlist,
+  overlap protection, and reset invalidation; and
+- a responsive Windows-style whole-device used/available storage bar at the
+  top of Settings > Data & backup, with the SAAGAR SQLite database and journal
+  bytes labelled separately.
+
+All existing action-specific reauthentication gates remain in place. The
+module-PIN policy is included in portable backup and strict restore validation.
+No PHP/platform work was started.
+
+Evidence:
+
+- focused PIN/Owner and embedded-module set **41/41 passed**;
+- focused storage/card set **13/13 passed**;
+- permanent offline suite **210/210 passed**;
+- embedded payload byte/SHA metadata and every embedded script passed;
+- diff integrity passed; and
+- Capacitor sync, native override, Java compilation, and Android debug
+  assembly passed.
+
+The local debug APK is 7,623,213 bytes with SHA-256
+`ABF1C83E25BFA44546F179B265F65D441BF98547A9BB1A0618AD2323147A1898`.
+No device-only row, DAT-02 gate, backup/restore interruption gate,
+production-signing gate, or release gate is marked passed. Device verification
+must cover Owner/PIN switching, all-off defaults and selected module prompts,
+embedded Manager downgrade behavior, and comparison of the new capacity card
+with Android device storage. Full evidence and the exact pending checklist are
+in `verification/PIN-STORAGE-SETTINGS-HANDOFF-2026-08-01.md`.
+
+These changes remain uncommitted and unpushed pending owner review. The branch
+has no configured upstream.
+
+### 2026-08-02 - Phase 0 repository closure preparation
+
+**State:** repository-side engineering is ready for a controlled Phase 0
+candidate; formal Phase 0 acceptance remains **OPEN** pending physical and
+operational evidence.
+
+The ENG-02 full-storage regression now uses a deterministic test clock, and
+build identity is centralized in `www/build-identity.js` for the application,
+Android override, and production release register. Focused Phase 0 checks pass
+12/12, the normal-timezone permanent offline suite passes 210/210, the clean
+debug build succeeds, and an unsigned release attempt fails closed for missing
+production signing secrets.
+
+The current debug APK is 7,623,657 bytes with SHA-256
+`991EC37A03F39540233BE0A3F3972CEF8A798A27521BD3B9FC4F0BD1B19ED743`.
+It is debug-signed and built from an intentionally dirty tree, so it is an
+engineering/device-review artifact only. It is not a final accepted baseline.
+
+All 69 physical cases, DAT-02 on two devices, BKP-03 provider evidence,
+cross-device restore, legacy/API-23 drill, legal/privacy approval, security
+posture, staff UAT, incident rehearsal, recovery/signing custody, clean-commit
+production provenance, and exact-hash owner acceptance remain pending. The
+controlling checklist is
+`verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md`.
+
+No device-only row is marked passed. No commit, push, tag, production signing,
+or PHP/platform work was performed.
