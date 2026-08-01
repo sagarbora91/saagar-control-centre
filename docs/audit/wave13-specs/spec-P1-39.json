@@ -1,0 +1,103 @@
+{
+  "item": "P1-39 — Text-size setting (Normal / Large) for shell chrome (index.html)",
+  "summary": "Add a device-local \"Text size\" preference (Normal default / Large) that applies a modest proportional zoom to the shell CHROME CONTENT scroller only, leaving the fixed topbar/bottom-nav and the module iframe untouched. The feature is a byte-for-byte clone of the EXISTING \"Display mode\" (saagar_ui_mode) pref pattern: a segmented control in the Config page, a new per-device localStorage key, an apply-on-boot call, and a class toggled on <html>. Mechanism: a class `st-textsize-large` on `document.documentElement` drives a single CSS rule `html.st-textsize-large #mainContent{ zoom:1.12 }`. Because #mainContent (.main, the `overflow:hidden auto` chrome scroller at index.html L131/L1150) is a SEPARATE element from the topbar, the .botnav, and the module overlay (#moduleScreen, a position:fixed sibling at L592/L1630 that hosts #moduleFrame), scaling #mainContent enlarges every chrome view (home/today/modules/reports/config) WITHOUT scaling nav chrome or module content — so it is inherently chrome-only with no iframe-injection changes. `zoom` (not font-size) is chosen because the design is px-based (body 14px + hundreds of explicit `font-size:Npx` rules that do not inherit), so root/body font-size scaling would barely move; zoom scales text AND its container together, which is the LEAST likely to clip. Key registration mirrors saagar_ui_mode exactly (see collisionNotes / newKeysOrFields).",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "www/index.html",
+      "name": "CSS — text-size scale rule (new)",
+      "line": "~135 (right after the .main{} block) or a new <style id=\"st-v5-textsize\">",
+      "change": "Add ONE targeted rule: `html.st-textsize-large #mainContent{zoom:1.12}`. Normal = no class = zoom 1 (untouched). Do NOT scale <html>/<body>/.app — .app is position:fixed;inset:0 (L68) and zooming the root would recompute the fixed full-screen grid against a zoomed viewport and can push .botnav off-screen. Scope strictly to #mainContent. Reuse — no other CSS edits."
+    },
+    {
+      "file": "www/index.html",
+      "name": "Config 'Text size' card (new markup)",
+      "line": "insert after L1299 (immediately after the #uiModeCard 'Display mode' card, before the <nav class=\"subtabs\"> at L1300)",
+      "change": "Add a sibling device-pref card cloned from #uiModeCard: `<div class=\"card card-pad\" id=\"textSizeCard\" style=\"margin-bottom:14px\"><h4><span class=\"em\">🔎</span> Text size</h4><p>Make on-screen text larger for easier reading. Saved on this device.</p><div class=\"seg\" id=\"textSizeSeg\"><button type=\"button\" class=\"seg-btn\" data-textsize=\"normal\" onclick=\"setTextSize('normal')\"><span>A</span> Normal</button><button type=\"button\" class=\"seg-btn\" data-textsize=\"large\" onclick=\"setTextSize('large')\"><span style=\"font-size:1.15em\">A</span> Large</button></div></div>`. Reuses existing .card/.card-pad/.seg/.seg-btn styles (L790-793). Inline onclick is consistent with setUiMode."
+    },
+    {
+      "file": "www/index.html",
+      "name": "getTextSize / reflectTextSizeUI / setTextSize + TEXT_SIZE_KEY (new)",
+      "line": "insert after toggleUiMode at L7067 (directly below the UI-mode helper block L7047-7067)",
+      "change": "Clone the setUiMode trio: `const TEXT_SIZE_KEY='saagar_text_size';` + `function getTextSize(){ try{ var s=safeGet(TEXT_SIZE_KEY); if(s==='large'||s==='normal') return s; }catch(e){} return 'normal'; }` + `function reflectTextSizeUI(){ var s=getTextSize(); try{ document.documentElement.classList.toggle('st-textsize-large', s==='large'); }catch(e){} try{ var g=document.querySelectorAll('#textSizeSeg .seg-btn'); for(var i=0;i<g.length;i++){ g[i].classList.toggle('active', g[i].getAttribute('data-textsize')===s); } }catch(e){} }` + `function setTextSize(size){ if(size!=='normal'&&size!=='large') return; try{ safeSet(TEXT_SIZE_KEY,size); }catch(e){} reflectTextSizeUI(); try{ toast(size==='large'?'🔎 Large text':'Normal text'); }catch(e){} }`. Uses existing safeGet/safeSet/toast."
+    },
+    {
+      "file": "www/index.html",
+      "name": "init() boot-apply",
+      "line": "L7108 (immediately after the existing `reflectUiModeUI();` call in the init IIFE)",
+      "change": "Add `try{ reflectTextSizeUI(); }catch(e){}` so the saved size is applied on every launch (persistence). This runs synchronously before first render, identical to how reflectUiModeUI is applied. Also harmless to re-call inside renderConfigPage/switchConfigTab('') if the seg needs the active class refreshed, but the boot call + the click handler already keep the seg in sync; NO change to switchConfigTab is required (the card lives in static markup, always present)."
+    },
+    {
+      "file": "www/index.html",
+      "name": "appControlKeys() — DELIBERATELY NOT edited",
+      "line": "L2123",
+      "change": "Do NOT add saagar_text_size here. This mirrors the sibling saagar_ui_mode (also absent from this list) and saagar_acting_as: per-device UI prefs are intentionally excluded from manual backup/migration so one device's text size can't override another's. See openQuestions #1 — this is a conscious deviation from the generic 'add every new key to appControlKeys' rule, justified because that rule guards against losing DATA on migration, which does not apply to a device-local UI pref."
+    },
+    {
+      "file": "www/index.html",
+      "name": "APP_RE / factoryReset — no edit needed",
+      "line": "L5684",
+      "change": "saagar_text_size already matches APP_RE via the `saagar_` prefix, so factory reset wipes it AND factoryResetSafetyBackup (L5710, iterates keys matched by APP_RE) captures it in the pre-reset safety backup on the same device. No regex change."
+    },
+    {
+      "file": "www/index.html",
+      "name": "validateRestoreKeyValue / restoreBlockedKeys — no edit needed",
+      "line": "L5489 / L2127",
+      "change": "Because the key is NOT whitelisted (isWhitelistedAppKey false), validateRestoreData (L5524) routes it to result.rejected and never restores it — identical to saagar_ui_mode. It is NOT in restoreBlockedKeys (correct). No control-branch edit required."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "localStorage pref key (top-level, device-local)",
+      "name": "saagar_text_size (recommended; st_v5_text_size is an equally-valid alternative that hews to the literal st_v\\d+_ naming guidance — both match APP_RE)",
+      "shape": "string enum: 'normal' | 'large' (any other/absent value ⇒ treated as 'normal')",
+      "defaults": "'normal' — absent key means Normal; getTextSize() returns 'normal' as the fallback",
+      "storageRulesNote": "Mirrors saagar_ui_mode EXACTLY. (a) NOT added to appControlKeys() ⇒ excluded from manual backup/migration export (appStorage filters on isWhitelistedAppKey) — intended, since text size is per-device. (b) Matches APP_RE (`saagar_` prefix at L5684) ⇒ wiped by factory reset AND included in the pre-reset safety backup (factoryResetSafetyBackup iterates APP_RE-matched keys, L5715). (c) Restore: not whitelisted ⇒ validateRestoreData rejects it (never imported from another device); it is NOT in restoreBlockedKeys, and no validateRestoreKeyValue control-branch entry is needed. Net: same lifecycle as the display-mode pref."
+    }
+  ],
+  "approach": "Additive clone of the existing Display-mode (setUiMode/saagar_ui_mode) machinery — the safest possible path because it copies a shipped, verified pattern. 1) MECHANISM: a class `st-textsize-large` on document.documentElement (mirrors the existing `bcc-mobile` class convention) gates one CSS rule that applies `zoom:1.12` to `#mainContent` only. #mainContent (.main) is the chrome content scroller (`overflow:hidden auto`, L131-135) holding all five chrome views (homeView/todayView/modulesView/reportsView/configView, L1155-1287). The topbar (.topbar) and bottom nav (.botnav) are grid siblings OUTSIDE .main, and the module iframe lives in #moduleScreen — a position:fixed;inset:0 sibling overlay (L592/L1630) — so zooming #mainContent scales chrome content while leaving nav chrome and module content pixel-identical. 2) WHY zoom, not font-size/root: the design is px-based (body 14px at L57; the vast majority of chrome text sets its own explicit `font-size:Npx` — e.g. .card p 13px, .attn-text 11-13px, .btn 13px — none of which inherit a root/body change), so a root or body font-size bump would be nearly invisible, whereas `zoom` proportionally scales text + padding + container together (less clipping than font-only, which would overflow fixed-width pills/badges). WebView target is Chromium (Android System WebView + desktop Chromium per the desktop-layout-fix history) where `zoom` is supported. 3) PERSISTENCE: reflectTextSizeUI() is called once in init() right after reflectUiModeUI() (L7108), reading the saved key synchronously before first render. 4) CHROME-ONLY (no iframe propagation) is the deliberate recommendation — see 'ui'/'risks' for justification.",
+  "ui": "Placement: a new 'Text size' card in the Config page, inserted immediately after the existing 'Display mode' card (#uiModeCard, L1292-1299) and before the subtabs nav (L1300) — co-locating the two device-preference toggles. It reuses the identical card + segmented-control markup/styles. Copy: heading '🔎 Text size'; body 'Make on-screen text larger for easier reading. Saved on this device.' (echoes the Display-mode card's 'Saved on this device' wording). Two segmented buttons: 'A Normal' (data-textsize=normal) and 'A Large' (data-textsize=large, with the sample 'A' bumped to font-size:1.15em as a visual cue). The active button is highlighted via the existing `.seg-btn.active` style (navy fill, L792), toggled by reflectTextSizeUI(). On tap, setTextSize() saves, re-applies, and shows a toast ('🔎 Large text' / 'Normal text'). Because the card itself lives inside #mainContent, choosing Large visibly enlarges the settings page including the toggle — expected, immediate feedback (like an OS accessibility control). No topbar icon-button is added (Display mode has one via #uiModeBtn, but text size is a set-and-forget preference; keeping it Config-only avoids topbar crowding — the topbar is already tight at phone widths per the L108-117 audit note).",
+  "edgeCases": [
+    "Fixed-height hero/nav: the topbar and .botnav are OUTSIDE #mainContent (grid siblings) so they are NEVER zoomed — no clipping there. The home hero (.brief/.hero) is INSIDE #homeView (inside #mainContent) so it scales proportionally; since .main scrolls vertically (`overflow:hidden auto`) the taller hero simply scrolls, no clip.",
+    "Horizontal clip risk: .main is `overflow:hidden auto` (x hidden). zoom effectively narrows the CSS viewport by the factor, so wide rows/tables could clip horizontally. Mitigation: keep Large modest at 1.12 (not 1.2), and note that data tables already wrap in `.table-wrap{overflow-x:auto}` (L575/L5200) so they self-scroll. Verify the config subtabs nav (L1300, 8 tabs incl. long 'Roles & access') doesn't clip.",
+    "Very long labels: zoom scales the label AND its container together, so wrapping/ellipsis behaviour is preserved proportionally (unlike font-only scaling). The one nowrap+ellipsis label (.brand-meta h1, L94) is in the topbar → not zoomed → unaffected.",
+    "Two-column wide-screen home: `body[data-view=\"home\"] .main` becomes a grid (L1037-1044) rendering #todayView as a 2nd column above ~768px. At zoom 1.12 the effective CSS width shrinks ~11%; on a small desktop window near the breakpoint the layout could drop to one column earlier. Acceptable (it just stacks) — verify it degrades gracefully.",
+    "Module content: opening a module shows #moduleScreen (separate fixed overlay) — text size does NOT apply there by design; module keeps its own sizing + the mobile/desktop display-mode signal.",
+    "Modal / toast / FAB text: #modalBackdrop (L1679), #toast (L1690), #st-v5-home-fab/#st-v5-next-chips (L6388-6389) are all body-level position:fixed siblings, NOT inside #mainContent, so their text is NOT scaled in v1. Acceptable limitation (transient surfaces); flagged as open question #2.",
+    "Storage unavailable (private mode / quota full): getTextSize() try/catches to 'normal'; setTextSize()'s safeSet may fail silently (safeSet already toasts on quota, L2117) — the class still applies for the session, just not persisted. Same resilience as setUiMode.",
+    "Composability with mobile/desktop display mode: text-size class and the `bcc-mobile` class are independent; zoom composes cleanly with either layout. Verify both Mobile and Desktop modes at Large.",
+    "Boot ordering: reflectTextSizeUI() runs in init() before doFirstRender/switchView('home'); the #textSizeSeg active class is set as soon as the (always-present, static) config markup exists — no render dependency."
+  ],
+  "verifySteps": [
+    "Load the shell in the browser harness (open www/index.html); confirm 0 new console errors on boot.",
+    "Config → set Text size = Large; confirm home cards, attention list, config forms, and reports text all grow ~12% while the topbar brand + bottom-nav labels stay unchanged (proves chrome-content-only scoping).",
+    "Reload the page; confirm Large persists (apply-on-boot) and the 'Large' seg button shows the active (navy) state.",
+    "Open a module (e.g. DSR/QMS) at Large; confirm the module iframe content is pixel-unchanged (proves #moduleScreen is unaffected).",
+    "Home at Large: scroll through the hero + all attention cards + module tiles; confirm no horizontal clipping and no content cut off (watch .main overflow-x:hidden). Repeat on a narrow (~360px) viewport.",
+    "Config subtabs nav at Large: confirm the 8 tab buttons (incl. 'Roles & access', 'Diagnostics') don't clip/overlap; tables inside Employees/Backup scroll horizontally rather than clip.",
+    "Toggle Mobile and Desktop display mode while Large is on; confirm both layouts render correctly (zoom composes with bcc-mobile and the wide-screen two-column home).",
+    "Set back to Normal; confirm zoom fully resets (class removed, layout byte-identical to pre-feature).",
+    "localStorage check: confirm key `saagar_text_size` = 'large'; run a manual backup export and confirm the key is ABSENT from payload.localStorage (per-device, not exported) — matches saagar_ui_mode behaviour.",
+    "Factory-reset dry check (or code-trace): confirm saagar_text_size matches APP_RE and would be both wiped and captured in the pre-reset safety backup.",
+    "Regression: with the feature added but Text size = Normal, confirm the whole shell is visually identical to the pristine build (diff against _v6_tools/wave13_pristine/index.pristine.html for the untouched regions)."
+  ],
+  "risks": [
+    "`zoom` is a non-standard (Chromium) property. It is safe for THIS app (Android System WebView + desktop Chromium), but if the team wants standards-only CSS, the fallback is font-size scaling of .main, which covers far less of this px-based design (only inheriting text). Recommend confirming zoom is acceptable (open question #3).",
+    "zoom effectively narrows the CSS viewport; combined with .main's overflow-x:hidden this is the main clipping vector. Mitigated by keeping Large at 1.12 and by pre-existing inner overflow-x:auto on tables — but MUST be verified on narrow widths and the config subtabs.",
+    "Scope creep temptation: propagating the scale into module iframes (11 separate base64-embedded documents with dense report/table layouts NOT designed to scale) is high blast-radius and hard to verify. Recommendation: DO NOT propagate in v1 (chrome-only); any future propagation is additive via a new postMessage type (like the dormant ST_SET_DATE at L7057) with per-module opt-in.",
+    "Modal/toast/FAB text not scaling could read as inconsistent to a user who set Large. Low severity (transient surfaces); can be extended later by adding those body-level containers to the scale rule if the owner wants it (open question #2).",
+    "If a future edit ever moves a position:fixed element to be a DESCENDANT of #mainContent, zoom would misplace it. Currently verified safe: all fixed FABs/chips/toasts/modal are body/.app-level (L6388-6389, L1679-1690), NOT inside .main.",
+    "Deviation from the stated hard rule (a) 'add every new key to appControlKeys': intentional and matches the saagar_ui_mode precedent, but needs explicit synthesis-owner sign-off so it isn't flagged as a rule violation (open question #1)."
+  ],
+  "collisionNotes": "SAME-FILE, SAME-REGION collisions with the other Wave-13 shell item P1-36 (language toggle) — both target index.html Config chrome + init() boot + a new per-device pref: (1) CONFIG CARD CLUSTER: P1-36 will also add a Config control (a tab or a section) and P1-39 adds a card at L1292-1299 (the device-preferences zone). Both should share ONE 'Device preferences' card cluster (Display mode + Text size + Language) rather than each independently editing L1292-1300 and shifting the subtabs nav — coordinate a single combined insertion so the two edits don't conflict on the same anchor. (2) init() BOOT-APPLY: both add an apply-on-boot call right after `reflectUiModeUI();` at L7108 — they must be sequenced as two adjacent lines, not two competing edits to the same line. (3) PREF-KEY DISCIPLINE: both introduce a new saagar_/st_v5_ pref key; confirm both follow the same registration decision (P1-39 recommends per-device / NOT-in-appControlKeys, mirroring saagar_ui_mode; if P1-36's language is also per-device it should match, otherwise justify the difference). (4) HELPER PLACEMENT: P1-39 inserts get/reflect/set helpers after L7067; if P1-36 does the same, keep them in adjacent blocks. NO collision with P1-38 (call-sheet report) — that item is entirely in saagar-report.js. NO collision with renderHome()/attention-list Wave-13 work — P1-39 does not touch renderHome or the bridge exceptions path.",
+  "openQuestions": [
+    "CONFIRM the key-registration deviation: P1-39 recommends NOT adding saagar_text_size to appControlKeys() (per-device, mirroring saagar_ui_mode), which deviates from the generic 'add every new key to appControlKeys' hard rule. The rule's intent is to avoid losing DATA on migration; a device-local UI pref is intentionally device-scoped. Approve this, or require it be backup-portable (then add to appControlKeys + a validateRestoreKeyValue control-branch entry)?",
+    "Should the scale also cover body-level surfaces (modals #modalBackdrop, toast, FABs) for consistency, or is chrome-content-only (v1) acceptable? Recommendation: chrome-content-only for v1; extendable later.",
+    "Confirm `zoom` is acceptable in the target WebView (Chromium) — recommended — vs. requiring standards-only CSS (which would force a much weaker font-size fallback on this px-based design).",
+    "Confirm the Large factor: 1.12 recommended to minimise horizontal-overflow risk; owner may want a bigger accessibility bump (up to ~1.2) at the cost of tighter overflow verification. A third 'Extra large' step is out of scope for Normal/Large but trivially addable later.",
+    "Coordinate with P1-36 on a shared 'Device preferences' Config card cluster and the init() boot-apply sequencing (see collisionNotes) so the two Wave-13 shell edits land as one coherent region rather than colliding."
+  ],
+  "_id": "P1-39"
+}

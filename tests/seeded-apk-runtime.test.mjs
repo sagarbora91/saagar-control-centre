@@ -132,5 +132,6 @@ test('730-day runtime seed creates two-year cross-module data', { timeout: 60_00
   const statements = parseStored(storage, 'tanishq_statements');
   assert.equal(Object.keys(statements).length, 731);
   assert.ok(storage.has(`saagar_stock_titanworld_${profile.startDate}`));
-  assert.ok(storage.has(`saagar_stock_helios_${profile.endDate}`));
+  assert.match(profile.stockEndDate, /^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(storage.has(`saagar_stock_helios_${profile.stockEndDate}`));
 });

@@ -1,0 +1,96 @@
+{
+  "item": "P1-36 — Marathi/Hindi label toggle for SHELL CHROME (www/index.html only)",
+  "summary": "Add an English (default) / Marathi / Hindi language toggle that swaps SHELL CHROME labels only. Approach = a static `data-i18n` attribute pass (additive attributes on chrome elements) walked by a new `applyLang()`, PLUS a tiny `stT(key)` lookup used at the exact spots in renderHome() where labels are JS-generated (they get overwritten each render, so an attribute alone would be clobbered). New backed-up control pref `saagar_lang` ('en'|'mr'|'hi', default 'en'), added to appControlKeys(), naming already matches APP_RE (saagar_ prefix) and passes restore via the control ok:true fallthrough. A \"Language / भाषा\" card in Settings (sibling of the existing Display-mode card #uiModeCard) hosts a 3-way segmented control. Missing translations fall back to English (and ultimately to the hand-written English already in the DOM, never clobbered). Scope is strictly shell chrome — NOT module iframes, NOT saagar-report.js content, NOT user data / proper nouns. All grounded in the real file (no existing i18n system: `data-i18n`/`applyLang`/`getLang` grep empty; html lang=\"en\" @L2).",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "www/index.html",
+      "name": "NEW i18n core (I18N dict + getLang/stT/applyLang/setLang/reflectLangUI)",
+      "line": "~2060 (right after the `$`/toast/timeGreeting utility band, before applyMode@2244)",
+      "change": "ADD a self-contained i18n block. `const I18N={en:{…},mr:{…},hi:{…}}` where `en` is the complete source-of-truth (every data-i18n key present). `function getLang(){var v=safeGet('saagar_lang');return (v==='mr'||v==='hi')?v:'en';}` (validates/defaults→'en', so a tampered/garbage restored value degrades to English). `function stT(k){var l=getLang();var d=I18N[l]||I18N.en;var s=(d&&d[k]!=null)?d[k]:(I18N.en[k]!=null?I18N.en[k]:null);return s;}` (returns null when key missing everywhere). `function applyLang(){try{document.documentElement.lang=getLang();}catch(e){} document.querySelectorAll('[data-i18n]').forEach(function(el){var s=stT(el.getAttribute('data-i18n')); if(s!=null) el.textContent=s;}); document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){var s=stT(el.getAttribute('data-i18n-placeholder')); if(s!=null) el.setAttribute('placeholder',s);});}` — MUST use textContent (never innerHTML) so it is XSS-inert AND so null-skip leaves original English DOM intact. `function reflectLangUI(){var l=getLang();document.querySelectorAll('#langSeg .seg-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-lang')===l);});}`. `function setLang(l){if(l!=='en'&&l!=='mr'&&l!=='hi')return;safeSet('saagar_lang',l);applyLang();reflectLangUI();try{if(!activeModuleId&&activeView==='home')renderHome();}catch(e){}try{toast('भाषा / Language: '+({en:'English',mr:'मराठी',hi:'हिंदी'}[l]));}catch(e){}}`. Name the translator `stT` (NOT `t`) — dozens of local `const t=…` exist (2062, 2643, 3019, 4393…) and a global `t` would be confusing/masked."
+    },
+    {
+      "file": "www/index.html",
+      "name": "init() boot wiring",
+      "line": "~7108 (immediately after reflectUiModeUI(); before reflectBuildBadge())",
+      "change": "ADD `try{ applyLang(); reflectLangUI(); }catch(e){}`. DOM is fully parsed at init (script is at end of body), so one applyLang() pass translates all static chrome. English-default users see no flash; only mr/hi users see a single one-time label swap."
+    },
+    {
+      "file": "www/index.html",
+      "name": "renderHome() JS-generated labels",
+      "line": "3162 (ownerLine), 3186 (heroNetLabel), 3193-3199 (hero-stat captions), 3207-3214 (quick-tile labels), 3273 (empty-state text)",
+      "change": "Wrap the ENGLISH literals in stT() at assignment (these are re-written on every render so data-i18n can't hold): L3162 `$('ownerLine').textContent = stT('home.ownerLine')||'Today at the store';`  L3186 `? (stT('hero.netToday')||'Net today') : (stT('hero.netForDay')||'Net for day')`.  Hero-stat captions array (Walk-ins/Cash/Expenses/Conversion/Grooming) — swap the 2nd tuple element to `stT('hero.walkins')||'Walk-ins'` etc. (labels are already escapeHtml'd at render — keep that; translations are dev-authored so safe either way).  Quick tiles array — swap the 3rd tuple element (Stock/CRO Login/Walk-in/Expense/Grooming/Service) to stT('quick.stock')||'Stock' etc.  Empty-state L3273 `stT('home.calm')||'Nothing urgent. Today looks calm.'`.  Do NOT translate the data-derived attention item titles/msgs/ctas (they interpolate counts/₹) or the locale date line — out of scope. OPTIONAL: timeGreeting()@2704 buckets via stT('greet.morning') etc."
+    },
+    {
+      "file": "www/index.html",
+      "name": "appControlKeys()",
+      "line": "2123",
+      "change": "Append `\"saagar_lang\"` to the returned array (like the existing \"saagar_owner_name\",\"saagar_bridge_config\" literals) so the pref is INCLUDED in backup/migration (isWhitelistedAppKey@2129 → appStorage@2130) and whitelisted on restore. NOTE: this line is also edited by the P1-37 text-size sibling — coordinate a single combined edit."
+    },
+    {
+      "file": "www/index.html",
+      "name": "Static chrome HTML — add data-i18n attributes (additive)",
+      "line": "nav 1611-1626; config subtabs 1301-1308; settings hub header 1289-1290; display-mode card 1293-1298; home section-heads 1202/1203/1208/1212/1219; hero-foot span 1192; modules view 1269/1270/1272; reports view 1280/1281; today view 1233/1245/1248/1255/1260/1261",
+      "change": "ADD data-i18n (or data-i18n-placeholder) to text-only leaf chrome elements. For elements that mix an icon/svg with text, WRAP ONLY the text in an additive <span data-i18n=…> so textContent-set never nukes the icon: nav buttons (svg+text → wrap 'Home/Modules/Reports/Settings'), seg-btn labels ('Mobile'/'Desktop' after their emoji span), display-mode h4 (has <span class=em>📱</span> → wrap text). Text-only elements take data-i18n directly: subtab buttons (People/Organisation/Masters/Roles & access/Data & backup/Sync/Diagnostics/About), section-head <h3>s (Needs attention / Quick actions / Customer lookup / Greetings due today), Refresh/Clear/Share/Reports links, hero-foot <span> (Tap for brief, run & activity), Settings-hub h2 'Settings Hub'+sub, Business modules h2+'All data stays on this device.', Reports h2+sub, Today h2 + section heads. Search inputs get data-i18n-placeholder ('Search modules…', 'Enter customer mobile…'). This is a targeted, additive attribute-only change — no existing text/behaviour altered."
+    },
+    {
+      "file": "www/index.html",
+      "name": "Config Language card (new static block)",
+      "line": "insert after #uiModeCard closes at ~1299, before <nav class=subtabs> at 1300",
+      "change": "ADD a card mirroring the Display-mode card: `<div class=\"card card-pad\" id=\"langCard\" style=\"margin-bottom:14px\"><h4><span class=\"em\">🌐</span> <span data-i18n=\"cfg.language\">Language</span> / भाषा</h4><p data-i18n=\"cfg.languageHelp\">Choose the labels shown on this screen. Saved on this device.</p><div class=\"seg\" id=\"langSeg\"><button type=\"button\" class=\"seg-btn\" data-lang=\"en\" onclick=\"setLang('en')\">English</button><button type=\"button\" class=\"seg-btn\" data-lang=\"mr\" onclick=\"setLang('mr')\">मराठी</button><button type=\"button\" class=\"seg-btn\" data-lang=\"hi\" onclick=\"setLang('hi')\">हिंदी</button></div></div>`. Reuses existing .card/.seg/.seg-btn styles — no new CSS. Visible regardless of active subtab. NOTE: P1-37 text-size proposes a card in the same spot — coordinate ordering."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "localStorage key (top-level, control-owned)",
+      "name": "saagar_lang",
+      "shape": "raw string, one of 'en' | 'mr' | 'hi' (stored raw like saagar_ui_mode stores 'mobile'/'desktop' — NOT JSON-wrapped)",
+      "defaults": "absent → getLang() returns 'en'; any unrecognised value → 'en'",
+      "storageRulesNote": "APP_RE@5684 already matches via the saagar_ prefix → factory reset wipes it AND the pre-reset safety backup includes it (no APP_RE edit needed). MUST be added to appControlKeys()@2123 so backup/migration includes it (this is the Wave-11/12 hard lesson). Restore: ownerModuleForKey→null so restoreKeyOwnerId='control'; validateRestoreKeyValue@5493 control branch falls through to `return {ok:true}` (not in the special OWNER/EMP/LOG lists, and NOT in restoreBlockedKeys@2127) — confirmed it restores. Value is applied as raw string; getLang() re-validates so a hostile 'saagar_lang':'<script>' from a tampered file is inert (only ever compared to 'mr'/'hi', never rendered)."
+    }
+  ],
+  "approach": "Hybrid, primary = additive `data-i18n` attribute pass; justification vs a pure render-time t() map: (1) Most high-value chrome (bottom nav, 8 config subtabs, Settings-hub header, home section headings, hero footer, modules/reports/today headings, display-mode card) lives in STATIC HTML that is parsed once and never regenerated — tagging it with data-i18n and walking it in applyLang() translates everything in a single pass with ZERO edits to render functions and preserves existing behaviour byte-for-byte (we only ADD attributes / wrap text in spans). A pure t() map would force converting that static HTML into JS-rendered strings = rewriting large spans, which the hard rules forbid. (2) A small, known set of labels is generated by JS inside renderHome() (heroNetLabel, the 5 hero-stat captions, the 6 quick-tile labels, ownerLine, the empty-state) — these get overwritten on every render, so a data-i18n attribute would be clobbered; for exactly these spots we wrap the literal in stT(key) at the assignment. (3) Re-translation triggers: applyLang() runs once in init() and on every setLang() toggle. It does NOT need to run inside renderHome, because (a) no data-i18n element sits inside an innerHTML-replaced host — the re-rendered hosts (#attentionList, #quickGrid, #heroStats, #empStats) contain DATA, while the chrome-label elements are static siblings — and (b) the JS-generated labels already read the live language via stT() at render time. Fallback chain: stT() returns dict[lang][key] ?? en[key] ?? null; applyLang skips null so the original hand-written English in the DOM is the ultimate fallback and is never destroyed. Devanagari (mr/hi) is LTR so no dir/RTL work. No new libraries, no new fonts — Devanagari renders via the existing font stack's OS fallback (system-ui/Roboto→Noto Devanagari on Android), fully offline.",
+  "ui": "Config → a new \"Language / भाषा\" card placed directly under the existing \"Display mode\" card (#uiModeCard) at the top of #configView, above the subtab nav so it's reachable from any subtab. Same visual language as Display mode: an h4 with a 🌐 emoji, a one-line helper, and a `.seg` segmented control with three `.seg-btn`s labelled in-language — \"English\" / \"मराठी\" / \"हिंदी\" — each calling setLang('en'|'mr'|'hi'). reflectLangUI() marks the active button. On toggle: a toast confirms (\"भाषा / Language: मराठी\") and chrome relabels instantly. Copy for the card: heading \"Language / भाषा\", helper \"Choose the labels shown on this screen. Saved on this device.\" (itself translated via data-i18n so it localises too). DRAFT label set (flag for native review): nav Home=मुख्यपृष्ठ/होम, Modules=मॉड्यूल्स/मॉड्यूल, Reports=अहवाल/रिपोर्ट, Settings=सेटिंग्ज/सेटिंग्स; Needs attention=लक्ष द्या/ध्यान दें, Quick actions=झटपट क्रिया/त्वरित कार्य, Customer lookup=ग्राहक शोध/ग्राहक खोज; Net today=आजचा निव्वळ/आज का शुद्ध; Walk-ins=ग्राहक भेटी/वॉक-इन, Cash=रोख/नकद, Expenses=खर्च/खर्च, Conversion=रूपांतर/कन्वर्ज़न.",
+  "edgeCases": [
+    "Missing translation key → stT returns null → applyLang skips the element → original English DOM text stays (never blanked). The en dict must be complete for every data-i18n key used.",
+    "Icon+text elements (nav buttons have <svg>; seg-btns and the display-mode h4 have an emoji <span>): setting textContent on the parent deletes the icon — MUST wrap only the text in a <span data-i18n>. Enumerated in functionsToTouch.",
+    "Tampered/garbage saagar_lang from a restored backup (validateRestoreKeyValue returns ok:true for control keys without checking the value) → getLang() whitelists to {en,mr,hi} and defaults to 'en'; the raw value is only string-compared, never rendered → inert.",
+    "One-time flash-of-English at boot for mr/hi users (static HTML ships English until applyLang runs in init). Default 'en' users see nothing. Acceptable; optional early inline pass mirroring the L1122/L787 saagar_ui_mode boot scripts if the flash is objectionable.",
+    "Module iframes are separate documents — chrome data-i18n does NOT and MUST NOT reach them. Verify module content stays English (scope guard).",
+    "Longer Devanagari labels can wrap/clip in the tight bottom-nav .tab and .subtab widths — keep translations concise; verify at mobile width.",
+    "Devanagari has no bundled webfont; relies on OS fallback in --font-sans (system-ui/Roboto→Noto Devanagari). Renders correctly but in a system font, not DM Sans (minor visual inconsistency).",
+    "renderHome runs every 60s (L7128); its labels use stT() so they self-refresh with the current language — no drift.",
+    "applyLang uses textContent (not innerHTML) so there is no injection surface; do NOT switch it to innerHTML."
+  ],
+  "verifySteps": [
+    "Open www/index.html in the browser harness. Default state (no saagar_lang): all chrome English, 0 console errors.",
+    "Settings → Language card → tap मराठी: verify bottom nav, config subtabs, home section headings (Needs attention/Quick actions/Customer lookup), Settings-hub header, hero footer, hero-stat captions and the 6 quick-tile labels all switch to Marathi; confirm nav/seg icons and svgs are still present (span-wrap worked).",
+    "Reload the page → saagar_lang='mr' persists and applyLang runs at boot (labels Marathi immediately, at most one flash).",
+    "Toggle हिंदी then back to English → verify full Hindi set, then a clean revert to English with NO leftover Devanagari.",
+    "Open any module (e.g. Stock) in the iframe → confirm module content is NOT translated; close → chrome still translated (scope correct).",
+    "Settings → Data & backup → export a backup → confirm the exported JSON localStorage contains saagar_lang. (Confirms appControlKeys addition.)",
+    "Console: `localStorage.setItem('saagar_lang','xx'); location.reload()` → chrome falls back to English, no error (getLang whitelist).",
+    "Missing-key check: reference a data-i18n key absent from the mr dict → that element stays English, no crash (null-skip fallback).",
+    "Layout: at mobile width (html.bcc-mobile), confirm mr/hi nav + subtab labels don't clip/overlap.",
+    "Grep the saved file to confirm base64 MODULES lines are byte-unchanged and no module blob was touched."
+  ],
+  "risks": [
+    "Translation quality: awkward/incorrect Marathi/Hindi wording is directly user-facing — needs a native reviewer (the owner is Marathi-speaking) before ship. HIGHEST risk, non-technical. Draft strings provided must be treated as placeholders.",
+    "Layout overflow/wrapping of longer Devanagari labels in tight nav/subtab/seg controls — MED; mitigate with concise wording + harness check.",
+    "No bundled Devanagari font → OS fallback rendering (visual inconsistency with DM Sans) — LOW; acceptable given the no-new-fonts rule.",
+    "Over-tagging: accidentally putting data-i18n on a proper noun (Saagar Traders / store names) or a data element would corrupt meaning — mitigate by translating ONLY the enumerated curated list; never tag brandName(#brandName)/#homeStoreName/date lines/attention data.",
+    "Merge collision with the P1-37 text-size sibling in appControlKeys()@2123, the config-card insert point (~1299), and init() wiring (~7108) — MED; coordination not correctness.",
+    "If a future wave moves a tagged chrome element inside an innerHTML-replaced host, its translation could be clobbered — LOW; mitigated by idempotent applyLang (could optionally be called in switchView)."
+  ],
+  "collisionNotes": "Shared regions with the OTHER Wave-13-lite item that also edits index.html (P1-37 text-size): (1) appControlKeys()@2123 — both append a new key literal to the SAME returned array; synthesis owner must land ONE combined edit (add both \\\"saagar_lang\\\" and the text-size key). (2) Config-card insert at the top of #configView (~L1292-1300) — both add a card as a sibling of #uiModeCard; agree an order (suggest Display mode → Language → Text size). (3) init() boot wiring (~L7108) — both add a boot apply call after reflectUiModeUI(); adjacent inserts, keep both. (4) APP_RE@5684 — NEITHER item needs to edit it if keys are named per existing prefixes (saagar_lang matches saagar_; a st_v5_textsize key matches st_v\\\\d+_). (5) validateRestoreKeyValue control branch@5493 — both rely on the ok:true fallthrough; no edit. (6) CSS body font-size@57 / :root — TEXT-SIZE edits this; LANGUAGE does NOT touch CSS at all, so the two compose cleanly (translated labels also scale with text-size). NO overlap with the call-sheet Wave-13 item, which lives entirely in saagar-report.js — this item does not touch the report engine, and report content is explicitly OUT of i18n scope.",
+  "openQuestions": [
+    "Backup semantics: the hard rule says add the new key to appControlKeys() (backed up + migrated), which I followed. But the closest precedent, saagar_ui_mode, is deliberately a PER-DEVICE pref NOT in appControlKeys (so a phone and the store tablet each keep their own layout). Language is arguably the same. Confirm: back up/restore saagar_lang (current spec) OR treat it as per-device like ui_mode (drop from appControlKeys)? Recommend follow the hard rule (backed up) unless the owner wants per-device.",
+    "Final Marathi/Hindi wording for the curated label set — MUST be confirmed by a native speaker before build. Which strings, exactly, get user-visible translations vs stay English (e.g. keep 'CRO' / 'GST' as-is)?",
+    "Scope confirmation of the ~40-key curated set: include the time-of-day greeting (optional, spec'd) and the Today-detail subheadings? Recommend NOT translating the dozens of employee-form field labels (high volume, low value, data-entry).",
+    "FOUC: accept the one-time English→mr/hi swap at boot, or add an early inline translate pass like the L787/L1122 saagar_ui_mode boot script? Recommend accept.",
+    "Translator naming: I chose stT() to avoid the many local `t` shadows — confirm the synthesis owner is OK standardising on stT()/applyLang()/getLang()/setLang() so P1-37 can reuse the same helpers if it needs any."
+  ],
+  "_id": "P1-36"
+}

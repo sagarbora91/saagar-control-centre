@@ -1,0 +1,110 @@
+{
+  "item": "P1-47 — Weekly report scope + last-period (this-week-vs-last-week) comparison in www/saagar-report.js",
+  "summary": "Introduce a third report scope 'weekly' by adding ONE new self-contained report type — weeklyBrief (\"Weekly Business Summary\") — rather than retrofitting a weekly filter onto existing daily/monthly builders. The builder aggregates the QMS walk-in funnel (walk-ins / purchases / conversion / sales / non-purchase, plus per-CRO and per-day rows) over a Monday–Sunday week window using the existing shell aggregator computeQmsDay(dateIso), and surfaces this-week-vs-last-week deltas (+/-, %, and percentage-points for conversion) both as KPI-tile subs (green up / red down via the existing subColor) and as a dedicated comparison table. All edits are inside saagar-report.js only (the report hub lives here); index.html is NOT touched. Reads existing data — no new localStorage key.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/saagar-report.js"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "www/saagar-report.js",
+      "name": "week helpers: isoOf / isoWeek / weekAgg / deltaOf / weekLabel (NEW private fns)",
+      "line": "~93 (immediately after monthQms, still inside the IIFE, alongside the other shared data helpers)",
+      "change": "Add pure helpers. isoOf(dateObj) -> LOCAL 'YYYY-MM-DD' via getFullYear/getMonth+1/getDate with padStart (NEVER toISOString — must mirror the codebase's local-midnight discipline seen in leaveDaySpan L648 and the serviceAging bug-hunt #2 L820, or the week boundary shifts a day in +5:30). isoWeek(anchorIso) -> {start,end,days:[7 iso strings Mon..Sun]} by constructing new Date(+y,+m-1,+d) then dow=(getDay()+6)%7 and back-stepping to Monday. weekAgg(days) -> iterate days calling var qfn=G('computeQmsDay',null); accumulate {walkins(+q.total), purchases, sales, nonPurchase, service, byCro{} keyed by c.cro, perDay[]}; conversion recomputed on totals (purchases/walkins*100), NOT averaged. deltaOf(cur,prev) -> {abs:cur-prev, pct: prev? Math.round((cur-prev)/prev*100):null, up:(cur-prev)>=0}. weekLabel(start,end) -> e.g. '07 Jul – 13 Jul 2026' via toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) (+year on end)."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "BUILDERS.weeklyBrief (NEW builder)",
+      "line": "~974 (insert as a new property just after the ownerMonthly builder, before the BUILDERS closing brace at L975; add a comma after ownerMonthly's closing brace)",
+      "change": "function(o){ var anchor=o.date||curDate(); var wk=isoWeek(anchor); var today=todayIsoSafe(); var spanEnd=(wk.end>today)?today:wk.end; var nDays=(spanEnd<wk.start)?7:wk.days.filter(function(dy){return dy<=spanEnd;}).length||1; var partial=nDays<7; var prevMon=new Date(wk.start+'T00:00:00'); prevMon.setDate(prevMon.getDate()-7); var pw=isoWeek(isoOf(prevMon)); var cur=weekAgg(wk.days.slice(0,nDays)); var prev=weekAgg(pw.days.slice(0,nDays)); var hdr={t:'header',title:'WEEKLY BUSINESS SUMMARY',sub:'Titan World + Helios · Latur',period:weekLabel(wk.start,wk.end)+(partial?' · week to date':'')}; if(!cur.walkins&&!prev.walkins) return {orientation:'portrait',blocks:[hdr,{t:'empty',text:'No walk-in activity recorded for this week.'}]}; then build blocks: (1) KPI row cols:5 — Walk-ins/Purchases/Conversion(hero)/Sales/Non-buy with sub=delta string + subClass 'up'/'down' (INVERT for Non-buy: fewer is better); conversion delta in percentage-points ('+4pp vs last wk'). (2) section 'This Week vs Last Week' + table head [['Metric','This week','Last week','Change']] rows for Walk-ins/Purchases/Conversion/Sales/Non-purchase (Change = signed abs + optional (pct%); money via inr for Sales, pp for Conversion). (3) section 'Daily Trend — Mon to Sun' + table head [['Day','Date','Walk-ins','Purchases','Conv %','Sales ₹']] body from cur.perDay (chronological, NOT value-sorted), money:[5], raw:[[..,sales]] for carry-consistency, foot totals. (4) section 'Sales & Conversion — by CRO' + table of Object.values(cur.byCro) sorted by walkins desc, top 8, same columns as ownerBrief byCro. (5) note: 'Walk-in funnel from QMS. Compared against the same '+nDays+' day(s) of the previous week ('+weekLabel(pw.start,pw.end)+'). Days with no entries count as zero.' Return {orientation:'portrait',blocks:blocks}."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "META (object literal)",
+      "line": "~984 (add a line, e.g. immediately after the qmsEodSummary META entry so the new line sits away from where P1-45 will add its own META entry)",
+      "change": "weeklyBrief: { title: 'Weekly Business Summary', scope: 'weekly', icon: '📅' },  — list()@1680 maps META automatically so the new type appears in SaagarReport.list() with scope:'weekly'; history()@1668 and _renderPackList already key off META[t] and work unchanged."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "SaagarReport.openHub — GROUPS array",
+      "line": "~1686-1691",
+      "change": "Insert a new group between the Daily and Monthly groups: { h: 'Weekly · Owner', types: ['weeklyBrief'] }. GROUPS is hardcoded and does NOT auto-derive from META, so without this the report would never appear in the hub."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "SaagarReport.openHub — TAGS object",
+      "line": "~1692-1701",
+      "change": "Add search tags: weeklyBrief: 'weekly business summary owner week wtd trend last week comparison'."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "SaagarReport.openHub — row() scope pill",
+      "line": "1708",
+      "change": "Extend the scope ternary so 'weekly' renders 'Weekly': change (m.scope === 'monthly' ? 'Monthly' : 'Daily') to (m.scope === 'monthly' ? 'Monthly' : (m.scope === 'weekly' ? 'Weekly' : 'Daily')). Without this a weekly report mislabels as 'Daily'. (The CSS class .hub-row .scope already exists in index.html L858 — no CSS change.)"
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "_packTypes + SaagarReport.pack (OPTIONAL — part e)",
+      "line": "1592 (_packTypes) / 1597-1598 (pack scope resolution)",
+      "change": "OPTIONAL and recommended DEFERRED for this wave (a one-report 'weekly pack' is low value). If a Weekly pack button is wanted: add weekly:['weeklyBrief'] to _packTypes and make pack() resolve types via this._packTypes[scope]||this._packTypes['daily'] plus a weekly label, and add a pack('weekly') button in openHub's packHtml. hubStep@1750 steps by day; leave it — the builder resolves the containing Mon–Sun week from any picked date, so day-stepping still selects a valid week."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "in-code META type (NOT a localStorage key)",
+      "name": "weeklyBrief",
+      "shape": "META.weeklyBrief = { title:'Weekly Business Summary', scope:'weekly', icon:'📅' }",
+      "defaults": "scope:'weekly' (the new third scope value alongside 'daily'|'monthly')",
+      "storageRulesNote": "Not a localStorage key — this is an entry in the in-memory META object literal. The Wave-11/12 appControlKeys()/APP_RE/validateRestoreKeyValue discipline is N/A: this item reads existing data (retail_queue_management_v1 via computeQmsDay) and writes NO new top-level pref key. saagar_rpt_recent / saagar_rpt_log (existing keys, already whitelisted) will store the string 'weeklyBrief' as a recent/history entry — additive value into an existing key, no schema change."
+    },
+    {
+      "kind": "transient in-memory model (per-render, not persisted)",
+      "name": "weekAgg result + KPI delta fields",
+      "shape": "{walkins,purchases,sales,nonPurchase,service,conversion, byCro:{cro:{cro,walkins,purchases,sales}}, perDay:[{date,walkins,purchases,sales,conv}]}; block model reuses existing block types only (header/kpi/section/table/note) with the existing KPI sub/subClass channel",
+      "defaults": "all numeric fields default 0; conversion recomputed on totals; deltas null-safe when previous week is 0 (show 'new' / absolute only, never divide by zero)",
+      "storageRulesNote": "Pure compute output built at render time from computeQmsDay; nothing persisted. No new block type is introduced — deltas ride the existing kpi it.sub/it.subClass path (subColor() L1042 already maps up=green/down=red) and a plain table, so renderDoc()/kpiTiles()/tableOpts() need no changes."
+    }
+  ],
+  "approach": "ADDITIVE, single-file (saagar-report.js). (a) Decision — NEW report TYPE, not a weekly filter over existing reports. Justification grounded in the code: reports are keyed by `type` in META/BUILDERS and `scope` is pure metadata used only for hub grouping/pack bucketing (list() L1680, row() scope pill L1708, _packTypes L1592) — there is no mechanism to pass a granularity into an existing builder. Most daily builders read single-day localStorage snapshots that do not naturally aggregate (cashDetail per date, DSR per date L261, stockDetailStore per date), so a 'weekly filter over existing' would mean rewriting many builders — a direct violation of the highest-blast-radius 'targeted change / preserve byte-for-byte' rule. QMS is the ONE cross-day-aggregatable source (computeQmsDay(dateIso), already summed across days by monthQms L88-93). So a single new weeklyBrief builder that aggregates the QMS funnel is the minimal, self-contained addition; it mirrors the existing ownerMonthly (L932) / ownerBrief (L99) patterns. (b) Week window — Monday–Sunday ISO week CONTAINING the hub-selected date (opts.date). Justified over rolling-last-7: the hub period control is a single date picker (rptDate) stepping by day (hubStep L1750); anchoring to the calendar week means every day the user steps to within a week yields the SAME stable report and a well-defined 'previous week', which is how owners reason ('this week vs last week'). (c) Comparison — fair same-span: compute nDays = number of week days up to min(weekEnd, today); current window = first nDays of this week, previous window = first nDays of last week (previous Monday +0..nDays-1). A completed past week degrades to full-7-vs-full-7; the in-progress current week compares week-to-date against the same point last week (proper pacing) instead of a misleading partial-vs-full. deltaOf() is null-safe when last week is zero. (d) Hub — new 'Weekly · Owner' GROUP + TAGS entry + the scope-pill ternary extended to 'Weekly'. (e) pack('weekly') — spec'd but recommended deferred (single report). Everything else (list, history, filename which uses opts.date, forModule) works unchanged.",
+  "ui": "In the Report hub (SaagarReport.openHub), a new section 'Weekly · Owner' appears between the two Daily sections and the Monthly sections, containing one row: 📅 Weekly Business Summary, with a 'Weekly' scope pill (new third pill value; CSS .hub-row .scope already styles it). Tapping it -> fromHub('weeklyBrief') -> preview() -> Save/Send/Print, identical to every other report. The PDF (portrait A4, native vector) header reads 'WEEKLY BUSINESS SUMMARY / Titan World + Helios · Latur', period '07 Jul – 13 Jul 2026' with a ' · week to date' suffix when the current week is incomplete. Body: a 5-tile KPI row (Walk-ins, Purchases, Conversion [hero], Sales, Non-buy) where each tile's sub-line shows the delta vs last week in green (up) / red (down) — e.g. '+12% vs last wk', conversion as '+4pp vs last wk', and Non-buy inverted (a drop shows green); a 'This Week vs Last Week' comparison table (Metric / This week / Last week / Change); a 'Daily Trend — Mon to Sun' table (one row per weekday); a 'Sales & Conversion — by CRO' table (top 8); and a footnote naming the previous-week comparison window and the 'days with no entries count as zero' caveat. Copy: title 'Weekly Business Summary'; search tags 'weekly business summary owner week wtd trend last week comparison'.",
+  "edgeCases": [
+    "Timezone off-by-one: MUST build week days with local Date (new Date(+y,+m-1,+d)) and format with a local isoOf() helper, NOT Date.toISOString() — in Asia/Kolkata (+5:30) toISOString would shift Monday to the previous Sunday. This mirrors the existing local-midnight fixes (leaveDaySpan L648, serviceAging bug-hunt #2 L820).",
+    "Partial current week (weekEnd in the future): spanEnd clamps to today; nDays<7 -> header shows 'week to date' and comparison uses the same nDays of last week (fair pacing) instead of full-vs-partial.",
+    "Previous week has zero activity: deltaOf pct is null -> show 'new' or the absolute delta only; never divide by zero.",
+    "Whole selected week in the future (user stepped forward): spanEnd<weekStart -> treat as full 7 days so both windows are symmetric zeros (avoids nDays=0).",
+    "No QMS data both weeks (cur.walkins==0 && prev.walkins==0): return header + {t:'empty'} note, matching the empty-state convention of every other builder.",
+    "Week spanning a month or year boundary (Mon 29 Jun – Sun 05 Jul, or Dec–Jan): pure date arithmetic handles it; weekLabel shows both months/years.",
+    "byCro keyed by CRO NAME string (as computeQmsDay already does): two CROs sharing a display name merge — a pre-existing engine limitation, acceptable and unchanged.",
+    "computeQmsDay unavailable (G('computeQmsDay',null) returns null): weekAgg falls back to zeros, report still renders (zeros) rather than throwing.",
+    "Per-day trend rows must stay chronological Mon->Sun (do NOT sort by value like the byCro tables do).",
+    "Non-purchase/Lost KPI delta semantics are inverted (a decrease is good=green) — must not reuse the naive up=green rule for that one tile."
+  ],
+  "verifySteps": [
+    "Harness (test seams already exposed): SaagarReport._buildModel('weeklyBrief',{date:'2026-07-13'}) — assert orientation==='portrait', blocks[0].t==='header' with a period containing '–', exactly one kpi block (5 items) whose Walk-ins/Sales tiles carry a .sub and .subClass, a 'This Week vs Last Week' table, and a 'Daily Trend' table whose body has 7 rows (or nDays rows for a partial week).",
+    "SaagarReport.list() includes {type:'weeklyBrief', scope:'weekly'}; assert the count and that scope is the literal 'weekly'.",
+    "Render smoke: SaagarReport.build('weeklyBrief',{date:'2026-07-13'}).then(b=>assert b.size>1000) — confirms jsPDF path produces a real PDF (native vector).",
+    "Delta correctness: seed retail_queue_management_v1 with QMS customers across the current and previous Mon–Sun weeks (differing walk-ins/sales), then confirm the comparison table 'Change' column and the KPI subClass (up=green/down=red) match cur-prev; confirm a previous-week-zero metric shows 'new' not NaN/Infinity.",
+    "Timezone: run with the device/emulator in Asia/Kolkata and verify the week starts on Monday and days[0] equals the expected local Monday (guards the isoOf/toISOString trap).",
+    "Hub UI: SaagarReport.openHub() -> a 'Weekly · Owner' section shows the 📅 row with a 'Weekly' pill; search 'weekly' filters to it; tapping opens the preview modal and Save/Send/Print work.",
+    "Regression: build ownerBrief, ownerMonthly, qmsReport, and run pack('daily')/pack('monthly') — all still succeed with zero new console errors, proving the shared META/GROUPS/scope-ternary edits didn't disturb existing reports.",
+    "History: after opening the weekly report once, SaagarReport.history() lists it (proves META[t] lookups resolve for the new type)."
+  ],
+  "risks": [
+    "Timezone/off-by-one in the week window is the single highest risk — using toISOString anywhere in the date math silently shifts the whole week by a day in IST. Enforce the local isoOf() helper and add the Asia/Kolkata verify step.",
+    "Shared-literal merge collisions with P1-45 (see collisionNotes): META object (977-1001), openHub GROUPS/TAGS (1686-1701), and potentially the row() scope-pill line — three regions both items touch.",
+    "KPI sub-line overflow: kpiTiles auto-shrinks the VALUE but not the SUB (FZ.kpiSub=8, drawn at fixed x, no ellipsis) — keep delta subs terse ('+12% vs last wk', '+4pp vs last wk'); long strings would clip at the tile edge.",
+    "Wrong delta polarity on the Non-purchase/Lost tile (down should read green) — easy to get backwards; call it out to the impl owner.",
+    "Performance: weeklyBrief calls computeQmsDay up to 14 times (7 current + 7 previous); each call scans all QMS customers. Fine (monthQms already calls it up to 31x), but note it scales with the QMS customer array size.",
+    "Scope-pill ternary: if only GROUPS is edited but the ternary on L1708 is missed, the weekly report renders with a 'Daily' pill — visible correctness bug, easy to overlook.",
+    "GROUPS is hardcoded (not derived from META): forgetting to add the type to a GROUP makes the report exist in list()/build() but be invisible in the hub."
+  ],
+  "collisionNotes": "SAME-FILE Wave-13 collision is with P1-45 only (the per-customer QMS non-purchase 'call sheet' described in the report-engine anchors — non-purchase walk-ins WITH a mobile from retail_queue_management_v1). Both P1-45 and P1-47 add: (1) a META entry in the 977-1001 object literal, (2) a builder property in the BUILDERS object (both insert near the tail, before the L975 closing brace — coordinate insertion points so the two new properties don't land on the same line/adjacent commas), and (3) a hub row (a GROUPS array element + a TAGS entry in openHub 1686-1701). Mitigations for the synthesis owner: place P1-47's META line right after qmsEodSummary (L984) and let P1-45 place its line elsewhere (e.g. after serviceTaxInvoice L999) so the edits are non-adjacent; P1-47 adds a NEW 'Weekly · Owner' GROUP while P1-45 (a daily-natured report) appends to the existing 'Daily · Floor & Service' GROUP, so they touch different array elements; TAGS entries are independent keys. Only P1-47 needs the row() scope-pill ternary change (L1708) — P1-45 is daily and does not, so no conflict there. No collision on list()/history()/pack (both consume META generically). IMPORTANT: this item does NOT edit index.html, so there is zero collision with the other Wave-13 shell items (P1-36 language toggle, text-size, HOME attention-list, config tabs) — those live in index.html; the report hub and all P1-47 changes live entirely in saagar-report.js.",
+  "openQuestions": [
+    "Week start convention: Monday–Sunday (recommended, ISO/retail norm) vs Sunday–Saturday — confirm the owner's operating week. The isoWeek() dow math is a one-line change if Sunday-start is preferred.",
+    "Comparison basis for the in-progress current week: fair same-span 'week-to-date vs same point last week' (recommended, spec'd) vs simple full-week-vs-full-week (simpler but makes mid-week look artificially low). Confirm the preferred product behavior.",
+    "Scope of the weekly report: QMS walk-in funnel only (recommended — the item's comparison metrics are walk-ins/sales/conversion, and QMS is the only clean cross-day aggregator) vs also folding in a weekly expense/P&L line. A weekly expense number would require a new date-range filter over gm_expenses (duplicating expenseMonth L78) — defer unless the owner wants it.",
+    "pack('weekly') UI (part e): add a 'Weekly pack' button now, or defer since there is only one weekly report? Recommended: defer (keep _packTypes generic-safe but no button).",
+    "hubStep by 7 days for weekly stepping: leave the day-stepper (any picked date resolves to its week — recommended) or add week-aware stepping? Adds hub-state complexity for little gain.",
+    "Should sales figures also cross-reference DSR bills (computeDsrDay salesAmt/salesCnt) as a secondary line, or keep QMS as the single source to avoid the QMS-vs-DSR double-count confusion the ownerBrief already navigates (L129)?"
+  ],
+  "_id": "P1-47"
+}

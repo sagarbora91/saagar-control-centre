@@ -1,0 +1,78 @@
+{
+  "item": "P1-41 — Statutory-payable card in the TAX module (read-only surfacing of the existing saagar_tax_payable bridge feed)",
+  "summary": "Surface the current month's PF / ESIC / PT / GST-estimate from the already-loaded saagar_tax_payable feed as a dedicated \"Statutory Payable\" panel. The feed reader (getTaxPayableFeed / __taxPayFeed) and the per-card badge (taxPayableBadge/taxPayableAmount) already exist; P1-41 adds only new render helpers plus two insertion points. Primary placement is a full panel in renderDashboard (always shown — figures or an empty-hint); secondary is a compact card in renderMonth's month header, shown ONLY on the current (as-of) month page and only when a non-empty current-month entry exists, so every other month page stays byte-identical. CRITICAL month-key distinction: this card keys the feed by the CURRENT real/as-of month (matching how the bridge writes out[ym(today())]), NOT the P-1 deposit-period shift that taxPayableAmount uses for per-line badges. No new localStorage key → NO STORAGE_RULES / APP_RE change (the Wave-11 key-registration lesson does not apply here). Purely additive, read-only, no library, offline.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/tax.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "NEW feed helpers (add near existing taxPayable* helpers)",
+      "line": "~2628 (right after taxPayableLine, inside the same W2-5(b) block so they sit with getTaxPayableFeed@2589 / taxPayableBadge@2619)",
+      "change": "Add module-level helpers, all reusing the EXISTING getTaxPayableFeed() (do NOT shadow __taxPayFeed): (1) fmtINR(n)=> '₹'+Math.round(Number(n)||0).toLocaleString('en-IN'); (2) fmtYMLabel(ym) => 'Mon YYYY' from a 'YYYY-MM' string via a 3-letter month array; (3) currentPayableYM() => derive 'YYYY-MM' by mirroring the curMonth IIFE@2548: read window.__stAsOf, validate /^\\d{4}-\\d{2}-\\d{2}$/, else new Date(), return getFullYear()+'-'+pad(getMonth()+1); (4) getStatutoryPayable() => const feed=getTaxPayableFeed(); const keys=Object.keys(feed).filter(k=>/^\\d{4}-\\d{2}$/.test(k)) (EXCLUDES _note); if !keys.length return null; const cy=currentPayableYM(); const ym = feed[cy] ? cy : keys.slice().sort().pop(); const rec=feed[ym]; if(!rec||typeof rec!=='object') return null; return {ym, rec, note: feed._note, isCurrent: ym===cy}; (5) renderStatutoryPayablePanel() => dashboard full panel (never '' — figures or hint, see approach); (6) renderStatutoryPayableCard(context,month) => compact month-header card, returns '' unless month===currentMonthName && getStatutoryPayable() has a NON-EMPTY current-month entry."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "renderMonth",
+      "line": "~2984 (between the mhd/mhd-note htmlParts.push@2984 and the stats push@2985)",
+      "change": "Insert htmlParts.push(renderStatutoryPayableCard('month', month)); — helper self-gates to the current-month page with data, so all other month pages render byte-identical. Do NOT reuse taxPayableAmount()/its MONTH_IDX_CAL P-1 shift here; this card is current-month, not deposit-period."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "renderDashboard",
+      "line": "~3032 (inside the big `html` template literal, immediately after the `</div>` that closes the dash-stats block and BEFORE the first `<div class=\"dash-grid-2\">`)",
+      "change": "Splice ${renderStatutoryPayablePanel()} into the template so the panel sits directly under the 4 KPI tiles. Panel is firm-agnostic — do NOT gate on getActiveFirm() (feed is business-wide)."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "none (read-only consumer of an existing shell/bridge-owned key)",
+      "name": "saagar_tax_payable",
+      "shape": "{ 'YYYY-MM': {month, pf, esic, pt, gstEstimate, sources[], at}, _note } — written by integration-bridge.js buildTaxPayable()@~542, already loaded by tax.html into __taxPayFeed@2588 via getTaxPayableFeed()@2589",
+      "defaults": "On absent/invalid: getTaxPayableFeed() already returns {} (try/catch). getStatutoryPayable() returns null → dashboard panel shows the hint, month card shows nothing.",
+      "storageRulesNote": "NO new top-level key is introduced, so NO STORAGE_RULES (index.html~1961) and NO APP_RE (index.html~5563) edit is required for P1-41. The Wave-11 'register every new key' lesson does not apply to this item. (saagar_tax_payable is owned/registered by the bridge, not by this wave.)"
+    }
+  ],
+  "approach": "ADDITIVE + READ-ONLY. tax.html already reads the feed (getTaxPayableFeed@2589, __taxPayFeed@2588) and already has per-line badges (taxPayableBadge@2619). P1-41 adds a SUMMARY surface only.\n\nMONTH-KEY DERIVATION (the load-bearing decision): the bridge writes out[m] with m=ym(today()) (integration-bridge.js@544-556) — i.e. the feed entry is keyed by the CURRENT real month. So getStatutoryPayable() targets the current/as-of month (currentPayableYM mirrors the curMonth IIFE@2548's __stAsOf-or-today logic). If feed[currentYM] is missing (common in seeded/as-of-mismatch demos where the bridge last ran on a different real date), fall back to the NEWEST feed key (max of the /^\\\\d{4}-\\\\d{2}$/ keys) and set isCurrent=false so the UI labels the actual month shown. This deliberately does NOT use taxPayableAmount()'s M→1 (prev-month) shift — that shift is correct for per-deposit-line badges (deposit for wages of month M sits on the M+1 calendar page) but WRONG for a 'what you owe this month' summary card.\n\nDASHBOARD PANEL (renderStatutoryPayablePanel, primary, always rendered): reuse existing CSS classes cos-panel + cos-panel-title@403 + ops-list/ops-row/ops-name/ops-meta/ops-val (no new CSS required). Structure:\n- Title: `Statutory Payable` (uppercase via cos-panel-title) + a right-aligned month chip fmtYMLabel(ym); when isCurrent===false add ' (latest available)'.\n- Four ops-rows: EPF (rec.pf), ESIC (rec.esic), Professional Tax (rec.pt), GST (estimate) (rec.gstEstimate) — each amount via fmtINR(). Show all four even at ₹0 but dim ₹0 rows (color:var(--g600)); the sources line explains a ₹0 (e.g. 'payroll(no statutory fields — see Payroll module)').\n- Total row (bold, amber #92400e to match the badge): fmtINR(pf+esic+pt+gstEstimate).\n- Provenance meta: `Sources: ` + escapeHtml((rec.sources||[]).join(' · ')) (fallback '—').\n- Optional 'Synced ' + formatDate((rec.at||'').slice(0,10)) if rec.at present.\n- Disclaimer footer: escapeHtml(note || 'Estimate — verify with CA before filing.') in muted small text; note that PF/ESIC/PT are business-wide (across payroll), GST is an estimate, and the whole card is not firm-specific.\nEMPTY/HINT branch (getStatutoryPayable()===null OR all four amounts 0): render a cos-panel with the same title and a hint body: `No statutory payable computed yet. Lock this month's Payroll and enter Expense GST, then run cross-module sync from the Home screen.` (offline, no link needed).\n\nMONTH-HEADER CARD (renderStatutoryPayableCard, secondary): returns '' unless month===currentMonthName() (compare against the same N[getMonth()] value the curMonth IIFE uses) AND getStatutoryPayable().isCurrent is true AND total>0. When shown, a compact one-line strip echoing the badge style: `₹<total> statutory payable this month · PF ₹x · ESIC ₹y · PT ₹z · GST ₹w · estimate — verify with CA`. No hint on month pages (dashboard carries the hint) so non-current / no-data month pages stay byte-identical to today.\n\nAll amounts Math.round(Number(x)||0); all interpolated feed strings pass through escapeHtml (sources[] is bridge-authored but escape defensively).",
+  "ui": "Dashboard: a full-width `cos-panel` titled \"STATUTORY PAYABLE\" inserted directly below the 4 KPI tiles (dash-stats) in renderDashboard@~3032, above the first dash-grid-2. Four labelled amount rows (EPF / ESIC / Professional Tax / GST estimate) + bold amber Total + grey \"Sources: payroll(2026-Jul) · expense.gm_tax_feed\" provenance + muted \"— estimate, verify with CA before filing (business-wide, not firm-specific)\". Empty state = same panel with a \"run cross-module sync / lock Payroll / enter Expense GST\" hint. Month calendar: a slim amber one-liner in the month header (after mhd-note@2984) shown ONLY on the current/as-of month when there is data — mirrors the existing taxPayableBadge amber (#92400e / #6b7280) so it reads as the same family. No new colours, no new CSS classes required (reuses cos-panel, ops-*, dash-stats family).",
+  "edgeCases": [
+    "Feed key absent entirely (getItem null) → getTaxPayableFeed()={} → getStatutoryPayable()=null → dashboard hint, no month card, 0 errors.",
+    "Feed present but only holds _note (no YYYY-MM keys) → keys filter drops _note → null → hint.",
+    "Current/as-of month has no entry but an older month does → fall back to newest key, isCurrent=false, panel labelled with that month + '(latest available)', month-header card suppressed (only shows for a genuine current-month entry).",
+    "All of pf/esic/pt=0 with sources 'payroll(no statutory fields — see Payroll module)' and gstEstimate>0 → show ₹0 dimmed rows + GST figure + that provenance so the 0 is explained, not silent.",
+    "All four amounts 0 → treat as empty (show hint on dashboard, no month card) to avoid ₹0 noise, matching the badge philosophy.",
+    "No firm selected (getActiveFirm()===null) → panel STILL renders (feed is business-wide); must NOT be gated behind a firm.",
+    "Past as-of date (isPastAsOf) → card is read-only display anyway; no writes, so no special handling needed, but confirm currentPayableYM uses __stAsOf so a past view shows that month's figure.",
+    "_note missing on an older/partial feed → fall back to fixed 'Estimate — verify with CA before filing.' string.",
+    "Non-numeric / NaN amounts in rec → Math.round(Number(x)||0) coerces to 0.",
+    "5s TTL cache on __taxPayFeed@2591 → after a fresh Home sync the card can lag up to ~5s until re-render; acceptable, note it."
+  ],
+  "verifySteps": [
+    "Harness: seed localStorage.setItem('saagar_tax_payable', JSON.stringify({'2026-07':{month:'2026-07',pf:12000,esic:3500,pt:2400,gstEstimate:48000,sources:['payroll(2026-Jul)','expense.gm_tax_feed'],at:'2026-07-13T00:00:00Z'},_note:'Best-effort... Verify with CA before filing.'})) with window.__stAsOf='2026-07-13'; open tax module → Dashboard tab shows the panel with 4 figures, Total ₹65,900, sources line, verify-with-CA note; 0 console errors.",
+    "Calendar → open July page: compact amber statutory-payable strip appears in the header; open August (or any other) page: NO strip (assert the header HTML for a non-current month equals baseline).",
+    "Remove the key (localStorage.removeItem('saagar_tax_payable')) + rerender: Dashboard shows the hint panel, month pages show no strip, 0 errors.",
+    "Zero-statutory case: seed pf/esic/pt=0, gstEstimate=48000, sources includes 'payroll(no statutory fields — see Payroll module)' → panel shows dimmed ₹0 EPF/ESIC/PT rows + GST ₹48,000 + that provenance; Total ₹48,000.",
+    "As-of mismatch: seed only '2026-05' entry with __stAsOf='2026-07-13' → panel falls back to May, shows fmtYMLabel 'May 2026' + '(latest available)', month strip suppressed on all pages.",
+    "No firm selected (clear activeFirmId): confirm the dashboard panel still renders (not hidden).",
+    "Currency: verify fmtINR renders Indian grouping (₹1,20,000 style) and matches taxPayableBadge output.",
+    "Re-run the tax harness smoke (all months + dashboard) to confirm no regression to renderMonth/renderDashboard and 0 new console errors."
+  ],
+  "risks": [
+    "renderMonth's htmlParts array and renderDashboard's single `html` template literal are SHARED regions — any other Wave-12 tax item that also injects into either will textually collide; synthesis owner must merge both insertion points rather than each item editing independently.",
+    "Must reuse the existing getTaxPayableFeed()/__taxPayFeed — a new helper that re-declares __taxPayFeed or a second getItem would double the state/cache and risk drift; spec explicitly reuses them.",
+    "Using taxPayableAmount()'s P-1 month shift by mistake would show last month's figures on a 'current month' card — the spec's currentPayableYM path avoids this; reviewers should confirm the card path never calls taxPayableAmount.",
+    "Gating the dashboard panel on getActiveFirm() would wrongly hide a business-wide figure when no firm is selected (common on first open) — explicitly do not gate.",
+    "5s TTL cache means a just-synced value can lag briefly; only cosmetic.",
+    "Feed values originate from the bridge (payroll rows may lack statutory fields), so figures can be ₹0/partial — the sources[] provenance + 'verify with CA' disclaimer are load-bearing to avoid the card being read as authoritative; do not drop them."
+  ],
+  "collisionNotes": "\"SAME-FILE (tax.html) Wave-12 neighbours: (1) P1-34 evidence-ZIP export touches the CSV export region@~2699 + snapshotAll + ensureJSZip — a DIFFERENT region from renderDashboard/renderMonth, so low collision, but if P1-34 also adds a dashboard/toolbar button it may want space near the same dash header — coordinate button placement. (2) Any Wave-12 item that adds firm-form fields / compliance fields touches saveFirm@2034 / renderFirmList / loadState — no overlap with P1-41's render helpers. (3) P1-33 (WA tax channel) lives in the SHELL WA_CFG@4514, NOT tax.html — no tax.html collision (confirmed). HARD SHARED POINTS for the synthesis owner: renderMonth@2963 htmlParts (insertion at ~2984) and renderDashboard@3002 `html` template (insertion after dash-stats). Existing feed API (getTaxPayableFeed@2589, taxPayableBadge@2619, taxPayableAmount@2606, taxPayableField@2598, taxPayableLine@2625, MONTH_IDX_CAL@2617) is REUSED read-only — P1-41 adds sibling helpers, changes none of them, so the per-line badge behaviour is unchanged. EXC_AREA_TO_MODULE@3013 already maps Tax->tax; P1-41 adds NO bridge exception (confirmed none needed).\"\n",
+  "openQuestions": [
+    "Placement scope: confirm dashboard-panel + current-month-header-strip (recommended), or dashboard-only? The strip adds calendar-context visibility but is a second insertion point to maintain.",
+    "Zero-amount lines: show all four rows with dimmed ₹0 (recommended, so provenance explains the 0) vs hide ₹0 rows (cleaner but a GST-only month looks sparse)?",
+    "Fallback behaviour when the current month has no entry: show the newest available month labelled '(latest available)' (recommended) vs show the empty hint even though older data exists? Decide which is less misleading for the CA user.",
+    "Show rec.at 'Synced <date>' timestamp on the panel (nice provenance) or omit to keep it compact?",
+    "Label wording for GST: 'GST (estimate)' distinctly vs treating all four uniformly under the single 'verify with CA' disclaimer.",
+    "Confirm the shell-owned key 'saagar_tax_payable' is intentionally EXCLUDED from tax.html's own STORAGE_RULES leaf (it is a bridge output, not a tax-module key) — so P1-41 correctly makes no registration change; synthesis owner to confirm no other Wave-12 tax item expects to register it."
+  ],
+  "_id": "P1-41"
+}

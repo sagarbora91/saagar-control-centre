@@ -1,0 +1,100 @@
+{
+  "item": "P1-38 — Attention Centre with dismiss/snooze (Home attention list in www/index.html)",
+  "summary": "Add per-item DISMISS and SNOOZE controls to the Home \"Needs attention\" list, backed by ONE new additive pref key. renderHome() (index.html ~L3152-3278) today builds an unordered items[] array (each {color,em,title,msg,action,cta}) with NO stable id and blindly renders items.slice(0,6) into #attentionList (~L3271-3272), toggling the bell dot #homeBellDot on items.length>0 (~L3275). The fix: (1) derive a STABLE per-item id from a hash of its title (which already embeds area+numbers) via the existing simpleHash() (~L2148); (2) persist dismiss/snooze state in a new key st_v5_attn_state_v1 shaped {dismissed:{id:'YYYY-MM-DD'}, snoozed:{id:'YYYY-MM-DD'}}; (3) filter items before rendering so DISMISS suppresses the current instance only for the rest of TODAY (reappears next calendar day if the condition recurs) and SNOOZE hides until a chosen future date; (4) the bell dot reflects only the post-filter ACTIVE count; (5) upgrade the already-wired bell handler openAttention() (~L3344, the ONLY caller is the bell at ~L1160) into an \"Attention Centre\" modal that lists ALL active items (not just 6) with controls plus a \"Snoozed & dismissed\" section with a Restore/un-snooze button. Fully additive: when the key is absent, attnLoadState() returns empty and the rendered list is byte-identical to today.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "www/index.html",
+      "name": "(const cluster + new attn helpers)",
+      "line": "~1998 (declare const), ~3149 (helpers next to amountsHidden/toggleHideAmounts)",
+      "change": "Add `const ATTN_STATE_KEY = \"st_v5_attn_state_v1\";` in the st_v* const cluster (near RESTORE_ROLLBACK_PREFIX ~L1998). Add a small helper block (recommended next to the ui_hide_amounts helpers ~L3149-3151): attnDaysAdd(iso,n) reusing the existing inline pattern `new Date(new Date(iso+'T00:00:00').getTime()+n*86400000).toISOString().slice(0,10)` (same idiom used at ~L3242/3248); attnLoadState() → tryJSON(safeGet(ATTN_STATE_KEY)) normalized to {dismissed:{},snoozed:{}} with GC (drop dismissed entries whose date!==todayIso() and snoozed entries whose date<=todayIso(); persist via attnSaveState ONLY if GC changed something); attnSaveState(s) → safeSet(ATTN_STATE_KEY, JSON.stringify(s)); attnId(it) → simpleHash(String(it.key||it.title||'')) (title already carries area+emoji+numbers; optional it.key override reserved for future stable sources, none set today); attnIsHidden(id,st,today) → st.dismissed[id]===today || (st.snoozed[id] && today<st.snoozed[id]); attnDismiss(id)/attnSnooze(id,days)/attnRestore(id) → mutate the loaded state (dismiss sets dismissed[id]=todayIso() and deletes snoozed[id]; snooze sets snoozed[id]=attnDaysAdd(todayIso(),days) and deletes dismissed[id]; restore deletes both), attnSaveState, then renderHome() and (if the modal is open) re-render the modal body."
+    },
+    {
+      "file": "www/index.html",
+      "name": "renderHome",
+      "line": "~3271-3275",
+      "change": "After the items[] array is fully built (right before the `if($('attentionList'))` render), insert: `const __ast=attnLoadState(); const __today=todayIso(); items.forEach(it=>{ it.__id=attnId(it); }); const __active=items.filter(it=>!attnIsHidden(it.__id,__ast,__today)); window.__attnCache=items;` Then render `__active.slice(0,6)` instead of `items.slice(0,6)`, appending Snooze + Dismiss icon-buttons to each row's action cell (wrap CTA + the two icon buttons in `<div class=\"attn-acts\">`). Keep the empty-state branch but drive it off `__active.length`. Change the bell line to `bd.classList.toggle('on', __active.length>0)`. Do NOT touch any of the ~12 inline items.push() calls (preserve byte-for-byte). Note buildTodayBrief uses viewDate() so items reflect the viewed date; ids are date-independent and dismiss compares to the REAL todayIso()."
+    },
+    {
+      "file": "www/index.html",
+      "name": "openAttention",
+      "line": "~3344-3347",
+      "change": "Replace the scroll-to-card body with an Attention Centre modal opener (or add openAttentionCentre() and repoint the bell). Call renderHome() first to refresh window.__attnCache, then read it; set $('modalTitle')='Needs attention' and $('modalBody') to: an ACTIVE section listing ALL active items (each: em+title, msg, primary CTA reusing x.action/x.cta, a Snooze control offering 1 day/3 days/1 week via onclick=\"attnSnooze('${it.__id}',N)\", and a Dismiss button onclick=\"attnDismiss('${it.__id}')\"); plus a 'Snoozed & dismissed' section (items where attnIsHidden is true) each with a Restore button onclick=\"attnRestore('${it.__id}')\" showing when it returns; call openModal(). All interpolated titles/msgs/ctas MUST go through escapeHtml() as the existing home render does. Action handlers re-render this body so the modal stays live."
+    },
+    {
+      "file": "www/index.html",
+      "name": "appControlKeys",
+      "line": "~2123",
+      "change": "Append ATTN_STATE_KEY to the returned array so the key is INCLUDED in backup/migration (isWhitelistedAppKey→appStorage→backupPayload). This is the single-line region multiple Wave-13 key items also edit — synthesis owner should merge all additions in one edit."
+    },
+    {
+      "file": "www/index.html",
+      "name": "(home bell button markup)",
+      "line": "~1160",
+      "change": "Repoint onclick=\"openAttention()\" to the modal opener (openAttentionCentre or the modified openAttention). Grep confirms the bell at L1160 is the ONLY caller of openAttention(), so this is safe. Optional: add a `<a class=\"link\" onclick=\"openAttentionCentre()\">View all</a>` in the attention section head (~L1201-1204) alongside the existing Refresh link."
+    },
+    {
+      "file": "www/index.html",
+      "name": "(attention-row CSS)",
+      "line": "~374 (after .attn-text rules)",
+      "change": "Add additive rules: `.attn-acts{display:flex;gap:6px;align-items:center}` and a compact `.attn-ico-btn{...}` (small icon button for 💤 snooze / ✕ dismiss) plus an optional muted `.attn.snoozed{opacity:.6}` for the modal's snoozed section. No change to the existing .attn grid (auto 1fr auto) — the acts wrapper occupies the existing third `auto` cell."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "localStorage top-level pref key",
+      "name": "st_v5_attn_state_v1 (via const ATTN_STATE_KEY)",
+      "shape": "JSON object {v:1, dismissed:{ \"<attnId>\":\"YYYY-MM-DD\" }, snoozed:{ \"<attnId>\":\"YYYY-MM-DD\" }} — dismissed value = the date the item was dismissed (suppressed only while ===todayIso()); snoozed value = the date to hide UNTIL (suppressed while todayIso()<value). attnId = simpleHash(title) as a decimal string.",
+      "defaults": "Key ABSENT by default. attnLoadState() returns {dismissed:{},snoozed:{}} when missing/corrupt → filter is a no-op → list identical to today. Blob is tiny (10-digit hashes); GC on every load keeps it bounded.",
+      "storageRulesNote": "NOT module-owned — do NOT add to STORAGE_RULES. (a) appControlKeys(): ADD ATTN_STATE_KEY so it rides backup/migration (isWhitelistedAppKey→true). (b) APP_RE (~L5684 `^(saagar_|gm_|st_v\\d+_|...)`): `st_v5_attn_state_v1` already matches `st_v\\d+_` → factory reset wipes it AND the pre-reset safety backup includes it. NO APP_RE edit needed. (c) Restore: restoreKeyOwnerId() returns 'control' (no STORAGE_RULES match); in validateRestoreKeyValue's owner==='control' branch (~L5493) it is not in the explicit list, not EMP/ACTIVITY/AUDIT → hits the generic `return {ok:true}` (~L5497). It is NOT in restoreBlockedKeys() (~L2127). Confirmed accepted on restore via the generic fallthrough."
+    }
+  ],
+  "approach": "Stable identity via title-hash (lowest blast radius): items already embed area+emoji+numbers in title, so attnId(it)=simpleHash(title) yields distinct ids per distinct message WITHOUT editing the ~12 inline push() sites — the id is computed centrally in one loop just before rendering. Recurrence is achieved by DATE-SCOPING the dismiss: dismiss stores todayIso() and only suppresses while that equals the current day, so a recurring condition (same title next day, e.g. a 'Stock: not locked' exception re-emitted by the bridge) produces the same id but the stale dismissed date no longer matches → it resurfaces. Snooze stores a future date and suppresses until then; un-snooze/restore lives in the modal. GC in attnLoadState() prunes inert dismissed (date!=today) and expired snoozed (date<=today) entries so the blob never grows. Everything is additive and gated on the key's presence.",
+  "ui": "Home rows keep the existing 3-column .attn grid; the third (action) cell gains an .attn-acts flex wrapper holding the existing primary CTA (Open/Fix/Sync/Backup) plus two compact icon buttons: 💤 (title 'Snooze 3 days' — one-tap default on Home) and ✕ (title 'Dismiss for today'). Copy: dismiss tooltip 'Dismiss for today — returns tomorrow if still open'; snooze tooltip 'Snooze — hide for a few days'. The bell (🔔 #homeBell) now opens the Attention Centre modal (title 'Needs attention') with two sections: 'Active (N)' listing ALL active items (no 6-cap) each with CTA + a snooze choice (1 day / 3 days / 1 week) + Dismiss; and 'Snoozed & dismissed' listing suppressed items muted (.attn.snoozed) with a 'Restore' button and the return date. Empty active list still shows the existing '✓ Nothing urgent. Today looks calm.' state. A small 'View all' link may be added beside the existing 'Refresh' link in the section head.",
+  "edgeCases": [
+    "No state key → attnLoadState() empty → __active===items → home list, order, 6-cap and bell all byte-identical to today (satisfies the additive hard rule).",
+    "Dismissed item on a later calendar day: dismissed[id] date !== todayIso() → not hidden → reappears; GC removes the stale entry. This is the core 'must resurface next day' requirement.",
+    "Snooze expiry: todayIso() >= snoozed[id] → not hidden → reappears; GC removes it.",
+    "Value-in-title changes SAME day after dismiss (e.g. '3 staff missing'→'2 staff missing'): title changes → id changes → the new instance shows same day (arguably correct, the situation changed). Documented; a source could later set a stable it.key to make dismiss value-independent.",
+    "Two sources emitting an identical title collide on one id → dismissing one dismisses both. Rare given distinct emoji/wording; harmless.",
+    "Dismissing an active item can pull a previously-7th item into the visible top-6 on Home — desired.",
+    "All items dismissed/snoozed → Home shows the 'Nothing urgent' empty state and the bell dot turns off.",
+    "High-severity exceptions are unshift()ed to the top (~L3267); they remain snoozable/dismissable — see open question about capping red/overdue items.",
+    "Viewing a PAST date: buildTodayBrief(viewDate()) yields that day's items, but dismiss compares to the REAL todayIso(); a dismiss taken while viewing a past date is dated today and hides that titled item across date views today. Minor; documented.",
+    "attnId is digits-only (simpleHash) so it is injection-safe inside onclick handlers; all titles/msgs still pass through escapeHtml().",
+    "Storage quota: blob is tiny; safeSet already toasts on QuotaExceededError.",
+    "Modal open when the storage listener fires renderHome() (~L2086/6856/7129): window.__attnCache refreshes but the open modal body is stale until the next action — optional: have renderHome() re-render the modal body if it is open."
+  ],
+  "verifySteps": [
+    "Load www/index.html in the browser harness; confirm Home 'Needs attention' renders the same items/order/≤6 as pristine and the bell dot is on when items exist; localStorage has NO st_v5_attn_state_v1.",
+    "Click ✕ Dismiss on one item → it vanishes from Home; inspect localStorage: st_v5_attn_state_v1 = {..,dismissed:{'<id>':'<today>'}}; bell reflects remaining active; a formerly-7th item (if any) now appears.",
+    "Reload same day → dismissed item stays hidden. Simulate next day (edit the stored dismissed date to yesterday, or advance the system clock) and re-render → the item REAPPEARS (recurrence proof) and the stale entry is GC'd out.",
+    "Click 💤 Snooze → snoozed[id]=today+N, item hidden; open the Attention Centre modal (bell) → item appears under 'Snoozed & dismissed' with a Restore button; click Restore → item returns to Home and the state entry is removed.",
+    "Open Attention Centre (bell) with >6 items → ALL active items list (no 6-cap), each with CTA + snooze durations + dismiss.",
+    "Dismiss/snooze every item → Home shows '✓ Nothing urgent…' and the bell dot is off.",
+    "Backup: run exportBackup/backupPayload and confirm st_v5_attn_state_v1 is present in localStorage payload; open Restore preview with a file containing it → it is listed under 'App Control' and lands in review.valid (accepted).",
+    "Factory reset: confirm APP_RE matches st_v5_attn_state_v1 (wiped) and it is included in the pre-reset safety backup.",
+    "Inject an exception/customer string containing quotes/<> into a title → confirm escapeHtml keeps the row and modal safe; browser console shows 0 errors across all the above.",
+    "Diff the no-state path against wave13_pristine/index.pristine.html rendering to confirm identical output when the key is absent."
+  ],
+  "risks": [
+    "Highest-blast-radius file: keep every edit a targeted insert into the named regions; never touch the base64 MODULES[] lines; do not rewrite the items.push() block.",
+    "Title-based id means value-in-title items reappear same-day when their number changes; if the owner expects a dismiss to stick, this may surprise — documented, mitigable later via per-source it.key.",
+    "Repointing the bell from scroll-to-card to a modal is a deliberate UX change (the feature's core) — confirm acceptable, or keep scroll and add a separate 'View all' link.",
+    "GC persisting on every load could add a localStorage write per render — guard: only attnSaveState when GC actually changed the object.",
+    "Snoozing/dismissing a red/high-severity flag (overdue tax, cash cross-check) could bury something critical — governance decision needed (see open questions).",
+    "Re-render coordination: action handlers call renderHome() then re-render the modal; ensure renderHome() never re-opens the modal (no loop)."
+  ],
+  "collisionNotes": "[\"renderHome() (~L3152-3278) is shared with the OTHER Wave-13 items: any i18n/chrome-label item (P1-36) that translates the attention CTA labels (Open/Fix/Sync/Backup) or headings touches the same render tail P1-38 rewrites (~L3271-3272). Agreement: P1-38 owns item id-compute + filtering + control markup + bell count; the i18n item owns label translation. Both must keep the ~12 items.push() calls byte-identical and keep escapeHtml on titles/ctas.\",\"appControlKeys() (~L2123) is a single-line list that EVERY Wave-13 key-adding item edits (P1-38 adds ATTN_STATE_KEY; a language/text-size prefs item likely adds its own key). Synthesis owner should merge all additions into one edit to avoid a line conflict. Same for the shared validateRestoreKeyValue control branch (~L5493) — all new control keys rely on its generic ok:true fallthrough.\",\"Config subtabs (~L1300-1308) + switchConfigTab (~L2976): P1-38 deliberately does NOT add a Settings tab (its surface is Home + a modal) to stay clear of the language/text-size item, which will likely add a 'Display/Preferences' section/tab here.\",\"CSS: P1-38 appends .attn-acts/.attn-ico-btn near ~L374; the text-size item edits :root/body font-size (~L54-57) and .subtabs. Different regions, low overlap, but both append CSS — keep blocks separate.\",\"Modal infra (#modalBackdrop / openModal / closeModal ~L6814) and #modalTitle/#modalBody are shared generic infra used serially by many features; no structural conflict, but two Wave-13 items must not both leave a modal open simultaneously.\"]",
+  "openQuestions": [
+    "Should red / high-severity exceptions (⛔ overdue tax, cash cross-check) be NON-snoozable, or capped to a short max snooze (e.g. 1 day), so critical flags can't be buried?",
+    "Bell behavior: replace the current scroll-to-card openAttention() with the modal (recommended), or keep the scroll and add a separate 'View all' link that opens the modal?",
+    "Snooze durations to offer in the modal (1 day / 3 days / 1 week?) and the one-tap default for the Home 💤 control (proposed 3 days).",
+    "Dismiss semantics: 'rest of today, returns tomorrow' (recommended, date-scoped) vs 'until the title/value changes' (needs each source to emit a stable it.key) — confirm the daily-return model is what the owner wants.",
+    "Should the manage-snoozed surface live only in the modal (recommended, avoids config collision) or also as a Settings section (would collide with the P1-36/text-size preferences tab)?",
+    "Is a numeric bell badge (active count) wanted, or is the existing plain dot sufficient (dot keeps CSS blast radius minimal)?"
+  ],
+  "_id": "P1-38"
+}

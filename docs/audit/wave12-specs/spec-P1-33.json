@@ -1,0 +1,79 @@
+{
+  "item": "P1-33 — CA WhatsApp pack per firm",
+  "summary": "Add a per-firm CA compliance-status WhatsApp pack. The shell ALREADY ships the answer to this item's headline open question: computeTaxStatus() (index.html:4324) derives overdue/due-this-week/due-this-month/filed counts + a named upcoming list PURELY from taxcal_v2.compliance[firmId][fy] records' dueDate/done/na fields — no catalogue D needed — because the tax module's materializeDueDates() (tax.html:1154, run on every renderMonth/renderDashboard) persists a {dueDate,done:false,name,buffer} record for every VISIBLE obligation of the active firm/FY across all 12 months. P1-33 converts the existing WA_CFG.tax channel (index.html:4625, currently kind:'summary', one all-firms owner note) into kind:'record' whose records = firms from taxcal_v2 (plus a synthetic 'All firms' record that preserves today's summary), and adds a per-firm 'ca_pack' template that reuses the same record-driven derivation scoped to one firm. Optionally add one in-module 'Send CA pack (WhatsApp)' button in tax.html scoped to the ACTIVE firm, which posts the existing ST_WA cross-frame message. NO new localStorage key — the only Wave-12 item with zero storage surface.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html",
+    "V:/Co work/Projects/Retail/_extracted_modules/tax.html (OPTIONAL — only if the in-module button is included)"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "saagar-control-centre/www/index.html",
+      "name": "WA_CFG.tax (channel config object)",
+      "line": "~4625-4632",
+      "change": "CONVERT from kind:'summary' to kind:'record'. New shape: { title:'Tax — send compliance pack', kind:'record', load(), findRec(id), templates:[...] }. load() reads waJSON('taxcal_v2',{}); returns a synthetic record first ({id:'__all', rec:{firmId:'__all'}, label:'All firms — compliance summary'}) then one record per firm in state.firms ({id:f.id, rec:{firmId:f.id, firm:f}, label: f.name + ' · ' + typeLabel(f.type) + ' · ' + pendingCount + ' pending'}). findRec(id) resolves '__all' or a firm by id (firms are few, but keeps parity with the service channel's findRec at 4520 so a locked in-module recordId always resolves). templates: [{id:'ca_pack', name:'CA compliance status', ok:()=>true, build:rec=> buildCaPackText(rec.firmId)}] (optionally a shorter 'ca_brief'). build() calls the new helper below and wraps with waSign(). This is the ONLY behavioural change needed for the shell WA channel."
+    },
+    {
+      "file": "saagar-control-centre/www/index.html",
+      "name": "computeFirmTaxStatus(firmId, fyStartYear) — NEW helper",
+      "line": "insert right after computeTaxStatus() ends, ~4349",
+      "change": "New helper mirroring computeTaxStatus (same Date/now/wkEnd/moEnd math at 4330-4332 so counts MATCH the tax dashboard the owner sees) but scoped to ONE firm's compliance[firmId][String(fyStartYear||2026)] bucket. Returns {firmMissing:boolean, overdue,dueWeek,dueMonth,done,total, overdueList:[{name,due}], dueMonthList:[{name,due}], next:{name,due}|null}. Skip v.na===true (match 4336) and records with no parseable dueDate (match 4339). name = shorten(v.name) (head-split on en-dash/pipe like tax.html obligationKey at 2473, then append due date to disambiguate months). firmMissing=true when compliance[firmId][fy] is absent/empty → drives the honest empty-state copy. For firmId==='__all' the ca_pack build() should instead reuse the EXISTING computeTaxStatus() (already all-firms) so the old summary is preserved verbatim/improved."
+    },
+    {
+      "file": "saagar-control-centre/www/index.html",
+      "name": "buildCaPackText(firmId) — NEW text builder (or inline in the ca_pack template)",
+      "line": "near WA_CFG, ~4625",
+      "change": "Assembles the plain-text WhatsApp body. For a real firm: header ('*Saagar Traders — Compliance status for CA*'), firm line (name + optional PAN/GSTIN + 'FY <yy-yy+1>' + 'as of <today>'), the counts line (Overdue/Due this week/Due this month), 'Filed: X of Y', then capped (<=5, '+N more') 'Overdue now:' and 'Due this month:' lists, then 'Next deadline: <name> (<due>)'. If firmMissing → honest copy: 'Open this firm once in the Tax module (any month) to generate its compliance list.' For '__all' → reuse computeTaxStatus() output (overdue/dueWeek/dueMonth/done + upcoming[] with firm names) = the current owner summary. Strip any residual HTML from legacy names with a simple regex; do NOT waEsc (this is share text, not HTML)."
+    },
+    {
+      "file": "_extracted_modules/tax.html (OPTIONAL)",
+      "name": "In-module 'Send CA pack (WhatsApp)' button + click handler",
+      "line": "dashboard header / firm-selector region (near renderDashboard 3002 or firm selector); mirror service.html:2579 ST_WA pattern",
+      "change": "Add a button (visible only when getActiveFirm() truthy) that calls window.parent.postMessage({type:'ST_WA', module:'tax', recordId:STATE.activeFirmId, templateId:'ca_pack'}, '*'). The shell handler at index.html:6732 already routes this to openWAComposer('tax', activeFirmId, 'ca_pack') which locks the recipient to that firm (read-only badge) and preselects the template. Scope to ACTIVE firm only because opening the module just ran materializeDueDates() for it, so its records are guaranteed fresh — sidesteps the stale-data risk."
+    }
+  ],
+  "newKeysOrFields": [],
+  "approach": "Additive, shell-first, zero-storage. (1) The pending-derivation question is already solved in-repo: reuse the record-driven pattern of computeTaxStatus() — iterate taxcal_v2.compliance[firmId][fy], read each record's dueDate (ISO, materialized by the module) + done + na, bucket against now/+7d/end-of-month exactly as the shell already does. NO catalogue D, no section numbers, no dates invented shell-side. (2) Convert the ONE existing WA_CFG.tax entry to kind:'record' with firms as records; prepend a synthetic 'All firms' record so the previous owner-summary capability is preserved even with zero firms (load() never returns empty → no 'no records' regression). (3) Add a per-firm computeFirmTaxStatus() helper next to computeTaxStatus() that shares its Date math so pack counts equal the tax dashboard. (4) The CA pack text = counts + capped overdue/due-this-month name lists (name shortened via the module's own en-dash/pipe head-split convention, + due date to disambiguate months) + next deadline. (5) Optional in-module button uses the existing ST_WA postMessage bridge (index.html:6732), proven by service.html:2579 — no new plumbing. Everything keys off firm.id (saveFirm at tax.html:2034 gives id/name/pan/gstin/entity/type), so the in-module recordId matches WA_CFG.tax record ids and locks cleanly.",
+  "ui": "Shell composer: opening the WA composer while Tax is active (module overflow 'Send a WhatsApp message', index.html:1659, calls openWAComposer() → scopes to WA_CFG['tax']) now shows a Recipient/record dropdown listing 'All firms — compliance summary' then each firm ('<Name> · <Type> · N pending'), a Message dropdown ('CA compliance status'), and the editable Preview textarea — reusing the generic record UI at 4703-4720. Message body copy (per firm), e.g.: '*Saagar Traders — Compliance status for CA*\\nAcme Traders · PAN ABCDE1234F · FY 2026-27 (as of 13 Jul)\\n\\nOverdue: 2 · Due this week: 1 · Due this month: 3\\nFiled: 14 of 25\\n\\nOverdue now:\\n• GSTR-3B (20 Jun)\\n• EPF (15 Jul)\\n\\nDue this month:\\n• GSTR-1 (11 Aug)\\n\\nNext deadline: TDS Deposit (7 Aug)\\n— Saagar Traders, Latur'. Optional in-module button: a compact 'Send CA pack (WhatsApp)' next to the firm selector / on the dashboard header, active-firm only; tapping opens the shell composer locked to that firm with the pack preselected (recipient shown as a read-only badge per 4697). Empty-state copy for a firm with no materialized records: 'Open this firm once in the Tax module (any month) to generate its compliance list.'",
+  "edgeCases": [
+    "No firms configured: load() still returns the synthetic 'All firms' record → composer works, ca_pack for '__all' shows 0/0/0 via computeTaxStatus (no regression vs current summary).",
+    "Firm never opened in Tax this FY (materializeDueDates never ran for it): compliance[firmId][fy] missing/empty → computeFirmTaxStatus returns firmMissing=true → honest 'open it once to populate' copy INSTEAD of a misleading 'all clear'. This is the single most important edge case.",
+    "na records (v.na===true): excluded from every count, matching computeTaxStatus:4336 and the tax module.",
+    "done records: counted as 'Filed', excluded from pending/overdue (match 4338).",
+    "Legacy compliance records missing dueDate: skipped from date buckets (match 4339) — no crash, just not listed.",
+    "Multiple financial years present under compliance[firmId]: the pack covers state.fyStartYear (the active FY the module materialized) only, and the message labels the FY so the CA knows the scope.",
+    "Long obligation names / many overdue items: name head-split for brevity + lists capped at 5 with '+N more' so the WhatsApp message stays short.",
+    "Firm with type='unregistered' or hasEmployees===false: fewer obligations materialized (getVisibleItems:2443 filters gst/payroll) → pack naturally shows fewer items; correct, no special-casing.",
+    "Firm missing PAN/GSTIN: those lines conditionally omitted.",
+    "Residual HTML in a legacy record name: strip tags in the builder (share text is plain, not HTML) — most names are already plain via stripHtml at materialize time (tax.html:1171).",
+    "Timezone/date parity: reuse computeTaxStatus's local-Date logic so shell pack counts equal what the owner sees on the tax dashboard (avoid a second, divergent date scheme)."
+  ],
+  "verifySteps": [
+    "Harness: seed localStorage.taxcal_v2 with fyStartYear + 2 firms and compliance[firmId][fy] records — some done:true, one with a past dueDate (overdue), one due within 7d, one due later this month, one na:true. Call openWAComposer('tax') in the top window; confirm the record dropdown lists 'All firms' + both firms; select firm A; confirm preview counts (overdue/dueWeek/dueMonth/filed) match a hand computation AND match computeTaxStatus filtered to that firm.",
+    "Select 'All firms'; confirm the pack equals the pre-change owner summary (overdue/dueWeek/dueMonth/done + upcoming with firm names) — i.e. no regression of the old WA_CFG.tax summary.",
+    "Seed a firm with NO compliance bucket → select it → confirm the honest empty-state copy renders and nothing throws.",
+    "Confirm the na record is excluded and a done record shows only in 'Filed X of Y', not in pending lists.",
+    "If in-module button built: from tax.html with an active firm, click it → confirm the shell composer opens LOCKED to that firm (read-only recipient badge) with 'CA compliance status' preselected and correct text; verify via the ST_WA path (index.html:6732).",
+    "Regression: call shareReport('tax') (index.html:4462) and confirm it is UNCHANGED (it uses computeTaxStatus directly, not WA_CFG) — proves the kind conversion is isolated.",
+    "Grep STORAGE_RULES (~1961) and APP_RE (~5563) before/after: confirm UNCHANGED — P1-33 adds no key; taxcal_v2 is already whitelisted and 'taxcal' is already in APP_RE.",
+    "Confirm window.WA_CFG (4641) still exposes the tax channel to iframes and the composer's generic record path (4680-4722) renders it without a config-shape error."
+  ],
+  "risks": [
+    "Stale/empty per-firm data: the shell can only read what the module already persisted; a firm not yet rendered in the module has no records. Mitigated by (a) firmMissing honest empty-state copy and (b) recommending the in-module ACTIVE-firm button (guaranteed fresh) as the primary path. Must be called out in copy, not hidden.",
+    "kind conversion (summary→record) changes the tax channel UX: the all-firms owner note now requires picking 'All firms' from the dropdown. Low risk and intended by P1-33; the synthetic record keeps the capability. If the synthesis owner prefers zero change to the existing entry, the fallback is a NEW WA_CFG.tax_ca key (see open questions) — but that clutters the dropdown and the module FAB still scopes to the old 'tax' entry.",
+    "Risk classification not derivable shell-side: getControlProfile().risk (tax.html:2870) is computed in-module and NOT persisted onto the compliance record (only name+buffer are, at 1173). The pack therefore should NOT claim a High/Med/Low taxonomy; it surfaces OVERDUE items as the urgency signal instead. Adding risk to the record would require a tax.html edit that collides with other Wave-12 tax items.",
+    "Message length: a firm with many pending obligations could produce a long message; capped lists mitigate.",
+    "Date drift: if the helper's date math diverges from computeTaxStatus, shell counts won't match the tax dashboard; mitigated by literally reusing the same now/wkEnd/moEnd construction.",
+    "If the optional in-module button is built, it adds tax.html surface that collides region-wise with the other Wave-12 tax items (P1-41 card, P1-34 zip)."
+  ],
+  "collisionNotes": "SHELL index.html: NO other Wave-12 item edits WA_CFG or computeTaxStatus — the WA_CFG.tax conversion and the new computeFirmTaxStatus/buildCaPackText helpers are P1-33-exclusive within the shell. Confirmed independent of shareReport('tax') (4462), which reads computeTaxStatus directly and is untouched. EXC_AREA_TO_MODULE (3013) already maps Tax→tax; P1-33 adds NO new bridge exception. TAX tax.html: the OPTIONAL in-module button is the only tax.html surface P1-33 touches, and it WILL collide region-wise with the other Wave-12 tax items sharing this file — P1-41 (Statutory Payable card on the dashboard/firm area), P1-34 (firm+FY evidence zip button), and P1-32 — all of which add dashboard/firm-selector UI. The synthesis owner should coordinate button placement (a single toolbar/action row) and note that all four read taxcal_v2. P1-33 does NOT touch materializeDueDates, getControlProfile, saveState, or the compliance record shape, so it does not collide with any item that mutates tax state. P1-31 is payroll-only (different file) — no collision.",
+  "openQuestions": [
+    "PRIMARY (headline): the shell derives 'pending' WITHOUT catalogue D by reading taxcal_v2.compliance[firmId][fy] records (dueDate+done+na) that the module's materializeDueDates() already persists — RESOLVED in code, but confirm the synthesis owner accepts this record-driven approach (vs a simpler firm-only summary). Recommendation: use it — it's the same source computeTaxStatus/notifications already trust.",
+    "Convert the existing WA_CFG.tax entry (kind summary→record + synthetic 'All firms') vs add a NEW WA_CFG.tax_ca key? Recommend CONVERT (single tax channel, module FAB scopes to it, dropdown stays clean).",
+    "Empty per-firm data (firm never rendered in-module): show honest 'open once to populate' copy (recommended) vs hide the firm from the list vs let the shell attempt nothing? Recommend the honest empty-state.",
+    "High-risk items: the risk field is NOT persisted on records. Derive urgency from OVERDUE items only (recommended, zero tax.html change) OR additively materialize getControlProfile().risk in materializeDueDates (tax.html edit that collides with other Wave-12 tax items)?",
+    "FY scope: pack the ACTIVE state.fyStartYear only (recommended, labelled in the message) vs roll up every FY present under compliance[firmId]?",
+    "Obligation-name brevity: full v.name vs head-split token + due date (recommended for WhatsApp)?",
+    "Include the optional in-module button, and if so scope to ACTIVE firm only (safe/fresh, recommended) vs per-firm-row buttons in the Firms modal (may open stale/empty packs for non-active firms)?"
+  ],
+  "_id": "P1-33"
+}

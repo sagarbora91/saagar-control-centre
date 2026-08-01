@@ -1,0 +1,35 @@
+{
+  "item": "SEC-05 Joiner–Mover–Leaver (activation / deactivation / immediate revocation) — reconciled against saagar_employee_master_v1 active/archived flags, STAFF_PIN_KEY, and ACTIVE_STAFF_KEY.",
+  "status": "PARTIAL",
+  "acceptanceBar": "User activation/deactivation/immediate revocation; a deactivated user cannot log in / be signed in; historical records survive and stay attributed; a leaver checklist exists. (Staff \"sign-in\" here is ATTRIBUTION only — per the line-2216 invariant it must never touch isAdmin/currentRole.)",
+  "existingCoverage": [
+    "Master model DONE: normalizeEmployee (index.html:2413-2446) persists active (bool), archived, archivedAt; getEmployeeMaster (2480), saveEmployeeMaster (2488). employeeStats splits active/inactive (2498).",
+    "Explicit ACTIVATE/DEACTIVATE DONE: toggleEmpActive(i) (5426-5433) flips active + audits employee.activate / employee.deactivate with before/after. Row button + badge at 5348-5352.",
+    "Explicit ARCHIVE DONE: archiveEmpRow(i) (5434-5442) sets active=false, archived=true, archivedAt, guarded by confirm(), audits employee.archive. Panel copy 'Edit, deactivate or archive. Archived records remain for traceability.' (1368).",
+    "Sign-in list ALREADY EXCLUDES leavers (UI-level): activeStaffEmployees() (2227) filters active!==false && !archived; renderSecurityPanel() (2239) builds #staffSignInSel from it; staffSignInPick(val) (2228-2230) re-resolves the id inside that filtered list, so a deactivated id can't be picked via the dropdown.",
+    "History survives + stays attributed DONE by design: deactivate/archive never deletes module blobs; operational pickers already drop inactive (e.g. 3079, 6270; payroll sync 2556/2561, leave sync 2603/2607 sync only active). auditLog attributes to the signed-in staffer via actor/actorId (2249-2250).",
+    "Storage plumbing DONE: EMP_MASTER_KEY, STAFF_PIN_KEY, ACTIVE_STAFF_KEY all in appControlKeys() (2149); STAFF_PIN_KEY in restoreBlockedKeys() (2153); restore validator accepts EMP_MASTER_KEY shape (5629). Adding active-flag logic needs no schema/key change."
+  ],
+  "delta": [
+    "GAP 1 (primitive gate — the task's core ask): the leaver block is UI-only. verifyStaffPin(id,pin) (2221) checks only the hash; signInStaff(emp) (2223) writes ACTIVE_STAFF_KEY with no active check. Add ONE helper (e.g. empActiveById(id): read getEmployeeMaster(), return whether that id is active && !archived) and gate BOTH primitives: signInStaff refuses (no write, toast) and verifyStaffPin returns false when the id resolves to a deactivated/archived master row. Makes the master flag the single source of truth so any future launch-time staff login inherits it.",
+    "GAP 2 (IMMEDIATE revocation of a LIVE session): activeStaff() (2222) is a snapshot of ACTIVE_STAFF_KEY and is never re-checked against the master, so a currently-signed-in staffer who is deactivated stays 'signed in' until manual sign-out/background. In toggleEmpActive (deactivate branch) and archiveEmpRow, add: if activeStaff() && String(activeStaff().id)===String(list[i].id) -> signOutStaff(). Optionally also re-validate in applyMode()/boot (2321): if the current activeStaff id is no longer active, auto signOutStaff() — cheap belt-and-suspenders.",
+    "GAP 3 (leaver checklist — MISSING entirely): no leaver/offboarding checklist exists. Add a lightweight one triggered at archive/deactivate (extend the existing confirm() or a small modal) listing: signed out, staff PIN cleared, dropped from payroll/leave sync, module handover noted. Recommend auto-clearing the leaver's credential on archive via the existing clearStaffPin(emp.id) (2219) so the PIN is revoked (already audited staff.pin.clear).",
+    "GAP 4 (naming, aligns with SEC-02): keep the primitive gate as the ONLY place that decides 'can this named user sign in' so the current dropdown-omission and any later gate stay consistent — avoid a second parallel filter."
+  ],
+  "newKeys": [],
+  "deviceRisk": "light",
+  "lockoutHazards": [
+    "P0 if mis-scoped: the active-flag gate must apply to STAFF ATTRIBUTION ONLY and NEVER to the owner/admin path. The owner is deliberately NOT an employee row (saveEmployeeMaster strips owner name, 2491-2493), so an active-flag lookup for the owner finds nothing — if that ever fed verifyPin/isAdmin the owner would be locked out. Keep the gate on verifyStaffPin/signInStaff only; do not touch verifyPin/promptVerifyOnly.",
+    "Fail-open on lookup miss: staff sign-in is attribution-only, so when the master can't be read or the id is unknown/legacy (not present), do NOT hard-block — mirror the dropdown (only refuse ids that resolve to a KNOWN row with active===false||archived). A blanket 'not found -> refuse' would strand attribution for legacy/never-registered names.",
+    "Auto-sign-out on deactivate must be try/guarded and call applyMode() so the staffSignedPill (2329) refreshes; a throw here must not abort saveEmployeeMaster or leave a stale pill.",
+    "Must preserve the line-2216 invariant: deactivation/revocation must never flip isAdmin or currentRole — a bug that changed device privilege on staff deactivate is a security regression, not just a lockout.",
+    "Idempotency: re-activating (toggleEmpActive back to active) must fully restore sign-in eligibility with no residual block; verify Activate after Deactivate re-lists the employee and lets them sign in again."
+  ],
+  "approach": "Harden, don't rebuild — the JML data model, activate/deactivate/archive actions, audit trail, and history-retention are already in place; R0-W1 adds enforcement. (1) Add one master-lookup helper and gate signInStaff + verifyStaffPin with it (staff-only, fail-open on unknown id). (2) In toggleEmpActive(deactivate) and archiveEmpRow, sign out the affected live session immediately (and optionally re-validate activeStaff in applyMode/boot). (3) Add a leaver checklist at archive/deactivate that also auto-clears the staff PIN via clearStaffPin. All edits are localized to index.html auth helpers (2217-2239) and the employee editor (5426-5442); reuse auditLog, signOutStaff, clearStaffPin, applyMode. No new localStorage keys, no storage-core/sqlite/photo-store contact.",
+  "openQuestions": [
+    "Should a leaver ALWAYS auto-clear the staff PIN on Archive (recommended for true revocation), or only on an explicit 'Offboard' action so a temporary Deactivate keeps the PIN for easy reactivation? Suggest: Archive clears PIN; plain Deactivate keeps it.",
+    "Should the leaver checklist be ephemeral (surfaced + audit-logged only, key-free) or persisted per-employee? Persisting introduces a NEW key that would then need appControlKeys()+restore-validator wiring — recommend key-free to keep deviceRisk light.",
+    "Deactivating mid-session revokes the ATTRIBUTION session, but device operational privilege is governed separately by admin PIN / currentRole (role gate, not the employee master). Confirm SEC-05 scope for R0-W1 is the named staff-attribution identity only, with role-based module access remaining under SEC-07 (P1-50 matrix is explicitly deferred to Track B)."
+  ],
+  "_id": "SEC-05"
+}

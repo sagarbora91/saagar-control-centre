@@ -1,0 +1,106 @@
+{
+  "item": "P1-35 — QRMP filing-frequency flag per firm in the TAX module (V:/Co work/Projects/Retail/_extracted_modules/tax.html). Add an optional per-firm boolean f.qrmp inside taxcal_v2; surface a QRMP badge + advisory notes on GST obligations for QRMP-scheme firms.",
+  "summary": "Add an optional boolean field `qrmp` to each record in taxcal_v2.firms[] (default undefined/false = normal monthly filer). It is a NESTED field on an already-whitelisted key, so NO new top-level localStorage key and NO STORAGE_RULES/APP_RE change is required (unlike the Wave-11 lesson). The firm form gets a checkbox (only meaningful/visible for gstRegType regular|both); saveFirm/editFirm/resetFirmForm persist and hydrate it. RECOMMENDED render effect (lowest-risk, per the pointer's steer): a clearly-labelled QRMP badge on the firm + an advisory chip on affected GST cards in renderMonth — WITHOUT hiding/rewriting any catalogue item, so scores/counts/Reports feed are byte-unchanged. Monthly GSTR-1/GSTR-3B \"(Monthly Filers)\" cards get an amber \"you file this quarterly, pay monthly via PMT-06\" note for a QRMP firm; the existing \"| QRMP Quarterly Filers\" cards get a green \"applies to your firm\" note; for a non-QRMP firm the QRMP cards get a grey \"only for QRMP-scheme firms\" note. Option B (actually hiding monthly-vs-QRMP items in getVisibleItems) is documented as an alternative but carries real correctness risk (stale materialized dueDate records leaking into shell Reports) so it is NOT the recommendation.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/tax.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "Firm-form modal HTML (#firm-form / .ff-grid)",
+      "line": "~686-701",
+      "change": "Add ONE new .ff-field after the 'GST Registration Type' select (id ff-type, ~L686-694): a checkbox <input type=checkbox id=ff-qrmp> with label 'GST Filing Frequency' and text 'QRMP — file GSTR-1 / GSTR-3B quarterly (monthly PMT-06 challans)'. Wrap the field in a container id=ff-qrmp-field so it can be shown/hidden. Use inline styles (do NOT touch the shared <style> block). Add onchange=\"syncQrmpField()\" to the existing #ff-type <select> (currently has no onchange) so the field auto-hides for composition/unregistered."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "saveFirm",
+      "line": "2034-2060",
+      "change": "Add `qrmp: document.getElementById('ff-qrmp').checked` to the `firm` object literal (~L2037-2046). Boolean from a checkbox → default false, no separate defaulting needed. This is the writer; COLLISION region flagged in pointer."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "editFirm",
+      "line": "2062-2075",
+      "change": "After setting ff-type, set `document.getElementById('ff-qrmp').checked = (f.qrmp === true)` (missing/legacy => unchecked) and call `syncQrmpField()` to apply visibility for the loaded firm's type."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "resetFirmForm",
+      "line": "2091-2098",
+      "change": "Set `document.getElementById('ff-qrmp').checked = false` and call `syncQrmpField()` (ff-type is reset to 'regular' just above, so QRMP field becomes visible+unchecked)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "syncQrmpField (NEW helper)",
+      "line": "~2098 (near resetFirmForm)",
+      "change": "New fn: reads #ff-type value; sets #ff-qrmp-field display to '' for 'regular'/'both', else 'none' (composition/unregistered). Does NOT clear the checkbox value (edit round-trips preserve it), just hides the control since QRMP is meaningless without gst obligations."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "qrmpBadge / gstFilingMode / qrmpAdvisory (NEW helpers)",
+      "line": "~2458 (after getVisibleItems block) or ~2623 (near taxPayableBadge)",
+      "change": "gstFilingMode(item): returns 'qrmp' if item.cat==='gst' && name.includes('qrmp'); 'monthly' if gst && name.includes('monthly filers'); else null (annual GSTR-9/9C, custom gst items => null). Reuse the SAME name conventions already used by taxPayableField@L2598-2604 and obligationKey@L2473. qrmpBadge(f): returns a small inline-styled '<span>QRMP</span>' chip when f&&f.qrmp, else ''. qrmpAdvisory(item,month): reads getActiveFirm(); returns '' when no firm or item.cat!=='gst'; for a QRMP firm -> amber note on 'monthly' items (suppress for type 'both'), green note on 'qrmp' items; for a non-QRMP firm -> grey note on 'qrmp' items; else ''."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "renderFirmList",
+      "line": "2013-2024",
+      "change": "Append `${qrmpBadge(f)}` after the firm-type-badge span (~L2019) so each firm row visibly shows its QRMP status."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "renderMonth (card template)",
+      "line": "2963-3000",
+      "change": "In the per-item card template (~L2994), insert `${qrmpAdvisory(item, month)}` immediately AFTER `${taxPayableBadge(item, month)}` and before the cc-filed/control-strip block. Also append the QRMP badge to the mhd-fy header (~L2984): change the firm label to `...(${typeLabel(f.type)})${qrmpBadge(f)}`. NOTE: shared with P1-41 which also edits renderMonth — see collisionNotes."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "nested optional field on existing record (NOT a new top-level localStorage key)",
+      "name": "firms[i].qrmp inside taxcal_v2",
+      "shape": "boolean — true = firm has opted into the QRMP (Quarterly Return Monthly Payment) scheme; absent/undefined/false = normal monthly filer",
+      "defaults": "undefined/false. On-read default is handled purely by JS falsiness (loadState has NO per-firm normalizer — confirmed: firms load as-is at L857; the only firm loops are renderFirmList/populateMasterFirmSelect/populateFirmSelector/collectOutstanding, none coerce). saveFirm writes an explicit boolean from the checkbox so every firm saved after this ships the field; legacy firms simply read as falsy = monthly.",
+      "storageRulesNote": "NO STORAGE_RULES or APP_RE change needed. Confirmed in shell index.html: STORAGE_RULES.tax = { exact:['taxcal_v2'], prefix:[] } (L1968) already whitelists the parent key, and the new field lives INSIDE that JSON object so it rides along in backup/migration automatically; APP_RE (L5563) already includes the `taxcal` prefix so factory reset already clears it. This is the key distinction from the Wave-11 hard lesson: that lesson applies only to NEW TOP-LEVEL keys — a nested field on an already-covered key requires no rule edit. Call this out explicitly so synthesis does not add a spurious rule."
+    }
+  ],
+  "approach": "ADDITIVE, advisory-first, single-file (tax.html only). (1) Persistence: new optional boolean firms[i].qrmp in taxcal_v2; saveFirm writes it, editFirm hydrates it, resetFirmForm clears it; no normalizer needed (falsy=monthly). (2) Form UI: a checkbox in the firm modal, auto-hidden by syncQrmpField() for GST-reg-types where QRMP is meaningless (composition/unregistered), matching the task's 'only meaningful for regular/both'. (3) RENDER EFFECT = advisory, not filtering: the catalogue already ships BOTH the monthly GSTR-1/3B '(Monthly Filers)' items (every month) AND the '| QRMP Quarterly Filers' items (quarter-end months Jul/Oct/Jan) and currently shows ALL of them to any regular/both firm — inherently ambiguous because a firm is EITHER monthly OR QRMP. The flag disambiguates via a badge + per-card advisory chip through a new qrmpAdvisory() helper and a name-based gstFilingMode() classifier (reusing the exact 'monthly filers'/'qrmp' name conventions already relied on by taxPayableField@L2598 and the QRMP note at L2600). Because nothing is hidden, getVisibleItems, the score/counts in renderMonth, renderDashboard quarter scores, materializeDueDates, collectOutstanding/Action Center, and the shell Reports feed are all byte-identical — the change is purely presentational. This directly satisfies the pointer's 'safest low-risk version is a badge + advisory rather than hiding/rewriting catalogue items'. (4) Option B (hide monthly items for QRMP firms / hide QRMP items for monthly firms, one branch in getVisibleItems@L2454) is fully specced in risks/openQuestions but NOT recommended, primarily because materializeDueDates persists {dueDate,done:false} records that the SHELL Reports/notifications read DIRECTLY (bypassing getVisibleItems), so hidden-but-materialized items would leak into shell Reports and double-count — Option A avoids that entirely.",
+  "ui": "Firm modal (Manage Firms): a new checkbox field 'GST Filing Frequency' with text 'QRMP — file GSTR-1 / GSTR-3B quarterly (monthly PMT-06 challans)' and helper subtext 'Tick if this firm opted into the Quarterly Return Monthly Payment scheme (turnover ≤ ₹5 crore).' Placed right after the GST Registration Type select; hidden automatically for Composition/Unregistered firms. Firm list rows and the calendar month header (mhd-fy) show a compact amber 'QRMP' badge when the flag is on. Per GST card (renderMonth), a one-line advisory chip below the Form/Portal line: amber for a QRMP firm on a Monthly-Filers card — 'QRMP firm: you file this quarterly, not monthly. File the quarterly GSTR-1/3B and pay monthly via PMT-06 challan (GSTR-1 IFF upload is optional).'; green for a QRMP firm on a QRMP-Quarterly card — 'Applies to your firm (QRMP quarterly filer).'; grey for a non-QRMP firm on a QRMP-Quarterly card — 'Only for QRMP-scheme firms — your firm files monthly (see the GSTR-1/3B Monthly card).' Copy is advisory only; it never disables the Mark-done control. Use inline styles / a tiny additive class to avoid editing the shared <style> block.",
+  "edgeCases": [
+    "Legacy firm with no qrmp field: reads falsy => treated as monthly. No advisory on its monthly cards (correct); QRMP quarterly cards get the grey 'only for QRMP firms' note. Behaviour identical to a firm saved with the box unticked.",
+    "No firm selected (All-Firms view): qrmpAdvisory returns '' and qrmpBadge returns '' — no chips, no crash. renderMonth already guards f with `${f?...}`.",
+    "gstRegType 'both' + qrmp on: 'both' is explicitly 'show all'. The amber 'monthly doesn't apply' advisory would be misleading, so qrmpAdvisory SUPPRESSES the amber note when type==='both' (still shows the green QRMP-applies note and the badge). Only type 'regular' gets the amber 'you file quarterly' note. (Open question for synthesis.)",
+    "Composition/Unregistered firm with qrmp somehow true (can't happen via UI since the field is hidden, but old/imported data could carry it): gst items are not shown to these types by getVisibleItems anyway, and qrmpAdvisory early-returns for item.cat!=='gst', so no chip appears. Safe.",
+    "Name-match fragility: gstFilingMode keys off the strings 'Monthly Filers' / 'QRMP' in item.name. If a future catalogue edit renames these, the classifier returns null and the advisory simply stops appearing (fails safe, no throw). Same fragility already accepted by taxPayableField@L2598-2604 and obligationKey@L2473.",
+    "Custom user obligations (expandCustom, cat:'gst'): their names don't contain 'Monthly Filers'/'QRMP' => gstFilingMode null => no advisory. Correct — custom items are user-defined frequency.",
+    "Content gap (out of scope, note only): the catalogue has NO Q4 (Jan–Mar) QRMP GSTR-1/3B items on the April page (April has only ap2/ap3 Monthly + ap_comp1 CMP-08 + ap4 GSTR-4). So a QRMP firm's April/quarter-end-Q4 filing has no positive-green card to land on; the amber note on April's Monthly cards still fires. Flag as a pre-existing authoring gap, not fixed here.",
+    "Toggling qrmp in Option A never orphans data (no records keyed on it). Only Option B would, via stale materialized dueDate records — see risks."
+  ],
+  "verifySteps": [
+    "Harness-load tax.html (or via shell). Open Manage Firms, add firm type=Regular Dealer, tick QRMP, Save Firm. Reopen editFirm on that firm → checkbox is ticked (persisted in taxcal_v2). Inspect localStorage: JSON.parse(localStorage.taxcal_v2).firms[i].qrmp === true.",
+    "Firm list row shows the amber 'QRMP' badge; calendar month header (mhd-fy) shows the QRMP badge next to the firm type.",
+    "Switch to July (Q1 quarter-end): GSTR-1 June (Monthly Filers) and GSTR-3B June (Monthly Filers) cards show the amber 'you file quarterly, pay via PMT-06' note; GSTR-1 Q1 (QRMP) and GSTR-3B Q1 (QRMP) cards show the green 'applies to your firm' note.",
+    "Switch to August (non-quarter-end): monthly GSTR cards show the amber note; no QRMP quarterly card exists there (none authored) and nothing crashes.",
+    "Untick QRMP on the firm, Save. Advisory flips: monthly cards are clean (no chip); QRMP quarterly cards (July/Oct/Jan) show the grey 'only for QRMP firms' note.",
+    "Change firm type to Composition: the QRMP checkbox field auto-hides (syncQrmpField); calendar shows only 'comp' items and no QRMP advisory appears.",
+    "REGRESSION: with a firm selected, record the renderMonth stats strip (Total / Completed / Pending / High Risk / Overdue) and the renderDashboard quarter score, toggle qrmp on↔off, and confirm every number is UNCHANGED (Option A guarantees no count/score movement).",
+    "No-firm (All Firms) view renders with zero advisory chips and no console error.",
+    "saveState/loadState round-trip: reload the module twice; qrmp survives. Then dry-run the shell factory-reset regex APP_RE against 'taxcal_v2' — matches (already covered), confirming reset still clears it.",
+    "Console clean (0 errors/warnings) across every step above; escapeHtml still applied to all firm-name output (no new XSS surface — qrmp is a boolean, never interpolated as text)."
+  ],
+  "risks": [
+    "Advisory copy accuracy: QRMP firms DO make monthly GST payments via PMT-06 for the first two months of each quarter — the amber note must say 'pay monthly via PMT-06', not 'nothing due monthly', or it would mislead. There is NO PMT-06 catalogue item (grep confirms PMT-06 appears only inside QRMP items' what/why text), so the advisory is the ONLY place the monthly-payment obligation is surfaced; keep the wording precise.",
+    "'both' firm semantics: 'Both / Show All' intentionally shows every item; an amber 'monthly doesn't apply' note contradicts that. Mitigation baked in: emit the amber note only for type==='regular'. Flagged as open question.",
+    "Name-match dependency (see edge cases) — fails safe (advisory disappears) but silently; acceptable and consistent with existing code.",
+    "Option B ONLY (if synthesis chooses filtering instead of advisory): (a) SHELL Reports/notifications read compliance[fid][fy][itemId].dueDate DIRECTLY, and materializeDueDates already persisted {dueDate,done:false} for the monthly items while the firm was non-QRMP; after turning QRMP on and hiding those monthly items, the stale records still surface in shell Reports and would DOUBLE-COUNT against the QRMP quarterly items — a real correctness bug. Fixing it requires purging/reconciling stale materialized records on flag toggle. (b) taxPayableField@L2598-2604 attaches the ≈₹ estimate only to 'GSTR-3B … Monthly Filers'; hiding those for a QRMP firm removes the ₹ estimate entirely (the QRMP quarterly card is explicitly excluded at L2600). (c) renderDashboard quarter scores shift. These three are why Option A (advisory) is recommended.",
+    "Blast radius is contained to tax.html; no shell/bridge/base64 edits; no new library; offline-safe."
+  ],
+  "collisionNotes": "Same-file Wave-12 tax items that share surfaces: (1) P1-41 (Statutory Payable card) also edits renderMonth@2963-3000 — my change is a single `${qrmpAdvisory(...)}` insert inside the existing per-item card template (after taxPayableBadge@~L2994) plus a badge in the mhd-fy header@~L2984; P1-41 adds a separate card/section. Both must land in the same renderMonth string builder — coordinate insertion order to avoid overlapping edits; no logic conflict. (2) The firm-form modal region (#firm-form HTML @L686-701) + saveFirm@2034 + editFirm@2062 + resetFirmForm@2091 is the pointer-flagged collision cluster — I own the QRMP field/checkbox here; if any other Wave-12 item adds a firm field it must share these four functions (additive object-literal keys + form-sync lines, no signature change). (3) P1-33 (WA tax channel) is SHELL-side (index.html WA_CFG.tax) and only READS taxcal_v2 firms — no code overlap, but it now has f.qrmp available if it wants to echo QRMP status in the WhatsApp summary; coordinate copy. (4) P1-34 (evidence ZIP export ~L2699+) and P1-33 do not touch getVisibleItems/renderMonth GST cards/firm form — no collision. (5) gstFilingMode reuses the exact name conventions in taxPayableField@L2598 (read-only reuse; do not change that fn).",
+  "openQuestions": [
+    "PRIMARY: adopt Option A (advisory badge + per-card notes, no hiding — RECOMMENDED, zero score/Reports impact) or Option B (hide monthly-vs-QRMP items in getVisibleItems)? I recommend A given the stale-materialized-dueDate/Reports double-count risk of B.",
+    "For gstRegType 'both' + qrmp on: suppress the amber 'monthly doesn't apply' advisory (recommended, since 'both' means show-all) and show only the green QRMP-applies note + badge? Confirm.",
+    "Should the QRMP badge also be echoed in (a) the top firm-type badge via updateFirmBadge@2413 / #firm-type-badge, and (b) the P1-33 WhatsApp tax summary? Currently specced for the firm list row + calendar month header only.",
+    "If Option B is chosen: do we (i) extend taxPayableField to map the ≈₹ estimate onto the QRMP quarterly GSTR-3B card, and (ii) purge stale materialized dueDate records on flag toggle so shell Reports don't double-count? Both are required for B to be correct.",
+    "Out-of-scope note for the owner: the catalogue lacks Q4 (Jan–Mar) QRMP GSTR-1/3B items on the April page — should a follow-up wave add them, or is the advisory-on-monthly-cards behaviour acceptable for now?"
+  ],
+  "_id": "P1-35"
+}

@@ -1,0 +1,798 @@
+{
+  "summary": "Wave 13-lite spec fleet: 5 item specs (i18n/attention/text-size/lost-walkin/weekly) + synthesis",
+  "agentCount": 6,
+  "logs": [
+    "Specs produced: 5/5"
+  ],
+  "result": {
+    "specs": [
+      {
+        "item": "P1-36 — Marathi/Hindi label toggle for SHELL CHROME (www/index.html only)",
+        "summary": "Add an English (default) / Marathi / Hindi language toggle that swaps SHELL CHROME labels only. Approach = a static `data-i18n` attribute pass (additive attributes on chrome elements) walked by a new `applyLang()`, PLUS a tiny `stT(key)` lookup used at the exact spots in renderHome() where labels are JS-generated (they get overwritten each render, so an attribute alone would be clobbered). New backed-up control pref `saagar_lang` ('en'|'mr'|'hi', default 'en'), added to appControlKeys(), naming already matches APP_RE (saagar_ prefix) and passes restore via the control ok:true fallthrough. A \"Language / भाषा\" card in Settings (sibling of the existing Display-mode card #uiModeCard) hosts a 3-way segmented control. Missing translations fall back to English (and ultimately to the hand-written English already in the DOM, never clobbered). Scope is strictly shell chrome — NOT module iframes, NOT saagar-report.js content, NOT user data / proper nouns. All grounded in the real file (no existing i18n system: `data-i18n`/`applyLang`/`getLang` grep empty; html lang=\"en\" @L2).",
+        "targetFiles": [
+          "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+        ],
+        "functionsToTouch": [
+          {
+            "file": "www/index.html",
+            "name": "NEW i18n core (I18N dict + getLang/stT/applyLang/setLang/reflectLangUI)",
+            "line": "~2060 (right after the `$`/toast/timeGreeting utility band, before applyMode@2244)",
+            "change": "ADD a self-contained i18n block. `const I18N={en:{…},mr:{…},hi:{…}}` where `en` is the complete source-of-truth (every data-i18n key present). `function getLang(){var v=safeGet('saagar_lang');return (v==='mr'||v==='hi')?v:'en';}` (validates/defaults→'en', so a tampered/garbage restored value degrades to English). `function stT(k){var l=getLang();var d=I18N[l]||I18N.en;var s=(d&&d[k]!=null)?d[k]:(I18N.en[k]!=null?I18N.en[k]:null);return s;}` (returns null when key missing everywhere). `function applyLang(){try{document.documentElement.lang=getLang();}catch(e){} document.querySelectorAll('[data-i18n]').forEach(function(el){var s=stT(el.getAttribute('data-i18n')); if(s!=null) el.textContent=s;}); document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){var s=stT(el.getAttribute('data-i18n-placeholder')); if(s!=null) el.setAttribute('placeholder',s);});}` — MUST use textContent (never innerHTML) so it is XSS-inert AND so null-skip leaves original English DOM intact. `function reflectLangUI(){var l=getLang();document.querySelectorAll('#langSeg .seg-btn').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-lang')===l);});}`. `function setLang(l){if(l!=='en'&&l!=='mr'&&l!=='hi')return;safeSet('saagar_lang',l);applyLang();reflectLangUI();try{if(!activeModuleId&&activeView==='home')renderHome();}catch(e){}try{toast('भाषा / Language: '+({en:'English',mr:'मराठी',hi:'हिंदी'}[l]));}catch(e){}}`. Name the translator `stT` (NOT `t`) — dozens of local `const t=…` exist (2062, 2643, 3019, 4393…) and a global `t` would be confusing/masked."
+          },
+          {
+            "file": "www/index.html",
+            "name": "init() boot wiring",
+            "line": "~7108 (immediately after reflectUiModeUI(); before reflectBuildBadge())",
+            "change": "ADD `try{ applyLang(); reflectLangUI(); }catch(e){}`. DOM is fully parsed at init (script is at end of body), so one applyLang() pass translates all static chrome. English-default users see no flash; only mr/hi users see a single one-time label swap."
+          },
+          {
+            "file": "www/index.html",
+            "name": "renderHome() JS-generated labels",
+            "line": "3162 (ownerLine), 3186 (heroNetLabel), 3193-3199 (hero-stat captions), 3207-3214 (quick-tile labels), 3273 (empty-state text)",
+            "change": "Wrap the ENGLISH literals in stT() at assignment (these are re-written on every render so data-i18n can't hold): L3162 `$('ownerLine').textContent = stT('home.ownerLine')||'Today at the store';`  L3186 `? (stT('hero.netToday')||'Net today') : (stT('hero.netForDay')||'Net for day')`.  Hero-stat captions array (Walk-ins/Cash/Expenses/Conversion/Grooming) — swap the 2nd tuple element to `stT('hero.walkins')||'Walk-ins'` etc. (labels are already escapeHtml'd at render — keep that; translations are dev-authored so safe either way).  Quick tiles array — swap the 3rd tuple element (Stock/CRO Login/Walk-in/Expense/Grooming/Service) to stT('quick.stock')||'Stock' etc.  Empty-state L3273 `stT('home.calm')||'Nothing urgent. Today looks calm.'`.  Do NOT translate the data-derived attention item titles/msgs/ctas (they interpolate counts/₹) or the locale date line — out of scope. OPTIONAL: timeGreeting()@2704 buckets via stT('greet.morning') etc."
+          },
+          {
+            "file": "www/index.html",
+            "name": "appControlKeys()",
+            "line": "2123",
+            "change": "Append `\"saagar_lang\"` to the returned array (like the existing \"saagar_owner_name\",\"saagar_bridge_config\" literals) so the pref is INCLUDED in backup/migration (isWhitelistedAppKey@2129 → appStorage@2130) and whitelisted on restore. NOTE: this line is also edited by the P1-37 text-size sibling — coordinate a single combined edit."
+          },
+          {
+            "file": "www/index.html",
+            "name": "Static chrome HTML — add data-i18n attributes (additive)",
+            "line": "nav 1611-1626; config subtabs 1301-1308; settings hub header 1289-1290; display-mode card 1293-1298; home section-heads 1202/1203/1208/1212/1219; hero-foot span 1192; modules view 1269/1270/1272; reports view 1280/1281; today view 1233/1245/1248/1255/1260/1261",
+            "change": "ADD data-i18n (or data-i18n-placeholder) to text-only leaf chrome elements. For elements that mix an icon/svg with text, WRAP ONLY the text in an additive <span data-i18n=…> so textContent-set never nukes the icon: nav buttons (svg+text → wrap 'Home/Modules/Reports/Settings'), seg-btn labels ('Mobile'/'Desktop' after their emoji span), display-mode h4 (has <span class=em>📱</span> → wrap text). Text-only elements take data-i18n directly: subtab buttons (People/Organisation/Masters/Roles & access/Data & backup/Sync/Diagnostics/About), section-head <h3>s (Needs attention / Quick actions / Customer lookup / Greetings due today), Refresh/Clear/Share/Reports links, hero-foot <span> (Tap for brief, run & activity), Settings-hub h2 'Settings Hub'+sub, Business modules h2+'All data stays on this device.', Reports h2+sub, Today h2 + section heads. Search inputs get data-i18n-placeholder ('Search modules…', 'Enter customer mobile…'). This is a targeted, additive attribute-only change — no existing text/behaviour altered."
+          },
+          {
+            "file": "www/index.html",
+            "name": "Config Language card (new static block)",
+            "line": "insert after #uiModeCard closes at ~1299, before <nav class=subtabs> at 1300",
+            "change": "ADD a card mirroring the Display-mode card: `<div class=\"card card-pad\" id=\"langCard\" style=\"margin-bottom:14px\"><h4><span class=\"em\">🌐</span> <span data-i18n=\"cfg.language\">Language</span> / भाषा</h4><p data-i18n=\"cfg.languageHelp\">Choose the labels shown on this screen. Saved on this device.</p><div class=\"seg\" id=\"langSeg\"><button type=\"button\" class=\"seg-btn\" data-lang=\"en\" onclick=\"setLang('en')\">English</button><button type=\"button\" class=\"seg-btn\" data-lang=\"mr\" onclick=\"setLang('mr')\">मराठी</button><button type=\"button\" class=\"seg-btn\" data-lang=\"hi\" onclick=\"setLang('hi')\">हिंदी</button></div></div>`. Reuses existing .card/.seg/.seg-btn styles — no new CSS. Visible regardless of active subtab. NOTE: P1-37 text-size proposes a card in the same spot — coordinate ordering."
+          }
+        ],
+        "newKeysOrFields": [
+          {
+            "kind": "localStorage key (top-level, control-owned)",
+            "name": "saagar_lang",
+            "shape": "raw string, one of 'en' | 'mr' | 'hi' (stored raw like saagar_ui_mode stores 'mobile'/'desktop' — NOT JSON-wrapped)",
+            "defaults": "absent → getLang() returns 'en'; any unrecognised value → 'en'",
+            "storageRulesNote": "APP_RE@5684 already matches via the saagar_ prefix → factory reset wipes it AND the pre-reset safety backup includes it (no APP_RE edit needed). MUST be added to appControlKeys()@2123 so backup/migration includes it (this is the Wave-11/12 hard lesson). Restore: ownerModuleForKey→null so restoreKeyOwnerId='control'; validateRestoreKeyValue@5493 control branch falls through to `return {ok:true}` (not in the special OWNER/EMP/LOG lists, and NOT in restoreBlockedKeys@2127) — confirmed it restores. Value is applied as raw string; getLang() re-validates so a hostile 'saagar_lang':'<script>' from a tampered file is inert (only ever compared to 'mr'/'hi', never rendered)."
+          }
+        ],
+        "approach": "Hybrid, primary = additive `data-i18n` attribute pass; justification vs a pure render-time t() map: (1) Most high-value chrome (bottom nav, 8 config subtabs, Settings-hub header, home section headings, hero footer, modules/reports/today headings, display-mode card) lives in STATIC HTML that is parsed once and never regenerated — tagging it with data-i18n and walking it in applyLang() translates everything in a single pass with ZERO edits to render functions and preserves existing behaviour byte-for-byte (we only ADD attributes / wrap text in spans). A pure t() map would force converting that static HTML into JS-rendered strings = rewriting large spans, which the hard rules forbid. (2) A small, known set of labels is generated by JS inside renderHome() (heroNetLabel, the 5 hero-stat captions, the 6 quick-tile labels, ownerLine, the empty-state) — these get overwritten on every render, so a data-i18n attribute would be clobbered; for exactly these spots we wrap the literal in stT(key) at the assignment. (3) Re-translation triggers: applyLang() runs once in init() and on every setLang() toggle. It does NOT need to run inside renderHome, because (a) no data-i18n element sits inside an innerHTML-replaced host — the re-rendered hosts (#attentionList, #quickGrid, #heroStats, #empStats) contain DATA, while the chrome-label elements are static siblings — and (b) the JS-generated labels already read the live language via stT() at render time. Fallback chain: stT() returns dict[lang][key] ?? en[key] ?? null; applyLang skips null so the original hand-written English in the DOM is the ultimate fallback and is never destroyed. Devanagari (mr/hi) is LTR so no dir/RTL work. No new libraries, no new fonts — Devanagari renders via the existing font stack's OS fallback (system-ui/Roboto→Noto Devanagari on Android), fully offline.",
+        "ui": "Config → a new \"Language / भाषा\" card placed directly under the existing \"Display mode\" card (#uiModeCard) at the top of #configView, above the subtab nav so it's reachable from any subtab. Same visual language as Display mode: an h4 with a 🌐 emoji, a one-line helper, and a `.seg` segmented control with three `.seg-btn`s labelled in-language — \"English\" / \"मराठी\" / \"हिंदी\" — each calling setLang('en'|'mr'|'hi'). reflectLangUI() marks the active button. On toggle: a toast confirms (\"भाषा / Language: मराठी\") and chrome relabels instantly. Copy for the card: heading \"Language / भाषा\", helper \"Choose the labels shown on this screen. Saved on this device.\" (itself translated via data-i18n so it localises too). DRAFT label set (flag for native review): nav Home=मुख्यपृष्ठ/होम, Modules=मॉड्यूल्स/मॉड्यूल, Reports=अहवाल/रिपोर्ट, Settings=सेटिंग्ज/सेटिंग्स; Needs attention=लक्ष द्या/ध्यान दें, Quick actions=झटपट क्रिया/त्वरित कार्य, Customer lookup=ग्राहक शोध/ग्राहक खोज; Net today=आजचा निव्वळ/आज का शुद्ध; Walk-ins=ग्राहक भेटी/वॉक-इन, Cash=रोख/नकद, Expenses=खर्च/खर्च, Conversion=रूपांतर/कन्वर्ज़न.",
+        "edgeCases": [
+          "Missing translation key → stT returns null → applyLang skips the element → original English DOM text stays (never blanked). The en dict must be complete for every data-i18n key used.",
+          "Icon+text elements (nav buttons have <svg>; seg-btns and the display-mode h4 have an emoji <span>): setting textContent on the parent deletes the icon — MUST wrap only the text in a <span data-i18n>. Enumerated in functionsToTouch.",
+          "Tampered/garbage saagar_lang from a restored backup (validateRestoreKeyValue returns ok:true for control keys without checking the value) → getLang() whitelists to {en,mr,hi} and defaults to 'en'; the raw value is only string-compared, never rendered → inert.",
+          "One-time flash-of-English at boot for mr/hi users (static HTML ships English until applyLang runs in init). Default 'en' users see nothing. Acceptable; optional early inline pass mirroring the L1122/L787 saagar_ui_mode boot scripts if the flash is objectionable.",
+          "Module iframes are separate documents — chrome data-i18n does NOT and MUST NOT reach them. Verify module content stays English (scope guard).",
+          "Longer Devanagari labels can wrap/clip in the tight bottom-nav .tab and .subtab widths — keep translations concise; verify at mobile width.",
+          "Devanagari has no bundled webfont; relies on OS fallback in --font-sans (system-ui/Roboto→Noto Devanagari). Renders correctly but in a system font, not DM Sans (minor visual inconsistency).",
+          "renderHome runs every 60s (L7128); its labels use stT() so they self-refresh with the current language — no drift.",
+          "applyLang uses textContent (not innerHTML) so there is no injection surface; do NOT switch it to innerHTML."
+        ],
+        "verifySteps": [
+          "Open www/index.html in the browser harness. Default state (no saagar_lang): all chrome English, 0 console errors.",
+          "Settings → Language card → tap मराठी: verify bottom nav, config subtabs, home section headings (Needs attention/Quick actions/Customer lookup), Settings-hub header, hero footer, hero-stat captions and the 6 quick-tile labels all switch to Marathi; confirm nav/seg icons and svgs are still present (span-wrap worked).",
+          "Reload the page → saagar_lang='mr' persists and applyLang runs at boot (labels Marathi immediately, at most one flash).",
+          "Toggle हिंदी then back to English → verify full Hindi set, then a clean revert to English with NO leftover Devanagari.",
+          "Open any module (e.g. Stock) in the iframe → confirm module content is NOT translated; close → chrome still translated (scope correct).",
+          "Settings → Data & backup → export a backup → confirm the exported JSON localStorage contains saagar_lang. (Confirms appControlKeys addition.)",
+          "Console: `localStorage.setItem('saagar_lang','xx'); location.reload()` → chrome falls back to English, no error (getLang whitelist).",
+          "Missing-key check: reference a data-i18n key absent from the mr dict → that element stays English, no crash (null-skip fallback).",
+          "Layout: at mobile width (html.bcc-mobile), confirm mr/hi nav + subtab labels don't clip/overlap.",
+          "Grep the saved file to confirm base64 MODULES lines are byte-unchanged and no module blob was touched."
+        ],
+        "risks": [
+          "Translation quality: awkward/incorrect Marathi/Hindi wording is directly user-facing — needs a native reviewer (the owner is Marathi-speaking) before ship. HIGHEST risk, non-technical. Draft strings provided must be treated as placeholders.",
+          "Layout overflow/wrapping of longer Devanagari labels in tight nav/subtab/seg controls — MED; mitigate with concise wording + harness check.",
+          "No bundled Devanagari font → OS fallback rendering (visual inconsistency with DM Sans) — LOW; acceptable given the no-new-fonts rule.",
+          "Over-tagging: accidentally putting data-i18n on a proper noun (Saagar Traders / store names) or a data element would corrupt meaning — mitigate by translating ONLY the enumerated curated list; never tag brandName(#brandName)/#homeStoreName/date lines/attention data.",
+          "Merge collision with the P1-37 text-size sibling in appControlKeys()@2123, the config-card insert point (~1299), and init() wiring (~7108) — MED; coordination not correctness.",
+          "If a future wave moves a tagged chrome element inside an innerHTML-replaced host, its translation could be clobbered — LOW; mitigated by idempotent applyLang (could optionally be called in switchView)."
+        ],
+        "collisionNotes": "Shared regions with the OTHER Wave-13-lite item that also edits index.html (P1-37 text-size): (1) appControlKeys()@2123 — both append a new key literal to the SAME returned array; synthesis owner must land ONE combined edit (add both \\\"saagar_lang\\\" and the text-size key). (2) Config-card insert at the top of #configView (~L1292-1300) — both add a card as a sibling of #uiModeCard; agree an order (suggest Display mode → Language → Text size). (3) init() boot wiring (~L7108) — both add a boot apply call after reflectUiModeUI(); adjacent inserts, keep both. (4) APP_RE@5684 — NEITHER item needs to edit it if keys are named per existing prefixes (saagar_lang matches saagar_; a st_v5_textsize key matches st_v\\\\d+_). (5) validateRestoreKeyValue control branch@5493 — both rely on the ok:true fallthrough; no edit. (6) CSS body font-size@57 / :root — TEXT-SIZE edits this; LANGUAGE does NOT touch CSS at all, so the two compose cleanly (translated labels also scale with text-size). NO overlap with the call-sheet Wave-13 item, which lives entirely in saagar-report.js — this item does not touch the report engine, and report content is explicitly OUT of i18n scope.",
+        "openQuestions": [
+          "Backup semantics: the hard rule says add the new key to appControlKeys() (backed up + migrated), which I followed. But the closest precedent, saagar_ui_mode, is deliberately a PER-DEVICE pref NOT in appControlKeys (so a phone and the store tablet each keep their own layout). Language is arguably the same. Confirm: back up/restore saagar_lang (current spec) OR treat it as per-device like ui_mode (drop from appControlKeys)? Recommend follow the hard rule (backed up) unless the owner wants per-device.",
+          "Final Marathi/Hindi wording for the curated label set — MUST be confirmed by a native speaker before build. Which strings, exactly, get user-visible translations vs stay English (e.g. keep 'CRO' / 'GST' as-is)?",
+          "Scope confirmation of the ~40-key curated set: include the time-of-day greeting (optional, spec'd) and the Today-detail subheadings? Recommend NOT translating the dozens of employee-form field labels (high volume, low value, data-entry).",
+          "FOUC: accept the one-time English→mr/hi swap at boot, or add an early inline translate pass like the L787/L1122 saagar_ui_mode boot script? Recommend accept.",
+          "Translator naming: I chose stT() to avoid the many local `t` shadows — confirm the synthesis owner is OK standardising on stT()/applyLang()/getLang()/setLang() so P1-37 can reuse the same helpers if it needs any."
+        ],
+        "_id": "P1-36"
+      },
+      {
+        "item": "P1-38 — Attention Centre with dismiss/snooze (Home attention list in www/index.html)",
+        "summary": "Add per-item DISMISS and SNOOZE controls to the Home \"Needs attention\" list, backed by ONE new additive pref key. renderHome() (index.html ~L3152-3278) today builds an unordered items[] array (each {color,em,title,msg,action,cta}) with NO stable id and blindly renders items.slice(0,6) into #attentionList (~L3271-3272), toggling the bell dot #homeBellDot on items.length>0 (~L3275). The fix: (1) derive a STABLE per-item id from a hash of its title (which already embeds area+numbers) via the existing simpleHash() (~L2148); (2) persist dismiss/snooze state in a new key st_v5_attn_state_v1 shaped {dismissed:{id:'YYYY-MM-DD'}, snoozed:{id:'YYYY-MM-DD'}}; (3) filter items before rendering so DISMISS suppresses the current instance only for the rest of TODAY (reappears next calendar day if the condition recurs) and SNOOZE hides until a chosen future date; (4) the bell dot reflects only the post-filter ACTIVE count; (5) upgrade the already-wired bell handler openAttention() (~L3344, the ONLY caller is the bell at ~L1160) into an \"Attention Centre\" modal that lists ALL active items (not just 6) with controls plus a \"Snoozed & dismissed\" section with a Restore/un-snooze button. Fully additive: when the key is absent, attnLoadState() returns empty and the rendered list is byte-identical to today.",
+        "targetFiles": [
+          "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+        ],
+        "functionsToTouch": [
+          {
+            "file": "www/index.html",
+            "name": "(const cluster + new attn helpers)",
+            "line": "~1998 (declare const), ~3149 (helpers next to amountsHidden/toggleHideAmounts)",
+            "change": "Add `const ATTN_STATE_KEY = \"st_v5_attn_state_v1\";` in the st_v* const cluster (near RESTORE_ROLLBACK_PREFIX ~L1998). Add a small helper block (recommended next to the ui_hide_amounts helpers ~L3149-3151): attnDaysAdd(iso,n) reusing the existing inline pattern `new Date(new Date(iso+'T00:00:00').getTime()+n*86400000).toISOString().slice(0,10)` (same idiom used at ~L3242/3248); attnLoadState() → tryJSON(safeGet(ATTN_STATE_KEY)) normalized to {dismissed:{},snoozed:{}} with GC (drop dismissed entries whose date!==todayIso() and snoozed entries whose date<=todayIso(); persist via attnSaveState ONLY if GC changed something); attnSaveState(s) → safeSet(ATTN_STATE_KEY, JSON.stringify(s)); attnId(it) → simpleHash(String(it.key||it.title||'')) (title already carries area+emoji+numbers; optional it.key override reserved for future stable sources, none set today); attnIsHidden(id,st,today) → st.dismissed[id]===today || (st.snoozed[id] && today<st.snoozed[id]); attnDismiss(id)/attnSnooze(id,days)/attnRestore(id) → mutate the loaded state (dismiss sets dismissed[id]=todayIso() and deletes snoozed[id]; snooze sets snoozed[id]=attnDaysAdd(todayIso(),days) and deletes dismissed[id]; restore deletes both), attnSaveState, then renderHome() and (if the modal is open) re-render the modal body."
+          },
+          {
+            "file": "www/index.html",
+            "name": "renderHome",
+            "line": "~3271-3275",
+            "change": "After the items[] array is fully built (right before the `if($('attentionList'))` render), insert: `const __ast=attnLoadState(); const __today=todayIso(); items.forEach(it=>{ it.__id=attnId(it); }); const __active=items.filter(it=>!attnIsHidden(it.__id,__ast,__today)); window.__attnCache=items;` Then render `__active.slice(0,6)` instead of `items.slice(0,6)`, appending Snooze + Dismiss icon-buttons to each row's action cell (wrap CTA + the two icon buttons in `<div class=\"attn-acts\">`). Keep the empty-state branch but drive it off `__active.length`. Change the bell line to `bd.classList.toggle('on', __active.length>0)`. Do NOT touch any of the ~12 inline items.push() calls (preserve byte-for-byte). Note buildTodayBrief uses viewDate() so items reflect the viewed date; ids are date-independent and dismiss compares to the REAL todayIso()."
+          },
+          {
+            "file": "www/index.html",
+            "name": "openAttention",
+            "line": "~3344-3347",
+            "change": "Replace the scroll-to-card body with an Attention Centre modal opener (or add openAttentionCentre() and repoint the bell). Call renderHome() first to refresh window.__attnCache, then read it; set $('modalTitle')='Needs attention' and $('modalBody') to: an ACTIVE section listing ALL active items (each: em+title, msg, primary CTA reusing x.action/x.cta, a Snooze control offering 1 day/3 days/1 week via onclick=\"attnSnooze('${it.__id}',N)\", and a Dismiss button onclick=\"attnDismiss('${it.__id}')\"); plus a 'Snoozed & dismissed' section (items where attnIsHidden is true) each with a Restore button onclick=\"attnRestore('${it.__id}')\" showing when it returns; call openModal(). All interpolated titles/msgs/ctas MUST go through escapeHtml() as the existing home render does. Action handlers re-render this body so the modal stays live."
+          },
+          {
+            "file": "www/index.html",
+            "name": "appControlKeys",
+            "line": "~2123",
+            "change": "Append ATTN_STATE_KEY to the returned array so the key is INCLUDED in backup/migration (isWhitelistedAppKey→appStorage→backupPayload). This is the single-line region multiple Wave-13 key items also edit — synthesis owner should merge all additions in one edit."
+          },
+          {
+            "file": "www/index.html",
+            "name": "(home bell button markup)",
+            "line": "~1160",
+            "change": "Repoint onclick=\"openAttention()\" to the modal opener (openAttentionCentre or the modified openAttention). Grep confirms the bell at L1160 is the ONLY caller of openAttention(), so this is safe. Optional: add a `<a class=\"link\" onclick=\"openAttentionCentre()\">View all</a>` in the attention section head (~L1201-1204) alongside the existing Refresh link."
+          },
+          {
+            "file": "www/index.html",
+            "name": "(attention-row CSS)",
+            "line": "~374 (after .attn-text rules)",
+            "change": "Add additive rules: `.attn-acts{display:flex;gap:6px;align-items:center}` and a compact `.attn-ico-btn{...}` (small icon button for 💤 snooze / ✕ dismiss) plus an optional muted `.attn.snoozed{opacity:.6}` for the modal's snoozed section. No change to the existing .attn grid (auto 1fr auto) — the acts wrapper occupies the existing third `auto` cell."
+          }
+        ],
+        "newKeysOrFields": [
+          {
+            "kind": "localStorage top-level pref key",
+            "name": "st_v5_attn_state_v1 (via const ATTN_STATE_KEY)",
+            "shape": "JSON object {v:1, dismissed:{ \"<attnId>\":\"YYYY-MM-DD\" }, snoozed:{ \"<attnId>\":\"YYYY-MM-DD\" }} — dismissed value = the date the item was dismissed (suppressed only while ===todayIso()); snoozed value = the date to hide UNTIL (suppressed while todayIso()<value). attnId = simpleHash(title) as a decimal string.",
+            "defaults": "Key ABSENT by default. attnLoadState() returns {dismissed:{},snoozed:{}} when missing/corrupt → filter is a no-op → list identical to today. Blob is tiny (10-digit hashes); GC on every load keeps it bounded.",
+            "storageRulesNote": "NOT module-owned — do NOT add to STORAGE_RULES. (a) appControlKeys(): ADD ATTN_STATE_KEY so it rides backup/migration (isWhitelistedAppKey→true). (b) APP_RE (~L5684 `^(saagar_|gm_|st_v\\d+_|...)`): `st_v5_attn_state_v1` already matches `st_v\\d+_` → factory reset wipes it AND the pre-reset safety backup includes it. NO APP_RE edit needed. (c) Restore: restoreKeyOwnerId() returns 'control' (no STORAGE_RULES match); in validateRestoreKeyValue's owner==='control' branch (~L5493) it is not in the explicit list, not EMP/ACTIVITY/AUDIT → hits the generic `return {ok:true}` (~L5497). It is NOT in restoreBlockedKeys() (~L2127). Confirmed accepted on restore via the generic fallthrough."
+          }
+        ],
+        "approach": "Stable identity via title-hash (lowest blast radius): items already embed area+emoji+numbers in title, so attnId(it)=simpleHash(title) yields distinct ids per distinct message WITHOUT editing the ~12 inline push() sites — the id is computed centrally in one loop just before rendering. Recurrence is achieved by DATE-SCOPING the dismiss: dismiss stores todayIso() and only suppresses while that equals the current day, so a recurring condition (same title next day, e.g. a 'Stock: not locked' exception re-emitted by the bridge) produces the same id but the stale dismissed date no longer matches → it resurfaces. Snooze stores a future date and suppresses until then; un-snooze/restore lives in the modal. GC in attnLoadState() prunes inert dismissed (date!=today) and expired snoozed (date<=today) entries so the blob never grows. Everything is additive and gated on the key's presence.",
+        "ui": "Home rows keep the existing 3-column .attn grid; the third (action) cell gains an .attn-acts flex wrapper holding the existing primary CTA (Open/Fix/Sync/Backup) plus two compact icon buttons: 💤 (title 'Snooze 3 days' — one-tap default on Home) and ✕ (title 'Dismiss for today'). Copy: dismiss tooltip 'Dismiss for today — returns tomorrow if still open'; snooze tooltip 'Snooze — hide for a few days'. The bell (🔔 #homeBell) now opens the Attention Centre modal (title 'Needs attention') with two sections: 'Active (N)' listing ALL active items (no 6-cap) each with CTA + a snooze choice (1 day / 3 days / 1 week) + Dismiss; and 'Snoozed & dismissed' listing suppressed items muted (.attn.snoozed) with a 'Restore' button and the return date. Empty active list still shows the existing '✓ Nothing urgent. Today looks calm.' state. A small 'View all' link may be added beside the existing 'Refresh' link in the section head.",
+        "edgeCases": [
+          "No state key → attnLoadState() empty → __active===items → home list, order, 6-cap and bell all byte-identical to today (satisfies the additive hard rule).",
+          "Dismissed item on a later calendar day: dismissed[id] date !== todayIso() → not hidden → reappears; GC removes the stale entry. This is the core 'must resurface next day' requirement.",
+          "Snooze expiry: todayIso() >= snoozed[id] → not hidden → reappears; GC removes it.",
+          "Value-in-title changes SAME day after dismiss (e.g. '3 staff missing'→'2 staff missing'): title changes → id changes → the new instance shows same day (arguably correct, the situation changed). Documented; a source could later set a stable it.key to make dismiss value-independent.",
+          "Two sources emitting an identical title collide on one id → dismissing one dismisses both. Rare given distinct emoji/wording; harmless.",
+          "Dismissing an active item can pull a previously-7th item into the visible top-6 on Home — desired.",
+          "All items dismissed/snoozed → Home shows the 'Nothing urgent' empty state and the bell dot turns off.",
+          "High-severity exceptions are unshift()ed to the top (~L3267); they remain snoozable/dismissable — see open question about capping red/overdue items.",
+          "Viewing a PAST date: buildTodayBrief(viewDate()) yields that day's items, but dismiss compares to the REAL todayIso(); a dismiss taken while viewing a past date is dated today and hides that titled item across date views today. Minor; documented.",
+          "attnId is digits-only (simpleHash) so it is injection-safe inside onclick handlers; all titles/msgs still pass through escapeHtml().",
+          "Storage quota: blob is tiny; safeSet already toasts on QuotaExceededError.",
+          "Modal open when the storage listener fires renderHome() (~L2086/6856/7129): window.__attnCache refreshes but the open modal body is stale until the next action — optional: have renderHome() re-render the modal body if it is open."
+        ],
+        "verifySteps": [
+          "Load www/index.html in the browser harness; confirm Home 'Needs attention' renders the same items/order/≤6 as pristine and the bell dot is on when items exist; localStorage has NO st_v5_attn_state_v1.",
+          "Click ✕ Dismiss on one item → it vanishes from Home; inspect localStorage: st_v5_attn_state_v1 = {..,dismissed:{'<id>':'<today>'}}; bell reflects remaining active; a formerly-7th item (if any) now appears.",
+          "Reload same day → dismissed item stays hidden. Simulate next day (edit the stored dismissed date to yesterday, or advance the system clock) and re-render → the item REAPPEARS (recurrence proof) and the stale entry is GC'd out.",
+          "Click 💤 Snooze → snoozed[id]=today+N, item hidden; open the Attention Centre modal (bell) → item appears under 'Snoozed & dismissed' with a Restore button; click Restore → item returns to Home and the state entry is removed.",
+          "Open Attention Centre (bell) with >6 items → ALL active items list (no 6-cap), each with CTA + snooze durations + dismiss.",
+          "Dismiss/snooze every item → Home shows '✓ Nothing urgent…' and the bell dot is off.",
+          "Backup: run exportBackup/backupPayload and confirm st_v5_attn_state_v1 is present in localStorage payload; open Restore preview with a file containing it → it is listed under 'App Control' and lands in review.valid (accepted).",
+          "Factory reset: confirm APP_RE matches st_v5_attn_state_v1 (wiped) and it is included in the pre-reset safety backup.",
+          "Inject an exception/customer string containing quotes/<> into a title → confirm escapeHtml keeps the row and modal safe; browser console shows 0 errors across all the above.",
+          "Diff the no-state path against wave13_pristine/index.pristine.html rendering to confirm identical output when the key is absent."
+        ],
+        "risks": [
+          "Highest-blast-radius file: keep every edit a targeted insert into the named regions; never touch the base64 MODULES[] lines; do not rewrite the items.push() block.",
+          "Title-based id means value-in-title items reappear same-day when their number changes; if the owner expects a dismiss to stick, this may surprise — documented, mitigable later via per-source it.key.",
+          "Repointing the bell from scroll-to-card to a modal is a deliberate UX change (the feature's core) — confirm acceptable, or keep scroll and add a separate 'View all' link.",
+          "GC persisting on every load could add a localStorage write per render — guard: only attnSaveState when GC actually changed the object.",
+          "Snoozing/dismissing a red/high-severity flag (overdue tax, cash cross-check) could bury something critical — governance decision needed (see open questions).",
+          "Re-render coordination: action handlers call renderHome() then re-render the modal; ensure renderHome() never re-opens the modal (no loop)."
+        ],
+        "collisionNotes": "[\"renderHome() (~L3152-3278) is shared with the OTHER Wave-13 items: any i18n/chrome-label item (P1-36) that translates the attention CTA labels (Open/Fix/Sync/Backup) or headings touches the same render tail P1-38 rewrites (~L3271-3272). Agreement: P1-38 owns item id-compute + filtering + control markup + bell count; the i18n item owns label translation. Both must keep the ~12 items.push() calls byte-identical and keep escapeHtml on titles/ctas.\",\"appControlKeys() (~L2123) is a single-line list that EVERY Wave-13 key-adding item edits (P1-38 adds ATTN_STATE_KEY; a language/text-size prefs item likely adds its own key). Synthesis owner should merge all additions into one edit to avoid a line conflict. Same for the shared validateRestoreKeyValue control branch (~L5493) — all new control keys rely on its generic ok:true fallthrough.\",\"Config subtabs (~L1300-1308) + switchConfigTab (~L2976): P1-38 deliberately does NOT add a Settings tab (its surface is Home + a modal) to stay clear of the language/text-size item, which will likely add a 'Display/Preferences' section/tab here.\",\"CSS: P1-38 appends .attn-acts/.attn-ico-btn near ~L374; the text-size item edits :root/body font-size (~L54-57) and .subtabs. Different regions, low overlap, but both append CSS — keep blocks separate.\",\"Modal infra (#modalBackdrop / openModal / closeModal ~L6814) and #modalTitle/#modalBody are shared generic infra used serially by many features; no structural conflict, but two Wave-13 items must not both leave a modal open simultaneously.\"]",
+        "openQuestions": [
+          "Should red / high-severity exceptions (⛔ overdue tax, cash cross-check) be NON-snoozable, or capped to a short max snooze (e.g. 1 day), so critical flags can't be buried?",
+          "Bell behavior: replace the current scroll-to-card openAttention() with the modal (recommended), or keep the scroll and add a separate 'View all' link that opens the modal?",
+          "Snooze durations to offer in the modal (1 day / 3 days / 1 week?) and the one-tap default for the Home 💤 control (proposed 3 days).",
+          "Dismiss semantics: 'rest of today, returns tomorrow' (recommended, date-scoped) vs 'until the title/value changes' (needs each source to emit a stable it.key) — confirm the daily-return model is what the owner wants.",
+          "Should the manage-snoozed surface live only in the modal (recommended, avoids config collision) or also as a Settings section (would collide with the P1-36/text-size preferences tab)?",
+          "Is a numeric bell badge (active count) wanted, or is the existing plain dot sufficient (dot keeps CSS blast radius minimal)?"
+        ],
+        "_id": "P1-38"
+      },
+      {
+        "item": "P1-39 — Text-size setting (Normal / Large) for shell chrome (index.html)",
+        "summary": "Add a device-local \"Text size\" preference (Normal default / Large) that applies a modest proportional zoom to the shell CHROME CONTENT scroller only, leaving the fixed topbar/bottom-nav and the module iframe untouched. The feature is a byte-for-byte clone of the EXISTING \"Display mode\" (saagar_ui_mode) pref pattern: a segmented control in the Config page, a new per-device localStorage key, an apply-on-boot call, and a class toggled on <html>. Mechanism: a class `st-textsize-large` on `document.documentElement` drives a single CSS rule `html.st-textsize-large #mainContent{ zoom:1.12 }`. Because #mainContent (.main, the `overflow:hidden auto` chrome scroller at index.html L131/L1150) is a SEPARATE element from the topbar, the .botnav, and the module overlay (#moduleScreen, a position:fixed sibling at L592/L1630 that hosts #moduleFrame), scaling #mainContent enlarges every chrome view (home/today/modules/reports/config) WITHOUT scaling nav chrome or module content — so it is inherently chrome-only with no iframe-injection changes. `zoom` (not font-size) is chosen because the design is px-based (body 14px + hundreds of explicit `font-size:Npx` rules that do not inherit), so root/body font-size scaling would barely move; zoom scales text AND its container together, which is the LEAST likely to clip. Key registration mirrors saagar_ui_mode exactly (see collisionNotes / newKeysOrFields).",
+        "targetFiles": [
+          "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+        ],
+        "functionsToTouch": [
+          {
+            "file": "www/index.html",
+            "name": "CSS — text-size scale rule (new)",
+            "line": "~135 (right after the .main{} block) or a new <style id=\"st-v5-textsize\">",
+            "change": "Add ONE targeted rule: `html.st-textsize-large #mainContent{zoom:1.12}`. Normal = no class = zoom 1 (untouched). Do NOT scale <html>/<body>/.app — .app is position:fixed;inset:0 (L68) and zooming the root would recompute the fixed full-screen grid against a zoomed viewport and can push .botnav off-screen. Scope strictly to #mainContent. Reuse — no other CSS edits."
+          },
+          {
+            "file": "www/index.html",
+            "name": "Config 'Text size' card (new markup)",
+            "line": "insert after L1299 (immediately after the #uiModeCard 'Display mode' card, before the <nav class=\"subtabs\"> at L1300)",
+            "change": "Add a sibling device-pref card cloned from #uiModeCard: `<div class=\"card card-pad\" id=\"textSizeCard\" style=\"margin-bottom:14px\"><h4><span class=\"em\">🔎</span> Text size</h4><p>Make on-screen text larger for easier reading. Saved on this device.</p><div class=\"seg\" id=\"textSizeSeg\"><button type=\"button\" class=\"seg-btn\" data-textsize=\"normal\" onclick=\"setTextSize('normal')\"><span>A</span> Normal</button><button type=\"button\" class=\"seg-btn\" data-textsize=\"large\" onclick=\"setTextSize('large')\"><span style=\"font-size:1.15em\">A</span> Large</button></div></div>`. Reuses existing .card/.card-pad/.seg/.seg-btn styles (L790-793). Inline onclick is consistent with setUiMode."
+          },
+          {
+            "file": "www/index.html",
+            "name": "getTextSize / reflectTextSizeUI / setTextSize + TEXT_SIZE_KEY (new)",
+            "line": "insert after toggleUiMode at L7067 (directly below the UI-mode helper block L7047-7067)",
+            "change": "Clone the setUiMode trio: `const TEXT_SIZE_KEY='saagar_text_size';` + `function getTextSize(){ try{ var s=safeGet(TEXT_SIZE_KEY); if(s==='large'||s==='normal') return s; }catch(e){} return 'normal'; }` + `function reflectTextSizeUI(){ var s=getTextSize(); try{ document.documentElement.classList.toggle('st-textsize-large', s==='large'); }catch(e){} try{ var g=document.querySelectorAll('#textSizeSeg .seg-btn'); for(var i=0;i<g.length;i++){ g[i].classList.toggle('active', g[i].getAttribute('data-textsize')===s); } }catch(e){} }` + `function setTextSize(size){ if(size!=='normal'&&size!=='large') return; try{ safeSet(TEXT_SIZE_KEY,size); }catch(e){} reflectTextSizeUI(); try{ toast(size==='large'?'🔎 Large text':'Normal text'); }catch(e){} }`. Uses existing safeGet/safeSet/toast."
+          },
+          {
+            "file": "www/index.html",
+            "name": "init() boot-apply",
+            "line": "L7108 (immediately after the existing `reflectUiModeUI();` call in the init IIFE)",
+            "change": "Add `try{ reflectTextSizeUI(); }catch(e){}` so the saved size is applied on every launch (persistence). This runs synchronously before first render, identical to how reflectUiModeUI is applied. Also harmless to re-call inside renderConfigPage/switchConfigTab('') if the seg needs the active class refreshed, but the boot call + the click handler already keep the seg in sync; NO change to switchConfigTab is required (the card lives in static markup, always present)."
+          },
+          {
+            "file": "www/index.html",
+            "name": "appControlKeys() — DELIBERATELY NOT edited",
+            "line": "L2123",
+            "change": "Do NOT add saagar_text_size here. This mirrors the sibling saagar_ui_mode (also absent from this list) and saagar_acting_as: per-device UI prefs are intentionally excluded from manual backup/migration so one device's text size can't override another's. See openQuestions #1 — this is a conscious deviation from the generic 'add every new key to appControlKeys' rule, justified because that rule guards against losing DATA on migration, which does not apply to a device-local UI pref."
+          },
+          {
+            "file": "www/index.html",
+            "name": "APP_RE / factoryReset — no edit needed",
+            "line": "L5684",
+            "change": "saagar_text_size already matches APP_RE via the `saagar_` prefix, so factory reset wipes it AND factoryResetSafetyBackup (L5710, iterates keys matched by APP_RE) captures it in the pre-reset safety backup on the same device. No regex change."
+          },
+          {
+            "file": "www/index.html",
+            "name": "validateRestoreKeyValue / restoreBlockedKeys — no edit needed",
+            "line": "L5489 / L2127",
+            "change": "Because the key is NOT whitelisted (isWhitelistedAppKey false), validateRestoreData (L5524) routes it to result.rejected and never restores it — identical to saagar_ui_mode. It is NOT in restoreBlockedKeys (correct). No control-branch edit required."
+          }
+        ],
+        "newKeysOrFields": [
+          {
+            "kind": "localStorage pref key (top-level, device-local)",
+            "name": "saagar_text_size (recommended; st_v5_text_size is an equally-valid alternative that hews to the literal st_v\\d+_ naming guidance — both match APP_RE)",
+            "shape": "string enum: 'normal' | 'large' (any other/absent value ⇒ treated as 'normal')",
+            "defaults": "'normal' — absent key means Normal; getTextSize() returns 'normal' as the fallback",
+            "storageRulesNote": "Mirrors saagar_ui_mode EXACTLY. (a) NOT added to appControlKeys() ⇒ excluded from manual backup/migration export (appStorage filters on isWhitelistedAppKey) — intended, since text size is per-device. (b) Matches APP_RE (`saagar_` prefix at L5684) ⇒ wiped by factory reset AND included in the pre-reset safety backup (factoryResetSafetyBackup iterates APP_RE-matched keys, L5715). (c) Restore: not whitelisted ⇒ validateRestoreData rejects it (never imported from another device); it is NOT in restoreBlockedKeys, and no validateRestoreKeyValue control-branch entry is needed. Net: same lifecycle as the display-mode pref."
+          }
+        ],
+        "approach": "Additive clone of the existing Display-mode (setUiMode/saagar_ui_mode) machinery — the safest possible path because it copies a shipped, verified pattern. 1) MECHANISM: a class `st-textsize-large` on document.documentElement (mirrors the existing `bcc-mobile` class convention) gates one CSS rule that applies `zoom:1.12` to `#mainContent` only. #mainContent (.main) is the chrome content scroller (`overflow:hidden auto`, L131-135) holding all five chrome views (homeView/todayView/modulesView/reportsView/configView, L1155-1287). The topbar (.topbar) and bottom nav (.botnav) are grid siblings OUTSIDE .main, and the module iframe lives in #moduleScreen — a position:fixed;inset:0 sibling overlay (L592/L1630) — so zooming #mainContent scales chrome content while leaving nav chrome and module content pixel-identical. 2) WHY zoom, not font-size/root: the design is px-based (body 14px at L57; the vast majority of chrome text sets its own explicit `font-size:Npx` — e.g. .card p 13px, .attn-text 11-13px, .btn 13px — none of which inherit a root/body change), so a root or body font-size bump would be nearly invisible, whereas `zoom` proportionally scales text + padding + container together (less clipping than font-only, which would overflow fixed-width pills/badges). WebView target is Chromium (Android System WebView + desktop Chromium per the desktop-layout-fix history) where `zoom` is supported. 3) PERSISTENCE: reflectTextSizeUI() is called once in init() right after reflectUiModeUI() (L7108), reading the saved key synchronously before first render. 4) CHROME-ONLY (no iframe propagation) is the deliberate recommendation — see 'ui'/'risks' for justification.",
+        "ui": "Placement: a new 'Text size' card in the Config page, inserted immediately after the existing 'Display mode' card (#uiModeCard, L1292-1299) and before the subtabs nav (L1300) — co-locating the two device-preference toggles. It reuses the identical card + segmented-control markup/styles. Copy: heading '🔎 Text size'; body 'Make on-screen text larger for easier reading. Saved on this device.' (echoes the Display-mode card's 'Saved on this device' wording). Two segmented buttons: 'A Normal' (data-textsize=normal) and 'A Large' (data-textsize=large, with the sample 'A' bumped to font-size:1.15em as a visual cue). The active button is highlighted via the existing `.seg-btn.active` style (navy fill, L792), toggled by reflectTextSizeUI(). On tap, setTextSize() saves, re-applies, and shows a toast ('🔎 Large text' / 'Normal text'). Because the card itself lives inside #mainContent, choosing Large visibly enlarges the settings page including the toggle — expected, immediate feedback (like an OS accessibility control). No topbar icon-button is added (Display mode has one via #uiModeBtn, but text size is a set-and-forget preference; keeping it Config-only avoids topbar crowding — the topbar is already tight at phone widths per the L108-117 audit note).",
+        "edgeCases": [
+          "Fixed-height hero/nav: the topbar and .botnav are OUTSIDE #mainContent (grid siblings) so they are NEVER zoomed — no clipping there. The home hero (.brief/.hero) is INSIDE #homeView (inside #mainContent) so it scales proportionally; since .main scrolls vertically (`overflow:hidden auto`) the taller hero simply scrolls, no clip.",
+          "Horizontal clip risk: .main is `overflow:hidden auto` (x hidden). zoom effectively narrows the CSS viewport by the factor, so wide rows/tables could clip horizontally. Mitigation: keep Large modest at 1.12 (not 1.2), and note that data tables already wrap in `.table-wrap{overflow-x:auto}` (L575/L5200) so they self-scroll. Verify the config subtabs nav (L1300, 8 tabs incl. long 'Roles & access') doesn't clip.",
+          "Very long labels: zoom scales the label AND its container together, so wrapping/ellipsis behaviour is preserved proportionally (unlike font-only scaling). The one nowrap+ellipsis label (.brand-meta h1, L94) is in the topbar → not zoomed → unaffected.",
+          "Two-column wide-screen home: `body[data-view=\"home\"] .main` becomes a grid (L1037-1044) rendering #todayView as a 2nd column above ~768px. At zoom 1.12 the effective CSS width shrinks ~11%; on a small desktop window near the breakpoint the layout could drop to one column earlier. Acceptable (it just stacks) — verify it degrades gracefully.",
+          "Module content: opening a module shows #moduleScreen (separate fixed overlay) — text size does NOT apply there by design; module keeps its own sizing + the mobile/desktop display-mode signal.",
+          "Modal / toast / FAB text: #modalBackdrop (L1679), #toast (L1690), #st-v5-home-fab/#st-v5-next-chips (L6388-6389) are all body-level position:fixed siblings, NOT inside #mainContent, so their text is NOT scaled in v1. Acceptable limitation (transient surfaces); flagged as open question #2.",
+          "Storage unavailable (private mode / quota full): getTextSize() try/catches to 'normal'; setTextSize()'s safeSet may fail silently (safeSet already toasts on quota, L2117) — the class still applies for the session, just not persisted. Same resilience as setUiMode.",
+          "Composability with mobile/desktop display mode: text-size class and the `bcc-mobile` class are independent; zoom composes cleanly with either layout. Verify both Mobile and Desktop modes at Large.",
+          "Boot ordering: reflectTextSizeUI() runs in init() before doFirstRender/switchView('home'); the #textSizeSeg active class is set as soon as the (always-present, static) config markup exists — no render dependency."
+        ],
+        "verifySteps": [
+          "Load the shell in the browser harness (open www/index.html); confirm 0 new console errors on boot.",
+          "Config → set Text size = Large; confirm home cards, attention list, config forms, and reports text all grow ~12% while the topbar brand + bottom-nav labels stay unchanged (proves chrome-content-only scoping).",
+          "Reload the page; confirm Large persists (apply-on-boot) and the 'Large' seg button shows the active (navy) state.",
+          "Open a module (e.g. DSR/QMS) at Large; confirm the module iframe content is pixel-unchanged (proves #moduleScreen is unaffected).",
+          "Home at Large: scroll through the hero + all attention cards + module tiles; confirm no horizontal clipping and no content cut off (watch .main overflow-x:hidden). Repeat on a narrow (~360px) viewport.",
+          "Config subtabs nav at Large: confirm the 8 tab buttons (incl. 'Roles & access', 'Diagnostics') don't clip/overlap; tables inside Employees/Backup scroll horizontally rather than clip.",
+          "Toggle Mobile and Desktop display mode while Large is on; confirm both layouts render correctly (zoom composes with bcc-mobile and the wide-screen two-column home).",
+          "Set back to Normal; confirm zoom fully resets (class removed, layout byte-identical to pre-feature).",
+          "localStorage check: confirm key `saagar_text_size` = 'large'; run a manual backup export and confirm the key is ABSENT from payload.localStorage (per-device, not exported) — matches saagar_ui_mode behaviour.",
+          "Factory-reset dry check (or code-trace): confirm saagar_text_size matches APP_RE and would be both wiped and captured in the pre-reset safety backup.",
+          "Regression: with the feature added but Text size = Normal, confirm the whole shell is visually identical to the pristine build (diff against _v6_tools/wave13_pristine/index.pristine.html for the untouched regions)."
+        ],
+        "risks": [
+          "`zoom` is a non-standard (Chromium) property. It is safe for THIS app (Android System WebView + desktop Chromium), but if the team wants standards-only CSS, the fallback is font-size scaling of .main, which covers far less of this px-based design (only inheriting text). Recommend confirming zoom is acceptable (open question #3).",
+          "zoom effectively narrows the CSS viewport; combined with .main's overflow-x:hidden this is the main clipping vector. Mitigated by keeping Large at 1.12 and by pre-existing inner overflow-x:auto on tables — but MUST be verified on narrow widths and the config subtabs.",
+          "Scope creep temptation: propagating the scale into module iframes (11 separate base64-embedded documents with dense report/table layouts NOT designed to scale) is high blast-radius and hard to verify. Recommendation: DO NOT propagate in v1 (chrome-only); any future propagation is additive via a new postMessage type (like the dormant ST_SET_DATE at L7057) with per-module opt-in.",
+          "Modal/toast/FAB text not scaling could read as inconsistent to a user who set Large. Low severity (transient surfaces); can be extended later by adding those body-level containers to the scale rule if the owner wants it (open question #2).",
+          "If a future edit ever moves a position:fixed element to be a DESCENDANT of #mainContent, zoom would misplace it. Currently verified safe: all fixed FABs/chips/toasts/modal are body/.app-level (L6388-6389, L1679-1690), NOT inside .main.",
+          "Deviation from the stated hard rule (a) 'add every new key to appControlKeys': intentional and matches the saagar_ui_mode precedent, but needs explicit synthesis-owner sign-off so it isn't flagged as a rule violation (open question #1)."
+        ],
+        "collisionNotes": "SAME-FILE, SAME-REGION collisions with the other Wave-13 shell item P1-36 (language toggle) — both target index.html Config chrome + init() boot + a new per-device pref: (1) CONFIG CARD CLUSTER: P1-36 will also add a Config control (a tab or a section) and P1-39 adds a card at L1292-1299 (the device-preferences zone). Both should share ONE 'Device preferences' card cluster (Display mode + Text size + Language) rather than each independently editing L1292-1300 and shifting the subtabs nav — coordinate a single combined insertion so the two edits don't conflict on the same anchor. (2) init() BOOT-APPLY: both add an apply-on-boot call right after `reflectUiModeUI();` at L7108 — they must be sequenced as two adjacent lines, not two competing edits to the same line. (3) PREF-KEY DISCIPLINE: both introduce a new saagar_/st_v5_ pref key; confirm both follow the same registration decision (P1-39 recommends per-device / NOT-in-appControlKeys, mirroring saagar_ui_mode; if P1-36's language is also per-device it should match, otherwise justify the difference). (4) HELPER PLACEMENT: P1-39 inserts get/reflect/set helpers after L7067; if P1-36 does the same, keep them in adjacent blocks. NO collision with P1-38 (call-sheet report) — that item is entirely in saagar-report.js. NO collision with renderHome()/attention-list Wave-13 work — P1-39 does not touch renderHome or the bridge exceptions path.",
+        "openQuestions": [
+          "CONFIRM the key-registration deviation: P1-39 recommends NOT adding saagar_text_size to appControlKeys() (per-device, mirroring saagar_ui_mode), which deviates from the generic 'add every new key to appControlKeys' hard rule. The rule's intent is to avoid losing DATA on migration; a device-local UI pref is intentionally device-scoped. Approve this, or require it be backup-portable (then add to appControlKeys + a validateRestoreKeyValue control-branch entry)?",
+          "Should the scale also cover body-level surfaces (modals #modalBackdrop, toast, FABs) for consistency, or is chrome-content-only (v1) acceptable? Recommendation: chrome-content-only for v1; extendable later.",
+          "Confirm `zoom` is acceptable in the target WebView (Chromium) — recommended — vs. requiring standards-only CSS (which would force a much weaker font-size fallback on this px-based design).",
+          "Confirm the Large factor: 1.12 recommended to minimise horizontal-overflow risk; owner may want a bigger accessibility bump (up to ~1.2) at the cost of tighter overflow verification. A third 'Extra large' step is out of scope for Normal/Large but trivially addable later.",
+          "Coordinate with P1-36 on a shared 'Device preferences' Config card cluster and the init() boot-apply sequencing (see collisionNotes) so the two Wave-13 shell edits land as one coherent region rather than colliding."
+        ],
+        "_id": "P1-39"
+      },
+      {
+        "item": "P1-45 — Lost walk-in follow-up call sheet (saagar-report.js)",
+        "summary": "Add ONE new native-vector report `lostWalkinCallSheet` (scope: monthly) to the report engine. It reads QMS customers from `retail_queue_management_v1` directly (the same key/way the existing `qmsReport` builder already reads it), filters to non-purchase walk-ins in the selected month, dedupes by mobile keeping the most recent (warmest) visit, sorts most-recent-first, and emits a portrait table: # | Name | Mobile | Visit Date | CRO | Reason/Notes. It excludes \"no-number\" walk-ins from the call list (they can't be phoned) and footnotes how many were excluded. Wiring is entirely inside saagar-report.js: one META entry + one BUILDERS entry + one row in openHub GROUPS/TAGS (+ optional add to the month-end pack). No index.html/shell edit, no new localStorage key, additive only.",
+        "targetFiles": [
+          "V:/Co work/Projects/Retail/saagar-control-centre/www/saagar-report.js"
+        ],
+        "functionsToTouch": [
+          {
+            "file": "www/saagar-report.js",
+            "name": "BUILDERS (add lostWalkinCallSheet builder)",
+            "line": "~974 (append at end of the BUILDERS object, just before its closing `};` at L975, right after the ownerMonthly builder ends at L974)",
+            "change": "Add a new builder function `lostWalkinCallSheet: function(o){...}` returning {orientation:'portrait', blocks:[...]}. Read `var st=J('retail_queue_management_v1',{})||{}; var custs=Array.isArray(st.customers)?st.customers:[]; var cros=Array.isArray(st.cros)?st.cros:[];` (mirrors qmsReport@L302). Define local helpers: `nameOf(id)` = cros.filter(x=>x.id===id)[0]?.name || 'Unassigned' (copy from qmsReport@L303); `tel10(m)` = `String(m||'').replace(/\\D/g,''); return d.length>=10?d.slice(-10):''` (re-implement the module's qmsTel10 inline — engine is in shell, cannot call the iframe's fn). month=`o.month||curMonth()`. Filter lost = custs.filter(c => c && /non.?purchase/i.test(c.outcome||'') && String(c.entryTime||'').slice(0,7)===month) — the regex matches the exact stored value 'Non Purchase' (confirmed in qms.html@L565/630/672) and is consistent with the existing engine convention (qmsReport@L323). Split into callable (tel10(c.mobile) truthy) vs noNum count. Dedupe callable by tel10 keeping the row with the newer entryTime; sort rows by entryTime DESC. Empty state → {t:'empty',text:'No lost walk-ins logged for this month.'}. Emit header (period:monthLong(month)), a 3-tile kpi (Lost / Callable / No Number), a section, and a table block. Notes cell = c.lostReason joined with c.notes (closure notes). Append a {t:'note'} footnote when noNum>0. Use existing helpers num/trunc/monthLong/esc-safe (table renderer sanitizes)."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "META registry",
+            "line": "~1000 (append after the ownerMonthly entry @L1000, before the closing `};` @L1001)",
+            "change": "Add `lostWalkinCallSheet: { title: 'Lost Walk-in Call Sheet', scope: 'monthly', icon: '📞' },`. This automatically makes it appear in list()@L1680, in history()@L1668 (filtered by META[e.t]), and in pack rendering labels."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "openHub() — GROUPS + TAGS (hub is NOT auto from META; it uses hardcoded arrays)",
+            "line": "GROUPS @~1686-1691 (add the type string to one group's types[]); TAGS @~1692-1701 (add a search-tag string)",
+            "change": "Add 'lostWalkinCallSheet' to the types[] of an existing monthly group (recommend the 'Monthly · People' group @L1689, or add a floor-facing group). Add TAGS['lostWalkinCallSheet']='lost walk-in call sheet follow-up non purchase callback missed customers qms'. Without this the report will not surface in the hub UI even though list()/history() include it."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "_packTypes.monthly (OPTIONAL)",
+            "line": "~1592",
+            "change": "Optionally append 'lostWalkinCallSheet' to the monthly array so the Month-end pack (pack('monthly')) bundles it. Optional — decide with owner; not required for the standalone report to work."
+          }
+        ],
+        "newKeysOrFields": [
+          {
+            "kind": "in-memory META registry entry (NOT a localStorage key)",
+            "name": "lostWalkinCallSheet",
+            "shape": "{ title:'Lost Walk-in Call Sheet', scope:'monthly', icon:'📞' }",
+            "defaults": "scope:'monthly'; period label via monthLong(opts.month)",
+            "storageRulesNote": "NO new top-level localStorage key is introduced by this item. The builder READS the existing key `retail_queue_management_v1` (owned by the QMS module) — which the engine already reads in qmsReport — and writes nothing. Therefore appControlKeys()/isWhitelistedAppKey/APP_RE/validateRestoreKeyValue/restoreBlockedKeys are ALL not applicable here. (The Wave-11/12 new-pref discipline does not trigger for a read-only report.)"
+          },
+          {
+            "kind": "existing QMS customer fields consumed (read-only, no new fields written)",
+            "name": "retail_queue_management_v1.customers[]",
+            "shape": "{ name, mobile, noMobile, entryTime(ISO), outcome:'Non Purchase', assignedCroId, lostReason, lostValue, notes, ... }; CRO names resolved via retail_queue_management_v1.cros[] {id,name}",
+            "defaults": "Non-purchase outcome is the exact string 'Non Purchase' (space, capitalised) — set in qms.html confirmCloseLead@L565. 'No number given' walk-ins (P1-4) have noMobile:true and mobile:'' — these are the skip-or-mark cases. lostReason from the fixed dropdown; lostValue optional number; notes = closure notes.",
+            "storageRulesNote": "Additive read only. Do NOT rename/reshape any customer field. Missing fields default gracefully (name||'—', assignedCroId→'Unassigned')."
+          }
+        ],
+        "approach": "Additive, self-contained, single-file. Add a dedicated `lostWalkinCallSheet` builder to BUILDERS that follows the exact pattern of the existing `qmsReport` builder (@L299-341) — read `retail_queue_management_v1` via J(), resolve CRO names via the same nameOf() lookup over st.cros, filter customers by the same /non.?purchase/i outcome test used at L323. The engine already proves this data is reachable from the shell context (qmsReport ships and works), so no new shell plumbing is needed for data access. Register it in META (auto-flows into list()/history()) and add it to the hardcoded openHub GROUPS/TAGS so it is reachable in the UI. Scope = monthly: `fromHub` always passes {date, month} and the hub period stepper keeps rptMonth in sync with the chosen date, so opts.month is reliably populated; the window is the calendar month via `String(c.entryTime).slice(0,7)===month`, labelled with monthLong(month) exactly like groomingMonthly/expenseMonthly. Rows are deduped by 10-digit mobile (keep most-recent visit) and sorted newest-first so the owner naturally calls the warmest leads first — this also honours the 'weekly' intent (recency-ordered) inside a monthly report without needing a non-existent 'weekly' scope. All rendering uses the existing block model (header/kpi/section/table/note/empty) — no renderer changes, no new libraries, no storage writes.",
+        "ui": "Discovery: the report appears in the Generate-Report hub (SaagarReport.openHub) once added to a GROUPS array — recommend the 'Monthly · People' group with icon 📞 and title 'Lost Walk-in Call Sheet'. It is a monthly report; the user picks any date in the target month via the existing period stepper. Also auto-appears in Report history and (if added to _packTypes.monthly) the Month-end pack. PDF layout (portrait, A4): HEADER 'LOST WALK-IN CALL SHEET' / sub 'Non-purchase follow-ups · Latur' / period = month name+year. KPI row (3 tiles): 'Lost Walk-ins' (hero, total non-purchase in month), 'Callable (with #)', 'No Number'. SECTION 'Call-back List' with a warn tag = callable count. TABLE columns: # | Name | Mobile | Visit Date | CRO | Reason / Notes. Reason/Notes = lostReason, appended with closure notes when present ('Price Issue — wants to compare'). A closing {t:'note'} line: 'N more lost walk-in(s) had no phone number and could not be called back.' when any no-number walk-ins exist. Empty state (no non-purchase in month): {t:'empty'} 'No lost walk-ins logged for this month.' Copy is plain, ASCII-safe (avoid curly quotes/emoji inside table cells — the SAN.text sanitizer strips emoji; the 📞 icon lives only in META, not in PDF body).",
+        "edgeCases": [
+          "No-number walk-ins (P1-4, noMobile:true / mobile:''): EXCLUDE from the call list (a call sheet with un-callable rows is noise) but COUNT them and disclose via the KPI 'No Number' tile + footnote note. Decision favours an actionable list; alternative (mark with '—') is possible but rejected as clutter.",
+          "Duplicate mobile in the same month (repeat lost visitor): dedupe by 10-digit mobile, keep the row with the most recent entryTime. OPTIONAL enhancement: suffix '(2 visits)' in the Notes cell when count>1 to surface hot repeat leads — flagged as an optional add, default is silent dedupe.",
+          "Outcome string variance: filter uses /non.?purchase/i (matches the stored 'Non Purchase'); this also tolerates a hypothetical 'Non-Purchase'. It must NOT match 'Purchase' or 'Service' — verified the regex only fires on the non/purchase pattern.",
+          "Empty month / no non-purchase rows → {t:'empty'} block, never a blank table.",
+          "Malformed/short mobile (e.g. 7 digits, or with +91/spaces): tel10() normalises to last 10 digits and drops anything <10 digits into the no-number bucket (same rule as the module's qmsTel10) — prevents an un-dialable number appearing as callable.",
+          "assignedCroId null/unknown (walk-in closed before allocation): nameOf() returns 'Unassigned' — no crash.",
+          "entryTime missing/blank: slice(0,7)!==month so the row is naturally excluded (won't false-match the month).",
+          "Very long name/reason: trunc() caps to column widths (name 24, notes 40) exactly like sibling reports.",
+          "Timezone: entryTime is a full ISO string; slice(0,7)/slice(0,10) uses the stored local-ISO prefix consistently with qmsReport@L304 — no Date() reparto, so no TZ drift."
+        ],
+        "verifySteps": [
+          "Harness/node test seam: SaagarReport._buildModel('lostWalkinCallSheet',{month:'2026-06'}) returns {orientation:'portrait', blocks:[...]} — assert header.period is the month label, a table block exists with 6 columns, and body rows only contain customers whose outcome matches /non.?purchase/i and whose entryTime month === '2026-06'.",
+          "Seed localStorage retail_queue_management_v1 with customers covering: a valid-mobile non-purchase, a noMobile non-purchase, a duplicate-mobile pair (two dates), a 'Purchase' row, and a wrong-month non-purchase. Assert: Purchase excluded, wrong-month excluded, duplicate collapsed to the newer date, noMobile counted in 'No Number' and surfaced in the footnote, rows sorted DESC by date.",
+          "SaagarReport._renderDoc('lostWalkinCallSheet',{month:'2026-06'}) — assert it produces a jsPDF doc with no throw (DMSans font gate passes; no emoji/₹ corruption since body has no currency and icon stays in META).",
+          "Empty-state: month with zero non-purchase → single {t:'empty'} block, no table.",
+          "UI smoke in the shell: open Reports → hub → confirm the row renders under its group, search 'call'/'lost'/'follow' surfaces it (TAGS), tap → preview builds and opens; confirm it also shows in Report history after viewing.",
+          "Regression: build the existing qmsReport and dsrRegister for the same date — confirm their 'Lost Walk-ins'/'Lost Sales' sections are byte-for-byte unchanged (this item adds a builder; it must not alter them). Confirm Object.keys(META).length count in the hub footer increments by exactly 1.",
+          "If added to _packTypes.monthly: run SaagarReport.pack('monthly') and confirm the pack builds N+1 reports with no error."
+        ],
+        "risks": [
+          "LOW: hub is NOT auto-populated from META (GROUPS are hardcoded @L1686-1691) — forgetting the GROUPS/TAGS edit ships a report that is invisible in the UI (only reachable via list()/history()). Must edit both META and openHub.",
+          "LOW: highest-blast-radius file — the edit must be a pure append to the BUILDERS object, META object, and GROUPS/TAGS; any accidental reshaping of qmsReport (which shares the same st.customers read pattern) would break a shipped report. Keep the new builder fully separate.",
+          "LOW: dedupe-by-mobile could hide a legitimately-repeat lost visitor from the count if misread — mitigated by keeping the 'Lost Walk-ins' KPI as the RAW total (pre-dedupe) while the table shows deduped rows; the two numbers intentionally differ and the KPI labels make that clear.",
+          "LOW: if the owner expects a WEEKLY sheet, monthly scope may feel coarse — mitigated by newest-first sort; a true weekly variant would need custom period handling (see open questions).",
+          "VERY LOW: reading a large customers[] every generate is O(n) but bounded (single store, one month filter) — same cost profile as qmsReport; no perf concern."
+        ],
+        "collisionNotes": "Within saagar-report.js the only shared append regions are: (1) the BUILDERS object (append the new builder at its end, ~L974, before `};`@L975), (2) the META object (append after ownerMonthly @L1000, before `};`@L1001), and (3) openHub()'s hardcoded GROUPS array (@L1686-1691) + TAGS map (@L1692-1701). If ANY other Wave-13 report-engine item is built in this same file, it will touch these exact three regions — recommend every report item append its META entry, its builder, and its GROUPS/TAGS entry as NEW trailing lines (never edit an existing sibling line) so a merge is a clean line-add rather than an overlapping edit; the synthesis owner should order the appends deterministically. Cross-file collision is unlikely: the OTHER Wave-13-lite items named in the spec context (P1-36 language toggle, text-size) live in index.html (renderHome/renderConfigPage/CSS root), not in saagar-report.js — this item touches NO shell code, NO renderHome, NO appControlKeys/APP_RE. No new localStorage key means zero contention on the backup/migration/restore key lists.",
+        "openQuestions": [
+          "Scope: ship monthly-only (recommended, fits the date-based period stepper cleanly) or ALSO a weekly variant? A true 'weekly' scope isn't supported by META (only daily|monthly) or the hub period UI; a weekly sibling would need a trailing-N-day window keyed off opts.date and custom labelling. Recommend monthly + newest-first sort now, weekly deferred.",
+          "Repeat-visitor handling: silent dedupe-to-newest (recommended for a clean call list) vs show every visit vs dedupe + '(k visits)' tag? Confirm owner preference.",
+          "Should rows already having a scheduled follow-up (retail_queue_management_v1.followups[] with matching customerId, created by 'Follow-up Required = Yes') be flagged or excluded to avoid double-chasing? Default = include all non-purchase (broader net); flagging is an optional enhancement.",
+          "Include an estimated-lost-value (₹) column/total from c.lostValue to help the owner prioritise high-value leads? Adds one column + a foot total; omitted from the base spec to keep the sheet call-focused — confirm if wanted.",
+          "Include the no-number walk-ins as a separate greyed sub-list (with name + reason) so the owner can still note who they were, or leave as just a count? Base spec uses count+footnote only."
+        ],
+        "_id": "P1-45"
+      },
+      {
+        "item": "P1-47 — Weekly report scope + last-period (this-week-vs-last-week) comparison in www/saagar-report.js",
+        "summary": "Introduce a third report scope 'weekly' by adding ONE new self-contained report type — weeklyBrief (\"Weekly Business Summary\") — rather than retrofitting a weekly filter onto existing daily/monthly builders. The builder aggregates the QMS walk-in funnel (walk-ins / purchases / conversion / sales / non-purchase, plus per-CRO and per-day rows) over a Monday–Sunday week window using the existing shell aggregator computeQmsDay(dateIso), and surfaces this-week-vs-last-week deltas (+/-, %, and percentage-points for conversion) both as KPI-tile subs (green up / red down via the existing subColor) and as a dedicated comparison table. All edits are inside saagar-report.js only (the report hub lives here); index.html is NOT touched. Reads existing data — no new localStorage key.",
+        "targetFiles": [
+          "V:/Co work/Projects/Retail/saagar-control-centre/www/saagar-report.js"
+        ],
+        "functionsToTouch": [
+          {
+            "file": "www/saagar-report.js",
+            "name": "week helpers: isoOf / isoWeek / weekAgg / deltaOf / weekLabel (NEW private fns)",
+            "line": "~93 (immediately after monthQms, still inside the IIFE, alongside the other shared data helpers)",
+            "change": "Add pure helpers. isoOf(dateObj) -> LOCAL 'YYYY-MM-DD' via getFullYear/getMonth+1/getDate with padStart (NEVER toISOString — must mirror the codebase's local-midnight discipline seen in leaveDaySpan L648 and the serviceAging bug-hunt #2 L820, or the week boundary shifts a day in +5:30). isoWeek(anchorIso) -> {start,end,days:[7 iso strings Mon..Sun]} by constructing new Date(+y,+m-1,+d) then dow=(getDay()+6)%7 and back-stepping to Monday. weekAgg(days) -> iterate days calling var qfn=G('computeQmsDay',null); accumulate {walkins(+q.total), purchases, sales, nonPurchase, service, byCro{} keyed by c.cro, perDay[]}; conversion recomputed on totals (purchases/walkins*100), NOT averaged. deltaOf(cur,prev) -> {abs:cur-prev, pct: prev? Math.round((cur-prev)/prev*100):null, up:(cur-prev)>=0}. weekLabel(start,end) -> e.g. '07 Jul – 13 Jul 2026' via toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) (+year on end)."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "BUILDERS.weeklyBrief (NEW builder)",
+            "line": "~974 (insert as a new property just after the ownerMonthly builder, before the BUILDERS closing brace at L975; add a comma after ownerMonthly's closing brace)",
+            "change": "function(o){ var anchor=o.date||curDate(); var wk=isoWeek(anchor); var today=todayIsoSafe(); var spanEnd=(wk.end>today)?today:wk.end; var nDays=(spanEnd<wk.start)?7:wk.days.filter(function(dy){return dy<=spanEnd;}).length||1; var partial=nDays<7; var prevMon=new Date(wk.start+'T00:00:00'); prevMon.setDate(prevMon.getDate()-7); var pw=isoWeek(isoOf(prevMon)); var cur=weekAgg(wk.days.slice(0,nDays)); var prev=weekAgg(pw.days.slice(0,nDays)); var hdr={t:'header',title:'WEEKLY BUSINESS SUMMARY',sub:'Titan World + Helios · Latur',period:weekLabel(wk.start,wk.end)+(partial?' · week to date':'')}; if(!cur.walkins&&!prev.walkins) return {orientation:'portrait',blocks:[hdr,{t:'empty',text:'No walk-in activity recorded for this week.'}]}; then build blocks: (1) KPI row cols:5 — Walk-ins/Purchases/Conversion(hero)/Sales/Non-buy with sub=delta string + subClass 'up'/'down' (INVERT for Non-buy: fewer is better); conversion delta in percentage-points ('+4pp vs last wk'). (2) section 'This Week vs Last Week' + table head [['Metric','This week','Last week','Change']] rows for Walk-ins/Purchases/Conversion/Sales/Non-purchase (Change = signed abs + optional (pct%); money via inr for Sales, pp for Conversion). (3) section 'Daily Trend — Mon to Sun' + table head [['Day','Date','Walk-ins','Purchases','Conv %','Sales ₹']] body from cur.perDay (chronological, NOT value-sorted), money:[5], raw:[[..,sales]] for carry-consistency, foot totals. (4) section 'Sales & Conversion — by CRO' + table of Object.values(cur.byCro) sorted by walkins desc, top 8, same columns as ownerBrief byCro. (5) note: 'Walk-in funnel from QMS. Compared against the same '+nDays+' day(s) of the previous week ('+weekLabel(pw.start,pw.end)+'). Days with no entries count as zero.' Return {orientation:'portrait',blocks:blocks}."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "META (object literal)",
+            "line": "~984 (add a line, e.g. immediately after the qmsEodSummary META entry so the new line sits away from where P1-45 will add its own META entry)",
+            "change": "weeklyBrief: { title: 'Weekly Business Summary', scope: 'weekly', icon: '📅' },  — list()@1680 maps META automatically so the new type appears in SaagarReport.list() with scope:'weekly'; history()@1668 and _renderPackList already key off META[t] and work unchanged."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "SaagarReport.openHub — GROUPS array",
+            "line": "~1686-1691",
+            "change": "Insert a new group between the Daily and Monthly groups: { h: 'Weekly · Owner', types: ['weeklyBrief'] }. GROUPS is hardcoded and does NOT auto-derive from META, so without this the report would never appear in the hub."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "SaagarReport.openHub — TAGS object",
+            "line": "~1692-1701",
+            "change": "Add search tags: weeklyBrief: 'weekly business summary owner week wtd trend last week comparison'."
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "SaagarReport.openHub — row() scope pill",
+            "line": "1708",
+            "change": "Extend the scope ternary so 'weekly' renders 'Weekly': change (m.scope === 'monthly' ? 'Monthly' : 'Daily') to (m.scope === 'monthly' ? 'Monthly' : (m.scope === 'weekly' ? 'Weekly' : 'Daily')). Without this a weekly report mislabels as 'Daily'. (The CSS class .hub-row .scope already exists in index.html L858 — no CSS change.)"
+          },
+          {
+            "file": "www/saagar-report.js",
+            "name": "_packTypes + SaagarReport.pack (OPTIONAL — part e)",
+            "line": "1592 (_packTypes) / 1597-1598 (pack scope resolution)",
+            "change": "OPTIONAL and recommended DEFERRED for this wave (a one-report 'weekly pack' is low value). If a Weekly pack button is wanted: add weekly:['weeklyBrief'] to _packTypes and make pack() resolve types via this._packTypes[scope]||this._packTypes['daily'] plus a weekly label, and add a pack('weekly') button in openHub's packHtml. hubStep@1750 steps by day; leave it — the builder resolves the containing Mon–Sun week from any picked date, so day-stepping still selects a valid week."
+          }
+        ],
+        "newKeysOrFields": [
+          {
+            "kind": "in-code META type (NOT a localStorage key)",
+            "name": "weeklyBrief",
+            "shape": "META.weeklyBrief = { title:'Weekly Business Summary', scope:'weekly', icon:'📅' }",
+            "defaults": "scope:'weekly' (the new third scope value alongside 'daily'|'monthly')",
+            "storageRulesNote": "Not a localStorage key — this is an entry in the in-memory META object literal. The Wave-11/12 appControlKeys()/APP_RE/validateRestoreKeyValue discipline is N/A: this item reads existing data (retail_queue_management_v1 via computeQmsDay) and writes NO new top-level pref key. saagar_rpt_recent / saagar_rpt_log (existing keys, already whitelisted) will store the string 'weeklyBrief' as a recent/history entry — additive value into an existing key, no schema change."
+          },
+          {
+            "kind": "transient in-memory model (per-render, not persisted)",
+            "name": "weekAgg result + KPI delta fields",
+            "shape": "{walkins,purchases,sales,nonPurchase,service,conversion, byCro:{cro:{cro,walkins,purchases,sales}}, perDay:[{date,walkins,purchases,sales,conv}]}; block model reuses existing block types only (header/kpi/section/table/note) with the existing KPI sub/subClass channel",
+            "defaults": "all numeric fields default 0; conversion recomputed on totals; deltas null-safe when previous week is 0 (show 'new' / absolute only, never divide by zero)",
+            "storageRulesNote": "Pure compute output built at render time from computeQmsDay; nothing persisted. No new block type is introduced — deltas ride the existing kpi it.sub/it.subClass path (subColor() L1042 already maps up=green/down=red) and a plain table, so renderDoc()/kpiTiles()/tableOpts() need no changes."
+          }
+        ],
+        "approach": "ADDITIVE, single-file (saagar-report.js). (a) Decision — NEW report TYPE, not a weekly filter over existing reports. Justification grounded in the code: reports are keyed by `type` in META/BUILDERS and `scope` is pure metadata used only for hub grouping/pack bucketing (list() L1680, row() scope pill L1708, _packTypes L1592) — there is no mechanism to pass a granularity into an existing builder. Most daily builders read single-day localStorage snapshots that do not naturally aggregate (cashDetail per date, DSR per date L261, stockDetailStore per date), so a 'weekly filter over existing' would mean rewriting many builders — a direct violation of the highest-blast-radius 'targeted change / preserve byte-for-byte' rule. QMS is the ONE cross-day-aggregatable source (computeQmsDay(dateIso), already summed across days by monthQms L88-93). So a single new weeklyBrief builder that aggregates the QMS funnel is the minimal, self-contained addition; it mirrors the existing ownerMonthly (L932) / ownerBrief (L99) patterns. (b) Week window — Monday–Sunday ISO week CONTAINING the hub-selected date (opts.date). Justified over rolling-last-7: the hub period control is a single date picker (rptDate) stepping by day (hubStep L1750); anchoring to the calendar week means every day the user steps to within a week yields the SAME stable report and a well-defined 'previous week', which is how owners reason ('this week vs last week'). (c) Comparison — fair same-span: compute nDays = number of week days up to min(weekEnd, today); current window = first nDays of this week, previous window = first nDays of last week (previous Monday +0..nDays-1). A completed past week degrades to full-7-vs-full-7; the in-progress current week compares week-to-date against the same point last week (proper pacing) instead of a misleading partial-vs-full. deltaOf() is null-safe when last week is zero. (d) Hub — new 'Weekly · Owner' GROUP + TAGS entry + the scope-pill ternary extended to 'Weekly'. (e) pack('weekly') — spec'd but recommended deferred (single report). Everything else (list, history, filename which uses opts.date, forModule) works unchanged.",
+        "ui": "In the Report hub (SaagarReport.openHub), a new section 'Weekly · Owner' appears between the two Daily sections and the Monthly sections, containing one row: 📅 Weekly Business Summary, with a 'Weekly' scope pill (new third pill value; CSS .hub-row .scope already styles it). Tapping it -> fromHub('weeklyBrief') -> preview() -> Save/Send/Print, identical to every other report. The PDF (portrait A4, native vector) header reads 'WEEKLY BUSINESS SUMMARY / Titan World + Helios · Latur', period '07 Jul – 13 Jul 2026' with a ' · week to date' suffix when the current week is incomplete. Body: a 5-tile KPI row (Walk-ins, Purchases, Conversion [hero], Sales, Non-buy) where each tile's sub-line shows the delta vs last week in green (up) / red (down) — e.g. '+12% vs last wk', conversion as '+4pp vs last wk', and Non-buy inverted (a drop shows green); a 'This Week vs Last Week' comparison table (Metric / This week / Last week / Change); a 'Daily Trend — Mon to Sun' table (one row per weekday); a 'Sales & Conversion — by CRO' table (top 8); and a footnote naming the previous-week comparison window and the 'days with no entries count as zero' caveat. Copy: title 'Weekly Business Summary'; search tags 'weekly business summary owner week wtd trend last week comparison'.",
+        "edgeCases": [
+          "Timezone off-by-one: MUST build week days with local Date (new Date(+y,+m-1,+d)) and format with a local isoOf() helper, NOT Date.toISOString() — in Asia/Kolkata (+5:30) toISOString would shift Monday to the previous Sunday. This mirrors the existing local-midnight fixes (leaveDaySpan L648, serviceAging bug-hunt #2 L820).",
+          "Partial current week (weekEnd in the future): spanEnd clamps to today; nDays<7 -> header shows 'week to date' and comparison uses the same nDays of last week (fair pacing) instead of full-vs-partial.",
+          "Previous week has zero activity: deltaOf pct is null -> show 'new' or the absolute delta only; never divide by zero.",
+          "Whole selected week in the future (user stepped forward): spanEnd<weekStart -> treat as full 7 days so both windows are symmetric zeros (avoids nDays=0).",
+          "No QMS data both weeks (cur.walkins==0 && prev.walkins==0): return header + {t:'empty'} note, matching the empty-state convention of every other builder.",
+          "Week spanning a month or year boundary (Mon 29 Jun – Sun 05 Jul, or Dec–Jan): pure date arithmetic handles it; weekLabel shows both months/years.",
+          "byCro keyed by CRO NAME string (as computeQmsDay already does): two CROs sharing a display name merge — a pre-existing engine limitation, acceptable and unchanged.",
+          "computeQmsDay unavailable (G('computeQmsDay',null) returns null): weekAgg falls back to zeros, report still renders (zeros) rather than throwing.",
+          "Per-day trend rows must stay chronological Mon->Sun (do NOT sort by value like the byCro tables do).",
+          "Non-purchase/Lost KPI delta semantics are inverted (a decrease is good=green) — must not reuse the naive up=green rule for that one tile."
+        ],
+        "verifySteps": [
+          "Harness (test seams already exposed): SaagarReport._buildModel('weeklyBrief',{date:'2026-07-13'}) — assert orientation==='portrait', blocks[0].t==='header' with a period containing '–', exactly one kpi block (5 items) whose Walk-ins/Sales tiles carry a .sub and .subClass, a 'This Week vs Last Week' table, and a 'Daily Trend' table whose body has 7 rows (or nDays rows for a partial week).",
+          "SaagarReport.list() includes {type:'weeklyBrief', scope:'weekly'}; assert the count and that scope is the literal 'weekly'.",
+          "Render smoke: SaagarReport.build('weeklyBrief',{date:'2026-07-13'}).then(b=>assert b.size>1000) — confirms jsPDF path produces a real PDF (native vector).",
+          "Delta correctness: seed retail_queue_management_v1 with QMS customers across the current and previous Mon–Sun weeks (differing walk-ins/sales), then confirm the comparison table 'Change' column and the KPI subClass (up=green/down=red) match cur-prev; confirm a previous-week-zero metric shows 'new' not NaN/Infinity.",
+          "Timezone: run with the device/emulator in Asia/Kolkata and verify the week starts on Monday and days[0] equals the expected local Monday (guards the isoOf/toISOString trap).",
+          "Hub UI: SaagarReport.openHub() -> a 'Weekly · Owner' section shows the 📅 row with a 'Weekly' pill; search 'weekly' filters to it; tapping opens the preview modal and Save/Send/Print work.",
+          "Regression: build ownerBrief, ownerMonthly, qmsReport, and run pack('daily')/pack('monthly') — all still succeed with zero new console errors, proving the shared META/GROUPS/scope-ternary edits didn't disturb existing reports.",
+          "History: after opening the weekly report once, SaagarReport.history() lists it (proves META[t] lookups resolve for the new type)."
+        ],
+        "risks": [
+          "Timezone/off-by-one in the week window is the single highest risk — using toISOString anywhere in the date math silently shifts the whole week by a day in IST. Enforce the local isoOf() helper and add the Asia/Kolkata verify step.",
+          "Shared-literal merge collisions with P1-45 (see collisionNotes): META object (977-1001), openHub GROUPS/TAGS (1686-1701), and potentially the row() scope-pill line — three regions both items touch.",
+          "KPI sub-line overflow: kpiTiles auto-shrinks the VALUE but not the SUB (FZ.kpiSub=8, drawn at fixed x, no ellipsis) — keep delta subs terse ('+12% vs last wk', '+4pp vs last wk'); long strings would clip at the tile edge.",
+          "Wrong delta polarity on the Non-purchase/Lost tile (down should read green) — easy to get backwards; call it out to the impl owner.",
+          "Performance: weeklyBrief calls computeQmsDay up to 14 times (7 current + 7 previous); each call scans all QMS customers. Fine (monthQms already calls it up to 31x), but note it scales with the QMS customer array size.",
+          "Scope-pill ternary: if only GROUPS is edited but the ternary on L1708 is missed, the weekly report renders with a 'Daily' pill — visible correctness bug, easy to overlook.",
+          "GROUPS is hardcoded (not derived from META): forgetting to add the type to a GROUP makes the report exist in list()/build() but be invisible in the hub."
+        ],
+        "collisionNotes": "SAME-FILE Wave-13 collision is with P1-45 only (the per-customer QMS non-purchase 'call sheet' described in the report-engine anchors — non-purchase walk-ins WITH a mobile from retail_queue_management_v1). Both P1-45 and P1-47 add: (1) a META entry in the 977-1001 object literal, (2) a builder property in the BUILDERS object (both insert near the tail, before the L975 closing brace — coordinate insertion points so the two new properties don't land on the same line/adjacent commas), and (3) a hub row (a GROUPS array element + a TAGS entry in openHub 1686-1701). Mitigations for the synthesis owner: place P1-47's META line right after qmsEodSummary (L984) and let P1-45 place its line elsewhere (e.g. after serviceTaxInvoice L999) so the edits are non-adjacent; P1-47 adds a NEW 'Weekly · Owner' GROUP while P1-45 (a daily-natured report) appends to the existing 'Daily · Floor & Service' GROUP, so they touch different array elements; TAGS entries are independent keys. Only P1-47 needs the row() scope-pill ternary change (L1708) — P1-45 is daily and does not, so no conflict there. No collision on list()/history()/pack (both consume META generically). IMPORTANT: this item does NOT edit index.html, so there is zero collision with the other Wave-13 shell items (P1-36 language toggle, text-size, HOME attention-list, config tabs) — those live in index.html; the report hub and all P1-47 changes live entirely in saagar-report.js.",
+        "openQuestions": [
+          "Week start convention: Monday–Sunday (recommended, ISO/retail norm) vs Sunday–Saturday — confirm the owner's operating week. The isoWeek() dow math is a one-line change if Sunday-start is preferred.",
+          "Comparison basis for the in-progress current week: fair same-span 'week-to-date vs same point last week' (recommended, spec'd) vs simple full-week-vs-full-week (simpler but makes mid-week look artificially low). Confirm the preferred product behavior.",
+          "Scope of the weekly report: QMS walk-in funnel only (recommended — the item's comparison metrics are walk-ins/sales/conversion, and QMS is the only clean cross-day aggregator) vs also folding in a weekly expense/P&L line. A weekly expense number would require a new date-range filter over gm_expenses (duplicating expenseMonth L78) — defer unless the owner wants it.",
+          "pack('weekly') UI (part e): add a 'Weekly pack' button now, or defer since there is only one weekly report? Recommended: defer (keep _packTypes generic-safe but no button).",
+          "hubStep by 7 days for weekly stepping: leave the day-stepper (any picked date resolves to its week — recommended) or add week-aware stepping? Adds hub-state complexity for little gain.",
+          "Should sales figures also cross-reference DSR bills (computeDsrDay salesAmt/salesCnt) as a secondary line, or keep QMS as the single source to avoid the QMS-vs-DSR double-count confusion the ownerBrief already navigates (L129)?"
+        ],
+        "_id": "P1-47"
+      }
+    ],
+    "synthesis": {
+      "perFilePlan": [
+        {
+          "file": "www/index.html",
+          "ownerBrief": "THREE shell-chrome items land in ONE serialized pass (P1-36 i18n, P1-38 attention centre, P1-39 text-size). They collide on FOUR shared regions — resolve each with a SINGLE combined edit, never two competing edits on the same anchor: (A) appControlKeys() L2123 — append THREE key literals in one edit; (B) the config-card cluster just after #uiModeCard closes (L1299, before <nav class=subtabs> L1300) — insert a coherent 'Device preferences' stack in fixed order: [existing Display-mode #uiModeCard] then Language #langCard then Text-size #textSizeCard; (C) init() boot wiring at L7108 (right after reflectUiModeUI();) — three adjacent try/catch apply calls; (D) renderHome() render tail L3271-3275 — P1-38 owns the item-id/filter/bell rewrite, P1-36 owns wrapping the JS-generated hero/quick/ownerLine labels in stT(); both must keep the ~12 items.push() calls and escapeHtml() byte-identical. NEVER touch the base64 MODULES[] lines. Use unique-string anchors, not raw line numbers, and apply edits bottom-of-file→top so earlier inserts don't shift later anchors.",
+          "editsInOrder": [
+            "1. [P1-38] L1998 const cluster: add `const ATTN_STATE_KEY=\"st_v5_attn_state_v1\";` beside RESTORE_ROLLBACK_PREFIX.",
+            "2. [P1-36] i18n core block after the $/toast/timeGreeting utility band (~L2065, before applyMode): add I18N={en,mr,hi} dict + getLang()/stT(k)/applyLang()/reflectLangUI()/setLang(l). textContent only (never innerHTML). Helpers named stT/getLang/setLang/applyLang/reflectLangUI (NOT `t`).",
+            "3. [ALL THREE] appControlKeys() L2123: single combined edit appending `,\"saagar_lang\",ATTN_STATE_KEY,\"saagar_text_size\"` to the returned array.",
+            "4. [P1-38] attn helper block near amountsHidden() L3149-3151: attnLoadState()(tryJSON+normalize+GC, save only if GC mutated), attnSaveState(), attnDaysAdd(iso,n), attnId(it)=simpleHash(it.key||it.title), attnIsHidden(id,st,today), attnDismiss/attnSnooze/attnRestore (mutate→save→renderHome→re-render modal if open).",
+            "5. [P1-38 + P1-36] renderHome() tail L3271-3275: (P1-38) after items[] built, compute it.__id, filter to __active via attnIsHidden, stash window.__attnCache=items, render __active.slice(0,6) with an .attn-acts wrapper (CTA + 💤 + ✕), drive empty-state + bell dot off __active.length. (P1-36) wrap the JS-generated labels at L3162 ownerLine, L3186 heroNet label, hero-stat captions, quick-tile labels, L3273 empty-state in stT('key')||'English'. Keep escapeHtml on all titles/msgs/ctas; keep the ~12 items.push() byte-identical.",
+            "6. [P1-38] openAttention() L3344: replace scroll-to-card with Attention Centre modal — call renderHome() to refresh window.__attnCache, build Active(N) list (ALL items, CTA + snooze 1d/3d/1wk + Dismiss) and 'Snoozed & dismissed' list (Restore + return date), openModal(); all interpolation via escapeHtml.",
+            "7. [P1-39] get/reflect/set trio after toggleUiMode L7067: const TEXT_SIZE_KEY='saagar_text_size'; getTextSize()/reflectTextSizeUI()(toggles html.st-textsize-large + #textSizeSeg active)/setTextSize(size) — clone of setUiMode.",
+            "8. [ALL THREE] init() boot L7108, after reflectUiModeUI();: `try{applyLang();reflectLangUI();}catch(e){}` then `try{reflectTextSizeUI();}catch(e){}` (two adjacent lines; attention needs no boot call — renderHome runs on first render).",
+            "9. [P1-36] static-chrome data-i18n attributes: additively tag the curated ~40 chrome leaves (bottom nav L1611-1626 wrap text in span beside svg; config subtabs L1301-1308; settings-hub header L1289-1290; home section-heads; hero-foot; modules/reports/today headings; search placeholders via data-i18n-placeholder). Icon+text nodes get an inner <span data-i18n> so textContent never nukes the icon. Never tag brand/store names/dates/data.",
+            "10. [P1-36 + P1-39] config-card cluster after L1299 (before subtabs L1300): insert #langCard ('🌐 Language / भाषा' + #langSeg en/mr/hi) THEN #textSizeCard ('🔎 Text size' + #textSizeSeg normal/large). Both clone #uiModeCard markup; reuse .card/.card-pad/.seg/.seg-btn — no new CSS for the cards.",
+            "11. [P1-39] CSS: one rule after .main{} (~L135) `html.st-textsize-large #mainContent{zoom:1.12}`. [P1-38] CSS near .attn-text (~L374): `.attn-acts{display:flex;gap:6px;align-items:center}`, `.attn-ico-btn{...}`, `.attn.snoozed{opacity:.6}`. Separate CSS regions, both pure appends.",
+            "12. [P1-38] home bell L1160: onclick stays openAttention() (now the modal opener) — grep-confirmed sole caller, safe."
+          ]
+        },
+        {
+          "file": "www/saagar-report.js",
+          "ownerBrief": "TWO report-engine items land in ONE serialized pass (P1-45 lostWalkinCallSheet monthly, P1-47 weeklyBrief weekly). Both append to the SAME three shared regions — resolve with deterministic, non-adjacent trailing appends, never editing an existing sibling line: (A) BUILDERS object close L974/975 — add a comma after ownerMonthly's closing `}` (L974) then TWO new builder properties; (B) META object L977-1001 — ownerMonthly (L1000) currently has NO trailing comma, so add a comma then TWO new META lines; (C) openHub() GROUPS L1686-1691 + TAGS L1692-1701. P1-47 additionally needs the scope-pill ternary at L1708 (P1-45 is monthly, does not). Neither item adds any localStorage key — zero contention on appControlKeys/APP_RE/restore. Both read the existing QMS key retail_queue_management_v1 (P1-45 directly via J(), P1-47 via the existing shell bridge G('computeQmsDay')). Do NOT reshape qmsReport or any sibling builder.",
+          "editsInOrder": [
+            "1. [P1-47] week helpers after monthQms (~L93, inside the IIFE): isoOf(dateObj) LOCAL yyyy-mm-dd (NEVER toISOString — IST +5:30 off-by-one), isoWeek(anchorIso)→{start,end,days[Mon..Sun]}, weekAgg(days) accumulating walkins/purchases/sales/nonPurchase/byCro/perDay via G('computeQmsDay',null) with conversion recomputed on totals, deltaOf(cur,prev) null-safe, weekLabel(start,end).",
+            "2. [P1-45 + P1-47] BUILDERS close L974: add comma after ownerMonthly's `}`, then append lostWalkinCallSheet:function(o){...} (read retail_queue_management_v1 via J(), local nameOf/tel10, filter /non.?purchase/i + entryTime.slice(0,7)===month, dedupe by 10-digit mobile keep newest, exclude+count no-number, portrait header/kpi(Lost/Callable/NoNumber)/table[# Name Mobile Visit CRO Reason]/note/empty) and weeklyBrief:function(o){...} (Mon–Sun ISO week of o.date, week-to-date vs same-span last week, portrait header/5-KPI-with-deltas/comparison-table/daily-trend-table/by-CRO-table/note/empty; Non-buy delta polarity INVERTED). Two separate properties, comma-separated.",
+            "3. [P1-45 + P1-47] META L1000: add comma after ownerMonthly entry, then two lines — `weeklyBrief:{title:'Weekly Business Summary',scope:'weekly',icon:'📅'}` and `lostWalkinCallSheet:{title:'Lost Walk-in Call Sheet',scope:'monthly',icon:'📞'}`.",
+            "4. [P1-47] GROUPS L1686-1691: insert a NEW group between Daily and Monthly: `{h:'Weekly · Owner',types:['weeklyBrief']}`. [P1-45] append 'lostWalkinCallSheet' to the existing 'Monthly · People' group types[] (L1689). Different array elements — no conflict.",
+            "5. [P1-45 + P1-47] TAGS L1692-1701: two independent keys — `weeklyBrief:'weekly business summary owner week wtd trend last week comparison'` and `lostWalkinCallSheet:'lost walk-in call sheet follow-up non purchase callback missed customers qms'`.",
+            "6. [P1-47] row() scope pill L1708: extend ternary to `(m.scope==='monthly'?'Monthly':(m.scope==='weekly'?'Weekly':'Daily'))` so weekly is not mislabelled 'Daily'.",
+            "7. [OPTIONAL, DEFER both] _packTypes L1592 / pack() L1597: do NOT wire pack('weekly') (single report) and do NOT auto-add lostWalkinCallSheet to the monthly pack this wave unless owner asks — keeps blast radius minimal."
+          ]
+        }
+      ],
+      "editOrder": [
+        "Files are independent (index.html chrome vs saagar-report.js hub) — no cross-file ordering constraint; may run as two parallel owner threads. Within EACH file the edits MUST serialize.",
+        "index.html thread: apply the 12-step editsInOrder BOTTOM-of-file→TOP where anchors overlap, but land the 4 shared-region edits (appControlKeys L2123, config-card cluster ~L1299, init boot L7108, renderHome tail L3271) as ONE combined edit each — never two passes on the same anchor.",
+        "saagar-report.js thread: apply the 7-step editsInOrder; land BUILDERS-close (L974), META-close (L1000), GROUPS/TAGS as single combined appends carrying BOTH items' additions so a later item never re-edits an already-modified sibling line.",
+        "Recommended sequence for a single owner doing both: index.html first (higher blast radius, gates the APK), then saagar-report.js.",
+        "Verify after EACH file independently against _v6_tools/wave13_pristine/ before moving on."
+      ],
+      "crossFileContracts": [
+        "No functional shell↔report wiring is added or changed. index.html and saagar-report.js are edited independently; neither new report reads or writes anything the shell edits touch.",
+        "Existing (unchanged) bridge preserved: the report engine reaches QMS data through the shell via G('computeQmsDay') (P1-47) and by reading localStorage key retail_queue_management_v1 directly (P1-45) — exactly as the shipped qmsReport/monthQms already do. Both new builders must consume these read-only; do not add a new accessor.",
+        "New-key registration path is ENTIRELY inside index.html and is shared by the three shell items only: the ONE appControlKeys() L2123 edit registers all three new prefs (saagar_lang, st_v5_attn_state_v1, saagar_text_size); APP_RE L5684 already matches all three via the saagar_ / st_v\\d+_ prefixes (no edit); restore accepts all three via the owner==='control' → return{ok:true} fallthrough at L5497 (no edit). The two report items introduce ZERO localStorage keys, so they never touch this path.",
+        "The two report types will be recorded as recent/history string values inside the EXISTING already-whitelisted keys saagar_rpt_recent / saagar_rpt_log — additive values, no schema change, no registration needed."
+      ],
+      "decisions": [
+        {
+          "question": "i18n coverage strategy and exact translated string set (P1-36)?",
+          "decision": "Hybrid, as spec'd: (1) additive data-i18n attribute pass over static chrome walked by applyLang(); (2) stT('key')||'English' at the JS-generated renderHome labels (ownerLine L3162, hero net label L3186, 5 hero-stat captions, 6 quick-tile labels, empty-state L3273) because those re-render and would clobber an attribute. Curated ~40-key set = bottom nav, 8 config subtabs, settings-hub header, home section heads (Needs attention/Quick actions/Customer lookup/Greetings due today), hero footer, hero-stat + quick-tile labels, modules/reports/today headings, the two new card copies. Fallback chain stT()=dict[lang][key] ?? en[key] ?? null; applyLang skips null so hand-written English DOM is the ultimate fallback and is never blanked. textContent only (XSS-inert). Do NOT translate: brand/store names, dates, data-derived attention titles/msgs/ctas, CRO/GST tokens, module iframe content, or report content. Marathi/Hindi draft strings are PLACEHOLDERS pending native review (owner is Marathi-speaking).",
+          "rationale": "Static chrome is parsed once and never regenerated — tagging + one applyLang pass translates it with zero render-function rewrites, honoring the 'preserve behaviour byte-for-byte / no large-span rewrite' hard rule. Only the small JS-generated label set needs stT() at assignment."
+        },
+        {
+          "question": "Attention stable-id scheme + dismiss/snooze semantics + re-appear (P1-38)?",
+          "decision": "id = simpleHash(it.key||it.title) (simpleHash confirmed at L2148, digits-only → injection-safe in onclick). State key st_v5_attn_state_v1 = {v:1,dismissed:{id:'YYYY-MM-DD'},snoozed:{id:'YYYY-MM-DD'}}. DISMISS = suppress only while stored date===todayIso() (returns next calendar day if the condition recurs). SNOOZE = hide until stored future date; durations offered in modal = 1 day / 3 days / 1 week; Home 💤 one-tap default = 3 days. attnLoadState() GCs stale dismissed(!=today) and expired snoozed(<=today) and persists ONLY if GC mutated. Bell keeps the plain dot (no numeric badge) driven by post-filter __active.length. openAttention() is repointed from scroll-to-card to the Attention Centre modal (grep-confirmed sole caller at L1160).",
+          "rationale": "Title already embeds area+emoji+numbers so a title-hash gives distinct ids without editing the ~12 push() sites; date-scoped dismiss delivers the required 'returns next day if still open' with a self-pruning tiny blob."
+        },
+        {
+          "question": "Can high-severity exceptions be buried by snooze/dismiss (P1-38 governance)?",
+          "decision": "Red/high-sev items (the SB.exceptions sev==='high' rows unshifted at L3267, e.g. cash cross-check, overdue tax) remain DISMISSABLE for the current day only but snooze is CAPPED to a max of 1 day for them; medium/low get the full 1d/3d/1wk menu. attnSnooze clamps days to 1 when the item is high-sev.",
+          "rationale": "Preserves the daily-return safety net for critical flags — they can be quieted for today but always resurface the next day — while still letting owners defer routine noise."
+        },
+        {
+          "question": "Text-size scale magnitude + chrome-only vs propagate (P1-39)?",
+          "decision": "class html.st-textsize-large → single rule `#mainContent{zoom:1.12}`. Normal=no class=untouched. Chrome-content-only for v1: NOT propagated to module iframes (#moduleScreen is a separate fixed overlay) and NOT applied to body-level fixed surfaces (modal/toast/FAB). Two-step Normal/Large only.",
+          "rationale": "zoom scales text+container together on this px-based design (root/body font-size would barely move); scoping to the #mainContent scroller keeps topbar/botnav/iframe pixel-identical with the least clipping risk. 1.12 (not 1.2) minimizes horizontal-overflow against .main overflow-x:hidden."
+        },
+        {
+          "question": "Weekly report: week window + new type vs filter (P1-47)?",
+          "decision": "NEW report type weeklyBrief with a third scope value 'weekly' (not a weekly filter over existing builders). Window = Monday–Sunday ISO week CONTAINING opts.date. Comparison = fair same-span: current window = first nDays up to min(weekEnd,today), previous window = same nDays of the prior Mon-Sun week (week-to-date vs same point last week). All week date math uses a LOCAL isoOf() helper, never toISOString (IST off-by-one). pack('weekly') DEFERRED.",
+          "rationale": "scope is pure hub metadata with no mechanism to pass granularity into a builder, and most daily builders read single-day snapshots that don't aggregate — a filter would force rewriting many builders (hard-rule violation). QMS via computeQmsDay is the one clean cross-day aggregator. Calendar-week anchoring makes every in-week date yield the same stable report."
+        },
+        {
+          "question": "Lost-walkin data source + scope (P1-45)?",
+          "decision": "NEW report type lostWalkinCallSheet, scope 'monthly'. Reads retail_queue_management_v1.customers[] directly via J() (same as qmsReport), filters outcome /non.?purchase/i AND entryTime.slice(0,7)===month. Callable = last-10-digit mobile present; dedupe by that number keeping the newest visit; sort newest-first. No-number walk-ins EXCLUDED from the call list but COUNTED and disclosed via a KPI tile + footnote. Include ALL non-purchase (do not exclude rows that already have a scheduled follow-up) in v1.",
+          "rationale": "Read-only, mirrors the proven qmsReport read pattern, no new key. Newest-first ordering satisfies the 'call warmest leads first' intent inside a clean monthly period the hub date-stepper already supports; excluding un-callable rows keeps the sheet actionable."
+        },
+        {
+          "question": "FINAL names + registration of ALL new pref keys?",
+          "decision": "THREE keys, all in index.html, registered by ONE combined appControlKeys() edit: saagar_lang ('en'|'mr'|'hi'), st_v5_attn_state_v1 (JSON dismiss/snooze state), saagar_text_size ('normal'|'large'). ALL THREE are ADDED to appControlKeys() (backed up + migrated). All three already match APP_RE (saagar_ / st_v\\d+_) so factory-reset wipe + pre-reset safety backup work with NO APP_RE edit. All three restore via the owner==='control' → return{ok:true} fallthrough (L5497); none are in restoreBlockedKeys. Each getter re-validates (getLang/getTextSize whitelist to defaults; attnLoadState normalizes+GCs) so a tampered restored value is inert.",
+          "rationale": "Overrides P1-39's per-device recommendation for saagar_text_size in favor of the wave's explicit hard rule ('any new top-level key MUST be added to appControlKeys') and the Wave-11/12 regression where a dropped key was a P1. Uniform treatment of all three prefs avoids a confusing split; backed-up prefs are harmless (restore is opt-in, values re-validate). The per-device alternative is raised as an owner question."
+        }
+      ],
+      "collisions": [
+        "index.html appControlKeys() L2123 (single-line array): P1-36 + P1-38 + P1-39 all append a new key literal → ONE combined edit adding saagar_lang, ATTN_STATE_KEY, saagar_text_size.",
+        "index.html config-card cluster after #uiModeCard L1299 (before subtabs L1300): P1-36 (#langCard) + P1-39 (#textSizeCard) both insert a sibling card → one combined insert in fixed order Display-mode → Language → Text-size. P1-38 deliberately does NOT add a config card (its surface is Home + modal).",
+        "index.html init() boot L7108 after reflectUiModeUI();: P1-36 (applyLang+reflectLangUI) + P1-39 (reflectTextSizeUI) add adjacent apply calls → two adjacent lines, not competing edits. P1-38 needs no boot call.",
+        "index.html renderHome() render tail L3271-3275: P1-38 rewrites the render/filter/bell logic; P1-36 wraps the JS-generated hero/quick/ownerLine/empty-state labels in stT(). Split ownership: P1-38 owns id-compute+filter+.attn-acts markup+bell count; P1-36 owns label translation. Both keep the ~12 items.push() and escapeHtml byte-identical.",
+        "index.html CSS appends: P1-39 adds the zoom rule near .main{} (~L135); P1-38 adds .attn-acts/.attn-ico-btn/.attn.snoozed near .attn-text (~L374). Different regions, both pure appends — keep blocks separate.",
+        "saagar-report.js BUILDERS close L974/975: P1-45 + P1-47 both append a builder → add comma after ownerMonthly's } then two new properties.",
+        "saagar-report.js META close L1000/1001: ownerMonthly has NO trailing comma → add comma, then two new META lines (weeklyBrief + lostWalkinCallSheet).",
+        "saagar-report.js openHub GROUPS L1686-1691: P1-47 inserts a new 'Weekly · Owner' group; P1-45 appends to the existing 'Monthly · People' group types[] — different array elements.",
+        "saagar-report.js openHub TAGS L1692-1701: two independent keys, no conflict.",
+        "saagar-report.js row() scope pill L1708: only P1-47 edits it (weekly). P1-45 is monthly and does not — no conflict.",
+        "NO cross-file collision: the two report items touch ONLY saagar-report.js; the three shell items touch ONLY index.html."
+      ],
+      "newKeysConsolidated": [
+        {
+          "key": "saagar_lang",
+          "shape": "raw string enum 'en'|'mr'|'hi' (stored raw like saagar_ui_mode, NOT JSON). Absent or unrecognized → getLang() returns 'en'.",
+          "appControlKeys": "ADD the literal \"saagar_lang\" to the returned array at L2123 (combined edit) so it is included in backup/migration via isWhitelistedAppKey.",
+          "appRe": "Already matched by APP_RE L5684 via the saagar_ prefix → factory reset wipes it AND the pre-reset safety backup captures it. No APP_RE edit.",
+          "restore": "owner==='control' → validateRestoreKeyValue falls through to return{ok:true} at L5497 (not in the ADMIN/EMP/LOG explicit list, not in restoreBlockedKeys). getLang() re-whitelists to {en,mr,hi} so a hostile value is inert (only string-compared, never rendered)."
+        },
+        {
+          "key": "st_v5_attn_state_v1",
+          "shape": "JSON object {v:1, dismissed:{'<attnId>':'YYYY-MM-DD'}, snoozed:{'<attnId>':'YYYY-MM-DD'}} where attnId=simpleHash(title) (decimal string). Absent/corrupt → attnLoadState() returns {dismissed:{},snoozed:{}} → filter no-op → home list byte-identical to pristine.",
+          "appControlKeys": "ADD ATTN_STATE_KEY (const = \"st_v5_attn_state_v1\") to the returned array at L2123 (combined edit) so dismiss/snooze state rides backup/migration.",
+          "appRe": "Already matched by APP_RE L5684 via the st_v\\d+_ prefix → wiped by factory reset AND included in the pre-reset safety backup. No APP_RE edit.",
+          "restore": "owner==='control' → generic return{ok:true} at L5497; NOT in restoreBlockedKeys. attnLoadState() normalizes shape + GCs stale/expired entries on load, so a malformed restored blob degrades safely."
+        },
+        {
+          "key": "saagar_text_size",
+          "shape": "raw string enum 'normal'|'large' (stored raw like saagar_ui_mode). Any other/absent → getTextSize() returns 'normal'.",
+          "appControlKeys": "ADD the literal \"saagar_text_size\" to the returned array at L2123 (combined edit). NOTE: this OVERRIDES the P1-39 per-device recommendation — decision is to back it up per the wave hard rule; see openQuestionsForOwner for the per-device alternative.",
+          "appRe": "Already matched by APP_RE L5684 via the saagar_ prefix → wiped by factory reset AND captured in the pre-reset safety backup. No APP_RE edit.",
+          "restore": "owner==='control' → generic return{ok:true} at L5497; NOT in restoreBlockedKeys. getTextSize() whitelists to {normal,large}; value only ever gates a CSS class, never rendered."
+        }
+      ],
+      "openQuestionsForOwner": [
+        "Marathi/Hindi wording for the ~40-label chrome set must be confirmed by a native speaker (owner is Marathi-speaking) before ship — the draft strings in the P1-36 spec are placeholders. Also confirm which tokens stay English (e.g. CRO, GST, DSR, QMS).",
+        "saagar_lang and saagar_text_size backup semantics: synthesis decision is to ADD both to appControlKeys() (backed up + migrated) per the wave hard rule. The precedent saagar_ui_mode is intentionally per-device (NOT backed up). Confirm you want language/text-size to carry to a new device on restore, OR treat them as per-device (drop from appControlKeys — they'd still be wiped/safety-backed via APP_RE).",
+        "Attention high-severity governance: synthesis caps snooze to max 1 day for red/high-sev flags (cash cross-check, overdue tax) while allowing dismiss-for-today. Confirm this, or make high-sev flags fully non-snoozable/non-dismissable.",
+        "Bell UX: synthesis repoints the Home bell from scroll-to-card to the Attention Centre modal. Confirm acceptable, or keep the scroll and add a separate 'View all' link.",
+        "Text-size Large factor 1.12: confirm, or request a stronger accessibility bump up to ~1.2 (needs tighter horizontal-overflow verification).",
+        "Weekly report scope: ship Monday–Sunday week? Confirm operating week (Sunday–Saturday is a one-line isoWeek change). Confirm 'week-to-date vs same point last week' comparison for the in-progress week (vs full-week-vs-full-week).",
+        "Lost-walkin call sheet: monthly-only this wave (weekly variant deferred)? And should rows that already have a scheduled follow-up be flagged/excluded, plus an optional ₹ lost-value column — all deferred by default.",
+        "Defer pack('weekly') and auto-adding lostWalkinCallSheet to the month-end pack (both omitted this wave to minimize blast radius) — confirm."
+      ],
+      "verifyPlan": [
+        "Boot smoke (both files): open www/index.html in the browser harness; 0 new console errors on boot; Home 'Needs attention' + all config/report chrome render; confirm base64 MODULES[] lines are byte-unchanged (grep) and diff untouched regions against _v6_tools/wave13_pristine/index.pristine.html + saagar-report.pristine.js.",
+        "P1-36 i18n: default (no saagar_lang) all-English; toggle मराठी → nav, subtabs, section heads, hero captions, 6 quick tiles, settings-hub header all switch; nav svg/seg emoji icons still present (span-wrap worked); reload persists (≤1 flash); toggle हिंदी then English reverts cleanly with no leftover Devanagari; open a module iframe → content stays English (scope guard); `localStorage.setItem('saagar_lang','xx');reload` → falls back to English, no error; export backup → payload contains saagar_lang.",
+        "P1-38 attention: pristine parity when key absent (same items/order/≤6, bell on); ✕ Dismiss → item vanishes, state written, a formerly-7th item appears; reload same day → stays hidden; edit stored dismissed date to yesterday + re-render → item REAPPEARS and stale entry GC'd; 💤 Snooze → appears under 'Snoozed & dismissed' in modal, Restore returns it; bell modal lists ALL active (no 6-cap); dismiss-all → 'Nothing urgent' + bell dot off; high-sev item snooze clamps to 1 day; inject quotes/<> in a title → escapeHtml keeps row/modal safe; backup payload contains st_v5_attn_state_v1.",
+        "P1-39 text-size: set Large → #mainContent chrome grows ~12% while topbar brand + bottom-nav labels unchanged; open a module → iframe pixel-unchanged; reload persists + 'Large' seg active; narrow ~360px + config subtabs (8 tabs incl 'Roles & access') no horizontal clip, tables self-scroll; toggle Mobile/Desktop display mode at Large → both compose; back to Normal → byte-identical to pristine; backup payload — CONFIRM per decision whether saagar_text_size IS present (backed up) as synthesized.",
+        "P1-45 lostWalkinCallSheet: SaagarReport._buildModel('lostWalkinCallSheet',{month:'2026-06'}) → portrait, header.period=month label, a 6-col table; seed retail_queue_management_v1 with a valid-mobile non-purchase, a noMobile non-purchase, a duplicate-mobile pair (two dates), a 'Purchase' row, a wrong-month non-purchase → assert Purchase & wrong-month excluded, duplicate collapsed to newer, noMobile counted in 'No Number' + footnote, rows sorted newest-first; empty month → single {t:'empty'}; render smoke build() produces a real PDF; hub search 'call'/'lost' surfaces the row under 'Monthly · People'.",
+        "P1-47 weeklyBrief: _buildModel('weeklyBrief',{date:'2026-07-13'}) → portrait, header period contains '–', one 5-item KPI block with .sub/.subClass, 'This Week vs Last Week' table, 'Daily Trend' table with 7 (or nDays) rows; list() includes {type:'weeklyBrief',scope:'weekly'}; run under Asia/Kolkata → week starts Monday, days[0] is the expected local Monday (toISOString-trap guard); seed two weeks of QMS → Change column + KPI up/down (green/red) match cur-prev, prev-week-zero shows 'new' not NaN; Non-buy tile delta polarity inverted (a drop reads green); hub shows 'Weekly · Owner' with a 'Weekly' pill.",
+        "Report regression: build ownerBrief, ownerMonthly, qmsReport, dsrRegister and run pack('daily')/pack('monthly') → all succeed, 0 new console errors; the existing 'No lost walk-ins logged.' block (L294) and qmsReport are byte-unchanged; Object.keys(META).length increased by exactly 2."
+      ],
+      "regressionRisks": [
+        "BOOT / module loading (index.html, highest): any stray edit to the base64 MODULES[] lines or a JS syntax slip in the new i18n/attn/text-size blocks bricks app boot and iframe load. Prove: harness boots with 0 console errors, every module opens, grep the base64 lines byte-identical vs pristine.",
+        "renderHome() (runs on boot, every view/data change, storage listener, and the 60s timer L7128): P1-38 rewrites the render/filter/bell tail and P1-36 wraps labels — a bug here breaks the Home screen on every refresh. Risks: attnLoadState() throwing (guard with try/catch + normalize), dropping escapeHtml on a title (XSS), or clobbering one of the ~12 items.push() rows. Prove: pristine parity with key absent, injected-quote safety test, 60s re-render leaves labels/state stable.",
+        "appControlKeys() L2123 combined edit: a malformed array literal breaks backup, migration, restore whitelisting AND factory-reset safety backup simultaneously. Prove: export a backup and confirm all three new keys present; run a restore preview listing them under App Control; code-trace factory reset includes them.",
+        "Backup/restore pipeline: three new control keys flow through validateRestoreData → validateRestoreKeyValue control branch (L5493-5497). Risk that one accidentally lands in restoreBlockedKeys or fails validation. Prove: restore a file containing all three → each lands in review.valid, none rejected; tampered values degrade to defaults via the getters.",
+        "Config screen render (renderConfigPage/switchConfigTab): the two new cards are inserted ABOVE the subtabs as static siblings of #uiModeCard — must not shift/hide the existing subtab nav or the Display-mode card. Prove: all 8 subtabs still switch; Display mode still toggles; cards render on every subtab.",
+        "Text-size zoom side-effects (P1-39): zoom on #mainContent narrows the effective CSS viewport — could clip wide rows or drop the wide-screen two-column home to one column early near the 768px breakpoint. Mitigated at 1.12 + inner table overflow-x:auto. Prove: narrow-width + config-subtabs + Mobile/Desktop-compose checks; Normal reverts byte-identical.",
+        "Existing reports (saagar-report.js): the shared BUILDERS/META/GROUPS/TAGS appends must be pure additions — a misplaced comma or an accidental reshape of qmsReport (shares the st.customers read) breaks a shipped report or the whole hub (a syntax error in META/BUILDERS takes down SaagarReport entirely). Prove: build every existing daily+monthly report and both packs with 0 errors; META count +2 exactly; hub renders all rows including the 2 new ones.",
+        "Timezone off-by-one (P1-47): any toISOString in the week math shifts the whole Mon-Sun window a day in IST, corrupting both current and comparison windows silently. Prove: the Asia/Kolkata days[0]=local-Monday harness check; enforce the local isoOf() helper.",
+        "Hub scope-pill ternary (P1-47): editing L1708 wrong could mislabel EVERY report's scope pill. Prove: existing daily reports still show 'Daily', monthly show 'Monthly', weekly shows 'Weekly'.",
+        "Devanagari layout (P1-36): longer mr/hi labels can wrap/clip in tight nav/subtab widths; OS-fallback font (no bundled Devanagari) is a minor visual inconsistency. Prove: mobile-width harness check of nav+subtab labels; keep wording concise."
+      ]
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Spec"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Synthesis"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "spec:P1-36-i18n",
+      "phaseIndex": 1,
+      "phaseTitle": "Spec",
+      "agentId": "a6220284fb364e5c9",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783953958552,
+      "queuedAt": 1783953958533,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-36 — Marathi/Hindi label toggle for SHELL CHROME (www/in…",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954395565,
+      "tokens": 115480,
+      "toolCalls": 25,
+      "durationMs": 437013,
+      "resultPreview": "{\"item\":\"P1-36 — Marathi/Hindi label toggle for SHELL CHROME (www/index.html only)\",\"summary\":\"Add an English (default) / Marathi / Hindi language toggle that swaps SHELL CHROME labels only. Approach = a static `data-i18n` attribute pass (additive attributes on chrome elements) walked by a new `applyLang()`, PLUS a tiny `stT(key)` lookup used at the exact spots in renderHome() where labels are JS-…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "spec:P1-38-attention",
+      "phaseIndex": 1,
+      "phaseTitle": "Spec",
+      "agentId": "acece4f28a86bbcb1",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783953958553,
+      "queuedAt": 1783953958533,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-38 — Attention Centre with dismiss/snooze (Home attentio…",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954303625,
+      "tokens": 91932,
+      "toolCalls": 16,
+      "durationMs": 345071,
+      "resultPreview": "{\"item\":\"P1-38 — Attention Centre with dismiss/snooze (Home attention list in www/index.html)\",\"summary\":\"Add per-item DISMISS and SNOOZE controls to the Home \\\"Needs attention\\\" list, backed by ONE new additive pref key. renderHome() (index.html ~L3152-3278) today builds an unordered items[] array (each {color,em,title,msg,action,cta}) with NO stable id and blindly renders items.slice(0,6) into #…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "spec:P1-39-textsize",
+      "phaseIndex": 1,
+      "phaseTitle": "Spec",
+      "agentId": "a39fdc2447da43a11",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783953958554,
+      "queuedAt": 1783953958533,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-39 — Text-size setting (Normal / Large) for shell chrome…",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954497141,
+      "tokens": 115269,
+      "toolCalls": 22,
+      "durationMs": 538587,
+      "resultPreview": "{\"item\":\"P1-39 — Text-size setting (Normal / Large) for shell chrome (index.html)\",\"summary\":\"Add a device-local \\\"Text size\\\" preference (Normal default / Large) that applies a modest proportional zoom to the shell CHROME CONTENT scroller only, leaving the fixed topbar/bottom-nav and the module iframe untouched. The feature is a byte-for-byte clone of the EXISTING \\\"Display mode\\\" (saagar_ui_mode…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "spec:P1-45-lostwalkin",
+      "phaseIndex": 1,
+      "phaseTitle": "Spec",
+      "agentId": "adb2998267377bc63",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783953958555,
+      "queuedAt": 1783953958533,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-45 — Lost walk-in follow-up call sheet (saagar-report.js)",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954314521,
+      "tokens": 105614,
+      "toolCalls": 21,
+      "durationMs": 355966,
+      "resultPreview": "{\"item\":\"P1-45 — Lost walk-in follow-up call sheet (saagar-report.js)\",\"summary\":\"Add ONE new native-vector report `lostWalkinCallSheet` (scope: monthly) to the report engine. It reads QMS customers from `retail_queue_management_v1` directly (the same key/way the existing `qmsReport` builder already reads it), filters to non-purchase walk-ins in the selected month, dedupes by mobile keeping the mo…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "spec:P1-47-weekly",
+      "phaseIndex": 1,
+      "phaseTitle": "Spec",
+      "agentId": "ab6ad10167beb9c8e",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783953958555,
+      "queuedAt": 1783953958533,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-47 — Weekly report scope + last-period (this-week-vs-las…",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954351390,
+      "tokens": 139540,
+      "toolCalls": 9,
+      "durationMs": 392835,
+      "resultPreview": "{\"item\":\"P1-47 — Weekly report scope + last-period (this-week-vs-last-week) comparison in www/saagar-report.js\",\"summary\":\"Introduce a third report scope 'weekly' by adding ONE new self-contained report type — weeklyBrief (\\\"Weekly Business Summary\\\") — rather than retrofitting a weekly filter onto existing daily/monthly builders. The builder aggregates the QMS walk-in funnel (walk-ins / purchases…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "synthesis",
+      "phaseIndex": 2,
+      "phaseTitle": "Synthesis",
+      "agentId": "a424625118e511e9e",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783954497159,
+      "queuedAt": 1783954497143,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "promptPreview": "# Saagar Control Centre — Wave 13-lite spec context (READ-ONLY spec; do NOT edit any file)\n\nAPP: an OFFLINE Capacitor-6 app. Wave 13-lite edits TWO PLAIN-TEXT files DIRECTLY (NOT module blobs, no decode/embed):\n- SHELL: V:/Co work/Projects/Retail/saagar-control-centre/www/index.html  (the ~2.6MB shell; it embeds 11 base64 module blobs as HUGE single lines in a MODULES=[...] array\n  — NEVER touch t…",
+      "lastProgressAt": 1783954789676,
+      "tokens": 97961,
+      "toolCalls": 13,
+      "durationMs": 292517,
+      "resultPreview": "{\"perFilePlan\":[{\"file\":\"www/index.html\",\"ownerBrief\":\"THREE shell-chrome items land in ONE serialized pass (P1-36 i18n, P1-38 attention centre, P1-39 text-size). They collide on FOUR shared regions — resolve each with a SINGLE combined edit, never two competing edits on the same anchor: (A) appControlKeys() L2123 — append THREE key literals in one edit; (B) the config-card cluster just after #uiM…"
+    }
+  ],
+  "totalTokens": 665796,
+  "totalToolCalls": 106
+}

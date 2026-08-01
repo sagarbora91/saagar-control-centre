@@ -1,0 +1,663 @@
+{
+  "summary": "R0-W1 reconcile: map SEC-02..07 + P1-37/51 vs existing Wave-6 shell auth, then slice into micro-waves",
+  "agentCount": 8,
+  "logs": [
+    "Reconciled 7/7 items"
+  ],
+  "result": {
+    "reconciles": [
+      {
+        "item": "SEC-02 — Named users / unique credentials / no shared PIN. Every login maps to one named employee; no generic 'admin' account; audit shows the person, not the role.",
+        "status": "PARTIAL",
+        "acceptanceBar": "Every login maps to exactly one named person; there is no nameless generic \"admin\"; and the audit trail attributes each action to the person (name/id), not to a role label.",
+        "existingCoverage": [
+          "Named-employee registry EXISTS: EMP_MASTER_KEY (saagar_employee_master_v1), rows via normalizeEmployee() carry a stable id (uidEmp()), employeeId, name, active, archived, archivedAt (index ~2413-2444). This is the identity table a named login binds to.",
+          "Per-staff CREDENTIAL primitive EXISTS but is OPTIONAL: STAFF_PIN_KEY = { empId: 'v2:<salted-hash>' }; setStaffPin/clearStaffPin/hasStaffPin/verifyStaffPin (2217-2221), all reusing pinHashV2 (50000-round salted). manageStaffPins() gated behind isAdmin (2231).",
+          "Named-attribution session EXISTS: ACTIVE_STAFF_KEY (saagar_active_staff_v1); activeStaff()/signInStaff(emp)/signOutStaff() (2222-2224); UI via #staffSignInSel + staffSignInPick() (2228-2230) and renderSecurityPanel() (2239). Sign-in list already restricted to active, non-archived employees (activeStaffEmployees(), 2227).",
+          "Audit already carries a person field when a staffer is signed in: auditLog() writes actorId = activeStaff().id when !isAdmin (line 2250), so staff actions are person-attributed today.",
+          "Owner is a distinct named super-admin already: OWNER_NAME_KEY (st_v5_owner_name, defaults 'Sagar Sanjay Bora' at 5312); ownerName() (2789); onboarding at first PIN prompts for owner name (unlockAdmin, 2358; markOwnerSetup by-name, 2204). Invariant enforced everywhere that the owner is NEVER an employee row (saveEmployeeMaster 2490-2493, detectEmployeesFromModules 2510-2511, 5378/5421).",
+          "Single owner credential EXISTS: ADMIN_PIN_KEY (salted pinHashV2), verifyPin()/hasAdminPin(), promptVerifyOnly() re-auth primitive (2208), setAdmin()/adminToken() PIN-bound session token (2339). SEC-PIN-05 onboarding language already tells staff NOT to set the owner PIN (2357)."
+        ],
+        "delta": [
+          "GAP 1 (the real SEC-02 miss) — owner actions are attributed to the literal role string 'Admin', not the person. auditLog() line 2249: actor:isAdmin?'Admin':(activeStaff()?activeStaff().name:'Staff'). Even with OWNER_NAME_KEY set, the log says 'Admin'. DELTA: derive actor from ownerName() when isAdmin (fallback to 'Owner' only if name blank), and add a role/level field (e.g. actorRole:'Owner') so owner-level is still identifiable. Pure logic change in one function.",
+          "GAP 1b (UI relabel) — the Admin-mode surface literally shows 'Admin' (adminStatePill 'Locked'/'Unlocked', 'Unlock admin'). To satisfy 'no generic admin account' visually, relabel the unlocked state to the owner's name (e.g. pill shows the owner name when unlocked). Cosmetic, in applyMode()/renderSecurityPanel().",
+          "GAP 2 (the 'no shared PIN' enforcement) — staffSignInPick() (2229) only prompts for a PIN if hasStaffPin(emp.id); a staffer WITHOUT a PIN can be selected freely = unauthenticated attribution / impersonation. DELTA: add an OWNER policy (new key, default OFF = today's behavior) 'require a staff PIN to sign in'. When ON, block selecting a staffer who has no PIN (toast: ask owner to set one) and require verifyStaffPin for those who do. Mirror the existing roleSwitchLocked() opt-in policy pattern (2207). Must stay off by default and never hard-lock (see hazards).",
+          "NON-GOAL to be explicit about: do NOT build a launch/login gate here (that is P1-37) and do NOT create an owner employee row to 'map the owner to a named employee' — the owner's named identity comes from OWNER_NAME_KEY, and the owner-is-not-an-employee invariant must hold. SEC-02 supplies the named-identity model; P1-37 later consumes it."
+        ],
+        "newKeys": [
+          "saagar_staff_login_required_v1 (owner policy: require a per-staff PIN before a staffer can be signed in for attribution). Default absent/OFF = current fail-open behavior. Register in appControlKeys() (2149) + APP_RE (5818) + validateRestoreKeyValue() control branch (5628). It is a policy, not a secret, so it need NOT go in restoreBlockedKeys (same treatment as ROLE_SWITCH_LOCK_KEY). Note: this is the ONLY new key strictly needed; GAP 1/1b need no new key (they reuse OWNER_NAME_KEY + AUDIT_LOG_KEY)."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "Owner-name fallback: ownerName() can legitimately return '' (saveOwnerName allows clearing, 2792). The new actor derivation MUST fall back to 'Owner'/'Admin' when blank — never write actor:'' to the audit log.",
+          "Staff-login-required must NEVER hard-lock. Staff sign-in is attribution, not an app/module gate, so worst case must degrade to 'Shared / nobody' (the '' option in the dropdown already exists) — the policy must not block app launch or module access. Keep default OFF so a fresh/unconfigured device is fail-open (owner not locked out).",
+          "Restore interaction: STAFF_PIN_KEY is in restoreBlockedKeys (never imported), but the new policy key would restore normally. On a restored/new device the policy could be ON while zero staff PINs exist. Handle by: policy only restricts per-staffer attribution (fall back to shared/nobody), and the owner path (owner PIN) is wholly unaffected — so no one is locked out; the owner re-establishes staff PINs as they already do for the admin PIN.",
+          "Do not make named STAFF login a precondition for anything the app currently allows without sign-in. Today the device works with nobody signed in; that must remain true (fail-open) or the offline shop floor is bricked.",
+          "Owner PIN must stay the single owner credential — do not fork it into per-user admin PINs in R0-W1. Splitting/rehashing the owner PIN risks locking the owner out of their own device (P0)."
+        ],
+        "approach": "Reframe the admin PIN as the OWNER'S NAMED account — the owner is the named super-admin — NOT a generic 'admin' and NOT a separate break-glass. The pieces already exist: OWNER_NAME_KEY is set, onboarding captures the owner name, and the owner is provably one person (never an employee). The single missing link is that owner actions log as 'Admin' instead of the owner's name; fixing the actor derivation in auditLog() (GAP 1) plus relabeling the Admin-mode UI to the owner name (GAP 1b) satisfies 'no generic admin account' with zero new machinery and no storage change. Named STAFF identity is the existing staff-PIN + active-staff path; to satisfy the 'no shared PIN' clause, add one opt-in owner policy (default OFF, fail-open) that upgrades staff sign-in from an unauthenticated dropdown pick to a credentialed one, modeled exactly on roleSwitchLocked(). Net: owner PIN = owner's real named login (primary owner identity), staff PINs = each staffer's named credential (primary staff identity), no nameless 'admin' anywhere. A dedicated break-glass account is unnecessary and out of R0-W1 scope. All changes reuse verifyPin/verifyStaffPin/promptVerifyOnly/ownerName/auditLog — additive, offline, no new libs, no storage-core contact; device-risk light (one new policy key + one logic change + one label).",
+        "openQuestions": [
+          "When the launch gate (P1-37) lands, should the owner PIN unlock straight to owner identity, or should the launch identity default to a named staffer and require the owner PIN only to elevate? SEC-02 should define the named-identity contract now so P1-37 consumes it, but the gate itself is out of scope here.",
+          "Should 'require staff PIN' default ON for NEW installs (stronger SEC-02) while staying OFF for existing devices (no regression)? A first-run-vs-upgrade default split is safer than a global flip but adds branching — confirm the acceptance bar demands enforcement-on, or whether opt-in satisfies the auditor.",
+          "Auditor's literal reading of 'every LOGIN maps to a named employee': the owner is a named person but is deliberately NOT in the employee master. Confirm 'named owner via OWNER_NAME_KEY' counts as a named user for SEC-02, so we do not have to (and must not) create an owner employee row.",
+          "Historical audit rows already written as actor:'Admin' will remain; only new rows carry the owner name. Confirm no back-fill of past entries is expected (back-filling AUDIT_LOG_KEY would rewrite history and is undesirable)."
+        ],
+        "_id": "SEC-02"
+      },
+      {
+        "item": "SEC-03 PIN policy (min length, lockout, rate limit, forced change) for R0-W1 Named Access, reconciled against the existing Wave-6 auth surface in saagar-control-centre/www/index.html.",
+        "status": "PARTIAL",
+        "acceptanceBar": "SEC-03: PIN policy = configurable minimum length + account lockout + brute-force rate limit + forced change on compromise; policy is configurable and logged; a brute-force attempt locks the account. Today only a hardcoded min-length (4) exists; lockout, rate-limit and forced-change are entirely absent, and failed attempts are not audited.",
+        "existingCoverage": [
+          "Hash/verify choke points already exist and are the layer to wrap: pinHashV2(pin) 50000-round salted hash (line 2191), pinSalt()/PIN_SALT_KEY=st_v2_pin_salt (2181-2190), verifyPin(pin) admin verify + legacy->v2 migrate (2192-2197), verifyStaffPin(id,pin) (2221). The 50000-round hash is a mild inherent per-attempt cost but is NOT a rate limit.",
+          "MIN-LENGTH is PARTIAL: enforced but HARDCODED at 4 and duplicated, not configurable. promptNewPin() checks String(pin).length<4 -> 'PIN must be at least 4 characters' (2342-2344); manageStaffPins() checks String(np).length<4 (2237). No complexity/trivial-PIN (0000/1234) rejection.",
+          "Interactive callers that must be gated (there are exactly 4): unlockAdmin()->verifyPin (2361-2363), changeAdminPin()->verifyPin on current PIN (2374), promptVerifyOnly(msg)->verifyPin the re-auth primitive used by the role-raise gate at 2066 and by SEC-04 money-action re-auth (2208), staffSignInPick()->verifyStaffPin (2229).",
+          "Audit plumbing exists: auditLog(action,detail,before,after) (2244-2254, capped 500, attributes to Admin/staff). Already logs admin.pin.create/change (2349), staff.pin.set/clear (2218-2219). But NO failed-PIN event is logged today (wrong PIN just toasts at 2363/2374/2229).",
+          "Key-registration + restore infra to extend: appControlKeys() (2149) exported+own-device-continuity list; restoreBlockedKeys() (2153) = keys never imported (already holds ADMIN_PIN_KEY/ADMIN_MODE_KEY/CURRENT_ROLE_KEY/ROLE_ACCESS_KEY/STAFF_PIN_KEY); APP_RE (5818, matches st_v2_ etc, drives factory-reset wipe + pre-reset backup); validateRestoreKeyValue() (5623) where owner!=module -> 'control' -> defaults {ok:true} at 5631.",
+          "Config-UI host exists: renderSecurityPanel() (2239) already renders #adminIdleSelect + #staffSignInSel in Settings, so policy controls (min-length, max-fails, force-change) have a home with no new panel needed.",
+          "Precedent for the exact same pattern: SEC-PIN-07 idle auto-lock (adminIdleMinutes()/armIdleLock() 2210-2215, ADMIN_IDLE_MIN_KEY) shows the established shape for a configurable, defaulted, additive security policy key + setter + audit event."
+        ],
+        "delta": [
+          "Add configurable min-length: replace the two hardcoded '<4' checks (promptNewPin 2344, manageStaffPins 2237) with a pinPolicy().minLen read, DEFAULT 4 so absent-policy behaviour is byte-identical to today. Enforce ONLY at SET time (never at unlock, or an old short PIN bricks). Optionally reject trivial PINs (spec as an opt-in flag, default off to preserve behaviour).",
+          "Add the net-new attempt-counter + temporary lockout with backoff — the core work. Add small helpers layered around (not inside) verifyPin/verifyStaffPin: pinLockRemaining(scope) -> ms remaining (0=open), recordPinFail(scope), recordPinSuccess(scope). Wire into all 4 callers (unlockAdmin, changeAdminPin, promptVerifyOnly, staffSignInPick): before prompting, if pinLockRemaining>0 -> toast 'Locked, try again in Ns' and abort; on wrong PIN -> recordPinFail; on correct -> recordPinSuccess (reset). scope='admin' for the 3 admin paths, scope='staff:'+empId for staff.",
+          "Backoff schedule: after N (default 5) consecutive fails, lock for baseLockSec, escalating (e.g. 30s->1m->2m->5m) capped at a MODEST maxLockSec (recommend <=5 min, see hazards). Store lastFailAt so counters age out (a stale single fail from hours ago resets).",
+          "Add forced-change: a per-target flag (forceChangeAdmin bool; forceChangeStaff map) set by the owner from the security panel ('force change on compromise'). On next successful unlockAdmin, if flag set, route straight into changeAdminPin() before granting normal admin use; clear flag on successful promptNewPin. Log admin.pin.force_change_set / .cleared.",
+          "Add logging: auditLog('admin.pin.fail'|'staff.pin.fail',{scope,fails}) on each wrong entry and auditLog('admin.pin.lockout',{untilMs,fails}) when a lockout arms — satisfies 'brute-force attempt logged'. Reuse existing auditLog; no new log store.",
+          "Register new keys per the hard rule: policy key -> appControlKeys() + a bounded validateRestoreKeyValue() branch (clamp minLen to e.g. 4..12 so a corrupt/huge minLen can't soft-brick PIN changes) + APP_RE. Attempt-state key -> APP_RE + restoreBlockedKeys() ONLY, and deliberately NOT in appControlKeys (see openQuestions) so a lockout never travels in a backup.",
+          "Add a small policy accessor pinPolicy() (returns defaults merged over stored JSON) mirroring adminIdleMinutes(), plus setters used by renderSecurityPanel controls."
+        ],
+        "newKeys": [
+          "st_v2_pin_policy_v1 — configurable policy: {minLen:4, maxFails:5, baseLockSec:30, maxLockSec:300, rejectTrivial:false, forceChangeAdmin:false, forceChangeStaff:{}}. Exportable (appControlKeys) + APP_RE + a BOUNDED restore validator branch (clamp minLen, coerce numeric fields).",
+          "st_v2_pin_attempts_v1 — device-local volatile lockout state: {admin:{fails,lockUntil,lastFailAt}, staff:{<empId>:{fails,lockUntil,lastFailAt}}}. In APP_RE (factory-reset clears it) + restoreBlockedKeys() (never imported). Intentionally NOT in appControlKeys so it is never EXPORTED — a lockout must not be carried into a backup and re-imposed elsewhere."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "FAIL-OPEN with no PIN (P0): the attempt gate MUST be a no-op when !hasAdminPin(). verifyPin already returns false for every input when no PIN is set, so an un-guarded counter would lock a device during owner onboarding after 5 empty tries. Gate helpers must early-return 'open' unless hasAdminPin() (and for staff, unless hasStaffPin(id)).",
+          "Lockout must be TEMPORARY and CAPPED, never a permanent 'locked after N fails forever' state. On a packaged APK there are NO dev tools, and Factory Reset itself is admin-gated (unreachable while admin is locked) and destroys business data — so TIME (auto-expiry) is the ONLY non-destructive recovery for a locked owner. Therefore maxLockSec must stay modest (recommend <=5 min). This is the primary spec constraint.",
+          "Clock-tamper brick: lockUntil is a wall-clock timestamp; setting the device clock backward could make a lockout appear to last very long. Mitigation: clamp at read — if (lockUntil - now) > maxLockSec treat as expired; also store lastFailAt and age out stale counters. Clock forward only expires early (acceptable).",
+          "Lockout-injection via restore (why attempt-state is restore-blocked): if the attempt key were importable, a tampered backup could plant a permanent future lockUntil = DoS/brick. Keeping it in restoreBlockedKeys() + out of appControlKeys() closes both the import and export vectors.",
+          "Scope containment: an admin PIN lockout must lock ONLY the admin-unlock/re-auth action, not the whole app. The app stays open in staff view (fail-open launch); the user simply cannot escalate until the window passes. A GLOBAL lock keyed on admin fails would brick the device.",
+          "Staff vs admin severity: staff PIN is attribution-only (verifyStaffPin never touches isAdmin/currentRole, per 2216) so a staff lockout is low-risk, and the owner (admin) can always clear it from the security panel — but the admin-clear path must exist so a locked staffer isn't stuck until expiry.",
+          "Corrupt policy soft-brick: a restored/edited minLen of 999 would make promptNewPin reject every new PIN (can't CHANGE the PIN, though existing unlock still works). The restore validator + pinPolicy() accessor must clamp minLen to a sane max.",
+          "Migration interaction: verifyPin transparently re-hashes legacy->v2 on success (2195). recordPinSuccess must run only after verifyPin returns true and must not interfere with that write; do not move the counter inside verifyPin."
+        ],
+        "approach": "Additive, offline, no new libs, zero storage-core touch — all changes live in www/index.html JS + the Settings security panel, exactly the SEC-PIN-07 idle-lock pattern. Do NOT rewrite verifyPin/verifyStaffPin; layer a tiny gate (pinLockRemaining/recordPinFail/recordPinSuccess + pinPolicy accessor) around the 4 existing interactive callers so admin unlock, PIN change, promptVerifyOnly re-auth, and staff sign-in all share one lockout path. Two new keys: a configurable policy key (exportable, bounded-validated) and a device-local attempt-state key (restore-blocked, not exported, APP_RE-wiped). Preserve today's behaviour when both keys are absent (minLen defaults to 4). Because a lockout logic bug = a real brick and TIME is the only recovery on-device, keep maxLockSec modest, make the gate strictly fail-open when no PIN is configured, and device-test the three critical paths (correct unlock still works, N wrong -> temporary lock that auto-expires, and no-PIN onboarding never locks) before ship.",
+        "openQuestions": [
+          "Confirm the deliberate deviation: attempt-state key kept OUT of appControlKeys() (never exported) rather than the standard 'all new keys -> appControlKeys' rule — justified by lockout-injection/DoS. Needs owner/orchestrator sign-off since it bends the stated hard rule.",
+          "maxLockSec ceiling: recommend <=5 min because auto-expiry is the only non-destructive owner recovery on a packaged APK. Confirm the exact cap and the escalation ladder (e.g. 30s/1m/2m/5m at maxFails=5).",
+          "Should there be an explicit admin-visible 'clear lockout' / recovery affordance for a locked STAFF account in renderSecurityPanel (owner can already reach it), and is any owner-side recovery for the ADMIN lockout desired beyond waiting (there is none safe today)?",
+          "Trivial-PIN rejection (0000/1234/1111): include as an opt-in policy flag (default off to preserve behaviour) or skip for R0-W1?",
+          "Does P1-51 money-action re-auth (SEC-04, via promptVerifyOnly) want the SAME lockout as admin unlock, or a separate/looser policy so a fat-fingered approver isn't locked out of approvals? Sharing scope='admin' is simplest and is assumed here.",
+          "Should forced-change also cover staff PINs, or admin-only for R0-W1 (staff PINs are attribution-only, so admin-only is defensible)?"
+        ],
+        "_id": "SEC-03"
+      },
+      {
+        "item": "SEC-04 — Idle auto-lock + re-auth for sensitive actions (absorbs P1-51 money-action PIN-confirm)",
+        "status": "PARTIAL",
+        "acceptanceBar": "App locks after configured idle (DONE for the admin privilege); payroll/cash/export AND approve/void/lock/reopen re-prompt for PIN regardless of session age (MOSTLY MISSING). P1-50 action-permission matrix explicitly OUT of scope (Track B).",
+        "existingCoverage": [
+          "Idle auto-lock fully built but ADMIN-scoped: armIdleLock() L2213 (early-returns if(!isAdmin)return), adminIdleMinutes() L2210 (default 5, '0'=Never), noteAdminActivity() L2215, setAdminIdle() L2226; key ADMIN_IDLE_MIN_KEY='st_v2_admin_idle_min' L2005 (SEC-PIN-07).",
+          "Boot IIFE L7243-7246 arms idle timer for a restored-unlocked session + installs click/keydown/touchstart/pointerdown activity hooks (capture) + visibilitychange & pagehide background-lock (also signs active staffer out); respects '0'=Never.",
+          "Re-auth primitive EXISTS: promptVerifyOnly(msg) L2208 authenticates WITHOUT flipping isAdmin (built on verifyPin L2192). Already reused for role-raise gate L2066 and role-switch policy roleSwitchLocked() L2207.",
+          "changeAdminPin() L2369-2377 already re-verifies the CURRENT pin before change — the one existing 'sensitive action re-auth' pattern to mirror.",
+          "setAdmin(v) L2340 (re)arms idle on unlock / clears on lock; adminToken() L2339 PIN-bound persisted flag; init() L7239 restores admin only if token matches.",
+          "Export IS gated but only when NOT already admin: exportBackup() L5488 and exportMigration() L5509 call unlockAdmin() only if(!isAdmin); exportBackupConfirmed() L5540 has isAdmin defence-in-depth. No re-prompt for an already-unlocked (possibly hours-old within idle window) session.",
+          "Module gating (SEC-07-ish, not per-action): ensureModuleAccess(id) L2386 admin-gates payroll/tax via unlockAdmin; openModule() L6348 calls it. This is open-time role gate, not action re-auth.",
+          "Shell<-module bridge exists: window message listener L6979-6992 handles ST_AUDIT (L6988) etc. — but ST_AUDIT is fire-after-the-fact; there is NO pre-action VERIFY request type today.",
+          "Iframe is same-origin + NOT sandboxed (L6224 comment; isModuleDirty reads contentDocument L6230; shim reads parent.SaagarStore.enabled L6386) => a blob can synchronously call window.parent.<fn>() and receive a boolean. All shell fns are top-level = already on window.",
+          "auditLog() L2244 attributes to Admin or signed-in staff (actorId) — the log channel a re-auth event should write to."
+        ],
+        "delta": [
+          "Add ONE shell-side re-auth primitive, e.g. window.SaagarReauth(reason): wraps promptVerifyOnly + auditLog('reauth.ok'/'reauth.deny',{reason}), returns boolean, prompts EVERY call (no session-age caching, to meet 'regardless of session age'). MUST be exposed on window so blobs reach it via window.parent.SaagarReauth.",
+          "Export = pure shell-side, ZERO blob edits: insert SaagarReauth('export') at the ENTRY of exportBackup() L5488 and exportMigration() L5509 so an already-admin session still re-prompts. Gate ONCE at entry, NOT inside the shared writer exportBackupConfirmed() (L5540) — it is called by both the preview modal and exportMigration, so gating there double-prompts.",
+          "Payroll/cash money actions (setRunStatus, lockRun, run reopen, cash approve/void) = HYBRID: shell supplies the SaagarReauth channel; the call sites live in payroll.html / dsr.html / stock.html / expense.html blobs and each needs a one-line guard: if(!window.parent.SaagarReauth('payroll.lock')) return; This CANNOT be done purely shell-side — ST_AUDIT (L6988) fires after the action already committed; there is no pre-action shell interception point.",
+          "Idle-lock delta is SMALL: the admin idle-lock already satisfies the privilege that matters. Do NOT re-scope whole-app launch/idle lock here — that overlaps P1-37 (App-launch PIN lock) in this same wave. Optionally surface a one-line note that idle-lock is admin-scoped by design.",
+          "Wire the re-auth toggle (if added) into renderSecurityPanel() L2239 next to the existing adminIdleSelect, mirroring setAdminIdle wiring.",
+          "Do NOT expand the P1-50 permission MATRIX — reuse the existing fixed sensitive-action set only."
+        ],
+        "newKeys": [
+          "OPTIONAL, only if a policy toggle is wanted: st_v2_sensitive_reauth (e.g. '1'/'0', default ON). If added: (a) APP_RE at L5818 already matches st_v\\d+_ so it is auto-covered; (b) MUST be added to appControlKeys() L2149 for portable backup/restore (note: ADMIN_IDLE_MIN_KEY was itself left OUT of appControlKeys, so idle-min is currently non-portable — decide consciously); (c) restore validator validateRestoreKeyValue L5623 owner==='control' default already returns {ok:true}, so no new branch needed; (d) it is a policy flag, NOT a secret, so it goes in appControlKeys, NOT restoreBlockedKeys.",
+          "Simplest posture = NO new key: always re-auth the fixed sensitive set, fail-open when no PIN. Recommended for R0-W1's 'harden, don't rebuild' + light-risk goal."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "P0 FAIL-CLOSED TRAP: promptVerifyOnly/verifyPin (L2192-2193) return false when NO admin PIN is configured. A naive SaagarReauth built on it would BLOCK export/payroll-lock/void on a PIN-less device — locking the owner out. SaagarReauth MUST short-circuit to true when !hasAdminPin() (fail-open, matching P1-37's mandatory posture).",
+          "prompt() returning null (user cancels) must ABORT the action, never proceed — promptVerifyOnly already encodes p!==null && verifyPin(p); the blob guard must treat false as 'do nothing', not 'continue'.",
+          "Double-prompt risk: gating both exportBackup entry AND exportBackupConfirmed writer, or both ensureModuleAccess (open payroll) AND every payroll action, produces prompt fatigue and can feel like a lock. Gate the ACTION once; do not stack on top of the open-time module gate.",
+          "SaagarReauth must NOT flip isAdmin or currentRole (use promptVerifyOnly, not unlockAdmin) — flipping to admin would silently escalate a staff session and also disarm/re-arm idle unexpectedly.",
+          "Blob-side dependency: if a blob calls window.parent.SaagarReauth before the shell exposes it (build ordering / older cached srcdoc via buildModuleSrc memoisation), the call throws. Blob guard must be defensive: typeof window.parent.SaagarReauth==='function' ? ... : true (fail-open) so a missing channel never bricks a money action.",
+          "staff (non-admin) performing a money action: if the action is reachable in staff view, re-auth would demand the ADMIN pin (verifyPin is admin-only) — confirm the sensitive actions are only reachable post module-gate, else a legitimate staffer is locked out of their own workflow.",
+          "Confirm exportBackupConfirmed's direct-call defence (L5541, isAdmin only) is not weakened; adding entry-level re-auth must keep that path intact for console-call defence."
+        ],
+        "approach": "Harden, don't rebuild. Idle-lock half is already DONE at the correct (admin-privilege) scope — leave armIdleLock/setAdminIdle/boot hooks untouched; the launch-idle-lock belongs to P1-37, not here. For the re-auth half, add ONE shell-side primitive window.SaagarReauth(reason) = fail-open when !hasAdminPin(), else promptVerifyOnly + auditLog, returns boolean, no caching. Export becomes pure shell-side (re-auth at exportBackup/exportMigration entry, once). Payroll/cash lock/reopen/approve/void become a hybrid: shell provides the channel, each blob site gets a one-line defensive guard (typeof-checked, fail-open). Reuse promptVerifyOnly/verifyPin/auditLog — no new machinery, no storage-core touch, no new libs. Optional single st_v2_ policy toggle wired into renderSecurityPanel; otherwise zero new keys. Device risk light (localStorage reads + prompt + parent calls).",
+        "openQuestions": [
+          "Exact sensitive-action set for P1-51: confirm it is payroll lock (lockRun) + run reopen + setRunStatus approve + DSR/cash void/approve + export/migration — i.e. which specific blob functions in payroll.html/dsr.html/stock.html/expense.html get the guard? A precise site list is needed before the build wave (this reconcile is read-only).",
+          "Re-auth caching: acceptance bar says 'regardless of session age' — interpret as ALWAYS re-prompt (no grace window)? Or is a short (e.g. 60s) grace acceptable to reduce prompt fatigue during a lock+slip+share sequence? Recommend always-prompt for R0-W1.",
+          "Policy toggle: ship the fixed always-on set (no key), or add st_v2_sensitive_reauth so the owner can disable it? If added, also decide portability (appControlKeys inclusion) given ADMIN_IDLE_MIN_KEY was left non-portable.",
+          "Staff reachability: are any of the sensitive money actions reachable in a non-admin staff session? If yes, re-auth would demand the ADMIN pin and block staff — confirm the intended actor for each action.",
+          "Should idle auto-lock also cover a signed-in-staff (non-admin) session beyond the existing background/pagehide sign-out, or is admin-scoped idle + background staff sign-out sufficient for SEC-04 (P1-37 covers the launch gate)?"
+        ],
+        "_id": "SEC-04"
+      },
+      {
+        "item": "SEC-05 Joiner–Mover–Leaver (activation / deactivation / immediate revocation) — reconciled against saagar_employee_master_v1 active/archived flags, STAFF_PIN_KEY, and ACTIVE_STAFF_KEY.",
+        "status": "PARTIAL",
+        "acceptanceBar": "User activation/deactivation/immediate revocation; a deactivated user cannot log in / be signed in; historical records survive and stay attributed; a leaver checklist exists. (Staff \"sign-in\" here is ATTRIBUTION only — per the line-2216 invariant it must never touch isAdmin/currentRole.)",
+        "existingCoverage": [
+          "Master model DONE: normalizeEmployee (index.html:2413-2446) persists active (bool), archived, archivedAt; getEmployeeMaster (2480), saveEmployeeMaster (2488). employeeStats splits active/inactive (2498).",
+          "Explicit ACTIVATE/DEACTIVATE DONE: toggleEmpActive(i) (5426-5433) flips active + audits employee.activate / employee.deactivate with before/after. Row button + badge at 5348-5352.",
+          "Explicit ARCHIVE DONE: archiveEmpRow(i) (5434-5442) sets active=false, archived=true, archivedAt, guarded by confirm(), audits employee.archive. Panel copy 'Edit, deactivate or archive. Archived records remain for traceability.' (1368).",
+          "Sign-in list ALREADY EXCLUDES leavers (UI-level): activeStaffEmployees() (2227) filters active!==false && !archived; renderSecurityPanel() (2239) builds #staffSignInSel from it; staffSignInPick(val) (2228-2230) re-resolves the id inside that filtered list, so a deactivated id can't be picked via the dropdown.",
+          "History survives + stays attributed DONE by design: deactivate/archive never deletes module blobs; operational pickers already drop inactive (e.g. 3079, 6270; payroll sync 2556/2561, leave sync 2603/2607 sync only active). auditLog attributes to the signed-in staffer via actor/actorId (2249-2250).",
+          "Storage plumbing DONE: EMP_MASTER_KEY, STAFF_PIN_KEY, ACTIVE_STAFF_KEY all in appControlKeys() (2149); STAFF_PIN_KEY in restoreBlockedKeys() (2153); restore validator accepts EMP_MASTER_KEY shape (5629). Adding active-flag logic needs no schema/key change."
+        ],
+        "delta": [
+          "GAP 1 (primitive gate — the task's core ask): the leaver block is UI-only. verifyStaffPin(id,pin) (2221) checks only the hash; signInStaff(emp) (2223) writes ACTIVE_STAFF_KEY with no active check. Add ONE helper (e.g. empActiveById(id): read getEmployeeMaster(), return whether that id is active && !archived) and gate BOTH primitives: signInStaff refuses (no write, toast) and verifyStaffPin returns false when the id resolves to a deactivated/archived master row. Makes the master flag the single source of truth so any future launch-time staff login inherits it.",
+          "GAP 2 (IMMEDIATE revocation of a LIVE session): activeStaff() (2222) is a snapshot of ACTIVE_STAFF_KEY and is never re-checked against the master, so a currently-signed-in staffer who is deactivated stays 'signed in' until manual sign-out/background. In toggleEmpActive (deactivate branch) and archiveEmpRow, add: if activeStaff() && String(activeStaff().id)===String(list[i].id) -> signOutStaff(). Optionally also re-validate in applyMode()/boot (2321): if the current activeStaff id is no longer active, auto signOutStaff() — cheap belt-and-suspenders.",
+          "GAP 3 (leaver checklist — MISSING entirely): no leaver/offboarding checklist exists. Add a lightweight one triggered at archive/deactivate (extend the existing confirm() or a small modal) listing: signed out, staff PIN cleared, dropped from payroll/leave sync, module handover noted. Recommend auto-clearing the leaver's credential on archive via the existing clearStaffPin(emp.id) (2219) so the PIN is revoked (already audited staff.pin.clear).",
+          "GAP 4 (naming, aligns with SEC-02): keep the primitive gate as the ONLY place that decides 'can this named user sign in' so the current dropdown-omission and any later gate stay consistent — avoid a second parallel filter."
+        ],
+        "newKeys": [],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "P0 if mis-scoped: the active-flag gate must apply to STAFF ATTRIBUTION ONLY and NEVER to the owner/admin path. The owner is deliberately NOT an employee row (saveEmployeeMaster strips owner name, 2491-2493), so an active-flag lookup for the owner finds nothing — if that ever fed verifyPin/isAdmin the owner would be locked out. Keep the gate on verifyStaffPin/signInStaff only; do not touch verifyPin/promptVerifyOnly.",
+          "Fail-open on lookup miss: staff sign-in is attribution-only, so when the master can't be read or the id is unknown/legacy (not present), do NOT hard-block — mirror the dropdown (only refuse ids that resolve to a KNOWN row with active===false||archived). A blanket 'not found -> refuse' would strand attribution for legacy/never-registered names.",
+          "Auto-sign-out on deactivate must be try/guarded and call applyMode() so the staffSignedPill (2329) refreshes; a throw here must not abort saveEmployeeMaster or leave a stale pill.",
+          "Must preserve the line-2216 invariant: deactivation/revocation must never flip isAdmin or currentRole — a bug that changed device privilege on staff deactivate is a security regression, not just a lockout.",
+          "Idempotency: re-activating (toggleEmpActive back to active) must fully restore sign-in eligibility with no residual block; verify Activate after Deactivate re-lists the employee and lets them sign in again."
+        ],
+        "approach": "Harden, don't rebuild — the JML data model, activate/deactivate/archive actions, audit trail, and history-retention are already in place; R0-W1 adds enforcement. (1) Add one master-lookup helper and gate signInStaff + verifyStaffPin with it (staff-only, fail-open on unknown id). (2) In toggleEmpActive(deactivate) and archiveEmpRow, sign out the affected live session immediately (and optionally re-validate activeStaff in applyMode/boot). (3) Add a leaver checklist at archive/deactivate that also auto-clears the staff PIN via clearStaffPin. All edits are localized to index.html auth helpers (2217-2239) and the employee editor (5426-5442); reuse auditLog, signOutStaff, clearStaffPin, applyMode. No new localStorage keys, no storage-core/sqlite/photo-store contact.",
+        "openQuestions": [
+          "Should a leaver ALWAYS auto-clear the staff PIN on Archive (recommended for true revocation), or only on an explicit 'Offboard' action so a temporary Deactivate keeps the PIN for easy reactivation? Suggest: Archive clears PIN; plain Deactivate keeps it.",
+          "Should the leaver checklist be ephemeral (surfaced + audit-logged only, key-free) or persisted per-employee? Persisting introduces a NEW key that would then need appControlKeys()+restore-validator wiring — recommend key-free to keep deviceRisk light.",
+          "Deactivating mid-session revokes the ATTRIBUTION session, but device operational privilege is governed separately by admin PIN / currentRole (role gate, not the employee master). Confirm SEC-05 scope for R0-W1 is the named staff-attribution identity only, with role-based module access remaining under SEC-07 (P1-50 matrix is explicitly deferred to Track B)."
+        ],
+        "_id": "SEC-05"
+      },
+      {
+        "item": "SEC-07 — Role-scoped sensitive views + masking + ACCESS LOGGING",
+        "status": "PARTIAL",
+        "acceptanceBar": "Role-scoped sensitive views, masking, and access logging: a role login (e.g. CRO) cannot open a module it lacks (e.g. payroll), AND every time a sensitive view/module is opened an entry is written to the access log (who / what / when). Role-scoping is DONE; access-logging and masking are the gap.",
+        "existingCoverage": [
+          "ROLE MATRIX (DONE): ROLE_ACCESS_KEY='saagar_role_access_v1' (L2042); loadRoleAccess/saveRoleAccess (L2053/2058); defaultRoleAccess (L2046) already denies payroll/tax to CRO/Cashier/etc (CRO=qms,dsr,grooming,cro_audit only); currentRole/setCurrentRole (L2059/2060); roleCanOpen(id) (L2070); ACCESS_ROLES/ACCESS_MODULES (L2044/2045).",
+          "GATE (DONE): ensureModuleAccess(id) (L2386) — isAdmin bypass, then roleCanOpen check (toasts 'not enabled for the <role> role' + returns false), then protectedModulesEnabled() admin-PIN gate for payroll+tax (L2389-2392). Single choke point: openModule(id) (L6348) calls ensureModuleAccess first (L6350); navigateToModule (L6246) and the ST_OPEN_MODULE bridge (L6982) both funnel through openModule.",
+          "'.adminOnly' CSS gating in applyMode() (L2325) hides admin-only chrome for non-admins; roleSelect reflected (L2332).",
+          "AUDIT SINK EXISTS + IS THE RIGHT PLACE: auditLog(action,detail,before,after) (L2244) → AUDIT_LOG_KEY='st_v4_audit_log' (L2022), 500-entry ring; entry ALREADY captures who/when: at (ISO), actor ('Admin' | active-staff name | 'Staff'), actorId (L2249-2251). Module iframes can already post audit events via the ST_AUDIT postMessage bridge (L6988-6989). AUDIT_LOG_KEY is exported (appControlKeys L2149) and restore-validated as array (L5630).",
+          "ACCESS-LOG GAP CONFIRMED: openModule today logs ONLY to the home ring via logActivity(id) (L6352→ACTIVITY_KEY, {id,icon,title,at}, 20-item, NO actor/role) — it does NOT call auditLog. ensureModuleAccess logs NOTHING on allow OR deny (toast only). So no who/what/when access trail for view opens exists.",
+          "MASKING GAP CONFIRMED: the only masking is the device-wide Privacy-eye ui_hide_amounts (amountsHidden/toggleHideAmounts L3227/3228, Home ₹ tiles L1193) — a manual per-device toggle, NOT role-aware. No role-based masking of salary/cash/full-customer-list; salary figures live inside the payroll iframe (blob), reachable only by roles the matrix already lets open payroll."
+        ],
+        "delta": [
+          "(a) ACCESS LOGGING — instrument the existing choke point, reuse auditLog (NO new machinery). In openModule (L6348), AFTER a successful ensureModuleAccess and only for a SENSITIVE-view set, add a guarded auditLog('access.open',{module:id,view:mod.short,role:currentRole(),admin:isAdmin}). Wrap in try/catch (mandatory — see hazards).",
+          "(a2) LOG DENIALS: in ensureModuleAccess (L2386), when roleCanOpen(id) fails, add a guarded auditLog('access.denied',{module:id,role:currentRole()}) BEFORE the existing toast+return false — do not change the returned decision. This yields the 'attempted-access' trail that completes the access log.",
+          "(a3) Define a SENSITIVE_VIEWS list. Minimal baseline = the two already-protected modules ['payroll','tax']; extend with 'expense' (cash) + 'cro_audit'/'dsr' (customer list / cash sales) per the salary/cash/customer bar. Scope logging to this set (not all 11) so the 500-ring is not flooded and security events aren't evicted. Consider adding currentRole() to the detail of relevant existing entries so the access log 'shows the person not the role' end-to-end (dovetails with SEC-02).",
+          "(b) MASKING (keep MINIMAL / shell-only). Role-scoping already stops non-authorized roles from opening payroll/tax at all, so the residual exposure is limited to surfaces visible to EVERY role — the Home ₹ tiles and the Home customer lookup. Light delta: make the existing ui_hide_amounts default role-aware (default-masked for roles lacking a money module) and/or gate the Home customer-lookup for roles without cro_audit/dsr. Deep in-iframe salary-column masking would touch module blobs and is NOT worth scoping into R0-W1 — flag as an open question, don't build it here.",
+          "Optional: surface the new access-log entries in the existing audit/security view (renderSecurityPanel L2239 / audit stats L2255) so the owner can actually READ the access log; auditStats already summarises the same key."
+        ],
+        "newKeys": [
+          "NONE required for the minimal path — access logging reuses AUDIT_LOG_KEY via auditLog (already in appControlKeys() + restore-validated as array); masking reuses ui_hide_amounts. If a separate role-mask preference key is ever added it MUST be registered in appControlKeys() + APP_RE + the restore-validator (parsedRestoreValue/validateRestoreKeyValue) — but the recommendation is to avoid a new key."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "CONFIRMED BRICK RISK if logging is unguarded: auditLog does tryJSON(AUDIT_LOG_KEY)||[] then log.unshift — if AUDIT_LOG_KEY holds a JSON object (not array, not null) tryJSON returns the object, ||[] does NOT fire, and .unshift throws. An UNWRAPPED auditLog call inside openModule would then throw on EVERY module open = total lockout from all modules. The open-time and deny-time calls MUST be wrapped in try/catch (matches every existing call site, e.g. L2058/2066/2068). This is the single biggest hazard for this item.",
+          "Access logging must be side-effect-only: it must NOT alter the return value or control flow of ensureModuleAccess/openModule. A logging failure on a denial must not flip a deny into an allow (false security) or an allow into a deny (lockout). Log, then return the unchanged decision.",
+          "Masking must be COSMETIC (blur/hide of values) and never the sole access control, and must never hide the 'Unlock admin' / role-switch affordances or the owner's own data — over-masking that hides the unlock path is a soft lockout. Keep isAdmin fully exempt (consistent with roleCanOpen/ensureModuleAccess bypass) so the owner can never mask themselves out.",
+          "Do not conflate granted vs denied: use distinct actions ('access.open' vs 'access.denied') so the log never implies access was granted when it was refused.",
+          "Fail-open posture preserved: with no PIN / no roles configured currentRole() defaults to 'Store Manager' (=ALL modules) and isAdmin bypass stands, so adding logging/masking must not introduce any path that gates a fresh unconfigured device."
+        ],
+        "approach": "Harden, do not rebuild. Role-scoping already meets 'CRO cannot open payroll'. Add access logging by instrumenting the ONE choke point (openModule + ensureModuleAccess) with guarded auditLog('access.open'/'access.denied') calls carrying {module, role, admin} for a scoped SENSITIVE_VIEWS set — reusing auditLog/AUDIT_LOG_KEY, no new key, no storage-core touch. Keep masking minimal and shell-only (role-aware default of the existing ui_hide_amounts + Home customer-lookup gate), leaning on role-scoping as the real control and deferring deep in-iframe salary masking. Every new auditLog call MUST be try/catch-wrapped to preserve fail-open module access.",
+        "openQuestions": [
+          "Exact SENSITIVE_VIEWS membership: is ['payroll','tax'] enough, or must 'expense'/'dsr' (cash) and 'cro_audit' (full customer list) also be access-logged? The bar names salary/cash/customer, suggesting all four.",
+          "Should EVERY module open be logged (full access trail) or only sensitive ones? Full logging floods the 500-entry ring and can evict security events (pin/restore) — recommend sensitive-only, needs owner sign-off.",
+          "Is in-iframe masking (e.g. hiding salary columns inside the payroll blob for a lower role that is nonetheless allowed to open it) in scope for R0-W1? It would require touching module blobs (heavier than 'light') — recommend deferring; role-scoping already blocks the modules for roles without need.",
+          "Should access-log entries also capture the store/device or the target record id for finer forensics, or is module+role+actor+timestamp sufficient for the acceptance bar?",
+          "Where should the access log be surfaced for the owner to read — extend renderSecurityPanel/auditStats, or is write-only-to-audit-log (readable via the existing audit ZIP export) enough for R0-W1?"
+        ],
+        "_id": "SEC-07"
+      },
+      {
+        "item": "P1-37 App-launch PIN lock (whole app; MUST fail-open with no PIN; satisfies P1-49)",
+        "status": "OPEN",
+        "acceptanceBar": "Launch-time gate: IF a launch/owner PIN is configured, the shell is unusable until it is entered; with NO PIN configured the app opens straight through (fail-open, zero lockout). Also satisfies P1-49.",
+        "existingCoverage": [
+          "NO launch gate exists — this bar is entirely OPEN. init() IIFE at index.html:7235 restores admin mode (line 7239) then renders home (doFirstRender, gated on SaagarStore.whenReady at 7318-7319); nothing blocks shell use at cold start.",
+          "Reusable verify primitive: verifyPin(pin) (2192-2196, v2 salted 50000-round pinHashV2 + legacy migrate) — the launch overlay's PIN check should call this directly.",
+          "Fail-open discriminator already exists: hasAdminPin() (2198) = !!safeGet(ADMIN_PIN_KEY 'st_v2_admin_pin_hash'). This is the correct 'is a PIN configured?' gate — no PIN ⇒ no lock.",
+          "Verify-WITHOUT-elevation semantics precedent: promptVerifyOnly(msg) (2208) authenticates without flipping isAdmin — the exact posture a launch gate wants (prove device-open, do not auto-elevate to admin). But it uses prompt() so it CANNOT be reused as-is (see delta).",
+          "Full-screen overlay precedent to mirror: the boot splash div#st-v5-boot-splash (1129, position:fixed;inset:0;z-index:2147483647) + its whenReady/setTimeout(hide,6500) hide script (1130). The lock overlay copies this pattern at >= that z-index.",
+          "auditLog(evt,data) (used throughout, e.g. 2349-2350) — reuse for 'launch.unlock'/'launch.denied' so SEC-02 attribution shows the event.",
+          "setAdmin/adminToken/ADMIN_MODE_KEY (2339-2340) and isAdmin session-restore (7239) — the launch gate is orthogonal to these and must not disturb them.",
+          "storage-core.js Step-0 synchronous hydrate (line 103) + pre-ready native passthrough (getItem line 225) make control keys readable at the synchronous top of init(), which is why the existing SEC-PIN-01 restore at 7239 trusts hasAdminPin() synchronously."
+        ],
+        "delta": [
+          "Add a DOM lock-overlay element (not the boot splash) with an inline numeric PIN input + on-screen keypad + Unlock button, initially display:none, at z-index >= 2147483647. NO native prompt() anywhere in this path.",
+          "Add showLaunchLock()/dismissLaunchLock() helpers. showLaunchLock traps focus, blocks pointer/keyboard to the shell beneath, and only dismisses when verifyPin(entered)===true.",
+          "Hook it into init() (7235): the gate SHOW decision + verify handlers must run so that hasAdminPin() is authoritative. Recommended two-layer hook — (a) paint the overlay synchronously at init top IF hasAdminPin() so the shell is covered during hydrate (like the boot splash), then (b) inside/alongside doFirstRender under whenReady, RE-EVALUATE hasAdminPin() and dismiss if false (handles a PIN changed in a prior _ready/SQLite session that Step-0 native hydrate can't see — see lockoutHazards). Wire real verify handlers only after whenReady so MEM/DB is authoritative.",
+          "Reuse the OWNER/admin PIN as the launch credential (verifyPin) — do NOT mint a separate launch PIN secret. Single source of truth, no new hash key, and fail-open keys off the existing hasAdminPin(). (Optional named-access extension: also accept any valid staff PIN via verifyStaffPin loop + auto signInStaff for attribution — flag to SEC-02, keep out of MVP.)",
+          "Launch unlock should be VERIFY-ONLY (dismiss overlay, leave isAdmin as restored) — do NOT auto-flip to admin; staff view stays the default working posture, consistent with promptVerifyOnly.",
+          "Keep the unlocked state PER-PROCESS / in-memory (re-shown every cold boot). Do NOT persist an 'unlocked-this-launch' flag; if one is ever persisted it must be adminToken-bound like SEC-PIN-01 to resist tampering.",
+          "Ensure the hardware back button cannot bypass the lock: installHardwareBack()/handleHardwareBack (7165-7169) must, while the overlay is up, minimize/exit the app rather than fall through into the shell.",
+          "Ensure the boot-splash hide script (1130, setTimeout(hide,6500)) hides ONLY the splash and never the lock overlay (separate id, coordinated z-index).",
+          "auditLog 'launch.unlock' (success, with staffer if named) and 'launch.denied' (failed attempt) events."
+        ],
+        "newKeys": [
+          "ZERO new keys required if launch lock is simply 'gate whenever hasAdminPin()' with in-memory unlock (leanest, safest).",
+          "OPTIONAL one boolean device-pref key to let the owner toggle the whole-app launch lock independently of having an admin PIN (some owners want an admin PIN for settings but no launch wall): suggest LAUNCH_LOCK_KEY = 'st_v2_launch_lock' ('true'/'false'). If added: (1) DEFAULT ABSENT ⇒ OFF (opt-in) to minimize brick risk; effective gate = hasAdminPin() && launchLockEnabled(); (2) add to appControlKeys() (2149) for backup/restore; (3) APP_RE (5818) already matches via st_v\\d+_ — no APP_RE edit; (4) add a restore-validator branch in validateRestoreKeyValue (5623, owner==='control') accepting the boolean; (5) do NOT add to restoreBlockedKeys — it is a safe device pref, and the hasAdminPin() AND-guard neutralizes carrying LAUNCH_LOCK=ON to a device whose PIN was (correctly) restore-blocked, so it fails open there."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "#1 BRICK RISK — fail-open must gate ONLY on 'is a PIN configured?' (hasAdminPin()), never on the verify result. Wrap the show-decision in try/catch that defaults to NOT locking; if storageAvailable()/hasAdminPin() throws, open through. Key strictly on hasAdminPin() (guarantees verifyPin can succeed) — do NOT key on ownerSetupDone() (OWNER_SETUP_KEY without a PIN hash would lock with no way to unlock = permanent brick).",
+          "prompt() suppression IS the brick vector this item exists to avoid: the Capacitor Android WebView can suppress/deny window.prompt() (memory: 'prompt() gate device-test pending'). If the launch gate used prompt() and it returned null, the owner could NEVER enter the PIN. The gate MUST be a DOM overlay with its own input+keypad. (Existing unlockAdmin still uses prompt() but that is not a brick because staff view remains usable without unlocking.)",
+          "Storage-timing bypass/stale-hash: a PIN CHANGED in a prior _ready/SQLite session is written to MEM+DB but NOT mirrored to native localStorage (storage-core.js line 231), while init's synchronous top only sees the Step-0 native-LS hydrate (line 103). Consequence: at sync init top hasAdminPin() may be stale (present-but-old hash, or absent). Mitigate by finalizing the show/hide + verify under whenReady (MEM authoritative) — paint early, decide late — so you neither brick on a stale hash nor silently bypass the gate on fast boot.",
+          "Forgotten launch PIN = forgotten admin PIN: recovery is identical to today (reinstall/restore; PIN is intentionally in restoreBlockedKeys 2153, non-importable ⇒ potential data loss). Acceptable because it matches existing posture, but the delta MUST NOT add any NEW recovery bypass (a bypass = false security). Document the recovery path in UI copy.",
+          "Interaction with the SEC-03 sibling (rate-limit/lockout): a launch gate + a hard account lockout could brick the owner. Keep brute-force response as escalating BACKOFF DELAY, never a permanent hard lock, on the launch path.",
+          "Overlay focus/pointer trap must block the shell beneath WITHOUT blocking its own input; and must not be dismissable by Esc/back/tap-outside.",
+          "z-index/hide-timing collision with the boot splash (1129-1130): the splash's setTimeout(hide,6500) must not hide the lock overlay; use a distinct id and >= splash z-index."
+        ],
+        "approach": "Additive, offline, no new libs; UI/logic only — touches index.html exclusively (init IIFE + a new overlay + 2-3 helpers), never storage-core.js/sqlite-store.js/photo-store.js. Reuse verifyPin + hasAdminPin + auditLog + the boot-splash overlay pattern; do NOT build parallel PIN machinery. Effective launch gate = hasAdminPin() (optionally && launchLockEnabled()); no PIN ⇒ open through. Unlock is a DOM overlay (inline PIN input + numeric keypad), verify-only (does not elevate to admin), per-process in-memory. Paint early at init top to cover the shell during hydrate, but make the final fail-open decision + attach verify handlers under SaagarStore.whenReady so MEM/DB is authoritative and a stale native-LS hash can neither brick nor bypass. Land the whole-app toggle as opt-in (default OFF) for the first release to keep brick surface minimal.",
+        "openQuestions": [
+          "Reuse admin PIN (recommended) vs a separate launch PIN? Recommend reuse to avoid a second secret + a second lockout path; confirm with owner.",
+          "Named-access scope: should launch also accept any valid STAFF PIN (verifyStaffPin) and auto-sign-in that staffer for SEC-02 attribution, or is owner-PIN-only acceptable for P1-37? (Recommend owner-PIN MVP; staff-PIN launch = SEC-02 coordination.)",
+          "Ship the independent LAUNCH_LOCK_KEY toggle now, or make the gate implicitly ON whenever a PIN exists? (Recommend explicit opt-in toggle, default OFF, for lowest brick risk.)",
+          "Does P1-37 include RE-LOCK on resume-from-background, or is that strictly SEC-04's idle/background lock (already partly present at 7245-7246)? Recommend scoping P1-37 to COLD START only to keep the boundary clean.",
+          "On-device confirmation that a DOM overlay reliably captures focus/keyboard on the target Android WebView and that hardware-back is intercepted while locked — this is the go/no-go device test before R0 sign-off."
+        ],
+        "_id": "P1-37"
+      },
+      {
+        "item": "P1-51 PIN-confirm on money actions (SEC-04 scope extension; NOT the P1-50 permission matrix)",
+        "status": "OPEN",
+        "acceptanceBar": "Re-auth (Admin PIN) must be demanded before a money/approval action COMMITS — approve/void/lock/reopen/close-day/close-month — regardless of session age (a logged-in owner still re-enters). Configurable + logged. MUST fail-open when no PIN is configured (never block a money action on a PIN-less install). Additive; offline; no new libs; does NOT touch storage-core.js/sqlite-store.js/photo-store.js.",
+        "existingCoverage": [
+          "RE-AUTH PRIMITIVE EXISTS, UNWIRED TO MONEY: promptVerifyOnly(msg) at index.html:2208 — synchronous, prompt()-based, calls verifyPin, returns bool, does NOT flip admin mode. Exactly the SEC-04 re-auth primitive. Today used ONLY at setCurrentRole role-raise gate (index.html:2066); zero money actions call it.",
+          "verifyPin(pin) index.html:2192 (salted v2 50k-round hash + transparent legacy re-hash); hasAdminPin() 2198 = the fail-open pivot; auditLog(evt,data,before,after) available for logging each re-auth.",
+          "SAME-ORIGIN srcdoc iframes: shell comment 'direct ref (same-origin srcdoc)' index.html:3687; modules already call parent.SaagarEvidence and window.parent.postMessage — so window.parent.<fn>() is callable SYNCHRONOUSLY from any module. This makes a blocking prompt-based gate viable without async restructuring.",
+          "Existing bridge events ST_WA (index.html:6987), ST_SHARE (6986), ST_PRINT/ST_REPORT/ST_AUDIT (6979-6992) are all ONE-WAY fire-and-forget via window.parent.postMessage — they model an action, not a gate that must block-and-return a decision.",
+          "Money-action commit sites all follow the same idiom (read-only/role guard -> confirm() -> mutate -> save): payroll setRunStatus 3192/lockRun 3202/unlockRun 3234/closeMonth 3243; expense finishClose 1487 (shared by closeDay 1469 + closeStoreDay), voidEntry 987, approveDay 1493, reopenDay 1500, can('monthlock'/'monthoverride') 469/471; stock toggleLock 2218/doLockClosing 2340/submitMovements 2401/doReopenConfirm 2476; dsr submitDay 2731/submitAudit 2979/unlockForCorrection 3007. NONE currently re-auth.",
+          "Payroll actions already start with 'if(stGuardWrite())return;' — a proven single-line top-of-function guard slot to mirror.",
+          "Storage-registration surface already in place: appControlKeys() index.html:2149, APP_RE (factoryReset) 5818 auto-covers st_v\\d+_ prefixes, restoreBlockedKeys() 2153, validateRestoreKeyValue() 5623."
+        ],
+        "delta": [
+          "SHELL (1 function): add a synchronous global window.stConfirmMoney(label) that FAIL-OPENS first (if !hasAdminPin() return true), else returns promptVerifyOnly('Enter Admin PIN to '+label), and auditLog('money.reauth.ok'|'money.reauth.denied',{action:label}). Pure reuse of existing primitives — no new machinery. Build it as the single re-auth entry point (alias stReauth) so SEC-04/SEC-07 sensitive-view re-prompts reuse it instead of forking.",
+          "BLOB (1 line per site, mechanical): at the top of each targeted money action, right after the read-only/role guard and BEFORE the existing confirm(), insert: if(window.parent&&window.parent.stConfirmMoney&&!window.parent.stConfirmMoney('lock the pay-run')){return;}  — the '&&' short-circuit is the fail-open fallback when the helper is absent (old/standalone shell). Where a shared commit choke-point exists (expense finishClose 1487), gate ONCE to cover closeDay+closeStoreDay+mismatch paths and cut edit count.",
+          "Scope the wiring to money-affecting verbs only (approve/void/lock/unlock/reopen/close-day/close-month), NOT routine entry — matches P1-51's stated 'approve/void/lock/reopen'. ~12-14 guard lines across payroll/expense/stock/dsr blobs.",
+          "DO NOT build a postMessage VERIFY_PIN request/response channel: money actions are synchronous confirm()-then-commit, so an async channel forces every site into continuation-passing + a per-module pending-callback registry (MORE wiring + stale-callback bugs). The same-origin synchronous parent call is strictly lower blast radius.",
+          "Edits land in the EMBEDDED module blobs inside www/index.html via the existing embed pipeline; V:/Co work/Projects/Retail/_extracted_modules/*.html are the decoded read-mirrors (line numbers above are from those mirrors)."
+        ],
+        "newKeys": [
+          "NONE strictly required — the minimal build keys off hasAdminPin() and is always-on-when-PIN-exists, which already satisfies fail-open.",
+          "RECOMMENDED optional owner toggle: st_v2_money_reauth ('on'/'off', default treated as 'on'; still fail-open when no PIN). Name it with the st_v2_ prefix so APP_RE (st_v\\d+_) and factoryReset auto-cover it. If added it MUST also go in appControlKeys() (index.html:2149) and get a validateRestoreKeyValue() rule (index.html:5623). It is config, not a secret -> appControlKeys(), NOT restoreBlockedKeys().",
+          "If a de-dup grace window is ever added (to avoid double-prompting on back-to-back actions), default it to 0 to honor SEC-04 'regardless of session age', and coordinate with SEC-04's existing ADMIN_IDLE_MIN_KEY — do NOT introduce a competing idle key."
+        ],
+        "deviceRisk": "light",
+        "lockoutHazards": [
+          "P0 if fail-open is skipped: helper MUST return true when !hasAdminPin(). A gate placed before the hasAdminPin() check bricks EVERY lock/close/approve/void for owners who never set a PIN (P1-37 fail-open posture).",
+          "Version-skew brick: the blob guard MUST default to ALLOW when window.parent.stConfirmMoney is undefined (older shell or module opened standalone). A guard that defaults to deny bricks money actions on version skew — hence the '&&' short-circuit form.",
+          "prompt() Cancel returns null: must be treated as DENY -> clean return, never proceed. promptVerifyOnly already handles p!==null; do not re-introduce a truthiness bug.",
+          "Placement/atomicity: the PIN gate must run BEFORE any irreversible snapshot/mutation (e.g. payroll lockRun builds the frozen snapshot + advance recoveries; a gate placed after partial mutation corrupts the run). Cancelled/failed PIN must leave the record byte-identical, mirroring the existing confirm()-cancel path.",
+          "No session bypass: do NOT add 'if(isAdmin) skip' — SEC-04 requires re-prompt regardless of session age; a logged-in owner must still re-enter for money actions.",
+          "Device: prompt()-based verify on Android WebView is the established Wave-6 pattern but is still device-test-pending per memory — regress-test the prompt gate on-device before R0 sign-off; it adds one blocking prompt per money action (train users)."
+        ],
+        "approach": "Lowest-blast-radius design: a single synchronous, same-origin shell helper window.stConfirmMoney(label) (thin fail-open wrapper over the EXISTING promptVerifyOnly + hasAdminPin + auditLog), invoked by one guard line at the top of each money-action function in the module blobs — mirroring the existing 'if(stGuardWrite())return;' idiom. This works because modules are same-origin srcdoc iframes, so the parent call is synchronous and blocks exactly like the current confirm(), needing no async restructuring. Reject the ST_WA/ST_SHARE-style postMessage request/response channel proposed in the task: it is async and would force ~14 synchronous sites into continuation-passing plus a per-module callback registry (more wiring, not less, plus stale-callback bugs). Per-module blob wiring is unavoidable (button onclick handlers commit inside the iframe; the shell cannot reliably intercept them), but it is minimal and uniform (one line each; gate shared choke-points like expense finishClose once). Build the helper as the shared re-auth entry point for the whole R0-W1 wave so SEC-04 sensitive-view re-prompts and SEC-07 payroll/export re-prompts reuse it rather than forking parallel prompt machinery.",
+        "openQuestions": [
+          "Exact site list: confirm the money-verb set to gate — proposed = payroll setRunStatus('approved')/lockRun/unlockRun/closeMonth, expense finishClose(close+closeStore)/voidEntry/approveDay/reopenDay/monthlock, stock toggleLock/doLockClosing/submitMovements/doReopenConfirm, dsr submitDay/submitAudit/unlockForCorrection. Include or exclude dsr submitDay (day report submit, not strictly money)?",
+          "Ship the optional st_v2_money_reauth toggle now, or hard-code always-on-when-PIN (simpler, fewer keys, no restore rule)? Recommend hard-code for R0-W1, add toggle only if owner wants an off-switch.",
+          "Attribution: SEC-02 wants the audit to name the PERSON. promptVerifyOnly verifies the Admin PIN (owner) — should money-reauth also record activeStaff()/named actor alongside the owner PIN, or is owner-PIN attribution sufficient for R0-W1 (named-user login is R0-W1's SEC-02 track, coordinate)?",
+          "Coordinate with SEC-04 owner: agree stConfirmMoney/stReauth as the single shared re-auth primitive so idle-lock re-auth, sensitive-view (SEC-07) re-prompts, and money-action re-prompts all funnel through it — avoid two teams shipping parallel prompt helpers.",
+          "Grace-window: SEC-04 says 'regardless of session age' — confirm we prompt on EVERY money action with no de-dup (recommended), accepting back-to-back prompts, vs a 0-default optional grace window."
+        ],
+        "_id": "P1-51"
+      }
+    ],
+    "slicing": {
+      "summary": "R0-W1 (Named Access) is 7 auth items, all in the 2.6MB shell index.html, security-critical, run micro-incremental with a device-test per slice. Verdicts: SEC-02/03/04/05/07 PARTIAL (Wave-6 foundation exists), P1-37/P1-51 OPEN. The foundation gives a named employee master with active/archived flags, salted per-staff + owner PINs, promptVerifyOnly (verify-without-elevate), admin-scoped idle auto-lock, role matrix + module gate, and an auditLog sink. R0-W1 hardens, not rebuilds. 4 micro-waves, lowest-brick-risk/highest-value first: (A) named identity + JML enforcement + access logging — pure logic + guarded logging, fail-open, harness-shippable; (B) one shared re-auth primitive + export/money-action re-auth (SEC-04+P1-51); (C) PIN policy min-length + escalating-backoff lockout + forced-change (SEC-03) — the real brick-risk, isolated; (D) app-launch PIN lock (P1-37) — the R0 go/no-go device gate. FAIL-OPEN is non-negotiable: every gate keys strictly on hasAdminPin() and no-PIN opens straight through; a lockout is P0. The wave funnels through ONE re-auth helper and ONE named-identity source of truth so items don't fork parallel machinery.",
+      "microWaves": [
+        {
+          "name": "Slice A — Named identity + JML enforcement + access logging (SEC-02, SEC-05, SEC-07)",
+          "items": [
+            "SEC-02 named users / no generic 'admin' in the audit trail",
+            "SEC-05 Joiner-Mover-Leaver enforcement + immediate revocation + leaver checklist",
+            "SEC-07 access logging (open/denied) + minimal shell-only masking"
+          ],
+          "ownerFiles": [
+            "V:\\Co work\\Projects\\Retail\\saagar-control-centre\\www\\index.html"
+          ],
+          "deviceRisk": "light",
+          "rationale": "Lowest brick-risk, highest-value foundation. Zero launch gates, zero lockout timers, zero money-action blocking — nothing here can lock the owner out. Pure logic + guarded logging + an opt-in-OFF policy; it establishes the named-identity contract every later slice consumes. One new key, default OFF (no behaviour change). Harness-verifiable end to end. Safe to ship on harness before device-test.",
+          "buildNotes": [
+            "SEC-02 GAP1 (confirmed index.html:2249 actor:isAdmin?'Admin':...): derive actor from ownerName() when isAdmin, add actorRole:'Owner'; MUST fall back to 'Owner'/'Admin' when ownerName() is blank — never write actor:''.",
+            "SEC-02 GAP1b: relabel Admin-mode UI (adminStatePill / 'Unlock admin') to the owner name when unlocked. Cosmetic, in applyMode()/renderSecurityPanel().",
+            "SEC-02 GAP2: add opt-in policy saagar_staff_login_required_v1 (DEFAULT ABSENT/OFF), modeled on roleSwitchLocked(). ATTRIBUTION-ONLY — must NEVER block app launch or module access; worst case degrades to the existing 'Shared / nobody' option.",
+            "SEC-05 GAP1: add empActiveById(id) and gate BOTH signInStaff (no ACTIVE_STAFF_KEY write) and verifyStaffPin (return false) when the id resolves to a KNOWN deactivated/archived row. FAIL-OPEN on lookup miss: unknown/legacy ids not in the master must still be allowed; only refuse active===false||archived.",
+            "SEC-05 GAP2 (immediate revocation): in toggleEmpActive(deactivate) and archiveEmpRow, if activeStaff().id===that row's id then signOutStaff() (try-guarded, then applyMode()).",
+            "SEC-05 GAP3: lightweight leaver checklist at archive (auto-clear staff PIN via existing clearStaffPin, note handover, confirm sign-out). Key-free (surface + auditLog only).",
+            "SEC-05 P0 SCOPE GUARD: the active-flag gate applies to verifyStaffPin/signInStaff ONLY — never verifyPin/promptVerifyOnly/isAdmin. The owner is not an employee row; feeding an owner active-lookup to the admin path would lock the owner out. Deactivation must NEVER flip isAdmin/currentRole (line-2216 invariant).",
+            "SEC-07: instrument the ONE choke point — after successful ensureModuleAccess in openModule add guarded auditLog('access.open',{module,role:currentRole(),admin:isAdmin}) for a scoped SENSITIVE_VIEWS set; in ensureModuleAccess when roleCanOpen fails add guarded auditLog('access.denied',...) BEFORE the toast+return (do not change the decision).",
+            "SEC-07 P0 (biggest hazard here): auditLog does tryJSON(AUDIT_LOG_KEY)||[] then .unshift — if the key holds a JSON object, ||[] does not fire and .unshift throws. An UNWRAPPED auditLog inside openModule would throw on EVERY module open = total lockout. Wrap every new auditLog in try/catch. Logging is side-effect-only.",
+            "SEC-07 masking (minimal, shell-only): make ui_hide_amounts default role-aware for roles lacking a money module and/or gate Home customer-lookup for roles without cro_audit/dsr. isAdmin ALWAYS exempt; never hide the Unlock/role-switch affordances. DEFER deep in-iframe salary masking to Track B.",
+            "No back-fill of historical 'Admin' audit rows — owner name applies to new rows only."
+          ]
+        },
+        {
+          "name": "Slice B — Shared re-auth primitive + export & money-action re-auth (SEC-04, P1-51)",
+          "items": [
+            "SEC-04 re-auth for sensitive actions (idle-lock half already DONE — leave untouched)",
+            "P1-51 PIN-confirm on money actions (approve/void/lock/unlock/reopen/close-day/close-month)"
+          ],
+          "ownerFiles": [
+            "V:\\Co work\\Projects\\Retail\\saagar-control-centre\\www\\index.html",
+            "V:\\Co work\\Projects\\Retail\\_extracted_modules\\payroll.html (read-mirror; edits land in the embedded blob inside index.html)",
+            "V:\\Co work\\Projects\\Retail\\_extracted_modules\\expense.html + stock.html + dsr.html (read-mirrors; embedded-blob money-action guards)"
+          ],
+          "deviceRisk": "light",
+          "rationale": "Builds the ONE shared re-auth channel the wave depends on, then wires the two highest-value consumers. Storage risk light, but blast radius is higher than A because money guards touch 4 module blobs and the prompt() path is device-test-pending per memory. Build shell-first: primitive + shell-only export gate are harness-verifiable alone; the blob guards go in module-by-module with a device pass. Ships after A because it reuses A's auditLog attribution.",
+          "buildNotes": [
+            "Add ONE synchronous same-origin shell helper — window.SaagarReauth(reason) (alias stConfirmMoney(label)). P0 fail-open FIRST: if(!hasAdminPin()) return true; else return promptVerifyOnly(...) then auditLog('reauth.ok'|'reauth.deny',{reason}). Reuse promptVerifyOnly (NOT unlockAdmin) so it never flips isAdmin/currentRole. No caching — re-prompt every call.",
+            "REJECT the async postMessage VERIFY channel: money commits are synchronous confirm()-then-mutate; async forces continuation-passing + per-module callback registries. Same-origin srcdoc iframes let a blob call window.parent.SaagarReauth() synchronously for a boolean.",
+            "Export = PURE shell-side, zero blob edits: gate ONCE at the entry of exportBackup() and exportMigration(). Do NOT gate the shared writer exportBackupConfirmed() (double-prompt); keep its isAdmin defence intact.",
+            "Money actions = HYBRID, one defensive line per site: if(typeof window.parent.SaagarReauth==='function' ? !window.parent.SaagarReauth('lock the pay-run') : false){return;} — typeof/short-circuit is the P0 version-skew fail-open (missing helper must ALLOW). Place AFTER the read-only/role guard and BEFORE any irreversible snapshot/mutation. prompt()-cancel (null) = deny = clean return.",
+            "Gate shared choke-points once (expense finishClose covers closeDay+closeStoreDay). Proposed site set (CONFIRM before build): payroll setRunStatus('approved')/lockRun/unlockRun/closeMonth; expense finishClose/voidEntry/approveDay/reopenDay/monthlock; stock toggleLock/doLockClosing/submitMovements/doReopenConfirm; dsr submitAudit/unlockForCorrection (submitDay TBD).",
+            "Do NOT add 'if(isAdmin) skip' — SEC-04 requires re-prompt regardless of session age.",
+            "Confirm each gated action is reachable only post module-gate so re-auth demands a PIN the actor legitimately holds — a staff-reachable money action would demand a PIN the staffer lacks = workflow lockout.",
+            "SEC-04 idle-lock half already DONE at admin scope — do NOT re-scope (whole-app/launch idle overlaps P1-37 in Slice D). Do NOT expand the P1-50 matrix (Track B).",
+            "Hard-code always-on-when-PIN. Do NOT ship st_v2_sensitive_reauth or st_v2_money_reauth toggle keys."
+          ]
+        },
+        {
+          "name": "Slice C — PIN policy: min-length + escalating-backoff lockout + rate-limit + forced-change (SEC-03)",
+          "items": [
+            "SEC-03 PIN policy (min length configurable, brute-force lockout with backoff, rate limit, forced change on compromise; configurable + logged)"
+          ],
+          "ownerFiles": [
+            "V:\\Co work\\Projects\\Retail\\saagar-control-centre\\www\\index.html"
+          ],
+          "deviceRisk": "light",
+          "rationale": "The real brick-risk of the wave — lockout logic can genuinely brick a packaged APK where there are no dev tools and Factory Reset is itself admin-gated, so TIME (auto-expiry) is the only non-destructive recovery. Isolate it with a dedicated device-test. Storage footprint light (2 keys) but the logic must be exactly right. Sequenced after B (shared verify path established) and BEFORE D so the launch gate relies on a proven escalating-backoff, never a permanent hard lock.",
+          "buildNotes": [
+            "P0 FAIL-OPEN: the attempt gate MUST early-return 'open' unless hasAdminPin() (and for staff, unless hasStaffPin(id)) — verifyPin returns false for every input when no PIN is set, so an unguarded counter would lock a device during owner onboarding after N empty tries.",
+            "Layer AROUND verifyPin/verifyStaffPin, do not rewrite: pinLockRemaining(scope), recordPinFail(scope), recordPinSuccess(scope). Wire into all 4 interactive callers (unlockAdmin, changeAdminPin, promptVerifyOnly, staffSignInPick). scope='admin' for the 3 admin paths, scope='staff:'+empId for staff. recordPinSuccess runs only AFTER verifyPin returns true.",
+            "Lockout MUST be temporary and CAPPED — escalating backoff (e.g. 30s/1m/2m/5m at maxFails=5) with maxLockSec ≤ 5 min. Never a permanent 'locked forever' state.",
+            "Clock-tamper: lockUntil is wall-clock; clamp at read — if (lockUntil-now) > maxLockSec treat as expired; store lastFailAt and age out stale counters.",
+            "Min-length: replace the two hardcoded '<4' checks (promptNewPin, manageStaffPins) with pinPolicy().minLen, DEFAULT 4 (byte-identical when absent). Enforce at SET time only — NEVER at unlock. Clamp minLen (e.g. 4..12) in the accessor + restore validator.",
+            "Forced-change: per-target flag; on next successful unlockAdmin route into changeAdminPin() before granting normal use; clear on successful promptNewPin. Admin-only is defensible for R0-W1.",
+            "Logging: auditLog('admin.pin.fail'|'staff.pin.fail',{scope,fails}) per wrong entry and auditLog('admin.pin.lockout',{untilMs,fails}) when a lockout arms. Reuse the sink (try/catch).",
+            "Scope containment: an admin lockout locks ONLY admin-unlock/re-auth — the app stays open in staff view. Never a global lock. Owner must be able to clear a locked STAFF account from renderSecurityPanel.",
+            "DEVICE-TEST before ship: (1) correct unlock still works, (2) N wrong then temporary lock that AUTO-EXPIRES, (3) no-PIN onboarding NEVER locks."
+          ]
+        },
+        {
+          "name": "Slice D — App-launch PIN lock (P1-37, satisfies P1-49)",
+          "items": [
+            "P1-37 whole-app launch-time PIN gate; MUST fail-open with no PIN"
+          ],
+          "ownerFiles": [
+            "V:\\Co work\\Projects\\Retail\\saagar-control-centre\\www\\index.html"
+          ],
+          "deviceRisk": "light",
+          "rationale": "The headline feature but the highest device-dependency and the R0 go/no-go. Storage footprint light (one optional toggle key + in-memory unlock), yet it CANNOT be validated on harness alone — the whole point is on-device Android-WebView behaviour: prompt() suppression (why it must be a DOM overlay+keypad), focus/keyboard capture, hardware-back interception. Sequenced last so it inherits Slice C's proven escalating-backoff and Slice A/B's identity + re-auth contracts.",
+          "buildNotes": [
+            "#1 BRICK RISK: gate ONLY on 'is a PIN configured?' (hasAdminPin()), NEVER on the verify result. Key on hasAdminPin() — do NOT key on ownerSetupDone() (OWNER_SETUP_KEY without a PIN hash = permanent brick). Wrap the show-decision in try/catch defaulting to NOT locking.",
+            "NO prompt() in this path — the Capacitor Android WebView can suppress window.prompt() (memory: prompt() device-test pending). Build a DOM lock-overlay with its own numeric input + on-screen keypad + Unlock button, z-index ≥ 2147483647, distinct id from #st-v5-boot-splash, not dismissable by Esc/back/tap-outside.",
+            "Paint early, decide late: paint the overlay synchronously at init top IF hasAdminPin() (covers the shell during Step-0 native hydrate), then RE-EVALUATE hasAdminPin() and attach verify handlers under SaagarStore.whenReady (MEM/DB authoritative). Prevents both bricking on a stale native-LS hash and silently bypassing on fast boot.",
+            "Reuse the admin PIN as the launch credential (verifyPin) — do NOT mint a separate launch secret. Verify-ONLY: dismiss overlay, leave isAdmin as restored — do not auto-elevate.",
+            "Ship as opt-in: effective gate = hasAdminPin() && launchLockEnabled(), st_v2_launch_lock DEFAULT ABSENT/OFF. The hasAdminPin() AND-guard neutralizes a restored LAUNCH_LOCK=ON on a device whose PIN was restore-blocked (fails open there).",
+            "In-memory per-process unlock (re-shown every cold boot). Do NOT persist an 'unlocked-this-launch' flag; if ever persisted it must be adminToken-bound like SEC-PIN-01.",
+            "Hardware back: while the overlay is up, installHardwareBack/handleHardwareBack must minimize/exit the app, never fall into the shell. Boot-splash setTimeout(hide,6500) must hide ONLY the splash, never the lock overlay.",
+            "Rate-limit on the launch path uses Slice C's escalating BACKOFF only — never a permanent hard lock.",
+            "Scope P1-37 to COLD START only; re-lock-on-resume is SEC-04's background lock. Owner-PIN-only for MVP.",
+            "GO/NO-GO device test before R0 sign-off: DOM overlay reliably captures focus/keyboard; hardware-back intercepted while locked; no-PIN device opens straight through."
+          ]
+        }
+      ],
+      "decisions": [
+        {
+          "question": "Admin PIN as the owner's named account, or a separate break-glass account?",
+          "decision": "Reframe the admin PIN as the OWNER'S named super-admin account, sourced from OWNER_NAME_KEY. No break-glass account, no owner employee row. Fix actor derivation so owner actions log as the owner's name (not 'Admin'); relabel the Admin-mode UI to the owner name.",
+          "rationale": "The pieces exist (OWNER_NAME_KEY set at onboarding; owner provably never an employee). The only real SEC-02 miss is the literal 'Admin' string in auditLog (confirmed index.html:2249). A break-glass account adds a second nameless credential — the opposite of SEC-02's 'no generic admin'."
+        },
+        {
+          "question": "Launch lock: reuse the admin PIN or mint a separate launch PIN?",
+          "decision": "Reuse the admin PIN (verifyPin). Single credential. Ship an opt-in toggle st_v2_launch_lock (default OFF); effective gate = hasAdminPin() && launchLockEnabled(). No PIN opens straight through. DOM overlay + on-screen keypad (never prompt()); verify-only; in-memory per-process unlock.",
+          "rationale": "A separate launch secret means a second lockout path and brick vector. Reuse keeps one source of truth, keys fail-open cleanly off hasAdminPin(), and matches existing recovery posture. prompt() can be suppressed on the Android WebView, so the gate must be a DOM overlay."
+        },
+        {
+          "question": "Re-auth VERIFY channel: shell-side helper, blob edits, or async postMessage?",
+          "decision": "One synchronous same-origin shell helper window.SaagarReauth(reason)/stConfirmMoney(label) — fail-open when !hasAdminPin(), else promptVerifyOnly + auditLog, no caching. Export gated purely shell-side. Money actions each get ONE defensive, typeof-checked, fail-open one-line blob guard. REJECT the async postMessage VERIFY channel.",
+          "rationale": "Modules are same-origin srcdoc iframes, so window.parent.SaagarReauth() is a synchronous boolean that blocks like the existing confirm() — no async restructuring. An async channel forces ~14 sync commit sites into continuation-passing + callback registries. One shared primitive serves SEC-04, SEC-07 and P1-51."
+        },
+        {
+          "question": "Where does lockout / attempt state live, and how does it travel in backup/restore?",
+          "decision": "A device-local key st_v2_pin_attempts_v1 registered in APP_RE + restoreBlockedKeys() ONLY — NOT in appControlKeys() (never exported AND never imported). Escalating backoff, maxLockSec ≤ 5 min, clamp-on-read for clock tamper, age out stale counters, fail-open when !hasAdminPin().",
+          "rationale": "Keeping it out of both export and import closes the lockout-injection/DoS vector (a tampered backup could plant a permanent future lockUntil) and prevents a lockout carrying to another device. This bends the 'all new keys → appControlKeys' rule (needs owner sign-off). Time is the only non-destructive recovery on a packaged APK, so the cap must stay modest."
+        },
+        {
+          "question": "Masking scope for R0-W1?",
+          "decision": "Minimal and shell-only: make ui_hide_amounts default role-aware (default-masked for roles with no money module) and gate the Home customer-lookup for roles without cro_audit/dsr. isAdmin always exempt. Defer deep in-iframe salary-column masking to Track B.",
+          "rationale": "Role-scoping (already DONE) is the real control — a CRO cannot even open payroll. Residual exposure is only surfaces visible to every role (Home ₹ tiles, Home customer lookup), which are shell-side. In-iframe masking would touch blobs (heavier than 'light'); over-masking that hides the Unlock affordance is itself a soft lockout."
+        },
+        {
+          "question": "Do staff-login-required (SEC-02) and launch-lock (P1-37) default ON or OFF?",
+          "decision": "Both default OFF/absent for R0-W1's first release. staff-login-required is attribution-only and must degrade to 'Shared / nobody', never blocking app/module access; launch-lock is explicit opt-in.",
+          "rationale": "Default-OFF guarantees a fresh/unconfigured/restored device is fail-open — the offline shop floor is never bricked and there is no regression on existing installs. A first-run-vs-upgrade split is an owner decision, flagged as an open question."
+        },
+        {
+          "question": "Do money/sensitive re-auth get their own toggle keys, and does money re-auth share the admin lockout?",
+          "decision": "No toggle keys for R0-W1 — hard-code always-on-when-PIN (st_v2_sensitive_reauth and st_v2_money_reauth omitted). Money re-auth shares scope='admin' with admin unlock (same lockout).",
+          "rationale": "Fewer keys, no restore rule, still fail-open. Sharing the admin lockout scope is simplest; because maxLockSec is capped (≤5 min) and fail-open, a fat-fingered approver auto-recovers rather than being permanently blocked."
+        }
+      ],
+      "crossItemContracts": [
+        "ONE re-auth primitive: window.SaagarReauth(reason)/stConfirmMoney(label) is the sole re-auth entry point. SEC-04 (export + sensitive views) and P1-51 (money actions) both funnel through it. Contract: fail-open when !hasAdminPin(); built on promptVerifyOnly so it never flips isAdmin/currentRole; prompt-cancel (null) = deny = abort; blob callers must be typeof-checked and fail-open when the helper is absent (version skew).",
+        "ONE named-identity source of truth: the employee master active/archived flag decides 'can this named user sign in' (SEC-05 gates signInStaff + verifyStaffPin on it, staff-only, fail-open on unknown/legacy id). auditLog attributes to the person — owner via ownerName() when isAdmin, else activeStaff().name (SEC-02). The owner is never an employee row; the staff gate never touches verifyPin/isAdmin/currentRole.",
+        "SEC-03 lockout ↔ SEC-04/P1-51 re-auth: the shared verify path (promptVerifyOnly→verifyPin) inherits the escalating-backoff lockout at scope='admin'. Contract: the lockout stays backoff-only and capped (≤5 min) so re-auth on a money action can never permanently brick an approver.",
+        "P1-37 launch gate ↔ SEC-02 identity ↔ SEC-03 backoff: launch reuses the admin PIN (= owner identity) and, if it rate-limits, uses SEC-03's escalating backoff — never a permanent hard lock. Effective gate = hasAdminPin() && launchLockEnabled(); no PIN opens.",
+        "SEC-07 access log ↔ SEC-02 attribution: access.open / access.denied entries carry {module, role:currentRole(), admin:isAdmin} plus the auditLog person-actor, so the access log shows the person and the role, not a bare role label.",
+        "Restore/backup security contract: PIN + role state + staff-PIN hashes stay in restoreBlockedKeys() (never imported); the attempt/lockout key is BOTH restore-blocked AND out of appControlKeys() (never exported); policy keys (pin_policy, staff_login_required, launch_lock) are exportable and MUST be bounded/clamped by the restore validator."
+      ],
+      "deviceRiskGate": "All four slices are 'light' on storage (UI/logic only; no storage-core.js/sqlite-store.js/photo-store.js contact — that never-touch rule is NOT lifted for R0-W1). They differ only in device-test dependency, which is what gates ship. Slice A (named identity + JML + access logging) is SAFE to harness-verify and SHIP PRE-DEVICE-TEST: no launch gate, no lockout timer, no money-action block, fail-open by nature, and its one real hazard (unguarded auditLog throw) is fully handled by try/catch — nothing in it can brick. Slices B, C, D MUST pass an on-device test before ship: (B) regress the prompt()-based re-auth on the Android WebView (a PIN-configured owner with a suppressed prompt would be blocked from a money action) — device-test the money-action + export flow; (C) device-test the three lockout paths — correct unlock still works, N-wrong then temporary lock that AUTO-EXPIRES, no-PIN onboarding never locks — because time is the only non-destructive recovery on a packaged APK; (D) is the R0 GO/NO-GO — never validated on harness alone, requiring on-device confirmation that the DOM overlay captures focus/keyboard, hardware-back is intercepted while locked, and a no-PIN device opens straight through. Recommended cadence: ship A on harness; hold B/C/D for the per-slice device-test, with D as the hard R0 sign-off gate.",
+      "newKeysConsolidated": [
+        "SHIPPING — st_v2_pin_policy_v1 (SEC-03, Slice C): configurable policy {minLen:4, maxFails:5, baseLockSec:30, maxLockSec:300, rejectTrivial:false, forceChangeAdmin:false, forceChangeStaff:{}}. Placement: appControlKeys() (exportable) + APP_RE (auto-covered by st_v\\d+_) + a BOUNDED validateRestoreKeyValue() 'control' branch that clamps minLen (e.g. 4..12) and coerces numerics. NOT restoreBlockedKeys — config, not secret.",
+        "SHIPPING — st_v2_pin_attempts_v1 (SEC-03, Slice C): device-local lockout state {admin:{fails,lockUntil,lastFailAt}, staff:{<empId>:{...}}}. Placement: APP_RE (factory-reset clears it) + restoreBlockedKeys() (never imported). DELIBERATELY NOT in appControlKeys() (never exported) — closes lockout-injection/DoS. Bends the 'all new keys → appControlKeys' rule; needs owner/orchestrator sign-off.",
+        "SHIPPING — saagar_staff_login_required_v1 (SEC-02, Slice A): owner policy, require a per-staff PIN before a staffer can be signed in for attribution. DEFAULT ABSENT/OFF = current fail-open. Placement: appControlKeys() + EXPLICIT APP_RE inclusion (the saagar_ prefix is NOT matched by APP_RE's st_v\\d+_ pattern) + validateRestoreKeyValue() 'control' branch. NOT restoreBlockedKeys (policy, not secret; mirrors ROLE_SWITCH_LOCK_KEY).",
+        "SHIPPING (opt-in) — st_v2_launch_lock (P1-37, Slice D): boolean, DEFAULT ABSENT/OFF; effective gate = hasAdminPin() && launchLockEnabled(). Placement: appControlKeys() + APP_RE (auto st_v\\d+_) + validateRestoreKeyValue() 'control' branch accepting the boolean. NOT restoreBlockedKeys — the hasAdminPin() AND-guard makes it fail-open on a device whose PIN was restore-blocked.",
+        "OMITTED for R0-W1 (decided against; hard-code always-on-when-PIN): st_v2_sensitive_reauth (SEC-04) and st_v2_money_reauth (P1-51). Fewer keys, no restore rules, still fail-open.",
+        "NO new key — SEC-05 (JML) reuses EMP_MASTER_KEY/STAFF_PIN_KEY/ACTIVE_STAFF_KEY; SEC-07 reuses AUDIT_LOG_KEY + ui_hide_amounts."
+      ],
+      "openQuestionsForOwner": [
+        "Enforcement default for NEW installs: should staff-login-required (SEC-02) and/or launch-lock (P1-37) default ON for fresh installs while staying OFF for existing devices (a first-run-vs-upgrade split), or is opt-in-OFF-everywhere acceptable to the auditor for R0-W1?",
+        "Confirm the deliberate rule-bend: st_v2_pin_attempts_v1 kept OUT of appControlKeys() (never exported) to prevent lockout-injection/DoS — sign-off needed since it deviates from the 'all new keys → appControlKeys' hard rule.",
+        "SEC-03 lockout parameters: confirm maxLockSec cap (recommend ≤5 min, the only non-destructive on-APK recovery is auto-expiry), the escalation ladder (e.g. 30s/1m/2m/5m), and maxFails (recommend 5).",
+        "SEC-07 SENSITIVE_VIEWS membership for access-logging: is ['payroll','tax'] enough, or must 'expense' (cash), 'dsr' (cash sales) and 'cro_audit' (full customer list) also be logged? Full-module logging risks flooding the 500-entry ring — recommend sensitive-only.",
+        "P1-51 exact money-action site list: confirm the ~14 functions (payroll setRunStatus/lockRun/unlockRun/closeMonth; expense finishClose/voidEntry/approveDay/reopenDay/monthlock; stock toggleLock/doLockClosing/submitMovements/doReopenConfirm; dsr submitAudit/unlockForCorrection) — include or exclude dsr submitDay?",
+        "Does 'every login maps to a named employee' (SEC-02/SEC-05 bar) accept the named OWNER via OWNER_NAME_KEY, given the owner is deliberately NOT an employee row? (We must NOT create an owner employee row.)",
+        "P1-37 named-access scope: owner-PIN-only launch (recommended MVP), or should launch also accept any valid STAFF PIN and auto-sign-in that staffer for attribution?",
+        "SEC-05 offboarding: should Archive ALWAYS auto-clear the staff PIN (true revocation, recommended) while plain Deactivate keeps it for easy reactivation?",
+        "SEC-03 trivial-PIN rejection (0000/1234/1111): include as an opt-in flag (default off) or skip for R0-W1?",
+        "Confirm deep in-iframe salary-column masking is deferred (touches module blobs = heavier than 'light'); role-scoping already blocks the module for unauthorized roles."
+      ],
+      "recommendedFirst": "Slice A — Named identity + JML enforcement + access logging (SEC-02 + SEC-05 + SEC-07). Lowest-brick-risk, highest-value: pure logic plus guarded logging plus one default-OFF policy key, with no launch gate, no lockout timer, and no money-action block — nothing in it can lock the owner out, and it is fail-open by construction. It establishes the two contracts every later slice consumes (the named-identity source of truth for attribution/JML, and access logging), and it is the only slice safe to ship on harness verification ahead of the device-test queue. The single must-do hazard is wrapping every new auditLog call in try/catch so the access-logging instrumentation in openModule/ensureModuleAccess cannot throw and brick module access."
+    }
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Reconcile"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Slice"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "rec:SEC-02-named-users",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a2a868c8a3f50bd65",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386746,
+      "queuedAt": 1784003386725,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "SEC-02 — Named users / unique credentials / no shared PIN. …",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003572667,
+      "tokens": 77363,
+      "toolCalls": 14,
+      "durationMs": 185921,
+      "resultPreview": "{\"item\":\"SEC-02 — Named users / unique credentials / no shared PIN. Every login maps to one named employee; no generic 'admin' account; audit shows the person, not the role.\",\"status\":\"PARTIAL\",\"acceptanceBar\":\"Every login maps to exactly one named person; there is no nameless generic \\\"admin\\\"; and the audit trail attributes each action to the person (name/id), not to a role label.\",\"existingCove…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "rec:SEC-03-pin-policy",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a9d96c3228591fcb3",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386748,
+      "queuedAt": 1784003386725,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "SEC-03 PIN policy (min length, lockout, rate limit, forced …",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003600910,
+      "tokens": 80631,
+      "toolCalls": 13,
+      "durationMs": 214162,
+      "resultPreview": "{\"item\":\"SEC-03 PIN policy (min length, lockout, rate limit, forced change) for R0-W1 Named Access, reconciled against the existing Wave-6 auth surface in saagar-control-centre/www/index.html.\",\"status\":\"PARTIAL\",\"acceptanceBar\":\"SEC-03: PIN policy = configurable minimum length + account lockout + brute-force rate limit + forced change on compromise; policy is configurable and logged; a brute-forc…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "rec:SEC-04-idle-reauth",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "ab0b7ede9aab4ee26",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386748,
+      "queuedAt": 1784003386725,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "SEC-04 — Idle auto-lock + re-auth for sensitive actions (ab…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003600957,
+      "tokens": 81309,
+      "toolCalls": 14,
+      "durationMs": 214209,
+      "resultPreview": "{\"item\":\"SEC-04 — Idle auto-lock + re-auth for sensitive actions (absorbs P1-51 money-action PIN-confirm)\",\"status\":\"PARTIAL\",\"acceptanceBar\":\"App locks after configured idle (DONE for the admin privilege); payroll/cash/export AND approve/void/lock/reopen re-prompt for PIN regardless of session age (MOSTLY MISSING). P1-50 action-permission matrix explicitly OUT of scope (Track B).\",\"existingCovera…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "rec:SEC-05-jml",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a1b9e0dfecb21ff50",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386748,
+      "queuedAt": 1784003386725,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "SEC-05 Joiner–Mover–Leaver (activation / deactivation / imm…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003570682,
+      "tokens": 80235,
+      "toolCalls": 10,
+      "durationMs": 183933,
+      "resultPreview": "{\"item\":\"SEC-05 Joiner–Mover–Leaver (activation / deactivation / immediate revocation) — reconciled against saagar_employee_master_v1 active/archived flags, STAFF_PIN_KEY, and ACTIVE_STAFF_KEY.\",\"status\":\"PARTIAL\",\"acceptanceBar\":\"User activation/deactivation/immediate revocation; a deactivated user cannot log in / be signed in; historical records survive and stay attributed; a leaver checklist ex…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "rec:SEC-07-role-access-log",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a568fcd139aba1185",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386749,
+      "queuedAt": 1784003386725,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "SEC-07 — Role-scoped sensitive views + masking + ACCESS LOG…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003629479,
+      "tokens": 81708,
+      "toolCalls": 23,
+      "durationMs": 242730,
+      "resultPreview": "{\"item\":\"SEC-07 — Role-scoped sensitive views + masking + ACCESS LOGGING\",\"status\":\"PARTIAL\",\"acceptanceBar\":\"Role-scoped sensitive views, masking, and access logging: a role login (e.g. CRO) cannot open a module it lacks (e.g. payroll), AND every time a sensitive view/module is opened an entry is written to the access log (who / what / when). Role-scoping is DONE; access-logging and masking are t…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "rec:P1-37-launch-lock",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a76e0dc297e5880a4",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386749,
+      "queuedAt": 1784003386726,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-37 App-launch PIN lock (whole app; MUST fail-open with n…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003638184,
+      "tokens": 78373,
+      "toolCalls": 16,
+      "durationMs": 251435,
+      "resultPreview": "{\"item\":\"P1-37 App-launch PIN lock (whole app; MUST fail-open with no PIN; satisfies P1-49)\",\"status\":\"OPEN\",\"acceptanceBar\":\"Launch-time gate: IF a launch/owner PIN is configured, the shell is unusable until it is entered; with NO PIN configured the app opens straight through (fail-open, zero lockout). Also satisfies P1-49.\",\"existingCoverage\":[\"NO launch gate exists — this bar is entirely OPEN. …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "rec:P1-51-money-reauth",
+      "phaseIndex": 1,
+      "phaseTitle": "Reconcile",
+      "agentId": "a0d963488af9af63b",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003386750,
+      "queuedAt": 1784003386726,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-51 PIN-confirm on money actions (SEC-04 scope extension;…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784003684086,
+      "tokens": 80168,
+      "toolCalls": 22,
+      "durationMs": 297336,
+      "resultPreview": "{\"item\":\"P1-51 PIN-confirm on money actions (SEC-04 scope extension; NOT the P1-50 permission matrix)\",\"status\":\"OPEN\",\"acceptanceBar\":\"Re-auth (Admin PIN) must be demanded before a money/approval action COMMITS — approve/void/lock/reopen/close-day/close-month — regardless of session age (a logged-in owner still re-enters). Configurable + logged. MUST fail-open when no PIN is configured (never blo…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "slice-synthesis",
+      "phaseIndex": 2,
+      "phaseTitle": "Slice",
+      "agentId": "a329f8f792d179403",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1784003684104,
+      "queuedAt": 1784003684088,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "R0-W1 (Named Access) is 7 auth items, all in the 2.6MB shel…",
+      "promptPreview": "# R0-W1 (Named Access) — RECONCILE task (READ-ONLY; do NOT edit any file)\n\nThe Saagar Control Centre offline Capacitor app is closing its V6 feature register and pivoting to the\nprogramme's R0 (Data Safety & Access Control), Track A. This is R0-W1 = NAMED ACCESS. It BUILDS ON an existing\nWave-6 auth foundation — your job is to map YOUR item to what ALREADY EXISTS and identify the exact DELTA\nR0-W1…",
+      "lastProgressAt": 1784004313030,
+      "tokens": 121951,
+      "toolCalls": 6,
+      "durationMs": 628926,
+      "resultPreview": "{\"summary\":\"R0-W1 (Named Access) is 7 auth items, all in the 2.6MB shell index.html, security-critical, run micro-incremental with a device-test per slice. Verdicts: SEC-02/03/04/05/07 PARTIAL (Wave-6 foundation exists), P1-37/P1-51 OPEN. The foundation gives a named employee master with active/archived flags, salted per-staff + owner PINs, promptVerifyOnly (verify-without-elevate), admin-scoped i…"
+    }
+  ],
+  "totalTokens": 681738,
+  "totalToolCalls": 118
+}

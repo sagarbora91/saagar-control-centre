@@ -1,0 +1,49 @@
+{
+  "item": "P1-37 App-launch PIN lock (whole app; MUST fail-open with no PIN; satisfies P1-49)",
+  "status": "OPEN",
+  "acceptanceBar": "Launch-time gate: IF a launch/owner PIN is configured, the shell is unusable until it is entered; with NO PIN configured the app opens straight through (fail-open, zero lockout). Also satisfies P1-49.",
+  "existingCoverage": [
+    "NO launch gate exists — this bar is entirely OPEN. init() IIFE at index.html:7235 restores admin mode (line 7239) then renders home (doFirstRender, gated on SaagarStore.whenReady at 7318-7319); nothing blocks shell use at cold start.",
+    "Reusable verify primitive: verifyPin(pin) (2192-2196, v2 salted 50000-round pinHashV2 + legacy migrate) — the launch overlay's PIN check should call this directly.",
+    "Fail-open discriminator already exists: hasAdminPin() (2198) = !!safeGet(ADMIN_PIN_KEY 'st_v2_admin_pin_hash'). This is the correct 'is a PIN configured?' gate — no PIN ⇒ no lock.",
+    "Verify-WITHOUT-elevation semantics precedent: promptVerifyOnly(msg) (2208) authenticates without flipping isAdmin — the exact posture a launch gate wants (prove device-open, do not auto-elevate to admin). But it uses prompt() so it CANNOT be reused as-is (see delta).",
+    "Full-screen overlay precedent to mirror: the boot splash div#st-v5-boot-splash (1129, position:fixed;inset:0;z-index:2147483647) + its whenReady/setTimeout(hide,6500) hide script (1130). The lock overlay copies this pattern at >= that z-index.",
+    "auditLog(evt,data) (used throughout, e.g. 2349-2350) — reuse for 'launch.unlock'/'launch.denied' so SEC-02 attribution shows the event.",
+    "setAdmin/adminToken/ADMIN_MODE_KEY (2339-2340) and isAdmin session-restore (7239) — the launch gate is orthogonal to these and must not disturb them.",
+    "storage-core.js Step-0 synchronous hydrate (line 103) + pre-ready native passthrough (getItem line 225) make control keys readable at the synchronous top of init(), which is why the existing SEC-PIN-01 restore at 7239 trusts hasAdminPin() synchronously."
+  ],
+  "delta": [
+    "Add a DOM lock-overlay element (not the boot splash) with an inline numeric PIN input + on-screen keypad + Unlock button, initially display:none, at z-index >= 2147483647. NO native prompt() anywhere in this path.",
+    "Add showLaunchLock()/dismissLaunchLock() helpers. showLaunchLock traps focus, blocks pointer/keyboard to the shell beneath, and only dismisses when verifyPin(entered)===true.",
+    "Hook it into init() (7235): the gate SHOW decision + verify handlers must run so that hasAdminPin() is authoritative. Recommended two-layer hook — (a) paint the overlay synchronously at init top IF hasAdminPin() so the shell is covered during hydrate (like the boot splash), then (b) inside/alongside doFirstRender under whenReady, RE-EVALUATE hasAdminPin() and dismiss if false (handles a PIN changed in a prior _ready/SQLite session that Step-0 native hydrate can't see — see lockoutHazards). Wire real verify handlers only after whenReady so MEM/DB is authoritative.",
+    "Reuse the OWNER/admin PIN as the launch credential (verifyPin) — do NOT mint a separate launch PIN secret. Single source of truth, no new hash key, and fail-open keys off the existing hasAdminPin(). (Optional named-access extension: also accept any valid staff PIN via verifyStaffPin loop + auto signInStaff for attribution — flag to SEC-02, keep out of MVP.)",
+    "Launch unlock should be VERIFY-ONLY (dismiss overlay, leave isAdmin as restored) — do NOT auto-flip to admin; staff view stays the default working posture, consistent with promptVerifyOnly.",
+    "Keep the unlocked state PER-PROCESS / in-memory (re-shown every cold boot). Do NOT persist an 'unlocked-this-launch' flag; if one is ever persisted it must be adminToken-bound like SEC-PIN-01 to resist tampering.",
+    "Ensure the hardware back button cannot bypass the lock: installHardwareBack()/handleHardwareBack (7165-7169) must, while the overlay is up, minimize/exit the app rather than fall through into the shell.",
+    "Ensure the boot-splash hide script (1130, setTimeout(hide,6500)) hides ONLY the splash and never the lock overlay (separate id, coordinated z-index).",
+    "auditLog 'launch.unlock' (success, with staffer if named) and 'launch.denied' (failed attempt) events."
+  ],
+  "newKeys": [
+    "ZERO new keys required if launch lock is simply 'gate whenever hasAdminPin()' with in-memory unlock (leanest, safest).",
+    "OPTIONAL one boolean device-pref key to let the owner toggle the whole-app launch lock independently of having an admin PIN (some owners want an admin PIN for settings but no launch wall): suggest LAUNCH_LOCK_KEY = 'st_v2_launch_lock' ('true'/'false'). If added: (1) DEFAULT ABSENT ⇒ OFF (opt-in) to minimize brick risk; effective gate = hasAdminPin() && launchLockEnabled(); (2) add to appControlKeys() (2149) for backup/restore; (3) APP_RE (5818) already matches via st_v\\d+_ — no APP_RE edit; (4) add a restore-validator branch in validateRestoreKeyValue (5623, owner==='control') accepting the boolean; (5) do NOT add to restoreBlockedKeys — it is a safe device pref, and the hasAdminPin() AND-guard neutralizes carrying LAUNCH_LOCK=ON to a device whose PIN was (correctly) restore-blocked, so it fails open there."
+  ],
+  "deviceRisk": "light",
+  "lockoutHazards": [
+    "#1 BRICK RISK — fail-open must gate ONLY on 'is a PIN configured?' (hasAdminPin()), never on the verify result. Wrap the show-decision in try/catch that defaults to NOT locking; if storageAvailable()/hasAdminPin() throws, open through. Key strictly on hasAdminPin() (guarantees verifyPin can succeed) — do NOT key on ownerSetupDone() (OWNER_SETUP_KEY without a PIN hash would lock with no way to unlock = permanent brick).",
+    "prompt() suppression IS the brick vector this item exists to avoid: the Capacitor Android WebView can suppress/deny window.prompt() (memory: 'prompt() gate device-test pending'). If the launch gate used prompt() and it returned null, the owner could NEVER enter the PIN. The gate MUST be a DOM overlay with its own input+keypad. (Existing unlockAdmin still uses prompt() but that is not a brick because staff view remains usable without unlocking.)",
+    "Storage-timing bypass/stale-hash: a PIN CHANGED in a prior _ready/SQLite session is written to MEM+DB but NOT mirrored to native localStorage (storage-core.js line 231), while init's synchronous top only sees the Step-0 native-LS hydrate (line 103). Consequence: at sync init top hasAdminPin() may be stale (present-but-old hash, or absent). Mitigate by finalizing the show/hide + verify under whenReady (MEM authoritative) — paint early, decide late — so you neither brick on a stale hash nor silently bypass the gate on fast boot.",
+    "Forgotten launch PIN = forgotten admin PIN: recovery is identical to today (reinstall/restore; PIN is intentionally in restoreBlockedKeys 2153, non-importable ⇒ potential data loss). Acceptable because it matches existing posture, but the delta MUST NOT add any NEW recovery bypass (a bypass = false security). Document the recovery path in UI copy.",
+    "Interaction with the SEC-03 sibling (rate-limit/lockout): a launch gate + a hard account lockout could brick the owner. Keep brute-force response as escalating BACKOFF DELAY, never a permanent hard lock, on the launch path.",
+    "Overlay focus/pointer trap must block the shell beneath WITHOUT blocking its own input; and must not be dismissable by Esc/back/tap-outside.",
+    "z-index/hide-timing collision with the boot splash (1129-1130): the splash's setTimeout(hide,6500) must not hide the lock overlay; use a distinct id and >= splash z-index."
+  ],
+  "approach": "Additive, offline, no new libs; UI/logic only — touches index.html exclusively (init IIFE + a new overlay + 2-3 helpers), never storage-core.js/sqlite-store.js/photo-store.js. Reuse verifyPin + hasAdminPin + auditLog + the boot-splash overlay pattern; do NOT build parallel PIN machinery. Effective launch gate = hasAdminPin() (optionally && launchLockEnabled()); no PIN ⇒ open through. Unlock is a DOM overlay (inline PIN input + numeric keypad), verify-only (does not elevate to admin), per-process in-memory. Paint early at init top to cover the shell during hydrate, but make the final fail-open decision + attach verify handlers under SaagarStore.whenReady so MEM/DB is authoritative and a stale native-LS hash can neither brick nor bypass. Land the whole-app toggle as opt-in (default OFF) for the first release to keep brick surface minimal.",
+  "openQuestions": [
+    "Reuse admin PIN (recommended) vs a separate launch PIN? Recommend reuse to avoid a second secret + a second lockout path; confirm with owner.",
+    "Named-access scope: should launch also accept any valid STAFF PIN (verifyStaffPin) and auto-sign-in that staffer for SEC-02 attribution, or is owner-PIN-only acceptable for P1-37? (Recommend owner-PIN MVP; staff-PIN launch = SEC-02 coordination.)",
+    "Ship the independent LAUNCH_LOCK_KEY toggle now, or make the gate implicitly ON whenever a PIN exists? (Recommend explicit opt-in toggle, default OFF, for lowest brick risk.)",
+    "Does P1-37 include RE-LOCK on resume-from-background, or is that strictly SEC-04's idle/background lock (already partly present at 7245-7246)? Recommend scoping P1-37 to COLD START only to keep the boundary clean.",
+    "On-device confirmation that a DOM overlay reliably captures focus/keyboard on the target Android WebView and that hardware-back is intercepted while locked — this is the go/no-go device test before R0 sign-off."
+  ],
+  "_id": "P1-37"
+}

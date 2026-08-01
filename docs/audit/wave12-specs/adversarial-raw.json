@@ -1,0 +1,341 @@
+{
+  "summary": "Wave 12 adversarial skeptic fleet — 9 item skeptics + storage/cross-module/regression/storage-caution",
+  "agentCount": 12,
+  "logs": [],
+  "result": {
+    "skeptics": [
+      {
+        "area": "P1-28 per-store leave capacity (LEAVE module: V:/Co work/Projects/Retail/_extracted_modules/leave.html + shell STORAGE_RULES)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "Blank store-cap input saves cap=0 (spurious 'over capacity' advisory) instead of resetting to default",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/leave.html:1332 (saveStoreCapsFromUI) + :1077 (saveCaps)",
+            "repro": "Staff Master -> 'Per-Store Leave Capacity' -> clear the Titan World field (leave it blank) -> click 'Save Store Caps'. saveStoreCapsFromUI passes a.value='' (the ternary only falls back to CAPS_DEFAULT when the input ELEMENT is missing, not when it is empty). saveCaps then computes Math.max(0,Math.floor(Number('')||0)) = 0, so leavedesk_caps_v1.WLMHW is persisted as 0. Afterwards any single active Titan leave on a day renders '1 / 0  ⚠ Over capacity' in the day modal (storeLeaveTallyForDay over = used>cap, 1>0) and marks the store understaffed in the P1-30 7-day strip. A user clearing a field to mean 'no limit' instead gets a hard 0-cap. Impact is advisory-only (getCapacity/canAddLeave unchanged) so there is no gating or data-loss consequence; and an explicit typed '0' is a legitimate cap, so this may be intended design rather than a bug.",
+            "suggestedFix": "In saveStoreCapsFromUI treat an empty string as 'unchanged/default' rather than 0, e.g. WLMHW: (a && a.value!=='') ? a.value : loadCaps().WLMHW (and likewise HEMW), preserving the ability to set an explicit 0. No change needed to saveCaps/loadCaps."
+          }
+        ]
+      },
+      {
+        "area": "P1-30 next-7-days staffing strip (LEAVE / _extracted_modules/leave.html, renderStaffStrip @1816-1873)",
+        "verdict": "HOLD",
+        "findings": []
+      },
+      {
+        "area": "LEAVE P1-29 — peak-season blackout / store-holiday dates (leave.html + shell STORAGE_RULES)",
+        "verdict": "HOLD",
+        "findings": []
+      },
+      {
+        "area": "P1-31 payroll↔leave reconciliation (V:/Co work/Projects/Retail/_extracted_modules/payroll.html)",
+        "verdict": "HOLD",
+        "findings": []
+      },
+      {
+        "area": "P1-32 evidence completeness (TAX / tax.html)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "__evCompToken is shared between the month-chip and FY-meter hydrates, so a cross-scope render can drop an in-flight compute (self-heals; never user-visible)",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/tax.html:3182 (let __evCompToken), 3222-3224 (single shared token), 3320 (month scope) + 3356 (fy scope)",
+            "repro": "Sit on the Dashboard while the FY 'Evidence Pack Completeness' meter is still async-counting (SaagarEvidence.count in flight), then immediately switch to Calendar. renderMonth bumps the shared __evCompToken for the #ev-comp-month chip, so when the earlier FY compute resolves it is dropped (tok !== __evCompToken) and #ev-completeness stays at 'Calculating…'. In practice this node is inside the now-hidden dash-content, and every view-entry re-renders its placeholder and re-hydrates (showView->renderDashboard, rerender picks exactly one view; all 8 handlers call a single render), so the stuck state is never visible and self-heals on return. No confirmed user-facing impact.",
+            "suggestedFix": "Use two independent token counters (e.g. __evCompTokenFy and __evCompTokenMonth) or key the guard by scope so a month render and an fy render don't cancel each other. Low priority — current code is correct for the actual single-view-at-a-time render model."
+          }
+        ]
+      },
+      {
+        "area": "P1-33 CA WhatsApp pack — SHELL edits in saagar-control-centre/www/index.html (WA_CFG.tax kind:summary→record, computeFirmTaxStatus, buildCaPackText, ensureJSZip-adjacent) + tax.html sendCaPack button",
+        "verdict": "HOLD",
+        "findings": []
+      },
+      {
+        "area": "P1-34 Evidence ZIP export — tax.html exportEvidenceZip + shell window.ensureJSZip / SaagarEvidence.snapshotAll",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "index.csv \"Added-on\" column shows a truncated epoch-ms integer, not a date",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/tax.html:2945 (exportEvidenceZip manifest row build); root data at saagar-control-centre/www/index.html:5010 (addedAt:Date.now()) and :5116 (snapshotAll passthrough)",
+            "repro": "Attach any evidence file to an obligation for the active firm, click '⤓ Evidence ZIP', open index.csv. SaagarEvidence.add() stores addedAt as a NUMERIC Date.now() (index.html:5010) and snapshotAll returns it unchanged as a number (index.html:5116 'addedAt:v.addedAt||0'). The manifest then does `String(e.addedAt).slice(0,10)` (tax.html:2945), so a 13-digit ms epoch like 1752345600000 renders as the meaningless first 10 digits '1752345600' in the audit manifest's 'Added-on' column of EVERY row, instead of a date such as '2026-07-13'. The developer evidently assumed addedAt was an ISO date string (as elsewhere) but it is numeric ms. The evidence files, obligation names and stored paths are all correct — only this date column is wrong.",
+            "suggestedFix": "Format the numeric epoch as a date, e.g. `e.addedAt ? new Date(e.addedAt).toISOString().slice(0,10) : ''` at tax.html:2945."
+          },
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "snapshotAll() base64-materializes the ENTIRE evidence store (all firms + all watch photos) before filtering to one firm — memory/OOM risk on device",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/tax.html:2914 (await api.snapshotAll()); implementation at saagar-control-centre/www/index.html:5106-5118",
+            "repro": "SaagarEvidence holds BOTH compliance evidence (firmId|fy|itemId) AND every watch photo (wsf|caseId) in one IndexedDB store. exportEvidenceZip calls the shell's snapshotAll(), which FileReader-decodes EVERY blob in the whole store to a base64 dataURL via Promise.all(recs.map(...)) — holding them all in memory at once (index.html:5115-5117) — and only AFTER that does exportEvidenceZip filter down to the one firm's prefix (tax.html:2915). On a real device with many multi-MB watch service photos this materializes ~1.37x the entire store as base64 strings simultaneously just to keep a handful of files, risking an OOM/ANR on the Android WebView (the app has a documented device-ANR history from big memory operations). It is functionally correct — only wasteful. Speculative because impact scales with how many photos exist in the store.",
+            "suggestedFix": "Add a prefix-scoped reader to SaagarEvidence (cursor over the 'byKey' index, decode ONLY blobs whose itemKey starts with firmId|fy|), or have exportEvidenceZip enumerate this firm's keys and fetch per-key, instead of decoding the whole store via snapshotAll()."
+          }
+        ]
+      },
+      {
+        "area": "P1-35 QRMP flag (TAX) — V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "Stale QRMP badge shown on a Composition/Unregistered firm (reachable via UI edit; spec wrongly assumed unreachable)",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/tax.html:2054 (saveFirm) + :2117-2122 (syncQrmpField) + :2028/:3304/:3315 (qrmpBadge render sites)",
+            "repro": "1) Add a firm, GST Registration Type = 'Regular', tick the QRMP checkbox, Save (firm.qrmp=true, badge correct). 2) Click Edit on that firm; the form loads with #ff-qrmp checked and the field visible. 3) Change GST Registration Type to 'Composition Dealer'. onchange=syncQrmpField() only sets #ff-qrmp-field display:none (comment: 'Does NOT clear the checkbox value') — the checkbox stays checked. 4) Click Save Firm. saveFirm reads document.getElementById('ff-qrmp').checked unconditionally (line 2054), so a Composition firm is persisted with qrmp:true. RESULT: qrmpBadge(f) (line 2665, checks only f.qrmp, not f.type) now renders an amber 'QRMP' badge on the Composition firm in the firm-list row (:2028), the calendar month header mhd-fy (:3304) and the Reports header (:3315). QRMP applies only to regular GST filers, so a QRMP badge on a Composition dealer is factually wrong. Impact is cosmetic/advisory only: getVisibleItems hides all gst items from composition/unregistered types and qrmpAdvisory early-returns on cat!=='gst', so NO wrong per-card chip appears and NO count/score/Reports byte changes — only the misleading badge. spec-P1-35 edgeCase[3] explicitly (but incorrectly) dismissed this as 'can't happen via UI since the field is hidden'; hiding via display:none does not clear the checkbox and saveFirm reads .checked regardless of visibility.",
+            "suggestedFix": "Gate the persisted value by GST type in saveFirm so the flag can only be true where it is meaningful, e.g. qrmp: (document.getElementById('ff-type').value==='regular' || document.getElementById('ff-type').value==='both') && document.getElementById('ff-qrmp').checked. (Alternatively clear #ff-qrmp.checked=false inside syncQrmpField when hiding, but that would break the intended regular<->both edit round-trip preservation, so the saveFirm guard is preferable.)"
+          }
+        ]
+      },
+      {
+        "area": "P1-41 statutory-payable card (TAX / tax.html)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "Current-month card and per-item deposit badges show different PF/ESIC/PT on the same page (by-design per D9, potential owner confusion)",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/tax.html:2748 (renderStatutoryPayableCard) vs :2630-2646 (taxPayableAmount/taxPayableBadge)",
+            "repro": "Seed saagar_tax_payable with BOTH {'2026-06':{pf:20000,...}} and {'2026-07':{pf:31000,...}} and set __stAsOf='2026-07-13'. Open the Tax calendar on the July page. The P1-41 amber strip reads feed['2026-07'] (currentPayableYM, no shift) and prints e.g. 'PF ₹31,000', while the per-item EPF/ESIC/PT deposit badges on the same July page read feed['2026-06'] (taxPayableAmount applies the P-1 shift, prev = July-1 = June) and print 'PF ₹20,000'. Two different PF figures for the same page. Both are labelled 'estimate — verify with CA', and this split is explicitly sanctioned by DECISIONS D9 / synthesis.json:153-155 (P-1 shift is only correct for per-deposit-line badges), so it is intentional, not a correctness bug.",
+            "suggestedFix": "No code change required for correctness. Optionally disambiguate the strip copy to make the accrual-vs-deposit distinction explicit (e.g. '₹X statutory payable accrued this month (deposits due next month)') so the strip total is not read as the sum of the deposit-line badges shown below it."
+          }
+        ]
+      },
+      {
+        "area": "STORAGE / backup / migration / factory-reset (Wave 12 STORAGE_RULES.leave prefix change)",
+        "verdict": "CONCERNS",
+        "findings": [
+          {
+            "severity": "P1",
+            "confidence": "confirmed",
+            "title": "Restore SILENTLY DROPS the newly-whitelisted leave sibling configs (caps/blackouts/weekoff) — the restore validator's leave branch hard-requires an employees[] array, so the Wave-12 'close the weekoff backup gap' is only half delivered (keys go INTO the backup but cannot be restored)",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:5492 (validateRestoreKeyValue leave branch) + 5560-5581 (restoreValidatedBackup writes only review.valid); triggered by the new prefix rule at :1967 that makes ownerModuleForKey('leavedesk_caps_v1'/'leavedesk_weekoff_v1'/'leavedesk_blackouts_v1') resolve to owner='leave'",
+            "repro": "1) In Leave, set a non-default weekly-off (e.g. add Tuesday -> leavedesk_weekoff_v1={days:[...]}), set per-store capacity (leavedesk_caps_v1={WLMHW:8,HEMW:8}), add a blackout (leavedesk_blackouts_v1={v:1,entries:[...]}). 2) Configuration -> Data & Backup -> Export (these keys are now IN the JSON via the new 'leavedesk_' whitelist prefix). 3) On a new device (or after Factory Reset, which wipes them via APP_RE), Restore that backup. 4) validateRestoreData -> for each of these keys owner=restoreKeyOwnerId()='leave' -> validateRestoreKeyValue requires Array.isArray(parsed.employees), which is false for {WLMHW,HEMW}/{days:[]}/{v:1,entries:[]}/{defaults,perEmployee} -> keys go to review.invalid. 5) restoreValidatedBackup writes only review.valid (line 5562/5580) -> these keys are NOT written. RESULT: after migration/restore, weekly-off reverts to [0,6] (wrong non-trading days -> wrong leave-day math), per-store capacity reverts to MAX_DAY default (over-capacity warnings lost), blackout/holiday dates revert to empty (peak-season blocks lost), and entitlements revert to built-in defaults. Only leavedesk_v3 (has employees[]) restores. The loss is silent except an 'Invalid: N' pill count in the restore preview. Same defect already affected leavedesk_entitlements_v1 in the pristine build; Wave 12 extended the blast radius to caps/blackouts/weekoff.",
+            "suggestedFix": "Give the leave branch per-key handling like the service branch already does (index.html:5482-5487): for leavedesk_weekoff_v1 / leavedesk_caps_v1 / leavedesk_entitlements_v1 accept {ok: parsed && typeof parsed==='object' && !Array.isArray(parsed)}; for leavedesk_blackouts_v1 accept an object with entries[] (or any object); only require Array.isArray(parsed.employees) for the leavedesk_v3 / leavedesk_v2 primary state keys. Then add a restore round-trip assertion to Diagnostics so a whitelisted key that fails its own owner-validator is caught."
+          }
+        ]
+      },
+      {
+        "area": "Cross-module / integration-bridge (Wave 12): reconcileMasters store-carry, bridge-exception copy-ban, tax evidence↔watch-photo key namespace, WA_CFG.tax recordId routing",
+        "verdict": "HOLD",
+        "findings": []
+      },
+      {
+        "area": "Wave 12 REGRESSION + storage-caution (leave/payroll/tax/shell/bridge) — conceptual diff vs _v6_tools/wave12_pristine/*",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "Staffing-strip 'avail' mixes two data sources (central-master active headcount vs leave-desk records)",
+            "location": "V:/Co work/Projects/Retail/_extracted_modules/leave.html — renderStaffStrip(), the availability line: Math.max(0, totalHeads - onLeave) + '/' + totalHeads (approx. line 2782)",
+            "repro": "totalHeads is getCentralEmployees().filter(active !== false && name).length; onLeave is getCapacity(key).dayUsed which counts leavedesk_v3 leave RECORDS (heads) irrespective of master membership. Seed a leavedesk_v3 active leave for a name that is NOT an active row in saagar_employee_master_v1 (e.g. a retired staff member): onLeave counts that head but totalHeads does not, so the 'X/Y avail' figure understates availability. It is clamped by Math.max(0,...) so it never goes negative — purely cosmetic, no crash, no data effect. This is a NEW-feature nuance, not a regression of any existing behaviour.",
+            "suggestedFix": "Optional/low-priority: derive the on-leave count for the avail line from the same central-master roster used for totalHeads, or relabel it to make clear the count is leave-desk-record-based. Not blocking."
+          }
+        ]
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Skeptics"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "sk:P1-28",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "ac08f71fd0dd4614a",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-28 per-store leave capacity (LEAVE module: V:/Co work/Projects/Retail/_extracted_modules/leave.html + shell STORAGE_RULES)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"Blank store-cap input saves cap=0 (spurious 'over capacity' advisory) instead of resetting to default\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/leave.html:1332 (save…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "sk:P1-30",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "ab2b5c75a37d272a7",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-30 next-7-days staffing strip (LEAVE / _extracted_modules/leave.html, renderStaffStrip @1816-1873)\",\"verdict\":\"HOLD\",\"findings\":[]}",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "sk:P1-29",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a8030526a26bffdb0",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"LEAVE P1-29 — peak-season blackout / store-holiday dates (leave.html + shell STORAGE_RULES)\",\"verdict\":\"HOLD\",\"findings\":[]}",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "sk:P1-31",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "ae684f94130a8e67b",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-31 payroll↔leave reconciliation (V:/Co work/Projects/Retail/_extracted_modules/payroll.html)\",\"verdict\":\"HOLD\",\"findings\":[]}",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "sk:P1-32",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a8e323b2b4fa456b5",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-32 evidence completeness (TAX / tax.html)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"__evCompToken is shared between the month-chip and FY-meter hydrates, so a cross-scope render can drop an in-flight compute (self-heals; never user-visible)\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/tax.html:3182 (let __evCompToken), 3222-3224 (s…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "sk:P1-33",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a122ba0b20e518f4d",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-33 CA WhatsApp pack — SHELL edits in saagar-control-centre/www/index.html (WA_CFG.tax kind:summary→record, computeFirmTaxStatus, buildCaPackText, ensureJSZip-adjacent) + tax.html sendCaPack button\",\"verdict\":\"HOLD\",\"findings\":[]}",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "sk:P1-34",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a5244921de250a424",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306224,
+      "lastProgressAt": 1783951306224,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-34 Evidence ZIP export — tax.html exportEvidenceZip + shell window.ensureJSZip / SaagarEvidence.snapshotAll\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"confirmed\",\"title\":\"index.csv \\\"Added-on\\\" column shows a truncated epoch-ms integer, not a date\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/tax.html:2945 (exportEvidenceZip manifest row build); root data…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "sk:P1-35",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a9b721619c0f6175d",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306225,
+      "lastProgressAt": 1783951306225,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-35 QRMP flag (TAX) — V:/Co work/Projects/Retail/_extracted_modules/tax.html\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"confirmed\",\"title\":\"Stale QRMP badge shown on a Composition/Unregistered firm (reachable via UI edit; spec wrongly assumed unreachable)\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/tax.html:2054 (saveFirm) + :2117-2122 (syncQrmpField) + …",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "sk:P1-41",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a49ef9d2492679242",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306225,
+      "lastProgressAt": 1783951306225,
+      "cached": true,
+      "resultPreview": "{\"area\":\"P1-41 statutory-payable card (TAX / tax.html)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"Current-month card and per-item deposit badges show different PF/ESIC/PT on the same page (by-design per D9, potential owner confusion)\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/tax.html:2748 (renderStatutoryPayableCard) vs :2630-2646 (taxPayabl…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "sk:storage",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "aa3f1dee239fad383",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306225,
+      "lastProgressAt": 1783951306225,
+      "cached": true,
+      "resultPreview": "{\"area\":\"STORAGE / backup / migration / factory-reset (Wave 12 STORAGE_RULES.leave prefix change)\",\"verdict\":\"CONCERNS\",\"findings\":[{\"severity\":\"P1\",\"confidence\":\"confirmed\",\"title\":\"Restore SILENTLY DROPS the newly-whitelisted leave sibling configs (caps/blackouts/weekoff) — the restore validator's leave branch hard-requires an employees[] array, so the Wave-12 'close the weekoff backup gap' is o…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 11,
+      "label": "sk:cross-bridge",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "ab478efb92a93dd15",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306263,
+      "queuedAt": 1783951306225,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Cross-module / integration-bridge (Wave 12): reconcileMaste…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…",
+      "lastProgressAt": 1783951630145,
+      "tokens": 117412,
+      "toolCalls": 24,
+      "durationMs": 323882,
+      "resultPreview": "{\"area\":\"Cross-module / integration-bridge (Wave 12): reconcileMasters store-carry, bridge-exception copy-ban, tax evidence↔watch-photo key namespace, WA_CFG.tax recordId routing\",\"verdict\":\"HOLD\",\"findings\":[]}"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 12,
+      "label": "sk:regression",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "afa71030c2c6b75bf",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783951306265,
+      "queuedAt": 1783951306225,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Wave 12 REGRESSION + storage-caution (leave/payroll/tax/she…",
+      "promptPreview": "# Wave 12 ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 12 shipped 9 additive features into an offline Capacitor app across 3 module blobs + shell:\n- LEAVE (V:/Co work/Projects/Retail/_extracted_modules/leave.html): P1-28 per-store capacity, P1-30 next-7 staffing strip, P1-29 blackout/holiday dates.\n- PAYROLL (V:/Co work/Projects/Retail/_extracted_modules/payroll…",
+      "lastProgressAt": 1783951745512,
+      "tokens": 153756,
+      "toolCalls": 31,
+      "durationMs": 439247,
+      "resultPreview": "{\"area\":\"Wave 12 REGRESSION + storage-caution (leave/payroll/tax/shell/bridge) — conceptual diff vs _v6_tools/wave12_pristine/*\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"Staffing-strip 'avail' mixes two data sources (central-master active headcount vs leave-desk records)\",\"location\":\"V:/Co work/Projects/Retail/_extracted_modules/leave.html — renderStaffStri…"
+    }
+  ],
+  "totalTokens": 271168,
+  "totalToolCalls": 55
+}

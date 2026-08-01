@@ -1,0 +1,91 @@
+{
+  "item": "P1-34 — Audit-ready evidence ZIP export (firm + FY) in the TAX module, reusing the shell JSZip",
+  "summary": "Add a \"⤓ Evidence ZIP\" header button to the Tax module that, for the active firm + selected FY, calls window.parent.SaagarEvidence.snapshotAll(), filters to itemKey.startsWith(firmId+'|'+fyStartYear+'|'), obtains the shell JSZip constructor via a NEW shell helper window.ensureJSZip(), decodes each file's dataURL to a Uint8Array, writes files into readable per-obligation folders (with in-folder collision de-duping), and downloads the .zip through the existing Android-safe ST_SHARE bridge (desktop anchor fallback). Purely additive: no new localStorage key and no record-shape change, so no STORAGE_RULES / APP_RE edit is required. The only cross-file dependency is the shell orchestrator adding window.ensureJSZip and the header-button insertion region shared with other Wave-12 tax items.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "header .hd-right button row (markup)",
+      "line": "~629",
+      "change": "ADD one button immediately after the existing CSV button (line 629): <button class=\"btn-hd\" onclick=\"exportEvidenceZip()\">⤓ Evidence ZIP</button>. Same .btn-hd styling as the CSV/Firms buttons; keep Print (line 630, .btn-hd.gold) last. This is the same hd-right region other Wave-12 tax items (e.g. P1-41's card lives in renderMonth, not here, but any item adding a header control) may touch — see collisionNotes."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "exportEvidenceZip() [NEW]",
+      "line": "insert after exportComplianceCSV, ~2735",
+      "change": "NEW top-level async function. (1) f=getActiveFirm(); if(!f){alert('Select a firm first to export its evidence pack.');return;}. (2) api=evApi(); if(!api){alert('Evidence store unavailable on this device.');return;}. (3) prefix = f.id+'|'+(STATE.fyStartYear||2026)+'|'  (EXACTLY the evKey() construction at line 2904 so the firm+FY match is byte-identical). (4) snap = await api.snapshotAll().catch(()=>[]);  files = (snap||[]).filter(e=>e && e.itemKey && e.itemKey.indexOf(prefix)===0 && e.dataURL). (5) if(!files.length){alert('No evidence files are attached for '+f.name+' ('+getFinancialYearLabel()+').');return;}. (6) JSZipCtor = await ensureJSZipRef(); if(!JSZipCtor){alert('ZIP support could not be loaded.');return;}. (7) build zip (see approach), (8) blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:5}}), (9) hand blob to downloadZipBlob(blob,fileName). Wrap the whole body in try/catch → alert('Could not build the evidence ZIP.'). Uses existing helpers getActiveFirm@880, evApi@2905, getFinancialYearLabel@985, STATE.fyStartYear."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "ensureJSZipRef() [NEW small helper]",
+      "line": "insert beside exportEvidenceZip, ~2735",
+      "change": "NEW helper that abstracts where JSZip comes from and makes the harness testable: try{ if(window.parent && window.parent!==window && typeof window.parent.ensureJSZip==='function') return window.parent.ensureJSZip(); }catch(e){}  if(typeof window.ensureJSZip==='function') return window.ensureJSZip();  try{ if(window.parent && window.parent.JSZip) return Promise.resolve(window.parent.JSZip); }catch(e){}  if(window.JSZip) return Promise.resolve(window.JSZip);  return Promise.resolve(null);  — mirrors evApi()'s parent-then-self fallback pattern (line 2905) so the same code path runs in the real shell and in the headless harness."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "itemMetaById() [NEW small helper] + dataURL→Uint8Array inline",
+      "line": "beside exportEvidenceZip, ~2735",
+      "change": "itemMetaById(): build a one-shot map { itemId: {name, cat, month} } by iterating MONTHS@1189 and getMonthItems(m)@2540, keying by it.id, storing stripHtml(renderFYText(it.name))@2702, catLabel(it.cat)@2760, and m. Used to name folders readably; itemIds absent from the map (custom/removed items) fall back to the raw itemId. dataURL→bytes: reuse the shell's proven decode logic (index.html dataURLToBlob@5005): i=u.indexOf(','); b64=u.slice(i+1); bin=atob(b64); arr=new Uint8Array(bin.length); for(...) arr[j]=bin.charCodeAt(j). Wrap per-file in try/catch and skip un-decodable files (count them)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "name": "downloadZipBlob() [NEW small helper]",
+      "line": "beside exportEvidenceZip, ~2735",
+      "change": "NEW helper mirroring exportComplianceCSV's delivery (lines 2723-2734): if(window.parent && window.parent!==window){ window.parent.postMessage({type:'ST_SHARE', file:blob, fileName:fileName, title:fileName}, '*'); return; }  else anchor-download via URL.createObjectURL + a.download=fileName + revoke. Reuses the shell ST_SHARE bridge (stShareBridge@6743) → SaagarShare (Capacitor Share on device / download on desktop). No text fallback for a binary zip."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html",
+      "name": "window.ensureJSZip [NEW shell helper — ORCHESTRATOR]",
+      "line": "add near WA/report bridge helpers, e.g. ~4514 region or beside saagar-report wiring",
+      "change": "NEW top-window helper the tax side awaits. Contract below. Suggested body: window.ensureJSZip = window.ensureJSZip || (function(){ var p=null; return function(){ if(window.JSZip) return Promise.resolve(window.JSZip); if(p) return p; p=new Promise(function(res,rej){ var s=document.createElement('script'); s.src='jszip.min.js'; s.onload=function(){ window.JSZip?res(window.JSZip):rej(new Error('JSZip missing after load')); }; s.onerror=function(){ p=null; rej(new Error('JSZip failed to load')); }; (document.body||document.documentElement).appendChild(s); }); return p; }; })();  This is the same jszip.min.js the payroll ZIP already loads via saagar-report.js ensureZip@1411 — one inlined copy at www/jszip.min.js, NO new library. Idempotent + in-flight-cached so concurrent calls don't double-inject."
+    }
+  ],
+  "newKeysOrFields": [],
+  "approach": "ADDITIVE, read-only over evidence + display-only export — no writes to taxcal_v2, no writes to SaagarEvidence, no new key/field. Flow: SNAPSHOT → window.parent.SaagarEvidence.snapshotAll() returns [{itemKey,name,type,addedAt,dataURL}] across ALL firms/FYs/modules (it also holds watch photos keyed wsf|caseId). FILTER to the active scope with prefix = f.id+'|'+(STATE.fyStartYear||2026)+'|' and e.itemKey.indexOf(prefix)===0. This prefix is collision-safe because firm ids are 'firm_'+Date.now() (saveFirm@2038) and contain no '|', and it is byte-identical to evKey()@2904 which produced the keys — so no watch photo (wsf|...) or other firm/FY leaks in. ZIP BUILD: JSZipCtor=await ensureJSZipRef(); zip=new JSZipCtor(); for each file resolve meta=itemMetaById()[itemId] where itemId=itemKey.slice(prefix.length); folder = sanitize(meta ? meta.month+'_'+meta.cat+'_'+meta.name : itemId).slice(0,60) (append '__'+itemId only if two different obligations sanitize to the same folder — simplest robust rule: always suffix folder with a short itemId tail to guarantee uniqueness while staying readable); fname = sanitize(file.name||'evidence'); DEDUPE within a folder via a Set — on collision insert ' (2)', ' (3)' before the extension. Decode dataURL→Uint8Array (see helper), zip.folder(folder).file(fname, bytes). Optionally add a top-level index.csv/manifest.txt listing Obligation, Original filename, Stored path, Added-on (from addedAt) — recommended for 'audit-ready' but flag as an open question (nice-to-have vs. minimal). GENERATE blob (DEFLATE level 5, matching payroll's zip@1447) → downloadZipBlob() posts ST_SHARE with the Blob (Android-safe) / anchors on desktop. FILENAME: 'Evidence_'+sanitize(f.name||'firm')+'_'+getFinancialYearShortLabel()+'.zip', sanitized like exportComplianceCSV@2721 (replace(/[^\\\\w.-]+/g,'_').replace(/^_+|_+$/g,'')).",
+  "ui": "Placement: one new header button in .hd-right immediately after the existing \"⤓ CSV\" button (tax.html line 629), before \"🖨 Print\". Label \"⤓ Evidence ZIP\", class btn-hd (non-gold), title=\"Download all attached evidence files for this firm and FY as a ZIP\". Feedback uses the module's existing alert() for the error/empty paths (matches exportComplianceCSV and evAttachHere). Optional: a lightweight toast('Preparing evidence ZIP…') before the async work if a toast helper exists in-module (CSV export uses none, so alert-only is acceptable and lower-risk). No modal, no new view — it is a one-tap export consistent with the CSV button beside it.",
+  "edgeCases": [
+    "No active firm → alert('Select a firm first…') and return (mirrors exportComplianceCSV@2705).",
+    "Evidence store unavailable (evApi() null, e.g. non-shell context without stub) → alert and return.",
+    "Zero evidence files after the firm+FY filter → alert('No evidence files are attached for <firm> (<FY>).') and return; never post an empty/near-empty zip.",
+    "snapshotAll() rejects internally → it already .catch(()=>[]) in the shell (index.html 5024), but still guard with .catch(()=>[]) on the module side; treated as zero files.",
+    "dataURL decode failure for one file (malformed/empty) → try/catch skip that file, keep a skipped counter; if EVERY file fails → treat as zero (alert). If some succeed, optionally note 'N file(s) skipped (unreadable)' in the success path.",
+    "ensureJSZip rejects (jszip.min.js fails to load) → ensureJSZipRef resolves the rejection to an alert path: alert('ZIP support could not be loaded on this device.') and return. Reset the cached in-flight promise on error so a retry can re-attempt (handled in the shell helper).",
+    "Filename collisions within the same obligation folder (snapshotAll preserves multiple files per key, and two files can share a name) → per-folder Set dedupe with ' (2)'…' (n)' before extension.",
+    "Two different obligations whose readable names sanitize to the same folder → append a short itemId tail to the folder to guarantee uniqueness.",
+    "itemId not resolvable to an obligation (custom item deleted, or item outside current FY catalogue) → folder falls back to the raw itemId (still a valid, unique folder).",
+    "fyStartYear type: evKey@2904 builds the key with numeric STATE.fyStartYear coerced in string concat; the export prefix MUST be built the same way (f.id+'|'+(STATE.fyStartYear||2026)+'|') so a numeric-vs-string mismatch can't silently return zero files.",
+    "Unicode/emoji in firm name or file name → sanitize with /[^\\w.-]+/g like the CSV exporter; keep an extension if present.",
+    "Large evidence set → base64 dataURLs held in memory during snapshot; acceptable for this app's scale but note the memory cost; DEFLATE level 5 keeps output modest (photos are already compressed, so expect near-store size).",
+    "Past-date read-only browsing (isPastAsOf) does NOT need to block export — it is a pure read; no isPastAsOf guard required (unlike evAttachHere/evDelete)."
+  ],
+  "verifySteps": [
+    "Harness setup: load _extracted_modules/tax.html in a top window. Because window.parent===window in the harness, evApi()@2905 falls back to window.SaagarEvidence and ensureJSZipRef falls back to window.ensureJSZip/window.JSZip — so stub BOTH: (a) window.SaagarEvidence = { snapshotAll: ()=>Promise.resolve([...fixtures]) } and (b) window.JSZip = real JSZip OR window.ensureJSZip = ()=>Promise.resolve(JSZipConstructor). Load jszip.min.js into the harness page.",
+    "Seed a firm and select it (STATE.activeFirmId set), set STATE.fyStartYear. Build snapshotAll fixtures: several {itemKey:firmId+'|'+fyStartYear+'|<realItemId>', name, type:'application/pdf', addedAt, dataURL:'data:application/pdf;base64,JVBER...'} PLUS decoys: a different firmId, a different fyStartYear, and a watch-photo key 'wsf|CASE1'. Call exportEvidenceZip().",
+    "Assert the produced zip (intercept downloadZipBlob → capture blob, unzip with JSZip.loadAsync) contains ONLY the in-scope files, foldered by obligation, decoys excluded, and byte content matches the decoded dataURL.",
+    "Filename-collision test: two fixtures under the same itemId with identical name → assert both present as 'x' and 'x (2)'. Cross-obligation same-name test: assert they land in separate folders.",
+    "Empty test: select a firm with no matching evidence → assert alert fired, no blob posted. No-firm test: STATE.activeFirmId=null → assert alert, no snapshot call side effects.",
+    "Decode-failure test: one fixture with dataURL:'data:;base64,%%%' → assert it is skipped and the rest still zip.",
+    "Bad-load test: make ensureJSZipRef resolve null (no JSZip/ensureJSZip) → assert alert path, no throw.",
+    "Real-shell smoke: in the browser shell, attach 2-3 evidence files to different obligations under one firm/FY, click ⤓ Evidence ZIP, confirm ST_SHARE fires and a correctly-named Evidence_<firm>_<FY>.zip downloads with the right structure; confirm console shows 0 errors.",
+    "Confirm NO write occurred: after export, re-read localStorage['taxcal_v2'] and SaagarEvidence.list for each key — unchanged (export is read-only)."
+  ],
+  "risks": [
+    "Cross-realm JSZip: the tax iframe instantiates the SHELL's JSZip constructor (window.parent's). This is fine (evApi already crosses the boundary the same way) and the resulting Blob is posted straight back to the parent via ST_SHARE, but if the orchestrator forgets to expose window.ensureJSZip the button silently no-ops → ensureJSZipRef's alert('ZIP support could not be loaded') covers it. HARD dependency: this item CANNOT ship without the shell adding window.ensureJSZip.",
+    "snapshotAll() decodes EVERY blob in the store to a dataURL (index.html 5020-5023) BEFORE the module filters — so a store with many large watch photos makes a big in-memory array even though only a few tax files are wanted. Acceptable at this app's scale; a future optimization could add a scoped snapshot(prefix) to the shell API, but that is out of scope for an additive wave.",
+    "atob on a non-base64 dataURL throws — must be inside per-file try/catch, else one bad file aborts the whole export.",
+    "If jszip.min.js path/name differs from the payroll loader's ('jszip.min.js', saagar-report.js 1414) the shell helper won't find it — the orchestrator must reuse the exact same src so there is exactly one inlined copy.",
+    "ST_SHARE with a Blob relies on SaagarShare being present on device; stShareBridge@6747 already toasts 'Sharing not available' if not — no crash."
+  ],
+  "collisionNotes": "[\"SAME FILE, SAME REGION — header .hd-right button row (tax.html ~616-631): this is the natural insertion point for any Wave-12 tax header control. P1-33 is shell-side (WA_CFG.tax channel in index.html) so it does NOT add a tax.html header button. P1-41 (Statutory Payable card) lives inside renderMonth@2963 card markup, not the header. So among the tax-file items only THIS item touches hd-right today — but the synthesis owner should still order header-button insertions deterministically (append after CSV) to avoid a merge conflict if another item adds a control.\",\"SAME FILE, function-neighbourhood — new functions are inserted just after exportComplianceCSV (ends line 2735). P1-41/other items adding functions in the same 2600-3000 export/render span should keep their inserts in distinct blocks; no shared function is modified (all my additions are net-new named functions).\",\"SHARED SHELL HELPER — window.ensureJSZip in index.html is added ONCE by the orchestrator and may be consumed by other future zip exporters; it must be idempotent/in-flight-cached (spec'd). It reuses the SAME jszip.min.js that payroll's saagar-report.js ensureZip@1411 loads — do not add a second copy.\",\"READ-ONLY vs P1-31/others touching evidence: this item only READS SaagarEvidence.snapshotAll(); it never writes, so it cannot collide with confirmDone@2938 / evAttachHere@2914 evidence writes.\",\"STORAGE_RULES@1961 / APP_RE@5563: NO change from this item (no new key). Note however the SEPARATE spec-wide recommendation to switch the leave rule to prefix:['leavedesk_'] belongs to the leave items, not here — do not fold it into P1-34.\"]",
+  "openQuestions": [
+    "ensureJSZip contract — confirm the orchestrator will name it EXACTLY window.ensureJSZip (top window) returning Promise<JSZipConstructor> (resolves with the constructor, NOT void like saagar-report's private ensureZip). If the orchestrator instead prefers to expose the already-loaded window.JSZip only, ensureJSZipRef's window.parent.JSZip fallback still works, but on-demand loading would be lost — decide whether lazy-load is required.",
+    "Manifest/index file — include a top-level index.csv (Obligation, Filename, Stored path, Added-on) inside the zip for true 'audit-ready' packaging, or keep the zip files-only for minimalism? Recommend including it (cheap, high audit value) but flagging for owner sign-off.",
+    "Folder-uniqueness scheme — always suffix folders with a short itemId tail (guaranteed-unique, slightly less pretty) vs. only-on-collision suffix (prettier, tiny extra logic). Recommend always-suffix for robustness; confirm the aesthetic tradeoff is acceptable.",
+    "Should the export be scoped to the selected FY only (as specified: firmId+'|'+fyStartYear) or offer an 'all FYs for this firm' option? Spec follows the item text (single firm+FY). Confirm no all-FY variant is wanted.",
+    "Toast vs alert-only for progress on large exports — CSV export uses neither; confirm alert-only error handling is sufficient or whether a lightweight in-module progress toast is desired."
+  ],
+  "_id": "P1-34"
+}

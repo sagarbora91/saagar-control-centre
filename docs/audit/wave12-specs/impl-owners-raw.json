@@ -1,0 +1,304 @@
+{
+  "summary": "Wave 12 implementation: 3 parallel blob owners (leave/payroll/tax) editing decoded module files",
+  "agentCount": 3,
+  "logs": [],
+  "result": {
+    "owners": [
+      {
+        "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+        "itemsDone": [
+          "P1-28 Per-store leave-capacity view (advisory day-modal grid + Staff-Master caps config; store resolved authoritatively from central master)",
+          "P1-29 Peak-season blackout dates + store holiday markers (calendar hatch/dot, live add-leave warning, soft-confirm/hard-block submit gate, Staff-Master config panel)",
+          "P1-30 Next-7-days staffing strip (read-only, anchored on getAsOf(), consumes P1-28 caps/resolver + P1-29 isBlackoutDate, feature-detected)"
+        ],
+        "editsApplied": [
+          {
+            "region": "CSS ~L164 (after .agenda-dot)",
+            "what": "P1-29 .cal-cell.blackout::before hatch overlay (composes, no bg swap) + .blackout-hard stronger tint + .blackout>* z-index lift + .blackout-dot (var(--rust))"
+          },
+          {
+            "region": "CSS ~L140 (after .stat-sub)",
+            "what": "P1-30 .staff-strip/.staff-day + .today/.nontrading/.blackout/.understaffed modifiers + text classes (theme vars only, overflow-x scroll)"
+          },
+          {
+            "region": "CSS @media print (after .stats-strip hide)",
+            "what": "P1-30 .staff-strip{display:none!important;} print-hide"
+          },
+          {
+            "region": "helpers ~L975 (after isWeekOffDate)",
+            "what": "P1-28 CAPS_KEY/STORE_CODES/STORE_LABELS/CAPS_DEFAULT + loadCaps/saveCaps (per-field default, clamp); P1-29 BLACKOUT_KEY + coerceBlackout/loadBlackouts/saveBlackouts/blackoutsForKey(arguments-length scoping)/isBlackoutDate"
+          },
+          {
+            "region": "resolver ~L2020 (after getCentralEmployees)",
+            "what": "P1-28 lvStoreMap()/lvStoreCode(name,map)/storeLeaveTallyForDay(key,map?) — the single shared store resolver"
+          },
+          {
+            "region": "config fns after saveWeekOffFromUI",
+            "what": "P1-28 renderStoreCaps/saveStoreCapsFromUI (guardReadOnly-gated, re-open day modal if active); P1-29 renderBlackouts/addBlackout/removeBlackout (guardReadOnly-gated)"
+          },
+          {
+            "region": "day-modal HTML (after #capacityGrid)",
+            "what": "P1-28 'Per-Store Leave Load' section-title + <div id=storeCapGrid>"
+          },
+          {
+            "region": "openDayModal() (after dayNote append)",
+            "what": "P1-28 per-store slot render (reuses .capacity-slot CSS) + neutral Unassigned slot"
+          },
+          {
+            "region": "#empOverlay HTML (after Weekly-Off panel)",
+            "what": "P1-28 caps panel (#capWLMHW/#capHEMW/Save Store Caps) + P1-29 blackout panel (#blackoutList/#bkFrom/#bkTo/#bkStore/#bkKind/#bkHard/#bkLabel/Add)"
+          },
+          {
+            "region": "openEmployeeMaster()",
+            "what": "append renderStoreCaps(); renderBlackouts(); after renderEntDefaults()/renderWeekOff()"
+          },
+          {
+            "region": "renderCalendar() per-cell loop (before cell.appendChild(dn))",
+            "what": "P1-29 blackoutsForKey(key) -> add .blackout(+.blackout-hard) class + .blackout-dot with scope/label title"
+          },
+          {
+            "region": "renderCalendar() tail (after renderStats())",
+            "what": "P1-30 renderStaffStrip(); call"
+          },
+          {
+            "region": "add-leave modal HTML (after #addLeaveWarning)",
+            "what": "P1-29 dedicated <div id=blackoutWarn class=limit-warning>"
+          },
+          {
+            "region": "onLeaveFormChange()",
+            "what": "P1-29 live blackout warning into #blackoutWarn (bounded span iterate, skip weekoff, store-scoped); also hides it on the empty-date early return"
+          },
+          {
+            "region": "submitLeave() (after entitlement confirm, before write loop)",
+            "what": "P1-29 blackout gate: hard->toast+return (short-circuits), soft->confirm() override"
+          },
+          {
+            "region": "renderStats() region (new fn after it)",
+            "what": "P1-30 renderStaffStrip() — 7 cells from getAsOf(), getCapacity/isWeekOffDate + feature-detected caps/isBlackoutDate, DOM/textContent only"
+          }
+        ],
+        "newKeysOrFields": [
+          "leavedesk_caps_v1 = { WLMHW:<int>=0, HEMW:<int>=0 }, default {3,3}=MAX_DAY; top-level sibling, per-field defaulted on read, clamped Math.max(0,Math.floor(Number)) on save — NEVER inside leavedesk_v3",
+          "leavedesk_blackouts_v1 = { v:1, entries:[{id,from,to,store:''|'WLMHW'|'HEMW',kind:'blackout'|'holiday',hard,label(<=80)}] }, default {v:1,entries:[]}; coerceBlackout defaults every field on read, drops invalid-date entries, normalizes swapped ranges, forces hard=false for holidays — top-level sibling, NEVER inside leavedesk_v3"
+        ],
+        "syntaxCheck": "PASS — extracted the single JS <script> block (101764 chars, no non-JS blocks to skip) and ran node --check: OK. Additionally ran the new helpers in a vm sandbox with a fake DOM/localStorage: caps default/clamp/partial-blob, resolver+tally (unassigned bucket), blackout coerce/normalize/holiday-force-soft, and blackoutsForKey store-scoping all behaved as specified. No duplicate definitions; unique ids; dropped leaveStoreCode clone confirmed absent.",
+        "deviations": [
+          "isBlackoutDate(key) is implemented as blackoutsForKey(key).length>0 (1-arg = ALL by-date entries) rather than the contract's literal blackoutsForKey(key,'') which would only match store-wide entries. Reason: the binding intent is 'store-agnostic' (a Helios-only blackout is still a blackout day to flag on the strip/marker); the literal '' form would silently miss store-specific blackouts. blackoutsForKey uses arguments.length>=2 to distinguish 'marker/omitted => all' from 'gate/provided (incl \"\") => store-wide OR that store', which preserves the required 'unassigned employee never gets false store-specific warnings' behavior. Verified both paths in the sandbox.",
+          "P1-28 caps panel HTML and P1-29 blackout panel HTML were inserted together in one Edit (adjacent static markup after the Weekly-Off panel) rather than in two separate passes; order is caps-then-blackout with distinct ids, exactly matching the collision resolution.",
+          "P1-30 mobile @media tweak folded into the base rule: .staff-strip already uses overflow-x:auto (horizontally scrollable on phones) and reuses only existing theme vars, so no extra @media(640) block was added.",
+          "renderStaffStrip suppresses the .blackout amber tint when the day is also non-trading (blackout && !nonTrading) so the 'Weekly off' striped style stays visible (store closed => blackout moot), per the P1-29 edge-case 'non-trading wins visually'."
+        ],
+        "harnessNotes": [
+          "ADVISORY-ONLY confirmed: getCapacity/canAddLeave are byte-for-byte unchanged; the only new add-path effect is P1-29's submitLeave soft-confirm (override-able) and hard-block (only when the owner ticks 'Block leave, not just warn' on a blackout entry).",
+          "To trigger P1-28/P1-30: seed parent localStorage saagar_employee_master_v1 with staff whose store text contains 'Titan'/'Helios' + leavedesk_v3 leaves, reload iframe. Per-store grid shows in the DAY MODAL under 'Per-Store Leave Load'; the next-7 strip (#staffStrip) sits under the stats strip and anchors on getAsOf() (unchanged by month nav; re-anchors on the shell 'st-date' event).",
+          "Store caps config + blackout config live in Staff Master (openEmployeeMaster). saveStoreCapsFromUI/addBlackout/removeBlackout are all guardReadOnly()-gated (no writes on a past as-of view). No admin-PIN involved.",
+          "TWO new top-level keys (leavedesk_caps_v1, leavedesk_blackouts_v1) require the orchestrator's single shell edit STORAGE_RULES.leave -> { exact:[], prefix:['leavedesk_'] } (index.html @1967) for backup/migration; APP_RE @5563 already covers the 'leavedesk_' prefix. This module does NOT touch index.html. Adversarial pass should assert isWhitelistedAppKey() true for both keys after that shell edit.",
+          "renderStaffStrip references to P1-28/P1-29 helpers are typeof-guarded (feature-detected) so it degrades to a store-agnostic day view and never throws even if a helper were absent; all live in this same file so they are present in the shipped build.",
+          "P1-30 verify: deleting leavedesk_caps_v1 restores default caps {3,3}, so the 'understaffed' red only fires when on-leave-per-store exceeds the configured cap (set a low cap like 0/1 to see it; delete key to clear it) — matches the spec's graceful-degrade test."
+        ],
+        "status": "COMPLETE"
+      },
+      {
+        "file": "V:/Co work/Projects/Retail/_extracted_modules/payroll.html",
+        "itemsDone": [
+          "P1-31 — DISPLAY-ONLY 'Leave Desk Reconciliation' panel in the Payroll Attendance tab: scans leavedesk_v3 directly (read-only), sums approved+legacy leave DAYS per canonical employee name for the payroll meta month (bucketed via attFeedKey 'YYYY-MM', identical to the DSR feed), and shows them side-by-side vs each row's entered leavesApplied, flagging mismatches. Never writes leavedesk_v3 or payroll state; no apply button."
+        ],
+        "editsApplied": [
+          {
+            "region": "pane-att HTML (~L843, immediately after #att-feed-panel </section>)",
+            "what": "Added sibling <section class=\"validation\" id=\"leave-recon-panel\"> with .val-hd title 'Leave Desk Reconciliation', #leave-recon-note mini-note, and #leave-recon-body. Distinct leave-recon-* ids — zero collision with att-feed-*."
+          },
+          {
+            "region": "New read-only helpers (~L3380, beside the ATT_FEED_KEY/loadAttFeed block)",
+            "what": "Added LEAVE_DESK_KEY='leavedesk_v3', lrCanon (trim+lowercase), lrLeaveDays (full_day->1 else 0.5, faithful mirror of leave.html leaveDaysOf), lrCounts (approved OR legacy/no-status; pending & rejected excluded — mirrors isCountedLeave/leaveStatus), loadLeaveDesk (guards obj.leaves), and lrLeaveDeskDiff() which buckets by attFeedKey(), walks p.leaves[date] arrays for this calendar month, builds byName{canon:days}+disp{canon:name}, then walks state.rows (rowHasId only) computing has/deskDays/entered/differs (roundHalf compare) and unmatched[]."
+          },
+          {
+            "region": "renderLeaveReconPanel() (immediately after renderAttFeedPanel, before the Import-modal block)",
+            "what": "New render fn into #leave-recon-body/#leave-recon-note. Friendly empty note when !hasDesk; summary line 'N of M matched employee(s) differ…'; table Employee | Leave Desk (approved days) | Entered Leaves | Entered Absent (greyed context) | status; differing rows highlight both leave cells (var(--orangep)/var(--orange)) with a Δ, matched rows show green ✓; 'no leave-desk entry for this name' for unmatched rows; unmatched-footer note. No buttons — display-only."
+          },
+          {
+            "region": "renderActiveTab() att branch (L1845)",
+            "what": "Appended renderLeaveReconPanel(); after renderAttFeedPanel();."
+          },
+          {
+            "region": "handleAttInput() (L1907)",
+            "what": "Appended renderLeaveReconPanel(); after renderAttFeedPanel(); so editing a row's leavesApplied/name re-flags live."
+          },
+          {
+            "region": "bindMeta() month/year change handler (L2273)",
+            "what": "Added a new line if(activeTab===\"att\")renderLeaveReconPanel(); after the existing renders so switching payroll month/year re-buckets the reconciliation (core interaction). Did NOT touch att-feed-panel (per DECISIONS OQ10 keep-minimal)."
+          },
+          {
+            "region": "applyAttFeedRows() (L3444) — spec functionsToTouch #7 (OPTIONAL polish)",
+            "what": "Appended renderLeaveReconPanel(); to the post-import render chain so the recon panel's Entered-Leaves column stays fresh after a DSR/Leave feed import while the Attendance tab is open. Additive, touches only my own panel."
+          }
+        ],
+        "newKeysOrFields": [
+          "NONE — no new localStorage key and no new record field. P1-31 is purely additive READ logic: it reads existing 'leavedesk_v3' (leave module) and existing payroll 'payroll_suite_v1_2026', and writes nothing. Per the Wave-11 lesson this is stated explicitly: because no new top-level key is created there is nothing to whitelist; leavedesk_v3 is already in the shell leave STORAGE_RULES and both leavedesk_/payroll_ prefixes are already in APP_RE — NO STORAGE_RULES/APP_RE change required or made."
+        ],
+        "syntaxCheck": "\"PASS. Extracted all <script> blocks and ran node --check: 2 JS blocks OK (main app block len 160545 clean), the type=application/json #app-data seed correctly skipped. RESULT: ALL CLEAN. Additionally ran a focused unit test of the counting logic against the spec's verifySteps seed — 11/11 assertions PASS (bucket=2026-01; Asha deskDays=1.5 with pending Jan-07 & Feb-03 excluded; Ravi=1 legacy no-status counts; both flagged; Feb re-bucket Asha=1; 'ASHA ' matches canonically; Meena in unmatched footer; no-data & corrupt-missing-.leaves both -> hasDesk=false).\"",
+        "deviations": [
+          "Included the OPTIONAL applyAttFeedRows() touch point (spec functionsToTouch #7, explicitly labelled 'OPTIONAL polish, low priority') which is NOT in the 6-item composed editsInOrder. Reason: it is purely additive and refreshes ONLY my own #leave-recon panel (does NOT re-render att-feed-panel, so it stays within DECISIONS OQ10 'do not touch the existing att-feed-panel'), fixing a real staleness gap where the recon panel would show stale Entered-Leaves after a DSR/Leave import while the Attendance tab is open. To revert to strict-6, delete the single appended renderLeaveReconPanel(); call on L3444.",
+          "Did NOT add renderAttFeedPanel() to bindMeta (the plan's 'optionally also renderAttFeedPanel() for consistency' note) — per DECISIONS OQ10 keep-minimal, the pre-existing att-feed-panel staleness on month change is out of Wave-12 scope and left untouched to avoid an unrelated regression."
+        ],
+        "harnessNotes": [
+          "Payroll is gated at the SHELL level (admin), NOT inside payroll.html — grep confirms there is no per-action setAdmin in payroll.html and P1-31 adds no new PIN/gate. Reuse the existing shell-admin bootstrap: setAdmin(true) in the top window, then openModule('payroll').",
+          "Trigger: the Attendance tab is the default (init() calls switchTab('att')). The new panel #leave-recon-panel renders directly below the existing #att-feed-panel. Its body id is #leave-recon-body, note id #leave-recon-note.",
+          "Reproduce spec assertions: seed localStorage['leavedesk_v3']={leaves:{'2026-01-05':[{name:'Asha',type:'full_day',status:'approved'}],'2026-01-06':[{name:'Asha',type:'half_day',status:'approved'}],'2026-01-07':[{name:'Asha',type:'full_day',status:'pending'}],'2026-01-08':[{name:'Ravi',type:'full_day'}],'2026-02-03':[{name:'Asha',type:'full_day',status:'approved'}]}}; set state.meta.month='January',year=2026; add att rows Asha(leavesApplied=1),Ravi(leavesApplied=0); open Attendance tab -> Asha Leave-Desk=1.5 flagged, Ravi=1 flagged.",
+          "Non-mutation guarantee: the new functions only call localStorage.getItem(LEAVE_DESK_KEY); no setItem for leavedesk_v3 exists anywhere in the new code. Capture leavedesk_v3 before/after — byte-identical.",
+          "New symbols (LEAVE_DESK_KEY, lrCanon, lrLeaveDays, lrCounts, loadLeaveDesk, lrLeaveDeskDiff, renderLeaveReconPanel) and DOM ids (leave-recon-panel/-note/-body) are unique to this addition; att-feed-*/ATT_FEED_KEY are untouched. The two panels coexist by design.",
+          "bindMeta re-render is guarded by activeTab==='att', so month/year changes on other tabs incur no extra work."
+        ],
+        "status": "COMPLETE"
+      },
+      {
+        "file": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+        "itemsDone": [
+          "P1-35 (QRMP filing-frequency flag + advisory badges/notes — Option A, no filtering)",
+          "P1-41 (Statutory-payable dashboard panel + current-month calendar strip)",
+          "P1-32 (Evidence-pack completeness meter, async + race-guard)",
+          "P1-34 (Audit-ready Evidence ZIP export via shell JSZip)",
+          "P1-33 (in-module 'Send CA pack (WhatsApp)' button posting ST_WA)"
+        ],
+        "editsApplied": [
+          {
+            "region": "Header .hd-right (~L630)",
+            "what": "P1-34: added <button class=btn-hd onclick=exportEvidenceZip()> Evidence ZIP, after CSV / before Print"
+          },
+          {
+            "region": "Firm-form modal HTML (~L688-708)",
+            "what": "P1-35: added onchange=syncQrmpField() to #ff-type; inserted #ff-qrmp-field container with #ff-qrmp checkbox + helper copy (inline styles only)"
+          },
+          {
+            "region": "renderFirmList (~L2019)",
+            "what": "P1-35: appended ${qrmpBadge(f)} after the firm-type badge span"
+          },
+          {
+            "region": "saveFirm (~L2044)",
+            "what": "P1-35: added qrmp: document.getElementById('ff-qrmp').checked to the firm object literal"
+          },
+          {
+            "region": "editFirm (~L2072)",
+            "what": "P1-35: set #ff-qrmp.checked=(f.qrmp===true) + syncQrmpField() after ff-type hydration"
+          },
+          {
+            "region": "resetFirmForm + new syncQrmpField() (~L2097)",
+            "what": "P1-35: uncheck #ff-qrmp + syncQrmpField(); added syncQrmpField() (shows QRMP field only for type regular/both)"
+          },
+          {
+            "region": "New helpers after taxPayableLine (~L2655)",
+            "what": "P1-35: gstFilingMode(item)/qrmpBadge(f)/qrmpAdvisory(item,month); P1-41: fmtINR/fmtYMLabel/currentPayableYM/getStatutoryPayable/renderStatutoryPayablePanel/renderStatutoryPayableCard (reuse getTaxPayableFeed, no __taxPayFeed shadow)"
+          },
+          {
+            "region": "New helpers after hydrateEvidence (~L2960)",
+            "what": "P1-32: let __evCompToken; computeEvidenceCompleteness(scope) (keys captured once, done-non-NA denominator) + hydrateEvidenceCompleteness(scope) (monotonic-token race guard)"
+          },
+          {
+            "region": "New helpers after exportComplianceCSV (~L2860)",
+            "what": "P1-34: ensureJSZipRef/itemMetaById/dataURLToBytes/downloadZipBlob/exportEvidenceZip (prefix firmId|fy|, index.csv manifest, itemId-suffixed folders, ST_SHARE delivery); P1-33: sendCaPack()"
+          },
+          {
+            "region": "renderMonth (~L2984-3020)",
+            "what": "P1-35 qrmpBadge in mhd-fy + qrmpAdvisory after taxPayableBadge in card; P1-41 renderStatutoryPayableCard push after mhd-note; P1-32 Evidence #ev-comp-month .sc chip in stats + hydrateEvidenceCompleteness(month) in tail (fixed insertion order)"
+          },
+          {
+            "region": "renderDashboard (~L3354-3357)",
+            "what": "P1-33 conditional Send-CA-pack button in dash-hd; P1-41 renderStatutoryPayablePanel() then P1-32 #ev-completeness prog-wrap after dash-stats; hydrateEvidenceCompleteness('fy') after #dash-content innerHTML"
+          }
+        ],
+        "newKeysOrFields": [
+          "firms[i].qrmp — NESTED optional boolean inside taxcal_v2 (true=QRMP scheme; absent/false=monthly). Written by saveFirm from #ff-qrmp; read as JS-falsy for legacy firms (no normalizer). NO new top-level key, NO STORAGE_RULES/APP_RE change (rides along in the already-registered taxcal_v2).",
+          "No other new keys/fields: P1-41 reads bridge-owned saagar_tax_payable; P1-32 & P1-34 read shell SaagarEvidence; P1-33 posts ST_WA — all read-only consumers."
+        ],
+        "syntaxCheck": "node --check PASSED on the single JS <script> block (164,730 chars; the only script block, type absent = JS). Additionally ran 3 headless runtime harnesses (jsdom-style stubs) exercising the real render paths: (1) init+renderMonth(July/Aug)+renderDashboard+all 17 new helpers = 17/17 OK, statutory card total ₹65,900 correct with Indian grouping, Aug card byte-empty, sendCaPack fires no-shell alert; (2) exportEvidenceZip = in-scope filter excludes decoy firm/FY/watch-photo, itemId-suffixed folders, same-name dedupe (ack.pdf + 'ack (2).pdf'), bad-dataURL skip, index.csv manifest present, ST_SHARE Evidence_Acme_Traders_2026_27.zip, all 3 alert branches; (3) evidence completeness = 2/3 (67%), missing=[C] done-but-no-proof only, no-firm short-circuits async, no-feed hint, non-QRMP grey note. 0 throws.",
+        "deviations": [
+          "P1-33 dashboard button uses inline navy/green styling instead of class .btn-hd — .btn-hd is white-on-translucent (designed for the dark navy header) and would be invisible on the light dashboard background. Places the button in renderDashboard's dash-hd, visible only when getActiveFirm() is truthy, per the composed plan.",
+          "renderStatutoryPayableCard gates the current-month strip by deriving the month name from the feed key (sp.ym) and comparing to the page's month arg, rather than comparing to curMonth (which renderMonth already sets to the page month, so a curMonth compare would always match). Net effect matches spec: strip only on the genuine current/as-of month page with a non-empty current-month entry.",
+          "P1-32 dashboard panel keeps the pre-existing 'Evidence readiness' ops-row (cq.done) untouched (the spec's optional repoint was flagged optional / not recommended) — the new #ev-completeness meter owns the coverage metric."
+        ],
+        "harnessNotes": [
+          "Evidence ZIP button depends on the ORCHESTRATOR shell helper window.ensureJSZip (Promise<JSZipConstructor>). ensureJSZipRef() falls back parent.ensureJSZip -> self.ensureJSZip -> parent.JSZip -> self.JSZip; without any, it alerts 'ZIP support could not be loaded' (no throw). Harness: stub window.SaagarEvidence.snapshotAll() + window.JSZip (or window.ensureJSZip) and load jszip.min.js.",
+          "P1-33 button posts {type:'ST_WA',module:'tax',recordId:STATE.activeFirmId,templateId:'ca_pack'} — needs the ORCHESTRATOR shell WA_CFG.tax kind:'record' conversion + ca_pack template + computeFirmTaxStatus + buildCaPackText. Outside the shell it shows a friendly alert (no throw). Button only appears on the Dashboard view when a firm is active.",
+          "Statutory-payable surfaces: seed saagar_tax_payable with a 'YYYY-MM' key matching window.__stAsOf's month. Dashboard panel ALWAYS renders (hint if no feed / all-zero); month calendar strip shows ONLY on the current/as-of month page (every other month page stays byte-identical). Fed by getTaxPayableFeed's 5s TTL cache.",
+          "Evidence completeness: needs window.parent.SaagarEvidence.count(firmId|fy|itemId)->Promise<number>. Denominator = DONE non-NA obligations (D7). Dashboard #ev-completeness fills async ('Calculating…' placeholder); no-firm shows 'Select a firm' with zero async. Per-month #ev-comp-month chip fills that month's coverage. __evCompToken guards firm/FY switch races.",
+          "Tax module is NOT admin-gated (unlike payroll) — no PIN to reach these views.",
+          "firms[i].qrmp persists via existing saveState() whole-STATE stringify; QRMP checkbox auto-hides for composition/unregistered firms (syncQrmpField). Advisory (Option A) hides/rewrites NO catalogue item, so every score/count/Reports byte is unchanged; regression check: toggle qrmp and confirm stats strip + dashboard scores are identical.",
+          "No shell/bridge edits made here (per ownership split): STORAGE_RULES.leave prefix, WA_CFG.tax, computeFirmTaxStatus, buildCaPackText, window.ensureJSZip are orchestrator-owned."
+        ],
+        "status": "COMPLETE"
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Implement"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "owner:leave",
+      "phaseIndex": 1,
+      "phaseTitle": "Implement",
+      "agentId": "ae7fc7fc34f4e7cd2",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783927714722,
+      "queuedAt": 1783927714709,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "promptPreview": "# Saagar Control Centre — Wave 12 IMPLEMENTATION (you EDIT one decoded module file in place)\n\nYou are the single implementation OWNER of ONE decoded module file. Edit it IN PLACE with the Edit tool.\nWork strictly ADDITIVELY and in the COMPOSED EDIT ORDER from the plan. Do NOT touch any other file.\n\n## READ THESE FIRST (they are your source of truth — read fully before editing):\n1. V:/Co work/Proje…",
+      "lastProgressAt": 1783928443741,
+      "tokens": 182799,
+      "toolCalls": 47,
+      "durationMs": 729019,
+      "resultPreview": "{\"file\":\"V:/Co work/Projects/Retail/_extracted_modules/leave.html\",\"itemsDone\":[\"P1-28 Per-store leave-capacity view (advisory day-modal grid + Staff-Master caps config; store resolved authoritatively from central master)\",\"P1-29 Peak-season blackout dates + store holiday markers (calendar hatch/dot, live add-leave warning, soft-confirm/hard-block submit gate, Staff-Master config panel)\",\"P1-30 Ne…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "owner:payroll",
+      "phaseIndex": 1,
+      "phaseTitle": "Implement",
+      "agentId": "a673ae7cf4716cc86",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783927714723,
+      "queuedAt": 1783927714709,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "V:/Co work/Projects/Retail/_extracted_modules/payroll.html",
+      "promptPreview": "# Saagar Control Centre — Wave 12 IMPLEMENTATION (you EDIT one decoded module file in place)\n\nYou are the single implementation OWNER of ONE decoded module file. Edit it IN PLACE with the Edit tool.\nWork strictly ADDITIVELY and in the COMPOSED EDIT ORDER from the plan. Do NOT touch any other file.\n\n## READ THESE FIRST (they are your source of truth — read fully before editing):\n1. V:/Co work/Proje…",
+      "lastProgressAt": 1783928090714,
+      "tokens": 98063,
+      "toolCalls": 24,
+      "durationMs": 375991,
+      "resultPreview": "{\"file\":\"V:/Co work/Projects/Retail/_extracted_modules/payroll.html\",\"itemsDone\":[\"P1-31 — DISPLAY-ONLY 'Leave Desk Reconciliation' panel in the Payroll Attendance tab: scans leavedesk_v3 directly (read-only), sums approved+legacy leave DAYS per canonical employee name for the payroll meta month (bucketed via attFeedKey 'YYYY-MM', identical to the DSR feed), and shows them side-by-side vs each row…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "owner:tax",
+      "phaseIndex": 1,
+      "phaseTitle": "Implement",
+      "agentId": "ac438488df4c7eb9d",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783927714724,
+      "queuedAt": 1783927714709,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "V:/Co work/Projects/Retail/_extracted_modules/tax.html",
+      "promptPreview": "# Saagar Control Centre — Wave 12 IMPLEMENTATION (you EDIT one decoded module file in place)\n\nYou are the single implementation OWNER of ONE decoded module file. Edit it IN PLACE with the Edit tool.\nWork strictly ADDITIVELY and in the COMPOSED EDIT ORDER from the plan. Do NOT touch any other file.\n\n## READ THESE FIRST (they are your source of truth — read fully before editing):\n1. V:/Co work/Proje…",
+      "lastProgressAt": 1783929366557,
+      "tokens": 219651,
+      "toolCalls": 64,
+      "durationMs": 1651833,
+      "resultPreview": "{\"file\":\"V:/Co work/Projects/Retail/_extracted_modules/tax.html\",\"itemsDone\":[\"P1-35 (QRMP filing-frequency flag + advisory badges/notes — Option A, no filtering)\",\"P1-41 (Statutory-payable dashboard panel + current-month calendar strip)\",\"P1-32 (Evidence-pack completeness meter, async + race-guard)\",\"P1-34 (Audit-ready Evidence ZIP export via shell JSZip)\",\"P1-33 (in-module 'Send CA pack (WhatsAp…"
+    }
+  ],
+  "totalTokens": 500513,
+  "totalToolCalls": 135
+}

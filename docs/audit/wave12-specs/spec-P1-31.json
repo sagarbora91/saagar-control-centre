@@ -1,0 +1,103 @@
+{
+  "item": "P1-31 — One-tap payroll↔leave reconciliation view in the PAYROLL module (read-only w.r.t. leavedesk_v3)",
+  "summary": "Add a DISPLAY-ONLY \"Leave Desk Reconciliation\" panel inside the Payroll Attendance tab (pane-att) that directly scans localStorage 'leavedesk_v3', sums APPROVED (+legacy) leave DAYS per employee (by canonical lowercased name) for the payroll state.meta month/year, and shows those figures side-by-side against each payroll row's manually-entered leavesApplied, flagging mismatches. It NEVER writes leavedesk_v3 and (recommended v1) writes nothing at all — pure cross-check. This is genuinely distinct from the existing DSR/Leave att-feed panel: that panel reads the bridge-built intermediate key 'saagar_payroll_attendance_feed' whose leave count is accumulated from LEAVE_APPROVED *event bus* messages (integration-bridge.js L449-453), which can be absent/stale if the bridge never processed those events; P1-31 reads the leave desk's own authoritative record directly. NO new localStorage key and NO new record field are introduced, so NO STORAGE_RULES / APP_RE change is required (both keys it touches — leavedesk_v3 and payroll_suite_v1_2026 — already exist and are whitelisted).",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/payroll.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "NEW read+sum helpers (loadLeaveDesk / lrCounts / lrLeaveDays / lrCanon / lrLeaveDeskDiff)",
+      "line": "~3377 (insert directly above or below the existing ATT_FEED_KEY block at L3377-3379 so both feed readers sit together)",
+      "change": "Add a read-only leave-desk reader. const LEAVE_DESK_KEY='leavedesk_v3'; lrCanon(s)=String(s||'').trim().toLowerCase(); lrLeaveDays(l)= l&&l.type==='full_day'?1:0.5 (MIRRORS leave.html leaveDaysOf — half_day/half_day_am/half_day_pm all →0.5); lrCounts(l)= mirrors leave.html isCountedLeave: const st=l&&l.status; return ['pending','approved','rejected'].includes(st) ? st==='approved' : true; (legacy/no-status rows count as approved; pending & rejected excluded). loadLeaveDesk(){ try parse localStorage[LEAVE_DESK_KEY]; return (obj && obj.leaves && typeof obj.leaves==='object') ? obj : null; }. lrLeaveDeskDiff(){ REUSE existing attFeedKey() (L3378) for the 'YYYY-MM' month key so this panel buckets IDENTICALLY to the DSR feed; p=loadLeaveDesk(); build byName{canon:days} and disp{canon:originalName} by iterating Object.keys(p.leaves), skip keys where String(k).slice(0,7)!==mk, then per record: if(!lrCounts(l))return; key=lrCanon(l.name); if(!key)return; byName[key]+=lrLeaveDays(l). Then walk state.rows (rowHasId only): entered=safeN(row.leavesApplied); key=lrCanon(row.name); has = key && byName[key]!==undefined; deskDays=has?byName[key]:null; differs = has && roundHalf(deskDays)!==roundHalf(entered); collect rows[] and unmatched[] (desk names with no payroll row). Return {mk, hasDesk:!!p, deskHadAnyLeaveThisMonth, rows, unmatched, matchedDiff}. }"
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "NEW renderLeaveReconPanel()",
+      "line": "~3459 (immediately after renderAttFeedPanel, mirroring its structure)",
+      "change": "Render into #leave-recon-body / #leave-recon-note. If !hasDesk → show a val-item 'Leave Desk has no data yet' note and return. Header line: matchedDiff of matched count differ from the Leave Desk for <mk>. Table cols: Employee | Leave Desk (approved days) | Entered Leaves (leavesApplied) | (context) Entered Absent | status(Δ/✓). Use existing helpers fmtN/escT/safeN/roundHalf and the same var(--orange)/var(--green) styling as renderAttFeedPanel. Rows with has===false render 'no leave-desk entry for this name'. Append an 'In Leave Desk but no payroll row: <disp names>' note from unmatched[] (mirrors att-feed's unmatched treatment). RECOMMENDED v1: NO write button — display only. (Alt, only if synthesis wants a one-tap apply: a per-row 'Use N' button calling a NEW guarded lrApplyRow(i) — see risks/openQuestions.)"
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "renderActiveTab()",
+      "line": "1845",
+      "change": "In the activeTab==='att' branch append renderLeaveReconPanel(); after renderAttFeedPanel(); so the panel paints when the Attendance tab opens."
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "handleAttInput()",
+      "line": "1907",
+      "change": "After the existing renderAttFeedPanel(); add renderLeaveReconPanel(); so editing a row's leavesApplied (or name) immediately re-evaluates the mismatch flags."
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "bindMeta() change handler",
+      "line": "2273",
+      "change": "The month/year meta handler currently re-renders att rows/summary/validation but NOT the feed panels. Add if(activeTab==='att')renderLeaveReconPanel(); after the existing renders so switching payroll month/year re-buckets the reconciliation (this is the core interaction — you change month to reconcile each period). Note: the pre-existing att-feed-panel has the same staleness gap; fixing it too is optional (open question)."
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "pane-att HTML — add sibling section",
+      "line": "~843 (right after the closing </section> of #att-feed-panel, before the </div><!-- /att -->)",
+      "change": "Insert <section class=\"validation\" id=\"leave-recon-panel\"><div class=\"val-hd\"><div class=\"val-title\">Leave Desk Reconciliation</div><div class=\"mini-note\" id=\"leave-recon-note\"></div></div><div id=\"leave-recon-body\"></div></section>. Distinct DOM ids (leave-recon-*) — zero collision with the att-feed-* ids."
+    },
+    {
+      "file": "_extracted_modules/payroll.html",
+      "name": "applyAttFeedRows() (OPTIONAL polish)",
+      "line": "3444",
+      "change": "Optionally add renderLeaveReconPanel(); to the chained renders so that after a DSR/Leave feed import (which writes leavesApplied) the reconciliation panel refreshes in the same tick. Low priority; renderActiveTab already covers tab re-entry."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "none",
+      "name": "(no new localStorage key, no new record field)",
+      "shape": "P1-31 is purely additive READ logic. It reads existing 'leavedesk_v3' (owned by the leave module) and the existing payroll 'payroll_suite_v1_2026'. The recommended v1 writes nothing; the optional alt 'apply' writes only the EXISTING row.leavesApplied field on payroll state.",
+      "defaults": "n/a",
+      "storageRulesNote": "NO STORAGE_RULES (index.html ~L1961) or APP_RE (~L5563) change is required — and this MUST be stated explicitly per the Wave-11 lesson: because no NEW top-level key is created, there is nothing to whitelist. leavedesk_v3 is already in the shell leave STORAGE_RULES exact-list and both leavedesk_ and payroll_ prefixes are already in APP_RE. (Separate latent gap noted by the orchestrator — leavedesk_weekoff_v1 missing from STORAGE_RULES — is NOT owned by P1-31 and does not affect it, since P1-31 only reads leavedesk_v3.)"
+    }
+  ],
+  "approach": "Additive, read-only, mirror-the-neighbour. (1) Reuse the module's own month-key helper attFeedKey() (L3378) verbatim so the reconciliation buckets by the SAME calendar 'YYYY-MM' as the existing DSR feed — do NOT invent a second month-mapping. (2) Re-implement leave counting LOCALLY inside payroll.html (the modules are separate iframes and cannot call leave.html functions) but make it a faithful mirror of the leave desk's own counters: lrLeaveDays == leave.html leaveDaysOf (full_day→1 else 0.5) and lrCounts == leave.html isCountedLeave (approved OR legacy/no-status; pending & rejected excluded). Since submitLeave() expands multi-day leaves into ONE record per date key (leave.html L1912-1930, week-offs skipped), summing one record = lrLeaveDays per matching date key is exactly how the leave desk sums for its own FY balances (fyUsage L995-1006) — no leaveFrom/leaveTo span math needed. (3) Reconcile deskDays against row.leavesApplied (NOT absent): approved leave is the paid-leave axis that calcAttendance() adds back into salary days (L1696 finalPresent+leavesApplied+extraDays); absent is the unpaid-deduction axis and must NOT drive the mismatch flag (show it only as read-only context). (4) Placement mirrors renderAttFeedPanel exactly: a new <section class='validation'> sibling in pane-att with its own render fn wired into the same three att-render call sites plus the meta-change handler. (5) Recommend DISPLAY-ONLY (no write). Rationale: the module ALREADY has a guarded one-tap writer for leavesApplied via the DSR/Leave feed (prefillAttRow/applyAttFeedRows); adding a SECOND independent writer of the same field creates two 'sources of truth' and maker confusion. A pure cross-check that says 'Leave Desk says 3, you entered 2' lets the maker fix it by hand (or via the existing feed import) and is the lowest-risk satisfaction of 'one-tap reconciliation VIEW'.",
+  "ui": "New section titled 'Leave Desk Reconciliation' placed inside the Attendance tab directly under the existing 'Attendance Feed — DSR / Leave' panel (visually consistent, class='validation'). Header note (#leave-recon-note): 'leave desk · <Month Year>' or 'no approved leave in leave desk for <Month Year>'. Summary line copy: '<N> of <M> matched employee(s) differ from the Leave Desk for <Month Year>. Leave Desk = approved (+legacy) leave days for this calendar month; compared to the Leaves column you entered.' Table: Employee | Leave Desk (days) | Entered Leaves | Entered Absent (context, greyed) | status. Differing rows highlight the two leave cells (background:var(--orangep);color:var(--orange);font-weight:800) exactly like the att-feed 'cell()' helper; matched rows show a green ✓. Rows whose name isn't found in the leave desk show a muted 'no leave-desk entry for this name'. Footer note lists leave-desk names with no matching payroll row: 'In Leave Desk but not in this payroll: <names> — check the name spelling or add them in Employee Master.' No buttons in the recommended display-only design. If (only if) synthesis adopts the optional apply: a small per-differing-row 'Use N' button that pops a confirm() showing old→new and writes ONLY leavesApplied through a guarded path — never a bulk auto-apply.",
+  "edgeCases": [
+    "Month mapping: state.meta.month is a NAME ('January'); leave keys are 'YYYY-MM-DD'. Reuse attFeedKey() = year + '-' + String(MONTHS.indexOf(month)+1).padStart(2,'0') and compare against k.slice(0,7). normalizeState() guards month to a valid MONTHS value (fallback 'January', L1613) so indexOf is never -1 in practice.",
+    "Pay PERIOD vs calendar month: payroll's actual salary period is 21st→20th (periodText L1584), but attendance fields and the existing DSR feed both bucket by CALENDAR month. P1-31 deliberately buckets by calendar month too (via attFeedKey) to stay CONSISTENT with the feed the maker already sees — diverging would confuse. Call this out as a known, shared limitation, not a P1-31 bug.",
+    "Status semantics: only approved + legacy(no-status) leaves count (lrCounts). Pending leaves are excluded (they still need approval); rejected excluded. A leave approved AFTER payroll was entered will show a mismatch until re-entered — that's the whole point.",
+    "Half-day types: leave desk uses 'full_day' | 'half_day' (and importer/UI may produce 'half_day_am'/'half_day_pm' per submitLeave L1898). lrLeaveDays treats ANYTHING not 'full_day' as 0.5, so all half variants score 0.5 correctly.",
+    "Multi-day leave spanning a month boundary: because records are stored per-day, only the days whose date-key falls in the payroll month are summed — correct automatically, no span math.",
+    "Week-offs: submitLeave never writes leave records on week-off dates, so summing recorded days already excludes weekly-offs; no extra handling needed.",
+    "Name matching ceiling: canonical trim+lowercase catches case/whitespace drift. It CANNOT match nicknames/initials/reordered names — those surface as 'no leave-desk entry' on the row and appear in the 'in leave desk but not in payroll' footer. This is the honest ceiling; do not attempt fuzzy matching (false positives are worse in payroll).",
+    "Duplicate payroll rows with the same name: both rows would show the same deskDays (the per-name total), which could double-flag. Mirror the att-feed's behavior (it has the same property); optionally note rows sharing a canonical name. Low frequency (checkGlobalValidation already warns on dup IDs).",
+    "Missing/absent leavedesk_v3 (fresh install, leave module never used): loadLeaveDesk returns null → panel shows a friendly 'Leave Desk has no data yet' note, no crash.",
+    "Corrupt/partial leavedesk_v3 (hand-edited, missing .leaves): guarded by the (obj && obj.leaves && typeof==='object') check → treated as no data.",
+    "Read-only past view (ST_READ_ONLY): panel is display-only so it renders fine on past months; if the optional apply button is adopted it MUST call stGuardWrite()/isCurLocked() first (reuse existing guards).",
+    "Empty payroll rows: filter with rowHasId(row) so blank template rows aren't reconciled."
+  ],
+  "verifySteps": [
+    "Harness setup: open the payroll module the same way existing payroll-tab harness tests do (payroll is gated at the SHELL level, not inside payroll.html — there is no per-action setAdmin in payroll.html; grep confirms none — so reuse the existing shell-admin harness bootstrap; P1-31 adds NO new PIN/gate).",
+    "Seed localStorage 'leavedesk_v3' = {leaves:{'2026-01-05':[{name:'Asha',type:'full_day',status:'approved'}],'2026-01-06':[{name:'Asha',type:'half_day',status:'approved'}],'2026-01-07':[{name:'Asha',type:'full_day',status:'pending'}],'2026-01-08':[{name:'Ravi',type:'full_day'}],'2026-02-03':[{name:'Asha',type:'full_day',status:'approved'}]},agendas:{},employees:[]}. Set payroll state.meta.month='January', year=2026. Add payroll rows: Asha (leavesApplied=1), Ravi (leavesApplied=0).",
+    "Open Attendance tab. ASSERT: Asha's Leave Desk figure = 1.5 (approved full 1 + approved half 0.5; the Jan-07 PENDING and the Feb approved day are EXCLUDED), flagged as a mismatch against entered 1. ASSERT: Ravi's Leave Desk = 1 (legacy no-status counts), flagged against entered 0.",
+    "Change meta.year to 2025 (or month to February): ASSERT the panel re-buckets (Feb shows Asha=1) — confirms bindMeta hook fires.",
+    "Edit Asha's Leaves cell to 1.5 in the attendance grid: ASSERT her row flips to ✓ without reopening the tab — confirms handleAttInput hook.",
+    "Non-mutation proof (the core guarantee): capture localStorage['leavedesk_v3'] string before opening the tab and after all interactions; ASSERT byte-identical. Also assert no code path in the new functions calls localStorage.setItem for LEAVE_DESK_KEY.",
+    "Name-match: add a payroll row 'ASHA ' (uppercase + trailing space) → ASSERT it still matches Asha (canonical). Add desk leave for 'Meena' with no payroll row → ASSERT 'Meena' appears in the 'in Leave Desk but not in payroll' footer.",
+    "No-data path: clear leavedesk_v3 → ASSERT panel shows the friendly empty note, no console error.",
+    "Console-clean: 0 errors across all the above."
+  ],
+  "risks": [
+    "Feature-overlap confusion (MAIN risk): the module already has an 'Attendance Feed — DSR / Leave' panel that shows a Leaves diff and can WRITE leavesApplied. Two adjacent leave panels can confuse the maker. Mitigation: distinct title ('Leave Desk Reconciliation'), explicit copy stating it reads the leave desk directly (authoritative) vs the feed (bridge-aggregated), and keep P1-31 DISPLAY-ONLY so there is exactly ONE writer of leavesApplied (the existing feed import).",
+    "Divergent numbers between the two panels: the bridge feed's leave count (event-accumulated, integration-bridge L449-453) can legitimately differ from a fresh leavedesk_v3 scan (e.g. leave approved before the bridge ran, or events not replayed). This is actually WHY P1-31 is valuable, but the copy must frame the reconciliation panel as the authoritative one to avoid 'which is right?' confusion.",
+    "If the optional 'apply' writer is adopted: it MUST funnel through a single guarded path (stGuardWrite + isCurLocked + draft-only, mirroring applyAttFeedRows L3430-3434), write ONLY leavesApplied, and always confirm() an old→new diff — never silent, never bulk. Recommendation is to SKIP it in v1.",
+    "Staleness on meta change if the bindMeta hook is missed — spec explicitly adds it; verify with the year/month switch test.",
+    "Half-day type drift: if a future leave-desk change introduces new type strings, lrLeaveDays defaults them to 0.5 (safe, matches leave.html's own default)."
+  ],
+  "collisionNotes": "P1-31 is the ONLY Wave-12 item that edits payroll.html (Leave-module items touch leave.html; Tax items touch tax.html + shell), so INTRA-WAVE collision risk in this file is effectively NIL. All collisions are with EXISTING code, and they are shared render-chain touchpoints, not logic overlaps: (a) renderActiveTab() L1845 att-branch, (b) handleAttInput() L1907, (c) bindMeta() handler L2273, and optionally (d) applyAttFeedRows() L3444 — each gets ONE added renderLeaveReconPanel() call appended after existing renders. New functions use an 'lr'/'leaveRecon' prefix and 'leave-recon-*' DOM ids — grep confirms no existing symbol/id collisions (att-feed-* and ATT_FEED_KEY are the neighbours and are untouched). The conceptual (not code) overlap is with the existing renderAttFeedPanel/att-feed-panel — they must COEXIST as two panels; P1-31 must not reuse or repurpose the att-feed ids/functions.",
+  "openQuestions": [
+    "Display-only vs optional per-row apply: recommend display-only for v1 (single writer of leavesApplied). Does synthesis want the optional guarded per-row 'Use N' button in scope, or explicitly deferred?",
+    "Should P1-31 also fix the pre-existing staleness of the EXISTING att-feed-panel on month/year change (bindMeta L2273 doesn't re-render it either), or leave that alone to keep the diff minimal to P1-31's own panel? (Recommend: also add renderAttFeedPanel() to bindMeta for consistency — 1 line, low risk — but flag it as scope-adjacent.)",
+    "Placement confirmation: sibling panel inside pane-att (recommended, mirrors att-feed) vs a dedicated bottom-nav tab. A tab adds it to BOTTOM_TABS/a new pane (more prominent but heavier). Recommend the in-att panel; confirm with synthesis owner.",
+    "Absent axis: spec shows Entered Absent as read-only CONTEXT only and does NOT flag it. Confirm the owner agrees leave-desk approved leave reconciles against leavesApplied only (not absent) — absent is the unpaid-deduction axis and flagging it would be semantically wrong.",
+    "Duplicate-name payroll rows: acceptable to double-show the per-name desk total (matches att-feed behavior), or add a subtle 'shared name' note? Recommend leave as-is (rare; dup-ID validation already exists)."
+  ],
+  "_id": "P1-31"
+}

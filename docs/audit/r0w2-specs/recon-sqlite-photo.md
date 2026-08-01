@@ -1,0 +1,65 @@
+# R0-W2 RECON — sqlite-store / photo-store / auto-backup / SaagarEvidence + plaintext-residue inventory
+(READ-ONLY; all paths under `V:\Co work\Projects\Retail\saagar-control-centre\www\` unless noted. Every claim anchored to actual code read this session.)
+
+## 1. Engine state (confirmed)
+- `storage-core.js:30` `var STORAGE_CORE_ENABLED = true;` — LIVE. `sqlite-store.js:29` stands down when `window.SaagarStore.enabled` (`"[sqlite-store] storage-core active — standing down"`), so sqlite-store.js is DEAD CODE at runtime today, but it is still shipped and becomes the active mirror the moment the flag is rolled back (`storage-core.js:33` returns → SaagarStore undefined → guard no-op). **Any encryption design must either also teach sqlite-store.js or accept that flag-off rollback writes plaintext again via the Design-A mirror** (sqlite-store writes the SAME file `bcc.sqlite`, sqlite-store.js:31/91, non-atomic single `FS.writeFile`, no .tmp/.bak).
+
+## 2. DB schema + write path (storage-core.js, the live engine)
+- Schema: single table `CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT)` (storage-core.js:331; identical in sqlite-store.js:163). All business data is TEXT values (JSON blobs) in one kv table. sql.js runs the DB **in memory**; persistence = whole-file export.
+- File write: `persist()` storage-core.js:168-193 — `db.export()` → base64 (`bytesToB64`, :81) → Capacitor Filesystem, `directory:'DATA'` (`dataDir()` :74, app-private `/data/data/com.saagartraders.bcc/files/`):
+  1. `FS.copy(bcc.sqlite → bcc.sqlite.bak.tmp)` + `rename → bcc.sqlite.bak` (:179-181, promote-old-live-first)
+  2. `FS.writeFile(bcc.sqlite.tmp)` + `rename → bcc.sqlite` (:182-183)
+  So at any instant up to FOUR sibling files can exist: `bcc.sqlite`, `.tmp`, `.bak`, `.bak.tmp` (resetAll deletes exactly these four, :364). Recovery chain at boot reads live → .tmp → .bak → fresh, validated with `PRAGMA quick_check` (:312-322).
+- Debounce `SAVE_DEBOUNCE=6000` (:63); flush on visibilitychange/pagehide/Capacitor `pause` (:351-353); persist mutex `_persisting/_persistAgain` (:55, :173).
+- WAL: `saagar_storage_wal` in **native localStorage** (:59), JSON array of `{op:'set',k,v,ts,seq}` — small values (≤ `WAL_BIG` 50000, :69) are journaled **inline plaintext** (:116); big values become pointers + forced persist. Cap `WAL_MAX=512000` (:70); overflow degrades inline sets to pointers (:125).
+- **Native localStorage is a live plaintext copy**: MEM hydrates from it at Step 0 (:103); pre-ready sets still write native (:232); after `_ready` sets are MEM-only but **all pre-migration values stay in native LS forever as the "frozen migration snapshot / catastrophic safety copy"** (:237-240, :99-101) — deletes/clears are mirrored to shrink it (:241, :250) but existing values are never removed otherwise. Marker `saagar_storage_migrated` (:60) gates DB-wins reconcile (:268-295); if marker set but no DB file loads, it **re-migrates from the native-LS plaintext copy** (:280) — encryption that leaves native LS plaintext keeps a full-resurrection plaintext store AND a functional dependency on it.
+- Android WebView localStorage itself lives on disk plaintext at `/data/data/<pkg>/app_webview/Default/Local Storage/leveldb/` — outside anything this codebase writes but inside the at-rest threat model.
+
+## 3. photo-store.js — facade status: **NOT WIRED** (verified today)
+- Header (:2, :10-11): "MECHANISM ONLY — modules NOT rewired"; runtime log `[photo-store] ready (mechanism only — modules not yet rewired)` (:195). Grep confirms no module calls `photo.put/get`; the only consumers are storage-core's Factory Reset `photo.clearAll` (storage-core.js:365) and backup/restore's `photo.snapshot/restoreAll` (index.html:5790, :5969) — all no-ops while no photos exist.
+- If/when wired: files land plaintext at `DATA/saagar-photos/{photoId}.{ext}` (:35, :67, put :99), read back as data URLs (:110-111). DEFERRED CONTRACT warning :13-21 still stands. **Today bill/cleaning/signature photos are base64 INSIDE localStorage JSON values** → they are inside kv-value encryption scope automatically; a photo-store rewire would move them OUT of it.
+
+## 4. auto-backup.js — daily plaintext exports to SHARED storage
+- Runs 6s after load + every 6h (:34, :174-178). Snapshots **every localStorage key** (:61-76 — note: with the engine ON this reads through the overridden `Storage.prototype`, i.e. MEM, so it captures full business data) and writes:
+  - `Documents/SaagarBCC-Backups/backup-YYYY-MM-DD.json` (`directory:'DOCUMENTS'`, utf8, :86-94) — **user-visible shared storage, survives uninstall, readable by any file manager**
+  - rolling `Documents/SaagarBCC-Backups/latest.json` (:139)
+  - keeps 90 daily files (:31, prune :96-113). Marker `bcc_autobackup_last`, log `bcc_autobackup_log`.
+- This is the single largest plaintext-residue surface: up to 91 full-data JSON files in Documents, refreshed daily, and R0-W3 (not W2) is the wave slated to harden it — W2's contract must state whether auto-backup keeps emitting plaintext in the interim (today: yes, by design, it's the recovery path).
+
+## 5. SaagarEvidence IndexedDB — shell-owned, OUTSIDE storage-core
+- Defined in index.html:5297-5467. `indexedDB.open('saagar_evidence',1)` (:5303), store `files` keyed autoIncrement id, index `byKey` on `itemKey`; records `{itemKey, name, type, size, blob, addedAt}` (:5316). Contents: **watch received-condition/after-service photos (`wsf|<caseId>`) and compliance evidence files (`firmId|FY|itemId`)** (:5293-5295, :5753-5754). Owner = the shell (modules call `parent.SaagarEvidence.*` because srcdoc iframes have opaque origins, :5291-5293).
+- It IS in backup scope (rides along as `payload.evidence` via `snapshotAll()`, engine-independent both paths, :5785-5797) and IS wiped on Factory Reset via `__wipeEvidence` (:6095, because `_reset()` does not touch it, :6093-6094). It is **not** in bcc.sqlite and not in native LS.
+- On-disk residence: WebView IndexedDB under `/data/data/<pkg>/app_webview/Default/IndexedDB/` — Blobs stored plaintext by the browser engine. A kv-value-encryption wave does NOT touch it. **Decision needed: is SaagarEvidence in W2 scope?** Options are (a) out-of-scope note for a later wave, (b) encrypt blobs at add() (touches 15 API methods incl. cursor readers, print embedding via getDataURL :5369, and the Tax evidence-ZIP `snapshotByPrefix` :5430).
+
+## 6. Other on-disk artifacts found (index.html)
+- **QMS archive**: `DATA/saagar_qms_archive.json` — plaintext JSON of archived closed customers (names, mobiles), written atomically .tmp→rename (index.html:6172, :6193-6194, restore :6233-6234); read by `qmsArchiveLookup` (:6243). In `DATA` (private) but plaintext.
+- **Manual backup / migration export**: `exportBackupConfirmed` (:5739-5798) → plaintext JSON download incl. photos/qmsArchive/evidence riders, **plus a raw `Saagar_Traders_<date>.sqlite` binary of the live DB** (:5771-5779). `shareBackup` (:5803-5819) writes the JSON to Capacitor `CACHE` then share-sheet (:5815-5817) — the CACHE copy is never deleted after sharing.
+- **Pre-reset safety backup**: `Documents/SaagarBCC-Backups/pre-reset-*.json` with read-back verify (:6071-6077).
+- **Archive-old-data export**: `Documents/SaagarBCC-Backups/Saagar_Archive_before_*.json` (:6155) + download.
+- **Report PDFs**: `Documents/SaagarBCC-Reports/<fname>` (:7304) and share-sheet files in `CACHE` (:5256) — business content, generated on demand.
+- Restore path facts W2 must preserve: `restoreValidatedBackup` writes via `SaagarStore.bulk` (:5944 — bulk bypasses WAL, one persist, storage-core.js:387-393); rollback snapshot stored as a localStorage key `RESTORE_ROLLBACK_PREFIX+ts` (:5926-5938); per-key validators parse the RAW value as JSON (`validateRestoreKeyValue` :5824ff) — **so values must be plaintext at the backup-JSON layer or the validator/manifest (`migrationManifest` recCount parses values, :5693) breaks**.
+
+## 7. Platform/plugin facts
+- Capacitor 6 (`@capacitor/core ^6.1.2`, filesystem ^6.0.1, share ^6.0.3, app, local-notifications — package.json). `capacitor.config`: `androidScheme:"https", hostname:"localhost"` → the WebView serves from a **secure context**, so `window.crypto.subtle` (WebCrypto) is available — platform API, no new lib. Existing code already uses `crypto.getRandomValues` (index.html:2188, pin salt); PIN hashing is a JS loop `pinHashV2` (`simpleHash` ×50000, :2194), NOT subtle — no existing subtle dependency to collide with. Caveat for the build contract: subtle availability should still be device-verified once (old WebView + srcdoc-iframe contexts), given the "trust nothing headless" history.
+- `AndroidManifest.xml:5` `android:allowBackup="false"` (permanent, per build-overrides) — Google/ADB backup of the private dir is off; the residue below is still readable on a rooted device or via Documents.
+- No keystore/secure-storage plugin is installed — **key custody has no native home today**; choices are a derived key (from PIN — but PIN is fail-open/optional per Slice C), a random key stored in… some plaintext store (defeats the purpose vs. same-surface attackers), or adding `@capacitor/preferences`-style/Keystore plugin (violates "no new libs" unless owner-waived). This is the central open decision; APK-reinstall vs factory-reset survival differs per choice (DATA dir dies on uninstall; Documents backups survive → a PIN/passphrase-derived key is the only thing that can decrypt a Documents backup after reinstall).
+
+## 8. EXHAUSTIVE plaintext-residue inventory after a NAIVE kv-value-encryption wave
+(i.e., encrypt `v` in the kv table only)
+1. `DATA/bcc.sqlite` **history**: `.bak` (one persist behind), `.tmp` / `.bak.tmp` (transient), all containing pre-encryption plaintext until fully rotated — storage-core.js:179-183, :364. Migration must rewrite AND rotate .bak, or delete it (breaking the recovery chain until next persist).
+2. **Native localStorage** — full frozen pre-migration plaintext copy of every business key, kept deliberately (storage-core.js:99-101, :237-240) + it is a live functional fallback (:280). Also WebView leveldb files on disk.
+3. **WAL** `saagar_storage_wal` in native LS — inline plaintext values ≤50KB per entry (storage-core.js:116).
+4. **auto-backup.js output** — `Documents/SaagarBCC-Backups/backup-*.json` ×90 + `latest.json`, refreshed daily, shared storage, survives uninstall (auto-backup.js:86-94, :138-139).
+5. **Manual backup / migration / pre-reset / archive JSON exports** — Documents + downloads + the raw `.sqlite` sibling download (index.html:5763, :5771-5779, :6066, :6072, :6155).
+6. **Share-sheet CACHE files** — backup JSON (:5815) and report PDFs (:5256), never cleaned up.
+7. **`DATA/saagar_qms_archive.json`** — archived customer PII (:6193).
+8. **SaagarEvidence IndexedDB** — watch/compliance photo Blobs (index.html:5297ff), untouched by kv encryption.
+9. **`DATA/saagar-photos/*`** — currently empty (facade unwired) but becomes plaintext image files the day the rewire lands (photo-store.js:99).
+10. **Restore rollback snapshots** — full pre-restore values stored as ordinary LS keys `saagar_restore_rollback…` (:5926-5932); they'd be encrypted only if they flow through the same value layer — but they're written pre-decision and read raw.
+11. **Logs**: `saagar_sqlite_log` (key names only), audit/activity logs (`auditLog` entries carry key counts + some detail), `bcc_autobackup_log` — low sensitivity but key-name metadata.
+12. **In-memory** (out of at-rest scope but note for ANR/heap dumps): MEM Map + sql.js in-memory DB always hold plaintext by design — any sync-API-preserving scheme decrypts at boot, so "encrypted-at-rest, plaintext-in-RAM" is the only shape compatible with the synchronous `Storage.prototype` contract (storage-core.js:225-256).
+
+## 9. Build-contract implications for the future gated wave (summary)
+- Encrypt at the **persist/load boundary** (encrypt `db.export()` bytes, or per-value at kvUpsert/kvAll) rather than at `SP.setItem` — MEM stays plaintext, sync API unbroken, WAL/backup/restore semantics decided separately. Whole-file-blob encryption is the smallest diff (2 call sites: persist :177, `rd()` :306 + recovery chain `open()` :312) but makes `PRAGMA quick_check` corruption-probing happen post-decrypt and breaks the raw-.sqlite export (:5774) and sqlite-store.js rollback compatibility — a versioned header + plaintext-fallback read is mandatory for "flag off must always work".
+- Must explicitly decide and document: native-LS frozen copy (wipe? re-encrypt? keep = no real at-rest gain), WAL inline values, .bak rotation during migration, auto-backup/manual-backup staying plaintext until R0-W3, SaagarEvidence scope, key custody (no keystore plugin exists; PIN is optional/fail-open), and reinstall-vs-factory-reset recovery matrix (Documents backups are the only cross-reinstall artifact).
+- Device-test is non-negotiable: subtle in Capacitor WebView, boot-time decrypt cost vs `BOOT_TIMEOUT_MS` 6000 (:64 — a slow decrypt that blows the timeout triggers the native-LS-fallback + late-heal path :324-336, which would then run on the stale plaintext copy).

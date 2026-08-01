@@ -1,0 +1,129 @@
+{
+  "item": "P1-29 — Peak-season blackout dates + store holiday markers in the LEAVE module (V:/Co work/Projects/Retail/_extracted_modules/leave.html)",
+  "summary": "Add a NEW additive sibling key 'leavedesk_blackouts_v1' (kept OUT of leavedesk_v3, exactly like leavedesk_weekoff_v1) holding a list of blackout/store-holiday date-range entries, optionally scoped per store. Follow the loadWeekOff/saveWeekOff pattern verbatim: a load/save/coerce trio that DEFAULTS every field on read (the drop-on-normalize trap). On the calendar, current-month cells whose date falls in an applicable entry get a new .cal-cell.blackout decoration + a date-num badge (a NEW dot element, composing with the existing limit-dot/agenda-dot and the today/weekend/at-limit background tints — no background swap). In the Add-Leave flow, a NEW warning element (#blackoutWarn) is populated by onLeaveFormChange() when the requested span intersects a blackout, and submitLeave() gains a gate mirroring the existing entitlement-exceed confirm(): SOFT entries (default) trigger a non-blocking confirm() override; only entries the owner explicitly flags hard:true actually block (return) — satisfying \"WARN, do not hard-block unless justified\". Config UI is a new emp-add-panel in the Staff Master overlay (#empOverlay), directly after the existing Weekly-Off panel. Store scope is resolved authoritatively from the CENTRAL master by name via a new leaveStoreCode(name) helper cloned from grooming's grmStoreCode() (NOT from lv.employees[].store, which the bridge only back-fills for new employees). Blackout is an ORTHOGONAL axis to weekly-off: weekoff auto-SKIPS leave creation; blackout only WARNS/optionally-blocks and never touches capacity or stats. The shell STORAGE_RULES leave rule must be widened from exact-list to prefix:['leavedesk_'] so the new key (and the latent weekoff gap) are backed up; APP_RE already covers 'leavedesk_' so factory reset needs no change.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "NEW: BLACKOUT_KEY + loadBlackouts()/saveBlackouts()/coerceBlackout()",
+      "line": "~968 (immediately after isWeekOffDate() at 971-974, i.e. right after the WEEKOFF sibling block 950-974)",
+      "change": "Add const BLACKOUT_KEY='leavedesk_blackouts_v1'; and a load/save trio mirroring loadWeekOff()@955 / saveWeekOff()@965. loadBlackouts() JSON.parse(localStorage.getItem(BLACKOUT_KEY)||'null'); if p && Array.isArray(p.entries) map each through coerceBlackout() and drop nulls, else return {v:1,entries:[]}. coerceBlackout(e): require valid from/to via isValidDateKey (already defined, used at import@2357/2377); normalize from<=to (swap or drop); store = e.store in {'WLMHW','HEMW'} else '' (store-wide); kind = e.kind==='holiday'?'holiday':'blackout'; hard = kind!=='holiday' && !!e.hard (holidays never hard-block); label = String(e.label||'').trim().slice(0,80); id = e.id || uid(). saveBlackouts(cfg) re-coerces and writes {v:1,entries}. This DEFAULTS every field on read so a partial/hand-edited blob never crashes render — the drop-on-normalize guard."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "NEW: leaveStoreCode(name) + blackoutsForKey(key, storeCode)",
+      "line": "~975 (beside the new load/save trio)",
+      "change": "leaveStoreCode(name): clone grooming.html grmStoreCode()@696 EXACTLY (read saagar_employee_master_v1 by lowercased name, e.store text: indexOf('helios')->'HEMW', indexOf('titan')->'WLMHW', else '' — NO WLMHW fallback so unknown staff are never mislabelled). Do NOT read lv.employees[].store (bridge only back-fills NEW employees; existing rows lack it). blackoutsForKey(key, storeCode): filter loadBlackouts().entries to those where key>=from && key<=to (lexicographic on 'YYYY-MM-DD', TZ-safe, same comparison style as fyUsage@998) AND (e.store==='' || e.store===storeCode). Used by renderCalendar (storeCode omitted => all entries, for the marker) and by the add-leave gate (storeCode = selected employee's resolved store)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "renderCalendar() current-month cell block",
+      "line": "~1403-1438 (inside the else branch, after isWeekend@1405 and the dn date-num assembly@1420-1438)",
+      "change": "After computing key, add const bkAll = blackoutsForKey(key); (no storeCode => every applicable-by-date entry). If bkAll.length: cell.classList.add('blackout') (and 'blackout-hard' if any entry.hard) and append a NEW badge span into dn (like limit-dot@1426 / agenda-dot@1432): className 'blackout-dot', title = list of entry labels + store scope ('All stores' or code) + '(store holiday)' for kind==='holiday'. Keep it a distinct dot + class — do NOT swap cell background (would fight today/at-limit/weekend at 156-158). Cells stay clickable (openDayModal unchanged). No change to leave-chips/agenda logic."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "onLeaveFormChange() add-leave live warning",
+      "line": "~1797-1811",
+      "change": "After the capacity msg block (before renderBalanceHint()@1810), compute the blackout warning into the NEW #blackoutWarn element (leave the existing #addLeaveWarning capacity message untouched — two separate elements so they don't clobber each other). Resolve store: const empId=document.getElementById('leaveName').value; const emp=(data.employees||[]).find(e=>e.id===empId); const sc = emp ? leaveStoreCode(emp.name) : ''. Iterate leaveFrom..leaveTo (bounded guard<400 like requestedLeaveDays@1820), for each non-weekoff key collect blackoutsForKey(key, sc) matches (store-wide OR matching sc; if sc==='' only store-wide match, so unassigned staff never get false store-specific warnings). If any: show #blackoutWarn with label(s)/dates and '⛔ hard block' vs '⚠ discouraged'; else hide it."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "submitLeave() blackout gate",
+      "line": "~1900-1911 (immediately after the entitlement-exceed confirm block; before the write loop at 1912)",
+      "change": "Resolve sc=leaveStoreCode(name). Walk from..to (same guard pattern), skipping isWeekOffDate(key) days (they aren't written anyway), collecting applicable blackoutsForKey(key,sc). If ANY collected entry.hard => showToast('Leave falls in a hard blackout window ('+labels+') — blocked','error') and return (no write). Else if any SOFT entry => confirm('These dates fall in a blackout window ('+labels+'): '+category+' leave is discouraged.\\nRecord it anyway?') — if cancelled, return. This mirrors the existing non-blocking entitlement confirm@1906-1908. Soft is the default; hard requires the owner to have ticked hard on that entry (justified block)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "NEW: renderBlackouts()/addBlackout()/removeBlackout() + openEmployeeMaster() call",
+      "line": "config fns near renderWeekOff()@1148-1174; openEmployeeMaster()@2083-2090",
+      "change": "Add renderBlackouts() (populate the new #blackoutList from loadBlackouts().entries — each row: label, from–to via formatDateShort, store scope text, kind, hard flag, and a × remove button calling removeBlackout(id)). addBlackout(): read the new inputs (#bkFrom,#bkTo,#bkStore,#bkKind,#bkHard,#bkLabel), guardReadOnly() first (like saveWeekOffFromUI@1168), validate from/to, push a coerced entry, saveBlackouts(), renderBlackouts(), renderCalendar() (re-mark immediately, same pattern as saveWeekOffFromUI@1172), showToast. removeBlackout(id): guardReadOnly, filter out, save, re-render both. Add renderBlackouts(); to openEmployeeMaster()@2083 right after renderWeekOff()@2086."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "#empOverlay markup — new config panel",
+      "line": "~758-759 (a new emp-add-panel between the Weekly-Off panel that closes at 758 and the empList div at 759)",
+      "change": "Add an emp-add-panel titled 'Peak-Season Blackouts & Store Holidays' containing: a #blackoutList container (existing entries), then an add-row with #bkFrom/#bkTo (type=date), #bkStore select (All stores / Titan World (WLMHW) / Helios (HEMW)), #bkKind select (Blackout (discourage leave) / Store Holiday (marker)), a #bkHard checkbox labelled 'Block leave, not just warn', a #bkLabel text input, and an 'Add' button onclick=addBlackout(). Copy note: 'Blackout days warn against new leave; tick Block to hard-stop it. Store Holiday just marks the day.' Use the same emp-add-panel/form-label classes as the Weekly-Off panel@749-758 for house style."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "Add-Leave modal markup — #blackoutWarn element",
+      "line": "~620 (right after #addLeaveWarning at line 620)",
+      "change": "Add <div id=\"blackoutWarn\" class=\"limit-warning\" style=\"display:none;\"></div> reusing the existing .limit-warning style so it visually matches the capacity warning, kept SEPARATE from #addLeaveWarning so the capacity and blackout messages never overwrite each other."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "CSS — .cal-cell.blackout + .blackout-dot",
+      "line": "~158-164 (beside .cal-cell.weekend@158 / .limit-dot@163)",
+      "change": "Add .cal-cell.blackout as a hatched/striped overlay via a ::before pseudo-element (diagonal repeating-linear-gradient at low opacity) so it composes on top of the existing background classes (today gold-pale@156, at-limit red-pale@157, weekend cream@158) rather than replacing them. .cal-cell.blackout-hard uses a stronger tint. .blackout-dot mirrors .limit-dot@163 (6px round) with a distinct colour (e.g. var(--rust) or a purple) so it's not confused with the red limit-dot or blue agenda-dot."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html",
+      "name": "STORAGE_RULES leave rule",
+      "line": "~1967",
+      "change": "Change leave: { exact:['leavedesk_v3','leavedesk_v2','leavedesk_entitlements_v1'], prefix:[] } to leave: { exact:[], prefix:['leavedesk_'] }. This covers the new 'leavedesk_blackouts_v1' AND fixes the pre-existing gap that 'leavedesk_weekoff_v1' was never whitelisted for backup/migration. Verified via keyMatchesModule()@2128 (prefix.some(p=>k.startsWith(p))) and isWhitelistedAppKey()@2129 that this is the correct mechanism. Change ONCE — coordinate with P1-28/P1-30 if they add sibling keys (all leavedesk_* are then covered)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html",
+      "name": "APP_RE factory-reset regex",
+      "line": "~5563",
+      "change": "NO CHANGE NEEDED — verified APP_RE already contains the 'leavedesk_' alternative, so 'leavedesk_blackouts_v1' is already wiped by factory reset and included in the pre-reset safety backup. State this explicitly in the build so it isn't 'fixed' redundantly."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "new top-level localStorage key (module sibling, NOT inside leavedesk_v3)",
+      "name": "leavedesk_blackouts_v1",
+      "shape": "{ v:1, entries: [ { id:'bk_xxx', from:'YYYY-MM-DD', to:'YYYY-MM-DD', store:''|'WLMHW'|'HEMW', kind:'blackout'|'holiday', hard:boolean, label:'string' } ] }  — single-day marker = from===to; store:'' means store-wide; hard only meaningful for kind:'blackout'",
+      "defaults": "Absent key => { v:1, entries:[] } (zero blackouts = today's exact behavior). Per-field defaults applied on read by coerceBlackout(): store->'' if not WLMHW/HEMW; kind->'blackout' if not 'holiday'; hard-> false (and forced false for holidays); label->'' (trimmed, capped 80); id-> uid() if missing; entry dropped if from/to fail isValidDateKey.",
+      "storageRulesNote": "MUST widen shell STORAGE_RULES leave rule (index.html ~L1967) from the exact-list to { exact:[], prefix:['leavedesk_'] } or this key is silently dropped from whole-app backup/migration (the Wave-11 hard lesson — same class of bug as payroll_fnf_v1). APP_RE (index.html ~L5563) ALREADY includes the 'leavedesk_' prefix, so factory reset + pre-reset safety backup already cover it — NO APP_RE change. The module's own exportJSON()/importJSON() (leave.html @2470/2339) only handle leavedesk_v3 and are intentionally NOT extended — blackout config, like weekoff/entitlements, is carried only by the shell whole-app backup, matching existing sibling-key behavior."
+    }
+  ],
+  "approach": "Strictly additive, sibling-key, mirror-the-weekoff-pattern. No existing leaveRec field is added or changed (blackouts live in their own key, so coerceShape()@883 and the leave record shape are untouched — zero drop-on-normalize risk to leave records; the risk instead lives in coerceBlackout() which defaults every blackout field on read). No new libraries, no network, offline-only. Store resolution is authoritative-from-central-master via a cloned grmStoreCode() rather than trusting lv.employees[].store (the bridge reconcileMasters()@766 only back-fills store for NEWLY-seeded leave employees, so existing rows have no store field). Calendar decoration is add-a-class + add-a-dot that COMPOSES with existing tints (never a background swap), keeping the collision surface with P1-28/P1-30 minimal. Add-leave warning uses a dedicated new element so it never fights the existing capacity warning. The block is soft-by-default (confirm() override, same posture as the existing entitlement-exceed confirm) and only hard when the owner explicitly ticks hard on an entry — this is the 'do not hard-block unless justified' requirement made concrete and owner-controlled.",
+  "ui": "Config: a new emp-add-panel in the Staff Master overlay (#empOverlay) directly below the existing 'Weekly Off (non-trading days)' panel, titled 'Peak-Season Blackouts & Store Holidays' — a list of current entries (label · date-range · store scope · kind · hard-flag · × remove) plus an add-row (date-from, date-to, store select [All / Titan World (WLMHW) / Helios (HEMW)], kind select [Blackout / Store Holiday], 'Block leave, not just warn' checkbox, label, Add button). Calendar: in-range current-month cells get a subtle hatched ::before overlay (composing over today/weekend/at-limit backgrounds) plus a distinct-coloured .blackout-dot in the date-num row whose title lists the entry label(s), store scope and 'store holiday' where applicable. Add-Leave modal: a new #blackoutWarn line (reusing .limit-warning style) beneath the existing capacity warning, live-updated by onLeaveFormChange(); on submit, a hard entry shows an error toast and blocks, a soft entry shows a confirm() the owner can override. Copy is plain and non-alarming ('discouraged' for soft, 'blocked' for hard).",
+  "edgeCases": [
+    "Absent key: loadBlackouts() returns {v:1,entries:[]} — calendar and add-leave behave exactly as today (no marks, no warnings).",
+    "Partial/hand-edited blob: coerceBlackout() drops entries with invalid from/to (isValidDateKey) and defaults every other field, so renderCalendar never dereferences a malformed entry.",
+    "from>to in a stored entry: normalize (swap) or drop in coerce so range checks (key>=from && key<=to) never silently match nothing.",
+    "Single-day marker: from===to — handled by the inclusive lexicographic comparison.",
+    "Unassigned employee (leaveStoreCode returns ''): only store-wide (store:'') blackouts warn/block; store-specific entries are correctly ignored (no false warning), matching grooming's deliberate no-WLMHW-fallback posture.",
+    "Range spanning weekly-off days: the add-leave gate skips isWeekOffDate(key) days (they aren't written anyway) so it never warns about a date that gets auto-skipped; the live onLeaveFormChange hint should use the same skip to stay consistent.",
+    "Day that is BOTH weekly-off and blackout: calendar composes (cream weekend bg + blackout hatch + dot); submit auto-skips the day for weekoff, so blackout is moot there — no double message.",
+    "Blackout day that is also at-limit/today: dot + hatch stack on top of the red-pale/gold-pale background (::before overlay, not a bg swap).",
+    "Store holiday (kind:'holiday'): informational only — marks the calendar and warns in add-leave but is forced hard:false so it never blocks; it does NOT auto-skip leave creation like weekoff (deliberate, keeps counting unchanged).",
+    "Past-date (read-only) view: addBlackout/removeBlackout call guardReadOnly() first (like saveWeekOffFromUI), and submitLeave's blackout gate is downstream of its existing guardReadOnly@1880 — no writes on a past view.",
+    "Range-iteration must be bounded (guard counter <400, exactly like requestedLeaveDays@1820) so a malformed from/to can't spin an infinite loop.",
+    "importJSON (leave.html@2339): does NOT re-run the blackout gate — import is a restore path, not a creation UI; blackout is enforced only at interactive submit. Note this so it isn't treated as a miss."
+  ],
+  "verifySteps": [
+    "Load the leave module in the shell harness with NO leavedesk_blackouts_v1 present — confirm 0 console errors and calendar/add-leave unchanged (default empty entries).",
+    "Seed leavedesk_blackouts_v1 with a store-wide soft blackout covering a visible date range; reload — confirm those cells show .cal-cell.blackout + .blackout-dot and existing today/weekend/at-limit tints still render underneath.",
+    "Open Add Leave for a date inside the blackout — confirm #blackoutWarn shows the discouraged message while the capacity #addLeaveWarning is unaffected; Submit — confirm the soft confirm() appears and on OK the leave records as status:'pending' and appears on the grid.",
+    "Via the config panel add a HARD blackout, then attempt Add Leave in range — confirm submit is blocked with an error toast and NO leavedesk_v3 row is written (inspect localStorage).",
+    "Add a store-specific HEMW blackout — confirm it warns/blocks only for an employee whose master 'store' resolves to Helios and does NOT warn for a Titan or unassigned employee.",
+    "Toggle a weekly-off day that overlaps a blackout — confirm the cell composes (cream + hatch + dot) and that submit still auto-skips the weekoff day while blackout only warns on trading days.",
+    "Remove a blackout in the config UI — confirm renderCalendar() re-runs and the cell de-marks immediately.",
+    "Shell whole-app backup (Configuration → Data & Backup) — confirm leavedesk_blackouts_v1 (and now leavedesk_weekoff_v1) appear in the exported JSON after the STORAGE_RULES prefix change; run the factory-reset safety-backup path and confirm the key is included (APP_RE already matches)."
+  ],
+  "risks": [
+    "Shell STORAGE_RULES change from exact-list to prefix:['leavedesk_'] broadens what is treated as leave-owned; verified all existing leavedesk_* keys (v3, v2, entitlements, weekoff) legitimately belong to the leave module, so this is safe and also fixes the latent weekoff backup gap — but it is a shared shell edit that must be made ONCE and coordinated with P1-28/P1-30.",
+    "Calendar cell decoration shares the renderCalendar() per-cell loop (~1403-1438) with P1-28/P1-30; multiple new dots/classes could crowd the date-num row or someone could swap the cell background — mitigate by each item adding its OWN distinct dot + class and never a full-background swap.",
+    "Store resolution depends on the central master 'store' text being populated; unassigned staff receive only store-wide warnings (acceptable, mirrors grooming) — but if the master rarely sets 'store', per-store blackouts will feel inert. Flag to owner.",
+    "coerceBlackout() is the single drop-on-normalize guard for this key; if any field default is missed, a hand-edited blob could throw inside renderCalendar — keep the coerce total and defensive.",
+    "Unbounded range iteration on a malformed from/to would hang the UI — must use the bounded guard<400 pattern already proven in requestedLeaveDays.",
+    "Two add-leave warnings (capacity + blackout) now share the modal top area; using a separate #blackoutWarn element avoids clobbering but adds vertical space on small screens — acceptable, both are display:none until relevant."
+  ],
+  "collisionNotes": "SAME-FILE Wave-12 collisions with P1-28 and P1-30 (both flagged as touching the shared settings overlay + calendar render): (1) #empOverlay markup (leave.html ~739-782) — all three add an emp-add-panel; synthesis owner must order the new panels and avoid duplicate ids. (2) openEmployeeMaster()@2083 — each adds a renderX() call; append renderBlackouts() without disturbing renderEntDefaults()/renderWeekOff(). (3) renderCalendar() current-cell loop@1403-1438 — shared decoration point; coordinate additive dots/classes, no background swap. (4) onLeaveFormChange()@1797 / the add-leave warning area — I add a DEDICATED #blackoutWarn element so I do NOT touch the existing #addLeaveWarning; if P1-28/30 also augment the warning, keep them on separate elements. (5) submitLeave()@1879 — I add a gate block after the entitlement confirm@1908 and before the write loop@1912; if another item also gates submit, order the confirms/blocks so a hard block short-circuits before any soft confirm. (6) SHELL STORAGE_RULES leave rule@1967 — if P1-28/P1-30 also introduce leavedesk_* sibling keys, the single prefix:['leavedesk_'] change covers all of them; make the edit once. NOT touched by this item (reduced surface): getCapacity()@1240, renderStats()@1523, coerceShape()@883, the leaveRec shape, and the integration-bridge — blackout is orthogonal to capacity/stats and needs no bridge exception.",
+  "openQuestions": [
+    "Final key name + shape: confirm 'leavedesk_blackouts_v1' and the UNIFIED entries list (each with kind:'blackout'|'holiday' + optional store) vs. two separate lists (ranges vs holidays). I recommend the unified list for minimal surface — synthesis owner to ratify.",
+    "Should a store holiday (kind:'holiday') AUTO-SKIP leave creation for that store's staff, like weekly-off does, rather than merely warning? I recommend NO (keep additive/warn-only; auto-skip would need a store-aware variant of isWeekOffDate and would change leave counting for that store's employees only — bigger change). Confirm.",
+    "Range-awareness of the warning: I make onLeaveFormChange + submitLeave iterate leaveFrom..leaveTo. Confirm P1-28/P1-30 also iterate the range so the shared add-leave path stays consistent.",
+    "Whether hard blackouts should also be enforced on importJSON (leave.html@2339). I recommend NO (import is a restore path). Confirm.",
+    "Store-scope UX when the central master rarely populates 'store' text: is store-wide-only warning for unassigned staff acceptable, or should there be a manual store picker on the blackout entry independent of employee resolution (already provided) plus a note? Confirm the copy.",
+    "Marker colour/style for .blackout-dot so it is visually distinct from the red limit-dot and blue agenda-dot AND from whatever markers P1-28/P1-30 add — needs a palette decision across the three items."
+  ],
+  "_id": "P1-29"
+}

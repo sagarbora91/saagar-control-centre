@@ -1,0 +1,86 @@
+{
+  "item": "P1-30 — \"Next 7 days\" staffing strip in the LEAVE module",
+  "summary": "Add a compact, read-only horizontal strip of the next 7 calendar days (anchored on the shell as-of/today date via getAsOf(), NOT calendar month navigation), each cell showing heads-on-leave vs available headcount/capacity, with visual marks for understaffed days, non-trading weekly-off days, and (feature-detected) blackout days. Purely additive and low-risk: ONE new HTML container, ONE new CSS block, ONE new render function renderStaffStrip(), and ONE call appended to renderCalendar()'s tail so it stays in sync with every mutation/nav/st-date path. NO new localStorage key and NO record-shape change — it CONSUMES P1-28's per-store store resolver + caps, and degrades gracefully (store-agnostic day view, no false \"understaffed\" reds) when those helpers or the caps key are absent. All claims grounded in _extracted_modules/leave.html as read.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/leave.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "HTML <main>: insert #staffStrip container",
+      "line": "~555",
+      "change": "Insert one empty container <div class=\"staff-strip\" id=\"staffStrip\"></div> between div.stats-strip#statsStrip (@554) and div.cal-wrapper#calWrapperEl (@556). Under the stats strip is the cleanest of the allowed placements and matches the existing render order (stats -> calendar)."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "CSS: new .staff-strip/.staff-day rules",
+      "line": "append after .stat-sub (@139); ALSO add a hide rule in the @media print block (near @347) and a mobile tweak in @media (near @405)",
+      "change": "Additive CSS only, reusing existing vars (--cream-card,--border,--red,--amber,--green,--ink-mid,--ink-dim,--blue-acc,--shadow-sm). .staff-strip{display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;} .staff-day{min-width:96px;flex:1 0 auto;border:1px solid var(--border);border-radius:10px;padding:9px 10px;background:var(--cream-card);display:flex;flex-direction:column;gap:2px;} modifiers .staff-day.today (accent border), .staff-day.nontrading (muted/striped bg), .staff-day.blackout (amber tint), .staff-day.understaffed (red tint/left-border). Print: add '.staff-strip{display:none !important;}' alongside the existing '.stats-strip{display:none !important;}' (@347). Mobile: keep overflow-x scroll; no new colors introduced."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "renderStaffStrip() — NEW function",
+      "line": "add a new function near renderStats (@1523); it is a function declaration so hoisting makes call-before-definition safe",
+      "change": "New read-only builder. Anchor = getAsOf() (real today/as-of, stable across month nav). parseKey(anchor) -> y,m,d. Loop i=0..6: dt=new Date(y,m,d+i); key=dateKey(dt.getFullYear(),dt.getMonth(),dt.getDate()) (native month/year rollover). Per day reuse: const cap=getCapacity(key) for dayUsed/dayFull/shift fullness (so the strip AGREES with the calendar's limit dots); onLeave=cap.dayUsed (active = pending+approved via isActiveLeave, rejected excluded). nonTrading=isWeekOffDate(key). blackout = (typeof isBlackoutDate==='function') ? isBlackoutDate(key) : false. Per-store (P1-28, feature-detected): bucket (data.leaves[key]||[]).filter(isActiveLeave) by store using P1-28 resolver, and derive available headcount per store from active master roster minus on-leave; understaffed = any store's available < that store's min-staff cap (or on-leave > maxLeave, per P1-28 caps semantics). If P1-28 helpers/caps absent -> skip understaffed highlight (never paint every day red). Non-trading suppresses understaffed (store closed => staffing moot). Build cells with DOM createElement/textContent (module XSS discipline; names not shown). Mark today's cell when key===todayISOStr()."
+    },
+    {
+      "file": "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+      "name": "renderCalendar() — append renderStaffStrip() to tail",
+      "line": "@1476, immediately after the existing renderStats(); call (before updateApprovalsBadge()/applyReadOnlyUI())",
+      "change": "Add one line: renderStaffStrip();. Because every mutation (decideLeave, submitLeave, removeLeave, import), every nav (prev/next/jump/goToToday/applyAsOfDate), and the st-date listener all funnel through renderCalendar(), the strip auto-refreshes with zero extra wiring. Anchoring on getAsOf() means prev/next month recompute the identical strip (cheap, harmless) rather than moving it."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "none — no new key/field",
+      "name": "(P1-30 introduces NONE)",
+      "shape": "P1-30 adds no top-level localStorage key and no leavedesk_v3 record field. It only READS: data.leaves[key] (existing), getCapacity()/isActiveLeave() (existing), isWeekOffDate()+loadWeekOff() ('leavedesk_weekoff_v1', existing), getCentralEmployees() ('saagar_employee_master_v1', existing), and P1-28's caps/resolver.",
+      "defaults": "n/a",
+      "storageRulesNote": "No STORAGE_RULES (index.html ~1967) or APP_RE (~5563) change is required BY P1-30. BUT the understaffed/blackout accuracy depends on P1-28 having registered ITS new caps (and any blackout) key in STORAGE_RULES + APP_RE. Flag for synthesis: the current leave rule { exact:['leavedesk_v3','leavedesk_v2','leavedesk_entitlements_v1'], prefix:[] } already MISSES 'leavedesk_weekoff_v1' — recommend P1-28 change it to prefix:['leavedesk_'] so v3/v2/entitlements/weekoff/caps/blackout are all covered (APP_RE already has the 'leavedesk_' prefix, so factory-reset is fine). P1-30 must feature-detect the caps key's absence so a fresh install without it degrades gracefully rather than mis-marking days."
+    }
+  ],
+  "approach": "Additive presentation layer with a hard dependency on P1-28. (1) Insert an empty #staffStrip container in the DOM under the stats strip. (2) Add scoped CSS reusing existing theme vars — no new colors, plus print-hide and mobile overflow. (3) Implement renderStaffStrip() that iterates the next 7 days from getAsOf(), reusing the EXISTING counting primitives getCapacity()/isActiveLeave() (pending+approved occupy capacity, rejected excluded — identical to the calendar's limit-dot logic) for the day total, isWeekOffDate() for non-trading marking, and P1-28's store resolver + per-store caps (feature-detected) for the per-store available-headcount and understaffed decision. (4) Append a single renderStaffStrip() call to renderCalendar()'s tail so the module's existing single-funnel refresh model drives it with no new event wiring. The whole change is one container + one CSS block + one function + one call line. It never mutates state, never changes a shared function signature, and never throws when P1-28 is absent (each P1-28 helper is guarded by typeof===\\\"function\\\").",
+  "ui": "Strip of 7 equal cells, horizontally scrollable on narrow screens. Each cell: day-of-week abbrev (Mon), date number, a primary count line 'N on leave', and a secondary 'M/T available' where T is the resolved store/total headcount. Today's cell gets an accent border; non-trading (weekly-off) cells get a muted/striped background with a small 'Weekly off' label and suppress the understaffed red; blackout cells (if P1-28/sibling provides isBlackoutDate) get an amber tint; understaffed cells get a red tint/left-border and a small '⚠ short' badge naming the short store when per-store data exists. Store-agnostic fallback (no P1-28 caps): show only 'N on leave' + non-trading marks, no red. Copy stays terse ('3 on leave', '5/7 avail', 'Weekly off', 'Short: Helios'). Read-only — no buttons, no click handlers required (optionally cell click could openDayModal(key) for the day, but keep display-only to stay strictly additive unless synthesis wants the affordance).",
+  "edgeCases": [
+    "Build-order / P1-28 absent: if lvStoreCode/caps helpers are undefined (P1-30 merged before P1-28), every P1-28 call is guarded by typeof===\"function\"; strip falls back to a store-agnostic day view (total on-leave vs total active roster) and never throws.",
+    "Fresh install / empty saagar_employee_master_v1: getCentralEmployees() returns [] -> no roster -> available headcount unknown. Degrade: show on-leave counts + non-trading marks, SUPPRESS understaffed highlight (do not paint every day red).",
+    "Caps key absent on a populated install: feature-detect the P1-28 caps loader; if no thresholds, show counts without understaffed red.",
+    "Month/year rollover inside the 7-day window: handled by new Date(y,m,d+i) arithmetic + dateKey(); no manual month math.",
+    "Half-day leaves: getCapacity().dayUsed counts a half-day head as one absent head (consistent with the calendar's per-day cap). This slightly overstates availability loss; documented, kept simple for a compact strip.",
+    "Pending vs rejected: pending leaves ARE counted (they occupy capacity via isActiveLeave) so the strip matches the calendar limit dots; rejected are excluded.",
+    "Unassigned store ('' code): staff whose master row store text isn't Helios/Titan resolve to '' — follow grmStoreCode's no-fallback rule (never mislabel as Titan); exclude Unassigned from per-store understaffed math, show a separate tally only if non-zero.",
+    "Non-trading AND understaffed same day: non-trading wins visually (store closed) and suppresses the red.",
+    "On-leave exceeds store roster: clamp available at 0 (no negative numbers).",
+    "Past as-of (read-only view): strip is display-only anyway; still shows next-7 from the as-of date; no write path, no guardReadOnly needed.",
+    "Month navigation: because anchor=getAsOf(), prev/next month leave the strip content unchanged (it reflects 'now', not the browsed month) — intentional; documented as a decision."
+  ],
+  "verifySteps": [
+    "Load leave.html standalone in the browser harness; seed saagar_employee_master_v1 with ~6 active staff split across Helios/Titan and a few leavedesk_v3 leaves across the next 7 days. Confirm 7 cells render with correct dow/date, on-leave counts equal the calendar chips for those days, and 0 console errors.",
+    "Staff Master -> weekly-off: tick a weekday that falls in the window; confirm that cell gets the non-trading style and shows no understaffed red.",
+    "Set P1-28 caps so one store's min-staff exceeds available on a day that has leaves; confirm that cell highlights understaffed with the short-store badge.",
+    "Delete the P1-28 caps key; confirm the understaffed highlight disappears but on-leave counts remain (graceful degrade).",
+    "Empty saagar_employee_master_v1; confirm no all-red strip — counts + non-trading marks still show.",
+    "Click prev/next month; confirm strip content is UNCHANGED (anchored at as-of) and no errors.",
+    "Dispatch window 'st-date' with a new YYYY-MM-DD; confirm the strip re-anchors to next-7 from that date.",
+    "Approve/reject/add/remove a leave inside the window; confirm the strip count updates live (via the renderCalendar funnel).",
+    "Undefine the P1-28 helpers (simulate P1-28 not yet merged); confirm renderStaffStrip() does not throw and shows the store-agnostic day view.",
+    "Trigger print preview; confirm the strip is hidden like .stats-strip."
+  ],
+  "risks": [
+    "Dependency/build-order risk: if P1-30 lands before P1-28, understaffed/per-store features are inert until P1-28 merges — mitigated by feature-detection (safe no-op, never a crash).",
+    "Naming risk: exact P1-28 helper/key names are unknown at spec time; if synthesis wires the wrong names the strip silently shows no understaffed highlight (safe fail, not a throw) — synthesis must freeze the contract (see open questions).",
+    "renderCalendar() tail is shared with P1-28: both items append a call there (@1476). Merge/order conflict if uncoordinated — synthesis must order the tail (renderStats(); [any P1-28 cal tint]; renderStaffStrip();) and dedupe if P1-28 also ships a summary strip.",
+    "Half-day availability is approximated as one absent head — minor overstatement, documented.",
+    "Visual noise on very narrow screens — mitigated by overflow-x:auto scroll and a min-width per cell."
+  ],
+  "collisionNotes": "Only ONE other Wave-12 item touches leave.html: P1-28 (per-store store resolution + caps) — a HARD DEPENDENCY, not a mere neighbor. Shared surfaces: (a) renderCalendar() tail @1476 — both append a render call; synthesis orders them. (b) getCentralEmployees() @2014 and isWeekOffDate()/loadWeekOff() @971/955 — read-only reuse by both, no conflict. (c) the Employee Master overlay (openEmployeeMaster @2083, renderEntDefaults/renderWeekOff) is where P1-28 adds its caps/blackout CONFIG UI; P1-30 adds NO UI there (it only consumes the resulting caps), so no overlap in that region. P1-30 changes no shared function signature and adds no key. The four helpers P1-30 REUSES from P1-28 (must be provided by P1-28, defined nowhere in P1-30): (1) a store resolver name->'HEMW'|'WLMHW'|'' following grmStoreCode (grooming.html @696) reading saagar_employee_master_v1 (likely lvStoreCode); (2) a per-store active-headcount/roster helper (or P1-30 derives it locally from getCentralEmployees().filter(active) + the resolver); (3) a per-store caps loader over P1-28's new key (e.g. leavedesk_caps_v1) exposing min-staff or max-on-leave thresholds; (4) a store list/labels const (WLMHW=Titan World, HEMW=Helios). P1-30 must feature-detect all four.",
+  "openQuestions": [
+    "Freeze the exact P1-28 names P1-30 consumes: store resolver (lvStoreCode?), per-store roster/headcount helper, caps loader + its shape/key (leavedesk_caps_v1? min-staff vs max-on-leave semantics), and the store list const.",
+    "Does Wave 12 include a blackout-dates feature (which item, which key, helper isBlackoutDate)? If not, P1-30 marks non-trading (weekly-off) days only and skips blackout.",
+    "Confirm the anchor policy: next-7 from getAsOf() (recommended — stable, reflects 'now') versus next-7 from the displayed calendar month. Recommend pinned to as-of.",
+    "Per-day display density: single day total + an understaffed store badge, or per-store mini-rows inside each cell? Recommend day-total + badge for a compact strip.",
+    "Understaffed semantics: available-headcount < store minStaff, or on-leave > store maxLeave? Depends on how P1-28 models caps.",
+    "Should strip cells be clickable to openDayModal(key), or stay strictly display-only? Recommend display-only to keep P1-30 purely additive unless synthesis wants the affordance."
+  ],
+  "_id": "P1-30"
+}

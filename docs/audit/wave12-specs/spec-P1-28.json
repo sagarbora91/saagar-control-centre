@@ -1,0 +1,127 @@
+{
+  "item": "P1-28 — Per-store leave-capacity view (WLMHW Titan World vs HEMW Helios) in the LEAVE module",
+  "summary": "Add a NEW sibling config key 'leavedesk_caps_v1' = { WLMHW:n, HEMW:n } (per-store max staff-off-per-day, defaulting to MAX_DAY=3), following the exact loadWeekOff/saveWeekOff sibling pattern. Add a store resolver that maps each leave-record name to a store code via the CENTRAL master (grmStoreCode logic: e.store 'helios'→HEMW, 'titan'→WLMHW, else '' Unassigned) — never trusting lv.employees[].store. Render an ADVISORY per-store \"Leave Load\" section in the DAY MODAL (used-vs-cap bars + over-capacity flag + a separate Unassigned slot), and a config panel in the Staff Master overlay. Purely display/config-additive: does NOT change the getCapacity/canAddLeave enforcement (global MAX_DAY still gates adds). Exposes loadCaps()/lvStoreCode()/storeLeaveTallyForDay() as the reusable base that P1-30 consumes. Requires ONE shell edit: widen STORAGE_RULES.leave to prefix:['leavedesk_'] so the new key is backed up (APP_RE already covers it).",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/_extracted_modules/leave.html",
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "leave.html",
+      "name": "CAPS sibling helpers (loadCaps/saveCaps) — NEW",
+      "line": "~968 (immediately after saveWeekOff/isWeekOffDate block, L953-974)",
+      "change": "Add const CAPS_KEY='leavedesk_caps_v1'; const STORE_CODES=['WLMHW','HEMW']; const STORE_LABELS={WLMHW:'Titan World',HEMW:'Helios'}; const CAPS_DEFAULT={WLMHW:MAX_DAY,HEMW:MAX_DAY}; loadCaps() reads/coerces per-store integers (>=0, default CAPS_DEFAULT[c]); saveCaps(caps) clamps each STORE_CODES entry to Math.max(0,Math.floor(Number)). Mirror the loadWeekOff/saveWeekOff pattern exactly (namespaced key, never inside leavedesk_v3)."
+    },
+    {
+      "file": "leave.html",
+      "name": "lvStoreCode/lvStoreMap resolver — NEW",
+      "line": "~2019 (right after getCentralEmployees() @2014)",
+      "change": "Add lvStoreMap() → builds { lowercased-name: code } from getCentralEmployees() (code = st.indexOf('helios')>=0?'HEMW': st.indexOf('titan')>=0?'WLMHW':'' from e.store); and lvStoreCode(name, map) → map[trim().toLowerCase()] || ''. Reuses existing getCentralEmployees(); mirrors grooming.grmStoreCode/grmEmpRow (grooming.html @691/696). Do NOT read lv.employees[].store."
+    },
+    {
+      "file": "leave.html",
+      "name": "storeLeaveTallyForDay(key) — NEW",
+      "line": "~2019 (next to lvStoreCode)",
+      "change": "Given a dateKey, filter (data.leaves[key]||[]) by isActiveLeave, resolve each name via lvStoreMap(), and return { WLMHW:{used,cap,over}, HEMW:{used,cap,over}, unassigned:used } where cap=loadCaps()[code] and over=used>cap. Counts leave RECORDS (heads) — same semantics as getCapacity dayUsed=leaves.length. Accept an optional pre-built map arg so callers/month-loops/P1-30 don't re-parse the master."
+    },
+    {
+      "file": "leave.html",
+      "name": "Day-modal per-store render block — inside openDayModal()",
+      "line": "~1607 (immediately after the dayNote append that closes the capacityGrid render, before the dayLeaveList block)",
+      "change": "After building #storeCapGrid: call storeLeaveTallyForDay(key) and render one .capacity-slot per STORE_CODES (label=STORE_LABELS, count `${used} / ${cap}`, .capacity-fill width used/cap, red 'full' class + '⚠ Over capacity' note when over, else '${cap-used} slot(s) free'); if tally.unassigned>0 append a neutral Unassigned slot ('N staff — store not set; open Staff Master') with NO over/under flag. DOM-only (textContent), reuse existing .capacity-slot/.capacity-bar/.capacity-fill CSS."
+    },
+    {
+      "file": "leave.html",
+      "name": "renderStoreCaps/saveStoreCapsFromUI — NEW",
+      "line": "~1174 (right after saveWeekOffFromUI @1167)",
+      "change": "renderStoreCaps() fills #capWLMHW/#capHEMW number inputs from loadCaps(); saveStoreCapsFromUI() guardReadOnly()-gated, reads the two inputs, saveCaps(), renderCalendar()+re-open current day modal if open, showToast. Mirror renderWeekOff/saveWeekOffFromUI exactly."
+    },
+    {
+      "file": "leave.html",
+      "name": "openEmployeeMaster()",
+      "line": "2083",
+      "change": "Add renderStoreCaps(); alongside the existing renderEntDefaults(); renderWeekOff(); calls (one additive line)."
+    },
+    {
+      "file": "leave.html",
+      "name": "Day-modal HTML — #storeCapGrid section",
+      "line": "579 (in the day modal body, right after the existing <div class=\"capacity-grid\" id=\"capacityGrid\">)",
+      "change": "Insert a new section-head <span class=\"section-title\">Per-Store Leave Load</span> and <div class=\"capacity-grid\" id=\"storeCapGrid\"></div> before the 'Absent Staff' section-head."
+    },
+    {
+      "file": "leave.html",
+      "name": "Staff Master overlay HTML — caps config panel",
+      "line": "~758 (right after the Weekly Off .emp-add-panel closes @749-758, before <div class=\"emp-list\" id=\"empList\">)",
+      "change": "Add an .emp-add-panel titled 'Per-Store Leave Capacity (max staff off per day)' with two number inputs id=capWLMHW ('Titan World / WLMHW') and id=capHEMW ('Helios / HEMW'), a 'Save Store Caps' btn calling saveStoreCapsFromUI(), and a hint line ('Advisory only — flags a store as over-capacity in the day view. Does not block adding leave. Staff store comes from the central Employee Master.')."
+    },
+    {
+      "file": "index.html (SHELL — orchestrator-owned)",
+      "name": "STORAGE_RULES.leave",
+      "line": "1967",
+      "change": "REQUIRED for backup/migration: change leave rule from { exact:['leavedesk_v3','leavedesk_v2','leavedesk_entitlements_v1'], prefix:[] } to { exact:[], prefix:['leavedesk_'] } — covers leavedesk_caps_v1 AND back-fills the pre-existing leavedesk_weekoff_v1 gap and any future leavedesk_* key. Without this the new key is silently dropped from backup/migration (Wave-11 hard lesson)."
+    },
+    {
+      "file": "index.html (SHELL)",
+      "name": "factoryReset APP_RE",
+      "line": "5563",
+      "change": "NO CHANGE NEEDED — APP_RE already includes the 'leavedesk_' prefix, so leavedesk_caps_v1 is already wiped by factory reset and included in the pre-reset safety backup. Confirmed by reading L5563."
+    },
+    {
+      "file": "integration-bridge.js (SHELL)",
+      "name": "reconcileMasters()",
+      "line": "774",
+      "change": "OPTIONAL companion (NOT required by P1-28): add store:e.store||'' to the pushed lv.employees object. P1-28 resolves store authoritatively from the central master, so this is a nicety only; the module must not depend on it (bridge only back-fills NEW seeds, existing rows keep no store)."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "localStorage key (new, top-level, sibling — NOT inside leavedesk_v3)",
+      "name": "leavedesk_caps_v1",
+      "shape": "{ \"WLMHW\": <int>=0>, \"HEMW\": <int>=0> } — per-store max staff on leave per day. Integers, clamped >=0 on save via Math.max(0,Math.floor()).",
+      "defaults": "Absent key OR any missing/invalid store field => CAPS_DEFAULT = { WLMHW: MAX_DAY, HEMW: MAX_DAY } (= {3,3}). loadCaps() defaults each field independently so a partial/hand-edited blob never yields NaN.",
+      "storageRulesNote": "MUST be covered by STORAGE_RULES (index.html @1967) or it is dropped from backup/migration — recommend switching leave rule to prefix:['leavedesk_'] (also fixes the latent leavedesk_weekoff_v1 gap). APP_RE @5563 already covers 'leavedesk_' so factory reset is fine. This is the Wave-11 hard-lesson call-out."
+    }
+  ],
+  "approach": "Fully additive and low-risk. (1) New sibling key 'leavedesk_caps_v1' via loadCaps/saveCaps built to the exact loadWeekOff/saveWeekOff template — leavedesk_v3 record shape is untouched, so no drop-on-normalize trap (coerceShape @883 stays as-is). (2) Store resolution is authoritative from the CENTRAL master (getCentralEmployees @2014 already exists) using the proven grooming resolver logic (helios→HEMW, titan→WLMHW, else ''), NOT lv.employees[].store — because the bridge only back-fills store on NEW seeds and existing lv.employees rows have none. A per-render name→code map (lvStoreMap) avoids re-parsing the master per record. (3) The view counts isActiveLeave records (pending+approved, matching getCapacity's dayUsed=leaves.length head-count semantics; rejected excluded) per store and compares to the store cap. (4) It is ADVISORY/display-only: it does NOT alter getCapacity/canAddLeave (@1240/1257), so the global MAX_DAY=3 add-gate is unchanged and adding leave is never newly blocked. (5) Reusable helpers (loadCaps, lvStoreCode/lvStoreMap, storeLeaveTallyForDay) are the base P1-30 builds on — spec them with an optional pre-built-map param so P1-30 can loop a month cheaply.",
+  "ui": "PRIMARY surface = DAY MODAL. A new 'Per-Store Leave Load' section is inserted directly under the existing 'Leave Capacity (per shift)' grid (they are DIFFERENT axes — shift AM/PM vs store — so a distinct heading avoids confusion). It renders one reused .capacity-slot per store: 'Titan World  2 / 3' with a fill bar; when used>cap the count/fill go red ('full' class) with a '⚠ Over capacity' note, otherwise 'N slot(s) free'. Any staff whose store can't be resolved appear in a separate neutral 'Unassigned' slot ('2 staff — store not set; open Staff Master') that is never flagged over/under. CONFIG surface = Staff Master overlay (#empOverlay): a new panel matching the existing Weekly-Off panel, with two number inputs (Titan World / WLMHW and Helios / HEMW), a 'Save Store Caps' button, and a hint that it is advisory-only and store comes from the central Employee Master. Recommend NOT adding a stats-strip tile in P1-28 (leave the month-level surface to P1-30 to avoid a shared-DOM collision).",
+  "edgeCases": [
+    "Name mismatch between a leave record's name and the master name: resolver trims+lowercases both sides; no match => '' (Unassigned), shown in the neutral slot, not counted against either store.",
+    "Central master absent/empty: getCentralEmployees() returns [] => every head lands in Unassigned; per-store slots show 0/ cap; nothing is falsely flagged over.",
+    "Same person split across half_day_am + half_day_pm on one day = 2 records => counts as 2 heads for that store, exactly mirroring getCapacity dayUsed=leaves.length. Note this in copy is optional; keep semantics consistent with the existing per-shift grid.",
+    "Rejected leaves excluded (isActiveLeave); pending INCLUDED (they occupy capacity) — consistent with getCapacity.",
+    "cap = 0 is a valid config (means 'nobody should be off'): any head => immediately over; do not treat 0 as 'unset'.",
+    "Negative / NaN / decimal cap input: saveCaps clamps via Math.max(0, Math.floor(Number(x)||0)).",
+    "Partial/hand-edited leavedesk_caps_v1 (missing one store, wrong type): loadCaps defaults each field independently, never returns NaN.",
+    "Past-date (read-only) view: the day-modal store section is display-only (fine); saveStoreCapsFromUI is guardReadOnly()-gated like saveWeekOffFromUI.",
+    "Store master row exists but e.store is blank / an unrecognized string: st.indexOf checks fail => '' (Unassigned) — matches grmStoreCode.",
+    "Person on leave whose master row is active:false: getCentralEmployees is read as-is (fillEmpIdSelect filters active elsewhere, but the resolver should map by name regardless of active so a currently-inactive-but-on-record staff still resolves to their store)."
+  ],
+  "verifySteps": [
+    "Open the leave harness. In the parent/top window seed localStorage.setItem('saagar_employee_master_v1', JSON.stringify([{employeeId:'E1',name:'Ravi Kumar',active:true,store:'Titan World'},{employeeId:'E2',name:'Sita Rao',active:true,store:'Helios'},{employeeId:'E3',name:'Amit No-Store',active:true,store:''}])).",
+    "Seed leavedesk_v3 with 2 active leaves for Titan staff + 1 for Helios + 1 for Amit on one date; reload the iframe.",
+    "Open that day's modal: confirm a 'Per-Store Leave Load' section shows 'Titan World 2 / 3' (green), 'Helios 1 / 3' (green), and an 'Unassigned 1' slot; verify Titan is NOT flagged.",
+    "Open Staff Master, set Titan World cap = 1, Save Store Caps; reopen the day modal: Titan World now '2 / 1' in RED with '⚠ Over capacity'.",
+    "Confirm localStorage 'leavedesk_caps_v1' === {\"WLMHW\":1,\"HEMW\":3}; reload iframe and confirm the cap persists (loadCaps round-trip).",
+    "Reject one of the Titan leaves (or set status rejected): confirm the store count drops (isActiveLeave excludes it); set it pending: confirm it counts again.",
+    "Confirm getCapacity/add-leave behavior is UNCHANGED: adding a 3rd leave is still gated only by the global MAX_DAY, not by any per-store cap.",
+    "After applying the shell STORAGE_RULES prefix change, run the shell backup/export and confirm leavedesk_caps_v1 (and leavedesk_weekoff_v1) appear in the exported blob.",
+    "Console-clean check: open/close day modal and Staff Master repeatedly — 0 errors."
+  ],
+  "risks": [
+    "FORGETTING the STORAGE_RULES edit (index.html @1967) => leavedesk_caps_v1 silently dropped from backup/migration (survives factory reset but not carried on device migration). This is the single highest-risk item — it is an orchestrator-owned SHELL edit, not a module edit, so it must be explicitly assigned. Recommend prefix:['leavedesk_'].",
+    "Relying on lv.employees[].store would under-count (bridge only stamps store on NEW seeds; existing rows have none) — the resolver MUST read the central master. Spec enforces this.",
+    "Semantic ambiguity 'staff on leave' vs 'leave-days': spec fixes it to head/record count (matching getCapacity) — if a reviewer expects day-weighted counts the copy must be adjusted, but record-count keeps it consistent with the existing per-shift grid.",
+    "Scope creep into enforcement: if someone wires the per-store cap into canAddLeave it changes add-gating semantics and can over-constrain (global MAX_DAY=3 already binds). Keep P1-28 advisory-only.",
+    "Master-parse cost if storeLeaveTallyForDay is called per-day in a month loop without the shared map param — spec includes an optional pre-built-map arg to avoid O(days) re-parses (matters for P1-30)."
+  ],
+  "collisionNotes": "Same-file (leave.html) Wave-12 overlaps: (1) P1-30 DEPENDS on P1-28 — it will consume loadCaps(), lvStoreCode/lvStoreMap(), and storeLeaveTallyForDay(). Expose these as clean module-level functions and give storeLeaveTallyForDay an optional pre-built-map param so P1-30's month view is cheap. Coordinate DOM ids: P1-28 owns #storeCapGrid (day modal) and #capWLMHW/#capHEMW (config); P1-30 must not reuse #storeCapGrid for a different render. (2) openDayModal() @1564: P1-28 inserts a render block right after the capacityGrid dayNote append (~L1607). Any other Wave-12 item editing openDayModal must serialize insertions — flag exact insertion order to the synthesis owner. (3) openEmployeeMaster() @2083: P1-28 adds a renderStoreCaps() call next to renderEntDefaults()/renderWeekOff() — additive one-liner, low collision. (4) empOverlay HTML (~L749-758) and the day-modal body (@579): P1-28 adds new panels/sections — additive blocks, but if P1-30 also injects into these overlays, coordinate placement. SHELL: STORAGE_RULES @1967 (index.html) is orchestrator-owned — no other Wave-12 leave item should also rewrite the leave rule; land the prefix:['leavedesk_'] change once. integration-bridge.js reconcileMasters() @774 store-carry is optional and independent.",
+  "openQuestions": [
+    "STORAGE_RULES: adopt prefix:['leavedesk_'] (recommended — also fixes the pre-existing leavedesk_weekoff_v1 backup gap) or minimally add 'leavedesk_caps_v1' (and 'leavedesk_weekoff_v1') to the exact array? Orchestrator owns index.html @1967.",
+    "Confirm P1-28 stays advisory-only (over-capacity FLAG in the view) and does NOT enforce per-store limits in canAddLeave/getCapacity. Recommend advisory-only; needs owner sign-off.",
+    "Default per-store cap = MAX_DAY (3) — acceptable, or should defaults be smaller / derived from per-store active headcount? Spec assumes MAX_DAY.",
+    "Should P1-28 also add a month-level per-store indicator (stats strip) now, or leave the month surface entirely to P1-30 to avoid a shared-DOM collision? Spec recommends day-modal only for P1-28.",
+    "Should the optional bridge store-carry one-liner (integration-bridge.js @774, add store:e.store||'') land in this wave? Not required by P1-28; owner to decide.",
+    "Head-count vs day-weighted counting for 'staff on leave' — spec uses record/head count to match getCapacity; confirm that is the intended reading."
+  ],
+  "_id": "P1-28"
+}

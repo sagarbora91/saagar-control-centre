@@ -1,0 +1,41 @@
+# bug-qms — bug audit
+
+**Target:** qms.html
+**Findings:** 4
+
+**Coverage notes:** VERIFIED CORRECT (do not re-audit): (1) DSR confirm-and-close is single-count — confirmCloseLead sets outcome='Purchase' once; calcStats counts outcome==='Purchase' once; after close dsrPurchaseFor() returns null (status==='Closed') so the flag/badge clears; the integration-bridge's consumeQmsToDsr suppresses re-writing DSR when a DSR_PURCHASE for that cid exists (bridge line 212), so no cross-module double count. (2) The bridge never writes the QMS blob (confirmed in integration-bridge.js consumeDsrPurchaseAck comments, lines 256-275) — QMS reads DSR_PURCHASE off saagar_bus at render time only; no race between the bridge tick and QMS writes on the QMS store. (3) The 45s idle re-render (line 434) correctly bails when tab hidden, when a modal is open, or when an INPUT/SELECT/TEXTAREA has focus — so it will not wipe an open Close-Lead / Skip / Reassign form mid-typing; and because the close modal blocks the tick, there is no confirm-and-close double-count from a concurrent re-render. (4) Queue numbering is monotonic per local date: nextQueueNo/getQueueNo both key on todayISO() (local date, not toISOString) and load() back-fills queueSeq to at least each day's customer count — no collision on removals or two greeters; todayISO() correctly uses local Y-M-D so the 00:30 new-day key is right. (5) Lead close single-count, skip-audit next-opportunity single-flag, priorityCroId clearing, and pointer advance (confirmSkip/allocateCustomer/pickAllocation) all looked internally consistent. (6) Pre-claim honor/miss/held state transitions and findActivePreclaim(mobile==todayISO()) are date-correct. (7) esc()/stEsc() escape user text in every innerHTML/print path I checked (names, notes, reasons). NEEDS LIVE RUNTIME CHECK: (a) reproduce qms-bug-01 by seeding customers spread across the last 7-31 days at varying times of day and comparing the Reports 7/31-day totals before/after noon — confirm the boundary-day morning entries drop out; (b) confirm qms-bug-02/04 by driving window.__stAsOf / dispatching an 'st-date' event to a past date and observing the mixed as-of framing; (c) confirm qms-bug-03 by attempting to close a lead as Purchase with amount 0. Could NOT exercise the actual srcdoc boot cost / whole-blob JSON.parse ANR under large seeded data statically — the load() path does one JSON.parse of the QMS blob plus one of saagar_employee_master_v1 and (per render) one of saagar_bus and saagar_gate_status; dsrPurchaseMap() re-parses saagar_bus on EVERY renderAll (incl. the 45s tick) — worth a perf check with a large bus blob but not a correctness bug.
+
+---
+
+## [P1] qms-bug-01 — rangeStats time-of-day boundary drops early-in-day entries on the oldest day (weekly/monthly under-count)
+- **Module/area:** qms | **Confidence:** high
+- **Location:** qms.html line 569, function rangeStats(days)
+- **Defect:** const since=new Date(); since.setDate(since.getDate()-days+1); return calcStats(state.customers.filter(c=>new Date(c.entryTime)>=since)). setDate only changes the day component, so `since` keeps the CURRENT time-of-day. Concrete failure: it is 3:00pm today and you open Reports. rangeStats(7) sets since = (today-6) at 15:00:00. A walk-in that happened 6 days ago at 11:00am has entryTime < since and is silently excluded. So the 'Last 7 Days' and 'Last 31 Days' cards (and their print/CSV mirrors) under-report walk-ins, purchases, sales ₹ and lost ₹ on the oldest calendar day of each window — every morning's entries on the boundary day vanish from the total the owner sees. The 'Today' card is unaffected (it uses todaysCustomers() string-match).
+- **Evidence:** function rangeStats(days){const since=new Date();since.setDate(since.getDate()-days+1);return calcStats(state.customers.filter(c=>new Date(c.entryTime)>=since))}
+- **Impact:** Owner-facing weekly/monthly KPI totals (walk-ins, sales ₹, conversion, lost ₹) are systematically undercounted by the portion of the oldest day that falls before the current wall-clock time. Wrong money/volume figures shown to the owner.
+- **Fix hint:** Zero the time on the window start before filtering: since.setDate(since.getDate()-days+1); since.setHours(0,0,0,0). Additive/no-storage change; only touches rangeStats.
+
+## [P2] qms-bug-02 — Reports weekly/monthly windows anchor on real clock, ignoring the viewAsOf date rail
+- **Module/area:** qms | **Confidence:** high
+- **Location:** qms.html line 569 (rangeStats) vs line 568/636 (renderReports uses calcStats/todaysCustomers = viewAsOf)
+- **Defect:** rangeStats() builds its window from `new Date()` (the real today) with no reference to viewAsOf. But the Reports 'Today' card comes from calcStats()->todaysCustomers() which is filtered by viewAsOf, and the print header stamps 'As of: viewAsOf'. Concrete failure: the shell pushes an st-date of a past day (e.g. viewing last Tuesday). The Reports page then shows a 'Today' card for last Tuesday, a print header saying 'As of: <last Tuesday>', but the 'Last 7 Days' and 'Last 31 Days' cards are windows ending on the REAL today — three inconsistent time frames on one report.
+- **Evidence:** function rangeStats(days){const since=new Date();since.setDate(since.getDate()-days+1);... }  // uses new Date(), not viewAsOf
+- **Impact:** On any past-date (read-only) view, the multi-window report is internally inconsistent and the 7/31-day figures do not correspond to the labeled as-of date. Misleading but not corrupting.
+- **Fix hint:** Anchor rangeStats on viewAsOf instead of new Date(): const since=new Date(viewAsOf+'T00:00:00'); since.setDate(since.getDate()-days+1); and filter entryTime<= viewAsOf end-of-day too. Render-only, no storage change.
+
+## [P2] qms-bug-03 — Legitimate zero-value Purchase cannot be closed (0 rejected as missing amount)
+- **Module/area:** qms | **Confidence:** high
+- **Location:** qms.html line 557, function confirmCloseLead — const amt=+$('purchaseAmount').value; if(!amt){toast('Purchase amount required.','error');return}
+- **Defect:** amt is coerced with unary + and validated with !amt, so amt===0 is treated as 'missing'. Concrete failure: a warranty/goodwill replacement billed at ₹0, or a purchase whose value is genuinely 0, cannot be closed with outcome=Purchase — the SM is forced to enter a non-zero amount or pick a different (wrong) outcome. This also distorts the DSR confirm-and-close path if a DSR_PURCHASE arrived with amount 0.
+- **Evidence:** const bill=$('billNo').value.trim(),amt=+$('purchaseAmount').value; ... if(!amt){toast('Purchase amount required.','error');return}
+- **Impact:** Rare but real: a valid ₹0 purchase closure is blocked, forcing incorrect data entry (fake amount or mis-classified outcome). Low frequency.
+- **Fix hint:** Distinguish empty from zero: read the raw string and reject only when it is blank/NaN, e.g. const raw=$('purchaseAmount').value.trim(); if(raw===''||isNaN(+raw)||+raw<0){reject}. Keep bill-required logic as-is.
+
+## [P3] qms-bug-04 — Dashboard header date and queue-card wait minutes use real clock on a past-date (read-only) view
+- **Module/area:** qms | **Confidence:** medium
+- **Location:** qms.html line 468 (renderDashboard header new Date().toLocaleDateString), line 469 (attentionList wait=minsBetween(c.entryTime,new Date().toISOString())), line 549 (queueCard wait=minsBetween(c.entryTime,now))
+- **Defect:** When viewing a past date via the st-date rail, KPIs and card lists come from viewAsOf, but the dashboard subtitle prints new Date() (today) and the 'waiting X min' figures on Attention-Required alerts and queue cards are computed against the live clock. Concrete failure: open a past day that had an un-closed lead; the card shows 'Wait 4300m' and the header shows today's date even though every number below it is from the past day.
+- **Evidence:** <p>${new Date().toLocaleDateString('en-IN',{weekday:'long',...})}</p>  ...  const wait=minsBetween(c.entryTime,new Date().toISOString());
+- **Impact:** Cosmetic/misleading on past-date views only (which are explicitly read-only). No data change, no effect on the live/today path.
+- **Fix hint:** On isPast(), cap the 'now' used for wait math at the viewAsOf end-of-day (or hide live wait counters), and render the header date from viewAsOf. Render-only.
+

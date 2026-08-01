@@ -1,0 +1,87 @@
+{
+  "item": "P1-45 — Lost walk-in follow-up call sheet (saagar-report.js)",
+  "summary": "Add ONE new native-vector report `lostWalkinCallSheet` (scope: monthly) to the report engine. It reads QMS customers from `retail_queue_management_v1` directly (the same key/way the existing `qmsReport` builder already reads it), filters to non-purchase walk-ins in the selected month, dedupes by mobile keeping the most recent (warmest) visit, sorts most-recent-first, and emits a portrait table: # | Name | Mobile | Visit Date | CRO | Reason/Notes. It excludes \"no-number\" walk-ins from the call list (they can't be phoned) and footnotes how many were excluded. Wiring is entirely inside saagar-report.js: one META entry + one BUILDERS entry + one row in openHub GROUPS/TAGS (+ optional add to the month-end pack). No index.html/shell edit, no new localStorage key, additive only.",
+  "targetFiles": [
+    "V:/Co work/Projects/Retail/saagar-control-centre/www/saagar-report.js"
+  ],
+  "functionsToTouch": [
+    {
+      "file": "www/saagar-report.js",
+      "name": "BUILDERS (add lostWalkinCallSheet builder)",
+      "line": "~974 (append at end of the BUILDERS object, just before its closing `};` at L975, right after the ownerMonthly builder ends at L974)",
+      "change": "Add a new builder function `lostWalkinCallSheet: function(o){...}` returning {orientation:'portrait', blocks:[...]}. Read `var st=J('retail_queue_management_v1',{})||{}; var custs=Array.isArray(st.customers)?st.customers:[]; var cros=Array.isArray(st.cros)?st.cros:[];` (mirrors qmsReport@L302). Define local helpers: `nameOf(id)` = cros.filter(x=>x.id===id)[0]?.name || 'Unassigned' (copy from qmsReport@L303); `tel10(m)` = `String(m||'').replace(/\\D/g,''); return d.length>=10?d.slice(-10):''` (re-implement the module's qmsTel10 inline — engine is in shell, cannot call the iframe's fn). month=`o.month||curMonth()`. Filter lost = custs.filter(c => c && /non.?purchase/i.test(c.outcome||'') && String(c.entryTime||'').slice(0,7)===month) — the regex matches the exact stored value 'Non Purchase' (confirmed in qms.html@L565/630/672) and is consistent with the existing engine convention (qmsReport@L323). Split into callable (tel10(c.mobile) truthy) vs noNum count. Dedupe callable by tel10 keeping the row with the newer entryTime; sort rows by entryTime DESC. Empty state → {t:'empty',text:'No lost walk-ins logged for this month.'}. Emit header (period:monthLong(month)), a 3-tile kpi (Lost / Callable / No Number), a section, and a table block. Notes cell = c.lostReason joined with c.notes (closure notes). Append a {t:'note'} footnote when noNum>0. Use existing helpers num/trunc/monthLong/esc-safe (table renderer sanitizes)."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "META registry",
+      "line": "~1000 (append after the ownerMonthly entry @L1000, before the closing `};` @L1001)",
+      "change": "Add `lostWalkinCallSheet: { title: 'Lost Walk-in Call Sheet', scope: 'monthly', icon: '📞' },`. This automatically makes it appear in list()@L1680, in history()@L1668 (filtered by META[e.t]), and in pack rendering labels."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "openHub() — GROUPS + TAGS (hub is NOT auto from META; it uses hardcoded arrays)",
+      "line": "GROUPS @~1686-1691 (add the type string to one group's types[]); TAGS @~1692-1701 (add a search-tag string)",
+      "change": "Add 'lostWalkinCallSheet' to the types[] of an existing monthly group (recommend the 'Monthly · People' group @L1689, or add a floor-facing group). Add TAGS['lostWalkinCallSheet']='lost walk-in call sheet follow-up non purchase callback missed customers qms'. Without this the report will not surface in the hub UI even though list()/history() include it."
+    },
+    {
+      "file": "www/saagar-report.js",
+      "name": "_packTypes.monthly (OPTIONAL)",
+      "line": "~1592",
+      "change": "Optionally append 'lostWalkinCallSheet' to the monthly array so the Month-end pack (pack('monthly')) bundles it. Optional — decide with owner; not required for the standalone report to work."
+    }
+  ],
+  "newKeysOrFields": [
+    {
+      "kind": "in-memory META registry entry (NOT a localStorage key)",
+      "name": "lostWalkinCallSheet",
+      "shape": "{ title:'Lost Walk-in Call Sheet', scope:'monthly', icon:'📞' }",
+      "defaults": "scope:'monthly'; period label via monthLong(opts.month)",
+      "storageRulesNote": "NO new top-level localStorage key is introduced by this item. The builder READS the existing key `retail_queue_management_v1` (owned by the QMS module) — which the engine already reads in qmsReport — and writes nothing. Therefore appControlKeys()/isWhitelistedAppKey/APP_RE/validateRestoreKeyValue/restoreBlockedKeys are ALL not applicable here. (The Wave-11/12 new-pref discipline does not trigger for a read-only report.)"
+    },
+    {
+      "kind": "existing QMS customer fields consumed (read-only, no new fields written)",
+      "name": "retail_queue_management_v1.customers[]",
+      "shape": "{ name, mobile, noMobile, entryTime(ISO), outcome:'Non Purchase', assignedCroId, lostReason, lostValue, notes, ... }; CRO names resolved via retail_queue_management_v1.cros[] {id,name}",
+      "defaults": "Non-purchase outcome is the exact string 'Non Purchase' (space, capitalised) — set in qms.html confirmCloseLead@L565. 'No number given' walk-ins (P1-4) have noMobile:true and mobile:'' — these are the skip-or-mark cases. lostReason from the fixed dropdown; lostValue optional number; notes = closure notes.",
+      "storageRulesNote": "Additive read only. Do NOT rename/reshape any customer field. Missing fields default gracefully (name||'—', assignedCroId→'Unassigned')."
+    }
+  ],
+  "approach": "Additive, self-contained, single-file. Add a dedicated `lostWalkinCallSheet` builder to BUILDERS that follows the exact pattern of the existing `qmsReport` builder (@L299-341) — read `retail_queue_management_v1` via J(), resolve CRO names via the same nameOf() lookup over st.cros, filter customers by the same /non.?purchase/i outcome test used at L323. The engine already proves this data is reachable from the shell context (qmsReport ships and works), so no new shell plumbing is needed for data access. Register it in META (auto-flows into list()/history()) and add it to the hardcoded openHub GROUPS/TAGS so it is reachable in the UI. Scope = monthly: `fromHub` always passes {date, month} and the hub period stepper keeps rptMonth in sync with the chosen date, so opts.month is reliably populated; the window is the calendar month via `String(c.entryTime).slice(0,7)===month`, labelled with monthLong(month) exactly like groomingMonthly/expenseMonthly. Rows are deduped by 10-digit mobile (keep most-recent visit) and sorted newest-first so the owner naturally calls the warmest leads first — this also honours the 'weekly' intent (recency-ordered) inside a monthly report without needing a non-existent 'weekly' scope. All rendering uses the existing block model (header/kpi/section/table/note/empty) — no renderer changes, no new libraries, no storage writes.",
+  "ui": "Discovery: the report appears in the Generate-Report hub (SaagarReport.openHub) once added to a GROUPS array — recommend the 'Monthly · People' group with icon 📞 and title 'Lost Walk-in Call Sheet'. It is a monthly report; the user picks any date in the target month via the existing period stepper. Also auto-appears in Report history and (if added to _packTypes.monthly) the Month-end pack. PDF layout (portrait, A4): HEADER 'LOST WALK-IN CALL SHEET' / sub 'Non-purchase follow-ups · Latur' / period = month name+year. KPI row (3 tiles): 'Lost Walk-ins' (hero, total non-purchase in month), 'Callable (with #)', 'No Number'. SECTION 'Call-back List' with a warn tag = callable count. TABLE columns: # | Name | Mobile | Visit Date | CRO | Reason / Notes. Reason/Notes = lostReason, appended with closure notes when present ('Price Issue — wants to compare'). A closing {t:'note'} line: 'N more lost walk-in(s) had no phone number and could not be called back.' when any no-number walk-ins exist. Empty state (no non-purchase in month): {t:'empty'} 'No lost walk-ins logged for this month.' Copy is plain, ASCII-safe (avoid curly quotes/emoji inside table cells — the SAN.text sanitizer strips emoji; the 📞 icon lives only in META, not in PDF body).",
+  "edgeCases": [
+    "No-number walk-ins (P1-4, noMobile:true / mobile:''): EXCLUDE from the call list (a call sheet with un-callable rows is noise) but COUNT them and disclose via the KPI 'No Number' tile + footnote note. Decision favours an actionable list; alternative (mark with '—') is possible but rejected as clutter.",
+    "Duplicate mobile in the same month (repeat lost visitor): dedupe by 10-digit mobile, keep the row with the most recent entryTime. OPTIONAL enhancement: suffix '(2 visits)' in the Notes cell when count>1 to surface hot repeat leads — flagged as an optional add, default is silent dedupe.",
+    "Outcome string variance: filter uses /non.?purchase/i (matches the stored 'Non Purchase'); this also tolerates a hypothetical 'Non-Purchase'. It must NOT match 'Purchase' or 'Service' — verified the regex only fires on the non/purchase pattern.",
+    "Empty month / no non-purchase rows → {t:'empty'} block, never a blank table.",
+    "Malformed/short mobile (e.g. 7 digits, or with +91/spaces): tel10() normalises to last 10 digits and drops anything <10 digits into the no-number bucket (same rule as the module's qmsTel10) — prevents an un-dialable number appearing as callable.",
+    "assignedCroId null/unknown (walk-in closed before allocation): nameOf() returns 'Unassigned' — no crash.",
+    "entryTime missing/blank: slice(0,7)!==month so the row is naturally excluded (won't false-match the month).",
+    "Very long name/reason: trunc() caps to column widths (name 24, notes 40) exactly like sibling reports.",
+    "Timezone: entryTime is a full ISO string; slice(0,7)/slice(0,10) uses the stored local-ISO prefix consistently with qmsReport@L304 — no Date() reparto, so no TZ drift."
+  ],
+  "verifySteps": [
+    "Harness/node test seam: SaagarReport._buildModel('lostWalkinCallSheet',{month:'2026-06'}) returns {orientation:'portrait', blocks:[...]} — assert header.period is the month label, a table block exists with 6 columns, and body rows only contain customers whose outcome matches /non.?purchase/i and whose entryTime month === '2026-06'.",
+    "Seed localStorage retail_queue_management_v1 with customers covering: a valid-mobile non-purchase, a noMobile non-purchase, a duplicate-mobile pair (two dates), a 'Purchase' row, and a wrong-month non-purchase. Assert: Purchase excluded, wrong-month excluded, duplicate collapsed to the newer date, noMobile counted in 'No Number' and surfaced in the footnote, rows sorted DESC by date.",
+    "SaagarReport._renderDoc('lostWalkinCallSheet',{month:'2026-06'}) — assert it produces a jsPDF doc with no throw (DMSans font gate passes; no emoji/₹ corruption since body has no currency and icon stays in META).",
+    "Empty-state: month with zero non-purchase → single {t:'empty'} block, no table.",
+    "UI smoke in the shell: open Reports → hub → confirm the row renders under its group, search 'call'/'lost'/'follow' surfaces it (TAGS), tap → preview builds and opens; confirm it also shows in Report history after viewing.",
+    "Regression: build the existing qmsReport and dsrRegister for the same date — confirm their 'Lost Walk-ins'/'Lost Sales' sections are byte-for-byte unchanged (this item adds a builder; it must not alter them). Confirm Object.keys(META).length count in the hub footer increments by exactly 1.",
+    "If added to _packTypes.monthly: run SaagarReport.pack('monthly') and confirm the pack builds N+1 reports with no error."
+  ],
+  "risks": [
+    "LOW: hub is NOT auto-populated from META (GROUPS are hardcoded @L1686-1691) — forgetting the GROUPS/TAGS edit ships a report that is invisible in the UI (only reachable via list()/history()). Must edit both META and openHub.",
+    "LOW: highest-blast-radius file — the edit must be a pure append to the BUILDERS object, META object, and GROUPS/TAGS; any accidental reshaping of qmsReport (which shares the same st.customers read pattern) would break a shipped report. Keep the new builder fully separate.",
+    "LOW: dedupe-by-mobile could hide a legitimately-repeat lost visitor from the count if misread — mitigated by keeping the 'Lost Walk-ins' KPI as the RAW total (pre-dedupe) while the table shows deduped rows; the two numbers intentionally differ and the KPI labels make that clear.",
+    "LOW: if the owner expects a WEEKLY sheet, monthly scope may feel coarse — mitigated by newest-first sort; a true weekly variant would need custom period handling (see open questions).",
+    "VERY LOW: reading a large customers[] every generate is O(n) but bounded (single store, one month filter) — same cost profile as qmsReport; no perf concern."
+  ],
+  "collisionNotes": "Within saagar-report.js the only shared append regions are: (1) the BUILDERS object (append the new builder at its end, ~L974, before `};`@L975), (2) the META object (append after ownerMonthly @L1000, before `};`@L1001), and (3) openHub()'s hardcoded GROUPS array (@L1686-1691) + TAGS map (@L1692-1701). If ANY other Wave-13 report-engine item is built in this same file, it will touch these exact three regions — recommend every report item append its META entry, its builder, and its GROUPS/TAGS entry as NEW trailing lines (never edit an existing sibling line) so a merge is a clean line-add rather than an overlapping edit; the synthesis owner should order the appends deterministically. Cross-file collision is unlikely: the OTHER Wave-13-lite items named in the spec context (P1-36 language toggle, text-size) live in index.html (renderHome/renderConfigPage/CSS root), not in saagar-report.js — this item touches NO shell code, NO renderHome, NO appControlKeys/APP_RE. No new localStorage key means zero contention on the backup/migration/restore key lists.",
+  "openQuestions": [
+    "Scope: ship monthly-only (recommended, fits the date-based period stepper cleanly) or ALSO a weekly variant? A true 'weekly' scope isn't supported by META (only daily|monthly) or the hub period UI; a weekly sibling would need a trailing-N-day window keyed off opts.date and custom labelling. Recommend monthly + newest-first sort now, weekly deferred.",
+    "Repeat-visitor handling: silent dedupe-to-newest (recommended for a clean call list) vs show every visit vs dedupe + '(k visits)' tag? Confirm owner preference.",
+    "Should rows already having a scheduled follow-up (retail_queue_management_v1.followups[] with matching customerId, created by 'Follow-up Required = Yes') be flagged or excluded to avoid double-chasing? Default = include all non-purchase (broader net); flagging is an optional enhancement.",
+    "Include an estimated-lost-value (₹) column/total from c.lostValue to help the owner prioritise high-value leads? Adds one column + a foot total; omitted from the base spec to keep the sheet call-focused — confirm if wanted.",
+    "Include the no-number walk-ins as a separate greyed sub-list (with name + reason) so the owner can still note who they were, or leave as just a count? Base spec uses count+footnote only."
+  ],
+  "_id": "P1-45"
+}

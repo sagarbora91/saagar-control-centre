@@ -21,6 +21,16 @@ const generatedIndexPath = path.join(
   'public',
   'index.html'
 );
+const generatedGradlePath = path.join(androidDir, 'app', 'build.gradle');
+const generatedStringsPath = path.join(
+  androidDir,
+  'app',
+  'src',
+  'main',
+  'res',
+  'values',
+  'strings.xml'
+);
 const builtApkPath = path.join(
   androidDir,
   'app',
@@ -38,6 +48,9 @@ const outputApkPath = path.resolve(
 
 const PROFILE = Object.freeze({
   id: 'two-year-review-v1',
+  packageId: 'com.saagartraders.bcc.demo',
+  appName: 'Saagar CC DEMO',
+  versionNameSuffix: '-demo',
   daysBack: 730,
   walkInsPerWorkingDay: 25,
   syntheticOnly: true,
@@ -78,6 +91,8 @@ run(process.execPath, [
 run(process.execPath, [path.join(repoDir, 'build-overrides', 'apply-overrides.js')]);
 
 const generatedClean = fs.readFileSync(generatedIndexPath, 'utf8');
+const generatedGradleClean = fs.readFileSync(generatedGradlePath, 'utf8');
+const generatedStringsClean = fs.readFileSync(generatedStringsPath, 'utf8');
 let generatedSeeded = replaceOnce(
   generatedClean,
   'var DEMO_SEED_ENABLED = false;',
@@ -96,8 +111,48 @@ if (!generatedSeeded.includes('two-year-review-v1') &&
   throw new Error('Generated shell is missing the demo-profile safety control');
 }
 
+let generatedDemoGradle = replaceOnce(
+  generatedGradleClean,
+  'applicationId "com.saagartraders.bcc"',
+  `applicationId "${PROFILE.packageId}"`,
+  'generated demo applicationId'
+);
+generatedDemoGradle = replaceOnce(
+  generatedDemoGradle,
+  'versionName "2.9"',
+  `versionName "2.9${PROFILE.versionNameSuffix}"`,
+  'generated demo versionName'
+);
+
+let generatedDemoStrings = replaceOnce(
+  generatedStringsClean,
+  '<string name="app_name">Saagar Control Centre</string>',
+  `<string name="app_name">${PROFILE.appName}</string>`,
+  'generated demo app name'
+);
+generatedDemoStrings = replaceOnce(
+  generatedDemoStrings,
+  '<string name="title_activity_main">Saagar Control Centre</string>',
+  `<string name="title_activity_main">${PROFILE.appName}</string>`,
+  'generated demo activity title'
+);
+generatedDemoStrings = replaceOnce(
+  generatedDemoStrings,
+  '<string name="package_name">com.saagartraders.bcc</string>',
+  `<string name="package_name">${PROFILE.packageId}</string>`,
+  'generated demo package name'
+);
+generatedDemoStrings = replaceOnce(
+  generatedDemoStrings,
+  '<string name="custom_url_scheme">com.saagartraders.bcc</string>',
+  `<string name="custom_url_scheme">${PROFILE.packageId}</string>`,
+  'generated demo URL scheme'
+);
+
 try {
   fs.writeFileSync(generatedIndexPath, generatedSeeded, 'utf8');
+  fs.writeFileSync(generatedGradlePath, generatedDemoGradle, 'utf8');
+  fs.writeFileSync(generatedStringsPath, generatedDemoStrings, 'utf8');
   if (process.platform === 'win32') {
     run(
       process.env.ComSpec || 'cmd.exe',
@@ -111,6 +166,8 @@ try {
   fs.copyFileSync(builtApkPath, outputApkPath);
 } finally {
   fs.writeFileSync(generatedIndexPath, generatedClean, 'utf8');
+  fs.writeFileSync(generatedGradlePath, generatedGradleClean, 'utf8');
+  fs.writeFileSync(generatedStringsPath, generatedStringsClean, 'utf8');
 }
 
 const apk = fs.readFileSync(outputApkPath);

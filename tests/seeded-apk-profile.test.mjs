@@ -21,7 +21,12 @@ test('production-oriented source remains clean while the seeded builder targets 
   assert.match(build, /var DEMO_SEED_ENABLED = true;/);
   assert.match(build, /daysBack:\s*730/);
   assert.match(build, /walkInsPerWorkingDay:\s*25/);
-  assert.match(build, /finally\s*\{[\s\S]*generatedClean/);
+  assert.match(build, /packageId:\s*'com\.saagartraders\.bcc\.demo'/);
+  assert.match(build, /appName:\s*'Saagar CC DEMO'/);
+  assert.match(build, /versionNameSuffix:\s*'-demo'/);
+  assert.match(build, /generatedGradlePath/);
+  assert.match(build, /generatedStringsPath/);
+  assert.match(build, /finally\s*\{[\s\S]*generatedClean[\s\S]*generatedGradleClean[\s\S]*generatedStringsClean/);
   assert.doesNotMatch(build, /writeFileSync\(sourceIndexPath/);
 });
 

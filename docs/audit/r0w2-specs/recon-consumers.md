@@ -1,0 +1,55 @@
+# R0-W2 RECON — Consumer contract for at-rest encryption (READ-ONLY; no files edited)
+
+All paths under `V:\Co work\Projects\Retail\saagar-control-centre\www\` unless noted.
+
+## 1. How consumers reach storage — three lanes, ALL synchronous
+
+**Lane A — Shell (index.html): overridden `Storage.prototype`.** storage-core.js loads at index.html:818 (after sql-wasm.js:816, before photo-store.js:821 and sqlite-store.js:7737, which stands down via its guard at sqlite-store.js:29). Every shell read goes through `safeGet` (index.html:2145 `return localStorage.getItem(k)`) / `safeSet` (:2146), which hit the overrides at storage-core.js:225-256:
+- `SP.getItem = function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); }` (line 225) — **synchronous, MEM-after-ready, NATIVE-LS-before-ready**.
+- `SP.key`/`length` are backed by the `memKeys()` O(1) cache (lines 221-222, 255-256) — module `for(i<localStorage.length)` loops are a load-bearing perf contract (the §perf comment cites 3,300-key O(n²) stalls).
+
+**Lane B — Module blobs: the srcdoc iframe shim.** Modules run in an opaque-origin srcdoc iframe (index.html:5291 "Modules run in a srcdoc iframe whose opaque origin blocks storage on the Android WebView — the same reason localStorage delegates to SaagarStore"). `injectIframeShim` (index.html:6683-6692) is prepended FIRST in every module `<head>` and rebinds the iframe's `Storage.prototype` AND a defineProperty'd `window.localStorage` to `parent.SaagarStore` (`SP.getItem=function(k){return P.get(k);}` … `key/length` via `P.keys()/P.length()` — index.html:6688). `SaagarStore.get` (storage-core.js:374) is the same sync MEM read. **Every one of the ~11 module blobs is therefore a synchronous consumer with zero awareness of the engine.**
+
+**Lane C — Sibling scripts:** integration-bridge.js is 100% synchronous raw `localStorage` (`L`/`S` at lines 65-66; key-iteration scans at 147, 166, 222, 685; 60s tick `setInterval(function(){safeCycle(false);},TICK)` line 958; `window.addEventListener('storage',...)` line 959 fed by the synthetic `_notify` StorageEvent, storage-core.js:207-214). demo-seed.js and auto-backup.js (snapshot loop, auto-backup.js:61-76) likewise use raw synchronous `localStorage`.
+
+Non-KV stores: photos → Capacitor Filesystem files (photo-store.js, plaintext, NOT yet module-wired — the DEFERRED CONTRACT at photo-store.js:13-21 says photos still live as base64 inside LS JSON values, i.e. inside the KV plane). Evidence files → IndexedDB `saagar_evidence` in the shell origin (index.html:5297+), a separate at-rest surface R0-W2 must scope in or explicitly defer.
+
+## 2. Readers that assume synchronous availability AT BOOT (the pre-whenReady set)
+
+The async engine already exists; the shipped whenReady gates are: demo-seed.js loader (index.html:838), boot splash (:1130, 6.5s hard-hide), `doFirstRender` (:7522 — home render, diagnostics, QMS archival, module pre-warm), integration-bridge loader (:7726).
+
+**NOT gated — runs synchronously in `init()` (index.html:7438-7456) BEFORE _ready, reading native LS via the pre-ready fallback:**
+- `isAdmin = hasAdminPin() ? (safeGet(ADMIN_MODE_KEY)===adminToken()) : …` (:7442) — the comment at :7439-7441 is explicit: "kept SYNCHRONOUS (before the whenReady gate) so the shell chrome paints immediately… safeGet reads MEM in C-mode (already hydrated from native at Step 0) or native localStorage". `hasAdminPin`/`adminToken` read the PIN-hash keys.
+- `applyMode()` (:7443, defined :2478) — paints admin chrome incl. `ownerName()` (a business-data read).
+- `armIdleLock()` + `activeStaff()`/`empActiveById()` boot sign-out check (:7446-7454) — reads the employees blob.
+- `applyLang()`, `reflectTextSizeUI()`, `reflectUiModeUI()` (:7451-7453).
+- Boot-splash decision (:1130) and `buildFlavor()` (:7420) read flags synchronously.
+
+These work today ONLY because Step-0 hydrate (storage-core.js:102-103) synchronously copies **plaintext native localStorage** into MEM before any script after storage-core runs, and the pre-ready `nGet` fallback (line 225) reads the same plaintext native LS.
+
+Also boot-critical: `bootTimeoutFallback` (storage-core.js:299) — "boot timeout — native-LS fallback (MEM already hydrated at Step 0)". The whole BOOT_TIMEOUT_MS=6000 hang-safety (lines 64-68) and the catastrophic re-migration path (`reconcile()` line 280: "migrated marker set but no DB file loaded — re-migrating from native-LS safety copy") depend on native LS holding a **complete plaintext copy** of the business data. So does the delete-mirror (:234-243) and clear-mirror (:244-254).
+
+## 3. If decrypt became async-at-boot, what breaks
+
+- WebCrypto (`crypto.subtle`) is Promise-only — there is NO synchronous decrypt. It IS available: `capacitor.config.json` sets `"androidScheme": "https", "hostname": "localhost"` → secure context in the Capacitor WebView (Chromium), so `window.crypto.subtle` exists in the shell. **Caveat to device-verify: the opaque-origin srcdoc iframe** — but modules never need crypto under the recommended design (they only touch plaintext MEM via the shim).
+- If native-LS values were ciphertext: Step-0 hydrate fills MEM with ciphertext → the entire :7438 sync block reads garbage → admin state silently locked/corrupt, `empActiveById` misreads employees → could sign staff out or worse; buildFlavor/lang/textsize wrong; and after `setReady()` on the timeout path the WHOLE SESSION runs on ciphertext (app looks factory-reset → user re-enters data → later heal/persist = the classic data-loss brick, the exact 3-crash-day failure class).
+- If native-LS were instead emptied (no plaintext copy): pre-ready reads return null (locked-but-sane), but the boot-timeout fallback and the marker-but-no-file recovery (line 280) become **empty-store fallbacks** — a slow/failed decrypt at boot presents as total data loss. auto-backup's 6s snapshot (auto-backup.js:34,63) would also snapshot empty on a slow boot.
+
+## 4. Answer to the design question: YES — a plaintext-MEM / encrypt-at-the-persistence-boundary design keeps every consumer untouched
+
+There is no "synchronous decrypt at hydrate" possible with WebCrypto — but none is needed if **MEM stays plaintext forever** and encryption happens only at the four persistence edges, all of which are already async or write-only:
+
+1. **DB file (the main body of data):** encrypt in `persist()` where `b64 = bytesToB64(db.export())` (storage-core.js:177) — insert `subtle.encrypt` into the already-async FS promise chain (:179-192; note :177 is currently sync inside `try` — encrypt must move inside the chain while keeping the `through = _seq` snapshot semantics and the `_persisting` mutex). Decrypt in `rd()` inside `boot()` (:306), before `open(bytes)` (:312) — `boot()` is already fully async and every data-consumer is already gated by whenReady or the pre-ready fallback. **Zero consumer changes.** Applies identically to `.tmp`/`.bak` recovery reads (:314-321). PRAGMA quick_check (:312) doubles as decrypt-integrity verification.
+2. **WAL** (`appendWAL` writes plaintext values into native LS, :116-129): cannot be sync-encrypted. Contract options: (a) journal ALL sets as pointers (the existing `big:1` mechanism, :116, + forced prompt persist :134) — durability window narrows to the in-flight persist; or (b) accept a bounded (WAL_MAX 512KB, :70) transient-plaintext window that `clearWALThrough` (:137) erases at each persist. This is the fail-open-vs-encrypted tension in miniature; needs an owner decision.
+3. **Native-LS plaintext mirror** (Step-0 source, :103; frozen safety copy, :237-240, :280): THE dangerous migration. It currently holds the entire pre-migration dataset in plaintext forever. Wiping it completes at-rest encryption but deletes the catastrophic-recovery source AND the pre-ready sync-read source. Safest sequencing: keep boot-critical UI/auth keys (admin token/PIN-hash, ui_mode, lang, text_size — small, arguably non-business) in native LS plaintext so the :7438 block works unchanged; wipe only business keys from native LS AFTER an encrypted DB + encrypted `.bak` have both verified on-device (a second one-way marker, mirroring the MIGRATED_KEY pattern :60). Rollback (flag off → raw native LS) then requires a decrypt-and-rehydrate-native step — "flag off must always work" means the wipe must be its own separately-gated sub-step, not bundled with cipher-on.
+4. **Out-of-band plaintext copies** (scope boundary with R0-W3, but they void at-rest claims if ignored): auto-backup.js writes full-plaintext JSON to shared `Documents/SaagarBCC-Backups/` daily (:86-94, `directory:'DOCUMENTS'`); shell backup/export (`backupPayload`, index.html:~6329); `saagar_evidence` IndexedDB; photo base64 inside KV values (covered by #1) but future photo-store files are plaintext FS. Manifest already has `allowBackup="false"` (AndroidManifest.xml:5).
+
+**Key custody facts:** plugins available = Filesystem/App/LocalNotifications/Share only (package.json) — no Preferences, no Keystore plugin, "no new libs" holds. So the key can live: (a) derived from owner PIN — but PIN is optional/fail-open (Slice C) and forgotten-PIN = data loss; (b) random key stored in a DATA-dir file — survives factory-reset-of-app-data no better than the DB itself, protects only against `Documents/` leakage + backup exfil, NOT against a rooted/adb attacker reading DATA (that requires Keystore = a new plugin, i.e. a roadmap decision); (c) `crypto.subtle.generateKey(..., extractable:false)` + IndexedDB — keeps key non-exportable but IndexedDB is cleared by "Clear storage" together with the DB (acceptable: both die together), and reinstall loses both unless the key is escrowed into the owner backup (which re-opens the plaintext-export question). APK reinstall vs factory reset custody is an owner gate, not an agent decision.
+
+## 5. Build contract for the future gated wave (summary)
+
+- MEM plaintext always; `SaagarStore`/`Storage.prototype`/iframe-shim/bridge/demo-seed/auto-backup: **zero edits** (auto-backup/export handling deferred to R0-W3 by explicit note).
+- Cipher only in storage-core.js `persist()`/`rd()` chains + a WAL policy decision + a separately-flagged native-LS business-key wipe with its own one-way marker and a rollback (decrypt-rehydrate) path.
+- Boot-timeout semantics must be re-proven on device: decrypt adds latency inside BOOT_TIMEOUT_MS 6000; a decrypt-failure must fall back to `.bak` → native copy (until wiped) → fail-open-empty ONLY behind an explicit user prompt, never silently (the ciphertext-in-MEM session is the brick vector).
+- Device-verify list: `crypto.subtle` present in shell AND (defensively) not needed in srcdoc iframe; encrypt+decrypt round-trip of a multi-MB export within timeout on the slow device; kill-mid-encrypted-persist recovery chain; flag-off rollback with and without the native wipe having run.
+- History caution honored: no fix proposed to existing code; the one code-shape note (sync `db.export()` at :177 must move into the async chain) is an observation for the build wave, verified against actual code.

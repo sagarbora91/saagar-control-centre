@@ -1,0 +1,304 @@
+{
+  "summary": "Wave 13-lite adversarial skeptic fleet — 5 item skeptics + storage + regression + storage-caution/cross-file",
+  "agentCount": 8,
+  "logs": [],
+  "result": {
+    "skeptics": [
+      {
+        "area": "P1-36 i18n (shell chrome) — www/index.html: I18N dict, getLang/stT/applyLang/reflectLangUI/setLang, data-i18n tags, renderHome stT-wrapped labels",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "Hero \"Net today\"/\"Net for day\" caption never translates — dead i18n dict keys hero.netToday/hero.netForDay",
+            "location": "www/index.html:3294 (label hardcoded); dict keys www/index.html:2285 (mr) and :2294 (hi); element #heroNetLabel www/index.html:1191",
+            "repro": "Open Settings, tap मराठी or हिंदी. Nav, config subtabs, section heads, and (on Home) ownerLine/calm all translate. Go to Home — the prominent navy hero net caption still reads 'Net today' / 'Net for day' in English. Root cause: line 3294 `$('heroNetLabel').textContent = isViewingToday() ? 'Net today' : 'Net for day'` is hardcoded and never consults stT(), so I18N.mr['hero.netToday']/['hero.netForDay'] (2285) and the hi equivalents (2294) are never read (dead keys). Not a regression — pristine index.pristine.html:3186 has the same hardcode — but the dict entries show translation was intended and the wiring was missed. No crash, no data issue; incomplete i18n only.",
+            "suggestedFix": "Route the label through stT with an English fallback, matching the ownerLine/calm pattern already used in renderHome: `if($('heroNetLabel')) $('heroNetLabel').textContent = isViewingToday() ? (stT('hero.netToday')||'Net today') : (stT('hero.netForDay')||'Net for day');`"
+          }
+        ]
+      },
+      {
+        "area": "P1-38 Attention Centre (SHELL — www/index.html)",
+        "verdict": "CONCERNS",
+        "findings": [
+          {
+            "severity": "P1",
+            "confidence": "confirmed",
+            "title": "attnSnooze checks an undefined variable (__attnModalOpen) instead of attnModalIsOpen() — snoozing an item from inside the Attention Centre modal leaves the modal showing a stale 'Active' list",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:3255 (function attnSnooze, lines 3252-3256)",
+            "repro": "__attnModalOpen is referenced ONLY at line 3255 and is never declared/assigned anywhere in www/ (grep-confirmed), so `typeof __attnModalOpen!=='undefined'` is ALWAYS false and the trailing openAttention() re-render never fires. Steps: tap the home bell to open the Attention Centre with >=1 active item; click a snooze button inside the modal (💤 1d / 3d / 1wk). attnSnooze saves state and calls renderHome() (which repaints the home #attentionList behind the modal), but does NOT repaint #modalBody. The just-snoozed item stays under 'Active (n)' and does not move to 'Snoozed & dismissed' until you close and reopen the modal. By contrast attnDismiss (line 3251) and attnRestore (line 3257) correctly call attnModalIsOpen() and DO refresh the modal — so ✕ Dismiss inside the modal refreshes but 💤 Snooze does not. State is saved correctly and the view self-heals on reopen (no data loss/corruption), but it is a deterministic wrong/stale result a user hits on the new feature's primary surface.",
+            "suggestedFix": "Replace `if(typeof __attnModalOpen!=='undefined'&&__attnModalOpen) openAttention();` at line 3255 with `if(attnModalIsOpen()) openAttention();` to match attnDismiss/attnRestore. (attnModalIsOpen() already returns false on Home with the modal closed, so this preserves the 'no spurious modal open from a home 💤/✕' property.)"
+          },
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "attnId collides on empty or duplicate titles → dismiss/snooze/restore acts on ALL items sharing that title at once",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:3249 (attnId) + 3250 (attnIsHidden)",
+            "repro": "attnId(it)=simpleHash(it.key||it.title||''); no push site sets .key, so id is derived purely from title. attnIsHidden(id,...) hides EVERY cached item whose id matches, so two items with the same title share one id and are hidden/restored together. No built-in home item collides in normal operation (all titles carry distinct labels/counts), so this needs either (a) two Exceptions-Hub entries with an identical `${x.area}: ${x.msg}` title (lines 3373-3374 build the title from bridge data; if the bridge ever emits a duplicate exception, dismissing one hides both), or (b) an exception with empty area+msg → title '' → simpleHash('') (=2166136261) shared by all empty-titled items. Result is over-suppression (a genuinely separate second flag disappears), not data loss.",
+            "suggestedFix": "Disambiguate the id (e.g. include the array index, or color+em+title) or dedupe items before assigning __id; and guard the empty-title case so a blank title does not collapse to one shared bucket."
+          }
+        ]
+      },
+      {
+        "area": "P1-39 Text size (shell, www/index.html)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "Large text does not enlarge body-level chrome (modals, toasts, FAB, attention modal) — scope limited to #mainContent",
+            "location": "www/index.html:137 (html.st-textsize-large #mainContent{zoom:1.12})",
+            "repro": "Config > Text size > Large, then trigger any shell modal (#modalBackdrop line 1704, e.g. a confirm/share dialog), a toast (#toast line 1715), the back-home FAB (#st-v5-home-fab line 6522), or the P1-38 attention modal — all are DOM siblings outside #mainContent so they render at normal size while all in-view .main content is 1.12x. The card copy 'Make on-screen text larger for easier reading' implies broader coverage than delivered.",
+            "suggestedFix": "Intended/documented scope ('chrome scroller only'), so not blocking. If fuller coverage is wanted, either also apply zoom to .modal/.toast/#st-v5-* selectors or switch to a root font-size scale; otherwise leave as-is (module iframes must stay excluded regardless)."
+          },
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "Sticky Today column max-height uses 100vh inside the zoomed scroller on desktop 2-col home",
+            "location": "www/index.html:1054 (body[data-view=home] #todayView max-height:calc(100vh - 44px - ...)) under the zoom at line 137",
+            "repro": "On a >=768px viewport in Desktop layout with Large text on and Home active, #todayView is a descendant of the zoomed #mainContent; under Chromium/WebKit `zoom`, the vh-derived length is scaled ~1.12x, so the sticky column's max-height computes taller than the actual viewport. Its own overflow:auto absorbs the excess (no content lost/clipped), but the column's bottom edge can sit below the fold.",
+            "suggestedFix": "No fix required — self-contained via overflow:auto and cosmetic only. If precise sizing is desired, divide the max-height by 1.12 when st-textsize-large is set, or move the vh calc off the zoomed subtree."
+          }
+        ]
+      },
+      {
+        "area": "P1-45 Lost Walk-in Call Sheet — lostWalkinCallSheet builder in www/saagar-report.js (lines 1015-1049)",
+        "findings": [],
+        "verdict": "HOLD"
+      },
+      {
+        "area": "P1-47 Weekly Business Summary (www/saagar-report.js: weeklyBrief builder + isoOf/isoWeek/weekAgg/deltaOf/weekLabel)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "Footnote labels the FULL previous Mon-Sun week range while claiming 'the same N days' (partial-week comparison)",
+            "location": "www/saagar-report.js:1119",
+            "repro": "Open Weekly Business Summary mid-week (e.g. anchor is a Wednesday, so nDays=3). The header correctly appends ' · week to date' and the actual data comparison correctly uses only the first 3 days of each week (cur=Mon-Wed this week, prev=Mon-Wed last week). But the closing note renders: 'Compared against the same 3 days of the previous week (06 Jul – 12 Jul 2026).' The parenthetical uses weekLabel(pw.start, pw.end), i.e. the full 7-day Mon–Sun previous week (06–12 Jul), whereas the span actually compared is only Mon–Wed (06–08 Jul). The number '3 days' is right and the underlying numbers are right; only the displayed date range overstates the compared window, which can mislead an owner into thinking the full prior week was used.",
+            "suggestedFix": "Label the actual sub-span instead of the whole prior week: use weekLabel(pw.start, pw.days[nDays-1]) (falling back to pw.end when nDays===7) in the note at line 1119. Data/KPIs are unaffected — cosmetic/clarity only."
+          }
+        ]
+      },
+      {
+        "area": "STORAGE / backup / restore / factory-reset — Wave 13-lite shell control keys (saagar_lang, st_v5_attn_state_v1, saagar_text_size)",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "speculative",
+            "title": "attnLoadState re-validates snooze/dismiss SHAPE but not the date-string VALUE — a tampered restored st_v5_attn_state_v1 can hide an advisory attention item effectively forever",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:3236-3250 (attnLoadState GC at 3243; attnIsHidden at 3250)",
+            "repro": "The three new control keys are correctly whitelisted/wiped/restored; getLang and getTextSize strictly re-coerce tampered values to en/normal. attnLoadState only guards structure: the snooze GC keeps any entry where z[k] > today by STRING comparison (line 3243) and attnIsHidden hides while today < st.snoozed[id] (line 3250), with no /^\\d{4}-\\d{2}-\\d{2}$/ check or max-horizon cap. Restore a hand-edited backup whose st_v5_attn_state_v1 = {\"v\":1,\"dismissed\":{},\"snoozed\":{\"<simpleHash-of-item>\":\"9999-12-31\"}} (control keys skip the invalid-JSON check and pass validateRestoreKeyValue). After the post-restore reload, that Home 'Needs attention' item stays suppressed until year 9999 — never GC'd, never resurfacing, including a high-severity/red flag that is supposed to cap at a 1-day snooze. Inert otherwise: no crash, no data loss, and it requires deliberate tampering plus knowing simpleHash of the item key/title; the underlying issue still shows inside the owning module.",
+            "suggestedFix": "In attnLoadState, when hydrating d/z drop any entry whose value fails /^\\d{4}-\\d{2}-\\d{2}$/, and clamp snooze horizon to a sane max (e.g. today+30d) so a malformed/hostile future date cannot hide an advisory item indefinitely — mirroring the strict re-validation getLang/getTextSize already do for the other two new control keys."
+          }
+        ]
+      },
+      {
+        "area": "Wave 13-lite REGRESSION — shell chrome (www/index.html) + report engine (www/saagar-report.js). Diffed both vs _v6_tools/wave13_pristine/. No regressions: MODULES base64 line SHA-identical (iframes load), appControlKeys retains all 21 pristine keys +3 appended, report META exactly +2, all existing builders/qmsReport byte-identical, GROUPS/TAGS/scope-pill pure additions, no symbol shadowing (all new symbols single-def, unique), setUiMode/config 8 subtabs untouched, boot + renderHome attention filter try/catch-guarded, no steady-state storage write burst. Two confirmed P2 correctness defects in the NEW P1-38 attention feature (not regressions).",
+        "verdict": "HOLD",
+        "findings": [
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "Snoozing from the Attention Centre modal never refreshes the modal — dead `__attnModalOpen` guard (attnDismiss/attnRestore use the correct attnModalIsOpen())",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:3255 (attnSnooze)",
+            "repro": "Home → tap the bell (opens openAttention modal) → tap a snooze button (💤 1d/3d/1wk) on an Active row. State is saved and renderHome() runs behind the overlay, but the modal body is NOT re-rendered because the guard `if(typeof __attnModalOpen!=='undefined'&&__attnModalOpen)` is always false — `__attnModalOpen` is never assigned anywhere (grep shows a single occurrence: the read at line 3255). The snoozed item stays visible in the modal's Active list with zero feedback until the user manually closes and reopens the modal. attnDismiss (line 3251) and attnRestore (line 3257) correctly use attnModalIsOpen() for the same refresh, so snooze is the lone inconsistent path.",
+            "suggestedFix": "Replace `if(typeof __attnModalOpen!=='undefined'&&__attnModalOpen) openAttention();` with `if(attnModalIsOpen()) openAttention();` so snooze matches attnDismiss/attnRestore."
+          },
+          {
+            "severity": "P2",
+            "confidence": "confirmed",
+            "title": "Attention dismiss/snooze silently un-sticks when an item's title count/amount changes intra-day — id is derived from the dynamic title (no stable key)",
+            "location": "V:/Co work/Projects/Retail/saagar-control-centre/www/index.html:3250 (attnId) with items.push sites 3336-3352",
+            "repro": "attnId(it)=simpleHash(String(it.key||it.title)); NO items.push site sets a `key`, and most titles embed live values — e.g. line 3346 `₹${Math.round(_out).toLocaleString('en-IN')} outstanding credit (udhaar)`, 3341 `${b.serviceOpen} open service jobs`, 3336 `${stats.active-pp.matched} staff missing from Payroll`, 3339 `${b.taxOverdue} overdue tax item(s)`. Dismiss \"₹45,000 outstanding credit (udhaar)\" today → dismissed[hash('₹45,000 …')]=today. Later the same day a new udhaar/service/payroll change makes the title \"₹47,500 outstanding credit (udhaar)\" → different hash → not in dismissed[] → the item the user dismissed reappears the same day (same for snooze). Static-title items (e.g. 'Employee master is empty' 3333, 'No manual backup taken yet' 3361) are unaffected.",
+            "suggestedFix": "Give each items.push item a stable `key` independent of the fluctuating count/amount (e.g. key:'udhaar_outstanding', 'service_open', 'payroll_missing', 'tax_overdue', 'leave_freeze') so attnId hashes the invariant key rather than the live title."
+          }
+        ]
+      },
+      {
+        "area": "STORAGE-CAUTION + CROSS-FILE (shell www/index.html + www/saagar-report.js). No new raw setItem (all writes via safeSet; setItem lines byte-identical vs pristine). New writers (saagar_lang, saagar_text_size, st_v5_attn_state_v1) are all tiny + event-driven; the only timer/listener-reachable write is the conditional GC-persist at index.html:3245 (if(changed), self-terminating, <1KB) — no large/clustered/burst write, none in a loop. Files are independent: report helpers isoOf/isoWeek/weekAgg/deltaOf/weekLabel are IIFE-local (report wrapped in IIFE at L12), do not leak to window; report references none of the shell's new globals and shell declares none of the report helpers — no symbol collision, only the pre-existing G('computeQmsDay') bridge. No new library/network/font: @font-face 4->4, fetch 0->0 vs pristine, no fetch/XHR/Worker/@font-face in report; Devanagari via inline I18N dict + OS fallback font. applyLang runs once per toggle/boot (setLang + init L7249), not in renderHome, and does not cross iframe boundary.",
+        "findings": [],
+        "verdict": "HOLD"
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Skeptics"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "sk:P1-36-i18n",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "ab9d0d454a1c27174",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550514,
+      "queuedAt": 1783999550447,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-36 i18n (shell chrome) — www/index.html: I18N dict, getL…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999848119,
+      "tokens": 80086,
+      "toolCalls": 17,
+      "durationMs": 297605,
+      "resultPreview": "{\"area\":\"P1-36 i18n (shell chrome) — www/index.html: I18N dict, getLang/stT/applyLang/reflectLangUI/setLang, data-i18n tags, renderHome stT-wrapped labels\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"confirmed\",\"title\":\"Hero \\\"Net today\\\"/\\\"Net for day\\\" caption never translates — dead i18n dict keys hero.netToday/hero.netForDay\",\"location\":\"www/index.html:3294 (label hardcoded); d…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "sk:P1-38-attn",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a5818aef8b4449d14",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550517,
+      "queuedAt": 1783999550447,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-38 Attention Centre (SHELL — www/index.html)",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999731581,
+      "tokens": 70442,
+      "toolCalls": 7,
+      "durationMs": 181064,
+      "resultPreview": "{\"area\":\"P1-38 Attention Centre (SHELL — www/index.html)\",\"verdict\":\"CONCERNS\",\"findings\":[{\"severity\":\"P1\",\"confidence\":\"confirmed\",\"title\":\"attnSnooze checks an undefined variable (__attnModalOpen) instead of attnModalIsOpen() — snoozing an item from inside the Attention Centre modal leaves the modal showing a stale 'Active' list\",\"location\":\"V:/Co work/Projects/Retail/saagar-control-centre/www/…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "sk:P1-39-textsize",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a26ed501991f8c2e2",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550518,
+      "queuedAt": 1783999550448,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-39 Text size (shell, www/index.html)",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999818626,
+      "tokens": 78062,
+      "toolCalls": 20,
+      "durationMs": 268108,
+      "resultPreview": "{\"area\":\"P1-39 Text size (shell, www/index.html)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"Large text does not enlarge body-level chrome (modals, toasts, FAB, attention modal) — scope limited to #mainContent\",\"location\":\"www/index.html:137 (html.st-textsize-large #mainContent{zoom:1.12})\",\"repro\":\"Config > Text size > Large, then trigger any shell modal (#m…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "sk:P1-45-lostwalkin",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a363525a0c977965b",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550519,
+      "queuedAt": 1783999550448,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-45 Lost Walk-in Call Sheet — lostWalkinCallSheet builder…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999902711,
+      "tokens": 106540,
+      "toolCalls": 20,
+      "durationMs": 352191,
+      "resultPreview": "{\"area\":\"P1-45 Lost Walk-in Call Sheet — lostWalkinCallSheet builder in www/saagar-report.js (lines 1015-1049)\",\"findings\":[],\"verdict\":\"HOLD\"}"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "sk:P1-47-weekly",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a1027b1077a190539",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550521,
+      "queuedAt": 1783999550448,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "P1-47 Weekly Business Summary (www/saagar-report.js: weekly…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999832739,
+      "tokens": 76729,
+      "toolCalls": 15,
+      "durationMs": 282218,
+      "resultPreview": "{\"area\":\"P1-47 Weekly Business Summary (www/saagar-report.js: weeklyBrief builder + isoOf/isoWeek/weekAgg/deltaOf/weekLabel)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"confirmed\",\"title\":\"Footnote labels the FULL previous Mon-Sun week range while claiming 'the same N days' (partial-week comparison)\",\"location\":\"www/saagar-report.js:1119\",\"repro\":\"Open Weekly Business Summary mid-…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "sk:storage",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "acd18552847f21e5f",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550522,
+      "queuedAt": 1783999550448,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "STORAGE / backup / restore / factory-reset — Wave 13-lite s…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999784526,
+      "tokens": 95861,
+      "toolCalls": 15,
+      "durationMs": 234004,
+      "resultPreview": "{\"area\":\"STORAGE / backup / restore / factory-reset — Wave 13-lite shell control keys (saagar_lang, st_v5_attn_state_v1, saagar_text_size)\",\"verdict\":\"HOLD\",\"findings\":[{\"severity\":\"P2\",\"confidence\":\"speculative\",\"title\":\"attnLoadState re-validates snooze/dismiss SHAPE but not the date-string VALUE — a tampered restored st_v5_attn_state_v1 can hide an advisory attention item effectively forever\",\"…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "sk:regression",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a1f2289d5093bad1a",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550523,
+      "queuedAt": 1783999550448,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Wave 13-lite REGRESSION — shell chrome (www/index.html) + r…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999868502,
+      "tokens": 95292,
+      "toolCalls": 18,
+      "durationMs": 317979,
+      "resultPreview": "{\"area\":\"Wave 13-lite REGRESSION — shell chrome (www/index.html) + report engine (www/saagar-report.js). Diffed both vs _v6_tools/wave13_pristine/. No regressions: MODULES base64 line SHA-identical (iframes load), appControlKeys retains all 21 pristine keys +3 appended, report META exactly +2, all existing builders/qmsReport byte-identical, GROUPS/TAGS/scope-pill pure additions, no symbol shadowin…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "sk:caution-crossfile",
+      "phaseIndex": 1,
+      "phaseTitle": "Skeptics",
+      "agentId": "a6909568f34545040",
+      "model": "claude-opus-4-8",
+      "state": "done",
+      "startedAt": 1783999550524,
+      "queuedAt": 1783999550449,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "STORAGE-CAUTION + CROSS-FILE (shell www/index.html + www/sa…",
+      "promptPreview": "# Wave 13-lite ADVERSARIAL review — find REAL, CONFIRMED defects (read-only; do NOT edit)\n\nWave 13-lite shipped 5 additive shell/report features into an offline Capacitor app (NO module blobs — two\nPLAIN files):\n- SHELL V:/Co work/Projects/Retail/saagar-control-centre/www/index.html: P1-36 i18n (English/Marathi/Hindi shell-chrome label toggle), P1-38 Attention Centre\n  (home dismiss/snooze + modal…",
+      "lastProgressAt": 1783999755476,
+      "tokens": 91902,
+      "toolCalls": 16,
+      "durationMs": 204952,
+      "resultPreview": "{\"area\":\"STORAGE-CAUTION + CROSS-FILE (shell www/index.html + www/saagar-report.js). No new raw setItem (all writes via safeSet; setItem lines byte-identical vs pristine). New writers (saagar_lang, saagar_text_size, st_v5_attn_state_v1) are all tiny + event-driven; the only timer/listener-reachable write is the conditional GC-persist at index.html:3245 (if(changed), self-terminating, <1KB) — no la…"
+    }
+  ],
+  "totalTokens": 694914,
+  "totalToolCalls": 128
+}

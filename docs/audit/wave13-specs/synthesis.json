@@ -1,0 +1,152 @@
+{
+  "perFilePlan": [
+    {
+      "file": "www/index.html",
+      "ownerBrief": "THREE shell-chrome items land in ONE serialized pass (P1-36 i18n, P1-38 attention centre, P1-39 text-size). They collide on FOUR shared regions — resolve each with a SINGLE combined edit, never two competing edits on the same anchor: (A) appControlKeys() L2123 — append THREE key literals in one edit; (B) the config-card cluster just after #uiModeCard closes (L1299, before <nav class=subtabs> L1300) — insert a coherent 'Device preferences' stack in fixed order: [existing Display-mode #uiModeCard] then Language #langCard then Text-size #textSizeCard; (C) init() boot wiring at L7108 (right after reflectUiModeUI();) — three adjacent try/catch apply calls; (D) renderHome() render tail L3271-3275 — P1-38 owns the item-id/filter/bell rewrite, P1-36 owns wrapping the JS-generated hero/quick/ownerLine labels in stT(); both must keep the ~12 items.push() calls and escapeHtml() byte-identical. NEVER touch the base64 MODULES[] lines. Use unique-string anchors, not raw line numbers, and apply edits bottom-of-file→top so earlier inserts don't shift later anchors.",
+      "editsInOrder": [
+        "1. [P1-38] L1998 const cluster: add `const ATTN_STATE_KEY=\"st_v5_attn_state_v1\";` beside RESTORE_ROLLBACK_PREFIX.",
+        "2. [P1-36] i18n core block after the $/toast/timeGreeting utility band (~L2065, before applyMode): add I18N={en,mr,hi} dict + getLang()/stT(k)/applyLang()/reflectLangUI()/setLang(l). textContent only (never innerHTML). Helpers named stT/getLang/setLang/applyLang/reflectLangUI (NOT `t`).",
+        "3. [ALL THREE] appControlKeys() L2123: single combined edit appending `,\"saagar_lang\",ATTN_STATE_KEY,\"saagar_text_size\"` to the returned array.",
+        "4. [P1-38] attn helper block near amountsHidden() L3149-3151: attnLoadState()(tryJSON+normalize+GC, save only if GC mutated), attnSaveState(), attnDaysAdd(iso,n), attnId(it)=simpleHash(it.key||it.title), attnIsHidden(id,st,today), attnDismiss/attnSnooze/attnRestore (mutate→save→renderHome→re-render modal if open).",
+        "5. [P1-38 + P1-36] renderHome() tail L3271-3275: (P1-38) after items[] built, compute it.__id, filter to __active via attnIsHidden, stash window.__attnCache=items, render __active.slice(0,6) with an .attn-acts wrapper (CTA + 💤 + ✕), drive empty-state + bell dot off __active.length. (P1-36) wrap the JS-generated labels at L3162 ownerLine, L3186 heroNet label, hero-stat captions, quick-tile labels, L3273 empty-state in stT('key')||'English'. Keep escapeHtml on all titles/msgs/ctas; keep the ~12 items.push() byte-identical.",
+        "6. [P1-38] openAttention() L3344: replace scroll-to-card with Attention Centre modal — call renderHome() to refresh window.__attnCache, build Active(N) list (ALL items, CTA + snooze 1d/3d/1wk + Dismiss) and 'Snoozed & dismissed' list (Restore + return date), openModal(); all interpolation via escapeHtml.",
+        "7. [P1-39] get/reflect/set trio after toggleUiMode L7067: const TEXT_SIZE_KEY='saagar_text_size'; getTextSize()/reflectTextSizeUI()(toggles html.st-textsize-large + #textSizeSeg active)/setTextSize(size) — clone of setUiMode.",
+        "8. [ALL THREE] init() boot L7108, after reflectUiModeUI();: `try{applyLang();reflectLangUI();}catch(e){}` then `try{reflectTextSizeUI();}catch(e){}` (two adjacent lines; attention needs no boot call — renderHome runs on first render).",
+        "9. [P1-36] static-chrome data-i18n attributes: additively tag the curated ~40 chrome leaves (bottom nav L1611-1626 wrap text in span beside svg; config subtabs L1301-1308; settings-hub header L1289-1290; home section-heads; hero-foot; modules/reports/today headings; search placeholders via data-i18n-placeholder). Icon+text nodes get an inner <span data-i18n> so textContent never nukes the icon. Never tag brand/store names/dates/data.",
+        "10. [P1-36 + P1-39] config-card cluster after L1299 (before subtabs L1300): insert #langCard ('🌐 Language / भाषा' + #langSeg en/mr/hi) THEN #textSizeCard ('🔎 Text size' + #textSizeSeg normal/large). Both clone #uiModeCard markup; reuse .card/.card-pad/.seg/.seg-btn — no new CSS for the cards.",
+        "11. [P1-39] CSS: one rule after .main{} (~L135) `html.st-textsize-large #mainContent{zoom:1.12}`. [P1-38] CSS near .attn-text (~L374): `.attn-acts{display:flex;gap:6px;align-items:center}`, `.attn-ico-btn{...}`, `.attn.snoozed{opacity:.6}`. Separate CSS regions, both pure appends.",
+        "12. [P1-38] home bell L1160: onclick stays openAttention() (now the modal opener) — grep-confirmed sole caller, safe."
+      ]
+    },
+    {
+      "file": "www/saagar-report.js",
+      "ownerBrief": "TWO report-engine items land in ONE serialized pass (P1-45 lostWalkinCallSheet monthly, P1-47 weeklyBrief weekly). Both append to the SAME three shared regions — resolve with deterministic, non-adjacent trailing appends, never editing an existing sibling line: (A) BUILDERS object close L974/975 — add a comma after ownerMonthly's closing `}` (L974) then TWO new builder properties; (B) META object L977-1001 — ownerMonthly (L1000) currently has NO trailing comma, so add a comma then TWO new META lines; (C) openHub() GROUPS L1686-1691 + TAGS L1692-1701. P1-47 additionally needs the scope-pill ternary at L1708 (P1-45 is monthly, does not). Neither item adds any localStorage key — zero contention on appControlKeys/APP_RE/restore. Both read the existing QMS key retail_queue_management_v1 (P1-45 directly via J(), P1-47 via the existing shell bridge G('computeQmsDay')). Do NOT reshape qmsReport or any sibling builder.",
+      "editsInOrder": [
+        "1. [P1-47] week helpers after monthQms (~L93, inside the IIFE): isoOf(dateObj) LOCAL yyyy-mm-dd (NEVER toISOString — IST +5:30 off-by-one), isoWeek(anchorIso)→{start,end,days[Mon..Sun]}, weekAgg(days) accumulating walkins/purchases/sales/nonPurchase/byCro/perDay via G('computeQmsDay',null) with conversion recomputed on totals, deltaOf(cur,prev) null-safe, weekLabel(start,end).",
+        "2. [P1-45 + P1-47] BUILDERS close L974: add comma after ownerMonthly's `}`, then append lostWalkinCallSheet:function(o){...} (read retail_queue_management_v1 via J(), local nameOf/tel10, filter /non.?purchase/i + entryTime.slice(0,7)===month, dedupe by 10-digit mobile keep newest, exclude+count no-number, portrait header/kpi(Lost/Callable/NoNumber)/table[# Name Mobile Visit CRO Reason]/note/empty) and weeklyBrief:function(o){...} (Mon–Sun ISO week of o.date, week-to-date vs same-span last week, portrait header/5-KPI-with-deltas/comparison-table/daily-trend-table/by-CRO-table/note/empty; Non-buy delta polarity INVERTED). Two separate properties, comma-separated.",
+        "3. [P1-45 + P1-47] META L1000: add comma after ownerMonthly entry, then two lines — `weeklyBrief:{title:'Weekly Business Summary',scope:'weekly',icon:'📅'}` and `lostWalkinCallSheet:{title:'Lost Walk-in Call Sheet',scope:'monthly',icon:'📞'}`.",
+        "4. [P1-47] GROUPS L1686-1691: insert a NEW group between Daily and Monthly: `{h:'Weekly · Owner',types:['weeklyBrief']}`. [P1-45] append 'lostWalkinCallSheet' to the existing 'Monthly · People' group types[] (L1689). Different array elements — no conflict.",
+        "5. [P1-45 + P1-47] TAGS L1692-1701: two independent keys — `weeklyBrief:'weekly business summary owner week wtd trend last week comparison'` and `lostWalkinCallSheet:'lost walk-in call sheet follow-up non purchase callback missed customers qms'`.",
+        "6. [P1-47] row() scope pill L1708: extend ternary to `(m.scope==='monthly'?'Monthly':(m.scope==='weekly'?'Weekly':'Daily'))` so weekly is not mislabelled 'Daily'.",
+        "7. [OPTIONAL, DEFER both] _packTypes L1592 / pack() L1597: do NOT wire pack('weekly') (single report) and do NOT auto-add lostWalkinCallSheet to the monthly pack this wave unless owner asks — keeps blast radius minimal."
+      ]
+    }
+  ],
+  "editOrder": [
+    "Files are independent (index.html chrome vs saagar-report.js hub) — no cross-file ordering constraint; may run as two parallel owner threads. Within EACH file the edits MUST serialize.",
+    "index.html thread: apply the 12-step editsInOrder BOTTOM-of-file→TOP where anchors overlap, but land the 4 shared-region edits (appControlKeys L2123, config-card cluster ~L1299, init boot L7108, renderHome tail L3271) as ONE combined edit each — never two passes on the same anchor.",
+    "saagar-report.js thread: apply the 7-step editsInOrder; land BUILDERS-close (L974), META-close (L1000), GROUPS/TAGS as single combined appends carrying BOTH items' additions so a later item never re-edits an already-modified sibling line.",
+    "Recommended sequence for a single owner doing both: index.html first (higher blast radius, gates the APK), then saagar-report.js.",
+    "Verify after EACH file independently against _v6_tools/wave13_pristine/ before moving on."
+  ],
+  "crossFileContracts": [
+    "No functional shell↔report wiring is added or changed. index.html and saagar-report.js are edited independently; neither new report reads or writes anything the shell edits touch.",
+    "Existing (unchanged) bridge preserved: the report engine reaches QMS data through the shell via G('computeQmsDay') (P1-47) and by reading localStorage key retail_queue_management_v1 directly (P1-45) — exactly as the shipped qmsReport/monthQms already do. Both new builders must consume these read-only; do not add a new accessor.",
+    "New-key registration path is ENTIRELY inside index.html and is shared by the three shell items only: the ONE appControlKeys() L2123 edit registers all three new prefs (saagar_lang, st_v5_attn_state_v1, saagar_text_size); APP_RE L5684 already matches all three via the saagar_ / st_v\\d+_ prefixes (no edit); restore accepts all three via the owner==='control' → return{ok:true} fallthrough at L5497 (no edit). The two report items introduce ZERO localStorage keys, so they never touch this path.",
+    "The two report types will be recorded as recent/history string values inside the EXISTING already-whitelisted keys saagar_rpt_recent / saagar_rpt_log — additive values, no schema change, no registration needed."
+  ],
+  "decisions": [
+    {
+      "question": "i18n coverage strategy and exact translated string set (P1-36)?",
+      "decision": "Hybrid, as spec'd: (1) additive data-i18n attribute pass over static chrome walked by applyLang(); (2) stT('key')||'English' at the JS-generated renderHome labels (ownerLine L3162, hero net label L3186, 5 hero-stat captions, 6 quick-tile labels, empty-state L3273) because those re-render and would clobber an attribute. Curated ~40-key set = bottom nav, 8 config subtabs, settings-hub header, home section heads (Needs attention/Quick actions/Customer lookup/Greetings due today), hero footer, hero-stat + quick-tile labels, modules/reports/today headings, the two new card copies. Fallback chain stT()=dict[lang][key] ?? en[key] ?? null; applyLang skips null so hand-written English DOM is the ultimate fallback and is never blanked. textContent only (XSS-inert). Do NOT translate: brand/store names, dates, data-derived attention titles/msgs/ctas, CRO/GST tokens, module iframe content, or report content. Marathi/Hindi draft strings are PLACEHOLDERS pending native review (owner is Marathi-speaking).",
+      "rationale": "Static chrome is parsed once and never regenerated — tagging + one applyLang pass translates it with zero render-function rewrites, honoring the 'preserve behaviour byte-for-byte / no large-span rewrite' hard rule. Only the small JS-generated label set needs stT() at assignment."
+    },
+    {
+      "question": "Attention stable-id scheme + dismiss/snooze semantics + re-appear (P1-38)?",
+      "decision": "id = simpleHash(it.key||it.title) (simpleHash confirmed at L2148, digits-only → injection-safe in onclick). State key st_v5_attn_state_v1 = {v:1,dismissed:{id:'YYYY-MM-DD'},snoozed:{id:'YYYY-MM-DD'}}. DISMISS = suppress only while stored date===todayIso() (returns next calendar day if the condition recurs). SNOOZE = hide until stored future date; durations offered in modal = 1 day / 3 days / 1 week; Home 💤 one-tap default = 3 days. attnLoadState() GCs stale dismissed(!=today) and expired snoozed(<=today) and persists ONLY if GC mutated. Bell keeps the plain dot (no numeric badge) driven by post-filter __active.length. openAttention() is repointed from scroll-to-card to the Attention Centre modal (grep-confirmed sole caller at L1160).",
+      "rationale": "Title already embeds area+emoji+numbers so a title-hash gives distinct ids without editing the ~12 push() sites; date-scoped dismiss delivers the required 'returns next day if still open' with a self-pruning tiny blob."
+    },
+    {
+      "question": "Can high-severity exceptions be buried by snooze/dismiss (P1-38 governance)?",
+      "decision": "Red/high-sev items (the SB.exceptions sev==='high' rows unshifted at L3267, e.g. cash cross-check, overdue tax) remain DISMISSABLE for the current day only but snooze is CAPPED to a max of 1 day for them; medium/low get the full 1d/3d/1wk menu. attnSnooze clamps days to 1 when the item is high-sev.",
+      "rationale": "Preserves the daily-return safety net for critical flags — they can be quieted for today but always resurface the next day — while still letting owners defer routine noise."
+    },
+    {
+      "question": "Text-size scale magnitude + chrome-only vs propagate (P1-39)?",
+      "decision": "class html.st-textsize-large → single rule `#mainContent{zoom:1.12}`. Normal=no class=untouched. Chrome-content-only for v1: NOT propagated to module iframes (#moduleScreen is a separate fixed overlay) and NOT applied to body-level fixed surfaces (modal/toast/FAB). Two-step Normal/Large only.",
+      "rationale": "zoom scales text+container together on this px-based design (root/body font-size would barely move); scoping to the #mainContent scroller keeps topbar/botnav/iframe pixel-identical with the least clipping risk. 1.12 (not 1.2) minimizes horizontal-overflow against .main overflow-x:hidden."
+    },
+    {
+      "question": "Weekly report: week window + new type vs filter (P1-47)?",
+      "decision": "NEW report type weeklyBrief with a third scope value 'weekly' (not a weekly filter over existing builders). Window = Monday–Sunday ISO week CONTAINING opts.date. Comparison = fair same-span: current window = first nDays up to min(weekEnd,today), previous window = same nDays of the prior Mon-Sun week (week-to-date vs same point last week). All week date math uses a LOCAL isoOf() helper, never toISOString (IST off-by-one). pack('weekly') DEFERRED.",
+      "rationale": "scope is pure hub metadata with no mechanism to pass granularity into a builder, and most daily builders read single-day snapshots that don't aggregate — a filter would force rewriting many builders (hard-rule violation). QMS via computeQmsDay is the one clean cross-day aggregator. Calendar-week anchoring makes every in-week date yield the same stable report."
+    },
+    {
+      "question": "Lost-walkin data source + scope (P1-45)?",
+      "decision": "NEW report type lostWalkinCallSheet, scope 'monthly'. Reads retail_queue_management_v1.customers[] directly via J() (same as qmsReport), filters outcome /non.?purchase/i AND entryTime.slice(0,7)===month. Callable = last-10-digit mobile present; dedupe by that number keeping the newest visit; sort newest-first. No-number walk-ins EXCLUDED from the call list but COUNTED and disclosed via a KPI tile + footnote. Include ALL non-purchase (do not exclude rows that already have a scheduled follow-up) in v1.",
+      "rationale": "Read-only, mirrors the proven qmsReport read pattern, no new key. Newest-first ordering satisfies the 'call warmest leads first' intent inside a clean monthly period the hub date-stepper already supports; excluding un-callable rows keeps the sheet actionable."
+    },
+    {
+      "question": "FINAL names + registration of ALL new pref keys?",
+      "decision": "THREE keys, all in index.html, registered by ONE combined appControlKeys() edit: saagar_lang ('en'|'mr'|'hi'), st_v5_attn_state_v1 (JSON dismiss/snooze state), saagar_text_size ('normal'|'large'). ALL THREE are ADDED to appControlKeys() (backed up + migrated). All three already match APP_RE (saagar_ / st_v\\d+_) so factory-reset wipe + pre-reset safety backup work with NO APP_RE edit. All three restore via the owner==='control' → return{ok:true} fallthrough (L5497); none are in restoreBlockedKeys. Each getter re-validates (getLang/getTextSize whitelist to defaults; attnLoadState normalizes+GCs) so a tampered restored value is inert.",
+      "rationale": "Overrides P1-39's per-device recommendation for saagar_text_size in favor of the wave's explicit hard rule ('any new top-level key MUST be added to appControlKeys') and the Wave-11/12 regression where a dropped key was a P1. Uniform treatment of all three prefs avoids a confusing split; backed-up prefs are harmless (restore is opt-in, values re-validate). The per-device alternative is raised as an owner question."
+    }
+  ],
+  "collisions": [
+    "index.html appControlKeys() L2123 (single-line array): P1-36 + P1-38 + P1-39 all append a new key literal → ONE combined edit adding saagar_lang, ATTN_STATE_KEY, saagar_text_size.",
+    "index.html config-card cluster after #uiModeCard L1299 (before subtabs L1300): P1-36 (#langCard) + P1-39 (#textSizeCard) both insert a sibling card → one combined insert in fixed order Display-mode → Language → Text-size. P1-38 deliberately does NOT add a config card (its surface is Home + modal).",
+    "index.html init() boot L7108 after reflectUiModeUI();: P1-36 (applyLang+reflectLangUI) + P1-39 (reflectTextSizeUI) add adjacent apply calls → two adjacent lines, not competing edits. P1-38 needs no boot call.",
+    "index.html renderHome() render tail L3271-3275: P1-38 rewrites the render/filter/bell logic; P1-36 wraps the JS-generated hero/quick/ownerLine/empty-state labels in stT(). Split ownership: P1-38 owns id-compute+filter+.attn-acts markup+bell count; P1-36 owns label translation. Both keep the ~12 items.push() and escapeHtml byte-identical.",
+    "index.html CSS appends: P1-39 adds the zoom rule near .main{} (~L135); P1-38 adds .attn-acts/.attn-ico-btn/.attn.snoozed near .attn-text (~L374). Different regions, both pure appends — keep blocks separate.",
+    "saagar-report.js BUILDERS close L974/975: P1-45 + P1-47 both append a builder → add comma after ownerMonthly's } then two new properties.",
+    "saagar-report.js META close L1000/1001: ownerMonthly has NO trailing comma → add comma, then two new META lines (weeklyBrief + lostWalkinCallSheet).",
+    "saagar-report.js openHub GROUPS L1686-1691: P1-47 inserts a new 'Weekly · Owner' group; P1-45 appends to the existing 'Monthly · People' group types[] — different array elements.",
+    "saagar-report.js openHub TAGS L1692-1701: two independent keys, no conflict.",
+    "saagar-report.js row() scope pill L1708: only P1-47 edits it (weekly). P1-45 is monthly and does not — no conflict.",
+    "NO cross-file collision: the two report items touch ONLY saagar-report.js; the three shell items touch ONLY index.html."
+  ],
+  "newKeysConsolidated": [
+    {
+      "key": "saagar_lang",
+      "shape": "raw string enum 'en'|'mr'|'hi' (stored raw like saagar_ui_mode, NOT JSON). Absent or unrecognized → getLang() returns 'en'.",
+      "appControlKeys": "ADD the literal \"saagar_lang\" to the returned array at L2123 (combined edit) so it is included in backup/migration via isWhitelistedAppKey.",
+      "appRe": "Already matched by APP_RE L5684 via the saagar_ prefix → factory reset wipes it AND the pre-reset safety backup captures it. No APP_RE edit.",
+      "restore": "owner==='control' → validateRestoreKeyValue falls through to return{ok:true} at L5497 (not in the ADMIN/EMP/LOG explicit list, not in restoreBlockedKeys). getLang() re-whitelists to {en,mr,hi} so a hostile value is inert (only string-compared, never rendered)."
+    },
+    {
+      "key": "st_v5_attn_state_v1",
+      "shape": "JSON object {v:1, dismissed:{'<attnId>':'YYYY-MM-DD'}, snoozed:{'<attnId>':'YYYY-MM-DD'}} where attnId=simpleHash(title) (decimal string). Absent/corrupt → attnLoadState() returns {dismissed:{},snoozed:{}} → filter no-op → home list byte-identical to pristine.",
+      "appControlKeys": "ADD ATTN_STATE_KEY (const = \"st_v5_attn_state_v1\") to the returned array at L2123 (combined edit) so dismiss/snooze state rides backup/migration.",
+      "appRe": "Already matched by APP_RE L5684 via the st_v\\d+_ prefix → wiped by factory reset AND included in the pre-reset safety backup. No APP_RE edit.",
+      "restore": "owner==='control' → generic return{ok:true} at L5497; NOT in restoreBlockedKeys. attnLoadState() normalizes shape + GCs stale/expired entries on load, so a malformed restored blob degrades safely."
+    },
+    {
+      "key": "saagar_text_size",
+      "shape": "raw string enum 'normal'|'large' (stored raw like saagar_ui_mode). Any other/absent → getTextSize() returns 'normal'.",
+      "appControlKeys": "ADD the literal \"saagar_text_size\" to the returned array at L2123 (combined edit). NOTE: this OVERRIDES the P1-39 per-device recommendation — decision is to back it up per the wave hard rule; see openQuestionsForOwner for the per-device alternative.",
+      "appRe": "Already matched by APP_RE L5684 via the saagar_ prefix → wiped by factory reset AND captured in the pre-reset safety backup. No APP_RE edit.",
+      "restore": "owner==='control' → generic return{ok:true} at L5497; NOT in restoreBlockedKeys. getTextSize() whitelists to {normal,large}; value only ever gates a CSS class, never rendered."
+    }
+  ],
+  "openQuestionsForOwner": [
+    "Marathi/Hindi wording for the ~40-label chrome set must be confirmed by a native speaker (owner is Marathi-speaking) before ship — the draft strings in the P1-36 spec are placeholders. Also confirm which tokens stay English (e.g. CRO, GST, DSR, QMS).",
+    "saagar_lang and saagar_text_size backup semantics: synthesis decision is to ADD both to appControlKeys() (backed up + migrated) per the wave hard rule. The precedent saagar_ui_mode is intentionally per-device (NOT backed up). Confirm you want language/text-size to carry to a new device on restore, OR treat them as per-device (drop from appControlKeys — they'd still be wiped/safety-backed via APP_RE).",
+    "Attention high-severity governance: synthesis caps snooze to max 1 day for red/high-sev flags (cash cross-check, overdue tax) while allowing dismiss-for-today. Confirm this, or make high-sev flags fully non-snoozable/non-dismissable.",
+    "Bell UX: synthesis repoints the Home bell from scroll-to-card to the Attention Centre modal. Confirm acceptable, or keep the scroll and add a separate 'View all' link.",
+    "Text-size Large factor 1.12: confirm, or request a stronger accessibility bump up to ~1.2 (needs tighter horizontal-overflow verification).",
+    "Weekly report scope: ship Monday–Sunday week? Confirm operating week (Sunday–Saturday is a one-line isoWeek change). Confirm 'week-to-date vs same point last week' comparison for the in-progress week (vs full-week-vs-full-week).",
+    "Lost-walkin call sheet: monthly-only this wave (weekly variant deferred)? And should rows that already have a scheduled follow-up be flagged/excluded, plus an optional ₹ lost-value column — all deferred by default.",
+    "Defer pack('weekly') and auto-adding lostWalkinCallSheet to the month-end pack (both omitted this wave to minimize blast radius) — confirm."
+  ],
+  "verifyPlan": [
+    "Boot smoke (both files): open www/index.html in the browser harness; 0 new console errors on boot; Home 'Needs attention' + all config/report chrome render; confirm base64 MODULES[] lines are byte-unchanged (grep) and diff untouched regions against _v6_tools/wave13_pristine/index.pristine.html + saagar-report.pristine.js.",
+    "P1-36 i18n: default (no saagar_lang) all-English; toggle मराठी → nav, subtabs, section heads, hero captions, 6 quick tiles, settings-hub header all switch; nav svg/seg emoji icons still present (span-wrap worked); reload persists (≤1 flash); toggle हिंदी then English reverts cleanly with no leftover Devanagari; open a module iframe → content stays English (scope guard); `localStorage.setItem('saagar_lang','xx');reload` → falls back to English, no error; export backup → payload contains saagar_lang.",
+    "P1-38 attention: pristine parity when key absent (same items/order/≤6, bell on); ✕ Dismiss → item vanishes, state written, a formerly-7th item appears; reload same day → stays hidden; edit stored dismissed date to yesterday + re-render → item REAPPEARS and stale entry GC'd; 💤 Snooze → appears under 'Snoozed & dismissed' in modal, Restore returns it; bell modal lists ALL active (no 6-cap); dismiss-all → 'Nothing urgent' + bell dot off; high-sev item snooze clamps to 1 day; inject quotes/<> in a title → escapeHtml keeps row/modal safe; backup payload contains st_v5_attn_state_v1.",
+    "P1-39 text-size: set Large → #mainContent chrome grows ~12% while topbar brand + bottom-nav labels unchanged; open a module → iframe pixel-unchanged; reload persists + 'Large' seg active; narrow ~360px + config subtabs (8 tabs incl 'Roles & access') no horizontal clip, tables self-scroll; toggle Mobile/Desktop display mode at Large → both compose; back to Normal → byte-identical to pristine; backup payload — CONFIRM per decision whether saagar_text_size IS present (backed up) as synthesized.",
+    "P1-45 lostWalkinCallSheet: SaagarReport._buildModel('lostWalkinCallSheet',{month:'2026-06'}) → portrait, header.period=month label, a 6-col table; seed retail_queue_management_v1 with a valid-mobile non-purchase, a noMobile non-purchase, a duplicate-mobile pair (two dates), a 'Purchase' row, a wrong-month non-purchase → assert Purchase & wrong-month excluded, duplicate collapsed to newer, noMobile counted in 'No Number' + footnote, rows sorted newest-first; empty month → single {t:'empty'}; render smoke build() produces a real PDF; hub search 'call'/'lost' surfaces the row under 'Monthly · People'.",
+    "P1-47 weeklyBrief: _buildModel('weeklyBrief',{date:'2026-07-13'}) → portrait, header period contains '–', one 5-item KPI block with .sub/.subClass, 'This Week vs Last Week' table, 'Daily Trend' table with 7 (or nDays) rows; list() includes {type:'weeklyBrief',scope:'weekly'}; run under Asia/Kolkata → week starts Monday, days[0] is the expected local Monday (toISOString-trap guard); seed two weeks of QMS → Change column + KPI up/down (green/red) match cur-prev, prev-week-zero shows 'new' not NaN; Non-buy tile delta polarity inverted (a drop reads green); hub shows 'Weekly · Owner' with a 'Weekly' pill.",
+    "Report regression: build ownerBrief, ownerMonthly, qmsReport, dsrRegister and run pack('daily')/pack('monthly') → all succeed, 0 new console errors; the existing 'No lost walk-ins logged.' block (L294) and qmsReport are byte-unchanged; Object.keys(META).length increased by exactly 2."
+  ],
+  "regressionRisks": [
+    "BOOT / module loading (index.html, highest): any stray edit to the base64 MODULES[] lines or a JS syntax slip in the new i18n/attn/text-size blocks bricks app boot and iframe load. Prove: harness boots with 0 console errors, every module opens, grep the base64 lines byte-identical vs pristine.",
+    "renderHome() (runs on boot, every view/data change, storage listener, and the 60s timer L7128): P1-38 rewrites the render/filter/bell tail and P1-36 wraps labels — a bug here breaks the Home screen on every refresh. Risks: attnLoadState() throwing (guard with try/catch + normalize), dropping escapeHtml on a title (XSS), or clobbering one of the ~12 items.push() rows. Prove: pristine parity with key absent, injected-quote safety test, 60s re-render leaves labels/state stable.",
+    "appControlKeys() L2123 combined edit: a malformed array literal breaks backup, migration, restore whitelisting AND factory-reset safety backup simultaneously. Prove: export a backup and confirm all three new keys present; run a restore preview listing them under App Control; code-trace factory reset includes them.",
+    "Backup/restore pipeline: three new control keys flow through validateRestoreData → validateRestoreKeyValue control branch (L5493-5497). Risk that one accidentally lands in restoreBlockedKeys or fails validation. Prove: restore a file containing all three → each lands in review.valid, none rejected; tampered values degrade to defaults via the getters.",
+    "Config screen render (renderConfigPage/switchConfigTab): the two new cards are inserted ABOVE the subtabs as static siblings of #uiModeCard — must not shift/hide the existing subtab nav or the Display-mode card. Prove: all 8 subtabs still switch; Display mode still toggles; cards render on every subtab.",
+    "Text-size zoom side-effects (P1-39): zoom on #mainContent narrows the effective CSS viewport — could clip wide rows or drop the wide-screen two-column home to one column early near the 768px breakpoint. Mitigated at 1.12 + inner table overflow-x:auto. Prove: narrow-width + config-subtabs + Mobile/Desktop-compose checks; Normal reverts byte-identical.",
+    "Existing reports (saagar-report.js): the shared BUILDERS/META/GROUPS/TAGS appends must be pure additions — a misplaced comma or an accidental reshape of qmsReport (shares the st.customers read) breaks a shipped report or the whole hub (a syntax error in META/BUILDERS takes down SaagarReport entirely). Prove: build every existing daily+monthly report and both packs with 0 errors; META count +2 exactly; hub renders all rows including the 2 new ones.",
+    "Timezone off-by-one (P1-47): any toISOString in the week math shifts the whole Mon-Sun window a day in IST, corrupting both current and comparison windows silently. Prove: the Asia/Kolkata days[0]=local-Monday harness check; enforce the local isoOf() helper.",
+    "Hub scope-pill ternary (P1-47): editing L1708 wrong could mislabel EVERY report's scope pill. Prove: existing daily reports still show 'Daily', monthly show 'Monthly', weekly shows 'Weekly'.",
+    "Devanagari layout (P1-36): longer mr/hi labels can wrap/clip in tight nav/subtab widths; OS-fallback font (no bundled Devanagari) is a minor visual inconsistency. Prove: mobile-width harness check of nav+subtab labels; keep wording concise."
+  ]
+}

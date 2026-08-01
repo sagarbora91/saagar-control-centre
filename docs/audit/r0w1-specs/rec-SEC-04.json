@@ -1,0 +1,48 @@
+{
+  "item": "SEC-04 — Idle auto-lock + re-auth for sensitive actions (absorbs P1-51 money-action PIN-confirm)",
+  "status": "PARTIAL",
+  "acceptanceBar": "App locks after configured idle (DONE for the admin privilege); payroll/cash/export AND approve/void/lock/reopen re-prompt for PIN regardless of session age (MOSTLY MISSING). P1-50 action-permission matrix explicitly OUT of scope (Track B).",
+  "existingCoverage": [
+    "Idle auto-lock fully built but ADMIN-scoped: armIdleLock() L2213 (early-returns if(!isAdmin)return), adminIdleMinutes() L2210 (default 5, '0'=Never), noteAdminActivity() L2215, setAdminIdle() L2226; key ADMIN_IDLE_MIN_KEY='st_v2_admin_idle_min' L2005 (SEC-PIN-07).",
+    "Boot IIFE L7243-7246 arms idle timer for a restored-unlocked session + installs click/keydown/touchstart/pointerdown activity hooks (capture) + visibilitychange & pagehide background-lock (also signs active staffer out); respects '0'=Never.",
+    "Re-auth primitive EXISTS: promptVerifyOnly(msg) L2208 authenticates WITHOUT flipping isAdmin (built on verifyPin L2192). Already reused for role-raise gate L2066 and role-switch policy roleSwitchLocked() L2207.",
+    "changeAdminPin() L2369-2377 already re-verifies the CURRENT pin before change — the one existing 'sensitive action re-auth' pattern to mirror.",
+    "setAdmin(v) L2340 (re)arms idle on unlock / clears on lock; adminToken() L2339 PIN-bound persisted flag; init() L7239 restores admin only if token matches.",
+    "Export IS gated but only when NOT already admin: exportBackup() L5488 and exportMigration() L5509 call unlockAdmin() only if(!isAdmin); exportBackupConfirmed() L5540 has isAdmin defence-in-depth. No re-prompt for an already-unlocked (possibly hours-old within idle window) session.",
+    "Module gating (SEC-07-ish, not per-action): ensureModuleAccess(id) L2386 admin-gates payroll/tax via unlockAdmin; openModule() L6348 calls it. This is open-time role gate, not action re-auth.",
+    "Shell<-module bridge exists: window message listener L6979-6992 handles ST_AUDIT (L6988) etc. — but ST_AUDIT is fire-after-the-fact; there is NO pre-action VERIFY request type today.",
+    "Iframe is same-origin + NOT sandboxed (L6224 comment; isModuleDirty reads contentDocument L6230; shim reads parent.SaagarStore.enabled L6386) => a blob can synchronously call window.parent.<fn>() and receive a boolean. All shell fns are top-level = already on window.",
+    "auditLog() L2244 attributes to Admin or signed-in staff (actorId) — the log channel a re-auth event should write to."
+  ],
+  "delta": [
+    "Add ONE shell-side re-auth primitive, e.g. window.SaagarReauth(reason): wraps promptVerifyOnly + auditLog('reauth.ok'/'reauth.deny',{reason}), returns boolean, prompts EVERY call (no session-age caching, to meet 'regardless of session age'). MUST be exposed on window so blobs reach it via window.parent.SaagarReauth.",
+    "Export = pure shell-side, ZERO blob edits: insert SaagarReauth('export') at the ENTRY of exportBackup() L5488 and exportMigration() L5509 so an already-admin session still re-prompts. Gate ONCE at entry, NOT inside the shared writer exportBackupConfirmed() (L5540) — it is called by both the preview modal and exportMigration, so gating there double-prompts.",
+    "Payroll/cash money actions (setRunStatus, lockRun, run reopen, cash approve/void) = HYBRID: shell supplies the SaagarReauth channel; the call sites live in payroll.html / dsr.html / stock.html / expense.html blobs and each needs a one-line guard: if(!window.parent.SaagarReauth('payroll.lock')) return; This CANNOT be done purely shell-side — ST_AUDIT (L6988) fires after the action already committed; there is no pre-action shell interception point.",
+    "Idle-lock delta is SMALL: the admin idle-lock already satisfies the privilege that matters. Do NOT re-scope whole-app launch/idle lock here — that overlaps P1-37 (App-launch PIN lock) in this same wave. Optionally surface a one-line note that idle-lock is admin-scoped by design.",
+    "Wire the re-auth toggle (if added) into renderSecurityPanel() L2239 next to the existing adminIdleSelect, mirroring setAdminIdle wiring.",
+    "Do NOT expand the P1-50 permission MATRIX — reuse the existing fixed sensitive-action set only."
+  ],
+  "newKeys": [
+    "OPTIONAL, only if a policy toggle is wanted: st_v2_sensitive_reauth (e.g. '1'/'0', default ON). If added: (a) APP_RE at L5818 already matches st_v\\d+_ so it is auto-covered; (b) MUST be added to appControlKeys() L2149 for portable backup/restore (note: ADMIN_IDLE_MIN_KEY was itself left OUT of appControlKeys, so idle-min is currently non-portable — decide consciously); (c) restore validator validateRestoreKeyValue L5623 owner==='control' default already returns {ok:true}, so no new branch needed; (d) it is a policy flag, NOT a secret, so it goes in appControlKeys, NOT restoreBlockedKeys.",
+    "Simplest posture = NO new key: always re-auth the fixed sensitive set, fail-open when no PIN. Recommended for R0-W1's 'harden, don't rebuild' + light-risk goal."
+  ],
+  "deviceRisk": "light",
+  "lockoutHazards": [
+    "P0 FAIL-CLOSED TRAP: promptVerifyOnly/verifyPin (L2192-2193) return false when NO admin PIN is configured. A naive SaagarReauth built on it would BLOCK export/payroll-lock/void on a PIN-less device — locking the owner out. SaagarReauth MUST short-circuit to true when !hasAdminPin() (fail-open, matching P1-37's mandatory posture).",
+    "prompt() returning null (user cancels) must ABORT the action, never proceed — promptVerifyOnly already encodes p!==null && verifyPin(p); the blob guard must treat false as 'do nothing', not 'continue'.",
+    "Double-prompt risk: gating both exportBackup entry AND exportBackupConfirmed writer, or both ensureModuleAccess (open payroll) AND every payroll action, produces prompt fatigue and can feel like a lock. Gate the ACTION once; do not stack on top of the open-time module gate.",
+    "SaagarReauth must NOT flip isAdmin or currentRole (use promptVerifyOnly, not unlockAdmin) — flipping to admin would silently escalate a staff session and also disarm/re-arm idle unexpectedly.",
+    "Blob-side dependency: if a blob calls window.parent.SaagarReauth before the shell exposes it (build ordering / older cached srcdoc via buildModuleSrc memoisation), the call throws. Blob guard must be defensive: typeof window.parent.SaagarReauth==='function' ? ... : true (fail-open) so a missing channel never bricks a money action.",
+    "staff (non-admin) performing a money action: if the action is reachable in staff view, re-auth would demand the ADMIN pin (verifyPin is admin-only) — confirm the sensitive actions are only reachable post module-gate, else a legitimate staffer is locked out of their own workflow.",
+    "Confirm exportBackupConfirmed's direct-call defence (L5541, isAdmin only) is not weakened; adding entry-level re-auth must keep that path intact for console-call defence."
+  ],
+  "approach": "Harden, don't rebuild. Idle-lock half is already DONE at the correct (admin-privilege) scope — leave armIdleLock/setAdminIdle/boot hooks untouched; the launch-idle-lock belongs to P1-37, not here. For the re-auth half, add ONE shell-side primitive window.SaagarReauth(reason) = fail-open when !hasAdminPin(), else promptVerifyOnly + auditLog, returns boolean, no caching. Export becomes pure shell-side (re-auth at exportBackup/exportMigration entry, once). Payroll/cash lock/reopen/approve/void become a hybrid: shell provides the channel, each blob site gets a one-line defensive guard (typeof-checked, fail-open). Reuse promptVerifyOnly/verifyPin/auditLog — no new machinery, no storage-core touch, no new libs. Optional single st_v2_ policy toggle wired into renderSecurityPanel; otherwise zero new keys. Device risk light (localStorage reads + prompt + parent calls).",
+  "openQuestions": [
+    "Exact sensitive-action set for P1-51: confirm it is payroll lock (lockRun) + run reopen + setRunStatus approve + DSR/cash void/approve + export/migration — i.e. which specific blob functions in payroll.html/dsr.html/stock.html/expense.html get the guard? A precise site list is needed before the build wave (this reconcile is read-only).",
+    "Re-auth caching: acceptance bar says 'regardless of session age' — interpret as ALWAYS re-prompt (no grace window)? Or is a short (e.g. 60s) grace acceptable to reduce prompt fatigue during a lock+slip+share sequence? Recommend always-prompt for R0-W1.",
+    "Policy toggle: ship the fixed always-on set (no key), or add st_v2_sensitive_reauth so the owner can disable it? If added, also decide portability (appControlKeys inclusion) given ADMIN_IDLE_MIN_KEY was left non-portable.",
+    "Staff reachability: are any of the sensitive money actions reachable in a non-admin staff session? If yes, re-auth would demand the ADMIN pin and block staff — confirm the intended actor for each action.",
+    "Should idle auto-lock also cover a signed-in-staff (non-admin) session beyond the existing background/pagehide sign-out, or is admin-scoped idle + background staff sign-out sufficient for SEC-04 (P1-37 covers the launch gate)?"
+  ],
+  "_id": "SEC-04"
+}

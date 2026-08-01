@@ -783,7 +783,11 @@
     }
 
     /* ════════ misc + mark seeded ════════ */
-    var demoProfile = { id: DAYS >= 700 ? 'two-year-review-v1' : 'large-review-v1', syntheticOnly: true, daysBack: DAYS, calendarDays: DSTR.length, walkInsPerWorkingDay: WALK, startDate: DSTR[0], endDate: TODAY, stores: ['WLMHW', 'HEMW'], qmsLive: qLive.length, qmsArchived: archived, serviceCases: SVC_TOTAL, payrollLockedMonths: Object.keys(payRuns).length };
+    var stockEndDate = DSTR[DSTR.length - 1];
+    while (stockEndDate && isWeekend(new Date(stockEndDate + 'T12:00:00'))) {
+      stockEndDate = DSTR[DSTR.indexOf(stockEndDate) - 1];
+    }
+    var demoProfile = { id: DAYS >= 700 ? 'two-year-review-v1' : 'large-review-v1', syntheticOnly: true, daysBack: DAYS, calendarDays: DSTR.length, walkInsPerWorkingDay: WALK, startDate: DSTR[0], endDate: TODAY, stockEndDate: stockEndDate, stores: ['WLMHW', 'HEMW'], qmsLive: qLive.length, qmsArchived: archived, serviceCases: SVC_TOTAL, payrollLockedMonths: Object.keys(payRuns).length };
     await writeBulk(function () { set('gm_role', 'owner'); set('saagar_owner_name', 'Sagar'); set('saagar_demo_profile_v1', demoProfile); set('saagar_demo_seeded', 'v4_' + DAYS + 'd_' + WALK + 'w'); });
     try { console.log('[demo-seed] BIG ' + DSTR.length + ' days · ' + qLive.length + ' live + ' + archived + ' archived QMS · ' + SVC_TOTAL + ' service · ' + payRows.length + ' payroll'); } catch (e) {}
     prog(100, 'done'); await yieldUI();
