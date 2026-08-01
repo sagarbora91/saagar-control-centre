@@ -2,8 +2,14 @@
 
 **Purpose:** close the three physical-device gates left PENDING by
 `verification/BKP03-DAT02-API23-2026-07-29.md` and `verification/R0-R1-CLOSEOUT-2026-07-29.md`.
-**Build under test:** `Retail/SaagarCC-DemoData-v2.9.apk` — versionCode 209, versionName 2.9, `com.saagartraders.bcc`,
-minSdk 23, targetSdk 34, at-rest encryption ON, `allowBackup=false`, **demo-seeded**, **debug-signed**.
+**Build under test:** `V:\Co work\Projects\Retail\SaagarCC-DemoData-2Years-D1-D3-v2.9.apk`
+- SHA-256: `77111CE3E9967C224340C10B4CE70B5487678E3080CEA7CEB96A5DF7F1FABEBD`
+- versionCode 209, versionName 2.9, `com.saagartraders.bcc`, minSdk 23,
+  targetSdk 34, at-rest encryption ON, native incremental SQLite, demo-seeded,
+  debug-signed.
+- The earlier `4545DA...` and `6B7B77...` APK hashes are superseded and must
+  not be tested.
+
 **Run on BOTH accepted devices** (primary + the older API-23-class device). Record every row; a blank row is a fail.
 
 ---
@@ -21,6 +27,26 @@ minSdk 23, targetSdk 34, at-rest encryption ON, `allowBackup=false`, **demo-seed
 > **Where everything lives:** Settings → **Backup & restore** (buttons: Create encrypted backup · Set up automatic
 > off-device backup · Run automatic backup now · Back up → Share to Drive · Restore from file · Restore from device
 > backup) and the **Storage performance acceptance (DAT-02)** card directly beneath it.
+
+---
+
+## Crash regression preflight - native SQLite
+
+Run this before DAT-02. Do not record PASS from source or automated tests.
+
+| # | Step | Expected | Result |
+|---|---|---|---|
+| P1 | Fresh-install the exact checksum above; open and wait for the two-year seed to finish | App remains open and shows the synthetic-data banner | |
+| P2 | Open each module one by one and remain in each for at least 15 seconds | No close, restart, ANR, or blank screen after the former six-second save point | |
+| P3 | On Home/Today select recent, one-year-old, and near-start two-year dates; remain 15 seconds on each | Back-date views render and stay open | |
+| P4 | Save representative QMS, Service, Cash/Expense, Leave/Payroll, and Stock changes; wait 15 seconds after each | Save confirms; app stays open | |
+| P5 | Navigate away, relaunch, and verify P4 data | Incremental SQLite readback matches | |
+| P6 | Kill the process during a fresh bulk seed/restore on a sacrificial install, then relaunch | Previous live dataset remains intact; partial staging is not published | |
+| P7 | Repeat P2-P5 after device restart | Same result | |
+
+If any app close occurs, stop, capture Android logcat for
+`com.saagartraders.bcc`, and mark the row FAIL. Do not reduce data volume as a
+substitute for fixing the storage path.
 
 ---
 
@@ -48,8 +74,9 @@ real DB at roughly 10–15 MB). A pass on demo data does **not** by itself satis
 Record which option you used: ________________
 
 **If a device fails:** stop and report the numbers. Per the verification record, a failure on either device reopens the
-worker/storage-engine rewrite — it is not a tuning exercise. Also note honestly: `db.export()` is still synchronous;
-passing this gate does **not** mean the export moved off the main thread.
+worker/storage-engine rewrite — it is not a tuning exercise. The compatibility metric is still named `exportMs`, but native mode now measures
+bounded record encode/transaction work and dispatches before the legacy
+`db.export()` fallback. Record the displayed value verbatim.
 
 ---
 
@@ -142,6 +169,8 @@ State plainly in any sign-off:
 - **Key fragility is real.** Uninstall, factory reset, or a lock-screen credential change destroys the hardware key and
   makes the on-device ciphertext unrecoverable — the off-device `.sccbak` is then the only recovery. This is exactly
   why Drill B/C matter.
-- **DAT-02 says nothing about threading.** `db.export()` remains synchronous.
+- **DAT-02 remains device evidence.** In native mode the compatibility metric
+  called `exportMs` measures bounded record encode/transaction work; the old
+  whole-file `db.export()` path is fallback-only.
 - **Still separately pending:** root/debug/ADB posture matrix on a *production-signed* build, staff UAT, legal/owner
   approval of the policy pack, and the timed incident rehearsal.

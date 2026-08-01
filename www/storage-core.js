@@ -53,15 +53,104 @@
     var SQL = null, db = null, _ready = false, _dirty = false, _bulk = false, _saveTimer = null, _resetting = false;
     var _whenReadyCbs = [], _bootTimer = null, _lastError = '', _lastSavedAt = null, _dbFromFile = false;
     var _persisting = false, _persistAgain = false, _persistP = null;
+    var _nativeMode = false, _nativeBooting = false, _nativeRows = 0, _nativeClearSeq = 0, _nativeReplaceSeq = 0;
+    var _storageBlocked = false, _authorityPending = false;
+    var _bootAttempt = 0, _activeBootAttempt = 0, _nativeStatusSafe = null, _storageInfoAttempt = 0;
+    var nativeDirty = new Map();
     var _persistPerf = [], _persistCounter = 0;   /* §13.2 persist mutex — serialize whole-file FS writes so concurrent flushes never race on the temp files */
     var dirtyKeys = new Set();          /* §13.4 retry set — failed kv writes stay here for retry */
     var _seq = 0;                       /* §13.1 monotonic WAL sequence — makes clear race-free */
     var DB_FILE = 'bcc.sqlite';
     var WAL_KEY = 'saagar_storage_wal';   /* §13.1 synchronous native-LS journal */
     var MIGRATED_KEY = 'saagar_storage_migrated';  /* §13.3 one-way marker: DB is authoritative */
+    var NATIVE_MIGRATED_KEY = 'saagar_native_store_migrated_v1';  /* fail closed instead of opening a stale legacy snapshot */
     var LOG_KEY = 'saagar_sqlite_log';
     var DAT02_KEY = 'saagar_dat02_acceptance_v1';
-    var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_sqlite_log': 1, 'saagar_dat02_acceptance_v1': 1 };
+    var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_native_store_migrated_v1': 1, 'saagar_sqlite_log': 1, 'saagar_dat02_acceptance_v1': 1 };
+    var RecoveryPolicy = window.SaagarStorageRecoveryPolicy || null;
+    try { _authorityPending = nGet.call(ls, NATIVE_MIGRATED_KEY) === '1'; } catch (e) { _authorityPending = false; }
+    var _recovery = {
+      state: _authorityPending ? 'pending' : 'idle',
+      code: '',
+      stage: _authorityPending ? 'native-status' : 'startup',
+      attempt: 0,
+      canRetry: true,
+      canRestore: false,
+      nativeMarker: _authorityPending,
+      pluginPresent: false,
+      schemaVersion: null,
+      expectedRows: null,
+      loadedRows: 0,
+      storage: null
+    };
+    var RECOVERY_CODES = {
+      PLUGIN_MISSING:1, STORE_TIMEOUT:1, NO_SPACE:1, DB_OPEN_FAILED:1,
+      DB_READ_ONLY:1, DB_IO_FAILED:1, SCHEMA_UNSUPPORTED:1,
+      INTEGRITY_FAILED:1, MIGRATION_INCOMPLETE:1, KEY_UNAVAILABLE:1,
+      ROW_AUTH_FAILED:1, ROW_FORMAT_INVALID:1, PAGE_CURSOR_INVALID:1,
+      ROW_COUNT_MISMATCH:1, DB_READ_FAILED:1, STORE_UNAVAILABLE:1
+    };
+    function recoveryCode(error, fallback) {
+      if (RecoveryPolicy && RecoveryPolicy.reasonFromError) return RecoveryPolicy.reasonFromError(error, fallback);
+      var candidate = typeof error === 'string' ? error : (error && error.data && error.data.reason) || (error && error.code);
+      candidate = String(candidate || '').toUpperCase();
+      if (RECOVERY_CODES[candidate]) return candidate;
+      fallback = String(fallback || '').toUpperCase();
+      return RECOVERY_CODES[fallback] ? fallback : 'STORE_UNAVAILABLE';
+    }
+    function inspectNativeStatus(status, requireMigrated) {
+      if (RecoveryPolicy && RecoveryPolicy.inspectStatus) return RecoveryPolicy.inspectStatus(status, requireMigrated);
+      if (!status || status.available !== true) return { ok:false, code:recoveryCode(status, 'STORE_UNAVAILABLE') };
+      if (String(status.integrity || '').toLowerCase() !== 'ok') return { ok:false, code:'INTEGRITY_FAILED' };
+      if (requireMigrated && status.migrated !== true) return { ok:false, code:'MIGRATION_INCOMPLETE' };
+      var rows = Number(status.rows);
+      if (!Number.isFinite(rows) || rows < 0 || Math.floor(rows) !== rows) return { ok:false, code:'ROW_COUNT_MISMATCH' };
+      return { ok:true, code:'', rows:rows };
+    }
+    function recoveryError(code, message) {
+      var error = new Error(message || code || 'Secure storage unavailable');
+      error.code = recoveryCode(code, 'STORE_UNAVAILABLE');
+      return error;
+    }
+    function safeNativeStatus(status) {
+      status = status && typeof status === 'object' ? status : {};
+      function safeNumber(value) { var number = Number(value); return Number.isFinite(number) && number >= 0 ? Math.floor(number) : null; }
+      var storage = RecoveryPolicy && RecoveryPolicy.safeStorage ? RecoveryPolicy.safeStorage(status.storage) : (function () {
+        var input = status.storage && typeof status.storage === 'object' ? status.storage : {};
+        return { totalBytes:safeNumber(input.totalBytes), availableBytes:safeNumber(input.availableBytes), freeBytes:safeNumber(input.freeBytes), databaseBytes:safeNumber(input.databaseBytes), walBytes:safeNumber(input.walBytes), shmBytes:safeNumber(input.shmBytes), journalBytes:safeNumber(input.journalBytes), nativeStoreBytes:safeNumber(input.nativeStoreBytes) };
+      })();
+      return { contractVersion:safeNumber(status.contractVersion), available:status.available === true, schemaVersion:safeNumber(status.schemaVersion), rows:safeNumber(status.rows), stagedRows:safeNumber(status.stagedRows), migrated:status.migrated === true, integrity:String(status.integrity || '').toLowerCase() === 'ok' ? 'ok' : 'failed', storage:storage };
+    }
+    function safeStorageInfo(value) {
+      var policy = null;
+      try { policy = window.SaagarStorageCapacityPolicy || null; } catch (e) {}
+      if (policy && typeof policy.sanitizeStorage === 'function') {
+        value = policy.sanitizeStorage(value);
+      } else {
+        value = value && typeof value === 'object' ? value : {};
+      }
+      function safeBytes(input) {
+        var type = typeof input;
+        if (input === null || input === undefined || (type !== 'number' && type !== 'string')) return null;
+        if (type === 'string' && input.trim() === '') return null;
+        var number = Number(input);
+        if (!Number.isFinite(number)) return null;
+        return Math.min(Number.MAX_SAFE_INTEGER || 9007199254740991, Math.max(0, Math.floor(number)));
+      }
+      return {
+        totalBytes:safeBytes(value.totalBytes),
+        availableBytes:safeBytes(value.availableBytes),
+        nativeStoreBytes:safeBytes(value.nativeStoreBytes)
+      };
+    }
+    function refreshStorageInfo() {
+      var attempt = ++_storageInfoAttempt, plugin = nativeStorePlugin();
+      if (!plugin || typeof plugin.storageInfo !== 'function') return Promise.resolve(null);
+      return Promise.resolve().then(function () { return plugin.storageInfo({}); }).then(function (value) {
+        if (attempt !== _storageInfoAttempt) return null;
+        try { return safeStorageInfo(value); } catch (e) { return null; }
+      }, function () { return null; });
+    }
     var SAVE_DEBOUNCE = 6000;           /* whole-file export is heavy */
     var BOOT_TIMEOUT_MS = 6000;         /* §13.6 hard timeout — generous so a SLOW device loads the real DB
                                            before falling back (was 1800; the flag-ON audit found a slow-boot
@@ -85,6 +174,7 @@
 
     /* ── ported helpers from sqlite-store.js (copy, do not re-import) ── */
     function FSplugin() { try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem) || null; } catch (e) { return null; } }
+    function nativeStorePlugin() { try { return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SaagarNativeStore) || null; } catch (e) { return null; } }
     function dataDir() { return 'DATA'; }
 
     function log(m) {
@@ -193,13 +283,67 @@
       }).catch(function () { log('decrypt errored on ' + label); return null; });   /* adversarial S-2 fold: self-contained never-throw guarantee — a synchronous throw inside the .then (partial subtle impl / detached buffer) resolves to null → recovery chain, not an escaping rejection */
     }
 
+    var NATIVE_RECORD_MAGIC = 'SBKV1:';
+    var NATIVE_BATCH_OPS = 32;
+    function utf8Encode(value) { return new TextEncoder().encode(String(value)); }
+    function utf8Decode(value) { return new TextDecoder().decode(value); }
+    function sha256Hex(value) {
+      if (!subtleOK()) return Promise.reject(recoveryError('KEY_UNAVAILABLE'));
+      return window.crypto.subtle.digest('SHA-256', utf8Encode(value)).then(function (hash) {
+        var bytes = new Uint8Array(hash), out = '';
+        for (var i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0');
+        return out;
+      });
+    }
+    function encodeNativeRecord(key, value, dek) {
+      if (!dek) return Promise.reject(recoveryError('KEY_UNAVAILABLE'));
+      var iv = new Uint8Array(12); window.crypto.getRandomValues(iv);
+      var plain = utf8Encode(JSON.stringify([String(key), String(value == null ? '' : value)]));
+      return Promise.all([
+        sha256Hex(String(key)),
+        window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, dek, plain)
+      ]).then(function (parts) {
+        var ciphertext = new Uint8Array(parts[1]), envelope = new Uint8Array(iv.length + ciphertext.length);
+        envelope.set(iv, 0); envelope.set(ciphertext, iv.length);
+        return { keyId: parts[0], payload: NATIVE_RECORD_MAGIC + bytesToB64(envelope) };
+      });
+    }
+    function decodeNativeRecord(row, dek) {
+      if (!dek) return Promise.reject(recoveryError('KEY_UNAVAILABLE'));
+      if (!row || typeof row.keyId !== 'string' || !/^[a-f0-9]{64}$/.test(row.keyId) || typeof row.payload !== 'string' || row.payload.indexOf(NATIVE_RECORD_MAGIC) !== 0) {
+        return Promise.reject(recoveryError('ROW_FORMAT_INVALID'));
+      }
+      var envelope;
+      try { envelope = b64ToBytes(row.payload.slice(NATIVE_RECORD_MAGIC.length)); }
+      catch (e) { return Promise.reject(recoveryError('ROW_FORMAT_INVALID')); }
+      if (envelope.length < 29) return Promise.reject(recoveryError('ROW_FORMAT_INVALID'));
+      var iv = envelope.subarray(0, 12), ciphertext = envelope.subarray(12);
+      return window.crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, dek, ciphertext).then(function (plain) {
+        var pair;
+        try { pair = JSON.parse(utf8Decode(new Uint8Array(plain))); }
+        catch (e) { throw recoveryError('ROW_FORMAT_INVALID'); }
+        if (!Array.isArray(pair) || pair.length !== 2) throw recoveryError('ROW_FORMAT_INVALID');
+        return sha256Hex(String(pair[0])).then(function (keyId) {
+          if (keyId !== row.keyId) throw recoveryError('ROW_AUTH_FAILED');
+          return { key: String(pair[0]), value: String(pair[1]) };
+        });
+      }, function () { throw recoveryError('ROW_AUTH_FAILED'); });
+    }
+    function markNativeDirty(key, seq) {
+      if (!_nativeMode) return;
+      key = String(key);
+      nativeDirty.set(key, { seq: Number(seq) || _seq, type: MEM.has(key) ? 'set' : 'remove' });
+      _dirty = true;
+    }
     /* kv table ops — on a thrown DB error, queue the key for retry (§13.4, do NOT swallow) */
     function kvUpsert(k, v) {
+      if (_nativeMode) { markNativeDirty(k, _seq); return; }
       if (!db) { dirtyKeys.add(String(k)); return; }
       try { db.run('INSERT INTO kv(k,v) VALUES(?,?) ON CONFLICT(k) DO UPDATE SET v=excluded.v', [String(k), String(v == null ? '' : v)]); _dirty = true; }
       catch (e) { _lastError = (e && e.message) || 'upsert'; dirtyKeys.add(String(k)); }
     }
     function kvDelete(k) {
+      if (_nativeMode) { markNativeDirty(k, _seq); return; }
       if (!db) { dirtyKeys.add(String(k)); return; }
       try { db.run('DELETE FROM kv WHERE k=?', [String(k)]); _dirty = true; }
       catch (e) { _lastError = (e && e.message) || 'delete'; dirtyKeys.add(String(k)); }
@@ -212,7 +356,7 @@
        marker is set, reconcile() makes the DB authoritative (DB-wins) so a stale
        native-LS copy can never resurrect a deleted record (§13.3). */
     var MEM = new Map();
-    (function hydrate() { try { var n = nLen.call(ls); for (var i = 0; i < n; i++) { var k = nKey.call(ls, i); if (k != null && !INTERNAL[k]) MEM.set(k, nGet.call(ls, k)); } } catch (e) {} })();
+    if (!_authorityPending) (function hydrate() { try { var n = nLen.call(ls); for (var i = 0; i < n; i++) { var k = nKey.call(ls, i); if (k != null && !INTERNAL[k]) MEM.set(k, nGet.call(ls, k)); } } catch (e) {} })();
 
     /* ── §13.1 WAL — sequenced synchronous native-LS crash journal ──
        Every set/remove/clear is stamped with a monotonic seq. persist() captures
@@ -244,6 +388,7 @@
         _lastError = 'wal:' + ((e && e.message) || 'append'); try { _dirty = true; flush(); } catch (_) {}
       }
       if (entry.big) { _dirty = true; try { flush(); } catch (_) {} }   /* big value: persist promptly so the pointer is quickly backed by the DB */
+      return entry.seq;
     }
     /* §13.1 race-free clear: keep only entries newer than the persisted snapshot. Returns # kept. */
     function clearWALThrough(through) {
@@ -260,12 +405,13 @@
       log('WAL non-empty (' + w.length + ') — replaying');
       for (var i = 0; i < w.length; i++) {
         var op = w[i]; if (!op || !op.op) continue;
+        _seq = Math.max(_seq, Number(op.seq) || 0);
         try {
-          if (op.op === 'clear') { MEM.clear(); try { db && db.run('DELETE FROM kv'); } catch (e) {} }
-          else if (op.op === 'remove') { if (op.k != null) { MEM.delete(op.k); kvDelete(op.k); } }
+          if (op.op === 'clear') { MEM.clear(); try { db && db.run('DELETE FROM kv'); } catch (e) {} if (_nativeMode) { nativeDirty.clear(); _nativeClearSeq = Number(op.seq) || _seq; } }
+          else if (op.op === 'remove') { if (op.k != null) { MEM.delete(op.k); if (_nativeMode) markNativeDirty(op.k, op.seq); else kvDelete(op.k); } }
           else if (op.op === 'set') {
             if (op.big) { /* value not journaled inline — it should already be in the DB from the forced persist; if absent it was lost in the crash. */ if (!MEM.has(op.k)) log('WAL big-set ' + op.k + ' not recoverable from journal (relying on DB)'); }
-            else if (op.k != null) { MEM.set(op.k, op.v == null ? '' : op.v); kvUpsert(op.k, op.v == null ? '' : op.v); }
+            else if (op.k != null) { MEM.set(op.k, op.v == null ? '' : op.v); if (_nativeMode) markNativeDirty(op.k, op.seq); else kvUpsert(op.k, op.v == null ? '' : op.v); }
           }
         } catch (e) { log('WAL replay err ' + i + ': ' + (e && e.message)); }
       }
@@ -282,7 +428,94 @@
       if (_persistPerf.length > 40) _persistPerf = _persistPerf.slice(-40);
     }
     function scheduleSave() { if (_resetting || _bulk) return; clearTimeout(_saveTimer); _saveTimer = setTimeout(function () { flush(); }, SAVE_DEBOUNCE); }
+    function encodeNativeOp(snapshot, dek) {
+      if (snapshot.type === 'remove') return sha256Hex(snapshot.key).then(function (keyId) { return { type: 'remove', keyId: keyId, seq: snapshot.seq }; });
+      return encodeNativeRecord(snapshot.key, snapshot.value, dek).then(function (record) {
+        return { type: 'set', keyId: record.keyId, payload: record.payload, seq: snapshot.seq };
+      });
+    }
+    function applyNativeSnapshots(plugin, snapshots, clearFirst, dek, stage) {
+      var index = 0, pending = null, clearPending = !!clearFirst;
+      function nextBatch() {
+        var ops = [], bytes = 0;
+        function fill() {
+          if (pending) {
+            var pendingBytes = (pending.keyId || '').length + (pending.payload || '').length;
+            if (ops.length && bytes + pendingBytes > 12 * 1024 * 1024) return Promise.resolve();
+            ops.push(pending); bytes += pendingBytes; pending = null;
+          }
+          if (index >= snapshots.length || ops.length >= NATIVE_BATCH_OPS) return Promise.resolve();
+          return encodeNativeOp(snapshots[index++], dek).then(function (op) {
+            var opBytes = (op.keyId || '').length + (op.payload || '').length;
+            if (ops.length && bytes + opBytes > 12 * 1024 * 1024) { pending = op; return; }
+            ops.push(op); bytes += opBytes;
+            return fill();
+          });
+        }
+        return fill().then(function () {
+          if (!ops.length && !clearPending) return true;
+          var doClear = clearPending; clearPending = false;
+          return plugin.applyBatch({ ops: ops, clear: doClear, stage: stage === true }).then(function () {
+            if (index < snapshots.length || pending) return nextBatch();
+            return true;
+          });
+        });
+      }
+      return nextBatch();
+    }
+    function persistNative() {
+      var plugin = nativeStorePlugin();
+      if (_resetting || !_ready || !_nativeMode || !plugin) return Promise.resolve(false);
+      if (_persisting) { if (_dirty || nativeDirty.size || _nativeClearSeq || _nativeReplaceSeq) _persistAgain = true; return _persistP; }
+      if (!_dirty && !nativeDirty.size && !_nativeClearSeq && !_nativeReplaceSeq) return Promise.resolve(true);
+      _persisting = true;
+      var through = _seq, clearSeq = (_nativeClearSeq && _nativeClearSeq <= through) ? _nativeClearSeq : 0;
+      var replaceSeq = (_nativeReplaceSeq && _nativeReplaceSeq <= through) ? _nativeReplaceSeq : 0;
+      var snapshots = [];
+      if (replaceSeq) {
+        MEM.forEach(function (value, key) { if (!INTERNAL[key]) snapshots.push({ key: key, seq: through, type: 'set', value: value }); });
+      } else {
+        nativeDirty.forEach(function (entry, key) {
+          if (entry.seq <= through) snapshots.push({ key: key, seq: entry.seq, type: MEM.has(key) ? 'set' : 'remove', value: MEM.has(key) ? MEM.get(key) : '' });
+        });
+      }
+      var persistStarted = perfNow(), workStarted = perfNow(), perfId = ++_persistCounter;
+      _persistP = getDEK(true).then(function (dek) {
+        if (!dek) throw new Error('Native incremental persistence requires the Android Keystore encryption key.');
+        if (!replaceSeq) return applyNativeSnapshots(plugin, snapshots, !!clearSeq, dek, false);
+        return plugin.beginMigration({}).then(function () {
+          return applyNativeSnapshots(plugin, snapshots, false, dek, true);
+        }).then(function () { return plugin.finishMigration({ expectedRows: snapshots.length }); }).then(function (result) {
+          if (!result || result.migrated !== true || Number(result.rows) !== snapshots.length) throw new Error('Native bulk publish verification failed');
+          return true;
+        });
+      }).then(function () {
+        for (var i = 0; i < snapshots.length; i++) {
+          var current = nativeDirty.get(snapshots[i].key);
+          if (current && current.seq === snapshots[i].seq) nativeDirty.delete(snapshots[i].key);
+        }
+        if (clearSeq && _nativeClearSeq === clearSeq) _nativeClearSeq = 0;
+        if (replaceSeq && _nativeReplaceSeq === replaceSeq) _nativeReplaceSeq = 0;
+        var remaining = clearWALThrough(through);
+        _dirty = remaining > 0 || nativeDirty.size > 0 || _nativeClearSeq > 0 || _nativeReplaceSeq > 0;
+        _nativeRows = MEM.size;
+        _lastSavedAt = new Date().toISOString();
+        return true;
+      }, function (e) {
+        _lastError = (e && e.message) || 'native-persist';
+        log('native incremental persist failed: ' + _lastError + ' - WAL kept');
+        return false;
+      }).then(function (ok) {
+        recordPersistPerf(perfId, ok === true, perfNow() - workStarted, perfNow() - persistStarted);
+        _persisting = false;
+        if (_persistAgain) { _persistAgain = false; return persistNative(); }
+        if (_dirty || nativeDirty.size || _nativeClearSeq || _nativeReplaceSeq) scheduleSave();
+        return ok;
+      });
+      return _persistP;
+    }
     function persist() {
+      if (_nativeMode) return persistNative();
       if (_resetting || !_ready || !db || !FSplugin()) return Promise.resolve(false);
       /* MUTEX (§13.2): only one whole-file write at a time. A flush requested mid-persist sets a
          re-run flag and shares the in-flight promise, so callers awaiting flush() see a completed
@@ -326,7 +559,7 @@
     }
     function runPersistenceAcceptance() {
       var contract = window.SaagarPersistenceAcceptance;
-      if (!_ready || !db || !FSplugin()) return Promise.reject(new Error('SQLite persistence is not ready on this device.'));
+      if (!_ready || (_nativeMode ? !nativeStorePlugin() : (!db || !FSplugin()))) return Promise.reject(new Error('SQLite persistence is not ready on this device.'));
       if (!contract || typeof contract.evaluate !== 'function' || typeof window.requestAnimationFrame !== 'function') return Promise.reject(new Error('DAT-02 measurement service is unavailable.'));
       var samples = [];
       function oneSample() {
@@ -382,18 +615,27 @@
     var _keysCache = null;
     function memKeys() { if (_keysCache === null) _keysCache = Array.from(MEM.keys()); return _keysCache; }
 
+    function storageUnavailable() { return _storageBlocked || _authorityPending; }
+    function blockedStorageError() {
+      var error = new Error('Authoritative native storage is unavailable');
+      error.code = 'STORAGE_BLOCKED';
+      return error;
+    }
     /* ── §3.2 overrides: MEM authoritative once _ready; native passthrough before ── */
-    SP.getItem = function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); };
+    SP.getItem = function (k) { if (storageUnavailable()) return null; return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); };
     SP.setItem = function (k, v) {
+      if (storageUnavailable()) throw blockedStorageError();
       k = String(k); v = String(v);
-      if (_bulk && _ready) { if (!MEM.has(k)) _keysCache = null; MEM.set(k, v); kvUpsert(k, v); return; }   /* §bulk: MEM + in-memory DB only — no per-write WAL/flush; one durable persist at endBulk (seed/large restore) */
+      if (_bulk && _ready) { if (!MEM.has(k)) _keysCache = null; MEM.set(k, v); if (_nativeMode) { _seq++; markNativeDirty(k, _seq); } else kvUpsert(k, v); return; }   /* §bulk: MEM + in-memory DB only — no per-write WAL/flush; one durable persist at endBulk (seed/large restore) */
       var _isNew = !MEM.has(k);                         /* only a NEW key changes the key list */
       appendWAL('set', k, v);                          /* §13.1 synchronous journal FIRST */
       if (_ready) { MEM.set(k, v); if (_isNew) _keysCache = null; kvUpsert(k, v); scheduleSave(); _notify(k, undefined, v); }
       else { var r = nSet.call(ls, k, v); MEM.set(k, v); if (_isNew) _keysCache = null; return r; }   /* pre-ready: today's path + mirror */
     };
     SP.removeItem = function (k) {
+      if (storageUnavailable()) throw blockedStorageError();
       k = String(k);
+      if (_bulk && _ready) { MEM.delete(k); _keysCache = null; if (_nativeMode) { _seq++; markNativeDirty(k, _seq); } else kvDelete(k); return; }
       appendWAL('remove', k);
       /* §13.3: MIRROR the delete to native LS too. Native is a frozen migration snapshot used only as
          the last-ditch catastrophic safety copy; if we never propagated deletes, a key the user deleted
@@ -403,18 +645,21 @@
       else { var r = nRemove.call(ls, k); MEM.delete(k); _keysCache = null; return r; }
     };
     SP.clear = function () {
+      if (storageUnavailable()) throw blockedStorageError();
       if (_ready) {
-        appendWAL('clear');                            /* §13.1 single O(1) sentinel — immune to the WAL byte-bound */
+        if (_bulk) { _seq++; MEM.clear(); _keysCache = null; dirtyKeys.clear(); nativeDirty.clear(); if (_nativeMode) _nativeClearSeq = _seq; else try { db && db.run('DELETE FROM kv'); } catch (e) {} _dirty = true; return; }
+        var clearSeq = appendWAL('clear');                            /* §13.1 single O(1) sentinel — immune to the WAL byte-bound */
         /* §13.3: mirror the clear to native LS too (business keys only — keep WAL/marker/log/demo-guard)
            so the catastrophic re-migration finds no zombies. Synchronous + crash-safe (the WAL sentinel
            handles a crash before persist). */
         try { var ks = []; MEM.forEach(function (_v, k) { if (!INTERNAL[k]) ks.push(k); }); for (var ci = 0; ci < ks.length; ci++) { try { nRemove.call(ls, ks[ci]); } catch (e) {} } } catch (e) {}
         MEM.clear(); _keysCache = null; try { db && db.run('DELETE FROM kv'); } catch (e) {} dirtyKeys.clear();
+        if (_nativeMode) { nativeDirty.clear(); _nativeClearSeq = clearSeq; }
         _dirty = true; flush();                        /* force a persist — clear durability must not ride the debounce */
       } else { var r = nClear.call(ls); MEM.clear(); _keysCache = null; return r; }
     };
-    SP.key = function (i) { return _ready ? (memKeys()[i] || null) : nKey.call(ls, i); };  /* §13.7 ordered, O(1) via cache */
-    try { Object.defineProperty(SP, 'length', { configurable: true, get: function () { return _ready ? MEM.size : nLen.call(ls); } }); } catch (e) {}
+    SP.key = function (i) { if (storageUnavailable()) return null; return _ready ? (memKeys()[i] || null) : nKey.call(ls, i); };  /* §13.7 ordered, O(1) via cache */
+    try { Object.defineProperty(SP, 'length', { configurable: true, get: function () { if (storageUnavailable()) return 0; return _ready ? MEM.size : nLen.call(ls); } }); } catch (e) {}
 
     /* ── §13.3 reconcile() — marker-gated migration. Returns {firstBoot, verified}. ──
         • First C-boot (no marker): recovery (DB-only→MEM) + additive migrate-up
@@ -455,13 +700,170 @@
       return { firstBoot: !migrated, verified: verified };
     }
 
+    function loadNativeRows(plugin, status) {
+      var inspected = inspectNativeStatus(status, true);
+      if (!inspected.ok) return Promise.reject(recoveryError(inspected.code));
+      var expected = inspected.rows, loaded = 0, after = '';
+      _recovery.stage = 'native-read'; _recovery.expectedRows = expected; _recovery.loadedRows = 0;
+      MEM.clear(); _keysCache = null; db = null; dirtyKeys.clear();
+      return getDEK(false).then(function (dek) {
+        if (!dek) throw recoveryError('KEY_UNAVAILABLE');
+        function page() {
+          return Promise.resolve().then(function () {
+            return plugin.readPage({ afterKeyId: after, limit: 32, maxBytes: 2 * 1024 * 1024 });
+          }).catch(function (error) {
+            throw recoveryError(recoveryCode(error, 'DB_READ_FAILED'));
+          }).then(function (result) {
+            var rows = result && Array.isArray(result.rows) ? result.rows : [];
+            var chain = Promise.resolve();
+            rows.forEach(function (row) {
+              chain = chain.then(function () { return decodeNativeRecord(row, dek); }).then(function (record) {
+                if (!INTERNAL[record.key]) MEM.set(record.key, record.value);
+                loaded++; _recovery.loadedRows = loaded;
+              });
+            });
+            return chain.then(function () {
+              if (result && result.done === false) {
+                var next = String(result.afterKeyId || '');
+                if (!next || next === after) throw recoveryError('PAGE_CURSOR_INVALID');
+                after = next; return page();
+              }
+            });
+          });
+        }
+        return page();
+      }).then(function () {
+        if (_storageBlocked) return false;
+        if (loaded !== expected) throw recoveryError('ROW_COUNT_MISMATCH');
+        _nativeRows = loaded; _dbFromFile = loaded > 0; _nativeMode = true;
+        replayWAL(); _keysCache = null; _nativeBooting = false; _authorityPending = false; _storageBlocked = false;
+        _recovery.state = 'ready'; _recovery.code = ''; _recovery.stage = 'ready'; _recovery.loadedRows = loaded;
+        setReady();
+        if (_dirty || nativeDirty.size || _nativeClearSeq) flush();
+        try { nSet.call(ls, NATIVE_MIGRATED_KEY, '1'); } catch (e) {}
+        log('native incremental SQLite active (' + loaded + ' encrypted records)');
+        return true;
+      });
+    }
+    function migrateToNative(plugin) {
+      var snapshots = [], migrateSeq = _seq;
+      MEM.forEach(function (value, key) { if (!INTERNAL[key]) snapshots.push({ key: key, value: value, type: 'set', seq: migrateSeq }); });
+      return getDEK(true).then(function (dek) {
+        if (!dek) throw new Error('Android Keystore key unavailable for native migration');
+        return plugin.beginMigration({}).then(function () {
+          return applyNativeSnapshots(plugin, snapshots, false, dek, true);
+        }).then(function () {
+          return plugin.finishMigration({ expectedRows: snapshots.length });
+        });
+      }).then(function (result) {
+        if (!result || result.migrated !== true || Number(result.rows) !== snapshots.length) throw new Error('Native migration verification did not complete');
+        _nativeMode = true; _nativeRows = snapshots.length; try { if (db && db.close) db.close(); } catch (e) {} db = null; dirtyKeys.clear(); nativeDirty.clear(); _nativeClearSeq = 0; _nativeReplaceSeq = 0;
+        clearWALThrough(migrateSeq); _dirty = false; _lastSavedAt = new Date().toISOString(); _nativeBooting = false;
+        try { nSet.call(ls, MIGRATED_KEY, '1'); nSet.call(ls, NATIVE_MIGRATED_KEY, '1'); } catch (e) {}
+        log('migrated and verified ' + snapshots.length + ' records in native incremental SQLite');
+        return true;
+      });
+    }
     /* ── §13.5 / §13.6 boot (async) ── */
+    function nativeMarkerSet() { try { return nGet.call(ls, NATIVE_MIGRATED_KEY) === '1'; } catch (e) { return false; } }
+    function recoveryDescriptor(code) {
+      if (RecoveryPolicy && RecoveryPolicy.descriptor) return RecoveryPolicy.descriptor(code);
+      return { code:recoveryCode(code, 'STORE_UNAVAILABLE'), title:'Secure storage needs recovery', body:'SAAGAR could not verify its protected database and has blocked stale fallback data. Retry once, then copy the diagnostics for support. Do not clear app data.' };
+    }
+    function recoveryStatus() {
+      var description = recoveryDescriptor(_recovery.code || 'STORE_UNAVAILABLE');
+      return {
+        state:_recovery.state,
+        code:_recovery.code,
+        title:description.title,
+        message:description.body,
+        stage:_recovery.stage,
+        attempt:_recovery.attempt,
+        canRetry:_recovery.canRetry,
+        canRestore:false,
+        nativeMarker:_recovery.nativeMarker,
+        pluginPresent:_recovery.pluginPresent,
+        schemaVersion:_recovery.schemaVersion,
+        expectedRows:_recovery.expectedRows,
+        loadedRows:_recovery.loadedRows,
+        storage:_recovery.storage
+      };
+    }
+    function buildRecoveryDiagnostics() {
+      var appVersion = 'unknown', apkBuild = 'unknown';
+      try { if (window.__SAAGAR_BUILD_ID) { appVersion = window.__SAAGAR_BUILD_ID.appVersion || appVersion; apkBuild = window.__SAAGAR_BUILD_ID.apkBuild || apkBuild; } } catch (e) {}
+      try { if (typeof APP_VERSION !== 'undefined') appVersion = APP_VERSION; } catch (e) {}
+      try { if (typeof APK_BUILD !== 'undefined') apkBuild = APK_BUILD; } catch (e) {}
+      var input = Object.assign({}, _recovery, { appVersion:appVersion, apkBuild:apkBuild });
+      if (RecoveryPolicy && RecoveryPolicy.diagnostics) return RecoveryPolicy.diagnostics(input);
+      return { format:'SAAGAR_STORAGE_RECOVERY', contractVersion:1, createdAt:new Date().toISOString(), appVersion:String(appVersion), apkBuild:String(apkBuild), state:_recovery.state, code:recoveryCode(_recovery.code, 'STORE_UNAVAILABLE'), stage:_recovery.stage, attempt:_recovery.attempt, canRetry:true, canRestore:false, nativeMarker:_recovery.nativeMarker, pluginPresent:_recovery.pluginPresent };
+    }
+    function copyText(text) {
+      try {
+        if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+          return Promise.resolve(window.navigator.clipboard.writeText(text)).then(function () { return true; }, function () { return fallback(); });
+        }
+      } catch (e) {}
+      return fallback();
+      function fallback() {
+        try {
+          var field = document.createElement('textarea'); field.value = text;
+          field.setAttribute('readonly', ''); field.style.cssText = 'position:fixed;left:-9999px;top:0';
+          document.body.appendChild(field); field.select();
+          var copied = !!document.execCommand('copy'); document.body.removeChild(field);
+          return Promise.resolve(copied);
+        } catch (e) { return Promise.resolve(false); }
+      }
+    }
+    function copyRecoveryDiagnostics() { return copyText(JSON.stringify(buildRecoveryDiagnostics(), null, 2)); }
+    function retryRecovery() {
+      if (!storageUnavailable()) return false;
+      _recovery.stage = 'reload'; _recovery.canRetry = false;
+      try { if (window.location && typeof window.location.reload === 'function') { window.location.reload(); return true; } } catch (e) {}
+      try { if (typeof location !== 'undefined' && typeof location.reload === 'function') { location.reload(); return true; } } catch (e) {}
+      _recovery.canRetry = true; return false;
+    }
+    function blockNativeStore(reason, stage) {
+      var code = recoveryCode(reason, 'STORE_UNAVAILABLE');
+      _storageBlocked = true; _authorityPending = true; _nativeBooting = false; _lastError = 'native-store-blocked:' + code;
+      _recovery.state = 'blocked'; _recovery.code = code; _recovery.stage = stage || _recovery.stage || 'native-status'; _recovery.canRetry = true;
+      clearTimeout(_bootTimer); log('BLOCKED: native authoritative store unavailable - refusing stale legacy fallback (' + code + ')');
+      function renderBlocked() {
+        try {
+          if (!document.body || document.getElementById('saagar-storage-blocked')) return;
+          var box = document.createElement('section'); box.id = 'saagar-storage-blocked';
+          box.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#081a33;color:#fff;padding:32px;font:16px/1.5 system-ui;display:flex;align-items:center;justify-content:center;text-align:center';
+          var description = recoveryDescriptor(code);
+          var message = document.createElement('div'); message.style.cssText = 'width:min(620px,100%);border:1px solid #d4af37;border-radius:14px;padding:24px;background:#10294d;box-shadow:0 18px 50px rgba(0,0,0,.28)';
+          var title = document.createElement('h1'); title.style.cssText = 'color:#d4af37;margin:0 0 12px;font-size:28px'; title.textContent = description.title;
+          var body = document.createElement('p'); body.style.cssText = 'margin:0 0 14px'; body.textContent = description.body;
+          var ref = document.createElement('p'); ref.style.cssText = 'margin:0 0 20px;color:#c9d7ea;font:600 13px/1.4 ui-monospace,monospace'; ref.textContent = 'Recovery code: ' + code;
+          var actions = document.createElement('div'); actions.style.cssText = 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap';
+          var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Retry storage'; retry.style.cssText = 'border:0;border-radius:9px;padding:11px 16px;background:#d4af37;color:#081a33;font-weight:800';
+          var copy = document.createElement('button'); copy.type = 'button'; copy.textContent = 'Copy diagnostics'; copy.style.cssText = 'border:1px solid #91a6c2;border-radius:9px;padding:11px 16px;background:#18375f;color:#fff;font-weight:700';
+          var feedback = document.createElement('p'); feedback.setAttribute('role', 'status'); feedback.style.cssText = 'min-height:24px;margin:14px 0 0;color:#c9d7ea;font-size:13px';
+          retry.addEventListener('click', function () { retry.disabled = true; feedback.textContent = 'Restarting secure storage check…'; if (!retryRecovery()) { retry.disabled = false; feedback.textContent = 'Please close and reopen SAAGAR manually.'; } });
+          copy.addEventListener('click', function () { copy.disabled = true; copyRecoveryDiagnostics().then(function (ok) { feedback.textContent = ok ? 'Diagnostics copied. No business data or PINs were included.' : 'Copy failed. Please take a screenshot showing the recovery code.'; copy.disabled = false; }); });
+          actions.appendChild(retry); actions.appendChild(copy);
+          message.appendChild(title); message.appendChild(body); message.appendChild(ref); message.appendChild(actions); message.appendChild(feedback); box.appendChild(message); document.body.appendChild(box);
+        } catch (e) {}
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderBlocked);
+      else renderBlocked();
+    }
     function setReady() { if (_ready) return; _ready = true; clearTimeout(_bootTimer); var cbs = _whenReadyCbs.slice(); _whenReadyCbs.length = 0; cbs.forEach(function (cb) { try { cb(); } catch (e) {} }); }
-    function bootTimeoutFallback() { if (_ready) return; log('boot timeout — native-LS fallback (MEM already hydrated at Step 0)'); setReady(); }
-    function boot() {
-      if (typeof initSqlJs !== 'function') { log('sql.js absent — native-LS fallback'); setReady(); return; }
-      _bootTimer = setTimeout(bootTimeoutFallback, BOOT_TIMEOUT_MS);
-      initSqlJs({ locateFile: function (f) { return f; } }).then(function (_SQL) {
+    function bootTimeoutFallback() {
+      if (_ready) return;
+      if (_nativeBooting && _authorityPending) { blockNativeStore('STORE_TIMEOUT', _recovery.stage || 'native-status'); return; }
+      if (_nativeBooting) {
+        _nativeBooting = false; _activeBootAttempt = ++_bootAttempt;
+        log('native SQLite probe timed out - legacy persistence remains authoritative'); bootLegacy(null); return;
+      }
+      log('boot timeout - native-LS fallback (MEM already hydrated at Step 0)'); setReady();
+    }
+    function bootLegacy(migrationPlugin) {
+      if (typeof initSqlJs !== 'function') { _nativeBooting = false; log('sql.js absent - native-LS fallback'); setReady(); return Promise.resolve(false); }
+      return initSqlJs({ locateFile: function (f) { return f; } }).then(function (_SQL) {
         if (_ready) return;
         SQL = _SQL; var FS = FSplugin();
         function rd(path) { return FS ? FS.readFile({ path: path, directory: dataDir() }).then(function (r) { return r && r.data ? decryptIfEnveloped(b64ToBytes(r.data), path) : null; }).catch(function () { return null; }) : Promise.resolve(null); }   /* R0-W2 E4: sniff+decrypt per file; plaintext passes through untouched (zero async cost added — decryptIfEnveloped resolves synchronously-shaped for non-envelopes) */
@@ -494,6 +896,14 @@
           var rc = reconcile();
           _keysCache = null;                 /* MEM rebuilt by replayWAL + reconcile — drop any cached key list */
           if (lateHeal) log('late DB load after boot-timeout fallback — MEM healed from DB (was on native-LS fallback)');
+          if (migrationPlugin && !lateHeal) {
+            return migrateToNative(migrationPlugin).then(function () { setReady(); return true; }, function (e) {
+              _nativeBooting = false; _lastError = (e && e.message) || 'native-migration';
+              log('native migration failed (' + _lastError + ') - legacy persistence retained');
+              setReady(); _dirty = true; return flush();
+            });
+          }
+          _nativeBooting = false;
           setReady();
           if (FS) {
             /* R0-W2 E5 — seal the .bak on the FIRST encrypted boot (the boot where the on-disk DB is still
@@ -516,7 +926,40 @@
             });
           }
         });
-      }).catch(function (e) { _lastError = (e && e.message) || 'init'; log('sql.js init failed: ' + _lastError + ' — fallback'); setReady(); });
+      }).catch(function (e) { _nativeBooting = false; _lastError = (e && e.message) || 'init'; log('sql.js init failed: ' + _lastError + ' - fallback'); setReady(); return false; });
+    }
+    function boot() {
+      var attempt = ++_bootAttempt; _activeBootAttempt = attempt;
+      _bootTimer = setTimeout(bootTimeoutFallback, BOOT_TIMEOUT_MS);
+      var plugin = nativeStorePlugin(), wasNative = nativeMarkerSet();
+      _recovery.attempt = attempt; _recovery.nativeMarker = wasNative; _recovery.pluginPresent = !!plugin; _recovery.stage = 'native-status';
+      if (!plugin) { if (wasNative) blockNativeStore('PLUGIN_MISSING', 'native-status'); else bootLegacy(null); return; }
+      _nativeBooting = true;
+      Promise.resolve().then(function () { return plugin.status({}); }).then(function (status) {
+        if (attempt !== _activeBootAttempt || _storageBlocked) return false;
+        _nativeStatusSafe = safeNativeStatus(status);
+        _recovery.schemaVersion = _nativeStatusSafe.schemaVersion;
+        _recovery.storage = _nativeStatusSafe.storage;
+        var nativeAuthoritative = wasNative || (status && status.migrated === true);
+        if (nativeAuthoritative) { _authorityPending = true; _recovery.state = 'pending'; }
+        var inspected = inspectNativeStatus(status, nativeAuthoritative);
+        if (inspected.ok && status.migrated === true) {
+          _recovery.expectedRows = inspected.rows;
+          return loadNativeRows(plugin, status).catch(function (e) {
+            if (attempt !== _activeBootAttempt || _storageBlocked) return false;
+            _nativeMode = false;
+            if (nativeAuthoritative) { blockNativeStore(e, _recovery.stage || 'native-read'); return false; }
+            log('native load failed before first migration - legacy persistence retained');
+            return bootLegacy(plugin);
+          });
+        }
+        if (wasNative) { blockNativeStore(inspected.code, 'native-status'); return false; }
+        return bootLegacy(plugin);
+      }, function (e) {
+        if (attempt !== _activeBootAttempt || _storageBlocked) return false;
+        if (wasNative) { blockNativeStore(recoveryCode(e, 'STORE_UNAVAILABLE'), 'native-status'); return false; }
+        _nativeBooting = false; log('native store unavailable before first migration - legacy persistence active'); return bootLegacy(null);
+      });
     }
     if (document.readyState === 'complete' || document.readyState === 'interactive') boot();
     else document.addEventListener('DOMContentLoaded', boot);
@@ -529,16 +972,18 @@
 
     /* ── §13.5 full Factory-Reset wipe — atomic + awaited (called by index.html factoryReset) ── */
     function resetAll() {
+      _storageInfoAttempt++;   /* invalidate any pre-reset device/database measurement */
       _resetting = true; clearTimeout(_saveTimer); clearTimeout(_bootTimer);
       try { MEM.clear(); _keysCache = null; } catch (e) {}
       try { if (db) db.run('DELETE FROM kv'); } catch (e) {}
-      _dirty = false; dirtyKeys.clear();
+      _dirty = false; dirtyKeys.clear(); nativeDirty.clear(); _nativeClearSeq = 0; _nativeReplaceSeq = 0;
       try { nClear.call(ls); } catch (e) {}                                  /* native LS (incl. WAL + marker) */
       try { nSet.call(ls, 'saagar_demo_seeded', 'cleared'); } catch (e) {}   /* survive the reload so the seeder does NOT repopulate */
       var FS = FSplugin(), ps = [];
       if (FS) ['', '.tmp', '.bak', '.bak.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DB_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });
       if (FS) ['', '.tmp'].forEach(function (s) { try { ps.push(FS.deleteFile({ path: DEK_FILE + s, directory: dataDir() }).catch(function () {})); } catch (e) {} });   /* R0-W2 E6: wipe the wrapped DEK with the data (Keystore KEK alias is left; a fresh DEK re-wraps under it, or a new KEK mints — either way the old ciphertext is gone) */
       _dekReadP = null; _dekWriteP = null;
+      try { var nativePlugin = nativeStorePlugin(); if (nativePlugin && nativePlugin.reset) ps.push(nativePlugin.reset({}).catch(function () {})); } catch (e) {}
       try { if (window.SaagarStore && window.SaagarStore.photo && window.SaagarStore.photo.clearAll) ps.push(Promise.resolve(window.SaagarStore.photo.clearAll()).catch(function () {})); } catch (e) {}
       return Promise.all(ps);
     }
@@ -548,16 +993,21 @@
       enabled: true,
       phase: 2,
       mode: 'mem-source',
-      get: function (k) { return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); },
+      get: function (k) { if (storageUnavailable()) return null; return _ready ? (MEM.has(String(k)) ? MEM.get(String(k)) : null) : nGet.call(ls, k); },
       set: function (k, v) { return SP.setItem.call(ls, k, v); },
       remove: function (k) { return SP.removeItem.call(ls, k); },
-      keys: function () { if (_ready) return memKeys().slice(); var a = [], n = nLen.call(ls); for (var i = 0; i < n; i++) a.push(nKey.call(ls, i)); return a; },
-      length: function () { return _ready ? MEM.size : nLen.call(ls); },
+      keys: function () { if (storageUnavailable()) return []; if (_ready) return memKeys().slice(); var a = [], n = nLen.call(ls); for (var i = 0; i < n; i++) a.push(nKey.call(ls, i)); return a; },
+      length: function () { if (storageUnavailable()) return 0; return _ready ? MEM.size : nLen.call(ls); },
       ready: function () { return _ready; },
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
-      flush: function () { _dirty = true; return flush(); },
+      flush: function () { if (storageUnavailable()) return Promise.reject(blockedStorageError()); _dirty = true; return flush(); },
+      recoveryStatus: recoveryStatus,
+      recoveryDiagnostics: buildRecoveryDiagnostics,
+      copyRecoveryDiagnostics: copyRecoveryDiagnostics,
+      retryRecovery: retryRecovery,
       runPersistenceAcceptance: runPersistenceAcceptance,
       persistenceAcceptance: readPersistenceAcceptance,
+      refreshStorageInfo: refreshStorageInfo,
       /* ── R0-W3-S3 primitive: whole-blob seal/unseal over the SAME DEK/SBCC1 envelope as the DB.
          INERT until R0-W3-S3 wires callers (auto-backup seal-on-write + restore sniff). Flag-gated via
          encryptForPersist: on a flag-off build seal returns PLAINTEXT bytes (correct — R0-W3-S3 seal-on-write
@@ -572,9 +1022,12 @@
          restore are re-runnable (re-seed / re-import), so skipping per-write WAL inside the burst is safe. */
       bulk: function (fn) {
         if (typeof fn !== 'function') return Promise.resolve(false);
+        if (storageUnavailable()) return Promise.reject(blockedStorageError());
         if (!_ready) { try { fn(); } catch (e) {} return (db ? flush() : Promise.resolve(false)); }
-        _bulk = true;
-        try { fn(); } finally { _bulk = false; }
+        _bulk = true; var bulkError = null;
+        try { fn(); } catch (e) { bulkError = e; } finally { _bulk = false; }
+        if (bulkError) { if (_nativeMode) { nativeDirty.clear(); _dirty = walRead().length > 0; } throw bulkError; }
+        if (_nativeMode) _nativeReplaceSeq = _seq || ++_seq;
         _dirty = true; return flush();
       },
       /* §bulkAsync — like bulk() but holds the no-flush window across an ASYNC fn (one that yields to the UI
@@ -584,18 +1037,19 @@
          does exactly ONE durable persist at the end. _bulk is always cleared (success or throw). */
       bulkAsync: function (fn) {
         if (typeof fn !== 'function') return Promise.resolve(false);
+        if (storageUnavailable()) return Promise.reject(blockedStorageError());
         if (!_ready) { return Promise.resolve().then(fn).then(function () { return db ? flush() : false; }); }
         _bulk = true;
         return Promise.resolve().then(fn).then(
-          function () { _bulk = false; _dirty = true; return flush(); },
-          function (e) { _bulk = false; _dirty = true; return flush().then(function () { throw e; }); }
+          function () { _bulk = false; if (_nativeMode) _nativeReplaceSeq = _seq || ++_seq; _dirty = true; return flush(); },
+          function (e) { _bulk = false; if (_nativeMode) { nativeDirty.clear(); _dirty = walRead().length > 0; return Promise.reject(e); } _dirty = true; return flush().then(function () { throw e; }); }
         );
       },
-      _reset: function () { return resetAll(); },                            /* §13.5 awaited full wipe */
+      _reset: function () { return storageUnavailable() ? Promise.reject(blockedStorageError()) : resetAll(); },                            /* §13.5 awaited full wipe */
       /* ── diagnostics ── */
       _phase: 2,
       _mem: function () { return MEM; },
-      _status: function () { return { ready: _ready, dirty: _dirty, dirtyKeys: dirtyKeys.size, lastSavedAt: _lastSavedAt, lastError: _lastError, hasFS: !!FSplugin(), migrated: !!(function () { try { return nGet.call(ls, MIGRATED_KEY); } catch (e) { return 0; } })(), dbFromFile: _dbFromFile, rows: db ? Object.keys(kvAll()).length : 0, encState: _encState }; },
+      _status: function () { return { ready: _ready, dirty: _dirty, dirtyKeys: _nativeMode ? nativeDirty.size : dirtyKeys.size, lastSavedAt: _lastSavedAt, lastError: _lastError, hasFS: _nativeMode ? !!nativeStorePlugin() : !!FSplugin(), migrated: _nativeMode || !!(function () { try { return nGet.call(ls, MIGRATED_KEY); } catch (e) { return 0; } })(), dbFromFile: _dbFromFile, rows: storageUnavailable() ? 0 : (_nativeMode ? MEM.size : (db ? Object.keys(kvAll()).length : 0)), encState: _encState, storageBlocked: _storageBlocked, authorityPending: _authorityPending, persistenceMode: _storageBlocked ? 'blocked' : (_authorityPending ? 'authority-pending' : (_nativeMode ? 'native-incremental' : 'legacy-snapshot')), nativeRows: _nativeRows, recovery: recoveryStatus(), nativeStatus: _nativeStatusSafe }; },
       _walLen: function () { return walRead().length; },
       _performance: function () { return _persistPerf.slice(); },
       _coherent: function () { try { if (_ready) return true; var n = nLen.call(ls); var c = 0; for (var i = 0; i < n; i++) { var k = nKey.call(ls, i); if (INTERNAL[k]) continue; if (MEM.get(k) !== nGet.call(ls, k)) return false; c++; } return MEM.size === c; } catch (e) { return false; } }
@@ -608,11 +1062,11 @@
     window.SaagarDB = {
       ready: function () { return _ready; },
       status: function () { var s = window.SaagarStore._status(); return { ready: s.ready, rows: s.rows, dirty: s.dirty, lastSavedAt: s.lastSavedAt, lastError: s.lastError, hasFS: s.hasFS }; },
-      save: function () { _dirty = true; return flush(); },
-      allKeys: function () { return _ready ? Object.keys(kvAll()).filter(function (k) { return !INTERNAL[k]; }) : []; },
-      query: function (sql, params) { if (!_ready || !db) return null; try { return db.exec(sql, params || []); } catch (e) { _lastError = e.message; return null; } },
-      pruneKeys: function (keys) { if (!_ready || !db || !keys || !keys.length) return 0; var n = 0; keys.forEach(function (k) { try { db.run('DELETE FROM kv WHERE k=?', [String(k)]); MEM.delete(String(k)); n++; } catch (e) {} }); if (n) { _keysCache = null; _dirty = true; flush(); } return n; },
-      raw: function () { return db; }
+      save: function () { if (storageUnavailable()) return Promise.reject(blockedStorageError()); _dirty = true; return flush(); },
+      allKeys: function () { return (!storageUnavailable() && _ready) ? memKeys().filter(function (k) { return !INTERNAL[k]; }) : []; },
+      query: function (sql, params) { if (storageUnavailable() || !_ready || !db) return null; try { return db.exec(sql, params || []); } catch (e) { _lastError = e.message; return null; } },
+      pruneKeys: function (keys) { if (!_ready || !keys || !keys.length) return 0; var n = 0; keys.forEach(function (k) { try { SP.removeItem.call(ls, String(k)); n++; } catch (e) {} }); return n; },
+      raw: function () { return storageUnavailable() ? null : db; }
     };
 
     try { console.log('[storage-core] phase 2-3 active — MEM source-of-truth (async sql.js); SaagarStore + SaagarDB ready'); } catch (e) {}

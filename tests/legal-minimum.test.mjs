@@ -86,6 +86,7 @@ test('LEG-01 rejects an unregistered intake field before the customer record is 
   const payload = qmsPayload();
   payload.unapprovedBiometric = 'must-not-ship';
   const result = legal.captureIntake({
+    operationId: 'qms-intake:cust_1',
     scope: 'qms-intake',
     source: 'test',
     actor: 'Tester',
@@ -117,6 +118,7 @@ test('LEG-03/04 operational messages survive no marketing consent while promotio
   const { legal } = loadLegal();
   const payload = qmsPayload();
   const captured = legal.captureIntake({
+    operationId: 'qms-intake:cust_1',
     scope: 'qms-intake',
     source: 'qms-new-walk-in',
     actor: 'Greeter',
@@ -190,6 +192,7 @@ test('LEG-10 minor capture fails without verified guardian consent and passes wi
   const payload = qmsPayload();
   payload.dob = '2012-01-01';
   const denied = legal.captureIntake({
+    operationId: 'qms-intake:cust_1',
     scope: 'qms-intake',
     source: 'qms-new-walk-in',
     actor: 'Greeter',
@@ -204,6 +207,7 @@ test('LEG-10 minor capture fails without verified guardian consent and passes wi
   assert.equal(denied.code, 'GUARDIAN_VERIFICATION_REQUIRED');
 
   const accepted = legal.captureIntake({
+    operationId: 'qms-intake:cust_1',
     scope: 'qms-intake',
     source: 'qms-new-walk-in',
     actor: 'Greeter',
@@ -227,8 +231,9 @@ test('R1 integration gates both intake modules and every shell WhatsApp delivery
   const modules = loadModuleBundle();
   const qms = modules.find(module => module.id === 'qms')?.html || '';
   const service = modules.find(module => module.id === 'service')?.html || '';
-  assert.match(qms, /qmsLegalCapture\(c,noMobile\)/);
-  assert.match(qms, /const legalResult=qmsLegalCapture\(c,noMobile\);if\(!legalResult\.ok\)/);
+  assert.match(qms, /operationId:\s*'qms-intake:'\s*\+\s*String\(c\.id\s*\|\|\s*''\)/);
+  assert.match(qms, /try\s*\{\s*legalResult\s*=\s*qmsLegalCapture\(c,\s*noMobile\);\s*\}\s*catch\s*\(error\)/);
+  assert.match(qms, /if\s*\(!legalResult\.ok\)[\s\S]*?c\.queueNo\s*=\s*nextQueueNo\(\)/);
   assert.match(qms, /qmsPromoConsent/);
   assert.match(service, /svcLegalCapture\(data\)/);
   assert.match(service, /if \(isNew\) \{\s*const legalResult = svcLegalCapture\(data\)/);

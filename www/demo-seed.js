@@ -19,6 +19,11 @@
   // Smaller seeds (6-month harness, light builds) keep the proven one-shot path untouched.
   var BIG = ((typeof window !== 'undefined' && window.__SEED_DAYS) || 180) >= 300;
 
+  function demoMobile(kind, n) {
+    var prefix = kind === 'employee' ? '10' : (kind === 'service' ? '13' : '12');
+    return prefix + String(10000000 + (Math.abs(Number(n) || 0) % 90000000)).slice(-8);
+  }
+
   var __runSeed = function () {
   var LS = localStorage;
   function set(k, v) { try { LS.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch (e) {} }
@@ -71,7 +76,7 @@
     return { name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
       employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' || e[2] === 'Greeter' ? 'Sales' : (e[2] === 'Technician' || e[2] === 'Assistant Technician' ? 'Service' : 'Admin')),
       bankName: ['HDFC', 'SBI', 'ICICI', 'Axis'][i % 4], accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i),
-      active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: '90' + String(11000000 + i * 137).slice(0, 8) };
+      active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: demoMobile('employee', i * 137) };
   });
   var CRO_EMP = EMP.filter(function (e) { return e.role === 'CRO'; });   // 8 CROs
   var CRO_NAMES = CRO_EMP.map(function (e) { return e.name; });
@@ -128,7 +133,7 @@
       var id = uid('cust');
       var entry = ds + 'T06:' + String(10 + (c % 45)).padStart(2, '0') + ':00.000Z';
       var exit = ds + 'T07:' + String(10 + (c % 45)).padStart(2, '0') + ':00.000Z';
-      var cust = { id: id, queueNo: 'Q-' + String(c + 1).padStart(3, '0'), entryTime: entry, name: pick(FIRSTN) + ' ' + pick(LASTN), mobile: '98' + String(20000000 + ri(0, 9999999)).slice(0, 8), visitType: outcome === 'Service' ? 'Service' : 'Purchase', customerType: rnd() < 0.5 ? 'New' : 'Repeat', source: 'Walk-in', peopleCount: 1, priority: 'Normal', status: 'Closed', assignedCroId: cro.id, expectedCroId: cro.id, allocatedTime: entry, exitTime: exit, outcome: outcome, closedAt: exit, closedBy: 'SM', notes: '' };
+      var cust = { id: id, queueNo: 'Q-' + String(c + 1).padStart(3, '0'), entryTime: entry, name: pick(FIRSTN) + ' ' + pick(LASTN), mobile: demoMobile('qms', qCustomers.length + 1), visitType: outcome === 'Service' ? 'Service' : 'Purchase', customerType: rnd() < 0.5 ? 'New' : 'Repeat', source: 'Walk-in', peopleCount: 1, priority: 'Normal', status: 'Closed', assignedCroId: cro.id, expectedCroId: cro.id, allocatedTime: entry, exitTime: exit, outcome: outcome, closedAt: exit, closedBy: 'SM', notes: '' };
       if (outcome === 'Purchase') {
         cust.purchaseAmount = ri(2, 60) * 500;          // ₹1,000–30,000
         cust.billNo = 'INV-' + (5000 + qCustomers.length);
@@ -228,7 +233,7 @@
     var closed = !open;
     var amt = ri(2, 30) * 100;
     var wc = { id: 'WS-' + curYear + '-' + String(s + 1).padStart(3, '0'), status: closed ? 'closed' : 'open', prog: closed ? 100 : ri(20, 80),
-      createdAt: ds2 + 'T09:30:00.000Z', dateRec: ds2, custName: pick(FIRSTN) + ' ' + pick(LASTN), custMobile: '97' + String(10000000 + ri(0, 9999999)).slice(0, 8),
+      createdAt: ds2 + 'T09:30:00.000Z', dateRec: ds2, custName: pick(FIRSTN) + ' ' + pick(LASTN), custMobile: demoMobile('service', s + 1),
       brand: pick(BRANDS_ALL), model: pick(['Edge', 'Raga', 'Classic', 'G-Shock', 'Chronograph', 'Automatic']), advisor: pick(CRO_NAMES), techName: pick(TECHS), ackBy: pick(CRO_NAMES),
       subTotal: String(amt), gst: '0', estTotal: String(amt), lineItems: [{ desc: pick(['Battery', 'Full Service', 'Glass', 'Strap', 'Polish']), qty: '1', unit: String(amt), total: String(amt) }] };
     if (closed) { wc.closedAt = ds2 + 'T17:00:00.000Z'; wc.delivery = { finalAmt: String(amt), payMode: pick(['Cash', 'UPI', 'Card']), delTechName: wc.techName, delCustSig: wc.custName }; }
@@ -437,7 +442,7 @@
     try {
       ov = document.createElement('div');
       ov.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:DM Sans,Arial,sans-serif';
-      ov.innerHTML = '<div style="font-size:40px;font-weight:800;letter-spacing:2px;margin-bottom:8px">ST</div><div style="opacity:.85;margin-bottom:18px">Preparing one year of demo data…</div><div style="width:240px;height:8px;background:rgba(255,255,255,.18);border-radius:5px;overflow:hidden"><div id="__seedBar" style="height:100%;width:0%;background:#d4a843;transition:width .2s"></div></div><div id="__seedLbl" style="opacity:.7;font-size:12px;margin-top:10px">starting…</div>';
+      ov.innerHTML = '<div style="font-size:40px;font-weight:800;letter-spacing:2px;margin-bottom:8px">ST</div><div style="opacity:.85;margin-bottom:18px">Preparing ' + (DAYS + 1) + ' days of synthetic demo data…</div><div style="width:240px;height:8px;background:rgba(255,255,255,.18);border-radius:5px;overflow:hidden"><div id="__seedBar" style="height:100%;width:0%;background:#d4a843;transition:width .2s"></div></div><div id="__seedLbl" style="opacity:.7;font-size:12px;margin-top:10px">starting…</div>';
       document.body.appendChild(ov); bar = ov.querySelector('#__seedBar'); lbl = ov.querySelector('#__seedLbl');
     } catch (e) {}
     function prog(pct, msg) { try { if (bar) bar.style.width = Math.round(pct) + '%'; if (lbl && msg) lbl.textContent = msg; } catch (e) {} }
@@ -474,7 +479,7 @@
       return { name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
         employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' || e[2] === 'Greeter' ? 'Sales' : (e[2] === 'Technician' || e[2] === 'Assistant Technician' ? 'Service' : 'Admin')),
         bankName: ['HDFC', 'SBI', 'ICICI', 'Axis'][i % 4], accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i),
-        active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: '90' + String(11000000 + i * 137).slice(0, 8) };
+        active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: demoMobile('employee', i * 137) };
     });
     var CRO_EMP = EMP.filter(function (e) { return e.role === 'CRO'; });
     var CRO_NAMES = CRO_EMP.map(function (e) { return e.name; });
@@ -513,7 +518,7 @@
         var id = uid('cust');
         var entry = ds + 'T06:' + String(10 + (c % 45)).padStart(2, '0') + ':00.000Z';
         var exit = ds + 'T07:' + String(10 + (c % 45)).padStart(2, '0') + ':00.000Z';
-        var cust = { id: id, queueNo: 'Q-' + String(c + 1).padStart(3, '0'), entryTime: entry, name: pick(FIRSTN) + ' ' + pick(LASTN), mobile: '98' + String(20000000 + ri(0, 9999999)).slice(0, 8), visitType: 'Purchase', customerType: rnd() < 0.5 ? 'New' : 'Repeat', source: 'Walk-in', peopleCount: 1, priority: 'Normal', assignedCroId: cro.id, expectedCroId: cro.id, allocatedTime: entry, notes: '' };
+        var cust = { id: id, queueNo: 'Q-' + String(c + 1).padStart(3, '0'), entryTime: entry, name: pick(FIRSTN) + ' ' + pick(LASTN), mobile: demoMobile('qms', qIndex + 1), visitType: 'Purchase', customerType: rnd() < 0.5 ? 'New' : 'Repeat', source: 'Walk-in', peopleCount: 1, priority: 'Normal', assignedCroId: cro.id, expectedCroId: cro.id, allocatedTime: entry, notes: '' };
         if (isOpen) {
           cust.status = pick(OPEN_STATUS); cust.outcome = null; cust.exitTime = (cust.status === 'Awaiting Closure') ? exit : null;
           if (cust.status === 'In Discussion') cust.attendStart = entry;
@@ -588,13 +593,33 @@
 
     /* ════════ SERVICE (saagar_wsf_v2) — scale with the year: ~1200 cases ════════ */
     var WSC = [], BRANDS_ALL = BR_T.concat(BR_H, ['Titan', 'Casio', 'Fossil', 'Rolex (genuine?)']);
+    var OPEN_STAGES = ['received', 'awaiting_approval', 'in_progress', 'ready', 'on_hold'];
     var SVC_OPEN = 90, SVC_CLOSED = Math.round(DSTR.length * 3.2), SVC_TOTAL = SVC_OPEN + SVC_CLOSED;
     var svcRecent = Math.min(21, DSTR.length - 1);
+    function addDaysIso(base, offset) { var d = new Date(base + 'T12:00:00'); d.setDate(d.getDate() + offset); return ymd(d); }
     for (var sidx = 0; sidx < SVC_TOTAL; sidx++) {
       var open = sidx >= SVC_CLOSED;
+      var openIndex = open ? sidx - SVC_CLOSED : -1;
       var di2 = open ? (DSTR.length - 1 - ri(0, svcRecent)) : ri(0, DSTR.length - 1);
       var ds2 = DSTR[di2], closed = !open, amt = ri(2, 30) * 100;
-      var wc = { id: 'WS-' + curYear + '-' + String(sidx + 1).padStart(4, '0'), status: closed ? 'closed' : 'open', prog: closed ? 100 : ri(20, 80), createdAt: ds2 + 'T09:30:00.000Z', dateRec: ds2, custName: pick(FIRSTN) + ' ' + pick(LASTN), custMobile: '97' + String(10000000 + ri(0, 9999999)).slice(0, 8), brand: pick(BRANDS_ALL), model: pick(['Edge', 'Raga', 'Classic', 'G-Shock', 'Chronograph', 'Automatic']), advisor: pick(CRO_NAMES), techName: pick(TECHS), ackBy: pick(CRO_NAMES), subTotal: String(amt), gst: '0', estTotal: String(amt), lineItems: [{ desc: pick(['Battery', 'Full Service', 'Glass', 'Strap', 'Polish']), qty: '1', unit: String(amt), total: String(amt) }] };
+      var stage = closed ? 'ready' : OPEN_STAGES[openIndex % OPEN_STAGES.length];
+      var promisedOffset = stage === 'ready' ? (openIndex % 3 === 0 ? -3 : 2) : (openIndex % 6 === 0 ? -2 : 5);
+      var wc = { id: 'WS-' + curYear + '-' + String(sidx + 1).padStart(4, '0'), status: closed ? 'closed' : 'open', stage: stage, prog: closed ? 100 : ri(20, 80), createdAt: ds2 + 'T09:30:00.000Z', dateRec: ds2, expDel: closed ? ds2 : addDaysIso(TODAY, promisedOffset), custName: pick(FIRSTN) + ' ' + pick(LASTN), custMobile: demoMobile('service', sidx + 1), serialNo: 'DEMO-SER-' + String((sidx % 500) + 1).padStart(4, '0'), brand: pick(BRANDS_ALL), model: pick(['Edge', 'Raga', 'Classic', 'G-Shock', 'Chronograph', 'Automatic']), advisor: pick(CRO_NAMES), techName: pick(TECHS), ackBy: pick(CRO_NAMES), watchPhoto: false, subTotal: String(amt), gst: '0', estTotal: String(amt), lineItems: [{ desc: pick(['Battery', 'Full Service', 'Glass', 'Strap', 'Polish']), qty: '1', unit: String(amt), total: String(amt) }], stageLog: [{ stage: stage, at: ds2 + 'T09:30:00.000Z', by: 'Synthetic seed' }] };
+      if (open && openIndex % 17 === 0 && WSC.length) {
+        var repeatBase = WSC[openIndex % Math.min(200, WSC.length)];
+        wc.custMobile = repeatBase.custMobile;
+        wc.serialNo = repeatBase.serialNo;
+        wc.brand = repeatBase.brand;
+        wc.model = repeatBase.model;
+        wc.demoScenario = 'REPEAT-DEMO';
+      }
+      if (stage === 'ready' && open) {
+        var notification = openIndex % 4 === 0 ? 'unreachable' : (openIndex % 2 === 0 ? 'pending' : 'notified');
+        wc.d3Readiness = { conditionConfirmed: true, paymentStatus: openIndex % 2 ? 'estimate_approved' : 'pay_at_pickup', promisedDate: wc.expDel, notificationStatus: notification, checkedBy: wc.techName, checkedAt: TODAY + 'T10:00:00.000Z' };
+        wc.d3Transitions = [{ operationId: 'svc-stage:' + wc.id + ':' + TODAY + 'T10:00:00.000Z', from: 'in_progress', to: 'ready', at: TODAY + 'T10:00:00.000Z', actor: wc.techName, reason: '', reasonCode: 'WORKFLOW', override: false }];
+      } else if (stage === 'on_hold' && open) {
+        wc.d3Transitions = [{ operationId: 'svc-stage:' + wc.id + ':' + TODAY + 'T10:00:00.000Z', from: 'in_progress', to: 'on_hold', at: TODAY + 'T10:00:00.000Z', actor: wc.advisor, reason: 'Awaiting synthetic demo part', reasonCode: 'WORKFLOW', override: false }];
+      }
       if (closed) { wc.closedAt = ds2 + 'T17:00:00.000Z'; wc.delivery = { finalAmt: String(amt), payMode: pick(['Cash', 'UPI', 'Card']), delTechName: wc.techName, delCustSig: wc.custName }; }
       WSC.push(wc);
       if (sidx % 400 === 399) await yieldUI();
@@ -623,14 +648,17 @@
       if (ei % 60 === 59) await yieldUI();
     }
     /* Wave-10: feed under the PREVIOUS month (see the small-path comment) — keeps the live month unlocked. */
-    var prevM = (function () { var y = +curYM.slice(0, 4), m = +curYM.slice(5, 7) - 1; if (m < 1) { y--; m = 12; } return y + '-' + (m < 10 ? '0' : '') + m; })();
-    var incM = 0, expM = 0; gmExp.forEach(function (e) { if (e.date.slice(0, 7) !== prevM) return; if (e.type === 'income') incM += e.amount; else expM += e.amount; });
-    var taxFeed = {}; taxFeed[prevM] = { month: prevM, income: incM, expense: expM, net: incM - expM, gstRate: 3, gstEstimate: Math.round(incM * 0.03), byCategory: {}, generatedAt: TODAY + 'T21:10:00.000Z', by: 'owner' };
-    await writeBulk(function () {
+    var monthTotals = {}, taxFeed = {}, budgets = {};
+    gmExp.forEach(function (e) { var ym = e.date.slice(0, 7); var mt = monthTotals[ym] || (monthTotals[ym] = { income: 0, expense: 0 }); if (e.type === 'income') mt.income += e.amount; else mt.expense += e.amount; });
+    Object.keys(monthTotals).sort().forEach(function (ym) {
+      budgets[ym] = { Inventory: 600000, Rent: 60000, Utilities: 25000, Marketing: 30000, Transport: 15000, Miscellaneous: 10000 };
+      if (ym === curYM) return;
+      var mt = monthTotals[ym]; taxFeed[ym] = { month: ym, income: mt.income, expense: mt.expense, net: mt.income - mt.expense, gstRate: 3, gstEstimate: Math.round(mt.income * 0.03), byCategory: {}, generatedAt: ym + '-28T21:10:00.000Z', by: 'Synthetic seed' };
+    });    await writeBulk(function () {
       set('gm_settings', { migratedV2: true, gstRate: 3 }); set('gm_expenses', gmExp); set('tanishq_statements', stmts);
       set('gm_petty', { float: 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: 5000 }] });
-      var b = {}; b[curYM] = { Inventory: 600000, Rent: 60000, Utilities: 25000, Marketing: 30000, Transport: 15000, Miscellaneous: 10000 }; set('gm_budgets', b);
-      set('gm_tax_feed', taxFeed); set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: prevM + ' tax feed generated' }]);
+      set('gm_budgets', budgets);
+      set('gm_tax_feed', taxFeed); set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: Object.keys(taxFeed).length + ' synthetic monthly tax feeds generated' }]);
     });
     gmExp = null; stmts = null; prog(76, 'expense ledger done'); await yieldUI();
 
@@ -687,8 +715,30 @@
       var netPayable = grossPayable - pt - pfEE - esicEE, otAmount = gross / totalDays * otDays, advance = 0, finalPay = netPayable + otAmount - advance;
       return { id: i + 2, firm: 'GM', empId: 'GM' + String(i + 1).padStart(3, '0'), name: e.name, phone: e.phone, designation: e.role, joiningDate: e.joiningDate, uan: '', esicIp: '', bankName: pick(['HDFC', 'SBI', 'ICICI', 'Axis']), accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i), idProof: '', active: true, absent: absent, halfDay: halfDay, late: late, noThumb: noThumb, leavesApplied: leavesApplied, remarks: '', signature: 'Signed', gross: gross, salaryType: e.salaryType, gender: e.gender, pfApplicable: pfApplicable, esicApplicable: esicApplicable, salaryAmount: 0, advance: 0, salaryRemark: '', pf: r2(pfEE), esic: r2(esicEE), pt: pt, net: r2(finalPay), grossPayable: r2(grossPayable) };
     });
-    await writeBulk(function () {
-      set('payroll_suite_v1_2026', { meta: { title: 'SAAGAR TRADERS — PAYROLL', month: curMonth, year: curYear, holidays: 0, totalDaysOverride: '', preparedBy: 'Nisha Bora', checkedBy: 'Kavya Iyer', approvedBy: 'Manish Jain', firmName: 'SAAGAR TRADERS', firmAddr: 'Main Road, Latur - 413512.', firmContact: 'Tel : 02382-000000', signatory: 'Manish Jain', rules: { pt: { maleExempt: 7500, maleMid: 10000, maleMidAmt: 175, stdAmt: 200, febAmt: 300, femaleExempt: 25000 }, pf: { rateEE: 12, rateER: 13, wageCap: 15000 }, esic: { rateEE: 0.75, rateER: 3.25, wageCeiling: 21000 } }, run: { status: 'approved', approvedBy: 'Manish Jain', approvedAt: TODAY + 'T21:00:00.000Z', formulaVersion: '4.0' } }, rows: payRows, advances: [], runs: {}, nextId: payRows.length + 2 });
+    var payRuns = {};
+    for (var pm = 1; pm <= 24; pm++) {
+      var periodDate = new Date(curYear, today.getMonth() - pm, 1, 12, 0, 0, 0);
+      var periodMonth = MONTHNAMES[periodDate.getMonth()], periodYear = periodDate.getFullYear();
+      var periodDays = daysInMonth(periodMonth, periodYear), snapshot = {};
+      var statTotals = { emp: 0, pt: 0, pfEE: 0, pfER: 0, esEE: 0, esER: 0, net: 0, at: ymd(periodDate) + 'T21:00:00.000Z' };
+      payRows.forEach(function (row, pi) {
+        var salaryDays = Math.max(24, periodDays - ((pm + pi) % 4));
+        var grossPayable = row.gross * salaryDays / periodDays;
+        var basic = row.salaryType === 'S' ? grossPayable * 0.5 : grossPayable;
+        var washing = row.salaryType === 'S' ? basic * 0.1 : 0;
+        var pt = ptFor(grossPayable, row.gender, periodMonth);
+        var pfEE = row.pfApplicable ? 0.12 * Math.min(basic, 15000) : 0;
+        var pfER = row.pfApplicable ? 0.13 * Math.min(basic, 15000) : 0;
+        var esicEE = row.esicApplicable && grossPayable <= 21000 ? 0.0075 * (grossPayable - washing) : 0;
+        var esicER = row.esicApplicable && grossPayable <= 21000 ? 0.0325 * (grossPayable - washing) : 0;
+        var finalPay = grossPayable - pt - pfEE - esicEE;
+        var calc = { totalSalaryDays: salaryDays, grossPayable: r2(grossPayable), otAmount: 0, pt: pt, pfEE: r2(pfEE), pfEmpr: r2(pfER), esicEE: r2(esicEE), esicEmpr: r2(esicER), advance: 0, finalPay: r2(finalPay) };
+        snapshot[String(row.empId || row.name || '').trim().toLowerCase()] = calc;
+        statTotals.emp++; statTotals.pt += pt; statTotals.pfEE += pfEE; statTotals.pfER += pfER; statTotals.esEE += esicEE; statTotals.esER += esicER; statTotals.net += finalPay;
+      });
+      payRuns[periodMonth + '-' + periodYear] = { status: 'locked', preparedBy: 'Nisha Bora', checkedBy: 'Kavya Iyer', approvedBy: 'Manish Jain', lockedAt: ymd(new Date(periodYear, periodDate.getMonth() + 1, 0, 12, 0, 0, 0)) + 'T21:00:00.000Z', formulaVersion: '4.0', snapshot: snapshot, advRecovered: {}, statTotals: statTotals };
+    }    await writeBulk(function () {
+      set('payroll_suite_v1_2026', { meta: { title: 'SAAGAR TRADERS — PAYROLL', month: curMonth, year: curYear, holidays: 0, totalDaysOverride: '', preparedBy: 'Nisha Bora', checkedBy: 'Kavya Iyer', approvedBy: 'Manish Jain', firmName: 'SAAGAR TRADERS', firmAddr: 'Main Road, Latur - 413512.', firmContact: 'Tel : 02382-000000', signatory: 'Manish Jain', rules: { pt: { maleExempt: 7500, maleMid: 10000, maleMidAmt: 175, stdAmt: 200, febAmt: 300, femaleExempt: 25000 }, pf: { rateEE: 12, rateER: 13, wageCap: 15000 }, esic: { rateEE: 0.75, rateER: 3.25, wageCeiling: 21000 } }, run: { status: 'approved', approvedBy: 'Manish Jain', approvedAt: TODAY + 'T21:00:00.000Z', formulaVersion: '4.0' } }, rows: payRows, advances: [], runs: payRuns, nextId: payRows.length + 2 });
     });
 
     /* ════════ LEAVE (leavedesk_v3) — a year of approved leaves ════════ */
@@ -733,7 +783,8 @@
     }
 
     /* ════════ misc + mark seeded ════════ */
-    await writeBulk(function () { set('gm_role', 'owner'); set('saagar_owner_name', 'Sagar'); set('saagar_demo_seeded', 'v3_1yr'); });
+    var demoProfile = { id: DAYS >= 700 ? 'two-year-review-v1' : 'large-review-v1', syntheticOnly: true, daysBack: DAYS, calendarDays: DSTR.length, walkInsPerWorkingDay: WALK, startDate: DSTR[0], endDate: TODAY, stores: ['WLMHW', 'HEMW'], qmsLive: qLive.length, qmsArchived: archived, serviceCases: SVC_TOTAL, payrollLockedMonths: Object.keys(payRuns).length };
+    await writeBulk(function () { set('gm_role', 'owner'); set('saagar_owner_name', 'Sagar'); set('saagar_demo_profile_v1', demoProfile); set('saagar_demo_seeded', 'v4_' + DAYS + 'd_' + WALK + 'w'); });
     try { console.log('[demo-seed] BIG ' + DSTR.length + ' days · ' + qLive.length + ' live + ' + archived + ' archived QMS · ' + SVC_TOTAL + ' service · ' + payRows.length + ' payroll'); } catch (e) {}
     prog(100, 'done'); await yieldUI();
     try { if (ov && ov.parentNode) { ov.style.transition = 'opacity .3s'; ov.style.opacity = '0'; setTimeout(function () { try { ov.parentNode.removeChild(ov); } catch (e) {} }, 320); } } catch (e) {}
