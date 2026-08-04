@@ -156,7 +156,9 @@ function parseModules() {
 function decodedModule(id) {
   const mod = parseModules().find(item => item.id === id);
   assert.ok(mod, `expected ${id} module`);
-  return Buffer.from(mod.html_b64, 'base64').toString('utf8');
+  return mod.html_b64
+    ? Buffer.from(mod.html_b64, 'base64').toString('utf8')
+    : fs.readFileSync(path.join(root, 'www', mod.src), 'utf8');
 }
 
 function calledInjectionNames() {

@@ -1,13 +1,33 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-04 (Asia/Kolkata), current to `62132c4`
+**Updated:** 2026-08-04 (Asia/Kolkata), pushed baseline `aee75cc`; D5 working tree complete
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
-**Programme status:** Phase 0 and improvement waves D1-D4 are implemented, regression-tested, merged and pushed. **Nothing is production accepted.** No device pass, UAT, legal approval, or production signing has been performed.
+**Programme status:** Phase 0 and D1-D4 are pushed; D5 is engineering-complete but uncommitted. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
+
+## Current D5 working-tree update
+
+- Pushed baseline remains `main` = `origin/main` = `aee75cc`; D5 has not been
+  committed or pushed.
+- D5-M1 and D5-S1-S3 are engineering-complete: external Stock module, pure
+  variance policy, additive brand-day triage, advisory Stock/DSR/QMS
+  reconciliation, and ranked variance drill-down.
+- Owner choices: approved eight-value taxonomy; reconciliation never blocks the
+  D5 lock; Store Manager is the default owner.
+- Verification: focused D5 15/15; full glob 275/275; offline 272/272;
+  `git diff --check` passed.
+- APK: `V:\Co work\Projects\Retail\SaagarCC-D5-Complete-debug.apk`, 6,689,698
+  bytes, SHA-256
+  `2437E400B90698D4A4BBB1F5AB2FCD596FBA13E7F9884A7CF74EB9758B2F1A54`.
+  Package/version/min API, v1/v2 debug signatures, and packaged policy/Stock
+  assets were verified.
+- The owner subsequently reported "all cool" for the complete D5 APK. Record
+  this as owner-reported D5-S1-S3 smoke evidence, not formal acceptance: device
+  metadata, named observations, and evidence files were not supplied.
 
 ## Read this first
 
-- `main` and `origin/main` are both at `9b54a44` (pushed 2026-08-04), the D4 merge. Working tree clean; no unpushed commits; no feature branch outstanding.
-- **`npm run test:offline` is 257/257; the full `tests/*.test.mjs` glob is 260/260.** The offline script lists files explicitly, so a new test file must be added to it or CI will silently skip it.
+- `main` and `origin/main` are both at `aee75cc` (pushed 2026-08-04). The working tree intentionally contains uncommitted D5 engineering changes; no D5 commit has been made.
+- **`npm run test:offline` is 272/272; the full `tests/*.test.mjs` glob is 275/275.** The offline script lists files explicitly; all three D5 test files are included.
 - **API-22 exception RETIRED (owner confirmed 2026-07-29: all field devices are Android 6+).** Production `minSdkVersion = 23`, stamped by `apply-overrides.js` with FATAL guards; supersedes the earlier OD-K1 "keep 22, fail-open plaintext" ruling.
 - **The build needs the bundled JDK 17**, not the system Java 8: `JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10"`. Gradle 8.2.1 will not run on Java 8.
 - PHP platform work (Track B / P1 onward) is **deferred by the owner and outside the current scope**. Do not start it without fresh owner direction.
@@ -17,9 +37,9 @@
 
 | Item | Current fact |
 |---|---|
-| Pushed baseline | `9b54a44` on `origin/main` - "Merge D4: DSR completion meter, no-sales acknowledgement, and patcher idempotency fixes". |
-| Permanent regression suite | `npm run test:offline` **257/257**; full glob **260/260** (2026-08-04). |
-| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-D4-DSR-Completion-debug.apk` - 6,593,846 bytes, SHA-256 `8fe8167b983e8c59a99ae9ed671e7ca0e29234c745e8a98a132391560792fdea`. Contents verified by unpacking, not inferred from build success. |
+| Pushed baseline | `aee75cc` on `origin/main` - documentation-only multi-agent verification protocol. D5-M1 remains uncommitted. |
+| Permanent regression suite | `npm run test:offline` **262/262**; full glob **265/265** (2026-08-04, D5-M1 working tree). |
+| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-D5-M1-Stock-Extraction-debug.apk` - 6,615,576 bytes, SHA-256 `2A0524F35943D4CF3505781AFE86EB347476B05C4E89740C962142F6C4F95CAC`. Unpacked: Stock is a real local asset, ten modules remain embedded, and Stock has zero remote asset references. Debug/device review only. |
 | APK identity | `com.saagartraders.bcc`, version 2.9, versionCode 209, min API 23, target API 34. |
 | APK posture | `android:allowBackup=false`; **debug certificate**; suitable for device acceptance only. All four native plugins present in the dex. |
 | Production signing | Fails closed when production signing secrets are absent. No production release exists. |

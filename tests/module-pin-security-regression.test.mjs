@@ -78,7 +78,9 @@ function modules() {
 function decodedModule(id) {
   const mod = modules().find(value => value.id === id);
   assert.ok(mod, `expected ${id} module`);
-  return Buffer.from(mod.html_b64, 'base64').toString('utf8');
+  return mod.html_b64
+    ? Buffer.from(mod.html_b64, 'base64').toString('utf8')
+    : fs.readFileSync(new URL(`../www/${mod.src}`, import.meta.url), 'utf8');
 }
 
 function applyTransform(name, input, moduleId) {

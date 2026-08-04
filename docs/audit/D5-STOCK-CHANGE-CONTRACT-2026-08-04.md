@@ -1,10 +1,10 @@
 # D5 Stock — Variance Triage, Reconciliation, and the First Modular Extraction
 
 **Date:** 2026-08-04 (Asia/Kolkata)
-**Baseline:** `main` = `origin/main` = `fc65889`; suite 260/260
+**Baseline:** pushed `main` = `origin/main` = `aee75cc`; D5 working tree suite 275/275
 **Scope authority:** `docs/V6-IMPROVEMENT-ROAD-PLAN.md` §4 wave D5; improvement inventory §4
 **Migration authority:** `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`, **incremental variant selected by the owner 2026-08-04**
-**Status:** drafted from source inspection; awaiting owner approval to implement
+**Status:** D5-M1 and D5-S1-S3 engineering complete and APK-verified; owner-reported M1 smoke received; formal device acceptance pending
 
 ## 1. Purpose
 
@@ -173,6 +173,57 @@ proven itself.
 3. **Who owns a variance by default** — the counting CRO, the SM, or unassigned
    until someone claims it?
 
+## 9. D5-M1 engineering evidence — 2026-08-04
+
+- Stock is packaged at `www/modules/stock/index.html`; its `MODULES` metadata uses
+  the relative `modules/stock/index.html` source and contains no `html_b64`.
+- The other ten modules retain the existing `srcdoc` path. No storage or Stock
+  business rule changed.
+- Extracted Stock: 238,805 bytes; SHA-256
+  `0cb7d6f395805e6374dd260297cdedd49b8257fe52c046aa7f6e5fc03ca4b067`.
+- The reproducible extraction tool records all eleven build-output hashes and
+  strips remote asset tags; packaged Stock has zero remote asset references.
+- Focused modular/security checks: 30/30. Full glob: 265/265. Explicit offline
+  suite: 262/262. The new D5 test file is present in `test:offline`.
+- Debug APK: `V:\Co work\Projects\Retail\SaagarCC-D5-M1-Stock-Extraction-debug.apk`,
+  6,615,576 bytes, SHA-256
+  `2A0524F35943D4CF3505781AFE86EB347476B05C4E89740C962142F6C4F95CAC`.
+  The APK was unpacked to verify the hybrid metadata and external Stock asset;
+  v1/v2 debug signatures verify.
+- No Android device was attached. Same-origin `window.parent.*` behavior is
+  therefore **unproven**, not passed. This blocks D5-S1.
+
 ---
 
-**Status:** AWAITING OWNER APPROVAL. No D5 implementation has begun.
+## 10. D5-S1-S3 engineering evidence - 2026-08-04
+
+- Owner decisions are resolved: the eight-value taxonomy is approved;
+  reconciliation is advisory and never lock-blocking in D5; Store Manager is
+  the default variance owner.
+- Pure policy: `www/stock-variance-policy.js`; no DOM, storage, or clock access.
+- Triage is additive at `dayBlob.d5Triage[brand]`; legacy remarks read as open
+  evidence. Closing requires an approved cause and evidence note.
+- Reconciliation shows Stock, submitted DSR, and QMS counts separately with
+  provenance, unavailable states, and three pairwise verdicts. QMS is labelled
+  whole-business because its records carry no store field.
+- The day drill-down ranks brands by absolute variance, preserves date/store,
+  and routes the manager to triage.
+- Extracted Stock: 245,408 bytes; SHA-256
+  `858f26d2248c2d85a4b385bbcca0bdac796ebcc6b1d02b356d5bc987a3c3bb0e`.
+- Focused D5: 15/15. Full glob: 275/275. Explicit offline: 272/272.
+- Debug APK: `V:\Co work\Projects\Retail\SaagarCC-D5-Complete-debug.apk`,
+  6,689,698 bytes, SHA-256
+  `2437E400B90698D4A4BBB1F5AB2FCD596FBA13E7F9884A7CF74EB9758B2F1A54`.
+  Package 2.9 (209), min API 23, v1/v2 debug signatures, and packaged Stock plus
+  local policy assets were verified.
+
+The owner first reported "everything works" for the D5-M1 APK and subsequently
+reported "all cool" for the complete D5 APK. These are owner-reported smoke
+results, sufficient for engineering progression, but not formal device
+acceptance: device metadata, named cases, observations, and evidence links were
+not provided.
+
+---
+
+**Status:** D5 ENGINEERING COMPLETE. Formal device acceptance remains open; no
+device-only gate is marked passed.

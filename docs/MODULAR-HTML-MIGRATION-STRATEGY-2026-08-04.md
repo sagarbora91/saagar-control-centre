@@ -1,8 +1,8 @@
 # Modular HTML Migration — Strategy and Execution Plan
 
 **Date:** 2026-08-04 (Asia/Kolkata)
-**Baseline:** `main` = `origin/main` = `bb03238`; suite 260/260
-**Status:** DRAFT FOR OWNER APPROVAL — no migration work authorised yet
+**Baseline:** pushed `main` = `origin/main` = `aee75cc`; D5 working tree suite 275/275
+**Status:** Stock M1 and D5 controls engineering complete; owner-reported M1 smoke received; formal device acceptance pending
 **Owner-set sequence:** finish remaining waves → push → test and fix → **migrate** → **ETP** → **PHP**
 
 ---
@@ -250,4 +250,4 @@ If you want the incremental variant, the only change is that M1 is scheduled per
 
 ---
 
-**Status:** AWAITING OWNER APPROVAL. No migration work has begun and none is authorised by this document.
+**Status:** INCREMENTAL VARIANT ACTIVE. Stock is externally packaged and regression-tested; do not start D5-S1 or another module extraction until Stock's relative `iframe.src` same-origin access is proven on a physical Android device.

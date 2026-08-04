@@ -11,7 +11,10 @@ export function loadModuleBundle() {
   const match = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(?:\r?\n)/);
   if (!match) throw new Error('MODULES bundle not found');
   return JSON.parse(match[1]).map(module => {
-    const bytes = Buffer.from(module.html_b64, 'base64');
+    const externalPath = module.src && path.resolve(path.dirname(indexPath), module.src);
+    const bytes = module.html_b64
+      ? Buffer.from(module.html_b64, 'base64')
+      : fs.readFileSync(externalPath);
     return {
       ...module,
       html: bytes.toString('utf8'),
