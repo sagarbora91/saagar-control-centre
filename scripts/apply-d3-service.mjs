@@ -736,7 +736,7 @@ function patchRuntimeTags(index) {
 }
 
 const index = fs.readFileSync(indexPath, 'utf8');
-const modulesMatch = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(\r?\n)/);
+const modulesMatch = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;[ \t]*(\r?\n)/);
 if (!modulesMatch) throw new Error('MODULES bundle not found');
 const modules = JSON.parse(modulesMatch[1]);
 const service = modules.find(module => module.id === 'service');

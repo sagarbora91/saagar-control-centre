@@ -21,6 +21,7 @@ const indexPath = path.join(repoDir, 'www', 'index.html');
    two bundles to be byte-identical. */
 
 const PATCHERS = [
+  { script: 'apply-d2-qms.mjs', moduleId: 'qms' },
   { script: 'apply-d3-service.mjs', moduleId: 'service' },
   { script: 'apply-d4-dsr.mjs', moduleId: 'dsr' }
 ];
@@ -65,6 +66,43 @@ for (const { script, moduleId } of PATCHERS) {
     const reapplied = runWithScriptEol(script, '\n');
     assert.ok(committed.equals(reapplied),
       `${script} rewrote the committed bundle; www/index.html is not its fixed point`);
+  });
+
+  /* git stores www/index.html with LF and checks it out with CRLF on Windows, so
+     the on-disk terminator after `const MODULES = [...];` varies by platform. The
+     patchers' capture group used `\s*(\r?\n)`, whose greedy `\s*` swallowed the
+     CR and left the group matching only the LF — so every run silently dropped
+     one byte on a CRLF checkout. Invisible in `git diff` (normalised away) but it
+     made the patchers non-idempotent at the byte level. */
+  test(`${script} preserves the MODULES line terminator under both checkouts`, () => {
+    for (const eol of ['\n', '\r\n']) {
+      const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'eol-term-'));
+      try {
+        const wwwDir = path.join(workDir, 'www');
+        const scriptsDir = path.join(workDir, 'scripts');
+        fs.mkdirSync(wwwDir, { recursive: true });
+        fs.mkdirSync(scriptsDir, { recursive: true });
+        fs.copyFileSync(path.join(repoDir, 'scripts', script), path.join(scriptsDir, script));
+
+        // Re-terminate the MODULES line as the target checkout would.
+        const shell = fs.readFileSync(indexPath, 'utf8');
+        const retargeted = shell.replace(/(\bconst\s+MODULES\s*=\s*\[[\s\S]*?\];)\r?\n/,
+          (_, head) => head + eol);
+        const shellPath = path.join(wwwDir, 'index.html');
+        fs.writeFileSync(shellPath, retargeted, 'utf8');
+        const before = fs.readFileSync(shellPath);
+
+        execFileSync(process.execPath, [path.join(scriptsDir, script)],
+          { cwd: workDir, stdio: 'pipe' });
+        const after = fs.readFileSync(shellPath);
+
+        assert.ok(before.equals(after),
+          `${script} rewrote a ${JSON.stringify(eol)}-terminated bundle ` +
+          `(${after.length - before.length} bytes)`);
+      } finally {
+        fs.rmSync(workDir, { recursive: true, force: true });
+      }
+    }
   });
 
   test(`${script} preserves the ${moduleId} payload's own line endings`, () => {
