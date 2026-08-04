@@ -14,21 +14,40 @@ const runtimeMarker = 'D3-SERVICE-RUNTIME-2026-07-30';
 const htmlMarker = 'D3-SERVICE-HTML-2026-07-30';
 const cssMarker = 'D3-SERVICE-CSS-2026-07-30';
 
+/* Injected blocks come from Function.prototype.toString(), which reproduces this
+   file's on-disk source verbatim — including its line endings. Git checks this
+   file out with CRLF on Windows and LF elsewhere (.gitattributes pins no *.mjs
+   rule), so without normalisation the patched bundle differed by platform and
+   re-patching a checked-out bundle rewrote every injected line. Normalising to
+   the payload's own ending makes the output independent of how this script was
+   checked out. The Service payload is LF; sibling modules (DSR) are CRLF, so the
+   target ending is detected per payload rather than hardcoded. */
+function detectEol(source) {
+  return source.includes('\r\n') ? '\r\n' : '\n';
+}
+
+function toEol(text, eol) {
+  return String(text).replace(/\r\n/g, '\n').replace(/\n/g, eol);
+}
+
 function replaceOnce(source, before, after, label) {
-  const first = source.indexOf(before);
+  const eol = detectEol(source);
+  const target = toEol(before, eol);
+  const first = source.indexOf(target);
   if (first < 0) throw new Error(`${label}: anchor not found`);
-  if (first !== source.lastIndexOf(before)) throw new Error(`${label}: anchor is not unique`);
-  return source.slice(0, first) + after + source.slice(first + before.length);
+  if (first !== source.lastIndexOf(target)) throw new Error(`${label}: anchor is not unique`);
+  return source.slice(0, first) + toEol(after, eol) + source.slice(first + target.length);
 }
 
 function replaceFunction(source, name, replacement) {
+  const eol = detectEol(source);
   const token = `function ${name}(`;
   const start = source.indexOf(token);
   if (start < 0) throw new Error(`${name}: function not found`);
   if (start !== source.lastIndexOf(token)) throw new Error(`${name}: function is not unique`);
-  const end = source.indexOf('\nfunction ', start + token.length);
+  const end = source.indexOf(`${eol}function `, start + token.length);
   if (end < 0) throw new Error(`${name}: next function boundary not found`);
-  return source.slice(0, start) + replacement + source.slice(end);
+  return source.slice(0, start) + toEol(replacement, eol) + source.slice(end);
 }
 
 function functionTokenCount(source, name) {
@@ -487,7 +506,8 @@ function repairD3HelperGroup(html) {
     .map(match => match[1])
     .find(name => !d3HelperNames.includes(name));
   if (foreign) throw new Error(`D3 helper repair would cross ${foreign}`);
-  const repaired = html.slice(0, groupAt) + d3HelperSource() + '\n' +
+  const eol = detectEol(html);
+  const repaired = html.slice(0, groupAt) + toEol(d3HelperSource() + '\n', eol) +
     html.slice(boundaryAt);
   const invalid = d3HelperNames.find(name => functionTokenCount(repaired, name) !== 1);
   if (invalid) throw new Error(`D3 helper repair failed for ${invalid}`);
@@ -596,17 +616,18 @@ const d3Css = `
 `;
 
 function patchService(html) {
+  const eol = detectEol(html);
   const stageStart = html.indexOf('const STAGES = {');
   const stageEnd = html.indexOf('// P1-10 helpers:', stageStart);
   if (stageStart < 0 || stageEnd < 0) throw new Error('Service stage block not found');
-  html = html.slice(0, stageStart) + stageBlock + '\n' + html.slice(stageEnd);
+  html = html.slice(0, stageStart) + toEol(stageBlock + '\n', eol) + html.slice(stageEnd);
 
   const stageSelectExpression = /<select class="field-input" id="f-stage"[^>]*>[\s\S]*?<\/select>(?:\s*<div class="field-hint" id="svc-d3-stage-help">[\s\S]*?<\/div>)?/g;
   const stageSelectMatches = [...html.matchAll(stageSelectExpression)];
   if (stageSelectMatches.length !== 1) {
     throw new Error(`Service stage select expected once, found ${stageSelectMatches.length}`);
   }
-  html = html.replace(stageSelectExpression, stageSelect);
+  html = html.replace(stageSelectExpression, toEol(stageSelect, eol));
 
   if (!html.includes(htmlMarker)) {
     html = replaceOnce(html, '    <div class="svc-search-bar">', d3DashboardHtml, 'D3 dashboard HTML');
@@ -620,7 +641,7 @@ function patchService(html) {
   if (!html.includes(cssMarker)) {
     const styleAt = html.indexOf('</style>');
     if (styleAt < 0) throw new Error('Service style boundary not found');
-    html = html.slice(0, styleAt) + d3Css + '\n' + html.slice(styleAt);
+    html = html.slice(0, styleAt) + toEol(d3Css + '\n', eol) + html.slice(styleAt);
   }
   const invalidPrintStyle = "SERVICE_PRINT_CSS + '\n</style>' + wrapped;";
   if (html.includes(invalidPrintStyle)) {
