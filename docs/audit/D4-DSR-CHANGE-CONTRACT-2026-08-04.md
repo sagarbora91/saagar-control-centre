@@ -199,6 +199,52 @@ Applicable sections therefore rise from six to seven.
 No real-device, UAT, legal/owner, signing, or release row may be marked passed
 by these automated checks.
 
+## 9. Engineering verification — 2026-08-04
+
+Implementation is complete on branch `d4-dsr-completion`:
+
+- focused D4 policy tests: **18/18 passed**;
+- focused D4 integration tests: **17/17 passed**;
+- full permanent offline suite: **254/254 passed**;
+- patcher determinism and three-run idempotency: passed;
+- owned-helper tamper rejection: passed;
+- embedded DSR payload: 181,149 UTF-8 bytes, SHA-256
+  `afef57010d84fae13b4b7c6e7ca7358712f719bac14aa635a1df95224a95d683`
+  (was 176,123 bytes at baseline);
+- every other embedded module byte-identical to `main` (service, stock, qms,
+  expense verified);
+- Android debug packaging: **BUILD SUCCESSFUL**, version 2.9, versionCode 209,
+  minSdk 23, targetSdk 34, package `com.saagartraders.bcc`;
+- all four native plugins present in the packaged dex (SaagarKeystore,
+  SaagarSecurity, SaagarOffDevice, SaagarNativeStore);
+- shipped `assets/public/index.html` is byte-identical to `www/index.html`, and
+  `dsr-completion-policy.js` is packaged with its `<script>` tag in the shell;
+- debug APK: **6,593,846 bytes**, SHA-256
+  `8fe8167b983e8c59a99ae9ed671e7ca0e29234c745e8a98a132391560792fdea`,
+  copied to `SaagarCC-D4-DSR-Completion-debug.apk`.
+
+APK content was verified by unpacking it and re-checking the D4 markers inside
+the shipped bundle, not inferred from build success: the runtime marker and the
+no-sales control are present, and both the old "leave this empty" copy and the
+hardcoded `true` checks array are absent.
+
+Engineering status is **complete**. Acceptance remains **pending** for the
+device, staff-UAT, and owner rows in §7. This is an unsigned debug build; no
+release signing, no commit to `main`, and nothing pushed.
+
+### Device cases this build is for
+
+| Case | Expectation |
+|---|---|
+| D4-01 | A new day's meter reads `0/7`, not `5/9 · 56%` |
+| D4-02 | Sales tab on an empty day offers **Confirm no sales today**; submit is refused until it is used |
+| D4-03 | The refusal modal lists each missing item by name |
+| D4-04 | Confirming shows the time and staff member, and the undo restores the incomplete state |
+| D4-05 | Adding a bill completes the section with no acknowledgement needed |
+| D4-06 | Opening counts carried from the prior close are labelled with their source date |
+| D4-07 | Marking both cleaning checkpoints done without photos does **not** reach 100% |
+| D4-08 | A previously submitted day still reads complete and stays read-only |
+
 ## 8. Owner decisions
 
 **Resolved 2026-08-04 — zero-sale days.** Asked whether a day with genuinely no
