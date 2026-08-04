@@ -100,10 +100,18 @@
 
 ### What's ready for owner approval RIGHT NOW
 
-#### D1: Home "Today" View
-**Document:** `docs/audit/D1-HOME-TODAY-VIEW-DESIGN-CONTRACT-2026-08-02.md`
+#### D1: Home "Today" View — ALREADY SHIPPED, no approval needed
 
-**The idea:** Home screen shows a role-aware card stack:
+> **Correction (2026-08-04).** This section was written in error. D1 was built and
+> shipped on 2026-07-30 in commit `4177701` ("Complete D1-D3 and native SQLite
+> scale fix"), together with D2 and D3. The design document this section pointed
+> at has been deleted, and the eight approval questions below are moot — those
+> decisions were made when D1 was built. Nothing here needs owner action.
+>
+> The description is kept for reference so you can see what shipped. The first
+> wave actually needing your input is **D4 (DSR)**, covered separately.
+
+**What shipped:** Home screen shows a role-aware card stack:
 - **Due follow-ups** (QMS: next 3 follow-ups, with estimated value)
 - **Open service jobs** (count ready for pickup, count awaiting parts)
 - **Cash health** (opening, deposits, expected closing vs target)
@@ -116,17 +124,7 @@
 
 **Why:** Managers spend 5–10 minutes every morning navigating 11 modules to know what to do. D1 gives them the answer in 10 seconds. Owner sees health of the system (backup status, exceptions) without asking.
 
-**What we need from you:** Approve the mockup, card content, and store badge design. **8 decisions:**
-- Home screen layout (card order, styling)?
-- Card content (which metrics per card)?
-- Store badge (size, placement, color)?
-- Role visibility (what does staff see vs manager vs owner)?
-- Reauth explanation text (is it clear)?
-- Backup health thresholds (24h warning, 36h critical)?
-- Card refresh cadence (on open? hourly? manual only)?
-- Storage keys (which cards backed up)?
-
-**Timeline:** Review → approve → code (can start 2026-08-26 after Phase 0 closes).
+**What we need from you:** Nothing. D1 shipped on 2026-07-30.
 
 #### E1–E6: ETP Verification Layer (prerequisites, not full design yet)
 **Document:** `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`
@@ -171,15 +169,14 @@
 
 ### Week 2–3: Phase 1 inputs (1–2 hours total)
 **By 2026-08-15 (not blocking, but helpful early):**
-- [ ] Review `docs/audit/D1-HOME-TODAY-VIEW-DESIGN-CONTRACT-2026-08-02.md`
-- [ ] Approve D1: mockup, cards, badge, reauth explanation (8 decisions)
+- [ ] ~~Review and approve the D1 design~~ — not required; D1 shipped 2026-07-30
 - [ ] Supply ETP sample exports (R022/R025/R013/R003 from both WLMHW + HEMW)
 - [ ] Approve dictionary owner + reconciliation rule
 - [ ] Approve date policy + unknown code handling
 - [ ] Confirm XLSX parser preference
 - [ ] Confirm incentive scheme source
 
-**Result:** E1 schema frozen; D1 design approved; Phase 1 build can start 2026-08-26.
+**Result:** E1 schema frozen; Phase 1 build can start 2026-08-26.
 
 ### Weeks 3–4: Device test + reviews (parallel, no action required)
 **2026-08-12 → 2026-08-26:**
@@ -226,7 +223,8 @@ TODAY (2026-08-02)
 
 ### Phase 1 (you review/approve these)
 - `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md` — All Phase 1 blockers
-- `docs/audit/D1-HOME-TODAY-VIEW-DESIGN-CONTRACT-2026-08-02.md` — **← APPROVE THIS**
+  (its "D1 design approved" gate is stale for the same reason — D1 shipped)
+- `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md` — the wave actually in progress
 - (E1–E6 detailed designs will follow once E1 prerequisites are supplied)
 
 ### Engineering reference (for transparency)
