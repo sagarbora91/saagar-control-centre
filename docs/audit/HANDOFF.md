@@ -1,6 +1,6 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-04 (Asia/Kolkata)
+**Updated:** 2026-08-04 (Asia/Kolkata), current to `594aa83`
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
 **Programme status:** Phase 0 and improvement waves D1-D4 are implemented, regression-tested, merged and pushed. **Nothing is production accepted.** No device pass, UAT, legal approval, or production signing has been performed.
 
@@ -64,7 +64,30 @@ Frozen pending seven owner inputs (see `docs/PHASE-1-PREREQUISITES-CHECKLIST-202
 
 **8 D-series waves:** D5 stock variance triage · D6 cash/expense · D7 payroll · D8 leave coverage · D9 tax readiness · D10 grooming + CRO coaching · D11 festival planner · D12 reports polish and closure.
 
-D5 is the natural next wave. D7 and D10 are *better* after the E-series supplies verified data but are not blocked by it.
+D7 and D10 are *better* after the E-series supplies verified data but are not blocked by it.
+
+### Modular HTML migration - decided 2026-08-04, incremental variant
+
+`www/index.html` is 3,087,060 chars and **77.9% of it is eleven base64-embedded module payloads**. Every module change is string surgery against that base64, which is the direct cause of the patcher defect class fixed on 2026-08-04. Strategy: `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`.
+
+**The owner chose the incremental variant:** each D-wave extracts the module it touches into real files under `www/modules/<id>/`, rather than a separate big-bang migration stage. D5 carries the first extraction (M1) behind a hybrid boot - stock via `iframe.src`, the other ten still `srcdoc`.
+
+**Riskiest single step in the programme:** `srcdoc` iframes inherit the parent origin, which is why `window.parent.SaagarReauth` resolves. `src` iframes do not. `capacitor.config.json` sets `androidScheme: https` / `hostname: localhost`, so a relative `src` *should* stay same-origin - **that must be device-proven at M1 before anything depends on it.**
+
+**Orphan gap - act on this.** 11 modules; the remaining waves cover only 8. **qms, service and dsr shipped as D2/D3/D4 before the incremental decision and have no future wave to ride on.** The three patchers `scripts/apply-d2-qms.mjs`, `apply-d3-service.mjs`, `apply-d4-dsr.mjs` exist for exactly those three modules, so while they survive the whole base64 fragility class stays alive. **Recommended: a dedicated M1-catchup phase for those three immediately after D5 proves the extraction, then delete all three patchers.** Folding them into D12 instead keeps the patchers alive for seven more waves.
+
+**Recorded from D5 recon:** `injectUniformCSS` is 32,442 chars of CSS injected into *every* module at open time; ten inject functions total 54,280 chars. That CSS blob is the `shared/base.css` of the target architecture and the largest single de-duplication win.
+
+### Phase count to the end of ETP
+
+| Stage | Phases | Detail |
+|---|---|---|
+| **A** build + incremental migration | **13** | M0 harness · D5 · M1-catchup + retire patchers · D6-D12 (7) · M2 shared assets · M4 shell slimming · M6 guard rails |
+| **C** device acceptance and error fixing | **1** | Owner-time bound, not engineering bound |
+| **E** ETP verification layer | **6-7** | E1-E6 plus optional E7 |
+| **F** PHP platform / Track B | unscoped | Deferred; needs fresh owner direction |
+
+**D1-D4 are done, so roughly 4 complete and 20 remaining before PHP.** M3 (split module internals) is folded into each D-wave rather than run separately; M5 (retire patchers) lands with M1-catchup.
 
 ### Remaining - backlog
 
@@ -199,7 +222,9 @@ node scripts/apply-d2-qms.mjs && node scripts/apply-d3-service.mjs && node scrip
 
 **Current programme (2026-08-02 onward):**
 
-- Programme blueprint, D/E/F waves: `docs/V6-IMPROVEMENT-ROAD-PLAN.md`
+- Programme blueprint, D/E/F waves, live sequence and phase count: `docs/V6-IMPROVEMENT-ROAD-PLAN.md`
+- Modular HTML migration strategy (M0-M6, the equivalence oracle, the origin risk): `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`
+- D5 change contract — variance triage + the first extraction, with three open owner questions: `docs/audit/D5-STOCK-CHANGE-CONTRACT-2026-08-04.md`
 - D4 change contract, engineering verification, APK checksum, device cases D4-01..08: `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md`
 - D2 / D3 change contracts: `docs/audit/D2-QMS-CHANGE-CONTRACT-2026-07-30.md`, `docs/audit/D3-SERVICE-CHANGE-CONTRACT-2026-07-30.md`
 - Phase 0 acceptance gates and exit rule: `verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md`

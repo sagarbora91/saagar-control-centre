@@ -99,30 +99,97 @@ Each wave: design note (cross-checked against the Blueprint chapter for the touc
 
 Unchanged in intent from the Deepen plan; D4/D10 scopes adjusted for the E-series. Each wave still opens with its module's test-catalogue pass (test-as-we-improve).
 
-| Wave | Scope | Notes |
+Since 2026-08-04 each D-wave also carries the **modular extraction of the module
+it touches** (see §4b). The "Module" column below is therefore load-bearing, not
+descriptive.
+
+| Wave | Module | Status | Scope | Notes |
+|---|---|---|---|---|
+| **D1** | *shell* | ✅ shipped `4177701` | Home "Today" view, unmissable store context, reauth explanations, backup health | Later gains ETP tile (E2) and exception feed (E6) |
+| **D2** | qms | ✅ shipped `4177701` | QMS fast arrive→outcome, follow-up priority, duplicate suggestion, reason codes | **Not extracted** — see §4b orphans |
+| **D3** | service | ✅ shipped `4177701` | Service workboard, pickup-readiness checklist, customer-visible status, exception list | **Not extracted** — see §4b orphans |
+| **D4** | dsr | ✅ shipped `9b54a44` | DSR completion meter, data-quality prompts, no-sales acknowledgement | **Not extracted** — see §4b orphans |
+| **D5** | stock | contract drafted `594aa83` | Stock variance triage, drill-down, guided stock↔DSR↔QMS reconciliation | **Carries M1, the first extraction.** Reconciliation gains ETP-verified sales units after E2 |
+| **D6** | expense | not started | Cash health card, recurring-expense review, tax-ready gate, Udhaar ageing | Unchanged |
+| **D7** | payroll | not started | Payroll pre-lock checklist, MoM variance, redaction-safe preview, separation workflow | Gains the E5 incentive earning line |
+| **D8** | leave | not started | Leave coverage-at-request, alternatives, manager calendar, reminders | Feeds E4 leave pro-rating |
+| **D9** | tax | not started | Tax filing-readiness timeline, reason codes, pre-export completeness, share history | Unchanged |
+| **D10** | grooming + cro_audit | not started | Grooming coaching + CRO coaching dashboard | **Two modules in one wave** |
+| **D11** | planning | not started | Festival planner forecast-vs-actual, templates, owned checklist, learning notes | Links to E4 festive-calendar override |
+| **D12** | *shell* | not started | Reports polish, cross-module traceability, backup-health guidance, defect sweep | Closure wave |
+
+## 4b. Modular extraction — coverage and the orphan gap
+
+**Owner decision 2026-08-04: incremental variant.** Rather than a separate
+big-bang migration stage, each D-wave extracts the module it touches from the
+base64 `MODULES` payload into real files under `www/modules/<id>/`. Full plan:
+`docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`.
+
+There are **11 modules** and the remaining waves cover only **8** of them:
+
+- **Covered by D5–D11:** stock, expense, payroll, leave, tax, grooming,
+  cro_audit, planning.
+- **Orphans — no future wave to ride on:** **qms, service, dsr**. They shipped as
+  D2/D3/D4 *before* the incremental decision, so nothing later touches them.
+
+This matters more than it looks. **`scripts/apply-d2-qms.mjs`,
+`apply-d3-service.mjs` and `apply-d4-dsr.mjs` exist for exactly those three
+modules.** While they survive, the whole base64-patcher fragility class stays
+alive for the rest of the programme.
+
+**Recommended:** a dedicated **M1-catchup** phase for qms/service/dsr immediately
+after D5 proves the extraction works on one module. All three patchers can then
+be deleted (strategy M5), and D6–D12 run entirely on real files with no patcher
+machinery at all.
+
+The alternative — folding the orphans into D12 — keeps the patchers alive for
+seven more waves and is not recommended.
+
+## 5. Sequence
+
+> **SUPERSEDED 2026-08-04.** The original plan interleaved the E-series early:
+> `D1 → E1…E6 → D2…D12 → F`. The owner has since set a different order — finish
+> the D-series and the migration first, then ETP, then PHP — and selected the
+> incremental migration variant. The live sequence is below.
+
+```
+[done]  D1 → D2 → D3 → D4
+        ↓
+Stage A M0 harness → D5 (+M1 stock) → M1-catchup (qms, service, dsr) + retire patchers
+        → D6 → D7 → D8 → D9 → D10 → D11 → D12
+        → M2 shared assets → M4 shell slimming → M6 guard rails
+        ↓
+Stage C device acceptance + error fixing   (Phase 0's 69 cases + 4 drills + 9 gates, plus per-wave cases)
+        ↓
+Stage E E1 → E2 → E3 → E4 → E5 → E6 [→ E7 optional]
+        ↓
+Stage F PHP platform / Track B
+```
+
+- **M3 (split module internals) is folded into each D-wave**, not run as a
+  separate pass — the wave is already editing that module.
+- **M5 (retire the patchers) lands with M1-catchup**, not at the end; that is the
+  whole reason to do the catchup early (§4b).
+- The four pending device drills (`verification/DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md`)
+  need owner time and two devices, not engineering, and can run in parallel with
+  Stage A once the nominations form arrives.
+- **E1's separate-store design remains insurance for DAT-02:** if the five-save
+  gate fails on device, the ETP layer is unaffected.
+- Each wave bumps versionCode, ships a debug APK verified by unpacking, and runs
+  its focused device cases before the next starts.
+
+### Phase count
+
+| Stage | Phases | Detail |
 |---|---|---|
-| **D1** | Home "Today" view, unmissable store context, reauth explanations, backup health | First build; later gains ETP tile (E2) and exception feed (E6) |
-| **D2** | QMS fast arrive→outcome, follow-up priority, duplicate suggestion, reason codes | Unchanged |
-| **D3** | Service workboard, pickup-readiness checklist, customer-visible status, exception list | Unchanged |
-| **D4** | DSR entry speed, completion meter, data-quality prompts | Narrowed: declaration entry & verification moved to E3 |
-| **D5** | Stock variance triage, drill-down, guided stock↔DSR↔QMS reconciliation | Reconciliation gains ETP-verified sales units after E2 |
-| **D6** | Cash health card, recurring-expense review, tax-ready gate, Udhaar ageing | Unchanged |
-| **D7** | Payroll pre-lock checklist, MoM variance, redaction-safe preview, separation workflow | Gains the E5 incentive earning line |
-| **D8** | Leave coverage-at-request, alternatives, manager calendar, reminders | Feeds E4 leave pro-rating |
-| **D9** | Tax filing-readiness timeline, reason codes, pre-export completeness, share history | Unchanged |
-| **D10** | Grooming coaching + CRO coaching dashboard | Narrowed: CRO numbers now come from E-series verified data |
-| **D11** | Festival planner forecast-vs-actual, templates, owned checklist, learning notes | Links to E4 festive-calendar override |
-| **D12** | Reports polish, cross-module traceability, backup-health guidance, defect sweep | Closure wave |
+| **A** — build + incremental migration | **13** | M0 · D5 · M1-catchup+M5 · D6–D12 (7) · M2 · M4 · M6 |
+| **C** — device acceptance and fixes | **1** | Large but owner-time bound, not engineering bound |
+| **E** — ETP verification layer | **6–7** | E1–E6, plus optional E7 |
+| **F** — PHP platform | unscoped | Deferred; needs fresh owner direction |
+| | **≈20–21** | to the end of ETP, excluding PHP |
 
-## 5. Recommended sequence
-
-```
-D1 → E1 → E2 → E3 → E4 → E5 → E6 → D2 → D3 → D4 → D5 → D6 → D7 → D8 → D9 → D10 → D11 → D12 → F-cycle
-```
-
-- D2/D3 may interleave into E-series device-wait gaps (different modules, no shared files).
-- The four pending device drills (`DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md`) run in parallel with D1/E1 — they need owner time and two devices, not engineering. **E1's separate-store design is also insurance for DAT-02: if the five-save gate fails on device, the ETP layer is unaffected.**
-- Each E/D wave bumps versionCode, ships a seeded APK, and runs its focused device cases before the next starts.
+Four waves (D1–D4) are already complete, so the programme is roughly **4 done,
+20 remaining** before PHP.
 
 ## 6. F-series — new functionality candidate backlog
 
