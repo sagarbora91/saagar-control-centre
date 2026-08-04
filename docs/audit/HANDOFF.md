@@ -1,42 +1,84 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-07-30 (Asia/Kolkata)
-**Purpose:** the single resume point for the Android safe-and-lawful closure.
-**Programme status:** the agreed Android engineering scope is implemented and regression-tested; it is **not production accepted** until the device, operational, legal, and signing evidence below is recorded.
+**Updated:** 2026-08-04 (Asia/Kolkata)
+**Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
+**Programme status:** Phase 0 and improvement waves D1-D4 are implemented, regression-tested, merged and pushed. **Nothing is production accepted.** No device pass, UAT, legal approval, or production signing has been performed.
 
 ## Read this first
 
-- `main` and `origin/main` are both at `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798` (pushed 2026-07-29). **That pushed baseline is unchanged; an uncommitted D1+D2 checkpoint now exists and is documented at the end of this handoff.** History on top of the R0/R1 close-out (`55ceabd`): `273e73d` BKP-03 + DAT-02 + API-23 engineering; `bf0a9e3` device test script; `49d531b` module-improvement inventory + seeded-APK readiness report.
-- **API-22 exception RETIRED (owner confirmed 2026-07-29: all field devices are Android 6+).** Production `minSdkVersion = 23`, stamped by `apply-overrides.js` with FATAL guards; this supersedes the earlier OD-K1 "keep 22, fail-open plaintext" ruling.
-- **Two different v2.9 debug APKs exist for different purposes - do not confuse them:**
-  - `V:\Co work\Projects\Retail\SaagarCC-BKP03-DAT02-v2.9-debug.apk` (6,510,923 bytes) - clean seed (`DEMO_SEED_ENABLED=false`), used for the BKP-03/DAT-02/API-23 engineering verification record.
-  - `V:\Co work\Projects\Retail\SaagarCC-DemoData-v2.9.apk` (7,583,854 bytes) - **seeded** (`DEMO_SEED_ENABLED=true`), built for the module-wise functional pass and the device drills; this is the one the seeded-APK readiness report and the device test script both point at.
-  - Same source commit, same version/build number; the only difference is the seed flag at packaging time.
-- Three new verification documents exist and are on `origin/main`: the device acceptance script, the module-wise test readiness report, and the module-functionality improvement inventory (see **Evidence and references** below).
-- PHP platform work (Track B / P1 onward) is **deferred by the owner and outside the current scope**. It is not complete; do not start it without fresh owner direction.
+- `main` and `origin/main` are both at `9b54a44` (pushed 2026-08-04), the D4 merge. Working tree clean; no unpushed commits; no feature branch outstanding.
+- **`npm run test:offline` is 257/257; the full `tests/*.test.mjs` glob is 260/260.** The offline script lists files explicitly, so a new test file must be added to it or CI will silently skip it.
+- **API-22 exception RETIRED (owner confirmed 2026-07-29: all field devices are Android 6+).** Production `minSdkVersion = 23`, stamped by `apply-overrides.js` with FATAL guards; supersedes the earlier OD-K1 "keep 22, fail-open plaintext" ruling.
+- **The build needs the bundled JDK 17**, not the system Java 8: `JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10"`. Gradle 8.2.1 will not run on Java 8.
+- PHP platform work (Track B / P1 onward) is **deferred by the owner and outside the current scope**. Do not start it without fresh owner direction.
+- **The two blocking inputs are both owner-side, not engineering:** the Phase 0 nominations form (unblocks every device gate) and the ETP sample exports from both stores (unblocks the entire E-series). Engineering can continue on D5-D12 without either.
 
 ## Repository and build snapshot
 
 | Item | Current fact |
 |---|---|
-| Pushed engineering baseline | `49d531b` on `origin/main`. Engineering content landed in `273e73d` (build 2.9 / vc209) - BKP-03 automatic encrypted off-device backup, DAT-02 persistence acceptance gate, minSdk 23. Builds on `55ceabd` - R0-W3 completion, R0-W4 controls/regressions, and R1 legal-minimum code/draft policy pack. `bf0a9e3` and `49d531b` added verification/planning documents only (no source change). 54 permanent offline tests pass. |
-| Permanent regression suite | `npm run test:offline` passed **54/54** on 2026-07-29. |
-| Non-seeded debug device-acceptance APK | `V:\Co work\Projects\Retail\SaagarCC-BKP03-DAT02-v2.9-debug.apk` - SHA-256 `614C8E191AED36467FE49B7E792EC70F21F4970E36312754C30B114D193EC06C`. Use for BKP-03/DAT-02/API-23 engineering verification. |
-| Seeded functional/device-drill APK | `V:\Co work\Projects\Retail\SaagarCC-DemoData-v2.9.apk` - SHA-256 `D6A09597070D3A689BDED8EF91E4676D225B54A616E48F126F9899D11D440E96`. Use for the module-wise functional pass and the BKP-03/DAT-02/restore device drills. |
-| APK identity (both) | `com.saagartraders.bcc`, Android version 2.9, versionCode 209, min API 23, target API 34. |
-| APK posture (both) | `android:allowBackup=false`; debug certificate; v1/v2 signature verified; suitable for device acceptance only. |
+| Pushed baseline | `9b54a44` on `origin/main` - "Merge D4: DSR completion meter, no-sales acknowledgement, and patcher idempotency fixes". |
+| Permanent regression suite | `npm run test:offline` **257/257**; full glob **260/260** (2026-08-04). |
+| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-D4-DSR-Completion-debug.apk` - 6,593,846 bytes, SHA-256 `8fe8167b983e8c59a99ae9ed671e7ca0e29234c745e8a98a132391560792fdea`. Contents verified by unpacking, not inferred from build success. |
+| APK identity | `com.saagartraders.bcc`, version 2.9, versionCode 209, min API 23, target API 34. |
+| APK posture | `android:allowBackup=false`; **debug certificate**; suitable for device acceptance only. All four native plugins present in the dex. |
 | Production signing | Fails closed when production signing secrets are absent. No production release exists. |
-| Seed posture | Clean source has `DEMO_SEED_ENABLED=false`; the seeded APK sets it `true` only at packaging time in the git-ignored `android/` build output, never in committed source. Do not use demo data for production acceptance. |
+| Seed posture | Clean source has `DEMO_SEED_ENABLED=false`; the seeded APK sets it `true` only at packaging time in the git-ignored `android/` output, never in committed source. Never use demo data for production acceptance. |
+
+**Older APKs referenced further down this file are superseded** by the D4 build above. The v2.9 pair (`SaagarCC-BKP03-DAT02-v2.9-debug.apk`, `SaagarCC-DemoData-v2.9.apk`) predate D1-D4 and must not be used for a current functional pass.
+
+## Programme inventory - 2026-08-04
+
+### Completed and on main
+
+| Item | Evidence |
+|---|---|
+| Phase 0 - encrypted storage, owner access, storage recovery, R1 legal minimum | merged `f76d4ab` |
+| **D1** Home "Today" view, store context, reauth explanations, backup health | `4177701` (2026-07-30) |
+| **D2** QMS fast arrive→outcome, follow-up priority, duplicate suggestion | `4177701` |
+| **D3** Service workboard, pickup readiness, customer-safe status, exceptions | `4177701` |
+| **D4** DSR completion meter, submit prompts, no-sales acknowledgement | `9b54a44` (2026-08-04) |
+
+**4 of 12 D-series waves are done. The E- and F-series have not started.**
+
+Defects fixed while verifying D4, all pre-existing:
+- `apply-d2-qms.mjs` and `apply-d3-service.mjs` injected code carrying the patcher file's own line endings, so output depended on how git checked the script out;
+- all three patchers dropped one byte per run from the `MODULES` line (greedy `\s*` swallowing the CR) - invisible in git, which normalises `index.html` to LF on commit and CRLF on checkout;
+- `tests/seeded-apk-runtime.test.mjs` asserted stock on the 730-day window's raw boundaries, which land on a Sunday two days in seven while the seed skips Sundays.
+
+### Remaining - blocked on people, not code
+
+1. **Phase 0 acceptance.** 69-case functional catalogue + 4 drills + 9 operational gates, all open. See "Non-negotiable acceptance gates still pending" below and `verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md` §6-§7.
+2. **D4 acceptance.** 8 device cases (D4-01..08) in `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md` §9. Unsigned debug APK only.
+3. **Owner nominations form.** `verification/PHASE-0-DEVICE-ACCEPTANCE-NOMINATIONS-FORM-2026-08-02.md`, outstanding since 2026-08-02. Nothing device-side starts without it.
+
+### Remaining - blocked on owner inputs
+
+**E-series: 7 waves, none started.** E1 exists only as a draft on branch `agent/e1-etp-import` (1 commit, not on main).
+
+E1 import layer → E2 DSR computed views → E3 CRO reconciliation → E4 planning and targets → E5 incentive → E6 exception monitoring → E7 service-centre *(optional)*.
+
+Frozen pending seven owner inputs (see `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`): sample ETP exports from **both** stores; dictionary approvals; the R022↔R025 reconciliation rule; date policy; unknown-code handling; XLSX parser choice; incentive scheme source. **E2-E6 all depend on E1's frozen schema, so this is the single largest blocker in the programme.**
+
+### Remaining - ready to build now, no blockers
+
+**8 D-series waves:** D5 stock variance triage · D6 cash/expense · D7 payroll · D8 leave coverage · D9 tax readiness · D10 grooming + CRO coaching · D11 festival planner · D12 reports polish and closure.
+
+D5 is the natural next wave. D7 and D10 are *better* after the E-series supplies verified data but are not blocked by it.
+
+### Remaining - backlog
+
+**F-series: 15 candidates, none started, none ranked.** The road plan requires ranking before any build. Highest-value by its own reasoning: **F1** banking reconciliation (~₹96.6L open/unbanked, the largest single control gap), **F5** PAN/Form-60 register (statutory, bills ≥ ₹2L), **F6** GST outward split check (known live discrepancy). Full list in `docs/V6-IMPROVEMENT-ROAD-PLAN.md` §6.
+
+### Housekeeping debt
+
+- **16 remote branches**, most stale (`back-button-2.9`, `test/year-*`, `scroll-*`, …). `agent/d1-d3-native-sqlite` and `agent/storage-recovery-p0` are fully merged and safe to delete. **`agent/e1-etp-import` must be kept** - it holds the E1 draft.
+- `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md` still carries a stale "D1 design approved ✋ PENDING" gate; D1 shipped 2026-07-30. Its E-series gates are all genuinely open.
+- **No `.gitattributes` rule for `*.mjs` or `index.html`.** This is the root cause of the line-ending bug class fixed twice on 2026-08-04. Pinning them to LF would prevent recurrence but rewrites endings across the working tree on next checkout - do it deliberately, not as a side effect.
 
 ### Working tree
 
-`main` still equals `origin/main` at `49d531b`; there are no unpushed commits. The current D1 checkpoint is intentionally uncommitted:
-
-- tracked modifications: `package.json`, `www/index.html`;
-- new implementation/tests: `www/reauth-policy.js`, `www/store-context.js`, `www/dashboard-policy.js`, `www/attention-policy.js`, `tests/d1-reauth.test.mjs`, `tests/d1-store-context.test.mjs`, `tests/d1-dashboard-policy.test.mjs`, `tests/d1-attention-policy.test.mjs`;
-- `docs/` and `package-lock.json` remain untracked under the standing convention and must not be staged unless the owner asks.
-
-No unrelated user change was overwritten. No commit or push is authorised yet.
+Clean. `main` equals `origin/main` at `9b54a44`. No feature branch outstanding; `d4-dsr-completion` was merged and deleted.
 ## Roadmap cross-check
 
 | Workstream | Engineering state | Roadmap exit state |
@@ -47,6 +89,9 @@ No unrelated user change was overwritten. No commit or push is authorised yet.
 | R0-W3 - backup and restore | BKP-01/02/04-08 source controls are in the pushed close-out; BKP-03 is source-complete and pushed in `273e73d`. | The restore-drill and provider/device evidence (including BKP-09) remain open. |
 | R0-W4 - export and release safety | Source-complete in `55ceabd`: SEC-08 through SEC-13 plus ENG-01/02/04 regression coverage and release tooling. | Production signing, device-hardening evidence, and the full ENG-03 device/UAT matrix remain open. |
 | R1 - legal minimum | Source controls and first-draft policy pack are complete in `55ceabd`. | Owner/counsel approval, operational rollout, and incident rehearsal remain open. |
+| V6 D-series (improvement) | D1-D4 merged; D5-D12 not started, unblocked. | Each wave needs its own device cases and owner acceptance; D4's are open. |
+| V6 E-series (ETP verification) | Not started. E1 draft on `agent/e1-etp-import` only. | Blocked on seven owner inputs; E1 schema must freeze before E2-E6 can be designed. |
+| V6 F-series (new functionality) | Not started, not ranked. | Ranking required before any build. |
 | Track B - PHP platform | Explicitly deferred by owner. | Not part of the current closure; no implementation work is authorised. |
 
 ## What the Android closure now contains
@@ -112,7 +157,15 @@ No source test, APK build, or debug signature may mark these rows passed. Record
 
 ## Safe resume order
 
-1. **Authorise the controlled two-device test pass** (per `SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`): nominate two devices (API 23+), an approved off-device provider folder/account, and a 12+ character recovery passphrase.
+**Pick the track that is actually unblocked.** As of 2026-08-04 the device track waits on the owner; the engineering track does not.
+
+**Track 1 - engineering, unblocked today.** Build D5 (stock variance triage) following the D4 pattern: read the real module payload first, write a change contract in `docs/audit/`, then a pure policy in `www/`, then a deterministic patcher in `scripts/apply-d5-*.mjs`, then policy + integration tests, then a debug APK verified by unpacking. Add every new test file to `npm run test:offline` or CI will skip it.
+
+**Track 2 - E-series, blocked.** Chase the seven owner inputs in `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`. Freeze E1's schema only once real exports from both stores are in hand. Do not design E2-E6 before then.
+
+**Track 3 - device and Phase 0 acceptance, blocked on the nominations form.** Once it arrives:
+
+1. **Authorise the controlled two-device test pass**: nominate two devices (API 23+), an approved off-device provider folder/account, and a 12+ character recovery passphrase.
 2. **Run the module-wise functional catalogue** on the seeded APK (`SaagarCC-DemoData-v2.9.apk`) using `SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`'s test IDs (CORE/QMS/SVC/DSR/STK/EXP/GRM/CRO/PAY/LEV/TAX/PLN/RPT/SEC/LEG). Stop on any P0/P1 defect.
 3. **Run the four device drills** from `DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md` (DAT-02 five-save, BKP-03 provider delivery, cross-device restore, legacy migration) on both devices and record a dated evidence log using the template at the end of that script.
 4. **If a device gate fails, make only the targeted correction.** In particular, any DAT-02 failure means the worker/storage-engine rewrite is required before acceptance can continue.
@@ -121,17 +174,40 @@ No source test, APK build, or debug signature may mark these rows passed. Record
 
 ## Build and verification commands
 
-Run from `V:\Co work\Projects\Retail\saagar-control-centre`:
+Run from `V:\Co work\Projects\Retail\saagar-control-centre`.
+
+The Android build needs the bundled JDK 17 — system Java 8 will not run Gradle 8.2.1:
+
+```bash
+JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10" npm run build:apk
+```
 
 ```powershell
 npm run test:offline
-npm run build:apk
 npm run build:release
+```
+
+Re-applying a module patcher is safe and idempotent as of `9b54a44`; each is a byte-level no-op on an already-patched bundle:
+
+```bash
+node scripts/apply-d2-qms.mjs && node scripts/apply-d3-service.mjs && node scripts/apply-d4-dsr.mjs
 ```
 
 `build:apk` performs the Capacitor sync and reapplies Android overrides. `build:release` is expected to stop with `Signed release blocked` until real production signing credentials are supplied; that is the correct fail-closed result.
 
 ## Evidence and references
+
+**Current programme (2026-08-02 onward):**
+
+- Programme blueprint, D/E/F waves: `docs/V6-IMPROVEMENT-ROAD-PLAN.md`
+- D4 change contract, engineering verification, APK checksum, device cases D4-01..08: `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md`
+- D2 / D3 change contracts: `docs/audit/D2-QMS-CHANGE-CONTRACT-2026-07-30.md`, `docs/audit/D3-SERVICE-CHANGE-CONTRACT-2026-07-30.md`
+- Phase 0 acceptance gates and exit rule: `verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md`
+- Owner nominations form (outstanding): `verification/PHASE-0-DEVICE-ACCEPTANCE-NOMINATIONS-FORM-2026-08-02.md`
+- Phase 1 / E-series prerequisites: `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`
+- Owner communication covering both phases: `docs/OWNER-COMMUNICATION-PHASE-0-AND-PHASE-1-2026-08-02.md`
+
+**Earlier closure evidence:**
 
 - Current v2.9 verification: `verification/BKP03-DAT02-API23-2026-07-29.md`
 - Pushed R0/R1 close-out verification: `verification/R0-R1-CLOSEOUT-2026-07-29.md`
@@ -152,7 +228,19 @@ npm run build:release
 - `bf0a9e3` - added the device acceptance script (`DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md`); no source change.
 - `49d531b` - added the module-improvement inventory and the seeded-APK module-wise test readiness report (with the full functional test catalogue); no source change.
 
-The next session should begin with the repository snapshot above, not with the older wave-by-wave instructions. This file supersedes the 2026-07-24 handoff state.
+- `4177701` - D1, D2, D3 and the native SQLite scale fix.
+- `f76d4ab` - Phase 0 merge: storage recovery, SQLite capacity, owner access, 210-test suite.
+- `9b54a44` - D4 merge: DSR completion meter, no-sales acknowledgement, patcher idempotency fixes, stale-D1-doc cleanup.
+
+The next session should begin with the repository snapshot and programme inventory above, not with the older wave-by-wave instructions. This file supersedes the 2026-07-24 handoff state.
+
+---
+
+# HISTORICAL RECORD - superseded, do not act on
+
+Everything below is a dated trail of earlier checkpoints, kept for provenance. **Its "current state" claims are stale**: the baselines, APK checksums, test counts and uncommitted-work notes were true when written and are not true now. The authoritative current state is the snapshot and inventory at the top of this file.
+
+In particular: sections below describe D1/D2/D3 as uncommitted working-tree checkpoints. They shipped in `4177701` on 2026-07-30 and are merged.
 
 ---
 
