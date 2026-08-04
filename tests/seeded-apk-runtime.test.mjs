@@ -131,6 +131,41 @@ test('730-day runtime seed creates two-year cross-module data', { timeout: 60_00
   assert.ok(Object.keys(taxFeed).length >= 23);
   const statements = parseStored(storage, 'tanishq_statements');
   assert.equal(Object.keys(statements).length, 731);
-  assert.ok(storage.has(`saagar_stock_titanworld_${profile.startDate}`));
-  assert.ok(storage.has(`saagar_stock_helios_${profile.endDate}`));
+  /* The seed writes stock for every day except Sunday (demo-seed.js isWeekend()
+     is `getDay() === 0`). The window is 730 days, and 730 % 7 === 2, so
+     profile.startDate sits two weekdays behind today: it lands on a Sunday every
+     Tuesday, and profile.endDate lands on one every Sunday. Asserting on the raw
+     boundaries therefore failed two days in seven. Anchor on the first and last
+     *stocked* day instead, and check the Sunday rule directly. */
+  const windowDays = [];
+  const cursor = new Date(`${profile.startDate}T12:00:00`);
+  for (let i = 0; i < profile.calendarDays; i++) {
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, '0');
+    const d = String(cursor.getDate()).padStart(2, '0');
+    windowDays.push(`${y}-${m}-${d}`);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  assert.equal(windowDays[0], profile.startDate);
+  assert.equal(windowDays[windowDays.length - 1], profile.endDate);
+
+  const isSunday = ds => new Date(`${ds}T12:00:00`).getDay() === 0;
+  const stockedDays = windowDays.filter(ds => !isSunday(ds));
+  const sundays = windowDays.filter(isSunday);
+  assert.ok(stockedDays.length > 600, 'the window should contain a full stock history');
+  assert.ok(sundays.length > 90, 'the window should contain Sundays to exclude');
+
+  // Both stores are stocked at each end of the window.
+  for (const store of ['titanworld', 'helios']) {
+    for (const day of [stockedDays[0], stockedDays[stockedDays.length - 1]]) {
+      assert.ok(storage.has(`saagar_stock_${store}_${day}`),
+        `expected seeded stock for ${store} on ${day}`);
+    }
+    // Every non-Sunday is stocked, and no Sunday is.
+    const seeded = [...storage.keys()].filter(key => key.startsWith(`saagar_stock_${store}_`));
+    assert.equal(seeded.length, stockedDays.length,
+      `${store} should have one stock record per non-Sunday`);
+    const seededSunday = sundays.find(ds => storage.has(`saagar_stock_${store}_${ds}`));
+    assert.equal(seededSunday, undefined, `${store} must not be stocked on ${seededSunday}`);
+  }
 });

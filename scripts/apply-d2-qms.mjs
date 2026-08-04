@@ -17,23 +17,42 @@ const resilienceMarker = 'D2-QMS-RESILIENCE-2026-07-30';
 const legalRetryMarker = 'D2-QMS-LEGAL-RETRY-2026-07-30';
 const entryRecoveryMarker = 'D2-QMS-ENTRY-RECOVERY-2026-07-30';
 
+/* Injected blocks come from Function.prototype.toString(), which reproduces this
+   file's on-disk source verbatim — line endings included. .gitattributes pins no
+   *.mjs rule, so git checks this script out with CRLF on Windows and LF
+   elsewhere, and an unnormalised inject would carry the wrong ending into the
+   payload. Normalising anchors and injected text to the target payload's own
+   ending makes the output platform-independent. Detection is per payload: the
+   QMS payload is LF, the DSR payload is CRLF. */
+function detectEol(source) {
+  return source.includes('\r\n') ? '\r\n' : '\n';
+}
+
+function toEol(text, eol) {
+  return String(text).replace(/\r\n/g, '\n').replace(/\n/g, eol);
+}
+
 function replaceOnce(source, before, after, label) {
-  if (source.includes(after)) return source;
-  const first = source.indexOf(before);
-  const last = source.lastIndexOf(before);
+  const eol = detectEol(source);
+  const target = toEol(after, eol);
+  const anchor = toEol(before, eol);
+  if (source.includes(target)) return source;
+  const first = source.indexOf(anchor);
+  const last = source.lastIndexOf(anchor);
   if (first < 0) throw new Error(`${label}: source anchor not found`);
   if (first !== last) throw new Error(`${label}: source anchor is not unique`);
-  return source.slice(0, first) + after + source.slice(first + before.length);
+  return source.slice(0, first) + target + source.slice(first + anchor.length);
 }
 
 function replaceFunction(source, name, replacement) {
+  const eol = detectEol(source);
   const startToken = `function ${name}(`;
   const start = source.indexOf(startToken);
   if (start < 0) throw new Error(`${name}: function not found`);
   if (start !== source.lastIndexOf(startToken)) throw new Error(`${name}: function is not unique`);
-  const end = source.indexOf('\nfunction ', start + startToken.length);
+  const end = source.indexOf(`${eol}function `, start + startToken.length);
   if (end < 0) throw new Error(`${name}: next function boundary not found`);
-  return source.slice(0, start) + replacement + source.slice(end);
+  return source.slice(0, start) + toEol(replacement, eol) + source.slice(end);
 }
 
 function replaceRegexExact(source, expression, replacement, expected, label) {
@@ -1208,7 +1227,8 @@ function repairD2IntakeHelperGroup(html) {
   if (foreignFunction) {
     throw new Error(`D2 intake helper repair would cross ${foreignFunction}`);
   }
-  const repaired = html.slice(0, groupAt) + d2IntakeHelperSource() + '\n' +
+  const eol = detectEol(html);
+  const repaired = html.slice(0, groupAt) + toEol(d2IntakeHelperSource() + '\n', eol) +
     html.slice(boundaryAt);
   const invalid = d2IntakeHelperNames.find(name => functionTokenCount(repaired, name) !== 1);
   if (invalid || repaired.includes('QMS_PENDING_INTAKE_KEY')) {
@@ -1339,7 +1359,7 @@ function patchQms(html) {
 }
 
 const index = fs.readFileSync(indexPath, 'utf8');
-const modulesMatch = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(\r?\n)/);
+const modulesMatch = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;[ \t]*(\r?\n)/);
 if (!modulesMatch) throw new Error('MODULES bundle not found');
 const modules = JSON.parse(modulesMatch[1]);
 const qms = modules.find(module => module.id === 'qms');
