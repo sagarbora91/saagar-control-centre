@@ -1,6 +1,6 @@
 # Agent Resume Prompt — Saagar Control Centre
 
-**Generated:** 2026-08-04 · **State captured at:** `origin/main` = `0ee2eea`
+**Generated:** 2026-08-04 · **State captured at:** `origin/main` = `62132c4`
 **Use:** paste §1 to a fresh agent (Codex or otherwise) as its opening prompt.
 Regenerate this file whenever the baseline moves.
 
@@ -26,7 +26,7 @@ A1. Verify the baseline. Run:
       git -C "<repo>" status --short
       git -C "<repo>" rev-parse HEAD
       git ls-remote --heads origin main
-    EXPECTED: HEAD == origin/main == 0ee2eea77e5065f388e4e8d9fff974453fbfb981,
+    EXPECTED: HEAD == origin/main == 62132c4cd4d31d0cf8317d51a4abd9ce77c4edac,
     working tree clean. If it differs, STOP and report — someone has moved on.
 
 A2. Verify the test suite. Run:

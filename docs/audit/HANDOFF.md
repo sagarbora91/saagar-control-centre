@@ -1,6 +1,6 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-04 (Asia/Kolkata), current to `594aa83`
+**Updated:** 2026-08-04 (Asia/Kolkata), current to `62132c4`
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
 **Programme status:** Phase 0 and improvement waves D1-D4 are implemented, regression-tested, merged and pushed. **Nothing is production accepted.** No device pass, UAT, legal approval, or production signing has been performed.
 
@@ -101,7 +101,30 @@ D7 and D10 are *better* after the E-series supplies verified data but are not bl
 
 ### Working tree
 
-Clean. `main` equals `origin/main` at `9b54a44`. No feature branch outstanding; `d4-dsr-completion` was merged and deleted.
+Clean. `main` equals `origin/main` at `62132c4`. No feature branch outstanding; `d4-dsr-completion` was merged and deleted.
+
+### Multi-agent handoff protocol
+
+More than one agent works this repository. To make handovers verifiable:
+
+| Marker | Value |
+|---|---|
+| **Last Claude-authored verified baseline** | `62132c4` — suite 260/260, `test:offline` 257/257, tree clean |
+| **Onboarding prompt for a fresh agent** | `docs/AGENT-RESUME-PROMPT-2026-08-04.md` §1 |
+| **Files any agent must keep current** | same file, §2 |
+| **Prompt to verify another agent's work, then resume** | `docs/CLAUDE-VERIFY-AND-RESUME-PROMPT.md` §1 |
+
+The verified-baseline SHA in `CLAUDE-VERIFY-AND-RESUME-PROMPT.md` is the trust anchor: it means *a reviewed session ended there with a green suite and a clean tree*. Advance it only after a verification pass actually passes — advancing it to an unverified commit launders unreviewed work into the trusted baseline, which is the one thing that protocol exists to prevent.
+
+**Any commit after `62132c4` that Claude did not author was written by another agent and must be independently verified before it is built upon.** Do not trust a commit message; re-derive its claims from the code and the tests.
+
+This repository has a specific failure history that verification must target:
+
+1. **Tests that pass while the app is broken.** The D1 rebuild deleted the Home screen's DOM hosts (`#heroNet`, `#quickGrid`, `#eodHost`, `#cust360Result`, …) while the JS still rendered into them. The suite stayed green because those tests are regex checks against JS source, not DOM assertions. Detection: for every `id="x"` removed from `www/index.html`, grep for a surviving `$('x')`.
+2. **Silent CI skips.** `npm run test:offline` lists files explicitly; a new test file not added to that list never runs.
+3. **Patcher fragility.** Any change to `scripts/apply-d*.mjs` must preserve byte-level idempotency, line-ending independence, and the `MODULES` line terminator.
+4. **Stale documents believed over code.** When a document and the repository disagree, the repository is right and the document is the defect.
+5. **Undeclared payload drift.** A commit touching `www/index.html` must change only the module payloads it claims to; verify every other module's `sha256` is unchanged.
 ## Roadmap cross-check
 
 | Workstream | Engineering state | Roadmap exit state |
