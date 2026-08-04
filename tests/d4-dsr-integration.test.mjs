@@ -4,12 +4,26 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import vm from 'node:vm';
 import { execFileSync } from 'node:child_process';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
+const require = createRequire(import.meta.url);
+const policy = require('../www/dsr-completion-policy.js');
 const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const indexPath = path.join(repoDir, 'www', 'index.html');
 const patcherPath = path.join(repoDir, 'scripts', 'apply-d4-dsr.mjs');
+
+/* Slices one D4-owned function out of the payload. The payload is CRLF, so the
+   next-function boundary is \r\nfunction. */
+function ownedFunction(html, name) {
+  const start = html.indexOf(`function ${name}(`);
+  assert.notEqual(start, -1, `${name} must exist in the payload`);
+  const end = html.indexOf('\r\nfunction ', start + 1);
+  assert.notEqual(end, -1, `${name} must have a following boundary`);
+  return html.slice(start, end);
+}
 
 function readShell() {
   return fs.readFileSync(indexPath, 'utf8');
@@ -84,9 +98,58 @@ test('carried opening values are marked, and only in the opening grid', () => {
 test('each owned helper is defined exactly once', () => {
   const { html } = dsrPayload(readShell());
   for (const name of ['dsrD4PolicyApi', 'dsrD4Context', 'dsrD4PrevClosingRecord',
-    'dsrD4CarriedOpening', 'dsrD4Summary']) {
+    'dsrD4CarriedOpening', 'dsrD4NoSalesAck', 'dsrD4ToggleNoSales', 'dsrD4Summary']) {
     assert.equal(html.split(`function ${name}(`).length - 1, 1, `${name} defined once`);
   }
+});
+
+/* Owner ruling 2026-08-04: a zero-sale day must be affirmed, not assumed. */
+
+test('the sales empty state asks for confirmation instead of inviting a blank', () => {
+  const { html } = dsrPayload(readShell());
+  assert.ok(html.includes('A day with no sales must be confirmed before you can submit.'));
+  assert.ok(html.includes('onclick="dsrD4ToggleNoSales()"'));
+  // The old guidance actively told staff a blank was fine.
+  assert.ok(!html.includes("Zero sales today? That's fine"));
+});
+
+test('the acknowledgement toggle refuses when locked or when sales exist', () => {
+  const { html } = dsrPayload(readShell());
+  const body = ownedFunction(html, 'dsrD4ToggleNoSales');
+  assert.ok(body.includes('if (rec.submitted || isPastView()) return;'));
+  assert.ok(/rec\.sales\.length[\s\S]*?return;/.test(body), 'guards against existing sales');
+  assert.ok(body.includes('saveRec(rec);'), 'an affirmation persists immediately');
+  assert.ok(body.includes('updateProgress();'));
+});
+
+test('the module acknowledgement check matches the policy, including the array trap', () => {
+  const { html } = dsrPayload(readShell());
+  const context = { Array, Object, String };
+  vm.createContext(context);
+  vm.runInContext(`${ownedFunction(html, 'dsrD4NoSalesAck')}\nthis.ack = dsrD4NoSalesAck;`, context);
+
+  for (const shape of [null, undefined, true, 'yes', {}, { by: 'A' }, { at: '' }, [],
+    { at: '18:40:00' }, { at: '18:40:00', by: 'Asha' }]) {
+    const rec = { sales: [], d4NoSales: shape };
+    assert.equal(!!context.ack(rec), policy.noSalesAcknowledged(rec),
+      `module and policy disagree on ${JSON.stringify(shape)}`);
+  }
+  // [] must not pass: typeof [] === 'object' and [].at is Array.prototype.at.
+  assert.equal(context.ack({ d4NoSales: [] }), null);
+});
+
+test('the policy-absent fallback also requires the acknowledgement', () => {
+  const { html } = dsrPayload(readShell());
+  const summary = ownedFunction(html, 'dsrD4Summary');
+  assert.ok(summary.includes("sales: 'incomplete'"), 'fallback starts sales incomplete');
+  assert.ok(summary.includes('dsrD4NoSalesAck(rec)'));
+  assert.ok(summary.includes("'opening', 'sales', 'tasks', 'cleaning', 'closing'"));
+});
+
+test('the submit gate fallback names the sales requirement', () => {
+  const { html } = dsrPayload(readShell());
+  const body = ownedFunction(html, 'getMissingForSubmit');
+  assert.ok(/Sales — add the day’s bills, or confirm there were no sales today/.test(body));
 });
 
 test('the policy script is loaded once, before the MODULES bundle', () => {

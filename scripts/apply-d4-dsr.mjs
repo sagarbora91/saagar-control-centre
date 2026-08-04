@@ -19,13 +19,10 @@ const runtimeMarker = 'D4-DSR-RUNTIME-2026-08-04';
 const cssMarker = 'D4-DSR-CSS-2026-08-04';
 const policyTag = '<script src="dsr-completion-policy.js"></script>';
 
-const d4HelperNames = [
-  'dsrD4PolicyApi',
-  'dsrD4Context',
-  'dsrD4PrevClosingRecord',
-  'dsrD4CarriedOpening',
-  'dsrD4Summary'
-];
+/* Declared after the helper functions below; the injected set and the
+   exactly-once verification list are both derived from it so they cannot drift. */
+let d4Helpers = [];
+let d4HelperNames = [];
 
 /* The DSR payload is CRLF throughout (3,297 pairs). Anchors and injected blocks
    are authored with LF in this file and converted to the payload's own ending so
@@ -107,9 +104,33 @@ function dsrD4CarriedOpening(rec) {
   }
 }
 
-/* Falls back to the honest subset when the policy file is absent: the four
-   sections that carry real evidence. It never reinstates the hardcoded `true`
-   entries, so a missing policy can under-report but never over-report. */
+/* Owner ruling 2026-08-04: a zero-sale day must be affirmed, not assumed. Mirrors
+   the policy's validity check — an array would otherwise pass, since typeof [] is
+   'object' and [].at resolves to Array.prototype.at. */
+function dsrD4NoSalesAck(rec) {
+  const ack = rec && rec.d4NoSales;
+  if (!ack || typeof ack !== 'object' || Array.isArray(ack)) return null;
+  return (typeof ack.at === 'string' && ack.at.length > 0) ? ack : null;
+}
+
+function dsrD4ToggleNoSales() {
+  const rec = getRecord();
+  if (rec.submitted || isPastView()) return;
+  if (Array.isArray(rec.sales) && rec.sales.length) {
+    toast('Sales are recorded for today — nothing to confirm', 'err');
+    return;
+  }
+  rec.d4NoSales = dsrD4NoSalesAck(rec)
+    ? null
+    : { at: nowTime(), by: rec.staffName || '' };
+  saveRec(rec);
+  renderSales();
+  updateProgress();
+}
+
+/* Falls back to the honest subset when the policy file is absent: the sections
+   that carry real evidence. It never reinstates the hardcoded `true` entries, so
+   a missing policy can under-report but never over-report. */
 function dsrD4Summary(rec) {
   const api = dsrD4PolicyApi();
   if (api) {
@@ -123,20 +144,33 @@ function dsrD4Summary(rec) {
   const cp2 = cleaning.cp2 || {};
   const status = {
     daystart: 'not_applicable', opening: 'incomplete', inout: 'not_applicable',
-    sales: 'not_applicable', nonpurch: 'not_applicable', tasks: 'incomplete',
+    sales: 'incomplete', nonpurch: 'not_applicable', tasks: 'incomplete',
     marketing: 'not_applicable', cleaning: 'incomplete', closing: 'incomplete'
   };
+  if ((Array.isArray(rec && rec.sales) && rec.sales.length > 0) ||
+      dsrD4NoSalesAck(rec) || (rec && rec.submitted)) status.sales = 'complete';
   if (cats.length && cats.every(c => rec && rec.opening && rec.opening[c.id] !== '' &&
     rec.opening[c.id] !== undefined && rec.opening[c.id] !== null)) status.opening = 'complete';
   if (cats.length && cats.every(c => rec && rec.closing && rec.closing[c.id] !== '' &&
     rec.closing[c.id] !== undefined && rec.closing[c.id] !== null)) status.closing = 'complete';
   if (tasks.length && tasks.every(t => taskEntered(rec && rec.tasks && rec.tasks[t.id]))) status.tasks = 'complete';
   if (cp1.done && cp1.photo && cp2.done && cp2.photo) status.cleaning = 'complete';
-  const applicable = ['opening', 'tasks', 'cleaning', 'closing'];
+  const applicable = ['opening', 'sales', 'tasks', 'cleaning', 'closing'];
   const done = applicable.filter(id => status[id] === 'complete').length;
   return { status, done, total: applicable.length,
     percent: applicable.length ? Math.round(done / applicable.length * 100) : 0 };
 }
+
+d4Helpers = [
+  dsrD4PolicyApi,
+  dsrD4Context,
+  dsrD4PrevClosingRecord,
+  dsrD4CarriedOpening,
+  dsrD4NoSalesAck,
+  dsrD4ToggleNoSales,
+  dsrD4Summary
+];
+d4HelperNames = d4Helpers.map(fn => fn.name);
 
 /* ── replaced module functions ── */
 
@@ -165,6 +199,7 @@ function getMissingForSubmit(rec) {
   }
   const m = [];
   if (!activeStockCats().every(c => rec.opening[c.id] !== '')) m.push('Opening stock — enter counts for all brands');
+  if (!(Array.isArray(rec.sales) && rec.sales.length) && !dsrD4NoSalesAck(rec)) m.push('Sales — add the day’s bills, or confirm there were no sales today');
   if (!TASK_LIST.every(t => taskEntered(rec.tasks[t.id]))) m.push('Daily task counts — fill all items');
   if (!rec.cleaning.cp1.done || !rec.cleaning.cp1.photo) m.push('Cleaning Checkpoint 1 — mark done & attach photo');
   if (!rec.cleaning.cp2.done || !rec.cleaning.cp2.photo) m.push('Cleaning Checkpoint 2 — mark done & attach photo');
@@ -212,9 +247,7 @@ function patchDsr(html) {
   const eol = detectEol(html);
   if (!html.includes(runtimeMarker)) {
     const anchor = '/* ── PROGRESS ── */';
-    const helpers = [
-      dsrD4PolicyApi, dsrD4Context, dsrD4PrevClosingRecord, dsrD4CarriedOpening, dsrD4Summary
-    ].map(fn => fn.toString()).join('\n');
+    const helpers = d4Helpers.map(fn => fn.toString()).join('\n');
     html = replaceOnce(html, anchor, toEol(helpers + '\n\n', eol) + anchor, 'D4 owned helpers');
   }
 
@@ -252,10 +285,29 @@ function patchDsr(html) {
     );
   }
 
+  /* Owner ruling 2026-08-04: replace the "leave this empty" guidance with the
+     acknowledgement control. The empty state is the only place a zero-sale day
+     is visible, so the affirmation belongs there. */
+  if (!html.includes('onclick="dsrD4ToggleNoSales()"')) {
+    html = replaceOnce(
+      html,
+      toEol('          <div class="empty-title">No sales recorded</div>\n' +
+        '          <div class="empty-sub">Zero sales today? That\'s fine — leave this empty.</div>', eol),
+      toEol('          <div class="empty-title">No sales recorded</div>\n' +
+        '          <div class="empty-sub">${dsrD4NoSalesAck(rec)\n' +
+        '            ? `Confirmed: no sales today (${esc(dsrD4NoSalesAck(rec).at)}${dsrD4NoSalesAck(rec).by ? \' · \' + esc(dsrD4NoSalesAck(rec).by) : \'\'})`\n' +
+        '            : \'A day with no sales must be confirmed before you can submit.\'}</div>\n' +
+        '          ${locked ? \'\' : `<button class="btn ${dsrD4NoSalesAck(rec) ? \'btn-outline\' : \'btn-green\'} btn-sm" style="margin-top:10px" onclick="dsrD4ToggleNoSales()">${dsrD4NoSalesAck(rec) ? \'Undo confirmation\' : \'Confirm no sales today\'}</button>`}', eol),
+      'D4 no-sales acknowledgement control'
+    );
+  }
+
   const required = [
     runtimeMarker,
     cssMarker,
     'dsrD4Summary(rec)',
+    'onclick="dsrD4ToggleNoSales()"',
+    'A day with no sales must be confirmed before you can submit.',
     'btn.classList.toggle(\'optional\'',
     'class="dsr-d4-missing"',
     'const d4Carried = dsrD4CarriedOpening(rec);',

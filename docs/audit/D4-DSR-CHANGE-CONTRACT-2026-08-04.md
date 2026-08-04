@@ -24,7 +24,8 @@ device-only gate.
 - `prefillOpeningFromPrev()` (prior closing → today's opening, 7-day lookback)
   remains the entry-speed mechanism; D4 does not replace it.
 - Read-only past-view and `_noRecord` rendering remain unchanged.
-- No new PII storage key is introduced. No new persisted key at all.
+- No new PII storage key is introduced, and no new storage key at all. (§4.6 adds
+  one optional **field** to the existing day record, per the owner's ruling.)
 
 ## 3. Defects found in the current module
 
@@ -100,13 +101,13 @@ hardcoded `true`. Each is classified explicitly rather than assumed:
 |---|---|
 | daystart | `complete` when the day has been started (an in/out `in` entry exists) |
 | inout | `complete` when the last entry resolves (no dangling `out`) |
-| sales | `not_applicable` — a zero-sale day is legitimate and must not be forced |
-| nonpurch | `not_applicable` — same reason |
-| marketing | `not_applicable` — no per-day obligation exists in the record |
+| sales | `complete` when bills exist **or** the day is explicitly acknowledged as a no-sales day (see §4.6) |
+| nonpurch | `not_applicable` — no per-day obligation exists in the record |
+| marketing | `not_applicable` — same reason |
 
 `not_applicable` sections are excluded from the denominator. The meter reads
-`done / applicable`, so an empty record reads honestly (e.g. `0/6`), and a
-zero-sale day can still reach 100%.
+`done / applicable`, so an empty record reads honestly (`0/7`), and an
+acknowledged zero-sale day can still reach 100%.
 
 **This changes a number the owner currently sees.** Existing records will read
 lower than before. That is the correction, not a regression.
@@ -134,6 +135,34 @@ prior day's closing, with the source date. The value is unchanged and remains
 freely editable; only its provenance becomes visible. The marking is derived at
 render time from the same lookback — **no new persisted field**.
 
+### 4.6 Explicit no-sales acknowledgement (owner ruling, 2026-08-04)
+
+The owner ruled that a day with no sales must be **affirmed, not assumed**. An
+empty sales list is only complete once the staff member has explicitly confirmed
+it, so "I forgot to enter the bills" and "there were genuinely no bills" stop
+looking identical.
+
+- The sales tab's empty state previously read *"Zero sales today? That's fine —
+  leave this empty."* It now states that a no-sales day must be confirmed, and
+  offers a **Confirm no sales today** button (with an undo).
+- Confirming writes `d4NoSales = { at, by }` onto the existing day record — a new
+  **field**, not a new storage key. This amends §2's "no new persisted field"
+  statement; the acknowledgement is an affirmative human act and cannot be
+  derived.
+- The acknowledgement is only consulted when the sales list is empty. Recording a
+  bill makes the section complete on its own merits.
+- The control is unavailable on a submitted or past-view record, and refuses
+  while bills exist.
+- The confirmation records its time and the staff member, so an auditor can see
+  when the day was declared empty.
+
+**A submitted day is exempt.** Records sealed before this rule existed carry no
+acknowledgement and never can; the meter must not retroactively fail evidence
+that was already accepted. `unlockForCorrection()` clears `submitted`, which
+correctly re-arms the requirement for anyone reopening the day.
+
+Applicable sections therefore rise from six to seven.
+
 ## 5. Explicitly out of scope
 
 - Declaration entry and verification (E3).
@@ -147,10 +176,13 @@ render time from the same lookback — **no new persisted field**.
 - **Visible metric change.** Owner and staff will see lower completion
   percentages than yesterday for the same data. Needs an owner heads-up before
   the device pass, not after.
-- **`not_applicable` is a judgement.** Classifying sales/nonpurch/marketing as
-  carrying no daily obligation reflects current record structure; if the owner
-  wants a zero-sale day to require an explicit "no sales today" acknowledgement,
-  that is a different rule and should be decided before implementation.
+- **A new daily step for staff.** Every genuinely empty sales day now needs one
+  extra tap before the day can be submitted. Staff should be told before the
+  device pass, or it will read as a bug.
+- **`not_applicable` is still a judgement for nonpurch and marketing.** The
+  owner's ruling covered sales. The same "affirm, don't assume" argument could be
+  extended to a day with no non-purchasers or no marketing activity; that would
+  be two more acknowledgements and has not been asked for.
 - The DSR module has no store tag on its records; nothing in D4 changes that,
   and the meter must not be described as store-isolated.
 
@@ -167,8 +199,13 @@ render time from the same lookback — **no new persisted field**.
 No real-device, UAT, legal/owner, signing, or release row may be marked passed
 by these automated checks.
 
-## 8. Open question for the owner
+## 8. Owner decisions
 
-§6 risk 2: on a day with genuinely no sales and no walk-ins, should the DSR
-require an explicit acknowledgement ("no sales today"), or silently count those
-sections as not applicable? This contract assumes **not applicable**.
+**Resolved 2026-08-04 — zero-sale days.** Asked whether a day with genuinely no
+sales should require an explicit "no sales today" acknowledgement or count as not
+applicable, the owner ruled: **require the acknowledgement.** Implemented per
+§4.6.
+
+**Still open — nonpurch and marketing.** The ruling addressed sales. Whether a day
+with no non-purchasers or no marketing activity should likewise be affirmed has
+not been asked, and both remain `not_applicable` (§6).

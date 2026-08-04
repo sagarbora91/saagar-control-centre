@@ -72,9 +72,34 @@
     });
   }
 
-  /* sales / nonpurch / marketing carry no per-day obligation: a zero-sale day is
-     legitimate and must not be forced to look incomplete. They are excluded from
-     the denominator rather than counted as free passes. */
+  /* Owner ruling (2026-08-04): a day with no sales must be affirmed, not assumed.
+     An empty sales list is only complete once the staff member has explicitly
+     acknowledged it, so "I forgot to enter the bills" and "there were genuinely
+     no bills" stop looking identical. */
+  /* `at` must be a non-empty string, and the carrier must be a plain object.
+     An array would otherwise pass: typeof [] === 'object' and [].at resolves to
+     Array.prototype.at, a truthy function. */
+  function noSalesAcknowledged(rec) {
+    const ack = rec && rec.d4NoSales;
+    if (!ack || typeof ack !== 'object' || Array.isArray(ack)) return false;
+    return typeof ack.at === 'string' && ack.at.length > 0;
+  }
+
+  function salesStatus(rec) {
+    if (asArray(rec && rec.sales).length > 0) return COMPLETE;
+    if (noSalesAcknowledged(rec)) return COMPLETE;
+    /* A submitted day is sealed. It closed under whatever gate applied at the
+       time, and the meter must not retroactively fail evidence that was already
+       accepted — records predating this rule carry no acknowledgement and never
+       can. unlockForCorrection() clears `submitted`, which correctly re-arms the
+       requirement for anyone reopening the day. */
+    if (rec && rec.submitted) return COMPLETE;
+    return INCOMPLETE;
+  }
+
+  /* nonpurch / marketing carry no per-day obligation in the record's current
+     structure, so they are excluded from the denominator rather than counted as
+     free passes. Sales was moved out of this group by the ruling above. */
   function sectionStatus(rec, ctx) {
     const record = rec && typeof rec === 'object' ? rec : {};
     const context = ctx && typeof ctx === 'object' ? ctx : {};
@@ -86,7 +111,7 @@
       daystart: io.started ? COMPLETE : INCOMPLETE,
       opening: allCategoriesEntered(record.opening, categories) ? COMPLETE : INCOMPLETE,
       inout: io.empty ? INCOMPLETE : (io.dangling ? INCOMPLETE : COMPLETE),
-      sales: NOT_APPLICABLE,
+      sales: salesStatus(record),
       nonpurch: NOT_APPLICABLE,
       tasks: tasksComplete(record, taskList) ? COMPLETE : INCOMPLETE,
       marketing: NOT_APPLICABLE,
@@ -123,6 +148,9 @@
 
     if (!allCategoriesEntered(record.opening, context.stockCategories)) {
       missing.push('Opening stock — enter counts for all brands');
+    }
+    if (asArray(record.sales).length === 0 && !noSalesAcknowledged(record)) {
+      missing.push('Sales — add the day’s bills, or confirm there were no sales today');
     }
     if (!tasksComplete(record, context.taskList)) {
       missing.push('Daily task counts — fill all items');
@@ -164,6 +192,7 @@
     INCOMPLETE,
     NOT_APPLICABLE,
     SECTIONS,
+    noSalesAcknowledged,
     sectionStatus,
     completionSummary,
     missingForSubmit,

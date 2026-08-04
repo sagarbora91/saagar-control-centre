@@ -18,7 +18,9 @@ function emptyRecord(over) {
     closing: { tw_watch: '', tw_clock: '', he_watch: '' },
     tasks: { greet: '', demo: '', callback: '' },
     cleaning: { cp1: { done: false, photo: '' }, cp2: { done: false, photo: '' } },
-    inout: []
+    inout: [],
+    sales: [],
+    d4NoSales: null
   }, over || {});
 }
 
@@ -28,7 +30,8 @@ function fullRecord() {
     closing: { tw_watch: '9', tw_clock: '4', he_watch: '6' },
     tasks: { greet: '3', demo: '2', callback: '1' },
     cleaning: { cp1: { done: true, photo: 'p1' }, cp2: { done: true, photo: 'p2' } },
-    inout: [{ type: 'in', at: '09:58:00' }]
+    inout: [{ type: 'in', at: '09:58:00' }],
+    sales: [{ billNo: 'B1', amount: 2500 }]
   });
 }
 
@@ -42,21 +45,77 @@ test('an empty record reports zero complete — no hardcoded floor', () => {
   assert.equal(status.inout, policy.INCOMPLETE);
 });
 
-test('sales, nonpurch and marketing are not applicable and leave the denominator', () => {
+test('nonpurch and marketing are not applicable and leave the denominator', () => {
   const summary = policy.completionSummary(emptyRecord(), CTX);
-  assert.equal(summary.status.sales, policy.NOT_APPLICABLE);
   assert.equal(summary.status.nonpurch, policy.NOT_APPLICABLE);
   assert.equal(summary.status.marketing, policy.NOT_APPLICABLE);
-  assert.equal(summary.total, 6);
+  assert.equal(summary.total, 7);
 });
 
-test('a zero-sale day can still reach one hundred percent', () => {
-  const rec = fullRecord();
-  assert.deepEqual(rec.inout, [{ type: 'in', at: '09:58:00' }]);
-  const summary = policy.completionSummary(rec, CTX);
-  assert.equal(summary.done, 6);
-  assert.equal(summary.total, 6);
+test('a day with recorded sales reaches one hundred percent', () => {
+  const summary = policy.completionSummary(fullRecord(), CTX);
+  assert.equal(summary.done, 7);
+  assert.equal(summary.total, 7);
   assert.equal(summary.percent, 100);
+});
+
+/* Owner ruling 2026-08-04: an empty sales list must be affirmed, not assumed. */
+
+test('an empty sales list is incomplete until it is acknowledged', () => {
+  const rec = fullRecord();
+  rec.sales = [];
+  assert.equal(policy.sectionStatus(rec, CTX).sales, policy.INCOMPLETE);
+  assert.equal(policy.completionSummary(rec, CTX).done, 6);
+
+  rec.d4NoSales = { at: '18:40:00', by: 'Asha' };
+  assert.equal(policy.sectionStatus(rec, CTX).sales, policy.COMPLETE);
+  assert.equal(policy.completionSummary(rec, CTX).done, 7);
+  assert.equal(policy.completionSummary(rec, CTX).percent, 100);
+});
+
+test('submit is refused on an unacknowledged zero-sale day and names why', () => {
+  const rec = fullRecord();
+  rec.sales = [];
+  const missing = policy.missingForSubmit(rec, CTX);
+  assert.equal(missing.length, 1);
+  assert.match(missing[0], /^Sales — /);
+  assert.match(missing[0], /confirm there were no sales today/);
+
+  rec.d4NoSales = { at: '18:40:00', by: 'Asha' };
+  assert.deepEqual(policy.missingForSubmit(rec, CTX), []);
+});
+
+test('recorded sales need no acknowledgement', () => {
+  const rec = fullRecord();
+  assert.equal(rec.sales.length, 1);
+  assert.equal(rec.d4NoSales, null);
+  assert.equal(policy.sectionStatus(rec, CTX).sales, policy.COMPLETE);
+  assert.deepEqual(policy.missingForSubmit(rec, CTX), []);
+});
+
+test('a malformed acknowledgement does not satisfy the rule', () => {
+  for (const ack of [true, 'yes', {}, { by: 'Asha' }, { at: '' }, []]) {
+    const rec = fullRecord();
+    rec.sales = [];
+    rec.d4NoSales = ack;
+    assert.equal(policy.noSalesAcknowledged(rec), false,
+      `${JSON.stringify(ack)} must not count as an acknowledgement`);
+    assert.equal(policy.sectionStatus(rec, CTX).sales, policy.INCOMPLETE);
+  }
+});
+
+test('a sealed day is not retroactively failed by the new rule', () => {
+  // Records submitted before this rule existed carry no acknowledgement and
+  // never can; the meter must not mark closed evidence incomplete.
+  const legacy = fullRecord();
+  legacy.sales = [];
+  delete legacy.d4NoSales;
+  legacy.submitted = true;
+  assert.equal(policy.sectionStatus(legacy, CTX).sales, policy.COMPLETE);
+
+  // Reopening the day re-arms the requirement.
+  legacy.submitted = false;
+  assert.equal(policy.sectionStatus(legacy, CTX).sales, policy.INCOMPLETE);
 });
 
 test('day start is incomplete until an in entry exists', () => {
@@ -112,9 +171,13 @@ test('the meter and the submit gate cannot disagree', () => {
 
 test('submit refusal names each missing section', () => {
   const missing = policy.missingForSubmit(emptyRecord(), CTX);
-  assert.equal(missing.length, 5);
+  assert.equal(missing.length, 6);
   assert.ok(missing.every(line => typeof line === 'string' && line.length > 0));
   assert.ok(missing.some(m => /Opening stock/.test(m)));
+  assert.ok(missing.some(m => /^Sales — /.test(m)));
+  assert.ok(missing.some(m => /Daily task counts/.test(m)));
+  assert.ok(missing.some(m => /Checkpoint 1/.test(m)));
+  assert.ok(missing.some(m => /Checkpoint 2/.test(m)));
   assert.ok(missing.some(m => /Closing stock/.test(m)));
 });
 
