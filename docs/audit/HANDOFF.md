@@ -1,11 +1,18 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-07 (Asia/Kolkata), MAH-4 Stage-B Planning canary checkpoint
+**Updated:** 2026-08-07 (Asia/Kolkata), Code Closure API-23 compatibility
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
+**Current reconciliation (supersedes historical status text below):** D1-D5,
+C1 and MAH-1 through MAH-4 are integrated on `main`. Whole-app API-23
+engineering compatibility is emulator verified. Nothing is production
+accepted; physical-device, UAT, legal and signing gates remain open.
 **Programme status:** D1-D5 remain on `main`; the cumulative C1/MAH-1–MAH-4 Stage-A engineering tranche is committed and pushed on `agent/c1-mah4-foundation` at implementation commit `0909972`, pending review/merge. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
 
 > **Latest active resume point:**
-> verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md.
+> `verification/CODE-CLOSURE-API23-COMPATIBILITY-2026-08-07.md`.
+> This code-closure checkpoint supersedes the older Planning-canary resume text
+> immediately below. Stock Chrome 44 rendered the shell and all eleven external
+> modules with Capacitor and native storage active. ETP/PHP remain excluded.
 > MAH-4 Stage B has started with a Planning-only product canary. The rendered
 > exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle passed. `ST_ERROR`,
 > timeout/error rendered cases, API-23 evidence and the remaining ten modules

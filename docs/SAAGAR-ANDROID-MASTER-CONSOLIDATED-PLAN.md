@@ -1875,3 +1875,18 @@ This does not claim whole-app API-23 production acceptance: the stock API-23
 WebView exposed older application-script syntax/polyfill incompatibilities that
 must be treated as a separate compatibility phase. See
 `verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md`.
+
+## Code Closure — API-23 compatibility and reconciliation — 2026-08-07
+
+The separate whole-app API-23 engineering compatibility phase is complete.
+Generated Android application scripts, inline scripts and Capacitor's injected
+native bridge are deterministically lowered for stock Chrome 44, with narrow
+missing-API shims. Normal, release and seeded APKs share the pipeline, and the
+generated manifest pins are rebound after transformation. The shell loader is
+also reconciled with the completed external-file module architecture.
+
+An Android 6.0 / API-23 emulator rendered the shell and all eleven modules with
+the Capacitor bridge and `SaagarNativeStore` active. Chrome 44 lacks WebAssembly;
+the supported evidence is the native-storage fallback, not WebAssembly support.
+Physical-device, owner UAT and production-signing gates remain open. See
+`verification/CODE-CLOSURE-API23-COMPATIBILITY-2026-08-07.md`.

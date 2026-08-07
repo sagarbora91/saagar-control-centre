@@ -18,7 +18,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
   assert.equal(inventory.upstream.currentWwwFileCount, 65);
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7726365);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7726843);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',

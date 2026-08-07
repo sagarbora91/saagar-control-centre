@@ -8230,9 +8230,19 @@ function seedModuleFromMaster(id){
    every later open / switch / reload into a cache hit; the iframe still re-mounts
    each time, so the module always boots with fresh data. */
 const __moduleSrcCache = Object.create(null);
+function loadExternalModuleHtml(mod){
+  if(!mod || !mod.src) throw new Error('Module source is unavailable.');
+  const request=new XMLHttpRequest();
+  request.open('GET',mod.src,false);
+  request.send(null);
+  if((request.status!==0 && (request.status<200||request.status>=300)) || !request.responseText){
+    throw new Error('Module source could not be loaded: '+mod.id);
+  }
+  return request.responseText;
+}
 function buildModuleSrc(mod){
   if(__moduleSrcCache[mod.id]) return __moduleSrcCache[mod.id];
-  const base=injectLegacyManagerPasswordGuard(decodeHtml(mod.html_b64),mod.id);
+  const base=injectLegacyManagerPasswordGuard(loadExternalModuleHtml(mod),mod.id);
   const built=injectIframeShim(
     injectSafetyNet(
       injectMobileMode(
@@ -8417,7 +8427,8 @@ function injectModuleAccessBridge(html,moduleId){
   if(!['service','expense','stock','dsr'].includes(moduleId)) return html;
   const ownerCheck="function isSuperAdmin(){ try{ return !!(window.parent&&window.parent.SaagarOwnerSession&&window.parent.SaagarOwnerSession.isOwnerActive()); }catch(e){ return false; } }";
   if(moduleId==='service'||moduleId==='expense'){
-    const count=String(html).split(ownerCheck).length-1;
+    const compact=String(html).replace(/\s+/g,'');
+    const count=compact.split(ownerCheck.replace(/\s+/g,'')).length-1;
     if(count!==1) throw new Error('Owner access contract mismatch for '+moduleId);
   }
   const mid=JSON.stringify(String(moduleId));

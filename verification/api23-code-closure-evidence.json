@@ -1,0 +1,136 @@
+{
+  "capturedAt": "2026-08-07T14:22:21.863Z",
+  "endpoint": "http://127.0.0.1:9222/json",
+  "base": {
+    "userAgent": "Mozilla/5.0 (Linux; Android 6.0; Android SDK built for x86_64 Build/MASTER; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/44.0.2403.119 Mobile Safari/537.36",
+    "api23": true,
+    "webAssembly": false,
+    "capacitor": true,
+    "nativeStore": true,
+    "secureShell": false
+  },
+  "modules": [
+    {
+      "id": "stock",
+      "ok": true,
+      "title": "Saagar Traders — Daily Stock Register v3",
+      "bodyChars": 162982,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 360256
+      }
+    },
+    {
+      "id": "service",
+      "ok": true,
+      "title": "Watch Service Centre — Saagar Traders",
+      "bodyChars": 154507,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 396239
+      }
+    },
+    {
+      "id": "qms",
+      "ok": true,
+      "title": "QMS — Queue Management System",
+      "bodyChars": 160974,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 336925
+      }
+    },
+    {
+      "id": "dsr",
+      "ok": true,
+      "title": "Saagar Traders — CRO Login",
+      "bodyChars": 132668,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 335334
+      }
+    },
+    {
+      "id": "expense",
+      "ok": true,
+      "title": "Expense Manager — Central Financial Ledger · Saagar Traders",
+      "bodyChars": 152978,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 332748
+      }
+    },
+    {
+      "id": "grooming",
+      "ok": true,
+      "title": "Saagar Traders — Grooming Checklist",
+      "bodyChars": 58031,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 248770
+      }
+    },
+    {
+      "id": "cro_audit",
+      "ok": true,
+      "title": "Store Manager v3 — Saagar Traders",
+      "bodyChars": 120743,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 309061
+      }
+    },
+    {
+      "id": "payroll",
+      "ok": true,
+      "title": "Saagar Traders — Payroll",
+      "bodyChars": 202902,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 443044
+      }
+    },
+    {
+      "id": "leave",
+      "ok": true,
+      "title": "Staff Leave Manager",
+      "bodyChars": 118062,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 320038
+      }
+    },
+    {
+      "id": "tax",
+      "ok": true,
+      "title": "Compliance Operating System — Indian Firms v2",
+      "bodyChars": 204309,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 398308
+      }
+    },
+    {
+      "id": "planning",
+      "ok": true,
+      "title": "Festival & Season Planner",
+      "bodyChars": 20649,
+      "loadError": false,
+      "open": {
+        "ok": true,
+        "chars": 170340
+      }
+    }
+  ],
+  "passed": true
+}

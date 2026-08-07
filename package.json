@@ -26,8 +26,9 @@
     "pretest:offline": "npm run test:c1 && npm run test:mobile && npm run test:settings && npm run test:language && npm run test:modular",
     "test:offline": "node --test tests/d5-stock-modular-extraction.test.mjs tests/d5-stock-variance-policy.test.mjs tests/d5-stock-controls-integration.test.mjs tests/native-incremental-storage.test.mjs tests/native-incremental-storage-runtime.test.mjs tests/native-storage-recovery-runtime.test.mjs tests/native-storage-info-runtime.test.mjs tests/storage-recovery-policy.test.mjs tests/storage-capacity-policy.test.mjs tests/storage-capacity-shell-integration.test.mjs tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/module-pin-policy.test.mjs tests/module-pin-shell-integration.test.mjs tests/module-pin-security-regression.test.mjs tests/module-access-context-runtime.test.mjs tests/service-owner-setting-guard.test.mjs tests/export-sinks.test.mjs tests/report-csv.test.mjs tests/portable-backup.test.mjs tests/financial-golden.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs tests/legal-intake-idempotency.test.mjs tests/offdevice-backup.test.mjs tests/persistence-acceptance.test.mjs tests/d1-reauth.test.mjs tests/d1-store-context.test.mjs tests/d1-dashboard-policy.test.mjs tests/d1-attention-policy.test.mjs tests/d2-qms-policy.test.mjs tests/d2-qms-integration.test.mjs tests/d3-service-workboard-policy.test.mjs tests/d3-service-integration.test.mjs tests/d4-dsr-completion-policy.test.mjs tests/d4-dsr-integration.test.mjs tests/seeded-apk-profile.test.mjs tests/backdate-crash-regression.test.mjs",
     "test:seeded-runtime": "node --test tests/seeded-apk-runtime.test.mjs",
-    "build:apk": "npm run sync && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleDebug",
-    "build:release": "npm run sync && node build-overrides/apply-overrides.js && cd android && gradlew.bat assembleRelease",
+    "prepare:api23": "node scripts/prepare-api23-assets.mjs",
+    "build:apk": "npm run sync && node build-overrides/apply-overrides.js && npm run prepare:api23 && cd android && gradlew.bat assembleDebug",
+    "build:release": "npm run sync && node build-overrides/apply-overrides.js && npm run prepare:api23 && cd android && gradlew.bat assembleRelease",
     "register:release": "node scripts/release-register.mjs"
   },
   "dependencies": {
@@ -39,6 +40,8 @@
     "@capacitor/share": "^6.0.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.7",
+    "@babel/preset-env": "^7.29.7",
     "@capacitor/cli": "^6.1.2"
   }
 }

@@ -129,6 +129,7 @@ if (!generatedSeeded.includes('two-year-review-v1') &&
 
 try {
   fs.writeFileSync(generatedIndexPath, generatedSeeded, 'utf8');
+  run(process.execPath, [path.join(repoDir, 'scripts', 'prepare-api23-assets.mjs')]);
   if (process.platform === 'win32') {
     run(
       process.env.ComSpec || 'cmd.exe',
