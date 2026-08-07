@@ -5,3 +5,16 @@
 *.png binary
 *.jpg binary
 *.ico binary
+
+# Identity-bound source and evidence must remain byte-stable on Windows.
+.gitattributes text eol=lf
+*.mjs text eol=lf
+www/** text eol=lf
+verification/** text eol=lf
+
+# Reassert binary handling after the recursive source rules above.
+www/**/*.wasm binary
+www/**/*.apk binary
+www/**/*.png binary
+www/**/*.jpg binary
+www/**/*.ico binary

@@ -18,7 +18,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
   assert.equal(inventory.upstream.currentWwwFileCount, 65);
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7745833);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7726365);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
@@ -104,7 +104,7 @@ test('MAH-4 freezes conditional local loaders and persistent iframe hooks separa
   assert.equal(dynamic.uniqueScriptAssetCount, 9);
   assert.equal(dynamic.scriptLiteralReferenceCount, 12);
   assert.equal(dynamic.resources.length, 10);
-  assert.equal(dynamic.totalResourceBytes, 3070778);
+  assert.equal(dynamic.totalResourceBytes, 3068524);
   assert.deepEqual(dynamic.directScriptOverlap, []);
   assert.deepEqual(dynamic.injectionSinks, {
     createElementScript: 5,

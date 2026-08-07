@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7365,
-    "mah3ProfileSha256": "707e35d725b8c07896ed8cbfb26d718bc2ec21692d6b1607ccf9c05ec7fe1376",
-    "mah3TreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
-    "currentWwwTreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
+    "mah3ProfileSha256": "2a24d0cd239a3928296683ca4ce1348af244a3f29a9e5f86a78c35cd508d0d3f",
+    "mah3TreeSha256": "cb6b8f197abcfb87f12daefe3c2aca8fccb20c0d6c33edca0859872c86c9d0ae",
+    "currentWwwTreeSha256": "cb6b8f197abcfb87f12daefe3c2aca8fccb20c0d6c33edca0859872c86c9d0ae",
     "currentWwwFileCount": 65,
-    "currentWwwTotalBytes": 7745833,
+    "currentWwwTotalBytes": 7726365,
     "shell": {
       "path": "www/index.html",
-      "bytes": 716901,
-      "sha256": "fbf58e2f0b010dfc8879f3cdb13e98738856e023f6438e1c749eef9276f1d911"
+      "bytes": 707675,
+      "sha256": "d6e233bbc0fc2c353cade9fd9c9b530a5ed52402dfaaceb8b529ed6bb02a1d87"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -945,8 +945,8 @@
           "path": "www/demo-seed.js",
           "kind": "script",
           "classification": "application",
-          "bytes": 76104,
-          "sha256": "9937500c0f0849347e23d8e301b2e7199114df46dc3147566d14dadb2c8f3e82",
+          "bytes": 75300,
+          "sha256": "5f66a4d286e15c7e3fe890b2561113ed6be2e2aab4841adab5330fff5735b12d",
           "loadedBy": [
             "shell-demo-seed"
           ]
@@ -955,8 +955,8 @@
           "path": "www/fonts/DMSans-bold.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 46049,
-          "sha256": "beb4901ee5616d3c22d623a6195e0591949d271520c1705f2d229d3d5afde9d4",
+          "bytes": 46040,
+          "sha256": "15be4935903e3a449083064b788b1f5d7b74440254f96f39f8eeb4d9e93559d1",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -965,8 +965,8 @@
           "path": "www/fonts/DMSans-normal.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 46089,
-          "sha256": "e7643145a4dbf5fd62234eec958dc5186ef945bc8588337b3ae5a92efaa11124",
+          "bytes": 46080,
+          "sha256": "7f76870c6e847665382c6dc6467ec3d5f930b88aedaec0576d2785c944ad5cba",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -975,8 +975,8 @@
           "path": "www/html2pdf.bundle.min.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 926900,
-          "sha256": "4fd731dfeed423a6ff6f0098245f67a6215e537ccf8e3b18e9401b007dfcc670",
+          "bytes": 926898,
+          "sha256": "5fa82550b018104e067e8221ce29b3a7d8db31f0624ef4111c2ad39c47b5d3c3",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -985,8 +985,8 @@
           "path": "www/integration-bridge.js",
           "kind": "script",
           "classification": "application",
-          "bytes": 72152,
-          "sha256": "9bb5eaccdbbb5fbdb81b9a76526835a903ab30adcbff8e3ca85e587a8c0a78a0",
+          "bytes": 71187,
+          "sha256": "b83efb987a93c3297c3b9f378b13c204ba596fcc045341b9cd2575eecf072d55",
           "loadedBy": [
             "shell-integration-bridge"
           ]
@@ -995,8 +995,8 @@
           "path": "www/jspdf.plugin.autotable.min.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 32398,
-          "sha256": "5372b0d800ddf26b0274a4969e39bbfa5ff80e5aa286e47a237154caf697ea99",
+          "bytes": 32389,
+          "sha256": "a65dff2c6a8296b16aff24e69f7683cd7dbaed4a4ec26b507d6840ee27d54649",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -1005,8 +1005,8 @@
           "path": "www/jspdf.umd.min.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 366158,
-          "sha256": "1f8420ac7ebddd0a7acfa5b5a9a8c5583b8d2c74c0024d0b92fb32db54359aff",
+          "bytes": 365758,
+          "sha256": "326c2aec4a4aebe12c4328849b1e2023d68fd5ce7098cc94b874777a87b81c48",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -1015,8 +1015,8 @@
           "path": "www/jszip.min.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 97670,
-          "sha256": "0a7b2c6cbe3457eb0fda23ef3175fea50ad95357bce83c6408906e11aa2f238b",
+          "bytes": 97656,
+          "sha256": "cd9066e9e554de7f983d4579455e01a3837d7b3854a9e092a75a84503b1111c6",
           "loadedBy": [
             "report-jszip",
             "shell-jszip"
@@ -1026,8 +1026,8 @@
           "path": "www/pdf.min.js",
           "kind": "script",
           "classification": "vendor",
-          "bytes": 320025,
-          "sha256": "86791280654fb3403853a2e3a39212941fd1c4af0c7e3608ae8f85cead458be0",
+          "bytes": 320004,
+          "sha256": "5b5799e6f8c680663207ac5b42ee14eed2a406fa7af48f50c154f0c0b1566946",
           "loadedBy": [
             "shell-pdf-libs"
           ]
@@ -1036,14 +1036,14 @@
           "path": "www/pdf.worker.min.js",
           "kind": "worker",
           "classification": "vendor",
-          "bytes": 1087233,
-          "sha256": "6195a19b81679dfb8fbd6c387aa37cf212c83f02628d768d142925fddc3d88fb",
+          "bytes": 1087212,
+          "sha256": "feabdf309770ed24bba31a5467836cdc8cf639c705af27d52b585b041bb8527b",
           "loadedBy": [
             "shell-pdf-worker"
           ]
         }
       ],
-      "totalResourceBytes": 3070778,
+      "totalResourceBytes": 3068524,
       "directScriptOverlap": []
     }
   },
@@ -1129,8 +1129,8 @@
   "dynamicMessageAssets": [
     {
       "path": "www/integration-bridge.js",
-      "bytes": 72152,
-      "sha256": "9bb5eaccdbbb5fbdb81b9a76526835a903ab30adcbff8e3ca85e587a8c0a78a0",
+      "bytes": 71187,
+      "sha256": "b83efb987a93c3297c3b9f378b13c204ba596fcc045341b9cd2575eecf072d55",
       "loadedBy": [
         "shell-integration-bridge"
       ],
@@ -1219,8 +1219,8 @@
       },
       {
         "path": "www/auto-backup.js",
-        "bytes": 28933,
-        "sha256": "018cb23b7bc382744fd31a38a2008d77549da1c6ab7f21d86ad1d7ee56247b9d",
+        "bytes": 28328,
+        "sha256": "ecccabff13285a5ca6639fea9d2402f2824ca19664e3429bdb05e68c602bad1f",
         "loadedBy": [
           "shell"
         ]
@@ -1249,8 +1249,8 @@
       },
       {
         "path": "www/saagar-report.js",
-        "bytes": 167531,
-        "sha256": "376f35b9b5a0a3e844608c7cb0a526070ab14618107e427caef97e2713f23fe7",
+        "bytes": 165641,
+        "sha256": "b6d156fec2b985c35ac9c6d031393287263cb416aa31ffd74ac8435f0b8f9952",
         "loadedBy": [
           "shell"
         ]
@@ -1286,32 +1286,32 @@
       },
       {
         "path": "www/sql-wasm.js",
-        "bytes": 46591,
-        "sha256": "298e07ff2e79d864bb819c987f9584b63c9259ac34c8bdcbf6d6f64375116934",
+        "bytes": 46406,
+        "sha256": "77d6435bac506af0e3c59636dce9d22b1b14156348bc327f41a1577f3212360f",
         "loadedBy": [
           "shell"
         ]
       },
       {
         "path": "www/sqlite-store.js",
-        "bytes": 12710,
-        "sha256": "27082cb46fd218f151fbd8285fcd9688f3ab3e6ceeb2b80f3a5c00d34937f963",
+        "bytes": 12519,
+        "sha256": "c9980fc2f0e5711215f31ee36fd7466666d9c88904311d06e8d7e675f8df0fe8",
         "loadedBy": [
           "shell"
         ]
       },
       {
         "path": "www/storage-core.js",
-        "bytes": 83525,
-        "sha256": "84544a6b9b9cec56fa527cd45f3f49fe9d54ea66908b54e3ef7093c42ea8a3b7",
+        "bytes": 82449,
+        "sha256": "aaf77728a7c6fc9aacd33303e2294f09bdbe200ad90cd96a2a8b0beedb3b9864",
         "loadedBy": [
           "shell"
         ]
       },
       {
         "path": "www/whatsapp-share.js",
-        "bytes": 16389,
-        "sha256": "a845fdc898a79d97cade31f0395573ecd6871c36021a74ee0ac2b70ced0f6bcc",
+        "bytes": 16136,
+        "sha256": "273635356eaf9ae1cfec1a02097444f03c14b53ae8bf1d9b0b3c7cbcde129591",
         "loadedBy": [
           "shell"
         ]
