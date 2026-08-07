@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import { loadModuleBundle } from './lib/module-bundle.mjs';
 
 const shell = fs.readFileSync(new URL('../www/index.html', import.meta.url), 'utf8');
+const moduleBundle = loadModuleBundle();
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -69,18 +71,10 @@ function extractFunction(name) {
   assert.fail(`unterminated function ${name}`);
 }
 
-function modules() {
-  const match = shell.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;/);
-  assert.ok(match, 'expected injected MODULES registry');
-  return JSON.parse(match[1]);
-}
-
 function decodedModule(id) {
-  const mod = modules().find(value => value.id === id);
-  assert.ok(mod, `expected ${id} module`);
-  return mod.html_b64
-    ? Buffer.from(mod.html_b64, 'base64').toString('utf8')
-    : fs.readFileSync(new URL(`../www/${mod.src}`, import.meta.url), 'utf8');
+  const mod = moduleBundle.find(function (value) { return value.id === id; });
+  assert.ok(mod, 'expected ' + id + ' module');
+  return mod.html;
 }
 
 function applyTransform(name, input, moduleId) {

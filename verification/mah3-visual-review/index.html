@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>MAH-3 visual baseline review</title>
+  <link rel="stylesheet" href="/review/review.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">SAAGAR modular hardening</p>
+      <h1>MAH-3 visual baseline review</h1>
+      <p id="identity" class="subtle">Loading the hash-bound baseline…</p>
+    </div>
+    <div class="summary" aria-live="polite">
+      <span><b id="reviewedCount">0</b> reviewed</span>
+      <span><b id="passCount">0</b> pass</span>
+      <span><b id="issueCount">0</b> issue/deferred</span>
+      <span><b id="remainingCount">168</b> remaining</span>
+    </div>
+  </header>
+
+  <main>
+    <aside class="panel controls" aria-label="Review controls">
+      <div class="notice">
+        Geometry is advisory. A case stays unreviewed until a person marks it.
+        Browser evidence is not physical-device or native-language acceptance.
+        Use only artifact IDs and generic notes; do not enter customer or staff data.
+      </div>
+
+      <label>Reviewer initials / role
+        <input id="reviewerId" maxlength="100" autocomplete="off" placeholder="Required; no customer or staff data">
+      </label>
+      <label>Case
+        <select id="caseSelect"></select>
+      </label>
+      <div class="nav-row">
+        <button type="button" id="previousCase">Previous</button>
+        <button type="button" id="nextCase">Next</button>
+      </div>
+
+      <dl class="case-facts">
+        <div><dt>Surface</dt><dd id="surfaceFact">—</dd></div>
+        <div><dt>Viewport</dt><dd id="viewportFact">—</dd></div>
+        <div><dt>Mode</dt><dd id="modeFact">—</dd></div>
+        <div><dt>Language</dt><dd id="languageFact">—</dd></div>
+      </dl>
+
+      <fieldset>
+        <legend>Manual review</legend>
+        <div class="status-row">
+          <button type="button" data-status="pass">Pass</button>
+          <button type="button" data-status="defect">Defect</button>
+          <button type="button" data-status="deferred">Deferred</button>
+          <button type="button" data-status="not-run">Clear</button>
+        </div>
+        <label>Evidence / screenshot reference
+          <input id="evidenceRef" maxlength="200" autocomplete="off" placeholder="Required artifact path or ID">
+        </label>
+        <label>Review note
+          <textarea id="reviewNote" maxlength="500" rows="4" placeholder="Required for defects and deferrals; no business data"></textarea>
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" id="rerunGeometry">Re-run geometry</button>
+        <button type="button" id="importEvidence">Import/resume JSON</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <button type="button" id="exportEvidence" class="primary">Export evidence JSON</button>
+      </div>
+    </aside>
+
+    <section class="workspace">
+      <div class="frame-toolbar">
+        <strong id="caseTitle">Preparing case…</strong>
+        <span id="loadState" class="pill">Loading</span>
+      </div>
+      <div class="frame-scroller">
+        <div id="frameStage" class="frame-stage">
+          <iframe id="appFrame" title="SAAGAR baseline case"></iframe>
+        </div>
+      </div>
+
+      <section class="panel geometry" aria-live="polite">
+        <div class="geometry-head">
+          <div>
+            <p class="eyebrow">Automated advisory checks</p>
+            <h2>Geometry result</h2>
+          </div>
+          <span id="geometryState" class="pill">Not run</span>
+        </div>
+        <pre id="geometryOutput">Waiting for the case to load.</pre>
+      </section>
+    </section>
+  </main>
+
+  <script src="/review/review-controller.js"></script>
+</body>
+</html>

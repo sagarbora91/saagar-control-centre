@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
@@ -13,7 +11,6 @@ const repoDir = path.resolve(here, '..');
 const indexSource = fs.readFileSync(path.join(repoDir, 'www', 'index.html'), 'utf8');
 const policySource = fs.readFileSync(path.join(repoDir, 'www', 'qms-policy.js'), 'utf8');
 const persistenceSource = fs.readFileSync(path.join(repoDir, 'www', 'qms-persistence.js'), 'utf8');
-const patchSource = fs.readFileSync(path.join(repoDir, 'scripts', 'apply-d2-qms.mjs'), 'utf8');
 const qmsModule = loadModuleBundle().find(module => module.id === 'qms');
 const qms = qmsModule?.html || '';
 
@@ -25,48 +22,6 @@ function functionSource(name) {
   const end = qms.indexOf('\nfunction ', start + token.length);
   assert.notEqual(end, -1, `${name} must have a following function boundary`);
   return qms.slice(start, end);
-}
-
-function withoutFunction(source, name) {
-  const token = `function ${name}(`;
-  const start = source.indexOf(token);
-  assert.notEqual(start, -1, `${name} must exist in recovery fixture`);
-  const end = source.indexOf('\nfunction ', start + token.length);
-  assert.notEqual(end, -1, `${name} must have a recovery boundary`);
-  return source.slice(0, start) + source.slice(end);
-}
-
-function runIsolatedPatcher(qmsHtml) {
-  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-d2-patcher-'));
-  const scriptsDir = path.join(fixtureDir, 'scripts');
-  const wwwDir = path.join(fixtureDir, 'www');
-  fs.mkdirSync(scriptsDir);
-  fs.mkdirSync(wwwDir);
-  try {
-    fs.writeFileSync(path.join(scriptsDir, 'apply-d2-qms.mjs'), patchSource, 'utf8');
-    const modules = [{
-      id: 'qms',
-      bytes: 0,
-      sha256: '',
-      html_b64: Buffer.from(qmsHtml, 'utf8').toString('base64')
-    }];
-    fs.writeFileSync(
-      path.join(wwwDir, 'index.html'),
-      `const MODULES = ${JSON.stringify(modules)};\n`,
-      'utf8'
-    );
-    execFileSync(process.execPath, [path.join(scriptsDir, 'apply-d2-qms.mjs')], {
-      cwd: fixtureDir,
-      stdio: 'pipe'
-    });
-    const repairedIndex = fs.readFileSync(path.join(wwwDir, 'index.html'), 'utf8');
-    const match = repairedIndex.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;/);
-    assert.ok(match, 'isolated recovery output must contain MODULES');
-    const repairedQms = JSON.parse(match[1]).find(module => module.id === 'qms');
-    return Buffer.from(repairedQms.html_b64, 'base64').toString('utf8');
-  } finally {
-    fs.rmSync(fixtureDir, { recursive: true, force: true });
-  }
 }
 
 const pendingIntakeKey = 'retail_queue_management_pending_intake_v1';
@@ -1411,14 +1366,6 @@ test('D2 resilience marker and follow-up helper group remain unique and idempote
     assert.ok(positions[index - 1] < positions[index]);
   }
   assert.equal((qms.match(/D2-QMS-RESILIENCE-2026-07-30/g) || []).length, 1);
-  assert.match(patchSource, /const resilienceMarker = 'D2-QMS-RESILIENCE-2026-07-30'/);
-  assert.match(patchSource, /return patchD2Resilience\(html\)/);
-  assert.match(
-    patchSource,
-    /if \(html\.includes\(resilienceMarker\)\) return patchD2LegalRetry\(html\)/
-  );
-  assert.match(patchSource, /const helperToken = 'function qmsPendingFollowupId\('/);
-  assert.match(patchSource, /html\.slice\(firstHelper, lastHelper\) !== html\.slice\(lastHelper, renderAt\)/);
 });
 
 test('D2 legal-retry and entry-recovery helpers and markers remain unique and idempotent', () => {
@@ -1442,56 +1389,14 @@ test('D2 legal-retry and entry-recovery helpers and markers remain unique and id
   assert.equal((qms.match(/D2-QMS-LEGAL-RETRY-2026-07-30/g) || []).length, 1);
   assert.equal((qms.match(/D2-QMS-ENTRY-RECOVERY-2026-07-30/g) || []).length, 1);
   assert.doesNotMatch(qms, /QMS_PENDING_INTAKE_KEY/);
-  assert.match(patchSource, /const legalRetryMarker = 'D2-QMS-LEGAL-RETRY-2026-07-30'/);
-  assert.match(patchSource, /const entryRecoveryMarker = 'D2-QMS-ENTRY-RECOVERY-2026-07-30'/);
-  assert.match(patchSource, /if \(html\.includes\(legalRetryMarker\)\) \{/);
-  assert.match(patchSource, /return patchD2EntryRecovery\(html\)/);
-  assert.match(
-    patchSource,
-    /if \(html\.includes\(entryRecoveryMarker\)\) return repairD2IntakeHelperGroup\(html\)/
-  );
-  assert.match(patchSource, /qmsPendingIntakeKey,[\s\S]*qmsReadPendingIntake,[\s\S]*qmsAcquirePendingIntake,[\s\S]*qmsClearPendingIntake/);
-  assert.match(patchSource, /function repairD2IntakeHelperGroup\(html\)/);
-  assert.match(patchSource, /const invalidHelper = d2IntakeHelperNames\.find/);
-  assert.match(patchSource, /verifyHtml\.includes\('QMS_PENDING_INTAKE_KEY'\)/);
 });
 
-test('D2 patcher self-heals incomplete marked intake helper groups', () => {
-  const helperNames = [
-    'qmsPendingIntakeKey',
-    'qmsReadPendingIntake',
-    'qmsAcquirePendingIntake',
-    'qmsClearPendingIntake',
-    'qmsLegalCapture',
-    'qmsCaptureEntryDraft',
-    'qmsRestoreEntryDraft'
-  ];
-  for (const missingName of helperNames) {
-    const repaired = runIsolatedPatcher(withoutFunction(qms, missingName));
-    for (const helperName of helperNames) {
-      const token = `function ${helperName}(`;
-      assert.equal(
-        repaired.split(token).length - 1,
-        1,
-        `${missingName} recovery must leave one ${helperName}`
-      );
-    }
-    assert.doesNotMatch(repaired, /QMS_PENDING_INTAKE_KEY/);
-    assert.match(repaired, /\^cust_\[a-z0-9_\]\{6,80\}\$/);
-  }
-});
-
-test('D2 persistence adapter owns one write and the embed script regenerates metadata idempotently', () => {
+test('D2 persistence adapter owns one write and external metadata is verified', () => {
   assert.equal((persistenceSource.match(/\.setItem\(/g) || []).length, 1);
   assert.doesNotMatch(persistenceSource, /\.getItem\(/);
   assert.match(persistenceSource, /state\.audit = nextAudit/);
-  assert.match(patchSource, /qms\.bytes = bytes\.length/);
-  assert.match(patchSource, /createHash\('sha256'\)/);
-  assert.match(patchSource, /if \(html\.includes\(hardeningMarker\)\) return patchD2Cleanup\(html\)/);
-  assert.match(patchSource, /if \(!html\.includes\(cleanupMarker\)\) \{/);
-  assert.match(patchSource, /if \(html\.includes\(marker\)\) return patchD2Hardening\(html\)/);
-  assert.match(patchSource, /verifyBytes\.length !== verifyQms\.bytes/);
-  assert.match(patchSource, /verifyHash !== verifyQms\.sha256/);
+  assert.equal(qmsModule.actualBytes, qmsModule.bytes);
+  assert.equal(qmsModule.actualSha256, qmsModule.sha256);
   assert.match(policySource, /DUPLICATE_DECISIONS/);
   assert.doesNotMatch(policySource, /MERGE/);
 });

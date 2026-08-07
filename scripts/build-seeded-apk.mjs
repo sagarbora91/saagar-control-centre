@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const androidDir = path.join(repoDir, 'android');
 const sourceIndexPath = path.join(repoDir, 'www', 'index.html');
+const sourceManifestPath = path.join(repoDir, 'www', 'module-manifest.js');
 const generatedIndexPath = path.join(
   androidDir,
   'app',
@@ -20,6 +21,15 @@ const generatedIndexPath = path.join(
   'assets',
   'public',
   'index.html'
+);
+const generatedManifestPath = path.join(
+  androidDir,
+  'app',
+  'src',
+  'main',
+  'assets',
+  'public',
+  'module-manifest.js'
 );
 const builtApkPath = path.join(
   androidDir,
@@ -33,7 +43,7 @@ const builtApkPath = path.join(
 const outputApkPath = path.resolve(
   repoDir,
   '..',
-  'SaagarCC-DemoData-2Years-D1-D3-v2.9.apk'
+  'SaagarCC-C1-DemoData-2Years-v2.9.apk'
 );
 
 const PROFILE = Object.freeze({
@@ -77,7 +87,18 @@ run(process.execPath, [
 ]);
 run(process.execPath, [path.join(repoDir, 'build-overrides', 'apply-overrides.js')]);
 
+const sourceManifest = fs.readFileSync(sourceManifestPath);
+const generatedManifest = fs.readFileSync(generatedManifestPath);
+if (!sourceManifest.equals(generatedManifest)) {
+  throw new Error('Generated Android manifest does not byte-match www/module-manifest.js');
+}
 const generatedClean = fs.readFileSync(generatedIndexPath, 'utf8');
+const manifestTag = '<script src=' + JSON.stringify('module-manifest.js') + '></script>';
+const manifestAt = generatedClean.indexOf(manifestTag);
+const shellAt = generatedClean.indexOf('const MODULES =');
+if (generatedClean.split(manifestTag).length - 1 !== 1 || manifestAt < 0 || shellAt <= manifestAt) {
+  throw new Error('Generated Android shell does not load one synchronous manifest before the main shell');
+}
 let generatedSeeded = replaceOnce(
   generatedClean,
   'var DEMO_SEED_ENABLED = false;',

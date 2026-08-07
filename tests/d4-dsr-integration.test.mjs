@@ -5,22 +5,20 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
-import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { loadModuleBundle } from './lib/module-bundle.mjs';
 
 const require = createRequire(import.meta.url);
 const policy = require('../www/dsr-completion-policy.js');
 const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const indexPath = path.join(repoDir, 'www', 'index.html');
-const patcherPath = path.join(repoDir, 'scripts', 'apply-d4-dsr.mjs');
 
-/* Slices one D4-owned function out of the payload. The payload is CRLF, so the
-   next-function boundary is \r\nfunction. */
+/* Slices one D4-owned function out of the normalized external module. */
 function ownedFunction(html, name) {
   const start = html.indexOf(`function ${name}(`);
   assert.notEqual(start, -1, `${name} must exist in the payload`);
-  const end = html.indexOf('\r\nfunction ', start + 1);
+  const end = html.indexOf('\nfunction ', start + 1);
   assert.notEqual(end, -1, `${name} must have a following boundary`);
   return html.slice(start, end);
 }
@@ -30,20 +28,16 @@ function readShell() {
 }
 
 function dsrPayload(shell) {
-  const match = shell.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(?:\r?\n)/);
-  assert.ok(match, 'MODULES bundle present');
-  const module = JSON.parse(match[1]).find(item => item.id === 'dsr');
+  const module = loadModuleBundle().find(item => item.id === 'dsr');
   assert.ok(module, 'DSR module present');
-  return { module, html: Buffer.from(module.html_b64, 'base64').toString('utf8') };
+  return { module, html: module.html };
 }
 
 test('D4 payload metadata matches its own bytes', () => {
   const { module } = dsrPayload(readShell());
-  const bytes = Buffer.from(module.html_b64, 'base64');
-  assert.equal(bytes.length, module.bytes);
-  assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), module.sha256);
+  assert.equal(module.actualBytes, module.bytes);
+  assert.equal(module.actualSha256, module.sha256);
 });
-
 test('the hardcoded completion floor is gone from updateProgress', () => {
   const { html } = dsrPayload(readShell());
   // The pre-D4 meter opened with `const checks = [` then a bare `true,` — five of
@@ -51,7 +45,6 @@ test('the hardcoded completion floor is gone from updateProgress', () => {
   assert.doesNotMatch(html, /const checks = \[\r?\n\s+true,/);
   assert.ok(html.includes('dsrD4Summary(rec)'));
 });
-
 test('the meter and the submit gate read from one policy', () => {
   const { html } = dsrPayload(readShell());
   assert.ok(html.includes('api.completionSummary(rec, dsrD4Context())'));
@@ -166,80 +159,10 @@ test('the policy script is loaded once, before the MODULES bundle', () => {
    injects LF-terminated code into this CRLF bundle trips this test. */
 const PRE_EXISTING_BARE_LF = 22;
 
-test('D4 injected no mixed line endings into the CRLF payload', () => {
+test('external DSR has deterministic LF line endings', () => {
   const { html } = dsrPayload(readShell());
   const crlf = (html.match(/\r\n/g) || []).length;
-  const bareLf = (html.match(/(?<!\r)\n/g) || []).length;
-  assert.ok(crlf > 3000, `expected CRLF payload, saw ${crlf}`);
-  assert.equal(bareLf, PRE_EXISTING_BARE_LF,
-    `bare LF count moved from ${PRE_EXISTING_BARE_LF} to ${bareLf}`);
-
-  // The D4-owned regions specifically must be CRLF.
-  for (const marker of ['function dsrD4Summary(', 'function updateProgress(', '.tab-btn.optional']) {
-    const at = html.indexOf(marker);
-    assert.ok(at > -1, `${marker} present`);
-    const region = html.slice(at, at + 400);
-    assert.equal((region.match(/(?<!\r)\n/g) || []).length, 0, `${marker} region is CRLF`);
-  }
-});
-
-test('D4 patcher is idempotent over a working copy', () => {
-  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'd4-idem-'));
-  try {
-    const wwwDir = path.join(workDir, 'www');
-    const scriptsDir = path.join(workDir, 'scripts');
-    fs.mkdirSync(wwwDir, { recursive: true });
-    fs.mkdirSync(scriptsDir, { recursive: true });
-    fs.copyFileSync(indexPath, path.join(wwwDir, 'index.html'));
-    fs.copyFileSync(patcherPath, path.join(scriptsDir, 'apply-d4-dsr.mjs'));
-
-    const run = () => {
-      execFileSync(process.execPath, [path.join(scriptsDir, 'apply-d4-dsr.mjs')],
-        { cwd: workDir, stdio: 'pipe' });
-      return fs.readFileSync(path.join(wwwDir, 'index.html'));
-    };
-
-    const first = run();
-    const second = run();
-    assert.ok(first.equals(second), 'second run changed the bundle');
-
-    const third = run();
-    assert.ok(second.equals(third), 'third run changed the bundle');
-  } finally {
-    fs.rmSync(workDir, { recursive: true, force: true });
-  }
-});
-
-test('the patcher refuses a bundle whose owned helper was removed', () => {
-  const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'd4-guard-'));
-  try {
-    const wwwDir = path.join(workDir, 'www');
-    const scriptsDir = path.join(workDir, 'scripts');
-    fs.mkdirSync(wwwDir, { recursive: true });
-    fs.mkdirSync(scriptsDir, { recursive: true });
-    fs.copyFileSync(patcherPath, path.join(scriptsDir, 'apply-d4-dsr.mjs'));
-
-    // Duplicate an owned helper inside the payload; the exactly-once guard must fire.
-    const shell = readShell();
-    const match = shell.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(\r?\n)/);
-    const modules = JSON.parse(match[1]);
-    const dsr = modules.find(item => item.id === 'dsr');
-    const html = Buffer.from(dsr.html_b64, 'base64').toString('utf8');
-    const tampered = html + '\r\nfunction dsrD4Context() { return null; }\r\n';
-    const bytes = Buffer.from(tampered, 'utf8');
-    dsr.html_b64 = bytes.toString('base64');
-    dsr.bytes = bytes.length;
-    dsr.sha256 = crypto.createHash('sha256').update(bytes).digest('hex');
-    const rebuilt = shell.slice(0, match.index) +
-      `const MODULES = ${JSON.stringify(modules)};${match[2]}` +
-      shell.slice(match.index + match[0].length);
-    fs.writeFileSync(path.join(wwwDir, 'index.html'), rebuilt, 'utf8');
-
-    assert.throws(() => {
-      execFileSync(process.execPath, [path.join(scriptsDir, 'apply-d4-dsr.mjs')],
-        { cwd: workDir, stdio: 'pipe' });
-    }, /not present exactly once|is not unique/);
-  } finally {
-    fs.rmSync(workDir, { recursive: true, force: true });
-  }
+  const lf = (html.match(/\n/g) || []).length;
+  assert.equal(crlf, 0);
+  assert.ok(lf > 3000, `expected LF payload, saw ${lf}`);
 });

@@ -1,20 +1,23 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const indexPath = path.resolve(here, '../../www/index.html');
+const wwwPath = path.resolve(here, '../../www');
+const manifestPath = path.join(wwwPath, 'module-manifest.js');
+const require = createRequire(import.meta.url);
+
+export function loadModuleManifest() {
+  return require(manifestPath);
+}
 
 export function loadModuleBundle() {
-  const index = fs.readFileSync(indexPath, 'utf8');
-  const match = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;\s*(?:\r?\n)/);
-  if (!match) throw new Error('MODULES bundle not found');
-  return JSON.parse(match[1]).map(module => {
-    const externalPath = module.src && path.resolve(path.dirname(indexPath), module.src);
-    const bytes = module.html_b64
-      ? Buffer.from(module.html_b64, 'base64')
-      : fs.readFileSync(externalPath);
+  return loadModuleManifest().modules.map(module => {
+    if (!module.src) throw new Error('external module path missing: ' + module.id);
+    const externalPath = path.resolve(wwwPath, module.src);
+    const bytes = fs.readFileSync(externalPath);
     return {
       ...module,
       html: bytes.toString('utf8'),

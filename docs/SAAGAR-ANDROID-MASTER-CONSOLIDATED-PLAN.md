@@ -1,5 +1,11 @@
 # Saagar Control Centre Android
 
+> **Phase-structure update (2026-08-04):** the owner directed that the remaining
+> work use the minimum practical number of outcome-sized phases. For phase count,
+> sequence, and owner testing cadence, see
+> `docs/SAAGAR-MINIMUM-PHASE-CONSOLIDATED-STRATEGY-2026-08-04.md`. This document
+> remains the detailed scope and acceptance catalogue.
+
 ## Master Consolidated Improvement, Verification, and Release Plan
 
 | Document control | Value |
@@ -11,7 +17,7 @@
 | Baseline source | `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798` |
 | Automated baseline | 54 of 54 permanent offline tests passing |
 | Device catalogue | 69 module-wise cases plus four recovery/device drills |
-| Core improvement scope | D1-D12 and E1-E6 |
+| Core improvement scope | D1-D12 and E1-E6; C1 non-ETP engineering complete 2026-08-04 |
 | Optional extension | E7, subject to a separate approval gate |
 | Future candidate register | F1-F15; not authorized build scope |
 | Server/PHP work | Deferred and excluded |
@@ -1612,3 +1618,114 @@ controlling checklist is
 
 No device-only row is marked passed. No commit, push, tag, production signing,
 or PHP/platform work was performed.
+
+### 2026-08-04 - C1 consolidated engineering and mobile-layout remediation
+
+**State:** C1 engineering complete and locally verified; owner smoke, commit,
+push, and formal device/release acceptance remain **PENDING**.
+
+All eleven Android modules now load from real local files. Runtime base64
+payloads and the D2/D3/D4 patchers are retired. D6-D12 non-ETP controls are
+implemented through the shared C1 policy/control desk, while D7 incentive and
+ETP-derived D10 metrics remain explicit C2 integration points.
+
+The final C1 defect sweep added phone-only shell and module responsive layers.
+It repairs the clipped shell identity, hidden tab/stage rails, local wide
+tables/calendars, undersized controls, Payroll bottom navigation, Tax sticky
+stack, CRO sticky actions, and collisions between Home and the C1 Control Desk.
+Desktop behavior is retained.
+
+The subsequent Settings architecture redesign removes the clipped horizontal
+category rail. Settings now starts with an 11-route grouped vertical home with
+search and live summaries. Phones use an explicit home/detail/Back stack;
+desktop uses a master/detail surface. Android hardware/gesture Back returns
+from a Settings detail to the Settings home before leaving Settings. Existing
+PIN, role, backup/restore, storage, reset, sync, diagnostics and privacy
+handlers remain unchanged.
+
+Evidence:
+
+- C1 focused suite **12/12**, mobile focused suite **6/6**, and Settings focused
+  suite **6/6**;
+- full `tests/*.test.mjs` suite **283/283**;
+- explicit offline suite **256/256**, after all three focused pre-gates;
+- browser-rendered matrix passed at 360/390/412 portrait, 800 landscape, and
+  1365 desktop; this is engineering evidence, not physical-device acceptance;
+- two-year seeded runtime **1/1** and Gradle debug assembly passed;
+- clean source and generated seed flags restored to `false` / `false`; and
+- v1/v2 debug signatures, package/version, minSdk 23 and targetSdk 34 verified.
+
+Current review APK:
+
+- `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`
+- 6,793,233 bytes
+- SHA-256 `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`
+
+No physical-device row, API-23 catalogue pass, DAT-02, backup/restore or
+migration drill, UAT, legal approval, production signing, release, or
+authenticated WLMHW/HEMW acceptance is claimed. Detailed evidence is in
+`verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md` and
+`verification/C1-MOBILE-LAYOUT-REMEDIATION-2026-08-04.md`. The Settings-specific
+implementation, crash recovery, automated evidence, and owner smoke checklist
+are in
+`verification/C1-SETTINGS-NAVIGATION-REDESIGN-2026-08-04.md`.
+
+The earlier browser-rendered viewport matrix predates the Settings redesign.
+Automated localhost browser control was blocked after crash recovery, so no new
+rendered or physical-device Settings acceptance is claimed.
+
+## 19. Post-C1 modular hardening status — 2026-08-06
+
+This internal hardening stream does not change the four owner-facing programme
+phases above. MAH-1 source protection is green but rendered/device evidence is
+open. MAH-2 has completed its module-manifest foundation: one strict synchronous
+registry now binds the 11 external paths to their declared bytes and SHA-256,
+and all runtime/build/test consumers use or verify that authority.
+
+Current engineering evidence: manifest 6/6, modular 14/14, offline 256/256 and
+complete glob 303/303. Shared runtime, message/lifecycle, CSS, module splitting,
+shell slimming and fallback retirement remain pending; no formal acceptance is
+claimed.
+
+### MAH-3 start — shared-runtime canary baseline gate
+
+MAH-3 is now explicitly defined as the shared-module-runtime canary. Its
+Stage-A evidence machinery is implemented without changing any `www` byte: an
+exact profile/source/runner-hash-bound loopback review server covers 168 cases
+through the real shell and nested module frames. At the MAH-3 start checkpoint,
+focused tests passed 7/7, the combined modular gate passed 21/21, the explicit
+offline suite passed 256/256 and the complete regression glob passed 310/310.
+
+The rendered review remains 0/168 because browser control is unavailable after
+a Windows ACL sandbox startup failure. Therefore Planning runtime extraction,
+manifest-v2 shared-asset binding, DSR/QMS canaries, MAH-4 Stage-B
+message/lifecycle runtime work and CSS extraction remain gated. No browser,
+device, native-language or production acceptance is claimed. See
+`verification/MAH3-SHARED-RUNTIME-START-CHECKPOINT-2026-08-06.md`.
+
+### MAH-4 Stage A complete — message-envelope and lifecycle baseline
+
+The owner's Phase 4 instruction is bound to **MAH-4 — Message Envelope &
+Lifecycle Contracts**, not historical M4 shell slimming or an owner-facing
+release phase. Because MAH-3 remains 0/168 and its Planning/DSR/QMS canaries
+have not run, MAH-4 product wiring is still blocked.
+
+Stage A is engineering-complete without changing `www`. Profile schema 3 binds
+the direct-entry graph, explicit dynamic-local loader inventory and the
+non-product executable protocol/lifecycle specification. Current source has 15
+active business types versus 17 lexical tokens; direct sends are 74 syntactic /
+68 configured, aggregate dynamic-aware totals are 75/69, and accepted
+configured behavior remains 68 because Integration Bridge's shell-realm route
+fails the active-iframe source guard. Exact 20-contract schemas, authorization
+boundaries, immutable compatibility normalization, correlation, deadlines,
+state, deduplication and synchronous tracked cleanup are synthetic-test locked.
+Raw `ST_AUDIT` migration remains blocked.
+
+Current verification is focused MAH-4 37/37, combined modular 58/58,
+explicit offline 256/256 and complete regression glob 347/347. These results
+are source/synthetic engineering evidence only.
+
+This completes only MAH-4 Stage A. Runtime loading/wiring is still blocked by
+MAH-3 0/168 plus Planning → DSR → QMS; API-23 timing/entropy, expected origin,
+rendered/device/native-language/production acceptance all remain false. See
+`verification/MAH4-MESSAGE-LIFECYCLE-STAGE-A-CHECKPOINT-2026-08-07.md`.

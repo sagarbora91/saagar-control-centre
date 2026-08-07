@@ -3,10 +3,14 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
+import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { readModuleManifestSource, renderModuleManifestSource } from './lib/module-manifest-source.mjs';
 
 const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const indexPath = path.join(repoDir, 'www', 'index.html');
+const require = createRequire(import.meta.url);
+const manifestApi = require(path.join(repoDir, 'www', 'module-manifest.js'));
 const outputPath = path.join(repoDir, 'www', 'modules', 'stock', 'index.html');
 const goldenPath = path.join(repoDir, 'verification', 'module-build-golden-hashes.json');
 const write = process.argv.includes('--write');
@@ -28,11 +32,6 @@ function hasRemoteAssets(html) {
     /@import\s+(?:url\()?\s*["']?https?:\/\//i.test(html);
 }
 
-function readBundle(index) {
-  const match = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;(\r?\n)/);
-  if (!match) throw new Error('MODULES bundle not found');
-  return { match, modules: JSON.parse(match[1]) };
-}
 
 function injectionRuntime(index) {
   const start = index.indexOf('function injectModuleHideCSS(');
@@ -75,8 +74,9 @@ function build(context, module) {
 }
 
 const index = fs.readFileSync(indexPath, 'utf8');
-const bundle = readBundle(index);
-const stock = bundle.modules.find(module => module.id === 'stock');
+const bundle = readModuleManifestSource(repoDir);
+const modules = bundle.data.modules;
+const stock = modules.find(module => module.id === 'stock');
 if (!stock) throw new Error('stock module metadata not found');
 if (!stock.html_b64) {
   if (!stock.src || !fs.existsSync(outputPath)) {
@@ -85,18 +85,17 @@ if (!stock.html_b64) {
   let external = fs.readFileSync(outputPath);
   if (write) {
     const normalized = Buffer.from(normalizeOffline(external.toString('utf8')), 'utf8');
-    const updatedModules = bundle.modules.map(module => module.id === 'stock'
+    const updatedModules = modules.map(module => module.id === 'stock'
       ? { ...module, bytes: normalized.length, sha256: sha256(normalized) }
       : module);
+    const updatedManifest = { ...bundle.data, modules: updatedModules };
+    manifestApi.validate(updatedManifest);
     const golden = JSON.parse(fs.readFileSync(goldenPath, 'utf8'));
     golden.stock = { bytes: normalized.length, sha256: sha256(normalized) };
     golden._profile = { ...golden._profile, offlineAssetsOnly: true };
     fs.writeFileSync(outputPath, normalized);
     fs.writeFileSync(goldenPath, `${JSON.stringify(golden, null, 2)}\n`, 'utf8');
-    const replacement = `const MODULES = ${JSON.stringify(updatedModules)};${bundle.match[2]}`;
-    const updatedIndex = index.slice(0, bundle.match.index) + replacement +
-      index.slice(bundle.match.index + bundle.match[0].length);
-    fs.writeFileSync(indexPath, updatedIndex, 'utf8');
+    fs.writeFileSync(bundle.filePath, renderModuleManifestSource(bundle, updatedManifest), 'utf8');
     external = normalized;
   }
   const result = {
@@ -111,7 +110,7 @@ if (!stock.html_b64) {
 
 const runtime = injectionRuntime(index);
 const golden = {};
-for (const module of bundle.modules) {
+for (const module of modules) {
   const built = build(runtime.context, module);
   golden[module.id] = { bytes: Buffer.byteLength(built), sha256: sha256(built) };
 }
@@ -122,7 +121,7 @@ golden._profile = {
 
 const builtStock = normalizeOffline(build(runtime.context, stock));
 const stockBytes = Buffer.from(builtStock, 'utf8');
-const updatedModules = bundle.modules.map(module => {
+const updatedModules = modules.map(module => {
   if (module.id !== 'stock') return module;
   const { html_b64, ...metadata } = module;
   return {
@@ -134,14 +133,14 @@ const updatedModules = bundle.modules.map(module => {
   };
 });
 
+const updatedManifest = { ...bundle.data, modules: updatedModules };
+manifestApi.validate(updatedManifest);
+
 if (write) {
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, stockBytes);
   fs.writeFileSync(goldenPath, `${JSON.stringify(golden, null, 2)}\n`, 'utf8');
-  const replacement = `const MODULES = ${JSON.stringify(updatedModules)};${bundle.match[2]}`;
-  const updatedIndex = index.slice(0, bundle.match.index) + replacement +
-    index.slice(bundle.match.index + bundle.match[0].length);
-  fs.writeFileSync(indexPath, updatedIndex, 'utf8');
+  fs.writeFileSync(bundle.filePath, renderModuleManifestSource(bundle, updatedManifest), 'utf8');
 }
 
 process.stdout.write(`${JSON.stringify({

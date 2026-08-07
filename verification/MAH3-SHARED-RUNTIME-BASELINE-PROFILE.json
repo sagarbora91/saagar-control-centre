@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "profileId": "mah3-shared-runtime-baseline-2026-08-06",
+  "phase": "MAH-3 - Shared Module Runtime Canary",
+  "baseline": {
+    "branch": "main",
+    "head": "c04bc98255a78d45b08ac449d88365b22d033f28",
+    "workingTree": "intentionally-dirty",
+    "runtimeRefactorApplied": false,
+    "visualBaselinesCaptured": false,
+    "physicalDeviceAccepted": false,
+    "nativeLanguageAccepted": false
+  },
+  "sourceFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 63,
+    "totalBytes": 7752655,
+    "treeSha256": "be92d6c9202052866d02aa33590160c27a804c638267c6f21717e00e89d78d95",
+    "criticalFiles": [
+      {
+        "path": "www/index.html",
+        "bytes": 715491,
+        "sha256": "a79ab0cc1c42e732c151bd5a719d3b728fec68a6c20442b3bc718a3434c5e219"
+      },
+      {
+        "path": "www/module-manifest.js",
+        "bytes": 12539,
+        "sha256": "64e90916c64f8babd39254cd800372d6b5e9800311bb4c7c59480bbaacd35330"
+      },
+      {
+        "path": "www/app-i18n.js",
+        "bytes": 93658,
+        "sha256": "0718b9c4025111d330a9cd42f08f68834da7d4d5a87d802351f51ed720c146f0"
+      },
+      {
+        "path": "www/mobile-layout.css",
+        "bytes": 11501,
+        "sha256": "c1a9ebd3efe18e96e345e5c1234901e7848a5601176d88a6525cc0f076599ec3"
+      },
+      {
+        "path": "www/mobile-shell.css",
+        "bytes": 2071,
+        "sha256": "c9b17aff7342e8b73b15f2cd05bc6e0ededc8a439bbbb7d24d4c1b2d82aa8f03"
+      },
+      {
+        "path": "www/settings-navigation.css",
+        "bytes": 6580,
+        "sha256": "df66a94f9b09c631b3be4e7058c5ea5175c60704faf321f047c8162481c7e88a"
+      },
+      {
+        "path": "www/c1-control-desk.js",
+        "bytes": 12405,
+        "sha256": "648bb4b6cfb2c0f011d852aa721155f1b7cf1050c0bcf8c595cbb9f127734c50"
+      },
+      {
+        "path": "www/c1-control-desk.css",
+        "bytes": 1768,
+        "sha256": "86e53e31d9e9a40349084454dab74d344be12a0959832e7d5fb036ec5305400b"
+      },
+      {
+        "path": "www/c1-operations-policy.js",
+        "bytes": 3069,
+        "sha256": "88197fad0e10726d9d9d321f6b76d7266e2551bce7e5914fd49876ec8b88defb"
+      },
+      {
+        "path": "www/modules/planning/index.html",
+        "bytes": 60724,
+        "sha256": "85bdf7c272a33a8ac761aafb5d0560fbae7f063eeb280af4f4cc4e129c574d1f"
+      },
+      {
+        "path": "www/modules/dsr/index.html",
+        "bytes": 229752,
+        "sha256": "a67e37ccb6e6c484ae6d4b8f27ee32cde623838171a57a518c177cdfabf7faca"
+      },
+      {
+        "path": "www/modules/qms/index.html",
+        "bytes": 214499,
+        "sha256": "66beddf0dd7d7638d3171ad03b7cae9a6eef71727610e633b497ad479d24d806"
+      }
+    ]
+  },
+  "matrix": {
+    "languages": ["en", "mr", "hi"],
+    "viewports": [
+      { "id": "phone-360", "width": 360, "height": 800, "uiMode": "mobile" },
+      { "id": "phone-412", "width": 412, "height": 915, "uiMode": "mobile" },
+      { "id": "compact-800", "width": 800, "height": 600, "uiMode": "mobile" },
+      { "id": "desktop-1365", "width": 1365, "height": 768, "uiMode": "desktop" }
+    ],
+    "surfaces": [
+      "shell-home",
+      "settings-home",
+      "settings-detail",
+      "stock",
+      "service",
+      "qms",
+      "dsr",
+      "expense",
+      "grooming",
+      "cro_audit",
+      "payroll",
+      "leave",
+      "tax",
+      "planning"
+    ],
+    "minimumVisualCases": 168,
+    "selectedDate": "2026-08-06",
+    "textSize": "normal",
+    "seedProfile": "topology-empty-no-pii-plus-planning-canary-v1",
+    "coverageClass": "14 default surfaces plus a deterministic non-PII Planning canary fixture",
+    "animations": "disabled-after-load-for-review"
+  },
+  "sharedRuntimeCandidates": {
+    "planning": {
+      "moduleBytes": 60724,
+      "moduleSha256": "85bdf7c272a33a8ac761aafb5d0560fbae7f063eeb280af4f4cc4e129c574d1f",
+      "inlineTimeouts": 8,
+      "mutationObservers": 2,
+      "intervals": 0,
+      "tables": 0,
+      "liveAccessContext": false,
+      "configuration": {
+        "schemaVersion": 1,
+        "moduleId": "planning",
+        "nextSteps": [],
+        "customerSelectors": [],
+        "accessContext": false
+      },
+      "javascriptBodyBytes": 13366,
+      "blocks": [
+        { "id": "st-v5-iframe-shim", "bytes": 1215, "sha256": "b5d4b6cfa5de8305e09df9982a3fbd102ccc42669e4e1cc4081361d26e8f5cbd", "occurrences": 11 },
+        { "id": "st-v5-safety-net", "bytes": 1213, "sha256": "f7c44230ae82f8e0bf3f53b049947dc72cafffedf21fc783ca8ad132b38dc000", "occurrences": 11 },
+        { "id": "st-v5-mobile-boot", "bytes": 4678, "sha256": "23c73df42d18c764465d41c3f0408f444c39a23a08b4c90af0655a189e7e0845", "normalizedTemplateSha256": "6cb53498fd102b71906f5b5b1624f9e55a0895d23769c07468bde81e17d593e6" },
+        { "id": "st-v5-back-script", "bytes": 2284, "sha256": "68ffe4779263f607c9b24f7d037ed0ea1705199fd19ec7b48d8eb219dbaa7501", "normalizedTemplateSha256": "3a31ea1a614dea8a67e1917cc4560f4c90d47118f3d33b86256aa9f7c3eb595f" },
+        { "id": "st-v5-emp-assist-script", "bytes": 3097, "sha256": "4acbdd91bd54f7d763adbf3510bf5be1745b155b0d5f66bbee11c6f2d8ee2a85", "normalizedTemplateSha256": "c695753d2d35acccfa783a58ad62d61caf7f883bbc116e792bf435d04e7d4028" },
+        { "id": "st-v5-module-audit-bridge", "bytes": 879, "sha256": "2a23098eb5e21259845013635fb54839b00961d6cb8203ddc284461be2142b3c", "normalizedTemplateSha256": "77c3023f3744f0b00ef3d729b500676d40c520eceb7af20cb2377f5bdc25d0c6" }
+      ],
+      "businessCss": { "bytes": 2819, "sha256": "f30a014bab768e56f87ab2da1f9b5d665a4ad96dc51460ac638cceeec2db2408" },
+      "businessJavaScript": { "bytes": 7609, "sha256": "788c366c267130bdf7bfda6440e13cf665b1c045d7a83aec1c16f93705f85b6f" }
+    },
+    "cssExtractionDeferred": true,
+    "secondCanary": "dsr",
+    "thirdCanary": "qms"
+  },
+  "review": {
+    "runnerReady": true,
+    "reviewStatus": "not-run",
+    "geometryIsAdvisory": true,
+    "visualBaselinesCaptured": false,
+    "physicalDeviceAccepted": false,
+    "nativeLanguageAccepted": false,
+    "runtimeRefactorGate": "all 168 cases reviewed with defects fixed or explicitly deferred"
+  }
+}

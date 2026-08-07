@@ -1,0 +1,360 @@
+/* Settings navigation architecture
+   Desktop: persistent master list + detail pane.
+   Phone/forced Mobile mode: Settings home -> detail navigation stack. */
+
+#configView .page-head {
+  margin-bottom: 16px;
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(248px, 292px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.settings-home {
+  min-width: 0;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.settings-home-head {
+  padding: 5px 6px 10px;
+}
+
+.settings-home-head h3 {
+  margin: 0 0 3px;
+  color: var(--navy);
+  font-size: 17px;
+}
+
+.settings-home-head p {
+  margin: 0;
+  color: var(--gray-600);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 4px 12px;
+  padding: 0 11px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  background: var(--gray-100);
+}
+
+.settings-search-wrap:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(216, 157, 31, .13);
+  background: #fff;
+}
+
+.settings-search-icon {
+  flex: 0 0 auto;
+  color: var(--gray-500);
+  font-size: 16px;
+}
+
+#settingsSearch {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--navy);
+  font: 500 13px var(--font-sans);
+}
+
+.settings-group + .settings-group {
+  margin-top: 12px;
+}
+
+.settings-group-title {
+  margin: 0;
+  padding: 3px 8px 5px;
+  color: var(--gray-500);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.settings-route {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 16px;
+  gap: 9px;
+  align-items: center;
+  width: 100%;
+  min-height: 60px;
+  margin: 1px 0;
+  padding: 8px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--navy);
+  text-align: left;
+  cursor: pointer;
+}
+
+.settings-route:hover {
+  background: var(--gray-100);
+}
+
+.settings-route.active {
+  background: rgba(216, 157, 31, .12);
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.settings-route:focus-visible,
+.settings-detail-back:focus-visible {
+  outline: 3px solid rgba(216, 157, 31, .35);
+  outline-offset: 1px;
+}
+
+.settings-row-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--gray-100);
+  color: var(--navy);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.settings-route.active .settings-row-icon {
+  background: var(--navy);
+  color: #fff;
+}
+
+.settings-row-copy {
+  min-width: 0;
+}
+
+.settings-row-title,
+.settings-row-summary {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-row-title {
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.settings-row-summary {
+  margin-top: 2px;
+  color: var(--gray-600);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.settings-row-chevron {
+  color: var(--gray-400);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.settings-empty-search {
+  display: none;
+  padding: 18px 10px;
+  color: var(--gray-600);
+  font-size: 13px;
+  text-align: center;
+}
+
+.settings-home.search-empty .settings-empty-search {
+  display: block;
+}
+
+.settings-detail {
+  min-width: 0;
+}
+
+.settings-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  margin-bottom: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.settings-detail-heading {
+  min-width: 0;
+}
+
+.settings-detail-heading h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.settings-detail-heading p {
+  margin: 2px 0 0;
+  color: var(--gray-600);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.settings-detail-back {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--navy);
+  font: 800 23px/1 var(--font-sans);
+  cursor: pointer;
+}
+
+.settings-detail .sub-section {
+  min-width: 0;
+}
+
+.settings-detail .sub-section.hidden {
+  display: none;
+}
+
+/* The shell rail reduces the usable desktop canvas. Keep detail forms readable
+   in the master/detail presentation instead of inheriting the global 3-column
+   form grid intended for full-width pages. */
+.settings-detail .field-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Forced Mobile mode also uses the phone navigation model on wide displays. */
+html.bcc-mobile #configView.settings-stack .settings-layout {
+  display: block;
+}
+
+html.bcc-mobile #configView.settings-stack .settings-home {
+  display: block;
+}
+
+html.bcc-mobile #configView.settings-stack .settings-detail {
+  display: none;
+}
+
+html.bcc-mobile #configView.settings-detail-open .settings-home {
+  display: none;
+}
+
+html.bcc-mobile #configView.settings-detail-open .settings-detail {
+  display: block;
+}
+
+html.bcc-mobile #configView.settings-detail-open > .page-head {
+  display: none;
+}
+
+html.bcc-mobile .settings-detail-back {
+  display: inline-flex;
+}
+
+@media (max-width: 980px) {
+  .settings-layout {
+    display: block;
+  }
+
+  #configView .settings-home {
+    display: block;
+    padding: 6px;
+  }
+
+  #configView .settings-detail {
+    display: none;
+  }
+
+  #configView.settings-detail-open .settings-home {
+    display: none;
+  }
+
+  #configView.settings-detail-open .settings-detail {
+    display: block;
+  }
+
+  #configView.settings-detail-open > .page-head {
+    display: none;
+  }
+
+  .settings-detail-back {
+    display: inline-flex;
+  }
+
+  .settings-detail-head {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    margin: -2px -2px 12px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .settings-route {
+    min-height: 64px;
+  }
+
+  .settings-detail .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-detail .field-grid .full {
+    grid-column: auto;
+  }
+
+  .settings-detail .card {
+    max-width: 100%;
+  }
+
+  .settings-detail table {
+    min-width: 620px;
+  }
+
+  .settings-detail .table-wrap,
+  .settings-detail .tbl-wrap,
+  .settings-detail .table-scroll,
+  .settings-detail [style*="overflow-x"] {
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 981px) {
+  .settings-home {
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-route,
+  .settings-detail {
+    scroll-behavior: auto;
+  }
+}

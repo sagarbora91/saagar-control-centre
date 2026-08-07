@@ -1,5 +1,17 @@
 # Saagar Control Centre — V6 Improvement Road Plan
 
+> **Phase-structure update (2026-08-04):** D6-D12, modular migration, E1-E6,
+> and final acceptance are now grouped into three owner-facing phases under
+> `docs/SAAGAR-MINIMUM-PHASE-CONSOLIDATED-STRATEGY-2026-08-04.md`. The package
+> descriptions below remain the detailed scope catalogue.
+
+> **C1 status update (2026-08-04):** D5 is pushed at `c04bc98`. D6-D12
+> non-ETP engineering and the full eleven-module external-file migration are
+> complete in the intentionally uncommitted C1 working tree. D7 incentive,
+> ETP-derived D10 metrics, owner review, and all formal acceptance remain open.
+> Current evidence:
+> `verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md`.
+
 **Prepared:** 2026-07-29 (Asia/Kolkata)
 **Baseline:** build 2.9 / versionCode 209, `origin/main = 49d531b`, 54/54 offline tests green. R0 (all four waves) + R1 legal minimum shipped.
 **Supersedes:** `docs/Deepen the Android app.md` (now a pointer to this file).

@@ -1,7 +1,7 @@
 # Modular HTML Migration — Strategy and Execution Plan
 
 **Date:** 2026-08-04 (Asia/Kolkata)
-**Baseline:** pushed `main` = `origin/main` = `aee75cc`; D5 working tree suite 275/275
+**Baseline:** pushed `main` = `origin/main` = `c04bc98255a78d45b08ac449d88365b22d033f28`; D5 suite 275/275
 **Status:** Stock M1 and D5 controls engineering complete; owner-reported M1 smoke received; formal device acceptance pending
 **Owner-set sequence:** finish remaining waves → push → test and fix → **migrate** → **ETP** → **PHP**
 
@@ -250,4 +250,84 @@ If you want the incremental variant, the only change is that M1 is scheduled per
 
 ---
 
-**Status:** INCREMENTAL VARIANT ACTIVE. Stock is externally packaged and regression-tested; do not start D5-S1 or another module extraction until Stock's relative `iframe.src` same-origin access is proven on a physical Android device.
+**Status update 2026-08-04:** C1 completed the migration in one consolidated
+engineering pass. All eleven modules are external local files, every payload is
+byte/hash guarded, all three legacy patchers are retired, and full/offline
+regressions plus debug assembly pass. Physical-device same-origin and formal
+acceptance evidence remain C3 gates; this engineering result does not mark them
+passed.
+
+## MAH-1 clarification — 2026-08-06
+
+“Migration complete” above means the external-file/base64-retirement milestone,
+not every target in historical M0–M6. The measured status is:
+
+| Historical target | Current state |
+|---|---|
+| M0 equivalence harness | Partial — byte/SHA and source tests exist; rendered DOM/function/message and visual baselines do not. |
+| M1 external files | Engineering-complete for all 11 modules; physical-device same-origin evidence remains open and the shell retains its `srcdoc/buildModuleSrc` fallback. |
+| M2 shared assets/runtime | Not started; there is no `www/shared/` directory. |
+| M3 module internals split | Not started; every module remains one large `index.html`. |
+| M4 slim shell | Not started; `www/index.html` is now 715,491 bytes after manifest externalization, still above the historical 150 KB target. |
+| M5 patcher retirement | Partial/mostly complete — legacy D2/D3/D4 patchers are retired, but fallback assembly code remains. |
+| M6 lock the gains | Partial — base64/external-path/hash/offline guards exist; inline-size, shared-helper and rendered-layout gates do not. |
+
+The owner authorized **MAH-1 — Modular Architecture Protection & Visual
+Baselines** on 2026-08-06. MAH-1 adds inventory and protection only; shared
+runtime extraction, protocol/lifecycle redesign, shell slimming and per-module
+CSS/JS splitting remain later hardening work. ETP and PHP remain excluded.
+
+## MAH-2 manifest foundation — 2026-08-06
+
+The owner authorized Phase 2 of the post-C1 modular hardening work. Its first
+coherent module is complete: one synchronous, versioned module-manifest.js is
+now authoritative for all eleven external modules. The shell keeps a temporary
+MODULES compatibility alias, while inventory, extraction, security tests and
+seeded packaging consume or verify the external manifest.
+
+The manifest fails closed on unknown/missing fields, identity/order drift,
+noncanonical paths and malformed integrity declarations. Build/tests bind every
+entry to the exact raw file bytes and SHA-256. Stale base64 diagnostics and the
+dead external-module prewarm scheduler were corrected without removing the
+historical srcdoc fallback.
+
+Verification is green: manifest 6/6, modular 14/14, offline 256/256 and the
+complete test glob 303/303. This is not rendered or physical-device acceptance.
+Shared runtime/CSS extraction remains gated on the pending MAH-1 visual baseline;
+Planning is the recommended first runtime canary after that evidence exists.
+
+## MAH-3 shared-runtime canary start — 2026-08-06
+
+The current hardening sequence does not jump directly to historical M3. MAH-3
+first supplies the missing rendered-oracle machinery: an exact hash-bound,
+loopback-only 168-case manual review runner using real shell-hosted modules.
+At the MAH-3 start checkpoint, automated source/server coverage was green while
+human rendered review remained 0/168; the explicit offline suite passed 256/256
+and the complete regression glob passed 310/310. No runtime file had changed.
+
+After the gate passes, Planning will pilot shared JavaScript only. Its six
+runtime positions must remain synchronous and ordered; its business CSS/JS and
+the four duplicated CSS blocks remain byte-pinned. DSR then tests access/timer
+behavior and QMS tests timers/mobile menu. Historical module splitting remains
+separate and still not started.
+
+## MAH-4 message/lifecycle Stage A complete — 2026-08-07
+
+MAH-4 Stage A is engineering-complete without editing a `www` byte. Scanner
+mode combines 33 direct entry-linked assets with an explicit dynamic-local
+loader inventory; it does not claim general transitive parsing. Profile schema
+3 binds the exact MAH-3 tree, 15 active business types versus 17 lexical tokens,
+direct 74 syntactic / 68 configured wildcard sends, aggregate 75/69 after the
+dynamic Integration Bridge site, callback-local trust and qualified lifecycle
+call-site buckets. The extra dynamic route is source-guard rejected, leaving 68
+accepted configured routes.
+
+The non-product executable specification locks 20 exact message contracts,
+authorization, immutable compatibility normalization, correlation, synthetic
+deadlines, state, per-instance deduplication and synchronous tracked cleanup.
+Focused MAH-4 verification is 37/37, combined modular is 58/58, explicit
+offline is 256/256 and the complete regression glob is 347/347.
+It is not loaded by `www`; runtime changes remain blocked until MAH-3 completes
+its rendered baseline plus Planning, DSR and QMS canaries. API-23/origin/device
+gates remain false. Historical M3 splitting, M4 shell slimming, shared CSS and
+fallback retirement remain separate work.
