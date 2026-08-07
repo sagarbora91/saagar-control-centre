@@ -1,19 +1,20 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-07 14:07 (Asia/Kolkata), MAH-4 post-Stage-A crash checkpoint on D5 pushed baseline c04bc98255a78d45b08ac449d88365b22d033f28
+**Updated:** 2026-08-07 (Asia/Kolkata), C1 through MAH-4 Stage-A publication checkpoint
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
-**Programme status:** D1-D5 are pushed; C1 is engineering-complete but uncommitted. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
+**Programme status:** D1-D5 remain on `main`; the cumulative C1/MAH-1–MAH-4 Stage-A engineering tranche is committed and pushed on `agent/c1-mah4-foundation` at implementation commit `0909972`, pending review/merge. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
 
 > **Latest active resume point:**
-> verification/MAH4-MESSAGE-LIFECYCLE-CRASH-CHECKPOINT-2026-08-07.md.
-> The evidence authority beneath that crash pointer is
+> verification/C1-MAH4-PUBLICATION-CHECKPOINT-2026-08-07.md.
+> The MAH-4 evidence authority beneath that publication checkpoint is
 > verification/MAH4-MESSAGE-LIFECYCLE-STAGE-A-CHECKPOINT-2026-08-07.md.
 > MAH-4 Stage A is engineering-complete as an identity-bound, non-product
 > executable specification. Direct sends are 74 syntactic / 68 configured;
 > dynamic-aware totals are 75/69, while accepted configured behavior remains
 > 68 because the extra Integration Bridge route fails the source guard. Product
 > runtime was not edited. Stage B remains blocked by MAH-3 0/168 and the
-> Planning → DSR → QMS canary chain. No APK, commit or push was performed.
+> Planning → DSR → QMS canary chain. The review branch is public and pushed;
+> `main` remains at the D5 baseline until review/merge.
 
 ## Current MAH-4 message/lifecycle update
 
@@ -113,8 +114,9 @@
   `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`.
 - Clean source and generated Android assets were restored to
   `DEMO_SEED_ENABLED=false` after packaging.
-- Owner C1 smoke for the resumed language state, commit and push are pending.
-  A live wide-browser recheck was blocked by the browser's localhost safety
+- The owner authorized publication; the cumulative engineering tree is now
+  committed and pushed for review on `agent/c1-mah4-foundation`. A live
+  wide-browser recheck was blocked by the browser's localhost safety
   policy, so no new wide-desktop visual evidence is claimed. Formal device
   acceptance stays open. See
   `verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md`.
@@ -152,15 +154,16 @@ remaining Android engineering and migration, C2 completes E1-E6, and C3 runs
 one consolidated formal acceptance and production release campaign. Automated
 tests and restartable commits remain internal safeguards, not owner-facing
 phases. C1 engineering, architecture catch-up, D6-D12 controls, the mobile
-defect sweep, and the Settings navigation redesign are complete locally. The
-current post-C1 action is the MAH-3 rendered baseline; runtime extraction stays
+defect sweep, and the Settings navigation redesign are complete and published
+on the review branch. The current post-C1 action is the MAH-3 rendered
+baseline; runtime extraction stays
 gated until that review is complete. MAH-4 Stage A is complete and returns for
 Stage B only after Planning → DSR → QMS. C2 remains blocked on representative
 ETP exports and owner data decisions.
 
 ## Read this first
 
-- `main` and `origin/main` are both at `c04bc98255a78d45b08ac449d88365b22d033f28` (D5 pushed 2026-08-04). The current C1/MAH-1/MAH-2/MAH-3/MAH-4 Stage-A engineering tree is uncommitted.
+- `main` and `origin/main` remain at `c04bc98255a78d45b08ac449d88365b22d033f28` (D5 pushed 2026-08-04). The current C1/MAH-1/MAH-2/MAH-3/MAH-4 Stage-A engineering tree is committed and pushed on `agent/c1-mah4-foundation`; implementation commit `0909972`.
 - **Current automated evidence:** MAH-4 focused 37/37, modular 58/58, C1 12/12,
   mobile 6/6, Settings 8/8 and language 4/4 pass; the explicit offline suite
   is 256/256 and the complete glob is 347/347. Rendered review remains 0/168.
@@ -173,6 +176,7 @@ ETP exports and owner data decisions.
 | Item | Current fact |
 |---|---|
 | Pushed baseline | `c04bc98255a78d45b08ac449d88365b22d033f28` on `origin/main` - D5 Stock controls and first modular extraction. |
+| Review publication | `agent/c1-mah4-foundation`, implementation commit `0909972` - cumulative C1 plus MAH-1 through MAH-4 Stage A; not merged to `main`. |
 | Permanent regression suite | MAH-4 **37/37**, modular **58/58**, C1 **12/12**, mobile **6/6**, Settings **8/8**, language **4/4**, explicit offline **256/256**, full glob **347/347** (2026-08-07). |
 | Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` - 6,793,233 bytes, SHA-256 `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`. All eleven modules are real local assets; phone remediation and the Settings navigation redesign are included. Debug/device review only. |
 | APK identity | `com.saagartraders.bcc`, version 2.9, versionCode 209, min API 23, target API 34. |
@@ -189,14 +193,15 @@ or mobile-layout pass.
 ### Current authoritative inventory
 
 - D1-D5 are committed and pushed on baseline `c04bc982...`.
-- C1 is engineering-complete but uncommitted: all eleven modules are external,
+- C1 is engineering-complete and published for review on
+  `agent/c1-mah4-foundation`: all eleven modules are external,
   D6-D12 non-ETP controls are present, base64 patchers are retired, and the
   shell/module phone defect sweep is green in browser rendering. The later
   Settings redesign is green in source/runtime tests but still needs owner
   device layout evidence because automated localhost browser control was
   unavailable after crash recovery.
-- Owner C1 smoke, explicit commit/push approval, and all formal C3 acceptance
-  gates remain pending.
+- Explicit commit/push approval was received and used for the review branch.
+  Owner formal device evidence and all C3 acceptance gates remain pending.
 - C2/E1-E6 remains blocked on representative raw R022, R025, R013, and R003
   exports for WLMHW and HEMW plus the documented dictionaries, reconciliation,
   date, parser, unknown-code, and incentive decisions.
@@ -279,7 +284,11 @@ D7 and D10 are *better* after the E-series supplies verified data but are not bl
 
 ### Working tree
 
-Intentionally dirty. The pushed baseline is `main` = `origin/main` = `c04bc98255a78d45b08ac449d88365b22d033f28`; C1/MAH-1/MAH-2 changes above it are uncommitted and must be preserved. No commit or push is authorized by this handoff.
+The cumulative engineering tree is committed and pushed on
+`agent/c1-mah4-foundation`; `main` remains at `c04bc98255a78d45b08ac449d88365b22d033f28`.
+Only the unused superseded `verification/mah3-visual-review/review.js` draft is
+intentionally left local and untracked. Do not add or delete it accidentally.
+
 ### Multi-agent handoff protocol
 
 More than one agent works this repository. To make handovers verifiable:
@@ -291,9 +300,14 @@ More than one agent works this repository. To make handovers verifiable:
 | **Files any agent must keep current** | same file, §2 |
 | **Prompt to verify another agent's work, then resume** | `docs/CLAUDE-VERIFY-AND-RESUME-PROMPT.md` §1 |
 
-The older resume/verification prompts still describe the historical `62132c4` clean-tree trust anchor. They are not the current resume point; use the MAH-1 checkpoint at the top of this handoff. Refresh those prompts only after Sagar approves a new baseline commit.
+The older resume/verification prompts still describe the historical `62132c4`
+clean-tree trust anchor. They are not the current resume point; use the
+publication checkpoint at the top of this handoff. Refresh those prompts only
+after Sagar approves a new baseline commit.
 
-**Current rule:** preserve the dirty tree, verify claims from source/tests, and do not convert it into a trusted baseline until the intended scope is reviewed and Sagar explicitly approves commit/push.
+**Current rule:** review the publication branch and its draft PR before merge.
+The 2026-08-07 approval covered this publication only; any later commit, merge,
+direct-main push or production action requires its own authority.
 
 This repository has a specific failure history that verification must target:
 

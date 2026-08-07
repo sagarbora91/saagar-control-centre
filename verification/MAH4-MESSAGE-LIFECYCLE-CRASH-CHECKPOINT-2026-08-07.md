@@ -1,5 +1,10 @@
 # MAH-4 post-Stage-A crash checkpoint — 2026-08-07
 
+> **Superseded after publication.** The completed cumulative tranche was
+> committed and pushed on `agent/c1-mah4-foundation` at implementation commit
+> `0909972`. Resume from
+> `verification/C1-MAH4-PUBLICATION-CHECKPOINT-2026-08-07.md`.
+
 **Captured:** 2026-08-07 14:07:56 +05:30 (Asia/Kolkata)
 
 **Purpose:** crash-safe resume pointer after MAH-4 Stage A completion

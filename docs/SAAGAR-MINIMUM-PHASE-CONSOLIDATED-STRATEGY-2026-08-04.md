@@ -95,16 +95,17 @@ work is implied beyond the authority already given by the owner.
 
 ## 7. Current position and next action
 
-D1-D5 are pushed. C1 engineering is complete in the intentionally uncommitted
-working tree: all eleven modules are external, the three patchers are retired,
+D1-D5 remain pushed on `main`. C1 engineering and MAH-1 through MAH-4 Stage A
+are committed and pushed for review on `agent/c1-mah4-foundation`; all eleven
+modules are external, the three patchers are retired,
 D6-D12 non-ETP controls are implemented, the phone-layout sweep is complete,
 and the full/offline/responsive/seed/build gates are green. The single C1
 seeded review APK is documented in
 `verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md`.
 
-**Next action:** obtain one owner-reported C1 smoke result, then commit/push only
-with explicit approval. Continue to C2 once real exports are available; formal
-device and production acceptance remains C3.
+**Next action:** review/merge the cumulative publication, then complete the
+MAH-3 rendered baseline and gated canaries. Continue to C2 once real exports
+are available; formal device and production acceptance remains C3.
 
 ## 8. Supersession rule
 
