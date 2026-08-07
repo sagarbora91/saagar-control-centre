@@ -1,6 +1,6 @@
 # Code Closure — API-23 compatibility
 
-**Date:** 2026-08-07 (Asia/Kolkata)  
+**Date:** 2026-08-07 (Asia/Kolkata)
 **Scope:** Android code closure only; ETP and PHP are excluded.
 
 ## Outcome
