@@ -31,6 +31,8 @@ const generatedManifestPath = path.join(
   'public',
   'module-manifest.js'
 );
+const sourceRuntimePath = path.join(repoDir, 'www', 'shared', 'module-runtime.js');
+const generatedRuntimePath = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public', 'shared', 'module-runtime.js');
 const builtApkPath = path.join(
   androidDir,
   'app',
@@ -91,6 +93,9 @@ const sourceManifest = fs.readFileSync(sourceManifestPath);
 const generatedManifest = fs.readFileSync(generatedManifestPath);
 if (!sourceManifest.equals(generatedManifest)) {
   throw new Error('Generated Android manifest does not byte-match www/module-manifest.js');
+}
+if (!fs.readFileSync(sourceRuntimePath).equals(fs.readFileSync(generatedRuntimePath))) {
+  throw new Error('Generated Android shared runtime does not byte-match www/shared/module-runtime.js');
 }
 const generatedClean = fs.readFileSync(generatedIndexPath, 'utf8');
 const manifestTag = '<script src=' + JSON.stringify('module-manifest.js') + '></script>';

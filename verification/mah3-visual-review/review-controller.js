@@ -209,7 +209,16 @@
 
   function visible(element) {
     if (!element || !element.ownerDocument) return false;
-    var style = element.ownerDocument.defaultView.getComputedStyle(element);
+    var win = element.ownerDocument.defaultView;
+    var node = element;
+    while (node && node.nodeType === 1) {
+      var nodeStyle = win.getComputedStyle(node);
+      if (node.hidden || node.hasAttribute('inert') || node.getAttribute('aria-hidden') === 'true') return false;
+      if (node.tagName === 'DETAILS' && !node.open && node !== element) return false;
+      if (nodeStyle.display === 'none' || nodeStyle.visibility === 'hidden' || Number(nodeStyle.opacity || 1) === 0) return false;
+      node = node.parentElement;
+    }
+    var style = win.getComputedStyle(element);
     var rect = element.getBoundingClientRect();
     return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) !== 0 && rect.width > 0 && rect.height > 0;
   }
@@ -242,15 +251,26 @@
   function clippedByAncestor(element) {
     var rect = element.getBoundingClientRect();
     var node = element.parentElement;
+    var horizontallyReachable = false;
+    var verticallyReachable = false;
     while (node && node !== element.ownerDocument.body) {
       var style = node.ownerDocument.defaultView.getComputedStyle(node);
+      if ((style.overflowX === 'auto' || style.overflowX === 'scroll') && node.scrollWidth > node.clientWidth + 1) horizontallyReachable = true;
+      if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && node.scrollHeight > node.clientHeight + 1) verticallyReachable = true;
       if (/hidden|clip/.test(style.overflowX + ' ' + style.overflowY)) {
         var parentRect = node.getBoundingClientRect();
-        if (intersectionArea(rect, parentRect) < rect.width * rect.height * 0.8) return true;
+        var clippedX = rect.left < parentRect.left - 1 || rect.right > parentRect.right + 1;
+        var clippedY = rect.top < parentRect.top - 1 || rect.bottom > parentRect.bottom + 1;
+        if ((clippedX && !horizontallyReachable) || (clippedY && !verticallyReachable)) return true;
       }
       node = node.parentElement;
     }
     return false;
+  }
+
+  function shellLexical(shellWindow, name) {
+    try { return shellWindow.eval(name); }
+    catch (_) { return undefined; }
   }
 
   function collectGeometry(doc, label) {
@@ -273,7 +293,11 @@
         var x = Math.max(1, Math.min(viewportWidth - 1, rect.left + rect.width / 2));
         var y = Math.max(1, Math.min(viewportHeight - 1, rect.top + rect.height / 2));
         var hit = doc.elementFromPoint(x, y);
-        if (hit && hit !== element && !element.contains(hit) && !hit.contains(element)) coveredVisibleControls.push(selectorFor(element) + ' covered by ' + selectorFor(hit));
+        var moduleScreen = label === 'shell' ? doc.getElementById('moduleScreen') : null;
+        var intentionallyCoveredByModule = moduleScreen && visible(moduleScreen) && moduleScreen.contains(hit) && !moduleScreen.contains(element);
+        if (hit && hit !== element && !element.contains(hit) && !hit.contains(element) && !hasScroller(element, 'y') && !intentionallyCoveredByModule) {
+          coveredVisibleControls.push(selectorFor(element) + ' covered by ' + selectorFor(hit));
+        }
       }
     });
 
@@ -361,6 +385,8 @@
   function readinessFor(item, nestedFrame, fontState) {
     var shellWindow = frame.contentWindow;
     var shellDocument = frame.contentDocument;
+    var activeView = shellLexical(shellWindow, 'activeView');
+    var activeModuleId = shellLexical(shellWindow, 'activeModuleId');
     var checks = [];
     function add(name, pass, observed) { checks.push({ name: name, pass: Boolean(pass), observed: observed }); }
     add('shell-path', shellWindow.location.pathname === '/app/index.html', shellWindow.location.pathname);
@@ -375,18 +401,18 @@
       var nestedWindow = nestedFrame && nestedFrame.contentWindow;
       var nestedDocument = nestedFrame && nestedFrame.contentDocument;
       var expectedPath = '/app/modules/' + item.surface + '/index.html';
-      add('active-module', shellWindow.activeModuleId === item.surface, shellWindow.activeModuleId || '');
+      add('active-module', activeModuleId === item.surface, activeModuleId || '');
       add('module-screen-visible', visible(shellDocument.getElementById('moduleScreen')), selectorFor(shellDocument.getElementById('moduleScreen')));
       add('module-loader-hidden', !visible(shellDocument.getElementById('loader')), shellDocument.getElementById('loader') && shellDocument.getElementById('loader').className);
       add('module-path', Boolean(nestedWindow) && nestedWindow.location.pathname === expectedPath, nestedWindow && nestedWindow.location.pathname);
       add('module-ui-mode', Boolean(nestedDocument) && nestedDocument.documentElement.classList.contains('bcc-mobile') === (item.uiMode === 'mobile'), nestedDocument && nestedDocument.documentElement.className);
       add('module-fonts', fontState.module && !fontState.module.timedOut && fontState.module.status !== 'loading', fontState.module);
     } else if (item.surface === 'shell-home') {
-      add('home-surface', shellWindow.activeView === 'home', shellWindow.activeView);
+      add('home-surface', activeView === 'home', activeView);
     } else {
       var home = shellDocument.getElementById('settingsHome');
       var detail = shellDocument.getElementById('settingsDetail');
-      add('settings-view', shellWindow.activeView === 'config', shellWindow.activeView);
+      add('settings-view', activeView === 'config', activeView);
       if (item.surface === 'settings-home') {
         add('settings-home-visible', visible(home), visible(home));
         add('settings-detail-state', item.uiMode === 'desktop' ? visible(detail) : !visible(detail), visible(detail));
@@ -472,12 +498,18 @@
         if (token !== loadSequence || currentCase().id !== item.id) return;
         disableMotion(frame.contentDocument);
         setPill(byId('loadState'), item.kind === 'module' ? 'Opening module' : 'Preparing surface', 'warn');
+        // The shell's async storage/bootstrap path deliberately returns Home.
+        // Wait for that boot navigation to settle before selecting the exact
+        // review surface, otherwise Settings/module cases can be overwritten
+        // after they were prepared and produce a false readiness failure.
+        await delay(1400);
+        if (token !== loadSequence || currentCase().id !== item.id) return;
         var nestedFrame = await prepareSurface(item, token);
         var fontState = {
           shell: await waitForFonts(frame.contentDocument),
           module: nestedFrame ? await waitForFonts(nestedFrame.contentDocument) : null
         };
-        await delay(2100);
+        await delay(700);
         await nextPaint(frame.contentWindow);
         if (nestedFrame) await nextPaint(nestedFrame.contentWindow);
         if (token !== loadSequence || currentCase().id !== item.id) return;

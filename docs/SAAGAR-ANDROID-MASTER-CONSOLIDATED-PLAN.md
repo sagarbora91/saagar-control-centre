@@ -1729,3 +1729,29 @@ This completes only MAH-4 Stage A. Runtime loading/wiring is still blocked by
 MAH-3 0/168 plus Planning → DSR → QMS; API-23 timing/entropy, expected origin,
 rendered/device/native-language/production acceptance all remain false. See
 `verification/MAH4-MESSAGE-LIFECYCLE-STAGE-A-CHECKPOINT-2026-08-07.md`.
+
+### MAH-3 Planning shared-runtime canary complete — 2026-08-07
+
+The identity-bound MAH-3 baseline review is complete at **168/168 browser
+cases passed**, with zero readiness failures and zero hard geometry findings.
+Six responsive defects found during that review were corrected and recaptured.
+This is browser engineering evidence only; physical-device, native-language
+and production acceptance remain false.
+
+Planning is the first completed shared-runtime canary. One classic synchronous
+offline runtime owns its six shared helpers while retaining all six parser
+positions and their order. Planning's business CSS remains exactly 2,819 bytes
+with SHA-256 `f30a014b...2408`; its business JavaScript remains exactly 7,609
+bytes with SHA-256 `788c366c...b6f`. Manifest schema 2 binds the runtime path,
+version, bytes and SHA-256. Inventory, message/lifecycle scanning and seeded
+Android packaging resolve and verify the same local asset.
+
+The post-refactor Planning comparison passed **12/12** across four viewports
+and English, Marathi and Hindi. Current evidence is MAH-3 11/11, MAH-4 37/37,
+modular 63/63, security 100/100, offline 256/256 and complete glob 352/352. The seeded debug APK is
+`V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` (6,633,967
+bytes; SHA-256 `0BC2EC1D51802D2D1FECFB486CC555609930D0096057EE1F22EDD0F1F00517FF`).
+
+Next: DSR access/timer canary, then QMS timer/mobile-menu canary. MAH-4 Stage B
+remains gated until both complete. Shared CSS, module splitting, shell
+slimming, ETP and PHP remain outside this completed Planning phase.

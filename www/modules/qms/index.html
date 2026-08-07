@@ -95,7 +95,8 @@ html.bcc-mobile[data-mod="qms"]{--sidebar:0px}
 html.bcc-mobile[data-mod="qms"] .main-area{margin-left:0 !important}
 html.bcc-mobile[data-mod="qms"] .role-banner{left:0 !important}
 html.bcc-mobile[data-mod="qms"] .sidebar{transform:translateX(-240px);transition:transform .25s;z-index:60;width:240px}
-html.bcc-mobile[data-mod="qms"] .sidebar.open{transform:translateX(0)}
+html.bcc-mobile[data-mod="qms"] .sidebar{visibility:hidden}
+html.bcc-mobile[data-mod="qms"] .sidebar.open,html.bcc-mobile[data-mod="qms"] .qms-menu-toggle:checked~.sidebar{transform:translateX(0);visibility:visible}
 /* QMS mobile drawer needs a backdrop: the shell opens it via .open (the module's own
    checkbox scrim is never wired up here), so without this the drawer floats over
    un-dimmed, left-clipped content. Scrim sits below the sidebar (60) + button (70). */

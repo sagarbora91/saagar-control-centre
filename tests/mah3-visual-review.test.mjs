@@ -40,8 +40,8 @@ test('MAH-3 baseline is bound to the exact dirty www tree and critical files', (
     totalBytes: actual.totalBytes,
     treeSha256: actual.treeSha256
   });
-  assert.equal(profile.baseline.runtimeRefactorApplied, false);
-  assert.equal(profile.baseline.visualBaselinesCaptured, false);
+  assert.equal(profile.baseline.runtimeRefactorApplied, true);
+  assert.equal(profile.baseline.visualBaselinesCaptured, true);
   assert.equal(profile.baseline.physicalDeviceAccepted, false);
   assert.equal(profile.baseline.nativeLanguageAccepted, false);
 });
@@ -60,26 +60,28 @@ test('MAH-3 evidence runner covers the unchanged MAH-1 168-case matrix', () => {
   assert.ok(cases.every(item => !/(?:[a-z]+:)?\/\//i.test(item.src)));
 });
 
-test('MAH-3 Planning candidate pins exact script bodies and preserves parser order', () => {
+test('MAH-3 Planning canary pins the extracted runtime and preserves parser order', () => {
   const planningPath = path.join(root, 'www', 'modules', 'planning', 'index.html');
   const planningBytes = fs.readFileSync(planningPath);
   const planning = planningBytes.toString('utf8');
   const candidate = profile.sharedRuntimeCandidates.planning;
   assert.equal(planningBytes.length, candidate.moduleBytes);
   assert.equal(sha256(planningBytes), candidate.moduleSha256);
-  assert.equal(candidate.blocks.reduce((sum, block) => sum + block.bytes, 0), candidate.javascriptBodyBytes);
+  assert.equal(candidate.originalBlocks.reduce((sum, block) => sum + block.bytes, 0), candidate.javascriptBodyBytes);
 
   let previous = -1;
-  for (const block of candidate.blocks) {
+  for (const block of candidate.originalBlocks) {
     const body = inlineBlock(planning, block.id);
-    assert.equal(Buffer.byteLength(body), block.bytes, `${block.id} bytes`);
-    assert.equal(sha256(body), block.sha256, `${block.id} hash`);
+    assert.match(body, /SaagarModuleRuntime\.run\(/, block.id);
     const at = planning.indexOf(`id="${block.id}"`);
     assert.ok(at > previous, `${block.id} parser order`);
     previous = at;
   }
   assert.equal(profile.sharedRuntimeCandidates.cssExtractionDeferred, true);
-  assert.doesNotMatch(planning, /shared\/module-runtime\.js|module-runtime\.js/);
+  assert.match(planning, /<script src="\.\.\/\.\.\/shared\/module-runtime\.js"><\/script>/);
+  const runtime = fs.readFileSync(path.join(root, 'www', 'shared', 'module-runtime.js'));
+  assert.equal(runtime.length, candidate.runtimeAsset.bytes);
+  assert.equal(sha256(runtime), candidate.runtimeAsset.sha256);
 });
 
 test('MAH-3 review UI keeps geometry advisory and acceptance explicit', () => {
@@ -89,6 +91,12 @@ test('MAH-3 review UI keeps geometry advisory and acceptance explicit', () => {
   assert.match(reviewScript, /manualStatus/);
   assert.match(reviewScript, /openModule\(item\.surface\)/);
   assert.match(reviewScript, /collectGeometry\(nestedFrame\.contentDocument/);
+  assert.match(reviewScript, /shellLexical\(shellWindow, 'activeView'\)/);
+  assert.match(reviewScript, /verticallyReachable/);
+  assert.match(reviewScript, /await delay\(1400\)/);
+  assert.match(reviewScript, /node\.hasAttribute\('inert'\)/);
+  assert.match(reviewScript, /intentionallyCoveredByModule/);
+  assert.doesNotMatch(reviewScript, /shellWindow\.activeView/);
   assert.match(reviewScript, /profileSha256/);
   assert.match(reviewScript, /runnerTreeSha256/);
   assert.match(reviewScript, /physicalDeviceAccepted:\s*false/);

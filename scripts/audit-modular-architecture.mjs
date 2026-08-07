@@ -55,12 +55,13 @@ function readRegistry(root) {
     manifestPath,
     manifestBytes,
     manifestSchemaVersion: manifest.schemaVersion,
-    modules: manifest.modules
+    modules: manifest.modules,
+    sharedAssets: manifest.sharedAssets || []
   };
 }
 
 export function createInventory(root = defaultRoot) {
-  const { shellPath, shell, manifestBytes, manifestSchemaVersion, modules } = readRegistry(root);
+  const { shellPath, shell, manifestBytes, manifestSchemaVersion, modules, sharedAssets } = readRegistry(root);
   const shellBytes = fs.readFileSync(shellPath);
   return {
     schemaVersion: 1,
@@ -83,6 +84,11 @@ export function createInventory(root = defaultRoot) {
       },
       breakpoints: breakpoints(shell)
     },
+    sharedAssets: sharedAssets.map(asset => {
+      const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
+      if (bytes.length !== asset.bytes || sha256(bytes) !== asset.sha256) throw new Error(`shared asset integrity mismatch: ${asset.id}`);
+      return { id: asset.id, version: asset.version, path: `www/${asset.file}`, bytes: bytes.length, sha256: sha256(bytes) };
+    }),
     modules: modules.map(module => {
       if (!module.src || module.html_b64) throw new Error(`module is not external: ${module.id}`);
       const absolutePath = path.join(root, 'www', module.src);

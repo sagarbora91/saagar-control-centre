@@ -180,6 +180,11 @@ html.bcc-mobile[data-mod="payroll"] .hd-name{font-size:14px;white-space:nowrap;o
 html.bcc-mobile[data-mod="payroll"] .hd-sub{display:none}
 html.bcc-mobile[data-mod="payroll"] .hd-right{flex-wrap:wrap;justify-content:flex-end;gap:5px;flex-shrink:0}
 html.bcc-mobile[data-mod="payroll"] .btn-hd{padding:5px 9px;font-size:11px}
+@media(max-width:480px){
+  html.bcc-mobile[data-mod="payroll"] .hd-right{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;flex:1 1 100%}
+  html.bcc-mobile[data-mod="payroll"] .status-chip{grid-column:1/-1;justify-self:start}
+  html.bcc-mobile[data-mod="payroll"] .btn-hd{width:100%;min-width:0;white-space:normal}
+}
 html.bcc-mobile[data-mod="payroll"] .wp{max-width:100% !important;margin:0 !important;padding:12px 10px 84px !important}
 html.bcc-mobile[data-mod="payroll"] .grid{grid-template-columns:1fr !important;gap:10px !important}
 html.bcc-mobile[data-mod="payroll"] .controls{grid-template-columns:1fr 1fr !important;gap:8px !important}

@@ -521,6 +521,34 @@ The working tree contains a reviewed **D1 engineering-complete / acceptance-pend
 - Representative-device layout, interaction, and performance evidence remains the explicit D1 acceptance item; no device pass is claimed.
 - Every Phase 0 device/provider/restore/legal/UAT/security/signing row above remains **PENDING**. The new debug APK is not a formal or production release.
 - No PHP/platform work was started.
+
+### Planning shared-runtime completion and seeded APK — 2026-08-07
+
+- Branch `agent/c1-mah4-foundation`; implementation base HEAD
+  `7ae0e0c8421d82c9bd4937a4684c0f8b25ab34c8`.
+- Working tree remains intentionally dirty. Nothing in this phase was committed
+  or pushed.
+- MAH-3 baseline: 168/168 browser cases. Planning post-extraction matrix:
+  12/12, with zero readiness or hard-geometry failures.
+- Manifest schema 2 binds `www/shared/module-runtime.js`; Planning uses it at
+  all six original helper positions. Business CSS and JavaScript retain their
+  baseline hashes.
+- Verification: MAH-3 11/11, MAH-4 37/37, modular 63/63, security 100/100,
+  offline 256/256 and complete glob 352/352.
+- Seeded review APK:
+  `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`;
+  6,633,967 bytes; SHA-256
+  `0BC2EC1D51802D2D1FECFB486CC555609930D0096057EE1F22EDD0F1F00517FF`.
+- Build parity verified the manifest and shared runtime. Source and generated
+  Android shells were restored to `DEMO_SEED_ENABLED = false`.
+- This debug APK and browser evidence do not establish physical-device,
+  native-language, production-signing or production acceptance.
+- On first reported opening, the fail-closed storage screen showed
+  `STORE_UNAVAILABLE`; one safe retry recovered it, after which the owner
+  reported the app working normally. This is owner-reported smoke evidence,
+  not formal device acceptance. App data was not cleared.
+- Preserve excluded draft `verification/mah3-visual-review/review.js`.
+- Next: DSR and QMS shared-runtime canaries before MAH-4 Stage B.
 - Nothing in this checkpoint is committed or pushed; owner review/approval is required first.
 ### Pause / exact resume point
 

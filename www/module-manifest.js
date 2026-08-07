@@ -45,6 +45,7 @@
   ]);
   var OPTIONAL_FIELDS = Object.freeze(['source_title']);
   var ALLOWED_FIELDS = Object.freeze(REQUIRED_FIELDS.concat(OPTIONAL_FIELDS));
+  var SHARED_REQUIRED_FIELDS = Object.freeze(['id', 'version', 'file', 'bytes', 'sha256']);
   var BLOCKED_KEYS = Object.freeze(['__proto__', 'prototype', 'constructor']);
   var HEX_64 = /^[a-f0-9]{64}$/;
   var MODULE_ID = /^[a-z][a-z0-9_]{1,31}$/;
@@ -156,8 +157,9 @@
 
   function validate(input) {
     assertObject(input, 'manifest');
-    assertExactKeys(input, ['schemaVersion', 'modules'], ['schemaVersion', 'modules'], 'manifest');
-    if (input.schemaVersion !== 1) fail('schemaVersion must be 1');
+    assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
+    if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 1) fail('sharedAssets must contain exactly one entry');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -172,25 +174,193 @@
     var modules = input.modules.map(function (module, index) {
       return freezeModule(module, index, seen);
     });
-    return Object.freeze({ schemaVersion: 1, modules: Object.freeze(modules) });
+    var shared = input.sharedAssets[0];
+    assertObject(shared, 'sharedAssets[0]');
+    assertExactKeys(shared, SHARED_REQUIRED_FIELDS, SHARED_REQUIRED_FIELDS, 'sharedAssets[0]');
+    if (cleanString(shared.id, 'sharedAssets[0].id') !== 'module-runtime' || shared.version !== 1 ||
+        cleanString(shared.file, 'sharedAssets[0].file') !== 'shared/module-runtime.js') fail('invalid shared runtime identity');
+    if (!Number.isSafeInteger(shared.bytes) || shared.bytes <= 0 || typeof shared.sha256 !== 'string' || !HEX_64.test(shared.sha256)) {
+      fail('invalid shared runtime integrity');
+    }
+    var frozenShared = Object.freeze({id:shared.id,version:1,file:shared.file,bytes:shared.bytes,sha256:shared.sha256});
+    return Object.freeze({ schemaVersion: 2, sharedAssets: Object.freeze([frozenShared]), modules: Object.freeze(modules) });
   }
 
   var RAW_MANIFEST = /*__SAAGAR_MODULE_MANIFEST_START__*/{
-    "schemaVersion": 1,
-    "modules": [
-      {"id":"stock","title":"Stock Register","short":"Stock","category":"Operations","icon":"📦","priority":"High control","file":"modules/stock/index.html","subtitle":"Daily opening, inward, sale, transfer, return, physical and closing stock control.","summary":"Inventory movement and variance control for store operations.","bytes":245505,"sha256":"ed68caabc751169a709724f61ac020f5c22e29848ec6bc1e6c80f971f639fdaf","source_title":"Saagar Traders — Daily Stock Register v3","src":"modules/stock/index.html"},
-      {"id":"service","title":"Watch Service Centre","short":"Service","category":"Operations","icon":"⌚","priority":"Live tracking","file":"modules/service/index.html","subtitle":"Job cards, repair stages, customer tracking, delivery and billing support.","summary":"End-to-end watch repair and service-centre workflow.","bytes":282830,"sha256":"e0db7a13391e05be952c47c451748644f3c571a1b9ddf4457445607ca0c98be4","source_title":"Watch Service Centre — Saagar Traders","src":"modules/service/index.html"},
-      {"id":"qms","title":"Queue Management","short":"Queue","category":"Operations","icon":"🎯","priority":"Live floor","file":"modules/qms/index.html","subtitle":"Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.","summary":"Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.","bytes":214499,"sha256":"66beddf0dd7d7638d3171ad03b7cae9a6eef71727610e633b497ad479d24d806","src":"modules/qms/index.html"},
-      {"id":"dsr","title":"CRO Login","short":"CRO Login","category":"Operations","icon":"📋","priority":"Daily accountability","file":"modules/dsr/index.html","subtitle":"Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.","summary":"CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.","bytes":229752,"sha256":"a67e37ccb6e6c484ae6d4b8f27ee32cde623838171a57a518c177cdfabf7faca","src":"modules/dsr/index.html"},
-      {"id":"expense","title":"Expense Manager — Central Ledger","short":"Expense","category":"Finance","icon":"₹","priority":"Approval safe","file":"modules/expense/index.html","subtitle":"Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.","summary":"Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.","bytes":209977,"sha256":"c1e7986e4e29b91901dd29b4b0ebcd457e0f5fa5836a28b8d76bb4abeeff11fa","source_title":"Tanishq Gold Mart · Expense Manager","src":"modules/expense/index.html"},
-      {"id":"grooming","title":"Grooming Checklist","short":"Grooming","category":"Staff","icon":"✅","priority":"Daily discipline","file":"modules/grooming/index.html","subtitle":"Daily staff presentation checklist, scoring and monthly records.","summary":"Readiness and staff grooming compliance tracker.","bytes":130194,"sha256":"fcc935c6ac50c19746b6bb8bb6b5766beb3a0517cf17d10ddba041fe00f7a188","source_title":"Saagar Traders — Grooming Checklist","src":"modules/grooming/index.html"},
-      {"id":"cro_audit","title":"Store Manager","short":"Store Manager","category":"Staff","icon":"🎖️","priority":"Daily rubric","file":"modules/cro_audit/index.html","subtitle":"10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.","summary":"Daily 10-point CRO scoring; pulls grooming score; trend dashboard.","bytes":182489,"sha256":"ca03b8645ce2fb1b208bcd69a224379a6563ebf92c2ced434952f268858fd5b4","src":"modules/cro_audit/index.html"},
-      {"id":"payroll","title":"Saagar Traders — Payroll","short":"Payroll","category":"Staff","icon":"💰","priority":"Payroll safe","file":"modules/payroll/index.html","subtitle":"Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.","summary":"Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.","bytes":310105,"sha256":"f20c555b7e88c1214ec07b6134b7dfe782356ef7396b6d0e4a45f0c958e676a6","source_title":"Gold Mart Group — Payroll Suite","src":"modules/payroll/index.html"},
-      {"id":"leave","title":"Staff Leave Calendar","short":"Leave","category":"Planning","icon":"🗓️","priority":"Capacity view","file":"modules/leave/index.html","subtitle":"Leave planning, holiday visibility and staff availability calendar.","summary":"Team leave management and availability control.","bytes":208655,"sha256":"d0e303d489c0e87f6abfaf4637e37515ec4b5cbcd10043f060297916c8f5c2fe","source_title":"Staff Leave Manager","src":"modules/leave/index.html"},
-      {"id":"tax","title":"Tax Compliance Calendar","short":"Compliance","category":"Compliance","icon":"🛡️","priority":"Deadline control","file":"modules/tax/index.html","subtitle":"GST, TDS and statutory compliance due-date operating calendar.","summary":"Indian statutory deadline tracker with compliance status controls.","bytes":272538,"sha256":"35749a744b2bd88caca0aca80b26a0a257a4a3d63d3fe886c9c17c11fee9f5f9","source_title":"Compliance Operating System — Indian Firms v2","src":"modules/tax/index.html"},
-      {"id":"planning","title":"Festival & Season Planner","short":"Planning","category":"Planning","icon":"🎊","priority":"Seasonal targets","file":"modules/planning/index.html","subtitle":"Festival targets, pre-season prep checklists and staff leave-blackout windows.","summary":"Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.","bytes":60724,"sha256":"85bdf7c272a33a8ac761aafb5d0560fbae7f063eeb280af4f4cc4e129c574d1f","src":"modules/planning/index.html"}
-    ]
-  }/*__SAAGAR_MODULE_MANIFEST_END__*/;
+  "schemaVersion": 2,
+  "sharedAssets": [
+    {
+      "id": "module-runtime",
+      "version": 1,
+      "file": "shared/module-runtime.js",
+      "bytes": 13887,
+      "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b"
+    }
+  ],
+  "modules": [
+    {
+      "id": "stock",
+      "title": "Stock Register",
+      "short": "Stock",
+      "category": "Operations",
+      "icon": "📦",
+      "priority": "High control",
+      "file": "modules/stock/index.html",
+      "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
+      "summary": "Inventory movement and variance control for store operations.",
+      "bytes": 245505,
+      "sha256": "ed68caabc751169a709724f61ac020f5c22e29848ec6bc1e6c80f971f639fdaf",
+      "source_title": "Saagar Traders — Daily Stock Register v3",
+      "src": "modules/stock/index.html"
+    },
+    {
+      "id": "service",
+      "title": "Watch Service Centre",
+      "short": "Service",
+      "category": "Operations",
+      "icon": "⌚",
+      "priority": "Live tracking",
+      "file": "modules/service/index.html",
+      "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
+      "summary": "End-to-end watch repair and service-centre workflow.",
+      "bytes": 282893,
+      "sha256": "a069c19291b9304c6ae777992a19d94842a3b009519a660ae4d6139bacf49b3b",
+      "source_title": "Watch Service Centre — Saagar Traders",
+      "src": "modules/service/index.html"
+    },
+    {
+      "id": "qms",
+      "title": "Queue Management",
+      "short": "Queue",
+      "category": "Operations",
+      "icon": "🎯",
+      "priority": "Live floor",
+      "file": "modules/qms/index.html",
+      "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
+      "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
+      "bytes": 214644,
+      "sha256": "39095347e51f8cb80dec1765ac9f94b41d53700d91c46577b8e6cd9fc06d2b09",
+      "src": "modules/qms/index.html"
+    },
+    {
+      "id": "dsr",
+      "title": "CRO Login",
+      "short": "CRO Login",
+      "category": "Operations",
+      "icon": "📋",
+      "priority": "Daily accountability",
+      "file": "modules/dsr/index.html",
+      "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
+      "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
+      "bytes": 229752,
+      "sha256": "a67e37ccb6e6c484ae6d4b8f27ee32cde623838171a57a518c177cdfabf7faca",
+      "src": "modules/dsr/index.html"
+    },
+    {
+      "id": "expense",
+      "title": "Expense Manager — Central Ledger",
+      "short": "Expense",
+      "category": "Finance",
+      "icon": "₹",
+      "priority": "Approval safe",
+      "file": "modules/expense/index.html",
+      "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
+      "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
+      "bytes": 209977,
+      "sha256": "c1e7986e4e29b91901dd29b4b0ebcd457e0f5fa5836a28b8d76bb4abeeff11fa",
+      "source_title": "Tanishq Gold Mart · Expense Manager",
+      "src": "modules/expense/index.html"
+    },
+    {
+      "id": "grooming",
+      "title": "Grooming Checklist",
+      "short": "Grooming",
+      "category": "Staff",
+      "icon": "✅",
+      "priority": "Daily discipline",
+      "file": "modules/grooming/index.html",
+      "subtitle": "Daily staff presentation checklist, scoring and monthly records.",
+      "summary": "Readiness and staff grooming compliance tracker.",
+      "bytes": 130194,
+      "sha256": "fcc935c6ac50c19746b6bb8bb6b5766beb3a0517cf17d10ddba041fe00f7a188",
+      "source_title": "Saagar Traders — Grooming Checklist",
+      "src": "modules/grooming/index.html"
+    },
+    {
+      "id": "cro_audit",
+      "title": "Store Manager",
+      "short": "Store Manager",
+      "category": "Staff",
+      "icon": "🎖️",
+      "priority": "Daily rubric",
+      "file": "modules/cro_audit/index.html",
+      "subtitle": "10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.",
+      "summary": "Daily 10-point CRO scoring; pulls grooming score; trend dashboard.",
+      "bytes": 182511,
+      "sha256": "8bcc54cf07b3d9e6a3cc67248c28e1b3cd46169f6241b2ce9043897c7705e14b",
+      "src": "modules/cro_audit/index.html"
+    },
+    {
+      "id": "payroll",
+      "title": "Saagar Traders — Payroll",
+      "short": "Payroll",
+      "category": "Staff",
+      "icon": "💰",
+      "priority": "Payroll safe",
+      "file": "modules/payroll/index.html",
+      "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
+      "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
+      "bytes": 310442,
+      "sha256": "1bbf644b199f0ff17df17c2ecac6c79ffd26dc2020065d8dded945de0038841a",
+      "source_title": "Gold Mart Group — Payroll Suite",
+      "src": "modules/payroll/index.html"
+    },
+    {
+      "id": "leave",
+      "title": "Staff Leave Calendar",
+      "short": "Leave",
+      "category": "Planning",
+      "icon": "🗓️",
+      "priority": "Capacity view",
+      "file": "modules/leave/index.html",
+      "subtitle": "Leave planning, holiday visibility and staff availability calendar.",
+      "summary": "Team leave management and availability control.",
+      "bytes": 208655,
+      "sha256": "d0e303d489c0e87f6abfaf4637e37515ec4b5cbcd10043f060297916c8f5c2fe",
+      "source_title": "Staff Leave Manager",
+      "src": "modules/leave/index.html"
+    },
+    {
+      "id": "tax",
+      "title": "Tax Compliance Calendar",
+      "short": "Compliance",
+      "category": "Compliance",
+      "icon": "🛡️",
+      "priority": "Deadline control",
+      "file": "modules/tax/index.html",
+      "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
+      "summary": "Indian statutory deadline tracker with compliance status controls.",
+      "bytes": 272538,
+      "sha256": "35749a744b2bd88caca0aca80b26a0a257a4a3d63d3fe886c9c17c11fee9f5f9",
+      "source_title": "Compliance Operating System — Indian Firms v2",
+      "src": "modules/tax/index.html"
+    },
+    {
+      "id": "planning",
+      "title": "Festival & Season Planner",
+      "short": "Planning",
+      "category": "Planning",
+      "icon": "🎊",
+      "priority": "Seasonal targets",
+      "file": "modules/planning/index.html",
+      "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
+      "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
+      "bytes": 48170,
+      "sha256": "79b045c86656c6de82e5c572470f5ea2baf9c78444b0305660e6d6ded2014658",
+      "src": "modules/planning/index.html"
+    }
+  ]
+}/*__SAAGAR_MODULE_MANIFEST_END__*/;
 
   var manifest = validate(RAW_MANIFEST);
   var byId = Object.create(null);
@@ -199,9 +369,11 @@
 
   return Object.freeze({
     schemaVersion: manifest.schemaVersion,
+    sharedAssets: manifest.sharedAssets,
     modules: manifest.modules,
     ids: EXPECTED_IDS,
     get: function (id) { return byId[String(id)] || null; },
+    getShared: function (id) { return id === 'module-runtime' ? manifest.sharedAssets[0] : null; },
     has: function (id) { return !!byId[String(id)]; },
     validate: validate
   });

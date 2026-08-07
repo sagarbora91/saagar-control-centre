@@ -3,29 +3,29 @@
   "profileId": "mah3-shared-runtime-baseline-2026-08-06",
   "phase": "MAH-3 - Shared Module Runtime Canary",
   "baseline": {
-    "branch": "main",
-    "head": "c04bc98255a78d45b08ac449d88365b22d033f28",
+    "branch": "agent/c1-mah4-foundation",
+    "head": "7ae0e0c8421d82c9bd4937a4684c0f8b25ab34c8",
     "workingTree": "intentionally-dirty",
-    "runtimeRefactorApplied": false,
-    "visualBaselinesCaptured": false,
+    "runtimeRefactorApplied": true,
+    "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false
   },
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
-    "fileCount": 63,
-    "totalBytes": 7752655,
-    "treeSha256": "be92d6c9202052866d02aa33590160c27a804c638267c6f21717e00e89d78d95",
+    "fileCount": 64,
+    "totalBytes": 7757327,
+    "treeSha256": "f1c8334eac04a9cd721c6317a378bdd7a592c21070711ee726eca396234c1e14",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 715491,
-        "sha256": "a79ab0cc1c42e732c151bd5a719d3b728fec68a6c20442b3bc718a3434c5e219"
+        "bytes": 715655,
+        "sha256": "a7d08ead406ca23977ab3504946b7e9356cf30b9ac16987cfa0a6e2c71b15f50"
       },
       {
         "path": "www/module-manifest.js",
-        "bytes": 12539,
-        "sha256": "64e90916c64f8babd39254cd800372d6b5e9800311bb4c7c59480bbaacd35330"
+        "bytes": 15075,
+        "sha256": "b6009e3c08e53464a365e8f786f7c256d5a5664df170c90474803796995909d1"
       },
       {
         "path": "www/app-i18n.js",
@@ -54,8 +54,8 @@
       },
       {
         "path": "www/c1-control-desk.css",
-        "bytes": 1768,
-        "sha256": "86e53e31d9e9a40349084454dab74d344be12a0959832e7d5fb036ec5305400b"
+        "bytes": 1840,
+        "sha256": "446225f99709af084685bd152fcbae1d1e8f51d8024d3c8ac13fa84e4f04674b"
       },
       {
         "path": "www/c1-operations-policy.js",
@@ -64,8 +64,8 @@
       },
       {
         "path": "www/modules/planning/index.html",
-        "bytes": 60724,
-        "sha256": "85bdf7c272a33a8ac761aafb5d0560fbae7f063eeb280af4f4cc4e129c574d1f"
+        "bytes": 48170,
+        "sha256": "79b045c86656c6de82e5c572470f5ea2baf9c78444b0305660e6d6ded2014658"
       },
       {
         "path": "www/modules/dsr/index.html",
@@ -74,18 +74,47 @@
       },
       {
         "path": "www/modules/qms/index.html",
-        "bytes": 214499,
-        "sha256": "66beddf0dd7d7638d3171ad03b7cae9a6eef71727610e633b497ad479d24d806"
+        "bytes": 214644,
+        "sha256": "39095347e51f8cb80dec1765ac9f94b41d53700d91c46577b8e6cd9fc06d2b09"
+      },
+      {
+        "path": "www/shared/module-runtime.js",
+        "bytes": 13887,
+        "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b"
       }
     ]
   },
   "matrix": {
-    "languages": ["en", "mr", "hi"],
+    "languages": [
+      "en",
+      "mr",
+      "hi"
+    ],
     "viewports": [
-      { "id": "phone-360", "width": 360, "height": 800, "uiMode": "mobile" },
-      { "id": "phone-412", "width": 412, "height": 915, "uiMode": "mobile" },
-      { "id": "compact-800", "width": 800, "height": 600, "uiMode": "mobile" },
-      { "id": "desktop-1365", "width": 1365, "height": 768, "uiMode": "desktop" }
+      {
+        "id": "phone-360",
+        "width": 360,
+        "height": 800,
+        "uiMode": "mobile"
+      },
+      {
+        "id": "phone-412",
+        "width": 412,
+        "height": 915,
+        "uiMode": "mobile"
+      },
+      {
+        "id": "compact-800",
+        "width": 800,
+        "height": 600,
+        "uiMode": "mobile"
+      },
+      {
+        "id": "desktop-1365",
+        "width": 1365,
+        "height": 768,
+        "uiMode": "desktop"
+      }
     ],
     "surfaces": [
       "shell-home",
@@ -112,10 +141,10 @@
   },
   "sharedRuntimeCandidates": {
     "planning": {
-      "moduleBytes": 60724,
-      "moduleSha256": "85bdf7c272a33a8ac761aafb5d0560fbae7f063eeb280af4f4cc4e129c574d1f",
-      "inlineTimeouts": 8,
-      "mutationObservers": 2,
+      "moduleBytes": 48170,
+      "moduleSha256": "79b045c86656c6de82e5c572470f5ea2baf9c78444b0305660e6d6ded2014658",
+      "inlineTimeouts": 0,
+      "mutationObservers": 0,
       "intervals": 0,
       "tables": 0,
       "liveAccessContext": false,
@@ -127,16 +156,58 @@
         "accessContext": false
       },
       "javascriptBodyBytes": 13366,
-      "blocks": [
-        { "id": "st-v5-iframe-shim", "bytes": 1215, "sha256": "b5d4b6cfa5de8305e09df9982a3fbd102ccc42669e4e1cc4081361d26e8f5cbd", "occurrences": 11 },
-        { "id": "st-v5-safety-net", "bytes": 1213, "sha256": "f7c44230ae82f8e0bf3f53b049947dc72cafffedf21fc783ca8ad132b38dc000", "occurrences": 11 },
-        { "id": "st-v5-mobile-boot", "bytes": 4678, "sha256": "23c73df42d18c764465d41c3f0408f444c39a23a08b4c90af0655a189e7e0845", "normalizedTemplateSha256": "6cb53498fd102b71906f5b5b1624f9e55a0895d23769c07468bde81e17d593e6" },
-        { "id": "st-v5-back-script", "bytes": 2284, "sha256": "68ffe4779263f607c9b24f7d037ed0ea1705199fd19ec7b48d8eb219dbaa7501", "normalizedTemplateSha256": "3a31ea1a614dea8a67e1917cc4560f4c90d47118f3d33b86256aa9f7c3eb595f" },
-        { "id": "st-v5-emp-assist-script", "bytes": 3097, "sha256": "4acbdd91bd54f7d763adbf3510bf5be1745b155b0d5f66bbee11c6f2d8ee2a85", "normalizedTemplateSha256": "c695753d2d35acccfa783a58ad62d61caf7f883bbc116e792bf435d04e7d4028" },
-        { "id": "st-v5-module-audit-bridge", "bytes": 879, "sha256": "2a23098eb5e21259845013635fb54839b00961d6cb8203ddc284461be2142b3c", "normalizedTemplateSha256": "77c3023f3744f0b00ef3d729b500676d40c520eceb7af20cb2377f5bdc25d0c6" }
-      ],
-      "businessCss": { "bytes": 2819, "sha256": "f30a014bab768e56f87ab2da1f9b5d665a4ad96dc51460ac638cceeec2db2408" },
-      "businessJavaScript": { "bytes": 7609, "sha256": "788c366c267130bdf7bfda6440e13cf665b1c045d7a83aec1c16f93705f85b6f" }
+      "businessCss": {
+        "bytes": 2819,
+        "sha256": "f30a014bab768e56f87ab2da1f9b5d665a4ad96dc51460ac638cceeec2db2408"
+      },
+      "businessJavaScript": {
+        "bytes": 7609,
+        "sha256": "788c366c267130bdf7bfda6440e13cf665b1c045d7a83aec1c16f93705f85b6f"
+      },
+      "runtimeAsset": {
+        "path": "www/shared/module-runtime.js",
+        "bytes": 13887,
+        "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b"
+      },
+      "extractionApplied": true,
+      "originalBlocks": [
+        {
+          "id": "st-v5-iframe-shim",
+          "bytes": 1215,
+          "sha256": "b5d4b6cfa5de8305e09df9982a3fbd102ccc42669e4e1cc4081361d26e8f5cbd",
+          "occurrences": 11
+        },
+        {
+          "id": "st-v5-safety-net",
+          "bytes": 1213,
+          "sha256": "f7c44230ae82f8e0bf3f53b049947dc72cafffedf21fc783ca8ad132b38dc000",
+          "occurrences": 11
+        },
+        {
+          "id": "st-v5-mobile-boot",
+          "bytes": 4678,
+          "sha256": "23c73df42d18c764465d41c3f0408f444c39a23a08b4c90af0655a189e7e0845",
+          "normalizedTemplateSha256": "6cb53498fd102b71906f5b5b1624f9e55a0895d23769c07468bde81e17d593e6"
+        },
+        {
+          "id": "st-v5-back-script",
+          "bytes": 2284,
+          "sha256": "68ffe4779263f607c9b24f7d037ed0ea1705199fd19ec7b48d8eb219dbaa7501",
+          "normalizedTemplateSha256": "3a31ea1a614dea8a67e1917cc4560f4c90d47118f3d33b86256aa9f7c3eb595f"
+        },
+        {
+          "id": "st-v5-emp-assist-script",
+          "bytes": 3097,
+          "sha256": "4acbdd91bd54f7d763adbf3510bf5be1745b155b0d5f66bbee11c6f2d8ee2a85",
+          "normalizedTemplateSha256": "c695753d2d35acccfa783a58ad62d61caf7f883bbc116e792bf435d04e7d4028"
+        },
+        {
+          "id": "st-v5-module-audit-bridge",
+          "bytes": 879,
+          "sha256": "2a23098eb5e21259845013635fb54839b00961d6cb8203ddc284461be2142b3c",
+          "normalizedTemplateSha256": "77c3023f3744f0b00ef3d729b500676d40c520eceb7af20cb2377f5bdc25d0c6"
+        }
+      ]
     },
     "cssExtractionDeferred": true,
     "secondCanary": "dsr",
@@ -144,11 +215,13 @@
   },
   "review": {
     "runnerReady": true,
-    "reviewStatus": "not-run",
+    "reviewStatus": "complete-passed",
     "geometryIsAdvisory": true,
-    "visualBaselinesCaptured": false,
+    "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false,
-    "runtimeRefactorGate": "all 168 cases reviewed with defects fixed or explicitly deferred"
+    "runtimeRefactorGate": "satisfied by identity-bound 168-case evidence and owner confirmation",
+    "evidencePath": "verification/mah3-visual-review/MAH3-VISUAL-REVIEW-EVIDENCE-2026-08-07.json",
+    "evidenceSha256": "e50ce33ff871d21beb36d08e79dc237694fac846f644ba3cc4c0eac1315286c7"
   }
 }
