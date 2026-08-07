@@ -1,0 +1,2832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="../../shared/mah4-runtime.js"></script>
+<script id="mah4-stage-b-runtime">SaagarMah4Runtime.bootModule({moduleId:'cro_audit'});</script>
+<script id="st-v5-iframe-shim">(function(){try{var P=window.parent&&window.parent.SaagarStore;if(!P||!P.enabled)return;var SP=Storage.prototype;SP.getItem=function(k){return P.get(k);};SP.setItem=function(k,v){return P.set(k,v);};SP.removeItem=function(k){return P.remove(k);};SP.clear=function(){try{console.warn("[st-shim] localStorage.clear() ignored inside a module (shared store)");}catch(e){}};SP.key=function(i){return P.keys()[i]||null;};try{Object.defineProperty(SP,"length",{configurable:true,get:function(){return P.length();}});}catch(e){}try{var __ls={getItem:function(k){return P.get(k);},setItem:function(k,v){return P.set(k,v);},removeItem:function(k){return P.remove(k);},clear:function(){},key:function(i){return P.keys()[i]||null;}};try{Object.defineProperty(__ls,"length",{get:function(){return P.length();}});}catch(e){}Object.defineProperty(window,"localStorage",{configurable:true,get:function(){return __ls;}});}catch(e){}var PP=P.photo;if(PP&&PP.put){window.SaagarPhoto={enabled:true,refId:function(m,r,f){return PP.refId(m,r,f);},put:function(id,d){return Promise.resolve(PP.put(id,d));},get:function(id){return Promise.resolve(PP.get(id));},remove:function(id){return Promise.resolve(PP.remove(id));}};}}catch(e){}})();</script>
+<script id="st-v5-safety-net">(function(){
+  var box;
+  function hint(msg){
+    try{
+      if(!box){ box=document.createElement('div'); box.id='st-v5-hintbox';
+        box.style.cssText='position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:2147483647;'+
+        'background:#1a3a5c;color:#fff;font:600 13px/1.4 \'DM Sans\',Arial,sans-serif;padding:11px 16px;'+
+        'border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.3);border-left:4px solid #b8922a;max-width:86vw;text-align:center';
+        (document.body||document.documentElement).appendChild(box);
+      }
+      box.textContent=msg; box.style.display='block';
+      clearTimeout(box._t); box._t=setTimeout(function(){ if(box) box.style.display='none'; },3200);
+    }catch(e){}
+  }
+  window.addEventListener('error', function(ev){
+    var m=(ev&&ev.message)||'';
+    if(/null|undefined|not a function/i.test(m)){
+      console.warn('[safety-net] recovered from out-of-sequence action:', m);
+      hint('Please complete the previous step first — nothing was changed.');
+      ev.preventDefault(); return true;
+    }
+  }, true);
+  window.addEventListener('unhandledrejection', function(ev){
+    console.warn('[safety-net] async issue:', ev&&ev.reason);
+  });
+})();</script>
+<style id="st-v5-mobile-css">
+/* base layer (all modules) */
+html.bcc-mobile table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile thead,html.bcc-mobile tbody,html.bcc-mobile tr{width:max-content;min-width:100%}
+html.bcc-mobile .table-wrap,html.bcc-mobile .twrap,html.bcc-mobile .table-scroll,html.bcc-mobile .tbl-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+html.bcc-mobile input,html.bcc-mobile select,html.bcc-mobile textarea{font-size:16px;max-width:100%}
+html.bcc-mobile td input,html.bcc-mobile td select,html.bcc-mobile td textarea,html.bcc-mobile th input,html.bcc-mobile th select{font-size:13px}
+html.bcc-mobile button,html.bcc-mobile .btn,html.bcc-mobile a.btn,html.bcc-mobile [role=button]{min-height:42px}
+html.bcc-mobile img,html.bcc-mobile svg,html.bcc-mobile video,html.bcc-mobile canvas{max-width:100%;height:auto}
+html.bcc-mobile .fg{min-width:0}
+html.bcc-mobile body{padding-bottom:80px}
+/* qms off-canvas menu button (injected for qms only) */
+#st-v5-qms-menu{display:none}
+html.bcc-mobile[data-mod="qms"] #st-v5-qms-menu{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:10px;z-index:70;width:42px;height:42px;border-radius:10px;background:#0d2340;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+/* stock */
+html.bcc-mobile[data-mod="stock"] .main{max-width:none !important;width:auto !important;margin:0 !important;padding:10px !important}
+html.bcc-mobile[data-mod="stock"] .scards{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
+html.bcc-mobile[data-mod="stock"] .scard{padding:10px !important}
+html.bcc-mobile[data-mod="stock"] .scard-val{font-size:21px !important}
+html.bcc-mobile[data-mod="stock"] .set-grid{grid-template-columns:1fr !important;gap:12px !important}
+html.bcc-mobile[data-mod="stock"] .sec-hdr{flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important}
+html.bcc-mobile[data-mod="stock"] .btn-row{width:100% !important}
+html.bcc-mobile[data-mod="stock"] .hdr{flex-wrap:wrap !important;gap:8px !important}
+html.bcc-mobile[data-mod="stock"] .add-row{flex-direction:column !important}
+html.bcc-mobile[data-mod="stock"] .rtbl{font-size:11px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl thead th{padding:5px 3px !important;font-size:9px !important;letter-spacing:0 !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td{padding:3px 3px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td.brand-td{padding-left:8px !important;font-size:10px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl thead th.tl{padding-left:8px !important}
+/* stock-L02: register-cell inputs were min-height:0 — below the 44px tap floor, in the core daily-count
+   flow. Give them a reasonable tap height. stock-L01: the fixed input widths are for the WIDE scroll table
+   (1280xMobile); at phone widths (<=640) the module reflows .rtbl into stacked cards whose inputs should
+   fill the row, so only cap the width above 640 and let the module's card layout own the narrow case. */
+html.bcc-mobile[data-mod="stock"] .rtbl td .ni{min-height:40px !important;font-size:11px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td .si,html.bcc-mobile[data-mod="stock"] .rtbl td .cro-sel{min-height:40px !important;font-size:11px !important}
+@media(min-width:641px){
+html.bcc-mobile[data-mod="stock"] .rtbl td .ni{width:48px !important}
+html.bcc-mobile[data-mod="stock"] .rtbl td .si,html.bcc-mobile[data-mod="stock"] .rtbl td .cro-sel{width:80px !important}
+}
+html.bcc-mobile[data-mod="stock"] .modal-box{min-width:0 !important;max-width:92vw !important;padding:20px !important}
+/* service */
+html.bcc-mobile[data-mod="service"] .dash-wrap,html.bcc-mobile[data-mod="service"] .form-content{max-width:none !important;padding-left:14px !important;padding-right:14px !important}
+html.bcc-mobile[data-mod="service"] .form-layout{display:block !important;min-height:0 !important}
+/* Phase-0 fix: do NOT hide .form-sidebar on mobile — the module's own @media(max-width:720px) reflows it
+   into a sticky progress bar + horizontal step-chip rail (nav-0..nav-11). Hiding it left the 12-step New
+   Order form with no jump-nav (one ~10,000px scroll). The module hides .sidebar-actions itself, so only the rail shows. */
+html.bcc-mobile[data-mod="service"] .grid-2,html.bcc-mobile[data-mod="service"] .grid-3,html.bcc-mobile[data-mod="service"] .grid-4,html.bcc-mobile[data-mod="service"] .check-columns{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="service"] .stats-grid{grid-template-columns:1fr 1fr !important;gap:10px !important}
+html.bcc-mobile[data-mod="service"] .col-span-2,html.bcc-mobile[data-mod="service"] .col-span-full{grid-column:auto !important}
+html.bcc-mobile[data-mod="service"] .dash-hero,html.bcc-mobile[data-mod="service"] .form-topbar,html.bcc-mobile[data-mod="service"] .section-header{flex-wrap:wrap !important}
+html.bcc-mobile[data-mod="service"] .form-topbar-left,html.bcc-mobile[data-mod="service"] .form-topbar-right{flex-wrap:wrap !important;width:100% !important}
+html.bcc-mobile[data-mod="service"] .tweaks-panel{position:static !important;width:auto !important;margin:12px 14px !important;box-shadow:none !important}
+html.bcc-mobile[data-mod="service"] .est-totals{align-items:stretch !important}
+html.bcc-mobile[data-mod="service"] .tot-row{justify-content:space-between !important;gap:8px !important}
+html.bcc-mobile[data-mod="service"] .tot-row .tot-label{width:auto !important}
+html.bcc-mobile[data-mod="service"] .tot-input{width:120px !important}
+html.bcc-mobile[data-mod="service"] .cond-table,html.bcc-mobile[data-mod="service"] .est-table{font-size:11.5px !important}
+html.bcc-mobile[data-mod="service"] .cond-table th,html.bcc-mobile[data-mod="service"] .est-table th{padding:6px 6px !important}
+html.bcc-mobile[data-mod="service"] .cond-table td,html.bcc-mobile[data-mod="service"] .est-table td{padding:4px 5px !important}
+html.bcc-mobile[data-mod="service"] .cond-table td input,html.bcc-mobile[data-mod="service"] .cond-table td select,html.bcc-mobile[data-mod="service"] .est-table td input{min-height:36px !important;font-size:13px !important}
+html.bcc-mobile[data-mod="service"] .stat-value{overflow-wrap:anywhere !important}  /* svc-l2: a long ₹ Est. Revenue was clipped by the overflow:hidden stat card — wrap instead of truncate */
+/* qms */
+html.bcc-mobile[data-mod="qms"] body{display:block !important;overflow:auto !important}
+html.bcc-mobile[data-mod="qms"]{--sidebar:0px}
+html.bcc-mobile[data-mod="qms"] .main-area{margin-left:0 !important}
+html.bcc-mobile[data-mod="qms"] .role-banner{left:0 !important}
+html.bcc-mobile[data-mod="qms"] .sidebar{transform:translateX(-240px);transition:transform .25s;z-index:60;width:240px}
+html.bcc-mobile[data-mod="qms"] .sidebar.open{transform:translateX(0)}
+/* QMS mobile drawer needs a backdrop: the shell opens it via .open (the module's own
+   checkbox scrim is never wired up here), so without this the drawer floats over
+   un-dimmed, left-clipped content. Scrim sits below the sidebar (60) + button (70). */
+#st-v5-qms-scrim{display:none}
+html.bcc-mobile[data-mod="qms"] #st-v5-qms-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:55;display:none}
+html.bcc-mobile[data-mod="qms"] #st-v5-qms-scrim.show{display:block}
+/* one hamburger only: the module's own checkbox button is redundant under the shell drawer */
+html.bcc-mobile[data-mod="qms"] .qms-menu-btn{display:none !important}
+html.bcc-mobile[data-mod="qms"] .topbar{padding-left:60px;position:relative}
+html.bcc-mobile[data-mod="qms"] .topbar .page-title{font-size:14px}
+html.bcc-mobile[data-mod="qms"] .kpi-grid,html.bcc-mobile[data-mod="qms"] .grid-2,html.bcc-mobile[data-mod="qms"] .grid-3,html.bcc-mobile[data-mod="qms"] .grid-auto,html.bcc-mobile[data-mod="qms"] .form-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="qms"] .field.col3{grid-column:auto !important}
+html.bcc-mobile[data-mod="qms"] .audit-item{grid-template-columns:1fr auto !important;gap:6px}
+html.bcc-mobile[data-mod="qms"] .audit-time{grid-column:1/-1}
+html.bcc-mobile[data-mod="qms"] .content{padding:16px 14px 32px}
+html.bcc-mobile[data-mod="qms"] .modal{max-width:100% !important}
+html.bcc-mobile[data-mod="qms"] .tbl{font-size:12px}
+html.bcc-mobile[data-mod="qms"] .tbl th{padding:7px 9px;font-size:10px}
+html.bcc-mobile[data-mod="qms"] .tbl td{padding:8px 9px}
+html.bcc-mobile[data-mod="qms"] .tbl td.actions{flex-wrap:wrap}
+/* dsr */
+html.bcc-mobile[data-mod="dsr"] .sgrid,html.bcc-mobile[data-mod="dsr"] .mkt-grid,html.bcc-mobile[data-mod="dsr"] .score-grid,html.bcc-mobile[data-mod="dsr"] .audit-ar-grid,html.bcc-mobile[data-mod="dsr"] .fgrid2,html.bcc-mobile[data-mod="dsr"] .role-sw{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="dsr"] .dash-kpi-grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="dsr"] .dkpi{padding:12px 8px !important}
+html.bcc-mobile[data-mod="dsr"] .dkpi-val{font-size:22px !important}
+html.bcc-mobile[data-mod="dsr"] .content-area{padding:12px !important}
+html.bcc-mobile[data-mod="dsr"] .audit-done-view{max-width:100% !important}
+html.bcc-mobile[data-mod="dsr"] .entry-item{width:100% !important;padding:14px 12px !important}
+html.bcc-mobile[data-mod="dsr"] .entry-hdr{flex-wrap:wrap !important;gap:4px 8px !important}
+html.bcc-mobile[data-mod="dsr"] .entry-detail{font-size:13px !important;word-break:break-word !important}
+html.bcc-mobile[data-mod="dsr"] .ptbl,html.bcc-mobile[data-mod="dsr"] .var-tbl{font-size:12px !important}
+html.bcc-mobile[data-mod="dsr"] .ptbl th,html.bcc-mobile[data-mod="dsr"] .ptbl td,html.bcc-mobile[data-mod="dsr"] .var-tbl th,html.bcc-mobile[data-mod="dsr"] .var-tbl td{padding:7px 8px !important;white-space:nowrap}
+/* expense */
+html.bcc-mobile[data-mod="expense"] .wrap{max-width:none !important}
+html.bcc-mobile[data-mod="expense"] .modal{max-width:none !important}
+html.bcc-mobile[data-mod="expense"] .fgrid,html.bcc-mobile[data-mod="expense"] .st-grid,html.bcc-mobile[data-mod="expense"] .deno{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="expense"] .kgrid{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="expense"] .deno-row{grid-template-columns:48px 1fr auto !important;gap:8px}
+html.bcc-mobile[data-mod="expense"] .tabs{-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="expense"] .card-h{flex-wrap:wrap}
+html.bcc-mobile[data-mod="expense"] .card-h .actions{width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="expense"] .card-h .actions>*{flex:0 0 auto}
+html.bcc-mobile[data-mod="expense"] th{padding:7px 7px !important;font-size:11px !important;white-space:nowrap}
+html.bcc-mobile[data-mod="expense"] td{padding:6px 7px !important;font-size:11.5px !important}
+html.bcc-mobile[data-mod="expense"] table{font-size:11.5px !important}
+html.bcc-mobile[data-mod="expense"] .st-row{font-size:12px;gap:8px}
+html.bcc-mobile[data-mod="expense"] .fitem{grid-template-columns:auto 1fr;row-gap:4px}
+/* grooming */
+html.bcc-mobile[data-mod="grooming"] .wrap{max-width:100%}
+html.bcc-mobile[data-mod="grooming"] .frow{flex-direction:column;gap:11px}
+html.bcc-mobile[data-mod="grooming"] .fg{min-width:0}
+html.bcc-mobile[data-mod="grooming"] .statgrid{grid-template-columns:repeat(2,1fr);gap:9px}
+html.bcc-mobile[data-mod="grooming"] .filter-bar{flex-direction:column;align-items:stretch;gap:11px}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .fg{flex:1 1 auto}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .finput{width:100% !important}
+html.bcc-mobile[data-mod="grooming"] .filter-bar .btn2{width:100%;margin-bottom:0 !important}
+html.bcc-mobile[data-mod="grooming"] .mt{font-size:11px}
+html.bcc-mobile[data-mod="grooming"] .mt th,html.bcc-mobile[data-mod="grooming"] .mt td{padding:6px 7px}
+html.bcc-mobile[data-mod="grooming"] .mt th{white-space:normal}
+html.bcc-mobile[data-mod="grooming"] .cro-right{flex-wrap:wrap;justify-content:flex-end}
+/* cro_audit */
+html.bcc-mobile[data-mod="cro_audit"] .sc-grid{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="cro_audit"] .rgroup{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="cro_audit"] .kpi-strip,html.bcc-mobile[data-mod="cro_audit"] .stat-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="cro_audit"] .wrap{max-width:none !important;padding:12px 10px 60px !important}
+html.bcc-mobile[data-mod="cro_audit"] .modal{max-width:none !important}
+html.bcc-mobile[data-mod="cro_audit"] .frow,html.bcc-mobile[data-mod="cro_audit"] .hi-filters{flex-direction:column;gap:9px}
+html.bcc-mobile[data-mod="cro_audit"] .fg{min-width:0 !important;width:100%;flex:1 1 auto}
+html.bcc-mobile[data-mod="cro_audit"] .mrow{flex-wrap:wrap}
+html.bcc-mobile[data-mod="cro_audit"] .mbar-wrap,html.bcc-mobile[data-mod="cro_audit"] .sb-bar,html.bcc-mobile[data-mod="cro_audit"] .thr-bwrap,html.bcc-mobile[data-mod="cro_audit"] .wm-bar-wrap{display:none !important}
+html.bcc-mobile[data-mod="cro_audit"] .minp{width:90px !important;min-height:40px}
+html.bcc-mobile[data-mod="cro_audit"] .ph,html.bcc-mobile[data-mod="cro_audit"] .tabs,html.bcc-mobile[data-mod="cro_audit"] .score-banner{padding-left:12px !important;padding-right:12px !important}
+/* payroll */
+/* Header: the module only compacts it at <=640px, so on wider phones/foldables the
+   5 action buttons wrap inside the fixed 50px sticky bar and spill over the title.
+   Make the bar height auto so a wrapped button row sits cleanly below the brand,
+   drop the sub-line, and let the brand ellipsize. Width-independent (bcc-mobile). */
+html.bcc-mobile[data-mod="payroll"] .hd{height:auto !important;min-height:50px;flex-wrap:wrap;padding:8px 10px;gap:6px 8px}
+html.bcc-mobile[data-mod="payroll"] .hd-brand{flex:1 1 auto;min-width:0}
+html.bcc-mobile[data-mod="payroll"] .hd-text{min-width:0}
+html.bcc-mobile[data-mod="payroll"] .hd-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html.bcc-mobile[data-mod="payroll"] .hd-sub{display:none}
+html.bcc-mobile[data-mod="payroll"] .hd-right{flex-wrap:wrap;justify-content:flex-end;gap:5px;flex-shrink:0}
+html.bcc-mobile[data-mod="payroll"] .btn-hd{padding:5px 9px;font-size:11px}
+html.bcc-mobile[data-mod="payroll"] .wp{max-width:100% !important;margin:0 !important;padding:12px 10px 84px !important}
+html.bcc-mobile[data-mod="payroll"] .grid{grid-template-columns:1fr !important;gap:10px !important}
+html.bcc-mobile[data-mod="payroll"] .controls{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="payroll"] .summary{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
+html.bcc-mobile[data-mod="payroll"] #pane-slips .stiles{grid-template-columns:repeat(2,1fr) !important}
+html.bcc-mobile[data-mod="payroll"] section[style*="minmax(240px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(220px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(180px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(170px"]{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="payroll"] .hero{flex-direction:column;align-items:flex-start;padding:14px 16px}
+html.bcc-mobile[data-mod="payroll"] .sc-v,html.bcc-mobile[data-mod="payroll"] .hero-stat-v{overflow-wrap:anywhere !important}  /* payroll-L05/L06: long ₹ Net Payable / Total CTC were clipped by the overflow:hidden summary/hero tiles — wrap instead of truncate */
+html.bcc-mobile[data-mod="payroll"] .hero-r{width:100%}
+html.bcc-mobile[data-mod="payroll"] .tab-nav{position:static !important;overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="payroll"] .tab-btn{padding:0 13px;font-size:11px}
+html.bcc-mobile[data-mod="payroll"] .table-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch;border-radius:10px}
+html.bcc-mobile[data-mod="payroll"] .table-scroll{overflow:auto !important;max-height:none !important}
+html.bcc-mobile[data-mod="payroll"] thead th{padding:6px 4px;font-size:9px}
+html.bcc-mobile[data-mod="payroll"] tbody td,html.bcc-mobile[data-mod="payroll"] tfoot td{padding:4px 3px}
+html.bcc-mobile[data-mod="payroll"] td input,html.bcc-mobile[data-mod="payroll"] td select,html.bcc-mobile[data-mod="payroll"] td textarea{font-size:13px;padding:5px 4px}
+html.bcc-mobile[data-mod="payroll"] td.calc-cell,html.bcc-mobile[data-mod="payroll"] td.final-cell,html.bcc-mobile[data-mod="payroll"] td.total-cell,html.bcc-mobile[data-mod="payroll"] td.locked,html.bcc-mobile[data-mod="payroll"] td.earn-cell,html.bcc-mobile[data-mod="payroll"] td.ded-cell,html.bcc-mobile[data-mod="payroll"] td.net-cell,html.bcc-mobile[data-mod="payroll"] td.ctc-cell,html.bcc-mobile[data-mod="payroll"] td.final-pay-cell,html.bcc-mobile[data-mod="payroll"] td.advance-cell{font-size:10px;padding:4px 3px}
+html.bcc-mobile[data-mod="payroll"] #pane-slips .stbl-wrap{max-height:none}
+html.bcc-mobile[data-mod="payroll"] .sheet-actions{flex-direction:column;align-items:stretch}
+html.bcc-mobile[data-mod="payroll"] .left-actions,html.bcc-mobile[data-mod="payroll"] .right-actions{justify-content:flex-start}
+/* leave */
+html.bcc-mobile[data-mod="leave"] .cal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="leave"] .day-headers,html.bcc-mobile[data-mod="leave"] .cal-grid{min-width:336px}
+html.bcc-mobile[data-mod="leave"] .cal-cell{min-height:92px;padding:6px 5px}
+html.bcc-mobile[data-mod="leave"] .leave-chip{font-size:9.5px}
+html.bcc-mobile[data-mod="leave"] .stats-strip{flex-direction:column !important}
+html.bcc-mobile[data-mod="leave"] .stats-strip .stat-card{flex:1 1 100% !important;min-width:0 !important}
+html.bcc-mobile[data-mod="leave"] .capacity-grid,html.bcc-mobile[data-mod="leave"] .form-grid,html.bcc-mobile[data-mod="leave"] .detail-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="leave"] main{max-width:100% !important;padding:13px !important}
+html.bcc-mobile[data-mod="leave"] .modal,html.bcc-mobile[data-mod="leave"] .modal-wide,html.bcc-mobile[data-mod="leave"] .modal-xl{max-width:100% !important}
+html.bcc-mobile[data-mod="leave"] .cal-nav{flex-wrap:wrap}
+html.bcc-mobile[data-mod="leave"] .month-label{min-width:0;font-size:22px}
+html.bcc-mobile[data-mod="leave"] .leave-chip,html.bcc-mobile[data-mod="leave"] .agenda-mini{white-space:normal}
+/* tax */
+html.bcc-mobile[data-mod="tax"] .wp,html.bcc-mobile[data-mod="tax"] .dash-wrap{max-width:none !important;margin:0 !important;padding:14px 10px 60px !important}
+html.bcc-mobile[data-mod="tax"] .mhd-note,html.bcc-mobile[data-mod="tax"] .cos-banner-sub,html.bcc-mobile[data-mod="tax"] .modal{max-width:100% !important}
+html.bcc-mobile[data-mod="tax"] .cos-grid,html.bcc-mobile[data-mod="tax"] .dash-grid-2,html.bcc-mobile[data-mod="tax"] .owner-grid,html.bcc-mobile[data-mod="tax"] .ng,html.bcc-mobile[data-mod="tax"] .ff-grid{grid-template-columns:1fr !important}
+html.bcc-mobile[data-mod="tax"] .focus-row{grid-template-columns:1fr !important;gap:4px !important;padding:10px 0 !important}
+html.bcc-mobile[data-mod="tax"] .dash-stats{grid-template-columns:1fr 1fr !important;gap:8px !important}
+html.bcc-mobile[data-mod="tax"] .mb-row{grid-template-columns:1fr 1fr !important;gap:2px 10px !important;padding:10px 12px !important}
+html.bcc-mobile[data-mod="tax"] .mb-row.header{display:none !important}
+html.bcc-mobile[data-mod="tax"] .mb-row .mb-num:last-child{display:block !important}
+html.bcc-mobile[data-mod="tax"] .view-tabs,html.bcc-mobile[data-mod="tax"] .q-tabs{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch}
+html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
+/* ─────────────────────────────────────────────────────────────────────────
+   SHARED MOBILE UTILITIES (additive, html.bcc-mobile-scoped, opt-in via class
+   except where noted). Provide reusable hooks modules can adopt incrementally.
+   ───────────────────────────────────────────────────────────────────────── */
+/* 1.3 Containment — keep wide children from forcing horizontal overflow.
+   Limited to these explicit hooks so it never collapses real flex/grid tracks. */
+html.bcc-mobile .contain,html.bcc-mobile [class*=grid],html.bcc-mobile .wrap,html.bcc-mobile .content > *{min-width:0;box-sizing:border-box;max-width:100%}
+/* 1.1 Tab chip strip utility — opt-in horizontally-scrollable chip row. */
+html.bcc-mobile .tab-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}
+html.bcc-mobile .tab-chips::-webkit-scrollbar{display:none}
+html.bcc-mobile .tab-chips>*{flex:0 0 auto;white-space:nowrap}
+/* 1.1 App-wide: turn EXISTING tab strips from squeeze-to-fit-and-overprint into
+   clean horizontal scrollers (class names confirmed present across modules/shell). */
+html.bcc-mobile .tab-nav,html.bcc-mobile .tabs,html.bcc-mobile .subtabs,html.bcc-mobile .cat-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+html.bcc-mobile .tab-nav::-webkit-scrollbar,html.bcc-mobile .tabs::-webkit-scrollbar,html.bcc-mobile .subtabs::-webkit-scrollbar,html.bcc-mobile .cat-tabs::-webkit-scrollbar{display:none}
+html.bcc-mobile .tab-nav>*,html.bcc-mobile .tabs>*,html.bcc-mobile .subtabs>*,html.bcc-mobile .cat-tabs>*{flex:0 0 auto;white-space:nowrap}
+/* 1.2 Table scroll boundary — opt-in wrapper to keep a wide table inside the column. */
+html.bcc-mobile .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+html.bcc-mobile .tbl-scroll td.sticky-col,html.bcc-mobile .tbl-scroll th.sticky-col{position:sticky;left:0;background:inherit;z-index:1}
+/* 1.2 Table-as-card base styles (rendered into a .card-list container by the boot helper). */
+html.bcc-mobile .card-list{display:block}
+html.bcc-mobile .bcc-card{display:block;border:1px solid var(--gray-200,#e5e7eb);border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#fff;box-shadow:0 1px 3px rgba(13,35,64,.06)}
+html.bcc-mobile .bcc-card-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px;line-height:1.35}
+html.bcc-mobile .bcc-card-row+.bcc-card-row{border-top:1px solid var(--gray-100,#f3f4f6)}
+html.bcc-mobile .bcc-card-label{color:var(--gray-500,#6b7280);font-weight:600;flex:0 0 auto;max-width:50%}
+html.bcc-mobile .bcc-card-val{text-align:right;min-width:0;word-break:break-word}
+/* 1.5 Sticky action bar base — modules add the markup later; class provides the chrome. */
+html.bcc-mobile .sticky-actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--gray-200,#e5e7eb);padding:8px 12px calc(8px + var(--safe-bottom,0px));display:flex;gap:8px;z-index:40}
+/* 1.6 Accordion base — minimal collapse; modules add markup later. */
+html.bcc-mobile .accordion-panel[hidden]{display:none}
+html.bcc-mobile .accordion-header{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+html.bcc-mobile .accordion-header::after{content:"⌄";font-size:14px;line-height:1;opacity:.6;transition:transform .2s}
+html.bcc-mobile .accordion-header[aria-expanded="true"]::after{transform:rotate(180deg)}
+/* ── Deferred cosmetic polish (P2/P3 content-clip / overflow / bottom-chrome guards) — additive, mobile-scoped ── */
+/* wrap long unbroken names/tokens/free-text inside their card instead of clipping/overflowing */
+html.bcc-mobile[data-mod="qms"] .q-name{overflow-wrap:anywhere !important;word-break:break-word !important}          /* qms-L05 */
+html.bcc-mobile[data-mod="qms"] .audit-detail{overflow-wrap:anywhere !important;word-break:break-word !important}    /* qms-L08: JSON audit payload */
+html.bcc-mobile[data-mod="expense"] .kpi .v{overflow-wrap:anywhere !important;word-break:break-word !important}      /* expense-L1: arbitrary Top-head / Status text */
+html.bcc-mobile[data-mod="expense"] .name-cell{overflow-wrap:anywhere !important;word-break:break-word !important}   /* expense-L4: long vendor/customer name in card header */
+html.bcc-mobile[data-mod="cro_audit"] .mtitle{flex:1 !important;min-width:0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important}  /* cro_audit-06: long CRO name crowds ✕ */
+/* stage-filter chips: scroll on one line instead of ballooning to ~3 rows of 44px pills */
+html.bcc-mobile[data-mod="service"] .stage-chips{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch !important}  /* svc-l3 */
+/* payroll Send-Slip card cell: let the two action buttons wrap instead of overflowing the narrow card */
+html.bcc-mobile[data-mod="payroll"] #ms-table tbody td[data-label="Send Slip"]{flex-wrap:wrap !important}            /* payroll-L09 */
+/* grooming Save FAB: keep it bottom-LEFT at all mobile widths (module only did so <=640) so it never sits over the shell's next-chip */
+html.bcc-mobile[data-mod="grooming"] #grm-float-save{left:14px !important;right:auto !important}                     /* grm-01 */
+/* transient toasts: lift clear of the shell bottom-nav / back-home FAB, and let long messages wrap */
+html.bcc-mobile[data-mod="payroll"] #app-toast{bottom:88px !important}                                               /* payroll toast over bottom-nav */
+html.bcc-mobile[data-mod="qms"] .toast{bottom:92px !important}                                                      /* qms-L11 */
+html.bcc-mobile[data-mod="planning"] .toast{bottom:98px !important}                                                 /* planning toast over FAB */
+html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !important;white-space:normal !important}   /* svc-l7: long toast wrap at mid-mobile width */
+</style><script id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod","cro_audit");function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return (x==="desktop"||x==="mobile")?x:"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if("cro_audit"==="qms"){var qClose=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(s)s.classList.remove("open");var sc=document.getElementById("st-v5-qms-scrim");if(sc)sc.classList.remove("show");};var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var sc=document.createElement("div");sc.id="st-v5-qms-scrim";sc.className="overlay";sc.onclick=qClose;(document.body||document.documentElement).appendChild(sc);var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(!s)return;var open=s.classList.toggle("open");var sc2=document.getElementById("st-v5-qms-scrim");if(sc2)sc2.classList.toggle("show",open);};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}var ON=function(){try{return document.documentElement.classList.contains("bcc-mobile");}catch(e){return false;}};function chipCenter(){try{if(!ON())return;var sel=".tab-chips .active,.tab-chips [aria-selected=true],.tab-nav .active,.tab-nav [aria-selected=true],.tabs .active,.tabs [aria-selected=true]";var el=document.querySelector(sel);if(el&&el.scrollIntoView)el.scrollIntoView({inline:"center",block:"nearest"});}catch(e){}}function buildCards(){try{if(!ON())return;var tbls=document.querySelectorAll("table.card-list:not([data-bcc-cards])");for(var t=0;t<tbls.length;t++){(function(tbl){try{tbl.setAttribute("data-bcc-cards","1");var heads=[];var ths=tbl.querySelectorAll("thead th");for(var h=0;h<ths.length;h++)heads.push((ths[h].textContent||"").trim());var rows=tbl.querySelectorAll("tbody tr");if(!rows.length)rows=tbl.querySelectorAll("tr");var box=document.createElement("div");box.className="card-list bcc-card-wrap";for(var r=0;r<rows.length;r++){var cells=rows[r].querySelectorAll("td");if(!cells.length)continue;var card=document.createElement("div");card.className="bcc-card";for(var c=0;c<cells.length;c++){var lbl=cells[c].getAttribute("data-label")||heads[c]||"";var row=document.createElement("div");row.className="bcc-card-row";if(lbl){var ls=document.createElement("span");ls.className="bcc-card-label";ls.textContent=lbl;row.appendChild(ls);}var vs=document.createElement("span");vs.className="bcc-card-val";vs.innerHTML=cells[c].innerHTML;row.appendChild(vs);card.appendChild(row);}box.appendChild(card);}tbl.style.display="none";if(tbl.parentNode)tbl.parentNode.insertBefore(box,tbl.nextSibling);}catch(e){}})(tbls[t]);}}catch(e){}}var bound=false;function bindDelegates(){try{if(bound||!document.body)return;bound=true;document.addEventListener("click",function(ev){try{if(!ON())return;var t=ev&&ev.target;if(!t)return;var ah=t.closest&&t.closest(".accordion-header");if(ah){var panel=ah.nextElementSibling;while(panel&&!(panel.classList&&panel.classList.contains("accordion-panel")))panel=panel.nextElementSibling;if(panel){var open=panel.hasAttribute("hidden");if(open)panel.removeAttribute("hidden");else panel.setAttribute("hidden","");ah.setAttribute("aria-expanded",open?"true":"false");}return;}var chip=t.closest&&t.closest(".tab-chips>*,.tab-nav>*,.tabs>*");if(chip)setTimeout(chipCenter,0);}catch(e){}},true);}catch(e){}}function boot(){try{bindDelegates();chipCenter();buildCards();}catch(e){}}if(document.readyState!=="loading")boot();else document.addEventListener("DOMContentLoaded",boot);window.addEventListener("load",function(){try{chipCenter();buildCards();}catch(e){}});}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Manager v3 — Saagar Traders</title>
+<style>
+:root{
+  --navy:#0d2340; --navy-mid:#1a3a5c; --navy-light:#264d7a;
+  --gold:#b8922a; --gold-light:#d4a843; --gold-pale:#fdf6e3;
+  --cream:#faf8f3; --paper:#ffffff;
+  --red:#b91c1c; --red-pale:#fef2f2; --amber:#b45309; --amber-pale:#fffbeb;
+  --green:#166534; --green-pale:#f0fdf4; --blue:#1d4ed8; --blue-pale:#eff6ff;
+  --gray-50:#fafafa; --gray-100:#f4f4f5; --gray-200:#e4e4e7; --gray-300:#d4d4d8;
+  --gray-400:#a1a1aa; --gray-500:#71717a; --gray-600:#52525b; --gray-700:#3f3f46; --gray-800:#27272a;
+  --radius:12px; --radius-lg:16px;
+  --font-sans:'DM Sans',system-ui,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-serif:'DM Serif Display',Georgia,'Times New Roman',serif;
+}
+/* ── compatibility aliases: legacy token names used throughout this module +
+   its inline JS strings are mapped onto the shared design-system tokens above,
+   so the forked palette is gone while every existing var() reference keeps working ── */
+:root{
+  --white:var(--paper);
+  --green-mid:#bbf7d0;
+  --teal:#0f766e; --teal-pale:#f0fdfa;
+  --g50:var(--gray-50); --g100:var(--gray-100); --g200:var(--gray-200); --g300:var(--gray-300);
+  --g400:var(--gray-400); --g500:var(--gray-500); --g600:var(--gray-600); --g700:var(--gray-700); --g800:var(--gray-800);
+  --sh:0 2px 12px rgba(13,35,64,.08); --sh-lg:0 8px 28px rgba(13,35,64,.13);
+  --r:var(--radius);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-height:100vh;}
+
+/* HEADER */
+.ph{background:var(--navy);padding:13px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:300;box-shadow:0 2px 16px rgba(0,0,0,.22);}
+.brand{font-family:var(--font-serif);font-size:19px;color:var(--gold-light);}
+.brand-sub{font-size:9px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;}
+.hbadge{background:var(--gold);color:var(--navy);font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.05em;}
+
+/* SCORE BANNER */
+.score-banner{background:var(--navy-mid);padding:9px 26px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;position:sticky;top:54px;z-index:200;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-left{display:flex;align-items:center;gap:13px;}
+.sb-num{font-family:var(--font-serif);font-size:24px;color:var(--white);line-height:1;}
+.sb-denom{font-size:12px;color:rgba(255,255,255,.33);margin-left:1px;}
+.sb-lbl{font-size:9px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.07em;margin-top:1px;}
+.sb-tasks{font-size:11px;color:rgba(255,255,255,.42);}
+.sb-bar{flex:1;min-width:90px;max-width:160px;}
+.sb-track{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.sb-fill{height:5px;border-radius:3px;transition:width .3s;background:var(--gold-light);}
+.gpill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;}
+.g-out{background:#dcfce7;color:#14532d;}
+.g-good{background:#cffafe;color:#164e63;}
+.g-sat{background:#fef9c3;color:#713f12;}
+.g-below{background:#ffedd5;color:#7c2d12;}
+.g-poor{background:var(--red-pale);color:var(--red);}
+
+/* TABS */
+.tabs{background:var(--navy-mid);display:flex;padding:0 26px;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.06);}
+.tab{padding:10px 15px;font-size:12px;font-weight:500;color:rgba(255,255,255,.36);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s;user-select:none;}
+.tab:hover{color:rgba(255,255,255,.7);}
+.tab.active{color:var(--gold-light);border-bottom-color:var(--gold-light);}
+
+/* LAYOUT */
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 70px;}
+.sec{display:none;}.sec.active{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);padding:18px 20px;margin-bottom:14px;}
+.card-title{font-family:var(--font-serif);font-size:16px;color:var(--navy);margin-bottom:3px;}
+.card-sub{font-size:12px;color:var(--g500);margin-bottom:16px;}
+
+/* FORM */
+.frow{display:flex;gap:11px;flex-wrap:wrap;margin-bottom:13px;}
+.fg{flex:1;min-width:160px;}
+.flabel{display:block;font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.finput,.fsel{width:100%;padding:8px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;font-family:var(--font-sans);color:var(--g800);outline:none;background:var(--white);transition:border .15s;}
+.finput:focus,.fsel:focus{border-color:var(--navy);}
+.sbtn{width:100%;padding:11px;background:var(--navy);color:var(--white);border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:background .15s;margin-top:2px;}
+.sbtn:hover{background:var(--navy-mid);}
+.sbtn.green{background:var(--green);}.sbtn.green:hover{background:#14532d;}
+
+/* TASK CARDS */
+.task-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:11px;overflow:hidden;transition:border-color .2s;}
+.task-card.r0{border-left:4px solid var(--red);}
+.task-card.r4{border-left:4px solid var(--amber);}
+.task-card.r7{border-left:4px solid var(--navy-light);}
+.task-card.r10{border-left:4px solid var(--green);}
+.task-card.rauto{border-left:4px solid var(--teal);}
+.task-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;gap:10px;cursor:pointer;user-select:none;}
+.task-left{display:flex;align-items:center;gap:10px;min-width:0;}
+.tnum{width:26px;height:26px;border-radius:50%;background:var(--g100);color:var(--g600);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.task-card.r0 .tnum{background:var(--red-pale);color:var(--red);}
+.task-card.r4 .tnum{background:var(--amber-pale);color:var(--amber);}
+.task-card.r7 .tnum{background:var(--blue-pale);color:var(--navy);}
+.task-card.r10 .tnum{background:var(--green-pale);color:var(--green);}
+.task-card.rauto .tnum{background:var(--teal-pale);color:var(--teal);}
+.task-ttl{font-size:13px;font-weight:600;color:var(--navy);}
+.task-dsc{font-size:11px;color:var(--g400);margin-top:1px;}
+.tpts{font-size:12px;font-weight:700;color:var(--g400);white-space:nowrap;flex:none;}
+.tpts.scored{color:var(--navy);}
+.task-body{padding:0 16px 14px;}
+
+/* CRITERIA */
+.crit-tog{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g400);cursor:pointer;user-select:none;margin-bottom:8px;}
+.crit-tog:hover{color:var(--g600);}
+.crit-box{margin-bottom:10px;padding:9px 12px;background:var(--g50);border-radius:7px;border:1px solid var(--g100);}
+.crit-item{font-size:12px;color:var(--g600);padding:2px 0;display:flex;gap:6px;}
+.crit-item::before{content:'•';color:var(--gold);flex-shrink:0;}
+
+/* QUAL RATING BUTTONS */
+.rgroup{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.rbtn{padding:8px 3px;border:1.5px solid var(--g200);border-radius:7px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;user-select:none;background:var(--white);color:var(--g500);}
+.rbtn:hover{border-color:var(--g400);background:var(--g50);}
+.rbtn .rpts{font-size:15px;font-family:var(--font-serif);display:block;color:var(--g800);}
+.rbtn.ar0{background:var(--red-pale);border-color:var(--red);color:var(--red);}
+.rbtn.ar0 .rpts{color:var(--red);}
+.rbtn.ar4{background:var(--amber-pale);border-color:var(--amber);color:var(--amber);}
+.rbtn.ar4 .rpts{color:var(--amber);}
+.rbtn.ar7{background:var(--blue-pale);border-color:var(--navy);color:var(--navy);}
+.rbtn.ar7 .rpts{color:var(--navy);}
+.rbtn.ar10{background:var(--green-pale);border-color:var(--green);color:var(--green);}
+.rbtn.ar10 .rpts{color:var(--green);}
+
+/* METRIC INPUTS (quantitative tasks) */
+.metric-grp{background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:11px 13px;margin-bottom:10px;}
+.mrow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--g200);}
+.mrow:last-child{border-bottom:none;padding-bottom:0;}
+.ml{flex:1;}
+.ml-name{font-size:12px;font-weight:600;color:var(--g800);}
+.ml-hint{font-size:10px;color:var(--g400);margin-top:1px;}
+.mr{display:flex;align-items:center;gap:7px;}
+.minp{width:70px;padding:5px 7px;border:1.5px solid var(--g200);border-radius:6px;font-size:14px;font-weight:600;font-family:var(--font-sans);text-align:center;outline:none;background:var(--white);}
+.minp:focus{border-color:var(--navy);}
+.minp.ro{background:var(--g50);color:var(--navy);cursor:default;}
+.mbar-wrap{width:70px;flex-shrink:0;}
+.mbar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.mbar-fill{height:5px;border-radius:3px;transition:width .3s;}
+.mpct{font-size:10px;font-weight:700;color:var(--g600);min-width:32px;text-align:right;}
+
+/* DSR→AUDIT CONTEXT BANNER (O2) */
+.ctx-banner{background:var(--teal-pale);border:1px solid rgba(15,118,110,.22);border-radius:8px;padding:9px 13px;margin-top:11px;display:none;}
+.ctx-banner.show{display:block;}
+.ctx-hd{font-size:9px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.ctx-line{font-size:12px;color:var(--g700);line-height:1.5;}
+.ctx-line b{color:var(--navy);font-weight:700;}
+.ctx-dot{color:var(--g300);margin:0 5px;}
+
+/* GROOMING AUTO NOTE (K) */
+.groom-note{font-size:10px;font-weight:600;margin-top:6px;padding:4px 9px;border-radius:6px;display:inline-block;}
+.groom-note.auto{background:var(--teal-pale);color:var(--teal);border:1px solid rgba(15,118,110,.2);}
+.groom-note.manual{background:var(--amber-pale);color:var(--amber);border:1px solid rgba(180,83,9,.2);}
+
+/* TASK CONTEXT HINT (O2 t3/t4) */
+.task-hint{font-size:11px;color:var(--teal);background:var(--teal-pale);border:1px solid rgba(15,118,110,.18);border-radius:6px;padding:5px 9px;margin-bottom:9px;}
+
+/* AUTO SCORE STRIP */
+.auto-strip{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:7px;background:var(--teal-pale);border:1px solid rgba(15,118,110,.2);margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+.as-score{font-family:var(--font-serif);font-size:19px;color:var(--teal);}
+.as-score sub{font-size:11px;opacity:.6;}
+.as-break{font-size:11px;color:var(--teal);opacity:.75;flex:1;text-align:right;}
+
+/* T6 GOOGLE-REVIEW COLLECTION LIST (per-buyer review requests) */
+.rev-collect{background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:9px 11px;margin-bottom:10px;}
+.rev-hd{font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+.rev-hd-sub{font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400);}
+.rev-row{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;padding:7px 0;border-bottom:1px solid var(--g200);}
+.rev-row:last-child{border-bottom:none;padding-bottom:0;}
+.rev-id{display:flex;flex-direction:column;gap:1px;min-width:120px;flex:1;}
+.rev-nm{font-size:12px;font-weight:600;color:var(--g800);}
+.rev-mo{font-size:11px;color:var(--g500);}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;}
+.rev-act{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.btn{padding:7px 11px;border:1.5px solid var(--g200);border-radius:6px;font-size:12px;font-weight:600;font-family:var(--font-sans);background:var(--white);color:var(--g700);cursor:pointer;transition:all .15s;}
+.btn:hover{border-color:var(--navy);color:var(--navy);}
+.btn.xs{padding:5px 9px;font-size:11px;}
+.rev-ask{background:var(--green-pale);border-color:rgba(22,101,52,.25);color:var(--green);}
+.rev-ask:hover{background:var(--green-pale);border-color:var(--green);color:var(--green);}
+.rev-ck{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--g600);cursor:pointer;user-select:none;}
+.rev-ck input{width:15px;height:15px;accent-color:var(--green);cursor:pointer;}
+.rev-empty{font-size:11px;color:var(--g400);padding:4px 0;}
+
+/* WEEK / MONTH PROGRESS */
+.wm-prog{margin-bottom:10px;}
+.wm-row{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--g50);border:1px solid var(--g100);border-radius:6px;margin-bottom:5px;}
+.wm-lbl{font-size:11px;color:var(--g600);flex:1;}
+.wm-val{font-size:11px;font-weight:700;color:var(--navy);min-width:60px;text-align:right;}
+.wm-bar-wrap{width:80px;flex-shrink:0;}
+.wm-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.wm-fill{height:5px;border-radius:3px;transition:width .3s;}
+.wm-tag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;white-space:nowrap;}
+.wm-tag.on{background:var(--green-pale);color:var(--green);}
+.wm-tag.off{background:var(--amber-pale);color:var(--amber);}
+
+/* REMARKS */
+.rem-lbl{font-size:10px;color:var(--g500);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;}
+.rem-inp{width:100%;padding:7px 10px;border:1.5px solid var(--g200);border-radius:7px;font-size:13px;font-family:var(--font-sans);color:var(--g800);resize:vertical;min-height:50px;outline:none;}
+.rem-inp:focus{border-color:var(--navy);}
+.rem-inp::placeholder{color:var(--g400);}
+
+/* SCORE CHIPS */
+.sc-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:4px;}
+.sc-chip{background:var(--g100);border-radius:7px;padding:7px 5px;text-align:center;}
+.sc-chip.p0{background:var(--red-pale);}
+.sc-chip.p4{background:var(--amber-pale);}
+.sc-chip.p5{background:var(--amber-pale);}
+.sc-chip.p7{background:var(--blue-pale);}
+.sc-chip.p8{background:var(--blue-pale);}
+.sc-chip.p9{background:var(--green-pale);}
+.sc-chip.p10{background:var(--green-pale);}
+.sc-n{font-size:9px;font-weight:700;color:var(--g400);text-transform:uppercase;}
+.sc-v{font-family:var(--font-serif);font-size:16px;line-height:1;margin-top:2px;}
+.sc-chip.p0 .sc-v{color:var(--red);}
+.sc-chip.p4 .sc-v,.sc-chip.p5 .sc-v{color:var(--amber);}
+.sc-chip.p7 .sc-v,.sc-chip.p8 .sc-v{color:var(--navy);}
+.sc-chip.p9 .sc-v,.sc-chip.p10 .sc-v{color:var(--green);}
+
+/* SUBMIT CARD */
+.submit-dk{background:var(--navy);border-radius:var(--r);padding:18px 20px;margin-bottom:14px;}
+.submit-dk .card-title{color:var(--gold-light);}
+.submit-dk .card-sub{color:rgba(255,255,255,.38);}
+.sub-meta{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.38);margin-bottom:5px;}
+.sub-bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;margin-bottom:13px;}
+.sub-fill{height:5px;border-radius:3px;background:var(--gold-light);transition:width .35s;}
+/* COMPLETION METER — progress = (tasks rated / 10); thin navy track + gold fill,
+   in the spirit of the Service form's completion meter. Additive: label row carries
+   the existing "X tasks rated · pts" text plus a live % readout. */
+.cmpl-meter{margin-bottom:11px;}
+.cmpl-lbl{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:rgba(255,255,255,.5);margin-bottom:5px;gap:8px;}
+.cmpl-lbl .cmpl-pct{font-weight:700;color:var(--gold-light);font-variant-numeric:tabular-nums;}
+.cmpl-track{height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+.cmpl-fill{height:6px;border-radius:3px;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .35s;}
+.unrated-list{font-size:11px;color:var(--red-pale);margin-bottom:10px;padding:7px 10px;background:rgba(185,28,28,.15);border-radius:6px;display:none;}
+
+/* DASHBOARD */
+.period-toggle{display:flex;gap:7px;margin-bottom:14px;}
+.pt-btn{padding:7px 16px;border:1.5px solid var(--g200);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;background:var(--white);color:var(--g600);transition:all .15s;}
+.pt-btn.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+.period-nav{display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:10px 15px;margin-bottom:14px;box-shadow:var(--sh);}
+.pn-lbl{font-family:var(--font-serif);font-size:15px;color:var(--navy);}
+.pn-sub{font-size:10px;color:var(--g400);margin-top:2px;}
+.pn-btn{background:var(--g100);border:1px solid var(--g200);border-radius:6px;padding:6px 11px;font-size:11px;cursor:pointer;color:var(--g600);font-family:var(--font-sans);transition:all .15s;}
+.pn-btn:hover{background:var(--g200);}
+.kpi-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin-bottom:14px;}
+.kpi-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.kpi-val{font-family:var(--font-serif);font-size:22px;color:var(--navy);line-height:1;}
+.kpi-sub{font-size:10px;color:var(--g400);margin-top:3px;}
+.kpi-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;margin-top:7px;}
+.kpi-fill{height:5px;border-radius:3px;transition:width .4s;}
+.kpi-met{font-size:10px;font-weight:700;color:var(--green);margin-top:3px;}
+.dash-sec-lbl{font-size:10px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px;}
+.cpc{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:8px;overflow:hidden;}
+.cpc-top{height:3px;}
+.cpc-body{padding:11px 15px;}
+.cpc-r1{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;}
+.cpc-name{font-size:13px;font-weight:600;color:var(--navy);}
+.cpc-meta{font-size:10px;color:var(--g400);margin-top:2px;}
+.cpc-right{display:flex;align-items:center;gap:7px;}
+.cpc-score{font-family:var(--font-serif);font-size:20px;color:var(--navy);}
+.trend{font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;}
+.trend.up{background:#dcfce7;color:#14532d;}
+.trend.dn{background:var(--red-pale);color:var(--red);}
+.trend.eq{background:var(--g100);color:var(--g600);}
+.cpc-kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--g100);}
+.cpc-kpi{font-size:11px;color:var(--g600);}
+.cpc-kv{font-weight:700;color:var(--navy);}
+.thr{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--g100);}
+.thr:last-child{border-bottom:none;}
+.thr-name{flex:1;font-size:12px;color:var(--g800);}
+.thr-bwrap{width:100px;flex-shrink:0;}
+.thr-bar{height:5px;background:var(--g200);border-radius:3px;overflow:hidden;}
+.thr-fill{height:5px;border-radius:3px;}
+.thr-sc{font-size:12px;font-weight:700;min-width:34px;text-align:right;}
+
+/* HISTORY */
+.hi-filters{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end;}
+.hi-item{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:8px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;}
+.hi-item:hover{box-shadow:var(--sh-lg);}
+.hi-bar{height:3px;}
+.hi-body{display:flex;align-items:center;padding:11px 14px;gap:10px;flex-wrap:wrap;}
+.hi-date{font-size:10px;color:var(--g500);background:var(--g100);padding:3px 7px;border-radius:5px;white-space:nowrap;}
+.hi-cro{font-size:13px;font-weight:600;color:var(--navy);flex:1;}
+.hi-store{font-size:10px;color:var(--g400);}
+.hi-spill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;}
+.hi-del{background:none;border:none;cursor:pointer;color:var(--g300);font-size:14px;padding:3px 5px;transition:color .15s;line-height:1;}
+.hi-del:hover{color:var(--red);}
+
+/* SETTINGS */
+.set-hint{font-size:11px;color:var(--g500);background:var(--g50);border:1px solid var(--g200);border-radius:7px;padding:8px 11px;margin-bottom:14px;}
+.set-derived{font-size:10px;color:var(--teal);margin-top:3px;font-weight:600;}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:9px;margin-bottom:18px;}
+.stat-c{background:var(--white);border:1px solid var(--g200);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);}
+.st-lbl{font-size:9px;color:var(--g400);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.st-val{font-family:var(--font-serif);font-size:22px;color:var(--navy);}
+.st-sub{font-size:10px;color:var(--g400);margin-top:2px;}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--g400);}
+.empty-ico{font-size:32px;margin-bottom:8px;}
+.empty-t{font-size:13px;font-weight:600;color:var(--g600);margin-bottom:3px;}
+.empty-s{font-size:11px;}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:14px;}
+.mo.show{display:flex;}
+.modal{background:var(--white);border-radius:12px;box-shadow:var(--sh-lg);max-width:500px;width:100%;max-height:90vh;overflow-y:auto;}
+.mhead{background:var(--navy);padding:16px 20px;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:space-between;}
+.mtitle{font-family:var(--font-serif);font-size:16px;color:var(--gold-light);}
+.mclose{background:none;border:none;color:rgba(255,255,255,.38);font-size:18px;cursor:pointer;padding:2px 5px;border-radius:4px;transition:color .15s;}
+.mclose:hover{color:var(--white);}
+.mbody{padding:18px 20px;}
+.res-score{text-align:center;padding:14px 0 10px;}
+.res-big{font-family:var(--font-serif);font-size:48px;color:var(--navy);line-height:1;}
+.res-bar{height:8px;background:var(--g200);border-radius:4px;overflow:hidden;margin:9px 0 12px;}
+.res-fill{height:8px;border-radius:4px;transition:width .5s;}
+.mpills{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:13px;}
+.mpill{display:inline-flex;align-items:center;gap:4px;background:var(--g100);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--g600);}
+.trr{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--g100);}
+.trr:last-child{border-bottom:none;}
+.trr-i{font-size:10px;font-weight:700;color:var(--g400);width:16px;text-align:center;flex-shrink:0;margin-top:2px;}
+.trr-n{flex:1;font-size:12px;color:var(--g800);}
+.trr-d{font-size:10px;color:var(--g400);margin-top:1px;}
+.trr-s{font-size:12px;font-weight:700;min-width:35px;text-align:right;}
+.trr-s.s0{color:var(--red);}
+.trr-s.s4,.trr-s.s5{color:var(--amber);}
+.trr-s.s6,.trr-s.s7,.trr-s.s8,.trr-s.s9{color:var(--navy);}
+.trr-s.s10{color:var(--green);}
+.print-btn{width:100%;padding:10px;background:var(--g100);border:1px solid var(--g200);border-radius:7px;font-size:12px;font-weight:600;color:var(--g700);cursor:pointer;font-family:var(--font-sans);transition:background .15s;margin-top:11px;}
+.print-btn:hover{background:var(--g200);}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:var(--white);padding:8px 18px;border-radius:8px;font-size:12px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+.footer{background:var(--navy);padding:12px 26px;text-align:center;font-size:9px;color:rgba(255,255,255,.22);letter-spacing:.06em;}
+
+@media(max-width:560px){
+  .ph,.tabs{padding-left:12px;padding-right:12px;}
+  .score-banner{padding:8px 12px;top:52px;}
+  .wrap{padding:12px 10px 55px;}
+  .card{padding:13px 12px;}
+  .rgroup{gap:5px;}
+  .rbtn{padding:7px 2px;font-size:11px;}
+  .rbtn .rpts{font-size:13px;}
+  /* progress bars kept (not hidden) — see convergence block for the flex reflow */
+  .sc-grid{grid-template-columns:repeat(5,1fr);}
+}
+
+/* ════════════════════════════════════════════════════
+   MOBILE RESPONSIVE LAYER  (phones ≤640px)
+   CSS-only. No ids/classes/handlers changed. Wide
+   screens (>640px) are byte-unchanged.
+════════════════════════════════════════════════════ */
+@media(max-width:640px){
+  /* prevent any horizontal page overflow */
+  html,body{max-width:100%;overflow-x:hidden;}
+  *{min-width:0;}
+
+  /* --- header: let right block sit under brand if cramped --- */
+  .ph{padding:11px 14px;gap:6px;}
+  .brand{font-size:17px;}
+
+  /* --- tabs already scroll horizontally; keep them tappable --- */
+  .tabs{padding-left:12px;padding-right:12px;}
+  .tab{padding:12px 14px;min-height:44px;display:flex;align-items:center;}
+
+  /* --- layout width --- */
+  .wrap{padding:14px 12px 60px;}
+
+  /* --- FORM ROWS: collapse to single column so 160px mins never overflow.
+     !important overrides the inline style="flex:2" on the CRO field WITHOUT
+     touching that attribute (selector rules otherwise lose to inline styles). --- */
+  .frow{gap:10px;}
+  .frow .fg{flex:1 1 100% !important;min-width:0 !important;}
+
+  /* inputs/selects/textarea ≥16px stops iOS focus-zoom; taller for touch */
+  .finput,.fsel{font-size:16px;padding:11px 12px;min-height:44px;}
+  .rem-inp{font-size:16px;}
+  .minp{font-size:16px;min-height:44px;}
+
+  /* primary buttons ≥44px tall */
+  .sbtn{padding:13px;min-height:46px;font-size:14px;}
+
+  /* --- STICKY SUBMIT: the New-Audit form is long; pin the existing submit
+     deck (last child of the scrolling .wrap) to the viewport bottom so the
+     real "Save & Submit Audit" button stays reachable while scrolling.
+     One control only — the existing button/onclick/id is untouched.
+     Settles into normal flow at the end of the form. --- */
+  .submit-dk{position:sticky;bottom:0;z-index:40;margin-bottom:0;
+    padding:13px 16px;box-shadow:0 -6px 16px rgba(0,0,0,.18);}
+  /* reserve room beneath the score summary so the pinned deck never hides
+     the last card's content while it floats */
+  #sec-audit .wrap{padding-bottom:96px;}
+
+  /* --- QUAL RATING BUTTONS: keep 4 across but guarantee touch height --- */
+  .rgroup{grid-template-columns:repeat(4,1fr);gap:6px;}
+  .rbtn{min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;padding:6px 2px;}
+  .rbtn .rpts{font-size:14px;}
+
+  /* --- metric rows: name + 70px input, wrap gracefully --- */
+  .mrow{flex-wrap:wrap;}
+  .metric-grp{padding:11px;}
+
+  /* --- T6 review list: stack row identity above actions; touch-height controls --- */
+  .rev-row{align-items:flex-start;}
+  .rev-id{flex:1 1 100%;}
+  .rev-act{flex:1 1 100%;gap:10px;}
+  .btn.xs{min-height:40px;padding:8px 12px;}
+  .rev-ck{min-height:40px;}
+  .rev-ck input{width:18px;height:18px;}
+
+  /* --- SCORE CHIPS: 5 across is fine on a phone (tiny tiles) --- */
+  .sc-grid{grid-template-columns:repeat(5,1fr);gap:4px;}
+  .sc-chip{padding:7px 3px;}
+  .sc-v{font-size:14px;}
+
+  /* --- DASHBOARD: KPI + stat tiles to 2 columns (small tiles may stay 2) --- */
+  .kpi-strip{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .kpi-card,.stat-c{padding:11px 12px;}
+
+  /* period controls — touch height */
+  .period-toggle{gap:8px;}
+  .pt-btn{flex:1;min-height:44px;}
+  .pn-btn{min-height:40px;padding:8px 12px;}
+
+  /* CRO performance card: header + score wrap instead of squashing */
+  .cpc-r1{align-items:flex-start;}
+  .cpc-kpis{gap:8px 12px;}
+
+  /* --- HISTORY filters: stack to one column; Clear button full width --- */
+  .hi-filters{gap:10px;}
+  .hi-filters .fg{flex:1 1 100%;min-width:0;}
+  .hi-body{gap:8px;}
+  .hi-cro{flex:1 1 100%;}
+  .hi-del{margin-left:auto;min-width:40px;min-height:40px;}
+
+  /* --- MODAL: full-width-ish, comfortable on phone --- */
+  .mo{padding:10px;}
+  .modal{max-height:92vh;}
+  .res-big{font-size:40px;}
+  .print-btn{min-height:46px;}
+
+  /* toast shouldn't exceed viewport */
+  .toast{max-width:92vw;white-space:normal;text-align:center;}
+}
+
+/* very narrow phones (~360px and below) */
+@media(max-width:380px){
+  .rbtn{font-size:11px;}
+  .rbtn .rpts{font-size:13px;}
+  .sc-chip{padding:6px 2px;}
+  .sc-n{font-size:11px;}
+  .sc-v{font-size:13px;}
+  .tab{padding:12px 12px;}
+}
+
+/* ════════════════════════════════════════════════════
+   DESIGN-SYSTEM CONVERGENCE — floors + module fixes
+   Appended last so equal-specificity rules win on source order.
+   VISUAL ONLY: no ids / handlers / calculations touched.
+════════════════════════════════════════════════════ */
+
+/* --- ON-SCREEN TEXT FLOOR (>=11px) ---
+   Raise every micro-label that was 8–10px up to the 11px floor.
+   tabular-nums on numeric readouts keeps the bumped digits aligned. --- */
+.brand-sub,.hbadge,.sb-lbl,.flabel,.ml-hint,.mpct,.ctx-hd,.groom-note,
+.wm-tag,.rem-lbl,.sc-n,.pn-sub,.kpi-lbl,.kpi-sub,.kpi-met,.dash-sec-lbl,
+.cpc-meta,.trend,.hi-date,.hi-store,.set-derived,.st-lbl,.st-sub,.mpill,
+.trr-i,.trr-d,.footer{font-size:11px;}
+/* inline-styled micro text in the markup (raise to floor without editing attrs) */
+#hdate,#sb-pct{font-size:11px !important;}
+
+/* --- NUMERIC COLUMNS: tabular figures --- */
+.minp,.mpct,.sb-num,.sb-denom,.wm-val,.kpi-val,.st-val,.cpc-score,.cpc-kv,
+.thr-sc,.trr-s,.res-big,.hi-spill,.sc-v,.tpts,.as-score{font-variant-numeric:tabular-nums;}
+
+/* --- TAP-TARGET FLOOR (>=44px) for small interactive controls --- */
+.minp{min-height:44px;}                 /* metric inputs: 40px -> 44px */
+.pn-btn{min-height:44px;}               /* dashboard prev/next */
+.mclose{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;}
+.hi-del{min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;}
+.crit-tog{min-height:44px;align-items:center;}  /* show/hide criteria toggle row */
+
+/* --- MODULE FIX: per-metric progress bars must survive on mobile ---
+   They were display:none under the responsive layers. Keep them visible and
+   let them flex instead of the fixed 70/80/100px widths, so the metric "table"
+   rows still show their bar alongside the value on a phone. --- */
+@media(max-width:640px){
+  .mrow{align-items:center;}
+  .ml{flex:1 1 100%;}                    /* metric name = identity row, full width */
+  .mr{flex:1 1 100%;justify-content:flex-start;gap:9px;}
+  .minp{font-size:16px;}                 /* keep iOS no-zoom; height handled by floor */
+  .mbar-wrap,.wm-bar-wrap,.sb-bar,.thr-bwrap{display:block;flex:1;min-width:48px;width:auto;}
+  .mbar,.wm-bar,.sb-track,.thr-bar{width:100%;}
+  /* week/month + dashboard rows: keep label as sticky-style identity, bar flexes */
+  .wm-row{flex-wrap:wrap;}
+  .wm-lbl{flex:1 1 100%;}
+  .thr-name{flex:1 1 auto;}
+}
+</style>
+
+<style id="st-v5-uniform-css">
+/* No remote @import — app is fully offline (INTERNET permission removed); a render-blocking
+   font fetch that can never resolve was a likely cause of module-open stalls. System fonts below. */
+/* ── VISIBILITY FIX ── force light rendering so Android WebView dark-mode
+   (algorithmic darkening / force-dark) cannot invert text to invisible.
+   This is the root cause of "some text not visible" on phones/tablets. */
+:root{color-scheme:light only}
+html{color-scheme:light only;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important;forced-color-adjust:none}
+h1,h2,h3,h4,h5,.title,.headline,.brand,.heading{font-family:'DM Serif Display',Georgia,serif !important;letter-spacing:.2px}
+/* Don't fight module's own colors — only normalize font + base focus ring */
+*:focus-visible{outline:2px solid #b8922a;outline-offset:1px}
+button,input,select,textarea{font-family:inherit}
+/* keep date/number/select text from going invisible on some Android WebViews */
+input,select,textarea{-webkit-text-fill-color:currentColor;opacity:1}
+input::placeholder,textarea::placeholder{-webkit-text-fill-color:#7a8699;opacity:1}
+/* ── RESPONSIVE SAFETY (tablet + mobile), conservative so module layouts stay intact ── */
+img,svg,video,canvas{max-width:100%;height:auto}
+*{ -webkit-tap-highlight-color:rgba(184,146,42,.18) }
+@media(max-width:920px){
+  body{ padding-bottom:72px !important }                 /* clear the back-home FAB + injected gate banner */
+  table{ display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch }
+  thead,tbody,tr{ width:max-content; min-width:100% }
+}
+@media(max-width:640px){
+  html{ font-size:15px }
+  button,.btn,a.btn,[role=button]{ min-height:40px }
+  input,select,textarea{ min-height:38px; font-size:16px }   /* 16px stops iOS/Android zoom-on-focus */
+}
+@media print{ body{background:#fff !important;color:#000 !important} }
+
+/* ════════════════════════════════════════════════════════════════════════
+   GLOBAL FLOORS — accessibility minimums applied to EVERY module iframe
+   (this block is injected unconditionally, mobile AND desktop). Two rules:
+     1. No on-screen text smaller than 11px.
+     2. Every interactive control is at least 44x44 with a real tap target.
+   These are FLOORS: they only raise values that fall below the minimum, so
+   module typography/spacing above the floor is untouched. !important is
+   required because module + MOBILE_CSS rules set their own sizes with
+   !important (some shrink table/label text to 9px and inputs below 44px).
+   ════════════════════════════════════════════════════════════════════════ */
+/* 1a — baseline text floor (NOT !important): max(11px,1em) keeps each element's
+   inherited/declared size when it is already >=11px, and lifts anything smaller
+   to 11px. Because it is low-priority, any module rule that sets a size >=11px
+   still wins; this only catches unset or sub-11px text. svg/script/style are
+   excluded so we never touch vector or non-rendered nodes. */
+html body *:not(svg):not(svg *):not(script):not(style){
+  font-size:max(11px, 1em);
+}
+/* 1b — hard floor (!important) for the small-text leaves that modules + MOBILE_CSS
+   deliberately shrink to 9–10px (table cells, chips, captions, *-sub/-meta/-hint
+   labels). Flooring these to 11px is the intent of the accessibility minimum.
+   These are genuine small-text leaves, so 11px will not distort hierarchy. */
+html body small,
+html body .h-name,html body th,html body td,
+html body .leave-chip,html body .mt,html body .badge,html body .chip,html body .pill,html body .tag,
+html body figcaption,html body caption,html body legend,
+html body [class*="-sub"],html body [class*="-meta"],html body [class*="-hint"],
+html body [class*="-note"],html body [class*="-cap"],html body [class*="-label"],
+html body [class*="-time"],html body [class*="-date"]{
+  font-size:max(11px, 1em) !important;
+}
+/* 2 — interactive control floor: 44px min hit area + readable size. Covers
+   normal controls AND tiny icon/delete/close/remove buttons that often ship at
+   ~24–32px. The [class*=…] matches are scoped to button/a/[role=button] so a
+   wrapper div like .delete-modal is never affected. min-width keeps icon-only
+   buttons square-ish. */
+html body button,
+html body input:not([type=hidden]):not([type=checkbox]):not([type=radio]),
+html body select,html body textarea,
+html body a.btn,html body [role=button],html body label.btn,
+html body .btn,html body .icon-btn,html body .iconbtn,
+html body button[class*="close"],html body button[class*="delete"],html body button[class*="remove"],
+html body button[class*="-del"],html body button[class*="icon"],
+html body a[class*="close"],html body a[class*="delete"],html body a[class*="remove"]{
+  min-height:44px !important;
+  min-width:44px;
+}
+/* keep checkbox/radio compact but tappable (don't stretch the box itself) */
+html body input[type=checkbox],html body input[type=radio]{
+  min-width:18px !important;min-height:18px !important;
+}
+/* inputs/selects inside dense table cells: keep the 44px hit area but allow
+   the cell width to drive horizontal size so tables don't blow out. */
+html body td button,html body th button,
+html body td input,html body th input,
+html body td select,html body th select{
+  min-width:0;
+}
+</style>
+<link rel="stylesheet" href="../../c1-control-desk.css">
+<script src="../../c1-operations-policy.js"></script>
+<script src="../../c1-control-desk.js" defer></script>
+<link rel="stylesheet" href="../../mobile-layout.css">
+<script src="../../app-i18n.js"></script>
+</head>
+<body>
+
+<div class="ph">
+  <div>
+    <div class="brand">Saagar Traders</div>
+    <div class="brand-sub">Titan World &amp; Helios · Latur</div>
+  </div>
+  <div style="text-align:right">
+    <div style="font-size:10px;color:rgba(255,255,255,.38);margin-bottom:3px" id="hdate"></div>
+    <div class="hbadge">STORE MANAGER</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="go('audit')" id="tab-audit">New Audit</div>
+  <div class="tab" onclick="go('dash')"    id="tab-dash">Dashboard</div>
+  <div class="tab" onclick="go('history')" id="tab-history">History</div>
+  <div class="tab" onclick="go('settings')" id="tab-settings">Settings</div>
+</div>
+
+<div class="score-banner" id="score-banner">
+  <div class="sb-left">
+    <div>
+      <div><span class="sb-num" id="sb-num">0</span><span class="sb-denom">/100</span></div>
+      <div class="sb-lbl">Live Score</div>
+    </div>
+    <div class="gpill g-poor" id="sb-grade">—</div>
+  </div>
+  <div class="sb-tasks" id="sb-tasks">0 / 10 rated</div>
+  <div class="sb-bar">
+    <div style="font-size:9px;color:rgba(255,255,255,.28);margin-bottom:2px" id="sb-pct">0%</div>
+    <div class="sb-track"><div class="sb-fill" id="sb-fill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<!-- ════ AUDIT ════ -->
+<div class="sec active" id="sec-audit">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Audit Session</div>
+      <div class="card-sub">Fill session details, then rate all 10 tasks</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Date <span style="color:#dc2626">*</span></label>
+          <input class="finput" type="date" id="f-date" onchange="onCroDateChange()">
+        </div>
+        <div class="fg">
+          <label class="flabel">Store <span style="color:#dc2626">*</span></label>
+          <select class="fsel" id="f-store" onchange="onCroDateChange()">
+            <option value="">Select…</option>
+            <option>Titan World, Latur</option>
+            <option>Helios, Latur</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg" style="flex:2">
+          <label class="flabel">Chief Retail Officer Name <span style="color:#dc2626">*</span></label>
+          <input class="finput" type="text" id="f-cro" placeholder="Chief Retail Officer full name" list="cro-dl" autocomplete="off" oninput="onCroDateChange()" onchange="onCroDateChange()">
+          <datalist id="cro-dl"></datalist>
+        </div>
+        <div class="fg">
+          <label class="flabel">SM (Auditor) <span style="color:#dc2626">*</span></label>
+          <input class="finput" type="text" id="f-sm" placeholder="SM name" list="sm-dl" autocomplete="off">
+          <datalist id="sm-dl"></datalist>
+        </div>
+      </div>
+      <!-- O2: DSR→audit operational context (read-only) -->
+      <div class="ctx-banner" id="cro-ctx">
+        <div class="ctx-hd">Operational context (from DSR / QMS)</div>
+        <div class="ctx-line" id="cro-ctx-line"></div>
+      </div>
+      <!-- cro-dup-guard: proactive "already audited — edit instead?" prompt -->
+      <div class="ctx-banner" id="cro-dup" style="background:var(--amber-pale);border-color:rgba(180,83,9,.25)">
+        <div class="ctx-hd" style="color:var(--amber)">Duplicate check</div>
+        <div class="ctx-line" id="cro-dup-line"></div>
+        <button class="print-btn" id="cro-dup-btn" style="margin-top:8px;background:var(--navy);color:var(--white);border-color:var(--navy)">Edit existing audit</button>
+      </div>
+    </div>
+
+    <div id="tasks-area"></div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px">Score Summary (all 10 tasks)</div>
+      <div class="sc-grid" id="sc-grid"></div>
+    </div>
+
+    <div class="submit-dk" id="submit-dk">
+      <div class="card-title">Submit Audit</div>
+      <div class="card-sub" id="sub-sub">Rate all qualitative tasks before submitting</div>
+      <div class="unrated-list" id="unrated-list"></div>
+      <div class="cmpl-meter">
+        <div class="cmpl-lbl"><span id="cmpl-text">0 tasks rated · 0 / 100 pts</span><span class="cmpl-pct" id="cmpl-pct">0%</span></div>
+        <div class="cmpl-track"><div class="cmpl-fill" id="cmpl-fill" style="width:0%"></div></div>
+      </div>
+      <div class="sub-meta"><span id="sub-done">0 rated</span><span id="sub-pts">0 / 100 pts</span></div>
+      <div class="sub-bar"><div class="sub-fill" id="sub-fill" style="width:0%"></div></div>
+      <button class="sbtn green" onclick="submitAudit()">Save &amp; Submit Audit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DASHBOARD ════ -->
+<div class="sec" id="sec-dash">
+  <div class="wrap">
+    <!-- P1-24 — store filter (reuses period-toggle styles) -->
+    <div class="period-toggle" id="store-toggle" style="margin-bottom:8px">
+      <button class="pt-btn active" id="ps-all" onclick="setDashStore('')">All Stores</button>
+      <button class="pt-btn" id="ps-WLMHW" onclick="setDashStore('WLMHW')">Titan World</button>
+      <button class="pt-btn" id="ps-HEMW" onclick="setDashStore('HEMW')">Helios</button>
+    </div>
+    <div class="period-toggle">
+      <button class="pt-btn active" id="pt-week" onclick="setPeriod('week')">Weekly</button>
+      <button class="pt-btn" id="pt-month" onclick="setPeriod('month')">Monthly</button>
+    </div>
+    <div class="period-nav">
+      <button class="pn-btn" onclick="shiftPeriod(-1)">← Prev</button>
+      <div style="text-align:center">
+        <div class="pn-lbl" id="pn-lbl">—</div>
+        <div class="pn-sub" id="pn-sub"></div>
+      </div>
+      <button class="pn-btn" onclick="shiftPeriod(1)">Next →</button>
+    </div>
+    <div id="dash-content"></div>
+  </div>
+</div>
+
+<!-- ════ HISTORY ════ -->
+<div class="sec" id="sec-history">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Audit History</div>
+      <div class="card-sub">Click any record to view full breakdown</div>
+      <div class="hi-filters">
+        <div class="fg"><label class="flabel">Chief Retail Officer</label>
+          <input class="finput" type="text" id="h-cro" placeholder="All" oninput="renderHistory()"></div>
+        <div class="fg"><label class="flabel">From</label>
+          <input class="finput" type="date" id="h-from" onchange="renderHistory()"></div>
+        <div class="fg"><label class="flabel">To</label>
+          <input class="finput" type="date" id="h-to" onchange="renderHistory()"></div>
+        <div class="fg" style="display:flex;align-items:flex-end">
+          <button class="sbtn" style="margin-top:0" onclick="clearHF()">Clear</button></div>
+      </div>
+      <div class="stat-grid" id="hist-stats"></div>
+      <div id="hist-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+<div class="sec" id="sec-settings">
+  <div class="wrap">
+    <div class="card">
+      <div class="card-title">Monthly KPI Targets</div>
+      <div class="card-sub">Enter monthly targets — weekly and daily breakdowns are calculated automatically</div>
+      <div class="set-hint">These targets drive scoring for Tasks 5, 6, 7 and appear as progress benchmarks in the audit form and dashboard.</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">NPS Surveys / Month</label>
+          <input class="finput" type="number" id="s-surveys" min="1" placeholder="80" oninput="updDerived()">
+          <div class="set-derived" id="d-surveys">Weekly: ~18 · Daily: ~3</div>
+        </div>
+        <div class="fg">
+          <label class="flabel">NPS Score Target (0–100)</label>
+          <input class="finput" type="number" id="s-nps-score" min="1" max="100" placeholder="85" oninput="updDerived()">
+          <div class="set-derived" id="d-nps">Score ≥ 85 = full 5 pts</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Response Rate Target (%)</label>
+          <input class="finput" type="number" id="s-rate" min="1" max="100" placeholder="40" oninput="updDerived()">
+          <div class="set-derived" id="d-rate">Surveys ÷ Bills × 100 — target 40%</div>
+        </div>
+        <div class="fg">
+          <label class="flabel">Google Reviews / Month</label>
+          <input class="finput" type="number" id="s-reviews" min="1" placeholder="30" oninput="updDerived()">
+          <div class="set-derived" id="d-reviews">Weekly: ~7 · Daily: ~1</div>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">Marketing Activities / Month</label>
+          <input class="finput" type="number" id="s-mktg" min="1" placeholder="120" oninput="updDerived()">
+          <div class="set-derived" id="d-mktg">Calls + visits. Weekly: ~28 · Daily: ~5</div>
+        </div>
+        <div class="fg"></div>
+      </div>
+      <button class="sbtn" onclick="saveSettings()">Save Targets</button>
+    </div>
+    <!-- P1-24 — optional per-store target overrides (saved by the same Save Targets button) -->
+    <div class="card">
+      <div class="card-title">Per-Store Targets (optional)</div>
+      <div class="card-sub">Leave blank to use the global monthly targets above for that store</div>
+      <div class="set-hint">Titan World, Latur</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">NPS Surveys / Month</label>
+          <input class="finput" type="number" id="s-WLMHW-surveys" min="1" placeholder="Global (80)">
+        </div>
+        <div class="fg">
+          <label class="flabel">Google Reviews / Month</label>
+          <input class="finput" type="number" id="s-WLMHW-reviews" min="1" placeholder="Global (30)">
+        </div>
+        <div class="fg">
+          <label class="flabel">Marketing Activities / Month</label>
+          <input class="finput" type="number" id="s-WLMHW-mktg" min="1" placeholder="Global (120)">
+        </div>
+      </div>
+      <div class="set-hint">Helios, Latur</div>
+      <div class="frow">
+        <div class="fg">
+          <label class="flabel">NPS Surveys / Month</label>
+          <input class="finput" type="number" id="s-HEMW-surveys" min="1" placeholder="Global (80)">
+        </div>
+        <div class="fg">
+          <label class="flabel">Google Reviews / Month</label>
+          <input class="finput" type="number" id="s-HEMW-reviews" min="1" placeholder="Global (30)">
+        </div>
+        <div class="fg">
+          <label class="flabel">Marketing Activities / Month</label>
+          <input class="finput" type="number" id="s-HEMW-mktg" min="1" placeholder="Global (120)">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Scoring Reference</div>
+      <div class="card-sub">How each task is scored out of 10</div>
+      <div id="scoring-ref"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="mo" id="mo" onclick="closeMO(event)">
+  <div class="modal" id="modal-box">
+    <div class="mhead">
+      <div class="mtitle" id="m-title">Audit Result</div>
+      <button class="mclose" onclick="hideMO()">✕</button>
+    </div>
+    <div class="mbody" id="m-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="footer">Saagar Traders · Store Manager · Data stored in browser localStorage</div>
+
+<script>
+/* ──────────────────────────────────────────
+   VIEW-DATE RAIL  (shell-driven, view-only history)
+   window.__stAsOf = "YYYY-MM-DD" = the day the user wants to VIEW.
+   Seeded before this script runs; updated live via the 'st-date' event.
+   When the viewed day is EARLIER than the real today → READ-ONLY past.
+────────────────────────────────────────── */
+function stRealToday(){ const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }   /* audit: local date — toISOString gave the previous day in IST */
+function stIsValidYMD(v){ return typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v); }
+/* the day the module currently treats as "today" (defaults to __stAsOf, else real today) */
+function stViewDate(){
+  var v = window.__stAsOf;
+  return stIsValidYMD(v) ? v : stRealToday();
+}
+/* true only when viewing a PAST day (strictly earlier than the real today) */
+function stIsPast(){ return stViewDate() < stRealToday(); }
+/* a Date object anchored at noon on the viewed day (avoids TZ slippage) */
+function stAnchorDate(){ return new Date(stViewDate()+'T12:00:00'); }
+
+/* ──────────────────────────────────────────
+   TASK DEFINITIONS
+────────────────────────────────────────── */
+const TASKS = [
+  { id:'t1', n:1,  title:'Open Stock',               type:'qual',
+    desc:'Count & verify stock at store opening',
+    criteria:['Physical stock count completed before first customer','Matches previous day closing stock record','Discrepancies reported to SM immediately'] },
+  { id:'t2', n:2,  title:'Display Management',        type:'qual',
+    desc:'All displays organised, correct product placement',
+    criteria:['All display stands / counters neatly arranged','Correct price tags visible on every product','Glass, trays & boards dusted and clean'] },
+  { id:'t3', n:3,  title:'Sale Recording',            type:'qual',
+    desc:'Every transaction accurately recorded',
+    criteria:['All sales entered in system / register same day','Customer name & contact captured per bill','Bills generated, serial-numbered & filed'] },
+  { id:'t4', n:4,  title:'Non-Purchase Recording',    type:'qual',
+    desc:'Track walk-ins who left without buying',
+    criteria:['Total footfall count recorded throughout the day','Reason for non-purchase noted per visitor','Follow-up / callback action planned where applicable'] },
+  { id:'t5', n:5,  title:'Thank You Calling — NPS',   type:'nps',
+    desc:'Collect NPS surveys; response rate = surveys ÷ bills × 100',
+    criteria:['TY calls made to recent customers for NPS collection','NPS score recorded per survey (0–100 scale)','Complaints escalated to SM same day'] },
+  { id:'t6', n:6,  title:'Google Review Collection',  type:'reviews',
+    desc:'Request & collect Google reviews vs monthly target',
+    criteria:['Review QR / link shared proactively at billing','Verbal request to every satisfied customer','Daily count recorded & monthly target tracked'] },
+  { id:'t7', n:7,  title:'Marketing Activity',        type:'activity',
+    desc:'Outbound calls + door-to-door visits for leads',
+    criteria:['Outbound calls to prospects / wedding lists / referrals','Door-to-door visits in catchment area','Lead details & follow-up noted in register'] },
+  { id:'t8', n:8,  title:'Closing Stock',             type:'qual',
+    desc:'Full closing count + EOD report submitted to SM',
+    criteria:['Physical closing count completed before shutdown','Matches opening stock minus today\'s sales','EOD stock report submitted to SM before leaving'] },
+  { id:'t9', n:9,  title:'Grooming Score',            type:'grooming',
+    desc:'Enter % from the daily grooming checklist',
+    criteria:['Uniform — clean, ironed, well-fitted all day','Name badge clearly visible during store hours','Personal hygiene & presentation maintained'] },
+  { id:'t10',n:10, title:'Store Discipline',          type:'qual',
+    desc:'Punctuality, conduct & store environment',
+    criteria:['On time — no unauthorised absences or late arrivals','Personal phone use minimised on floor','Store kept clean, organised & welcoming all day'] }
+];
+
+const QUAL_R = [
+  { val:0,  label:'Not Done',   cls:'ar0'  },
+  { val:4,  label:'Below Exp.', cls:'ar4'  },
+  { val:7,  label:'Met Exp.',   cls:'ar7'  },
+  { val:10, label:'Exceeded',   cls:'ar10' }
+];
+
+/* ──────────────────────────────────────────
+   SETTINGS
+────────────────────────────────────────── */
+const DEF = { surveys:80, npsScore:85, rate:40, reviews:30, mktg:120 };
+
+function getS(){ try{ return Object.assign({},DEF,JSON.parse(localStorage.getItem('cro_s_v3')||'{}')); }catch(e){ return {...DEF}; } }
+
+/* P1-24 — per-store targets: internal store codes + effective-target resolvers */
+const CRO_STORES=[
+  {code:'WLMHW', label:'Titan World, Latur', short:'Titan World'},
+  {code:'HEMW',  label:'Helios, Latur',      short:'Helios'}
+];
+/* dsrStoreCode-style tolerant text match on a record's store label; unmatched → null
+   (excluded from a store-filtered dashboard but always counted under All) */
+function croStoreCode(label){
+  const t=String(label||'').toLowerCase();
+  if(t.includes('titan'))  return 'WLMHW';
+  if(t.includes('helios')) return 'HEMW';
+  return null;
+}
+/* Effective targets for one store; null/unknown code or no override → globals.
+   npsScore/rate stay GLOBAL (quality thresholds, not volume). */
+function getTargets(storeCode){
+  const s=getS();
+  const bs=(s.byStore&&typeof s.byStore==='object')?s.byStore:{};
+  const o=(storeCode&&bs[storeCode]&&typeof bs[storeCode]==='object')?bs[storeCode]:{};
+  const n=k=>{ const v=+o[k]; return v>0?v:s[k]; }; // >0 gate: NaN/0/negatives inherit global
+  return { surveys:n('surveys'), reviews:n('reviews'), mktg:n('mktg'),
+           npsScore:s.npsScore, rate:s.rate };
+}
+/* Dashboard targets for the current store filter. Configured "All" = sum of the two
+   per-store effective volume targets; zero-config All = globals (today's behaviour). */
+function getDashTargets(){
+  const s=getS();
+  if(dashStore) return getTargets(dashStore);
+  /* Mirror getTargets' shape guard: a truthy-but-non-object/empty byStore (corrupt/bad restore)
+     must inherit plain globals for "All", NOT enter the per-store SUM branch (which would double them). */
+  const bs=(s.byStore&&typeof s.byStore==='object'&&!Array.isArray(s.byStore)&&Object.keys(s.byStore).length)?s.byStore:null;
+  if(!bs) return getTargets(null);
+  const t={surveys:0,reviews:0,mktg:0,npsScore:s.npsScore,rate:s.rate};
+  CRO_STORES.forEach(st=>{ const e=getTargets(st.code); t.surveys+=e.surveys; t.reviews+=e.reviews; t.mktg+=e.mktg; });
+  return t;
+}
+
+function saveSettings(){
+  // READ-ONLY past: no save actions while viewing a past day
+  if(stIsPast()){ showToast('Viewing a past day — settings are read-only'); return; }
+  const prev=getS(); // P1-24 CARRY: never rebuild from scratch — unknown/sibling fields must survive
+  const s={ ...prev,
+    surveys: +document.getElementById('s-surveys').value||DEF.surveys,
+    npsScore:+document.getElementById('s-nps-score').value||DEF.npsScore,
+    rate:    +document.getElementById('s-rate').value||DEF.rate,
+    reviews: +document.getElementById('s-reviews').value||DEF.reviews,
+    mktg:    +document.getElementById('s-mktg').value||DEF.mktg
+  };
+  // P1-24 — rebuild byStore from the six per-store inputs (blank/0 = inherit global)
+  const byStore={};
+  CRO_STORES.forEach(st=>{
+    const o={};
+    ['surveys','reviews','mktg'].forEach(k=>{
+      const el=document.getElementById('s-'+st.code+'-'+k);
+      const v=el?+el.value:0; if(v>0) o[k]=v;
+    });
+    if(Object.keys(o).length) byStore[st.code]=o;
+  });
+  if(Object.keys(byStore).length) s.byStore=byStore; else delete s.byStore;
+  localStorage.setItem('cro_s_v3', JSON.stringify(s));
+  showToast('Targets saved!');
+  buildTasks(); // rebuild to reflect new targets in cards
+}
+
+function loadSettingsForm(){
+  const s=getS();
+  document.getElementById('s-surveys').value  = s.surveys;
+  document.getElementById('s-nps-score').value= s.npsScore;
+  document.getElementById('s-rate').value     = s.rate;
+  document.getElementById('s-reviews').value  = s.reviews;
+  document.getElementById('s-mktg').value     = s.mktg;
+  // P1-24 — per-store overrides (blank = inherit global) + live "Global (n)" placeholders
+  const bs=(s.byStore&&typeof s.byStore==='object')?s.byStore:{};
+  CRO_STORES.forEach(st=>{
+    const o=(bs[st.code]&&typeof bs[st.code]==='object')?bs[st.code]:{};
+    [['surveys',s.surveys],['reviews',s.reviews],['mktg',s.mktg]].forEach(([k,g])=>{
+      const el=document.getElementById('s-'+st.code+'-'+k); if(!el) return;
+      el.value=(+o[k]>0)?+o[k]:'';
+      el.placeholder='Global ('+g+')';
+    });
+  });
+  updDerived();
+}
+
+function wkly(m){ return Math.ceil(m/4.33); }
+function daily(m){ return Math.max(1,Math.ceil(m/26)); }
+
+function updDerived(){
+  const sur  = +document.getElementById('s-surveys').value||DEF.surveys;
+  const rev  = +document.getElementById('s-reviews').value||DEF.reviews;
+  const mktg = +document.getElementById('s-mktg').value||DEF.mktg;
+  const nps  = +document.getElementById('s-nps-score').value||DEF.npsScore;
+  const rate = +document.getElementById('s-rate').value||DEF.rate;
+  document.getElementById('d-surveys').textContent = `Weekly: ~${wkly(sur)} surveys · Daily: ~${daily(sur)}`;
+  document.getElementById('d-reviews').textContent = `Weekly: ~${wkly(rev)} reviews · Daily: ~${daily(rev)}`;
+  document.getElementById('d-mktg').textContent    = `Weekly: ~${wkly(mktg)} activities · Daily: ~${daily(mktg)}`;
+  document.getElementById('d-nps').textContent     = `Score ≥ ${nps} = full 5 pts (out of 10 for Task 5)`;
+  document.getElementById('d-rate').textContent    = `Target ${rate}% response rate = full 5 pts`;
+}
+
+/* ──────────────────────────────────────────
+   STATE
+────────────────────────────────────────── */
+let tData   = {};
+let weekPre = {};
+let monthPre= {};
+let dashMode= 'week';
+let dashOff = 0;
+let dashStore=''; // P1-24 — dashboard store filter: ''=All · 'WLMHW' · 'HEMW' (in-memory only)
+let editingId=null; // cro-dup-guard: id of the record being edited in-place; null = fresh audit
+
+function initTData(){
+  // quantitative tasks are pre-initialised with zeros so submission is never blocked by them
+  tData['t5'] = { billsCount:0, npsCollected:0, npsScore:0, remarks:'' };
+  tData['t6'] = { reviewsCount:0, remarks:'' };
+  tData['t7'] = { activityCount:0, remarks:'' };
+  tData['t9'] = { groomingPct:0, remarks:'' };
+  // qual tasks (t1-t4, t8, t10) start undefined — must be explicitly rated
+}
+
+function loadPreData(){
+  const all = getAudits();
+  const today = todayStr();
+  const wRange = getWeekRange(0);
+  const mPfx   = today.substring(0,7);
+  const wStart = dStr(wRange.start);
+  const wEnd   = dStr(wRange.end);
+  // exclude today's audits (in case of re-submit)
+  let wAudits = all.filter(a=>a.date>=wStart&&a.date<=wEnd&&a.date!==today);
+  let mAudits = all.filter(a=>a.date.startsWith(mPfx)&&a.date!==today);
+  // P1-24 — store-scope the pre-counts ONLY when per-store targets are configured
+  // AND a store is selected (preserves today's both-store pre-counts otherwise)
+  const stSel=(document.getElementById('f-store')||{}).value||'';
+  if(getS().byStore && stSel){
+    const c=croStoreCode(stSel);
+    const sf=a=>croStoreCode(a.store)===c;
+    wAudits=wAudits.filter(sf); mAudits=mAudits.filter(sf);
+  }
+
+  weekPre = {
+    surveys:  wAudits.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0),
+    reviews:  wAudits.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0),
+    mktg:     wAudits.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0)
+  };
+  monthPre = {
+    surveys:  mAudits.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0),
+    reviews:  mAudits.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0),
+    mktg:     mAudits.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0)
+  };
+}
+
+/* ──────────────────────────────────────────
+   SCORING
+────────────────────────────────────────── */
+function calcNps(d, s){
+  const responseRate = d.billsCount>0 ? Math.round((d.npsCollected/d.billsCount)*100) : 0;
+  const ratePts  = Math.min(Math.round((responseRate/s.rate)*5), 5);
+  const scorePts = Math.min(Math.round(((d.npsScore||0)/s.npsScore)*5), 5);
+  return { total:ratePts+scorePts, ratePts, scorePts, responseRate };
+}
+function calcRev(d, s){ const dt=daily(s.reviews); return Math.min(Math.round(((d.reviewsCount||0)/dt)*10),10); }
+function calcMktg(d, s){ const dt=daily(s.mktg); return Math.min(Math.round(((d.activityCount||0)/dt)*10),10); }
+function calcGroom(d){ return Math.min(Math.round((d.groomingPct||0)/10),10); }
+
+/* ──────────────────────────────────────────
+   T6 GOOGLE-REVIEW COLLECTION — per-buyer review-request list.
+   Reads today's closed Purchase buyers from the QMS store (READ-ONLY),
+   binds every button/tick by QMS customer id (cid), and auto-derives
+   t6.reviewsCount from the number of "received" ticks. Fully additive,
+   offline (wa.me / tel: only). Old t6 records without reviewList still work.
+────────────────────────────────────────── */
+function croTel10(m){ const d=String(m||'').replace(/\D/g,''); return d.length>=10?d.slice(-10):''; }
+function croReviewBuyers(dateStr){
+  try{
+    const st=JSON.parse(localStorage.getItem('retail_queue_management_v1')||'{}');
+    const arr=(st&&Array.isArray(st.customers))?st.customers:[];
+    return arr.filter(c=>c&&c.status==='Closed'&&c.outcome==='Purchase'
+              && String(c.closedAt||c.entryTime||'').slice(0,10)===dateStr
+              && croTel10(c.mobile))
+              .map(c=>({cid:String(c.id), name:c.name||'', mobile:c.mobile||'',
+                        billNo:c.billNo||'', cat:c.purchaseCategory||''}));
+  }catch(e){ return []; }
+}
+/* merge live QMS buyers into the persisted tick-list, keyed by cid so a
+   re-render never loses a tick and never mis-binds to a shifted row. */
+function croSyncReviewList(){
+  const date=(document.getElementById('f-date')||{}).value||todayStr();
+  const prev=(tData.t6&&Array.isArray(tData.t6.reviewList))?tData.t6.reviewList:[];
+  const byId={}; prev.forEach(r=>{ if(r&&r.cid) byId[r.cid]=r; });
+  const list=croReviewBuyers(date).map(b=>{
+    const p=byId[b.cid]||{};
+    return {cid:b.cid, name:b.name, mobile:b.mobile,
+            requested:!!p.requested, received:!!p.received};
+  });
+  tData.t6={ ...(tData.t6||{}), reviewList:list };
+  return list;
+}
+/* WhatsApp copy — optional shell template via window.parent.WA_CFG.cro_reviews,
+   else an inline offline fallback (no shell dependency needed). */
+function croReviewMsg(r){
+  try{ const cfg=window.parent&&window.parent.WA_CFG&&window.parent.WA_CFG.cro_reviews;
+       if(cfg&&Array.isArray(cfg.templates)&&cfg.templates[0]&&typeof cfg.templates[0].build==='function')
+         return cfg.templates[0].build(r); }catch(e){}
+  return 'Namaste '+(r&&r.name||'')+',\nThank you for your purchase at Saagar Traders, Latur 🙏\nA quick Google review would mean a lot to us: <REVIEW_LINK>';
+}
+function croReviewSend(cid){
+  const list=(tData.t6&&tData.t6.reviewList)||[];
+  const r=list.find(x=>x.cid===cid); if(!r) return;
+  const d=croTel10(r.mobile); if(!d){ showToast('No valid mobile'); return; }
+  if(window.parent&&window.parent!==window){window.parent.postMessage({type:'ST_WA_LINK',url:'https://wa.me/91'+d+'?text='+encodeURIComponent(croReviewMsg(r)),scopeId:'cro-review-request',purposeId:'promotional-review-solicitation'},'*');}
+  else{showToast('Controlled WhatsApp is available only inside Saagar Control Centre.');return;}
+  croReviewTick(cid,'requested',true); // sending auto-marks Requested
+  croRenderReviewRows(); // reflect the auto-check without a full rebuild
+}
+function croReviewTick(cid,field,val){
+  const list=(tData.t6&&tData.t6.reviewList)||[];
+  const r=list.find(x=>x.cid===cid); if(!r) return;
+  r[field]=!!val;
+  if(field==='received'&&val) r.requested=true; // received implies requested
+  croReviewDerive();
+  croRenderReviewRows();
+}
+/* auto-derive reviewsCount from the received ticks, keep the stored field in
+   sync (so every existing reviewsCount aggregator stays correct), and refresh
+   the /10 strip + week/month bars live. */
+function croReviewDerive(){
+  const list=(tData.t6&&tData.t6.reviewList)||[];
+  const rec=list.filter(r=>r.received).length;
+  // Preserve a legacy manual count (old record, no ticks yet) until the SM
+  // ticks at least one Received — then the derived tick-count takes over.
+  const legacy=(tData.t6&&+tData.t6._legacyCount)||0;
+  let cnt=rec;
+  if(rec>0 && tData.t6){ delete tData.t6._legacyCount; }
+  else if(rec===0 && legacy>0){ cnt=legacy; }
+  const s=getS(); const dt=daily(s.reviews);
+  tData.t6={ ...(tData.t6||{}), reviewsCount:cnt };
+  const inp=document.getElementById('rev-cnt'); if(inp) inp.value=cnt;
+  setFill('rev-fill', cnt/dt, 'rev-pct', cnt+'');
+  updAutoStrip('rev-auto', calcRev(tData.t6,s), `${cnt} reviews · daily target ${dt}`);
+  updTaskDisp('t6');
+  const wNew=weekPre.reviews+cnt, mNew=monthPre.reviews+cnt;
+  updWM('w-rev',wNew,wkly(s.reviews)); updWM('m-rev',mNew,s.reviews);
+}
+/* build the buyer-row HTML from the synced reviewList (cid-keyed bindings). */
+function croReviewRowsHtml(){
+  const list=croSyncReviewList();
+  if(!list.length) return '<div class="rev-empty">No purchase closures found in QMS for this date. Type a count above.</div>';
+  return list.map(r=>`<div class="rev-row" data-cid="${stEsc(r.cid)}">
+    <div class="rev-id"><span class="rev-nm">${stEsc(r.name||'—')}</span><span class="rev-mo mono">${stEsc(r.mobile||'')}</span></div>
+    <div class="rev-act">
+      <button type="button" class="btn xs rev-ask" onclick="croReviewSend('${stEsc(r.cid)}')">📲 Ask</button>
+      <label class="rev-ck"><input type="checkbox" ${r.requested?'checked':''} onchange="croReviewTick('${stEsc(r.cid)}','requested',this.checked)">Requested</label>
+      <label class="rev-ck"><input type="checkbox" ${r.received?'checked':''} onchange="croReviewTick('${stEsc(r.cid)}','received',this.checked)">Received</label>
+    </div>
+  </div>`).join('');
+}
+/* re-render just the buyer list + the rev-cnt read-only state (no full rebuild). */
+function croRenderReviewRows(){
+  const box=document.getElementById('rev-buyers'); if(!box) return;
+  box.innerHTML=croReviewRowsHtml();
+  const hasList=!!(tData.t6&&Array.isArray(tData.t6.reviewList)&&tData.t6.reviewList.length);
+  const inp=document.getElementById('rev-cnt');
+  if(inp){
+    if(hasList){ inp.readOnly=true; inp.classList.add('ro'); }
+    else { inp.readOnly=false; inp.classList.remove('ro'); }
+  }
+}
+
+function getTaskPts(tid){
+  const t=TASKS.find(x=>x.id===tid);
+  const d=tData[tid]||{};
+  const s=getS();
+  if(t.type==='qual')     return (d.pts!=null)?d.pts:null;
+  if(t.type==='nps')      return calcNps(d,s).total;
+  if(t.type==='reviews')  return calcRev(d,s);
+  if(t.type==='activity') return calcMktg(d,s);
+  if(t.type==='grooming') return calcGroom(d);
+  return null;
+}
+function getTotal(){ return TASKS.reduce((sum,t)=>{ const p=getTaskPts(t.id); return sum+(p!=null?p:0); },0); }
+function getGrade(sc){
+  if(sc>=90) return {label:'Outstanding',cls:'g-out', color:'#16a34a',barCls:'g-out-c'};
+  if(sc>=75) return {label:'Good',       cls:'g-good',color:'#0891b2',barCls:'g-good-c'};
+  if(sc>=60) return {label:'Satisfactory',cls:'g-sat',color:'#ca8a04',barCls:'g-sat-c'};
+  if(sc>=45) return {label:'Below Exp.',cls:'g-below',color:'#ea580c',barCls:'g-below-c'};
+  return            {label:'Poor',      cls:'g-poor', color:'#dc2626',barCls:'g-poor-c'};
+}
+
+/* ──────────────────────────────────────────
+   BUILD TASK CARDS
+────────────────────────────────────────── */
+function buildTasks(){
+  const area=document.getElementById('tasks-area');
+  area.innerHTML='';
+  const s=getS();
+  loadPreData();
+
+  TASKS.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='task-card';
+    div.id='tc-'+t.id;
+    const critHtml=t.criteria.map(c=>`<div class="crit-item">${c}</div>`).join('');
+    let body=`
+      <div class="crit-tog" onclick="togCrit('${t.id}');event.stopPropagation()">
+        &#9432; <span id="ct-${t.id}">Show criteria</span>
+      </div>
+      <div class="crit-box" id="cb-${t.id}" style="display:none">${critHtml}</div>`;
+
+    if(t.type==='qual')     body+=buildQualBody(t);
+    else if(t.type==='nps')      body+=buildNpsBody(t,s);
+    else if(t.type==='reviews')  body+=buildRevBody(t,s);
+    else if(t.type==='activity') body+=buildMktgBody(t,s);
+    else if(t.type==='grooming') body+=buildGroomBody(t);
+
+    body+=`<div class="rem-lbl">SM Remarks <span style="font-weight:400;color:var(--g400)">(optional)</span></div>
+      <textarea class="rem-inp" id="rem-${t.id}" placeholder="Observation or note…" oninput="setRem('${t.id}',this.value)">${stEsc(tData[t.id]?.remarks||'')}</textarea>`;
+
+    div.innerHTML=`
+      <div class="task-hdr" onclick="togCrit('${t.id}')">
+        <div class="task-left">
+          <div class="tnum" id="tn-${t.id}">${t.n}</div>
+          <div><div class="task-ttl">${t.title}</div><div class="task-dsc">${t.desc}</div></div>
+        </div>
+        <div class="tpts" id="tp-${t.id}">—/10</div>
+      </div>
+      <div class="task-body">${body}</div>`;
+    area.appendChild(div);
+  });
+  buildScChips();
+  // re-apply cross-module auto-grooming (K) + context hints (O2) to freshly built cards
+  if(typeof onCroDateChange==='function') onCroDateChange();
+}
+
+function setRem(tid,val){ if(tData[tid]) tData[tid].remarks=val; }
+
+function buildQualBody(t){
+  const existing=tData[t.id]?.pts;
+  return `<div class="rgroup" id="rg-${t.id}">
+    ${QUAL_R.map(r=>`<div class="rbtn${existing===r.val?' '+r.cls:''}" id="rb-${t.id}-${r.val}" onclick="setQual('${t.id}',${r.val})">
+      <span class="rpts">${r.val}</span>${r.label}</div>`).join('')}
+  </div>`;
+}
+
+function buildNpsBody(t,s){
+  const wT=wkly(s.surveys); const mT=s.surveys;
+  const wCur=weekPre.surveys; const mCur=monthPre.surveys;
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Bills / Invoices Today</div><div class="ml-hint">Total bills raised at store today</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="nps-bills" placeholder="0" oninput="npsBillsTouched();onNpsInput()">
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">NPS Surveys Collected</div><div class="ml-hint">Customers who gave NPS rating today</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="nps-coll" placeholder="0" oninput="onNpsInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-coll" style="width:0%;background:var(--navy)"></div></div></div>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Response Rate</div><div class="ml-hint">Auto: Surveys ÷ Bills × 100 — Target ${s.rate}%</div></div>
+      <div class="mr">
+        <input class="minp ro" type="text" id="nps-rate-disp" value="—" readonly>
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-rate" style="width:0%;background:var(--teal)"></div></div></div>
+        <span class="mpct" id="np-rate-pct"></span>
+      </div>
+    </div>
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">NPS Score Today (0–100)</div><div class="ml-hint">Average satisfaction score — Target ≥ ${s.npsScore}</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" max="100" id="nps-score-inp" placeholder="0" oninput="onNpsInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="nf-score" style="width:0%;background:var(--green)"></div></div></div>
+        <span class="mpct" id="np-score-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="nps-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Enter bills and surveys above</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — NPS surveys</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-nps-fill" style="width:0%;background:var(--navy)"></div></div></div>
+      <span class="wm-val" id="w-nps-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — NPS surveys</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-nps-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-nps-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildRevBody(t,s){
+  const wT=wkly(s.reviews); const mT=s.reviews; const dt=daily(s.reviews);
+  const wCur=weekPre.reviews; const mCur=monthPre.reviews;
+  // sync the per-buyer review list from QMS for the selected date (cid-keyed);
+  // when a list exists, rev-cnt becomes derived + read-only, else manual fallback.
+  const revRows=croReviewRowsHtml();
+  const hasRevList=!!(tData.t6&&Array.isArray(tData.t6.reviewList)&&tData.t6.reviewList.length);
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Google Reviews Collected Today</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="mr">
+        <input class="minp${hasRevList?' ro':''}" type="number" min="0" id="rev-cnt" placeholder="0" oninput="onRevInput()"${hasRevList?' readonly':''}>
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="rev-fill" style="width:0%;background:var(--gold)"></div></div></div>
+        <span class="mpct" id="rev-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="rev-collect">
+    <div class="rev-hd">Today's buyers — request a Google review <span class="rev-hd-sub">(ticks auto-fill the count · matched by date)</span></div>
+    <div id="rev-buyers">${revRows}</div>
+  </div>
+  <div class="auto-strip" id="rev-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Daily target: ${dt}</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — reviews</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-rev-fill" style="width:0%;background:var(--gold)"></div></div></div>
+      <span class="wm-val" id="w-rev-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — reviews</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-rev-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-rev-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildMktgBody(t,s){
+  const wT=wkly(s.mktg); const mT=s.mktg; const dt=daily(s.mktg);
+  const wCur=weekPre.mktg; const mCur=monthPre.mktg;
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Total Activities Today (calls + visits)</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" id="mktg-cnt" placeholder="0" oninput="onMktgInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="mktg-fill" style="width:0%;background:var(--navy)"></div></div></div>
+        <span class="mpct" id="mktg-pct"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="mktg-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Daily target: ${dt}</div>
+  </div>
+  <div class="wm-prog">
+    <div class="wm-row">
+      <span class="wm-lbl">This week — activities</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="w-mktg-fill" style="width:0%;background:var(--navy)"></div></div></div>
+      <span class="wm-val" id="w-mktg-val">${wCur} / ${wT}</span>
+      <span class="wm-tag ${wCur>=wT?'on':'off'}">${wCur>=wT?'✓ Met':'Target: '+wT}</span>
+    </div>
+    <div class="wm-row">
+      <span class="wm-lbl">This month — activities</span>
+      <div class="wm-bar-wrap"><div class="wm-bar"><div class="wm-fill" id="m-mktg-fill" style="width:0%;background:var(--amber)"></div></div></div>
+      <span class="wm-val" id="m-mktg-val">${mCur} / ${mT}</span>
+      <span class="wm-tag ${mCur>=mT?'on':'off'}">${mCur>=mT?'✓ Met':'Target: '+mT}</span>
+    </div>
+  </div>`;
+}
+
+function buildGroomBody(t){
+  return `<div class="metric-grp">
+    <div class="mrow">
+      <div class="ml"><div class="ml-name">Grooming Checklist Score (%)</div><div class="ml-hint">From the daily grooming checklist tool · 100% = 10 pts</div></div>
+      <div class="mr">
+        <input class="minp" type="number" min="0" max="100" id="groom-pct" placeholder="0" oninput="onGroomInput()">
+        <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="groom-fill" style="width:0%;background:var(--teal)"></div></div></div>
+        <span class="mpct" id="groom-pct-lbl"></span>
+      </div>
+    </div>
+  </div>
+  <div class="auto-strip" id="groom-auto">
+    <div><div class="as-score">—<sub>/10</sub></div></div>
+    <div class="as-break">Enter % from grooming checklist</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   INPUT HANDLERS
+────────────────────────────────────────── */
+function setQual(tid,val){
+  tData[tid]=tData[tid]||{};
+  tData[tid].pts=val;
+  QUAL_R.forEach(r=>{ document.getElementById(`rb-${tid}-${r.val}`).className='rbtn'+(val===r.val?' '+r.cls:''); });
+  updTaskDisp(tid);
+}
+
+/* P1-23 — user typed into #nps-bills: drop the auto flag + note so manual wins */
+function npsBillsTouched(){
+  const inp=document.getElementById('nps-bills'); if(!inp) return;
+  inp.dataset.autoFilled='';
+  if(typeof setBillsNote==='function') setBillsNote('','');
+}
+
+function onNpsInput(){
+  const bills = +document.getElementById('nps-bills').value||0;
+  const coll  = +document.getElementById('nps-coll').value||0;
+  const score = +document.getElementById('nps-score-inp').value||0;
+  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); // P1-24 — targets follow the form's store
+  const rr = bills>0 ? Math.round((coll/bills)*100) : 0;
+
+  document.getElementById('nps-rate-disp').value = bills>0 ? rr+'%' : '—';
+  setFill('nf-coll', coll/Math.max(daily(s.surveys),1));
+  setFill('nf-rate', rr/s.rate, 'np-rate-pct', rr+'%');
+  setFill('nf-score', score/s.npsScore, 'np-score-pct', score+'');
+
+  tData['t5']={ billsCount:bills, npsCollected:coll, responseRate:rr, npsScore:score, remarks:tData['t5']?.remarks||'' };
+  const {total,ratePts,scorePts}=calcNps(tData['t5'],s);
+  updAutoStrip('nps-auto', total, `Rate ${ratePts}/5 · NPS ${scorePts}/5 · Response ${rr}%`);
+  updTaskDisp('t5');
+
+  // update week/month progress bars
+  const wNew=weekPre.surveys+coll; const wT=wkly(s.surveys);
+  const mNew=monthPre.surveys+coll; const mT=s.surveys;
+  updWM('w-nps',wNew,wT); updWM('m-nps',mNew,mT);
+}
+
+function onRevInput(){
+  // if a QMS buyer list exists, the count is DERIVED from received-ticks (read-only) —
+  // don't let a manual edit override it; just re-sync from the ticks.
+  if(tData.t6&&Array.isArray(tData.t6.reviewList)&&tData.t6.reviewList.length){ croReviewDerive(); return; }
+  const cnt=+document.getElementById('rev-cnt').value||0;
+  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); const dt=daily(s.reviews); // P1-24
+  setFill('rev-fill', cnt/dt, 'rev-pct', cnt+'');
+  // spread to PRESERVE reviewList (old code dropped everything but count+remarks).
+  tData['t6']={ ...(tData['t6']||{}), reviewsCount:cnt };
+  const pts=calcRev(tData['t6'],s);
+  updAutoStrip('rev-auto', pts, `${cnt} reviews · daily target ${dt}`);
+  updTaskDisp('t6');
+  const wNew=weekPre.reviews+cnt; const mNew=monthPre.reviews+cnt;
+  updWM('w-rev',wNew,wkly(s.reviews)); updWM('m-rev',mNew,s.reviews);
+}
+
+function onMktgInput(){
+  const cnt=+document.getElementById('mktg-cnt').value||0;
+  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); const dt=daily(s.mktg); // P1-24
+  setFill('mktg-fill', cnt/dt, 'mktg-pct', cnt+'');
+  tData['t7']={ activityCount:cnt, remarks:tData['t7']?.remarks||'' };
+  const pts=calcMktg(tData['t7'],s);
+  updAutoStrip('mktg-auto', pts, `${cnt} activities · daily target ${dt}`);
+  updTaskDisp('t7');
+  const wNew=weekPre.mktg+cnt; const mNew=monthPre.mktg+cnt;
+  updWM('w-mktg',wNew,wkly(s.mktg)); updWM('m-mktg',mNew,s.mktg);
+}
+
+function onGroomInput(){
+  const pct=+document.getElementById('groom-pct').value||0;
+  setFill('groom-fill', pct/100, 'groom-pct-lbl', pct+'%');
+  tData['t9']={ groomingPct:pct, remarks:tData['t9']?.remarks||'' };
+  const pts=calcGroom(tData['t9']);
+  updAutoStrip('groom-auto', pts, `${pct}% checklist compliance = ${pts}/10 pts`);
+  updTaskDisp('t9');
+}
+
+/* helpers */
+function setFill(barId, ratio, pctId, pctTxt){
+  const r=Math.min(ratio,1); const el=document.getElementById(barId);
+  if(el) el.style.width=(r*100)+'%';
+  if(pctId){ const pe=document.getElementById(pctId); if(pe) pe.textContent=pctTxt||Math.round(ratio*100)+'%'; }
+}
+function updAutoStrip(id,pts,breakdown){
+  const el=document.getElementById(id); if(!el) return;
+  const c=pts>=8?'var(--green)':pts>=6?'var(--teal)':pts>=4?'var(--amber)':'var(--red)';
+  el.innerHTML=`<div><div class="as-score" style="color:${c}">${pts}<sub style="color:${c}">/10</sub></div></div><div class="as-break">${breakdown}</div>`;
+}
+function updWM(prefix, cur, target){
+  const f=document.getElementById(prefix+'-fill');
+  const v=document.getElementById(prefix+'-val');
+  const t=document.getElementById(prefix.replace('w-','w-').replace('m-','m-')+'-val')?.closest('.wm-row')?.querySelector('.wm-tag');
+  if(f) f.style.width=Math.min(cur/target*100,100)+'%';
+  if(v) v.textContent=cur+' / '+target;
+  const tag=document.querySelector('#'+prefix+'-val')?.closest('.wm-row')?.querySelector('.wm-tag');
+  if(tag){ tag.textContent=cur>=target?'✓ Met':'Target: '+target; tag.className='wm-tag '+(cur>=target?'on':'off'); }
+}
+function togCrit(tid){
+  const el=document.getElementById('cb-'+tid); const tog=document.getElementById('ct-'+tid);
+  const open=el.style.display==='block';
+  el.style.display=open?'none':'block';
+  tog.textContent=open?'Show criteria':'Hide criteria';
+}
+
+/* ──────────────────────────────────────────
+   TASK DISPLAY UPDATE
+────────────────────────────────────────── */
+function updTaskDisp(tid){
+  const pts=getTaskPts(tid); if(pts===null) return;
+  const card=document.getElementById('tc-'+tid);
+  const rc=pts===0?'r0':pts<=4?'r4':pts<=7?'r7':'r10';
+  const isAuto=TASKS.find(x=>x.id===tid)?.type!=='qual';
+  card.className='task-card '+(isAuto?'rauto':rc);
+  const lbl=document.getElementById('tp-'+tid);
+  lbl.textContent=pts+'/10'; lbl.className='tpts scored';
+  updBanner(); updScChips();
+}
+function updBanner(){
+  const rated=TASKS.filter(t=>getTaskPts(t.id)!==null).length;
+  const total=getTotal();
+  // Live score is only meaningful once every task is rated: until then unrated
+  // qual tasks count as 0 over a fixed /100, which understates the standing.
+  // Show a provisional placeholder for the headline figures (display only — the
+  // SAVED value is unaffected; submitAudit still gates on all qual tasks rated).
+  const allRated = rated===TASKS.length;
+  document.getElementById('sb-num').textContent  = allRated ? total : '—';
+  document.getElementById('sb-tasks').textContent=rated+' / 10 rated';
+  document.getElementById('sb-pct').textContent  = allRated ? total+'%' : 'provisional';
+  document.getElementById('sb-fill').style.width=total+'%';
+  const g=getGrade(total);
+  const gb=document.getElementById('sb-grade');
+  gb.textContent = allRated ? g.label : '—';
+  gb.className   = 'gpill '+(allRated ? g.cls : 'g-poor');
+  document.getElementById('sub-done').textContent=rated+' tasks rated';
+  document.getElementById('sub-pts').textContent=total+' / 100 pts';
+  document.getElementById('sub-fill').style.width=total+'%';
+  // Completion meter: progress = rated / total-tasks (10). Defensive (no-throw):
+  // skip silently if any node is absent so a partial DOM never breaks recompute.
+  try{
+    const totalTasks=TASKS.length||10;
+    const pct=Math.max(0,Math.min(100,Math.round((rated/totalTasks)*100)));
+    const cf=document.getElementById('cmpl-fill');
+    const cp=document.getElementById('cmpl-pct');
+    const ct=document.getElementById('cmpl-text');
+    if(cf) cf.style.width=pct+'%';
+    if(cp) cp.textContent=pct+'%';
+    if(ct) ct.textContent=`${rated} task${rated===1?'':'s'} rated · ${total} / 100 pts`;
+  }catch(e){}
+  const qualUnrated=TASKS.filter(t=>t.type==='qual'&&getTaskPts(t.id)===null).length;
+  document.getElementById('sub-sub').textContent=qualUnrated>0
+    ?`Rate ${qualUnrated} more qualitative task${qualUnrated>1?'s':''} to submit`
+    :'All tasks rated — ready to submit';
+}
+function buildScChips(){
+  document.getElementById('sc-grid').innerHTML=TASKS.map(t=>`
+    <div class="sc-chip" id="scc-${t.id}"><div class="sc-n">T${t.n}</div><div class="sc-v" id="scv-${t.id}">—</div></div>`).join('');
+}
+function updScChips(){
+  TASKS.forEach(t=>{
+    const pts=getTaskPts(t.id);
+    const c=document.getElementById('scc-'+t.id);
+    const v=document.getElementById('scv-'+t.id);
+    if(pts===null){ c.className='sc-chip'; v.textContent='—'; return; }
+    c.className='sc-chip p'+pts; v.textContent=pts;
+  });
+}
+
+/* ──────────────────────────────────────────
+   SUBMIT
+────────────────────────────────────────── */
+function submitAudit(){
+  // READ-ONLY past: the model APPENDS, so a back-dated submit would duplicate. Block it.
+  if(stIsPast()){ showToast('Viewing a past day — submission is disabled'); return; }
+  const qualUnrated=TASKS.filter(t=>t.type==='qual'&&getTaskPts(t.id)===null);
+  if(qualUnrated.length){
+    const ul=document.getElementById('unrated-list');
+    ul.style.display='block';
+    ul.textContent='Please rate: '+qualUnrated.map(t=>t.title).join(', ');
+    qualUnrated[0]&&document.getElementById('tc-'+qualUnrated[0].id)?.scrollIntoView({behavior:'smooth',block:'center'});
+    showToast('Rate all qualitative tasks first');
+    return;
+  }
+  document.getElementById('unrated-list').style.display='none';
+
+  const cro  =document.getElementById('f-cro').value.trim();
+  const sm   =document.getElementById('f-sm').value.trim();
+  const date =document.getElementById('f-date').value;
+  const store=document.getElementById('f-store').value;
+  if(!cro)  { showToast('Enter Chief Retail Officer name');  return; }
+  if(!sm)   { showToast('Enter SM name');   return; }
+  if(!date) { showToast('Select a date');   return; }
+  if(!store){ showToast('Select store');    return; }
+
+  // build tasks snapshot
+  const tasks={};
+  TASKS.forEach(t=>{
+    tasks[t.id]={ ...( tData[t.id]||{} ), pts: getTaskPts(t.id)||0 };
+  });
+  const total=getTotal();
+  const all=getAudits();
+  /* cro-dup-guard: locate a target record to REPLACE.
+     - explicit edit (editingId set) → that record; no confirm (user chose to edit).
+     - late-detected accidental dup (same date+store+cro, no Edit used) → keep the
+       existing confirm() so behaviour is unchanged for that path.
+     Match is case/space-insensitive on CRO. */
+  const dupKey=cro.trim().toLowerCase();
+  let tgtIdx=-1;
+  if(editingId){
+    tgtIdx=all.findIndex(a=>a && a.id===editingId);
+  }else{
+    tgtIdx=all.findIndex(a=>a && a.date===date && a.store===store && String(a.cro||'').trim().toLowerCase()===dupKey);
+    if(tgtIdx!==-1){
+      if(!confirm('An audit already exists for this Chief Retail Officer at this store on this date. Replace the existing one?')){
+        showToast('Duplicate audit — not saved');
+        return;
+      }
+    }
+  }
+  let audit;
+  if(tgtIdx!==-1){
+    /* replace: preserve the ORIGINAL id + submittedAt (audit trail); stamp editedAt */
+    const prev=all[tgtIdx];
+    audit={
+      id:prev.id, date, store, cro, sm, total,
+      grade:getGrade(total).label,
+      tasks,
+      submittedAt:prev.submittedAt||new Date().toISOString(),
+      editedAt:new Date().toISOString()
+    };
+    all.splice(tgtIdx,1); // remove the old record so the rebuilt one replaces it (no double-count)
+  }else{
+    audit={
+      id:'a'+Date.now(), date, store, cro, sm, total,
+      grade:getGrade(total).label,
+      tasks,
+      submittedAt:new Date().toISOString()
+    };
+  }
+  all.unshift(audit);
+  localStorage.setItem('cro_audits_v3',JSON.stringify(all));
+  showToast(editingId?'Audit updated':'Audit saved successfully!');
+  editingId=null; // clear edit state before resetForm re-renders
+  showModal(audit);
+  resetForm();
+  renderHistory();
+}
+
+function resetForm(){
+  editingId=null; // cro-dup-guard: leaving edit mode
+  tData={};
+  initTData();
+  buildTasks();
+  updBanner();
+  document.getElementById('f-cro').value='';
+  document.getElementById('f-sm').value='';
+  document.getElementById('unrated-list').style.display='none';
+  updEditNote(); // restore "Save & Submit Audit" label + remove edit note
+  setToday();
+  // re-derive leave filter + clear auto-grooming/context now that fields are blank
+  applyCroLeaveFilter();
+  onCroDateChange();
+}
+
+/* ──────────────────────────────────────────
+   DATA
+────────────────────────────────────────── */
+function getAudits(){ try{ return JSON.parse(localStorage.getItem('cro_audits_v3'))||[]; }catch(e){ return []; } }
+
+/* cro-dup-guard: find an existing audit matching the same date+store+cro
+   (case/space-insensitive on CRO — mirrors submitAudit's dup match). */
+function findDupAudit(date,store,cro){
+  if(!date||!store||!cro) return null;
+  const key=kk(cro);
+  return getAudits().find(a=>a && a.date===date && a.store===store && kk(a.cro)===key)||null;
+}
+
+/* ──────────────────────────────────────────
+   MODAL
+────────────────────────────────────────── */
+function showModal(a){
+  const g=getGrade(a.total);
+  let rows=TASKS.map((t,i)=>{
+    const td=a.tasks?.[t.id]||{}; const pts=td.pts!=null?td.pts:0;
+    let detail='';
+    if(t.type==='nps'){
+      const rr=td.billsCount>0?Math.round((td.npsCollected/td.billsCount)*100):0;
+      detail=`Bills: ${td.billsCount||0} · Surveys: ${td.npsCollected||0} · Response: ${rr}% · NPS Score: ${td.npsScore||0}`;
+    }
+    if(t.type==='reviews')  detail=`Reviews collected: ${td.reviewsCount||0}`;
+    if(t.type==='activity') detail=`Activities done: ${td.activityCount||0}`;
+    if(t.type==='grooming') detail=`Grooming: ${td.groomingPct||0}%`;
+    if(td.remarks) detail+=(detail?' · ':'')+`"${stEsc(td.remarks)}"`;
+    return `<div class="trr"><div class="trr-i">${i+1}</div>
+      <div class="trr-n">${t.title}${detail?`<div class="trr-d">${detail}</div>`:''}</div>
+      <div class="trr-s s${pts}">${pts}/10</div></div>`;
+  }).join('');
+
+  document.getElementById('m-title').textContent=`Audit — ${a.cro}`;
+  document.getElementById('m-body').innerHTML=`
+    <div class="res-score">
+      <div class="res-big">${a.total}<span style="font-size:16px;color:var(--g400)">/100</span></div>
+      <div class="res-bar"><div class="res-fill" style="width:${a.total}%;background:${g.color}"></div></div>
+      <div class="gpill ${g.cls}">${g.label}</div>
+    </div>
+    <div class="mpills">
+      <span class="mpill">📅 ${fmtDate(a.date,true)}</span>
+      <span class="mpill">🏪 ${stEsc(a.store)}</span>
+      <span class="mpill">👤 ${stEsc(a.cro)}</span>
+      <span class="mpill">🔍 SM: ${stEsc(a.sm)}</span>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Task Breakdown</div>
+    ${rows}
+    <button class="print-btn" onclick="loadAuditForEdit('${a.id}')">✎ Edit this audit</button>
+    <button class="print-btn" onclick="printAudit('${a.id}')">🖨 Print / Save as PDF</button>`;
+  document.getElementById('mo').classList.add('show');
+}
+function hideMO(){ document.getElementById('mo').classList.remove('show'); }
+function closeMO(e){ if(e.target===document.getElementById('mo')) hideMO(); }
+
+/* ──────────────────────────────────────────
+   HISTORY
+────────────────────────────────────────── */
+function renderHistory(){
+  const all=getAudits();
+  const cro=(document.getElementById('h-cro')?.value||'').trim().toLowerCase();
+  const from=document.getElementById('h-from')?.value||'';
+  const to=document.getElementById('h-to')?.value||'';
+  const fil=all.filter(a=>{
+    if(cro&&!a.cro.toLowerCase().includes(cro)) return false;
+    if(from&&a.date<from) return false;
+    if(to&&a.date>to) return false;
+    return true;
+  });
+  const se=document.getElementById('hist-stats');
+  const le=document.getElementById('hist-list');
+  if(!se||!le) return;
+
+  if(fil.length){
+    const avg=Math.round(fil.reduce((s,a)=>s+a.total,0)/fil.length);
+    se.innerHTML=`
+      <div class="stat-c"><div class="st-lbl">Audits</div><div class="st-val">${fil.length}</div><div class="st-sub">shown</div></div>
+      <div class="stat-c"><div class="st-lbl">Avg Score</div><div class="st-val">${avg}</div><div class="st-sub">/ 100</div></div>
+      <div class="stat-c"><div class="st-lbl">Best</div><div class="st-val">${Math.max(...fil.map(a=>a.total))}</div><div class="st-sub">score</div></div>
+      <div class="stat-c"><div class="st-lbl">Chief Retail Officers</div><div class="st-val">${new Set(fil.map(a=>a.cro)).size}</div><div class="st-sub">unique</div></div>`;
+  } else se.innerHTML='';
+
+  if(!fil.length){
+    le.innerHTML=`<div class="empty"><div class="empty-ico">📋</div><div class="empty-t">No audits found</div><div class="empty-s">${all.length?'Adjust filters':'Submit your first audit'}</div></div>`;
+    return;
+  }
+  fil.sort((a,b)=>(b.date||'').localeCompare(a.date||'')); var __CAP=150, __more=fil.length>__CAP, __shown=__more?fil.slice(0,__CAP):fil;
+  le.innerHTML=(__more?'<div class="empty-s" style="padding:6px 2px">Showing the '+__CAP+' most recent of '+fil.length+' audits. Use the filters above to narrow.</div>':'')+__shown.map(a=>{
+    const g=getGrade(a.total);
+    return `<div class="hi-item" onclick="showModal(${JSON.stringify(a).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")})">
+      <div class="hi-bar" style="background:${g.color}"></div>
+      <div class="hi-body">
+        <div class="hi-date">${fmtDate(a.date)}</div>
+        <div><div class="hi-cro">${stEsc(a.cro)}</div><div class="hi-store">${stEsc(a.store)} · SM: ${stEsc(a.sm)}</div></div>
+        <div class="hi-spill ${g.cls}">${a.total}/100</div>
+        <button class="hi-del" onclick="delAudit('${a.id}',event)" title="Delete">✕</button>
+      </div></div>`;
+  }).join('');
+  stApplyReadOnly(); // disable delete buttons when viewing a past day
+}
+function delAudit(id,e){
+  e.stopPropagation();
+  // READ-ONLY past: never mutate stored records while viewing history
+  if(stIsPast()){ showToast('Viewing a past day — delete is disabled'); return; }
+  if(!confirm('Delete this audit record?')) return;
+  localStorage.setItem('cro_audits_v3',JSON.stringify(getAudits().filter(a=>a.id!==id)));
+  renderHistory(); showToast('Deleted');
+}
+function clearHF(){
+  document.getElementById('h-cro').value='';
+  document.getElementById('h-from').value='';
+  document.getElementById('h-to').value='';
+  renderHistory();
+}
+
+/* ──────────────────────────────────────────
+   DASHBOARD
+────────────────────────────────────────── */
+function setPeriod(m){
+  dashMode=m; dashOff=0;
+  document.getElementById('pt-week').className ='pt-btn'+(m==='week'?' active':'');
+  document.getElementById('pt-month').className='pt-btn'+(m==='month'?' active':'');
+  renderDash();
+}
+function shiftPeriod(d){ dashOff+=d; renderDash(); }
+/* P1-24 — dashboard store filter toggle */
+function setDashStore(c){
+  dashStore=c;
+  [['ps-all',''],['ps-WLMHW','WLMHW'],['ps-HEMW','HEMW']].forEach(([id,v])=>{
+    const b=document.getElementById(id); if(b) b.classList.toggle('active',v===c);
+  });
+  renderDash();
+}
+
+function getWeekRange(off){
+  // anchored to the SELECTED view date (not the wall-clock today)
+  const n=stAnchorDate(); const day=n.getDay(); const md=day===0?-6:1-day;
+  const mon=new Date(n); mon.setDate(mon.getDate()+md+off*7);
+  const sun=new Date(mon); sun.setDate(sun.getDate()+6);
+  return {start:mon,end:sun};
+}
+function getMonthInfo(off){
+  // anchored to the SELECTED view date (not the wall-clock today)
+  const n=stAnchorDate();
+  const d=new Date(n.getFullYear(),n.getMonth()+off,1);
+  return {year:d.getFullYear(),month:d.getMonth()};
+}
+function dStr(d){ return d.toISOString().split('T')[0]; }
+/* "today" as the module sees it = the selected view date (defaults to real today) */
+function todayStr(){ return stViewDate(); }
+function wkNum(d){ const j=new Date(d.getFullYear(),0,1); return Math.ceil(((d-j)/864e5+j.getDay()+1)/7); }
+
+function renderDash(){ if(dashMode==='week') renderWeekDash(); else renderMonthDash(); }
+
+function renderWeekDash(){
+  const wr=getWeekRange(dashOff); const pr=getWeekRange(dashOff-1);
+  const all=getAudits();
+  let cur=all.filter(a=>a.date>=dStr(wr.start)&&a.date<=dStr(wr.end));
+  let prv=all.filter(a=>a.date>=dStr(pr.start)&&a.date<=dStr(pr.end));
+  // P1-24 — store filter (prv filtered too, so ▲/▼ trends compare like-for-like)
+  if(dashStore){ const f=a=>croStoreCode(a.store)===dashStore; cur=cur.filter(f); prv=prv.filter(f); }
+  const s=getS();
+  const T=getDashTargets(); // P1-24 — effective targets for the active store filter
+  const wT_sur=wkly(T.surveys); const wT_rev=wkly(T.reviews); const wT_mktg=wkly(T.mktg);
+  const fmt=d=>d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('pn-lbl').textContent=`Week ${wkNum(wr.start)}, ${wr.start.getFullYear()}`;
+  document.getElementById('pn-sub').textContent=`${fmt(wr.start)} – ${fmt(wr.end)} · ${cur.length} audit${cur.length!==1?'s':''} · ${dashStore?CRO_STORES.find(x=>x.code===dashStore).short:'All stores'}`;
+
+  const el=document.getElementById('dash-content');
+  if(!cur.length){
+    const sn=dashStore?' — '+CRO_STORES.find(x=>x.code===dashStore).short:'';
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📊</div><div class="empty-t">No audits this week${sn}</div><div class="empty-s">Submit audits to see weekly performance</div></div>`;
+    return;
+  }
+
+  // week-level KPIs
+  const totSur  = cur.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0);
+  const totBills= cur.reduce((s,a)=>s+(a.tasks?.t5?.billsCount||0),0);
+  const totRev  = cur.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0);
+  const totMktg = cur.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0);
+  const npsVals = cur.map(a=>a.tasks?.t5?.npsScore||0).filter(v=>v>0);
+  const avgNPS  = npsVals.length?(npsVals.reduce((a,b)=>a+b,0)/npsVals.length).toFixed(1):'—';
+  const wkRR    = totBills>0?Math.round(totSur/totBills*100):0;
+  const kpiBand = (v,t)=>v>=t?'var(--green)':'var(--amber)';
+
+  const kpiHtml=`<div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-lbl">NPS Surveys</div><div class="kpi-val">${totSur}</div>
+      <div class="kpi-sub">Target: ${wT_sur}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totSur/wT_sur*100,100)}%;background:${kpiBand(totSur,wT_sur)}"></div></div>
+      ${totSur>=wT_sur?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Response Rate</div><div class="kpi-val">${wkRR}%</div>
+      <div class="kpi-sub">Target: ${s.rate}% (${totSur}/${totBills} bills)</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(wkRR/s.rate*100,100)}%;background:${kpiBand(wkRR,s.rate)}"></div></div>
+      ${wkRR>=s.rate?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg NPS Score</div><div class="kpi-val">${avgNPS}</div>
+      <div class="kpi-sub">Target: ≥${s.npsScore}</div>
+      ${avgNPS!=='—'?`<div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(+avgNPS/s.npsScore*100,100)}%;background:${kpiBand(+avgNPS,s.npsScore)}"></div></div>`:''}
+      ${avgNPS!=='—'&&+avgNPS>=s.npsScore?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Google Reviews</div><div class="kpi-val">${totRev}</div>
+      <div class="kpi-sub">Target: ${wT_rev}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totRev/wT_rev*100,100)}%;background:${kpiBand(totRev,wT_rev)}"></div></div>
+      ${totRev>=wT_rev?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Marketing Activities</div><div class="kpi-val">${totMktg}</div>
+      <div class="kpi-sub">Target: ${wT_mktg}/week</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totMktg/wT_mktg*100,100)}%;background:${kpiBand(totMktg,wT_mktg)}"></div></div>
+      ${totMktg>=wT_mktg?'<div class="kpi-met">✓ Weekly target met!</div>':''}
+    </div>
+  </div>`;
+
+  const croMap=groupByCRO(cur,true); const prvMap=groupByCRO(prv);
+  const croHtml=Object.entries(croMap).sort((a,b)=>b[1].avg-a[1].avg).map(([nm,cd])=>{
+    const g=getGrade(cd.avg); const pa=prvMap[nm]?.avg||null;
+    const d=pa!==null?Math.round(cd.avg-pa):null;
+    const tr=d===null?'':`<span class="trend ${d>0?'up':d<0?'dn':'eq'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;
+    const avgN=cd.npsVals.length?(cd.npsVals.reduce((a,b)=>a+b,0)/cd.npsVals.length).toFixed(1):'—';
+    const rr=cd.bills>0?Math.round(cd.surveys/cd.bills*100):0;
+    return `<div class="cpc"><div class="cpc-top" style="background:${g.color}"></div>
+      <div class="cpc-body">
+        <div class="cpc-r1">
+          <div><div class="cpc-name">${stEsc(nm)}</div><div class="cpc-meta">${cd.count} audit${cd.count>1?'s':''}</div></div>
+          <div class="cpc-right">${tr}<div class="cpc-score">${cd.avg}/100</div><div class="gpill ${g.cls}">${g.label}</div></div>
+        </div>
+        <div class="cpc-kpis">
+          <div class="cpc-kpi">Surveys <span class="cpc-kv">${cd.surveys}</span></div>
+          <div class="cpc-kpi">Bills <span class="cpc-kv">${cd.bills}</span></div>
+          <div class="cpc-kpi">Rate <span class="cpc-kv">${rr}%</span></div>
+          <div class="cpc-kpi">NPS <span class="cpc-kv">${avgN}</span></div>
+          <div class="cpc-kpi">Reviews <span class="cpc-kv">${cd.reviews}</span></div>
+        </div>
+      </div></div>`;
+  }).join('');
+
+  const taskRows=taskAvgRows(cur);
+  el.innerHTML=`
+    <div style="margin-bottom:14px">${kpiHtml}</div>
+    <div class="dash-sec-lbl" style="margin-bottom:9px">Chief Retail Officer Performance</div>
+    ${croHtml}
+    <div class="card" style="margin-top:14px"><div class="dash-sec-lbl">Task Averages (weakest first)</div>${taskRows}</div>`;
+}
+
+function renderMonthDash(){
+  const mi=getMonthInfo(dashOff); const pmi=getMonthInfo(dashOff-1);
+  const pfx=`${mi.year}-${String(mi.month+1).padStart(2,'0')}`;
+  const ppfx=`${pmi.year}-${String(pmi.month+1).padStart(2,'0')}`;
+  const all=getAudits();
+  let cur=all.filter(a=>a.date.startsWith(pfx));
+  let prv=all.filter(a=>a.date.startsWith(ppfx));
+  // P1-24 — store filter (prv filtered too, so ▲/▼ trends compare like-for-like)
+  if(dashStore){ const f=a=>croStoreCode(a.store)===dashStore; cur=cur.filter(f); prv=prv.filter(f); }
+  const s=getS();
+  const T=getDashTargets(); // P1-24 — effective targets for the active store filter
+  const mLabel=new Date(mi.year,mi.month,1).toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  document.getElementById('pn-lbl').textContent=mLabel;
+  document.getElementById('pn-sub').textContent=`${cur.length} audit${cur.length!==1?'s':''} · ${new Set(cur.map(a=>a.cro)).size} Chief Retail Officer${new Set(cur.map(a=>a.cro)).size!==1?'s':''} · ${dashStore?CRO_STORES.find(x=>x.code===dashStore).short:'All stores'}`;
+
+  const el=document.getElementById('dash-content');
+  if(!cur.length){
+    const sn=dashStore?' — '+CRO_STORES.find(x=>x.code===dashStore).short:'';
+    el.innerHTML=`<div class="empty"><div class="empty-ico">📈</div><div class="empty-t">No audits for ${mLabel}${sn}</div><div class="empty-s">Submit audits to see monthly KPIs</div></div>`;
+    return;
+  }
+
+  const totSur  =cur.reduce((s,a)=>s+(a.tasks?.t5?.npsCollected||0),0);
+  const totBills=cur.reduce((s,a)=>s+(a.tasks?.t5?.billsCount||0),0);
+  const totRev  =cur.reduce((s,a)=>s+(a.tasks?.t6?.reviewsCount||0),0);
+  const totMktg =cur.reduce((s,a)=>s+(a.tasks?.t7?.activityCount||0),0);
+  const npsVals =cur.map(a=>a.tasks?.t5?.npsScore||0).filter(v=>v>0);
+  const avgNPS  =npsVals.length?(npsVals.reduce((a,b)=>a+b,0)/npsVals.length).toFixed(1):'—';
+  const mRR     =totBills>0?Math.round(totSur/totBills*100):0;
+  const avgSc   =Math.round(cur.reduce((s,a)=>s+a.total,0)/cur.length);
+  const kpiBand =(v,t)=>v>=t?'var(--green)':'var(--amber)';
+
+  // week-by-week breakdown for current month (P1-24: effective targets override globals)
+  const weekBreak = buildWeekBreakdown(cur, mi.year, mi.month, {...s,...T});
+
+  const kpiHtml=`<div class="kpi-strip">
+    <div class="kpi-card"><div class="kpi-lbl">NPS Surveys</div><div class="kpi-val">${totSur}</div>
+      <div class="kpi-sub">Target: ${T.surveys}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totSur/T.surveys*100,100)}%;background:${kpiBand(totSur,T.surveys)}"></div></div>
+      ${totSur>=T.surveys?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Response Rate</div><div class="kpi-val">${mRR}%</div>
+      <div class="kpi-sub">Target: ${s.rate}% (${totSur}/${totBills} bills)</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(mRR/s.rate*100,100)}%;background:${kpiBand(mRR,s.rate)}"></div></div>
+      ${mRR>=s.rate?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg NPS Score</div><div class="kpi-val">${avgNPS}</div>
+      <div class="kpi-sub">Target: ≥${s.npsScore}</div>
+      ${avgNPS!=='—'?`<div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(+avgNPS/s.npsScore*100,100)}%;background:${kpiBand(+avgNPS,s.npsScore)}"></div></div>`:''}
+      ${avgNPS!=='—'&&+avgNPS>=s.npsScore?'<div class="kpi-met">✓ Target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Google Reviews</div><div class="kpi-val">${totRev}</div>
+      <div class="kpi-sub">Target: ${T.reviews}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totRev/T.reviews*100,100)}%;background:${kpiBand(totRev,T.reviews)}"></div></div>
+      ${totRev>=T.reviews?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Marketing Activities</div><div class="kpi-val">${totMktg}</div>
+      <div class="kpi-sub">Target: ${T.mktg}/month</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${Math.min(totMktg/T.mktg*100,100)}%;background:${kpiBand(totMktg,T.mktg)}"></div></div>
+      ${totMktg>=T.mktg?'<div class="kpi-met">✓ Monthly target met!</div>':''}
+    </div>
+    <div class="kpi-card"><div class="kpi-lbl">Avg Audit Score</div><div class="kpi-val">${avgSc}</div>
+      <div class="kpi-sub">/ 100 · ${cur.length} audits</div>
+      <div class="kpi-bar"><div class="kpi-fill" style="width:${avgSc}%;background:${getGrade(avgSc).color}"></div></div>
+    </div>
+  </div>`;
+
+  const croMap=groupByCRO(cur,true); const prvMap=groupByCRO(prv);
+  const croHtml=Object.entries(croMap).sort((a,b)=>b[1].avg-a[1].avg).map(([nm,cd])=>{
+    const g=getGrade(cd.avg); const pa=prvMap[nm]?.avg||null;
+    const d=pa!==null?Math.round(cd.avg-pa):null;
+    const tr=d===null?'':`<span class="trend ${d>0?'up':d<0?'dn':'eq'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;
+    const avgN=cd.npsVals.length?(cd.npsVals.reduce((a,b)=>a+b,0)/cd.npsVals.length).toFixed(1):'—';
+    const rr=cd.bills>0?Math.round(cd.surveys/cd.bills*100):0;
+    return `<div class="cpc"><div class="cpc-top" style="background:${g.color}"></div>
+      <div class="cpc-body">
+        <div class="cpc-r1">
+          <div><div class="cpc-name">${stEsc(nm)}</div><div class="cpc-meta">${cd.count} audit${cd.count>1?'s':''} · ${mLabel}</div></div>
+          <div class="cpc-right">${tr}<div class="cpc-score">${cd.avg}/100</div><div class="gpill ${g.cls}">${g.label}</div></div>
+        </div>
+        <div class="cpc-kpis">
+          <div class="cpc-kpi">📞 Surveys <span class="cpc-kv">${cd.surveys}/${T.surveys}</span></div>
+          <div class="cpc-kpi">📄 Bills <span class="cpc-kv">${cd.bills}</span></div>
+          <div class="cpc-kpi">📊 Rate <span class="cpc-kv">${rr}%</span></div>
+          <div class="cpc-kpi">⭐ NPS <span class="cpc-kv">${avgN}/${s.npsScore}</span></div>
+          <div class="cpc-kpi">🌟 Reviews <span class="cpc-kv">${cd.reviews}/${T.reviews}</span></div>
+        </div>
+      </div></div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div style="margin-bottom:14px">${kpiHtml}</div>
+    ${weekBreak}
+    <div class="dash-sec-lbl" style="margin-bottom:9px">Chief Retail Officer Monthly Performance</div>
+    ${croHtml}
+    <div class="card" style="margin-top:14px"><div class="dash-sec-lbl">Task Averages — ${mLabel} (weakest first)</div>${taskAvgRows(cur)}</div>`;
+}
+
+function buildWeekBreakdown(audits, year, month, s){
+  // group audits into their ISO weeks within this month
+  const weeks={};
+  audits.forEach(a=>{
+    const d=new Date(a.date+'T12:00:00');
+    const wn=wkNum(d);
+    if(!weeks[wn]) weeks[wn]={label:'',audits:[],surveys:0,reviews:0,mktg:0,bills:0,npsVals:[]};
+    weeks[wn].audits.push(a);
+    weeks[wn].surveys +=a.tasks?.t5?.npsCollected||0;
+    weeks[wn].bills   +=a.tasks?.t5?.billsCount||0;
+    weeks[wn].reviews +=a.tasks?.t6?.reviewsCount||0;
+    weeks[wn].mktg    +=a.tasks?.t7?.activityCount||0;
+    const ns=a.tasks?.t5?.npsScore||0;
+    if(ns>0) weeks[wn].npsVals.push(ns);
+  });
+  if(!Object.keys(weeks).length) return '';
+  const wT_sur=wkly(s.surveys); const wT_rev=wkly(s.reviews); const wT_mktg=wkly(s.mktg);
+
+  const rows=Object.entries(weeks).sort((a,b)=>+a[0]-+b[0]).map(([wn,wd])=>{
+    const avgSc=Math.round(wd.audits.reduce((s,a)=>s+a.total,0)/wd.audits.length);
+    const rr=wd.bills>0?Math.round(wd.surveys/wd.bills*100):0;
+    const avgN=wd.npsVals.length?(wd.npsVals.reduce((a,b)=>a+b,0)/wd.npsVals.length).toFixed(1):'—';
+    const g=getGrade(avgSc);
+    const surOk=wd.surveys>=wT_sur; const revOk=wd.reviews>=wT_rev; const mktgOk=wd.mktg>=wT_mktg;
+    return `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--g100);flex-wrap:wrap">
+      <div style="min-width:70px;font-size:11px;font-weight:700;color:var(--g600)">Week ${wn}</div>
+      <div style="font-size:11px;color:var(--g800);flex:1">${wd.audits.length} audits · Avg <b>${avgSc}/100</b></div>
+      <span class="wm-tag ${surOk?'on':'off'}">Sur ${wd.surveys}/${wT_sur}</span>
+      <span class="wm-tag ${rr>=s.rate?'on':'off'}">Rate ${rr}%</span>
+      <span class="wm-tag ${avgN!=='—'&&+avgN>=s.npsScore?'on':'off'}">NPS ${avgN}</span>
+      <span class="wm-tag ${revOk?'on':'off'}">Rev ${wd.reviews}/${wT_rev}</span>
+      <span class="wm-tag ${mktgOk?'on':'off'}">Mktg ${wd.mktg}/${wT_mktg}</span>
+    </div>`;
+  }).join('');
+
+  return `<div class="card" style="margin-bottom:14px">
+    <div class="dash-sec-lbl">Week-by-Week Breakdown</div>
+    <div style="font-size:11px;color:var(--g400);margin-bottom:8px">Weekly targets — Surveys: ${wT_sur} · Reviews: ${wT_rev} · Marketing: ${wT_mktg}</div>
+    ${rows}
+  </div>`;
+}
+
+function groupByCRO(audits, kpi=false){
+  const m={};
+  audits.forEach(a=>{
+    if(!m[a.cro]) m[a.cro]={scores:[],count:0,surveys:0,bills:0,reviews:0,mktg:0,npsVals:[]};
+    m[a.cro].scores.push(a.total); m[a.cro].count++;
+    if(kpi){
+      m[a.cro].surveys +=a.tasks?.t5?.npsCollected||0;
+      m[a.cro].bills   +=a.tasks?.t5?.billsCount||0;
+      m[a.cro].reviews +=a.tasks?.t6?.reviewsCount||0;
+      m[a.cro].mktg    +=a.tasks?.t7?.activityCount||0;
+      const ns=a.tasks?.t5?.npsScore||0; if(ns>0) m[a.cro].npsVals.push(ns);
+    }
+  });
+  Object.values(m).forEach(cd=>{ cd.avg=Math.round(cd.scores.reduce((a,b)=>a+b,0)/cd.scores.length); });
+  return m;
+}
+function taskAvgRows(audits){
+  return TASKS.map(t=>{
+    const vals=audits.map(a=>a.tasks?.[t.id]?.pts||0);
+    const avg=vals.reduce((s,v)=>s+v,0)/vals.length;
+    const color=avg>=7.5?'#16a34a':avg>=5?'#0891b2':avg>=3?'#ca8a04':'#dc2626';
+    return {t,avg,color};
+  }).sort((a,b)=>a.avg-b.avg)
+    .map(({t,avg,color})=>`<div class="thr">
+      <div class="thr-name">${t.title}</div>
+      <div class="thr-bwrap"><div class="thr-bar"><div class="thr-fill" style="width:${(avg/10)*100}%;background:${color}"></div></div></div>
+      <div class="thr-sc" style="color:${color}">${avg.toFixed(1)}/10</div>
+    </div>`).join('');
+}
+
+/* ──────────────────────────────────────────
+   SETTINGS UI
+────────────────────────────────────────── */
+function renderScoringRef(){
+  const s=getS();
+  const el=document.getElementById('scoring-ref'); if(!el) return;
+  el.innerHTML=`<div style="font-size:12px;color:var(--g600);line-height:2">
+    <div><b>Tasks 1–4, 8, 10</b> (qualitative): Not Done <b>0</b> · Below Exp. <b>4</b> · Met Exp. <b>7</b> · Exceeded <b>10</b></div>
+    <div><b>Task 5 — NPS Calling (10 pts)</b><br>
+      &nbsp;&nbsp;Response Rate (5 pts): (Surveys ÷ Bills × 100) ÷ ${s.rate}% × 5<br>
+      &nbsp;&nbsp;NPS Score (5 pts): NPS Score ÷ ${s.npsScore} × 5</div>
+    <div><b>Task 6 — Google Reviews (10 pts)</b>: Reviews ÷ ${daily(s.reviews)} daily target × 10</div>
+    <div><b>Task 7 — Marketing Activity (10 pts)</b>: Activities ÷ ${daily(s.mktg)} daily target × 10</div>
+    <div><b>Task 9 — Grooming (10 pts)</b>: Checklist % ÷ 10</div>
+    <hr style="border:none;border-top:1px solid var(--g200);margin:8px 0">
+    <div><b>Grades:</b> Outstanding ≥90 · Good ≥75 · Satisfactory ≥60 · Below Exp. ≥45 · Poor &lt;45</div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────
+   PRINT
+────────────────────────────────────────── */
+// Escape + post a built print document to the shell's on-screen Preview (Android-safe,
+// adds Print / Save-PDF / Share); desktop standalone falls back to a print window.
+function stEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function stPrintDoc(o){
+  o=o||{};
+  const html='<div id="sp-doc">'+(o.body||'')+'</div>';
+  try{
+    if(window.parent&&window.parent!==window){
+      window.parent.postMessage({type:'ST_PRINT',title:o.title||'Print',css:o.css||'',html:html,orientation:o.orientation||'portrait',fileBase:o.fileBase||o.title},'*');
+      return;
+    }
+  }catch(e){}
+  showToast('Controlled print is available only inside Saagar Control Centre.');
+}
+function printAudit(id){
+  const a=getAudits().find(x=>x.id===id); if(!a) return;
+  const g=getGrade(a.total);
+  const rows=TASKS.map((t,i)=>{
+    const td=a.tasks?.[t.id]||{}; const pts=td.pts!=null?td.pts:0;
+    let detail='';
+    if(t.type==='nps'){ const rr=td.billsCount>0?Math.round(td.npsCollected/td.billsCount*100):0; detail=`Bills: ${td.billsCount||0} | Surveys: ${td.npsCollected||0} | Response: ${rr}% | NPS: ${td.npsScore||0}`; }
+    if(t.type==='reviews') detail=`Reviews: ${td.reviewsCount||0}`;
+    if(t.type==='activity') detail=`Activities: ${td.activityCount||0}`;
+    if(t.type==='grooming') detail=`Grooming: ${td.groomingPct||0}%`;
+    if(td.remarks) detail+=(detail?' | ':'')+`"${td.remarks}"`;
+    return `<tr><td class="stp-c">${i+1}</td><td><b>${stEsc(t.title)}</b></td><td class="stp-mut" style="font-size:8pt">${stEsc(detail)||'—'}</td><td class="stp-c stp-tot">${pts}/10</td></tr>`;
+  }).join('');
+  const body=`<div class="stp-head"><div class="stp-brand">Saagar Traders<small>Store Manager · CRO Audit</small></div><div class="stp-title">SM Audit<small>${stEsc(fmtDate(a.date,true))}</small></div></div>`
+    +`<div class="stp-meta"><span><b>Store:</b> ${stEsc(a.store)}</span><span><b>SM:</b> ${stEsc(a.sm)}</span><span><b>CRO:</b> ${stEsc(a.cro)}</span></div>`
+    +`<div class="stp-cards" style="grid-template-columns:1fr"><div class="stp-card" style="text-align:center"><h4>Total Score</h4><div class="v" style="font-size:26pt">${a.total}<span style="font-size:12pt;color:#888">/100</span></div><div class="stp-mut" style="font-size:9pt">${stEsc(g.label)}</div></div></div>`
+    +`<table class="stp-table"><thead><tr><th style="width:8%">#</th><th style="width:34%">Task</th><th>Details</th><th class="stp-c" style="width:14%">Score</th></tr></thead><tbody>${rows}</tbody></table>`
+    +`<div class="stp-foot">Chief Retail Officer: ${stEsc(a.cro)} · Submitted: ${stEsc(new Date(a.submittedAt).toLocaleString('en-IN'))}</div>`;
+  stPrintDoc({title:`SM Audit — ${a.cro} — ${a.date}`, fileBase:`SM-Audit-${a.cro}-${a.date}`, body});
+}
+
+/* ──────────────────────────────────────────
+   TABS
+────────────────────────────────────────── */
+function go(tab){
+  ['audit','dash','history','settings'].forEach(t=>{
+    document.getElementById('sec-'+t).classList.toggle('active',t===tab);
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });
+  document.getElementById('score-banner').style.display=tab==='audit'?'':'none';
+  if(tab==='history')  renderHistory();
+  if(tab==='dash')     renderDash();
+  if(tab==='settings'){ loadSettingsForm(); renderScoringRef(); }
+}
+
+/* ──────────────────────────────────────────
+   UTILS & INIT
+────────────────────────────────────────── */
+function fmtDate(str,long=false){
+  try{
+    const d=new Date(str+'T12:00:00');
+    return long
+      ?d.toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+      :d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){ return str; }
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+function setToday(){
+  // seed the entry-form date + header from the SELECTED view date (defaults to real today)
+  document.getElementById('f-date').value=stViewDate();
+  document.getElementById('hdate').textContent=stAnchorDate().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+}
+
+/* ──────────────────────────────────────────
+   READ-ONLY GUARD (view-only past)
+   When viewing a PAST day: lock the New-Audit screen (no submit) and any
+   delete/save actions; History + Dashboard stay fully viewable.
+   When viewing today (default): restore the live, editable behavior.
+────────────────────────────────────────── */
+function stApplyReadOnly(){
+  const past=stIsPast();
+  // --- New-Audit submit deck ---
+  const submitDk=document.getElementById('submit-dk');
+  const submitBtn=submitDk?submitDk.querySelector('.sbtn'):null;
+  if(submitBtn){
+    submitBtn.disabled=past;
+    submitBtn.style.opacity=past?'.45':'';
+    submitBtn.style.cursor=past?'not-allowed':'';
+  }
+  // lock the entry-form date input on a past view (it already reflects the viewed day)
+  const fDate=document.getElementById('f-date');
+  if(fDate){ fDate.disabled=past; }
+  // read-only notice inside the submit deck (created once, toggled thereafter)
+  if(submitDk){
+    let note=document.getElementById('st-ro-note');
+    if(past){
+      if(!note){
+        note=document.createElement('div');
+        note.id='st-ro-note';
+        note.className='unrated-list';
+        note.style.display='block';
+        note.style.background='rgba(180,83,9,.18)';
+        note.style.color='var(--gold-pale)';
+        submitDk.insertBefore(note, submitDk.querySelector('.sub-meta'));
+      }
+      note.style.display='block';
+      note.textContent='Viewing '+fmtDate(stViewDate(),true)+' (past) — read-only. Switch to today to record a new audit.';
+    } else if(note){ note.remove(); }
+  }
+  // --- Settings save ---
+  const setSave=document.querySelector('#sec-settings .sbtn[onclick*="saveSettings"]');
+  if(setSave){
+    setSave.disabled=past;
+    setSave.style.opacity=past?'.45':'';
+    setSave.style.cursor=past?'not-allowed':'';
+  }
+  // --- History delete buttons (re-rendered each renderHistory; disable in place) ---
+  document.querySelectorAll('#hist-list .hi-del').forEach(b=>{
+    b.disabled=past;
+    b.style.opacity=past?'.3':'';
+    b.style.cursor=past?'not-allowed':'';
+  });
+}
+
+/* ──────────────────────────────────────────
+   CROSS-MODULE INTEGRATION  (J · K · O2)
+   Reads (read-only) shared contract blobs written by the integration bridge:
+     saagar_gate_status.unavailable  — per-name leave/block map
+     saagar_cro_audit_feed[date][kk] — auto-derived operational inputs
+────────────────────────────────────────── */
+function kk(n){ return String(n||'').trim().toLowerCase(); }
+function readGate(){ try{ return JSON.parse(localStorage.getItem('saagar_gate_status')||'null')||{}; }catch(e){ return {}; } }
+function readCroFeed(){ try{ const f=JSON.parse(localStorage.getItem('saagar_cro_audit_feed')||'null'); return (f&&typeof f==='object')?f:{}; }catch(e){ return {}; } }
+function croFeedEntry(date,cro){
+  if(!date||!cro) return null;
+  const day=readCroFeed()[date];
+  if(!day||typeof day!=='object') return null;
+  return day[kk(cro)]||null;
+}
+/* unavailable today iff entry exists AND .leave===true */
+function leaveBlockedSet(){
+  const un=(readGate()||{}).unavailable||{};
+  const set={};
+  Object.keys(un).forEach(k=>{ const e=un[k]; if(e&&e.leave===true) set[k]=true; });
+  return set;
+}
+
+/* J — filter the CRO datalist to exclude leave-unavailable names today.
+   Idempotent: re-derives from the employee master each call (the trailing
+   populate script and this filter both run on boot / re-fills). SM list is
+   left untouched (an auditor isn't gated). */
+function croMasterOptions(){
+  try{
+    const m=JSON.parse(localStorage.getItem('saagar_employee_master_v1')||'[]');
+    if(!Array.isArray(m)) return [];
+    return m.filter(e=>e&&e.name&&e.active!==false).map(e=>String(e.name));
+  }catch(e){ return []; }
+}
+function applyCroLeaveFilter(){
+  const dl=document.getElementById('cro-dl'); if(!dl) return;
+  const blocked=leaveBlockedSet();
+  const names=croMasterOptions();
+  // if the master is empty (nothing populated yet) leave whatever is there as-is
+  if(!names.length) return;
+  dl.innerHTML=names.filter(n=>!blocked[kk(n)])
+    .map(n=>'<option value="'+n.replace(/"/g,'&quot;')+'"></option>').join('');
+}
+
+/* K — auto-fill grooming % from the feed for the selected cro+date.
+   Feed hit  → set #groom-pct, make it read-only, show "auto" note, run onGroomInput().
+   Feed miss → leave editable, show "manual" note. groomingPct may be null (no checklist). */
+function setGroomNote(kind,text){
+  const inp=document.getElementById('groom-pct'); if(!inp) return;
+  let note=document.getElementById('groom-note');
+  if(!note){
+    note=document.createElement('div');
+    note.id='groom-note';
+    const grp=inp.closest('.metric-grp')||inp.parentNode;
+    (grp.parentNode||grp).insertBefore(note, grp.nextSibling);
+  }
+  note.className='groom-note '+kind;
+  note.textContent=text;
+}
+/* P1-23 — note under #nps-bills (T5 bills prefill); reuses the .groom-note styles */
+function setBillsNote(kind,text){
+  const inp=document.getElementById('nps-bills'); if(!inp) return;
+  let note=document.getElementById('bills-note');
+  if(!text){ if(note) note.remove(); return; }
+  if(!note){
+    note=document.createElement('div');
+    note.id='bills-note';
+    inp.parentNode.appendChild(note); // inside the .mr cell, under the input
+  }
+  note.className='groom-note '+kind;
+  note.textContent=text;
+}
+function autoFillGrooming(){
+  const inp=document.getElementById('groom-pct'); if(!inp) return;
+  const cro=(document.getElementById('f-cro')||{}).value;
+  const date=(document.getElementById('f-date')||{}).value;
+  const fe=croFeedEntry(date,cro);
+  const hasPct = fe && fe.groomingPct!=null && fe.groomingPct!=='';
+  if(hasPct){
+    inp.value=Math.round(Number(fe.groomingPct)||0);
+    inp.readOnly=true; inp.classList.add('ro');
+    inp.dataset.autoFilled='1'; // Audit fix cro-groom-stale: mark this value as auto-filled
+    setGroomNote('auto','✓ auto from grooming checklist');
+    onGroomInput(); // score t9
+  }else{
+    inp.readOnly=false; inp.classList.remove('ro');
+    /* Audit fix cro-groom-stale: if the box was auto-filled for a previous CRO and the
+       newly-selected CRO has no checklist, clear the stale % (and t9 score) so one
+       employee's grooming score isn't saved under another. Manually-typed values are kept. */
+    if(inp.dataset.autoFilled==='1'){
+      inp.value='';
+      inp.dataset.autoFilled='';
+      onGroomInput(); // recompute → clears #groom-pct display and tData.t9.groomingPct
+    }
+    setGroomNote('manual','no checklist — enter manually');
+  }
+}
+
+/* P1-23 — prefill "Bills / Invoices Today" from the QMS feed (qmsSales).
+   Deliberately EDITABLE (never readOnly — divergence from grooming): the store
+   register is the source of truth and the SM can overtype. Manual value wins. */
+function autoFillBills(){
+  const inp=document.getElementById('nps-bills'); if(!inp) return;
+  const cro=(document.getElementById('f-cro')||{}).value;
+  const date=(document.getElementById('f-date')||{}).value;
+  const fe=croFeedEntry(date,cro);
+  const has = fe && fe.qmsSales!=null && fe.qmsSales!=='';
+  const untouched = inp.value==='' || inp.dataset.autoFilled==='1';
+  if(has && untouched){
+    inp.value=Math.round(Number(fe.qmsSales)||0);
+    inp.dataset.autoFilled='1';
+    setBillsNote('auto','✓ auto from QMS — edit if register differs');
+    onNpsInput(); // score t5 via the existing path
+  }else if(!has && inp.dataset.autoFilled==='1'){
+    // stale-clear (mirror cro-groom-stale): don't carry one CRO's count to another
+    inp.value=''; inp.dataset.autoFilled='';
+    setBillsNote('',''); onNpsInput();
+  } // manual value present (untouched===false) → hands off, no note change
+}
+
+/* O2 — read-only operational context banner + advisory hints on t3/t4.
+   Advisory only: does NOT auto-score t3/t4. */
+function fmtINR(n){ n=Number(n)||0; try{ return '₹'+n.toLocaleString('en-IN'); }catch(e){ return '₹'+n; } }
+function setTaskHint(tid,text){
+  const card=document.getElementById('tc-'+tid); if(!card) return;
+  const body=card.querySelector('.task-body'); if(!body) return;
+  let h=document.getElementById('hint-'+tid);
+  if(text){
+    if(!h){ h=document.createElement('div'); h.id='hint-'+tid; h.className='task-hint'; body.insertBefore(h, body.firstChild); }
+    h.innerHTML=text;
+  }else if(h){ h.remove(); }
+}
+function renderCroContext(){
+  const cro=(document.getElementById('f-cro')||{}).value;
+  const date=(document.getElementById('f-date')||{}).value;
+  const fe=croFeedEntry(date,cro);
+  const banner=document.getElementById('cro-ctx');
+  const line=document.getElementById('cro-ctx-line');
+  if(!banner||!line) return;
+  if(!fe){ banner.classList.remove('show'); line.textContent=''; setTaskHint('t3',''); setTaskHint('t4',''); return; }
+  const dsrTxt = fe.dsrSubmitted
+    ? ('DSR submitted'+(fe.dsrScore!=null?' (score '+fe.dsrScore+')':''))
+    : 'DSR not yet submitted';
+  const dsrSales = (fe.dsrSalesCount!=null?fe.dsrSalesCount:0);
+  const dsrAmt   = (fe.dsrSalesAmt!=null?fe.dsrSalesAmt:0);
+  const qmsClosed= (fe.qmsSales!=null?fe.qmsSales:0);
+  const qmsNP    = (fe.qmsNonPurch!=null?fe.qmsNonPurch:0);
+  line.innerHTML=
+    '<b>'+dsrTxt+'</b><span class="ctx-dot">·</span>'
+    +'DSR sales <b>'+dsrSales+'</b> ('+fmtINR(dsrAmt)+')<span class="ctx-dot">·</span>'
+    +'QMS closed <b>'+qmsClosed+'</b> / non-purchase <b>'+qmsNP+'</b>';
+  banner.classList.add('show');
+  // advisory hints (do NOT auto-score)
+  setTaskHint('t3','For reference — recorded today: <b>'+dsrSales+'</b> sale'+(dsrSales===1?'':'s')+' in DSR · <b>'+qmsClosed+'</b> closed in QMS. Verify against register.');
+  setTaskHint('t4','For reference — <b>'+qmsNP+'</b> non-purchase visit'+(qmsNP===1?'':'s')+' logged in QMS'+(fe.dsrNonPurch!=null?' · <b>'+fe.dsrNonPurch+'</b> in DSR':'')+'. Verify footfall tracking.');
+}
+
+/* Orchestrator — run on #f-cro / #f-date / #f-store change, and after buildTasks/reset */
+function onCroDateChange(){
+  loadPreData();   // P1-24: refresh (store-scoped) week/month pre-counts first
+  autoFillGrooming();
+  autoFillBills(); // P1-23: prefill bills from the QMS feed (editable; manual wins)
+  renderCroContext();
+  updDupBanner();
+  // T6: re-sync the per-buyer Google-review list to the selected date, then
+  // re-derive the count from the (cid-keyed) received-ticks. Guarded so it is a
+  // no-op until the T6 card exists in the DOM.
+  if(document.getElementById('rev-buyers')){ croRenderReviewRows(); croReviewDerive(); }
+  // P1-24: re-score with the selected store's targets (refreshes the wm-progress bars)
+  if(document.getElementById('nps-bills')) onNpsInput();
+  if(document.getElementById('rev-cnt')) onRevInput();
+  if(document.getElementById('mktg-cnt')) onMktgInput();
+}
+
+/* cro-dup-guard: proactive "already audited — edit instead?" prompt on the entry
+   form. Shows once Date+Store+CRO identify an existing record AND we are not
+   already editing that same record. Hidden otherwise. Non-blocking. */
+function updDupBanner(){
+  const banner=document.getElementById('cro-dup');
+  const line=document.getElementById('cro-dup-line');
+  const btn=document.getElementById('cro-dup-btn');
+  if(!banner||!line||!btn) return;
+  const cro=(document.getElementById('f-cro')||{}).value;
+  const date=(document.getElementById('f-date')||{}).value;
+  const store=(document.getElementById('f-store')||{}).value;
+  const dup=findDupAudit(date,store,cro);
+  // don't nag while editing the very record that matches
+  if(dup && dup.id!==editingId){
+    line.innerHTML='<b>'+stEsc(dup.cro)+'</b> already audited on '+stEsc(fmtDate(dup.date))+'. Edit the existing audit?';
+    btn.onclick=function(){ loadAuditForEdit(dup.id); };
+    banner.classList.add('show');
+  }else{
+    banner.classList.remove('show');
+    btn.onclick=null;
+  }
+}
+
+/* cro-dup-guard: EDIT-IN-PLACE loader — rehydrate an existing audit back into
+   the entry form + tData, then flag editingId so submitAudit replaces it. */
+function loadAuditForEdit(id){
+  const a=getAudits().find(x=>x.id===id); if(!a) return;
+  hideMO();
+  go('audit');
+  // session fields
+  document.getElementById('f-date').value  = a.date||'';
+  document.getElementById('f-store').value = a.store||'';
+  document.getElementById('f-cro').value   = a.cro||'';
+  document.getElementById('f-sm').value    = a.sm||'';
+  // hydrate tData from the stored task snapshot
+  tData={}; initTData();
+  const src=a.tasks||{};
+  TASKS.forEach(t=>{
+    const td=src[t.id]; if(!td) return;
+    if(t.type==='qual'){ tData[t.id]={ pts:(td.pts!=null?td.pts:null), remarks:td.remarks||'' }; }
+    else if(t.type==='nps'){ tData['t5']={ billsCount:td.billsCount||0, npsCollected:td.npsCollected||0, responseRate:td.responseRate||0, npsScore:td.npsScore||0, remarks:td.remarks||'' }; }
+    else if(t.type==='reviews'){ tData['t6']={ reviewsCount:td.reviewsCount||0, remarks:td.remarks||'', ...(Array.isArray(td.reviewList)?{reviewList:td.reviewList}:{_legacyCount:(td.reviewsCount||0)}) }; }
+    else if(t.type==='activity'){ tData['t7']={ activityCount:td.activityCount||0, remarks:td.remarks||'' }; }
+    else if(t.type==='grooming'){ tData['t9']={ groomingPct:td.groomingPct||0, remarks:td.remarks||'' }; }
+  });
+  editingId=id; // set BEFORE buildTasks so onCroDateChange/updDupBanner sees the edit
+  buildTasks(); // rebuilds cards; reads tData[].pts for qual highlight + remarks; calls onCroDateChange()
+  // buildTasks leaves the quantitative <input>s blank — set their .value from tData then recompute
+  const setV=(elId,val)=>{ const el=document.getElementById(elId); if(el) el.value=val; };
+  setV('nps-bills',   tData['t5']?.billsCount||0);
+  // P1-23 — the buildTasks→onCroDateChange pass may have auto-filled bills; the SAVED
+  // value (just set) must win, and a stale flag must not let a later CRO/date change clobber it
+  const nb=document.getElementById('nps-bills'); if(nb) nb.dataset.autoFilled='';
+  if(typeof setBillsNote==='function') setBillsNote('','');
+  setV('nps-coll',    tData['t5']?.npsCollected||0);
+  setV('nps-score-inp',tData['t5']?.npsScore||0);
+  setV('rev-cnt',     tData['t6']?.reviewsCount||0);
+  setV('mktg-cnt',    tData['t7']?.activityCount||0);
+  // grooming LAST so a since-changed feed auto-fill doesn't clobber the SAVED value
+  const gp=document.getElementById('groom-pct');
+  if(gp){ gp.readOnly=false; gp.classList.remove('ro'); gp.dataset.autoFilled=''; gp.value=tData['t9']?.groomingPct||0; }
+  if(typeof onNpsInput==='function') onNpsInput();
+  if(typeof onRevInput==='function') onRevInput();
+  if(typeof onMktgInput==='function') onMktgInput();
+  if(typeof onGroomInput==='function') onGroomInput();
+  updBanner();
+  updEditNote();
+  updDupBanner();
+  showToast('Loaded audit for editing');
+}
+
+/* cro-dup-guard: persistent "editing existing audit" note in the submit deck +
+   submit-button relabel. Toggled by editingId; reset in resetForm(). */
+function updEditNote(){
+  const submitDk=document.getElementById('submit-dk');
+  const btn=submitDk?submitDk.querySelector('.sbtn'):null;
+  if(btn) btn.innerHTML = editingId ? 'Save Changes' : 'Save &amp; Submit Audit';
+  if(!submitDk) return;
+  let note=document.getElementById('edit-note');
+  if(editingId){
+    if(!note){
+      note=document.createElement('div');
+      note.id='edit-note';
+      note.className='unrated-list';
+      note.style.display='block';
+      note.style.background='rgba(184,146,42,.2)';
+      note.style.color='var(--gold-pale)';
+      submitDk.insertBefore(note, submitDk.querySelector('.cmpl-meter'));
+    }
+    note.style.display='block';
+    note.textContent='Editing existing audit — saving replaces it.';
+  }else if(note){ note.remove(); }
+}
+
+/* Re-render every view that depends on the viewed day. Called on the
+   'st-date' event. Pure READ + re-render — never writes/auto-creates. */
+function stReRender(){
+  setToday();              // re-seed #f-date + #hdate from the new view date
+  buildTasks();            // re-anchors week/month pre-totals (loadPreData) + live entry
+  updBanner();
+  renderDash();            // dashboard now anchors to the selected date's week/month
+  if(document.getElementById('sec-history')?.classList.contains('active')) renderHistory();
+  stApplyReadOnly();       // lock/unlock submit + save + delete for the new view date
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setToday();
+  initTData();
+  buildTasks();
+  updBanner();
+  renderDash();
+  applyCroLeaveFilter();
+  onCroDateChange();
+  stApplyReadOnly();       // apply read-only state if the shell seeded a past __stAsOf
+});
+
+/* shell view-date rail: the user picked a different day to VIEW */
+window.addEventListener('st-date', function(e){
+  var v = e && e.detail;
+  if(stIsValidYMD(v)) window.__stAsOf = v;   // adopt the new viewed day (ignore junk)
+  stReRender();
+});
+</script>
+<script>(function(){function ld(){try{var m=JSON.parse(localStorage.getItem("saagar_employee_master_v1")||"[]");if(!Array.isArray(m))return;var o=m.filter(function(e){return e&&e.name&&e.active!==false;}).map(function(e){return '<option value="'+String(e.name).replace(/"/g,"&quot;")+'"></option>';}).join("");["cro-dl","sm-dl"].forEach(function(id){var dl=document.getElementById(id);if(dl)dl.innerHTML=o;});/* J: re-apply leave filter to the CRO list after every (re)populate; SM list stays unfiltered */if(typeof window.applyCroLeaveFilter==="function")window.applyCroLeaveFilter();}catch(e){}}document.addEventListener("DOMContentLoaded",ld);ld();setTimeout(ld,800);})();</script>
+
+<style id="st-v5-back-style">
+#st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
+  background:linear-gradient(135deg,#0d2340,#18385f);border:2px solid rgba(184,146,42,.7);color:#fff;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(13,35,64,.35);
+  transition:transform .15s,box-shadow .15s,border-color .15s;padding:0;outline:none}
+#st-v5-home-fab:hover{transform:scale(1.12);box-shadow:0 8px 26px rgba(13,35,64,.45);border-color:#b8922a}
+#st-v5-home-fab:active{transform:scale(.96)}
+#st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+@media print{#st-v5-home-fab{display:none!important}}
+@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}#st-v5-next-chips{bottom:124px;right:14px}}
+#st-v5-next-chips{position:fixed;bottom:140px;right:22px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+#st-v5-next-chips button{background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;border:1px solid rgba(184,146,42,.7);border-radius:999px;padding:8px 14px;font:700 12px 'DM Sans',Arial,sans-serif;box-shadow:0 6px 18px rgba(13,35,64,.35);cursor:pointer}
+@media print{#st-v5-next-chips{display:none!important}}
+/* Auto-hide both FABs while a module modal/overlay is open (boot script toggles st-v5-modalopen),
+   so they never sit over a dialog's Cancel/inputs. On mobile the boot script also reserves bottom
+   safe-area so the FABs never cover the last row / per-row action buttons. */
+html.st-v5-modalopen #st-v5-home-fab,html.st-v5-modalopen #st-v5-next-chips{display:none!important}
+/* Mobile nav aids only — on Desktop the persistent left nav + back button cover this, and the FABs overlapped module content. */
+html:not(.bcc-mobile) #st-v5-home-fab,html:not(.bcc-mobile) #st-v5-next-chips{display:none!important}
+</style>
+<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<div id="st-v5-next-chips"></div>
+<script id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});var steps=[];var host=document.getElementById('st-v5-next-chips');if(host&&steps.length){steps.forEach(function(s){var c=document.createElement('button');c.type='button';c.textContent=s.label;c.onclick=function(){try{parent.postMessage({type:'ST_OPEN_MODULE',id:s.id},'*')}catch(e){}};host.appendChild(c);});}var R=document.documentElement;function onM(){try{return R.classList.contains('bcc-mobile');}catch(e){return false;}}function pad(){try{if(!onM()){if(document.body)document.body.style.removeProperty('padding-bottom');return;}if(!document.body)return;var ih=window.innerHeight||0,need=0;['st-v5-home-fab','st-v5-next-chips'].forEach(function(id){var el=document.getElementById(id);if(!el)return;var cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;var r=el.getBoundingClientRect();if(!r.height)return;var fb=ih-r.top;if(fb>need)need=fb;});if(need>0)document.body.style.setProperty('padding-bottom',Math.ceil(need+16)+'px','important');}catch(e){}}function modalUp(){try{var q=document.querySelectorAll('[class~="modal"],[class~="overlay"],[class~="sheet"],[role="dialog"],#firm-modal,.drawer');var iw=window.innerWidth||0,ih=window.innerHeight||0;for(var i=0;i<q.length;i++){var el=q[i],cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0')continue;var r=el.getBoundingClientRect();if(r.width>=iw*0.5&&r.height>=120&&r.bottom>0&&r.top<ih)return true;}return false;}catch(e){return false;}}function tick(){try{R.classList.toggle('st-v5-modalopen',modalUp());pad();}catch(e){}}var sch=function(){clearTimeout(tick._t);tick._t=setTimeout(tick,180);};if(document.readyState!=='loading')tick();else document.addEventListener('DOMContentLoaded',tick);[400,1200].forEach(function(d){setTimeout(tick,d);});window.addEventListener('resize',sch);try{new MutationObserver(sch).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});}catch(e){}})();</script>
+
+<style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style><script id="st-v5-emp-assist-script">(function(){var KEY='saagar_employee_master_v1';var CKEY='saagar_master_customers';var CSEL=[];function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}function unav(){try{var g=JSON.parse(localStorage.getItem('saagar_gate_status')||'{}');var u=(g&&g.unavailable)||{};var s={};Object.keys(u).forEach(function(k){if(u[k]&&u[k].leave)s[k]=1;});return s;}catch(e){return{}}}function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');var bl=unav();return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name&&!bl[String(e.name).trim().toLowerCase()]}):[]}catch(e){return[]}}function readC(){try{var x=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(x)?x.filter(function(c){return c&&c.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var custs=CSEL.length?readC():[];var __act='';try{__act=localStorage.getItem('saagar_acting_as')||'';}catch(e){}var __g='';try{__g=localStorage.getItem('saagar_gate_status')||'';}catch(e){}var sig='E:'+emps.map(function(e){return e.name}).join('|')+'||C:'+custs.map(function(c){return c.name}).join('|')+'||G:'+__g.length;var selA=['#cro-inp','#staff-name-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-dtn','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(el.readOnly||el.disabled)return;if(el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list');if(__act&&!el.__stPre&&el.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|number|date|file)$/i.test(el.type||'')&&!el.value){el.value=__act;el.__stPre=1;}})})}if(custs.length){CSEL.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-customer-list')el.setAttribute('list','st-v5-customer-list')})})}var dl=document.getElementById('st-v5-employee-list');var cOk=CSEL.length?!!document.getElementById('st-v5-customer-list'):true;if(sig===__sig&&dl&&cOk)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+esc(e.name)+'"></option>'}).join('');if(CSEL.length){var cdl=document.getElementById('st-v5-customer-list');if(!cdl){cdl=document.createElement('datalist');cdl.id='st-v5-customer-list';document.body.appendChild(cdl)}cdl.innerHTML=custs.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.mobile?' label="'+esc(c.mobile)+'"':'')+'></option>'}).join('')}__sig=sig;}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();</script>
+
+<script id="st-v5-module-audit-bridge">(function(){var nativeSet=localStorage.setItem.bind(localStorage),nativeRemove=localStorage.removeItem.bind(localStorage),sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;if(window.SaagarMah4&&window.SaagarMah4.audit)window.SaagarMah4.audit(action,String(key),before,after)}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();</script>
+</body>
+</html>

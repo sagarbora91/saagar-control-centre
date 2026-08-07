@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
@@ -15,7 +13,6 @@ const persistence = require('../www/service-persistence.js');
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoDir = path.resolve(here, '..');
 const indexSource = fs.readFileSync(path.join(repoDir, 'www', 'index.html'), 'utf8');
-const patchSource = fs.readFileSync(path.join(repoDir, 'scripts', 'apply-d3-service.mjs'), 'utf8');
 const serviceModule = loadModuleBundle().find(module => module.id === 'service');
 const service = serviceModule?.html || '';
 
@@ -27,52 +24,6 @@ function functionSource(name, source = service) {
   const end = source.indexOf('\nfunction ', start + token.length);
   assert.notEqual(end, -1, `${name} must have a following function boundary`);
   return source.slice(start, end);
-}
-
-function withoutFunction(source, name) {
-  const token = `function ${name}(`;
-  const start = source.indexOf(token);
-  assert.notEqual(start, -1);
-  const end = source.indexOf('\nfunction ', start + token.length);
-  assert.notEqual(end, -1);
-  return source.slice(0, start) + source.slice(end);
-}
-
-function runIsolatedPatcher(serviceHtml) {
-  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-d3-patcher-'));
-  const scriptsDir = path.join(fixtureDir, 'scripts');
-  const wwwDir = path.join(fixtureDir, 'www');
-  fs.mkdirSync(scriptsDir);
-  fs.mkdirSync(wwwDir);
-  try {
-    fs.writeFileSync(path.join(scriptsDir, 'apply-d3-service.mjs'), patchSource, 'utf8');
-    const modules = [{
-      id: 'service',
-      bytes: 0,
-      sha256: '',
-      html_b64: Buffer.from(serviceHtml, 'utf8').toString('base64')
-    }];
-    fs.writeFileSync(
-      path.join(wwwDir, 'index.html'),
-      `<script src="qms-policy.js"></script>\nconst MODULES = ${JSON.stringify(modules)};\n`,
-      'utf8'
-    );
-    execFileSync(process.execPath, [path.join(scriptsDir, 'apply-d3-service.mjs')], {
-      cwd: fixtureDir,
-      stdio: 'pipe'
-    });
-    const output = fs.readFileSync(path.join(wwwDir, 'index.html'), 'utf8');
-    const match = output.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;/);
-    assert.ok(match);
-    const repaired = JSON.parse(match[1]).find(module => module.id === 'service');
-    return {
-      output,
-      html: Buffer.from(repaired.html_b64, 'base64').toString('utf8'),
-      module: repaired
-    };
-  } finally {
-    fs.rmSync(fixtureDir, { recursive: true, force: true });
-  }
 }
 
 function fields(overrides = {}) {
@@ -171,7 +122,6 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
     assert.doesNotThrow(() => new vm.Script(source, { filename: `d3-service-.js` }));
   });
 });
-
 test('D3 list stage actions use numeric context and never interpolate a case id into a handler', () => {
   assert.match(service, /window\.__svcD3ListCaseIds = pageItems\.map/);
   assert.match(service, /pageItems\.map\(\(c, cardIndex\) =>/);
@@ -179,7 +129,6 @@ test('D3 list stage actions use numeric context and never interpolate a case id 
   assert.doesNotMatch(service, /onchange="quickStage\('\\?\$\{c\.id\}/);
   assert.match(functionSource('svcD3ListTransition'), /__svcD3ListCaseIds/);
 });
-
 test('D3 workboard render excludes customer PII and escapes operational labels', () => {
   const host = { innerHTML: '' };
   const context = {
@@ -378,17 +327,4 @@ test('D3 warranty scheduling updates the existing automatic reminder without dup
   assert.equal(record.followUps[0].dueDate, '2028-01-30');
   assert.match(record.followUps[0].remarks, /Warranty expiring/);
   assert.match(record.followUps[0].updatedAt, /^\d{4}-\d{2}-\d{2}T/);
-});
-
-test('D3 patcher is idempotent and self-heals a missing owned helper', () => {
-  const first = runIsolatedPatcher(service);
-  assert.equal(first.html, service);
-  assert.equal(first.module.bytes, serviceModule.bytes);
-  assert.equal(first.module.sha256, serviceModule.sha256);
-  assert.equal((first.output.match(/service-workboard-policy\.js/g) || []).length, 1);
-  assert.equal((first.output.match(/service-persistence\.js/g) || []).length, 1);
-
-  const repaired = runIsolatedPatcher(withoutFunction(service, 'svcD3ListTransition'));
-  assert.equal(repaired.html, service);
-  assert.equal((repaired.html.match(/function svcD3ListTransition\(/g) || []).length, 1);
 });

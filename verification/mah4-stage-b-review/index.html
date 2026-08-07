@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>MAH-4 Stage B failure-path evidence</title>
+<script src="../../www/shared/mah4-runtime.js"></script></head><body>
+<h1>MAH-4 Stage B deterministic failure paths</h1><ol id="results"></ol>
+<script>
+(function(){
+  function clock(){var jobs=[];return{jobs:jobs,setTimeout:function(fn,ms){var x={fn:fn,ms:ms};jobs.push(x);return x;},clearTimeout:function(x){var i=jobs.indexOf(x);if(i>=0)jobs.splice(i,1);}};}
+  function frame(){var sent=[];return{sent:sent,contentWindow:{postMessage:function(message,origin){sent.push({message:message,origin:origin});}}};}
+  function event(host,frame,message){return{source:frame.contentWindow,origin:location.origin,data:Object.assign({channel:'saagar.module',version:1,moduleId:'planning',instanceId:host.instanceId},message)};}
+  function row(name,pass,detail){var li=document.createElement('li');li.setAttribute('data-case',name);li.setAttribute('data-pass',pass?'true':'false');li.textContent=name+': '+(pass?'PASS':'FAIL')+' — '+detail;document.getElementById('results').appendChild(li);}
+  var c1=clock(),f1=frame(),close1;var h1=SaagarMah4Runtime.createHost({moduleId:'planning',frame:f1,scheduler:c1,onClosed:function(x){close1=x;}});h1.loaded({language:'en',date:'2026-08-07',uiMode:'mobile'});var ready=c1.jobs.filter(function(x){return x.ms===5000;})[0];ready.fn();row('ready-timeout',h1.state==='FORCED_CLOSED'&&close1.code==='ready-timeout','5000 ms, '+close1.code);
+  var c2=clock(),f2=frame(),close2;var h2=SaagarMah4Runtime.createHost({moduleId:'planning',frame:f2,scheduler:c2,onClosed:function(x){close2=x;}});h2.loaded({language:'en',date:'2026-08-07',uiMode:'mobile'});h2.message(event(h2,f2,{type:'ST_ERROR',messageId:'error.synthetic.init',payload:{code:'init.failed',phase:'init',recoverable:true}}));row('init-error-fail-closed',h2.state==='FORCED_CLOSED'&&close2.code==='module-error:init.failed',close2.code);
+  var c3=clock(),f3=frame(),close3;var h3=SaagarMah4Runtime.createHost({moduleId:'planning',frame:f3,scheduler:c3,onClosed:function(x){close3=x;}});h3.loaded({language:'en',date:'2026-08-07',uiMode:'mobile'});var init=f3.sent[0].message;h3.message(event(h3,f3,{type:'ST_READY',messageId:'ready.synthetic',replyTo:init.messageId,payload:{runtimeVersion:'1.0.0',capabilities:['lifecycle-v1']}}));h3.message(event(h3,f3,{type:'ST_ERROR',messageId:'error.synthetic.runtime',payload:{code:'runtime.retry',phase:'runtime',recoverable:true}}));row('runtime-error-recoverable',h3.state==='READY','state '+h3.state);h3.dispose('switch');var dispose=c3.jobs.filter(function(x){return x.ms===1500;})[0];dispose.fn();row('dispose-timeout',h3.state==='FORCED_CLOSED'&&close3.code==='dispose-timeout','1500 ms, '+close3.code);
+  document.documentElement.setAttribute('data-review-complete','true');
+})();
+</script></body></html>

@@ -1,7 +1,7 @@
 # D5 Stock — Variance Triage, Reconciliation, and the First Modular Extraction
 
 **Date:** 2026-08-04 (Asia/Kolkata)
-**Baseline:** pushed `main` = `origin/main` = `aee75cc`; D5 working tree suite 275/275
+**Baseline:** D5 pushed on `main` = `origin/main` at `c04bc98255a78d45b08ac449d88365b22d033f28`; suite 275/275
 **Scope authority:** `docs/V6-IMPROVEMENT-ROAD-PLAN.md` §4 wave D5; improvement inventory §4
 **Migration authority:** `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`, **incremental variant selected by the owner 2026-08-04**
 **Status:** D5-M1 and D5-S1-S3 engineering complete and APK-verified; owner-reported M1 smoke received; formal device acceptance pending

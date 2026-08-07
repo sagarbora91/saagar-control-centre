@@ -1,13 +1,130 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-04 (Asia/Kolkata), pushed baseline `aee75cc`; D5 working tree complete
+**Updated:** 2026-08-07 (Asia/Kolkata), MAH-4 Stage-B Planning canary checkpoint
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
-**Programme status:** Phase 0 and D1-D4 are pushed; D5 is engineering-complete but uncommitted. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
+**Programme status:** D1-D5 remain on `main`; the cumulative C1/MAH-1–MAH-4 Stage-A engineering tranche is committed and pushed on `agent/c1-mah4-foundation` at implementation commit `0909972`, pending review/merge. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
 
-## Current D5 working-tree update
+> **Latest active resume point:**
+> verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md.
+> MAH-4 Stage B has started with a Planning-only product canary. The rendered
+> exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle passed. `ST_ERROR`,
+> timeout/error rendered cases, API-23 evidence and the remaining ten modules
+> are pending. The working tree is intentionally dirty and this Stage-B work
+> has not been committed or pushed.
 
-- Pushed baseline remains `main` = `origin/main` = `aee75cc`; D5 has not been
-  committed or pushed.
+## Current MAH-4 message/lifecycle update
+
+- Stage A is engineering-complete without changing a product byte. Profile
+  schema 3 binds the exact MAH-3 `www` tree, reconciled direct/dynamic inventory,
+  executable protocol/lifecycle oracle and its synthetic tests.
+- The oracle freezes 20 exact contracts, authorization, immutable compatibility
+  normalization, correlation, state, deadlines, deduplication and synchronous
+  tracked cleanup. Raw legacy `ST_AUDIT` migration remains blocked.
+- Verification is green: focused MAH-4 **37/37**, combined modular **58/58**,
+  explicit offline **256/256**, and complete regression glob **347/347**.
+- This is engineering evidence only. Runtime loading, API-23 timing/entropy,
+  expected origin, browser/device/native-language and production acceptance
+  remain false.
+- Stage B remains blocked by MAH-3 rendered review (`0/168`) and the complete
+  Planning → DSR → QMS canary chain. Exact evidence and next steps are in the
+  final MAH-4 Stage-A checkpoint above.
+
+## Current MAH-3 shared-runtime canary update
+
+- Phase 3 is explicitly bound to the post-C1 shared-runtime canary, not the
+  master-plan money phase, C3 release or historical module splitting.
+- A loopback-only manual runner binds the raw profile, complete `www` snapshot
+  and runner bundle to exact SHA-256 identities and serves immutable bytes.
+- All 168 cases use real shell-hosted surfaces; modules open through
+  `openModule()` and both shell and nested geometry are recorded.
+- A deterministic non-PII Planning fixture covers targets, actuals and
+  checklist layout. Empty/default topology remains the coverage limit for the
+  other ten modules; all review states are not claimed.
+- The in-app browser process failed at Windows ACL sandbox startup. Rendered
+  review is therefore 0/168 and `visualBaselinesCaptured=false`.
+- MAH-3-focused verification remains green at 7/7. The current combined modular
+  gate is 58/58, explicit offline is 256/256 and complete regression glob is
+  347/347 after MAH-4 Stage A.
+- Planning runtime extraction, manifest shared-asset binding, DSR/QMS canaries,
+  MAH-4 Stage-B runtime wiring and CSS extraction remain gated on reviewed
+  evidence with `refactorGateReady=true`.
+- Run `npm run review:mah3`; export/import is identity-bound and never upgrades
+  browser evidence into device or native-language acceptance.
+
+## Current MAH-2 shared architecture update
+
+- One synchronous schema-v1 manifest is authoritative for all eleven modules;
+  its records and lookup API are immutable and fail closed on schema/path drift.
+- The shell, inventory, extraction tools, security-test loaders and seeded build
+  now consume or verify the external authority instead of parsing an inline array.
+- Every module byte count/SHA matches. Stale base64 diagnostics and dead prewarm
+  scheduling were corrected; the separately gated historical fallback remains.
+- MAH-4 Stage-A specification is complete. Shared runtime, MAH-4 Stage-B product
+  wiring, CSS extraction and module splitting have not started. Planning follows
+  only after the pending rendered baseline.
+- Full evidence and exact next steps are in the MAH-2 checkpoint above.
+
+## Current MAH-1 modular protection update
+
+- The owner authorized MAH-1 on 2026-08-06 as a post-C1 protection workstream;
+  it is not the legacy ETP “Phase 1” and does not admit PHP or storage work.
+- A reproducible inventory now covers the shell and all eleven modules:
+  paths, bytes/SHA, assets, messages, parent dependencies, storage literals,
+  inline scripts/styles, tables, timers, observers and breakpoints.
+- The versioned profile defines 14 surfaces × 4 viewports × 3 languages = 168
+  minimum visual cases and permanently records that visual/device acceptance is
+  still false until evidence exists.
+- The modular suite is 8/8 green and is part of the offline pre-gate. A verified
+  narrow-Desktop leak was fixed by scoping every phone-shell selector to
+  `html.bcc-mobile`.
+- External-file/base64 migration is complete, but the full historical M0–M6
+  target is not: shared runtime, module splits, shell slimming and rendered
+  baselines remain open. See the latest MAH-1 checkpoint above.
+
+## Current C1 completion update
+
+- All eleven modules are external local files; no runtime `html_b64` payloads
+  remain. D2/D3/D4 patchers and their patcher-only test are retired.
+- D6-D12 non-ETP controls are implemented through the shared offline C1 control
+  desk and shell traceability card. D7 incentive and ETP-derived D10 metrics are
+  explicitly pending C2.
+- Phone remediation now covers the shell and all eleven modules. Browser
+  engineering checks passed at 360/390/412 portrait, 800 landscape and 1365
+  desktop; this is not physical-device acceptance.
+- Settings is no longer a clipped horizontal tab rail. It is an 11-route,
+  grouped vertical Settings home with search and live summaries; phones use an
+  explicit home/detail/Back stack and desktop uses master/detail. Existing
+  security, backup, privacy, sync and reset handlers are preserved.
+- Verification: C1 12/12; mobile 6/6; Settings 8/8; language 4/4; modular 8/8;
+  full 297/297; offline 256/256 after the C1, mobile, Settings, language and
+  modular pre-gates; two-year seeded runtime 1/1; the earlier Gradle debug
+  assembly passed.
+- Shared language propagation is fixed across the shell and all eleven modules.
+  A resumed bounded vocabulary pass raised each Marathi/Hindi dictionary to 860
+  unique phrases and a static-candidate audit measured 1,155/1,641 (70.4%). This
+  is engineering coverage only: proper names and business data remain unchanged,
+  while dense Service, Payroll, QMS, Tax and legal/domain wording still needs a
+  fluent native review.
+- Review APK: `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`,
+  6,793,233 bytes, SHA-256
+  `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`.
+- Clean source and generated Android assets were restored to
+  `DEMO_SEED_ENABLED=false` after packaging.
+- The owner authorized publication; the cumulative engineering tree is now
+  committed and pushed for review on `agent/c1-mah4-foundation`. A live
+  wide-browser recheck was blocked by the browser's localhost safety
+  policy, so no new wide-desktop visual evidence is claimed. Formal device
+  acceptance stays open. See
+  `verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md`.
+  Responsive details are in
+  `verification/C1-MOBILE-LAYOUT-REMEDIATION-2026-08-04.md`; the Settings-only
+  checkpoint is
+  `verification/C1-SETTINGS-NAVIGATION-REDESIGN-2026-08-04.md`.
+
+## Current D5 completion update
+
+- D5 is committed and pushed; `main` = `origin/main` =
+  `c04bc98255a78d45b08ac449d88365b22d033f28`.
 - D5-M1 and D5-S1-S3 are engineering-complete: external Stock module, pure
   variance policy, additive brand-day triage, advisory Stock/DSR/QMS
   reconciliation, and ranked variance drill-down.
@@ -24,32 +141,74 @@
   this as owner-reported D5-S1-S3 smoke evidence, not formal acceptance: device
   metadata, named observations, and evidence files were not supplied.
 
+## Consolidated phase direction - 2026-08-04
+
+The owner directed fewer, larger phases and fewer repetitive APK test cycles.
+The controlling phase/cadence document is
+`docs/SAAGAR-MINIMUM-PHASE-CONSOLIDATED-STRATEGY-2026-08-04.md`: C1 completes
+remaining Android engineering and migration, C2 completes E1-E6, and C3 runs
+one consolidated formal acceptance and production release campaign. Automated
+tests and restartable commits remain internal safeguards, not owner-facing
+phases. C1 engineering, architecture catch-up, D6-D12 controls, the mobile
+defect sweep, and the Settings navigation redesign are complete and published
+on the review branch. The current post-C1 action is the MAH-3 rendered
+baseline; runtime extraction stays
+gated until that review is complete. MAH-4 Stage A is complete and returns for
+Stage B only after Planning → DSR → QMS. C2 remains blocked on representative
+ETP exports and owner data decisions.
+
 ## Read this first
 
-- `main` and `origin/main` are both at `aee75cc` (pushed 2026-08-04). The working tree intentionally contains uncommitted D5 engineering changes; no D5 commit has been made.
-- **`npm run test:offline` is 272/272; the full `tests/*.test.mjs` glob is 275/275.** The offline script lists files explicitly; all three D5 test files are included.
-- **API-22 exception RETIRED (owner confirmed 2026-07-29: all field devices are Android 6+).** Production `minSdkVersion = 23`, stamped by `apply-overrides.js` with FATAL guards; supersedes the earlier OD-K1 "keep 22, fail-open plaintext" ruling.
+- `main` and `origin/main` remain at `c04bc98255a78d45b08ac449d88365b22d033f28` (D5 pushed 2026-08-04). The current C1/MAH-1/MAH-2/MAH-3/MAH-4 Stage-A engineering tree is committed and pushed on `agent/c1-mah4-foundation`; implementation commit `0909972`.
+- **Current automated evidence:** MAH-4 focused 37/37, modular 58/58, C1 12/12,
+  mobile 6/6, Settings 8/8 and language 4/4 pass; the explicit offline suite
+  is 256/256 and the complete glob is 347/347. Rendered review remains 0/168.
 - **The build needs the bundled JDK 17**, not the system Java 8: `JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10"`. Gradle 8.2.1 will not run on Java 8.
 - PHP platform work (Track B / P1 onward) is **deferred by the owner and outside the current scope**. Do not start it without fresh owner direction.
-- **The two blocking inputs are both owner-side, not engineering:** the Phase 0 nominations form (unblocks every device gate) and the ETP sample exports from both stores (unblocks the entire E-series). Engineering can continue on D5-D12 without either.
+- **The two blocking inputs are both owner-side:** the Phase 0 nominations form (unblocks every formal device gate) and the ETP sample exports from both stores (unblocks the entire E-series). C1 code is ready for owner review; E-series implementation must not invent the missing exports.
 
 ## Repository and build snapshot
 
 | Item | Current fact |
 |---|---|
-| Pushed baseline | `aee75cc` on `origin/main` - documentation-only multi-agent verification protocol. D5-M1 remains uncommitted. |
-| Permanent regression suite | `npm run test:offline` **262/262**; full glob **265/265** (2026-08-04, D5-M1 working tree). |
-| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-D5-M1-Stock-Extraction-debug.apk` - 6,615,576 bytes, SHA-256 `2A0524F35943D4CF3505781AFE86EB347476B05C4E89740C962142F6C4F95CAC`. Unpacked: Stock is a real local asset, ten modules remain embedded, and Stock has zero remote asset references. Debug/device review only. |
+| Pushed baseline | `c04bc98255a78d45b08ac449d88365b22d033f28` on `origin/main` - D5 Stock controls and first modular extraction. |
+| Review publication | `agent/c1-mah4-foundation`, implementation commit `0909972` - cumulative C1 plus MAH-1 through MAH-4 Stage A; not merged to `main`. |
+| Permanent regression suite | MAH-4 **37/37**, modular **58/58**, C1 **12/12**, mobile **6/6**, Settings **8/8**, language **4/4**, explicit offline **256/256**, full glob **347/347** (2026-08-07). |
+| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` - 6,793,233 bytes, SHA-256 `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`. All eleven modules are real local assets; phone remediation and the Settings navigation redesign are included. Debug/device review only. |
 | APK identity | `com.saagartraders.bcc`, version 2.9, versionCode 209, min API 23, target API 34. |
 | APK posture | `android:allowBackup=false`; **debug certificate**; suitable for device acceptance only. All four native plugins present in the dex. |
 | Production signing | Fails closed when production signing secrets are absent. No production release exists. |
 | Seed posture | Clean source has `DEMO_SEED_ENABLED=false`; the seeded APK sets it `true` only at packaging time in the git-ignored `android/` output, never in committed source. Never use demo data for production acceptance. |
 
-**Older APKs referenced further down this file are superseded** by the D4 build above. The v2.9 pair (`SaagarCC-BKP03-DAT02-v2.9-debug.apk`, `SaagarCC-DemoData-v2.9.apk`) predate D1-D4 and must not be used for a current functional pass.
+**Older APKs and hashes referenced further down this file are superseded** by
+the current C1 review APK above. They must not be used for a current functional
+or mobile-layout pass.
 
 ## Programme inventory - 2026-08-04
 
-### Completed and on main
+### Current authoritative inventory
+
+- D1-D5 are committed and pushed on baseline `c04bc982...`.
+- C1 is engineering-complete and published for review on
+  `agent/c1-mah4-foundation`: all eleven modules are external,
+  D6-D12 non-ETP controls are present, base64 patchers are retired, and the
+  shell/module phone defect sweep is green in browser rendering. The later
+  Settings redesign is green in source/runtime tests but still needs owner
+  device layout evidence because automated localhost browser control was
+  unavailable after crash recovery.
+- Explicit commit/push approval was received and used for the review branch.
+  Owner formal device evidence and all C3 acceptance gates remain pending.
+- C2/E1-E6 remains blocked on representative raw R022, R025, R013, and R003
+  exports for WLMHW and HEMW plus the documented dictionaries, reconciliation,
+  date, parser, unknown-code, and incentive decisions.
+- PHP, optional E7, and F1-F15 remain excluded/deferred unless the owner gives
+  fresh direction.
+
+The detailed inventory immediately below records the pre-C1 planning state and
+is retained for traceability. Where it conflicts with this current inventory,
+the current inventory and the consolidated C1 checkpoint control.
+
+### Historical pre-C1 inventory - superseded
 
 | Item | Evidence |
 |---|---|
@@ -107,7 +266,7 @@ D7 and D10 are *better* after the E-series supplies verified data but are not bl
 | **E** ETP verification layer | **6-7** | E1-E6 plus optional E7 |
 | **F** PHP platform / Track B | unscoped | Deferred; needs fresh owner direction |
 
-**D1-D4 are done, so roughly 4 complete and 20 remaining before PHP.** M3 (split module internals) is folded into each D-wave rather than run separately; M5 (retire patchers) lands with M1-catchup.
+**Historical estimate superseded:** the former "4 complete and 20 remaining" count predates D5 and C1 consolidation. Use the minimum-phase strategy and the MAH-1 checkpoint for current sequencing; ETP and PHP remain excluded here.
 
 ### Remaining - backlog
 
@@ -121,7 +280,10 @@ D7 and D10 are *better* after the E-series supplies verified data but are not bl
 
 ### Working tree
 
-Clean. `main` equals `origin/main` at `62132c4`. No feature branch outstanding; `d4-dsr-completion` was merged and deleted.
+The cumulative engineering tree is committed and pushed on
+`agent/c1-mah4-foundation`; `main` remains at `c04bc98255a78d45b08ac449d88365b22d033f28`.
+Only the unused superseded `verification/mah3-visual-review/review.js` draft is
+intentionally left local and untracked. Do not add or delete it accidentally.
 
 ### Multi-agent handoff protocol
 
@@ -129,14 +291,19 @@ More than one agent works this repository. To make handovers verifiable:
 
 | Marker | Value |
 |---|---|
-| **Last Claude-authored verified baseline** | `62132c4` — suite 260/260, `test:offline` 257/257, tree clean |
+| **Historical Claude-authored trust anchor** | `62132c4` - suite 260/260, `test:offline` 257/257, tree clean; retained as history, not the current resume state |
 | **Onboarding prompt for a fresh agent** | `docs/AGENT-RESUME-PROMPT-2026-08-04.md` §1 |
 | **Files any agent must keep current** | same file, §2 |
 | **Prompt to verify another agent's work, then resume** | `docs/CLAUDE-VERIFY-AND-RESUME-PROMPT.md` §1 |
 
-The verified-baseline SHA in `CLAUDE-VERIFY-AND-RESUME-PROMPT.md` is the trust anchor: it means *a reviewed session ended there with a green suite and a clean tree*. Advance it only after a verification pass actually passes — advancing it to an unverified commit launders unreviewed work into the trusted baseline, which is the one thing that protocol exists to prevent.
+The older resume/verification prompts still describe the historical `62132c4`
+clean-tree trust anchor. They are not the current resume point; use the
+publication checkpoint at the top of this handoff. Refresh those prompts only
+after Sagar approves a new baseline commit.
 
-**Any commit after `62132c4` that Claude did not author was written by another agent and must be independently verified before it is built upon.** Do not trust a commit message; re-derive its claims from the code and the tests.
+**Current rule:** review the publication branch and its draft PR before merge.
+The 2026-08-07 approval covered this publication only; any later commit, merge,
+direct-main push or production action requires its own authority.
 
 This repository has a specific failure history that verification must target:
 
@@ -223,16 +390,22 @@ No source test, APK build, or debug signature may mark these rows passed. Record
 
 ## Safe resume order
 
-**Pick the track that is actually unblocked.** As of 2026-08-04 the device track waits on the owner; the engineering track does not.
+**Pick the track that is actually unblocked.** As of 2026-08-04 the remaining
+C1 action is owner review and publication; C2 data engineering waits on exports.
 
-**Track 1 - engineering, unblocked today.** Build D5 (stock variance triage) following the D4 pattern: read the real module payload first, write a change contract in `docs/audit/`, then a pure policy in `www/`, then a deterministic patcher in `scripts/apply-d5-*.mjs`, then policy + integration tests, then a debug APK verified by unpacking. Add every new test file to `npm run test:offline` or CI will skip it.
+**Track 1 - C1 review and publication.** Install the current named seeded APK.
+Verify Settings category reachability, search, phone detail Back, Android
+hardware/gesture Back, Appearance, People, Security, Data & backup and desktop
+master/detail. Record this as owner-reported smoke unless the formal evidence
+catalogue is completed. If satisfactory, the owner may explicitly authorize a
+scoped commit and push of the dirty C1/Settings tree.
 
 **Track 2 - E-series, blocked.** Chase the seven owner inputs in `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`. Freeze E1's schema only once real exports from both stores are in hand. Do not design E2-E6 before then.
 
 **Track 3 - device and Phase 0 acceptance, blocked on the nominations form.** Once it arrives:
 
 1. **Authorise the controlled two-device test pass**: nominate two devices (API 23+), an approved off-device provider folder/account, and a 12+ character recovery passphrase.
-2. **Run the module-wise functional catalogue** on the seeded APK (`SaagarCC-DemoData-v2.9.apk`) using `SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`'s test IDs (CORE/QMS/SVC/DSR/STK/EXP/GRM/CRO/PAY/LEV/TAX/PLN/RPT/SEC/LEG). Stop on any P0/P1 defect.
+2. **Run the module-wise functional catalogue** on the current seeded APK (`SaagarCC-C1-DemoData-2Years-v2.9.apk`) using `SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`'s test IDs (CORE/QMS/SVC/DSR/STK/EXP/GRM/CRO/PAY/LEV/TAX/PLN/RPT/SEC/LEG). Stop on any P0/P1 defect.
 3. **Run the four device drills** from `DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md` (DAT-02 five-save, BKP-03 provider delivery, cross-device restore, legacy migration) on both devices and record a dated evidence log using the template at the end of that script.
 4. **If a device gate fails, make only the targeted correction.** In particular, any DAT-02 failure means the worker/storage-engine rewrite is required before acceptance can continue.
 5. **Obtain legal/owner and operating evidence** while the app is being exercised: policy approval, staff UAT, incident rehearsal, and restore-custodian evidence.
@@ -249,23 +422,26 @@ JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10" npm r
 ```
 
 ```powershell
+npm run test:c1
+npm run test:mobile
+npm run test:settings
 npm run test:offline
-npm run build:release
+npm run test:seeded-runtime
+npm run build:apk:seeded-2y
 ```
 
-Re-applying a module patcher is safe and idempotent as of `9b54a44`; each is a byte-level no-op on an already-patched bundle:
-
-```bash
-node scripts/apply-d2-qms.mjs && node scripts/apply-d3-service.mjs && node scripts/apply-d4-dsr.mjs
-```
-
-`build:apk` performs the Capacitor sync and reapplies Android overrides. `build:release` is expected to stop with `Signed release blocked` until real production signing credentials are supplied; that is the correct fail-closed result.
+The D2/D3/D4 patchers are retired and deleted; do not recreate or run them.
+`build:apk` performs the Capacitor sync and reapplies Android overrides.
+`build:release` is expected to stop with `Signed release blocked` until real
+production signing credentials are supplied; that is the correct fail-closed
+result.
 
 ## Evidence and references
 
 **Current programme (2026-08-02 onward):**
 
 - Programme blueprint, D/E/F waves, live sequence and phase count: `docs/V6-IMPROVEMENT-ROAD-PLAN.md`
+- Current C1 Settings navigation architecture and test/APK evidence: `verification/C1-SETTINGS-NAVIGATION-REDESIGN-2026-08-04.md`
 - Modular HTML migration strategy (M0-M6, the equivalence oracle, the origin risk): `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`
 - D5 change contract — variance triage + the first extraction, with three open owner questions: `docs/audit/D5-STOCK-CHANGE-CONTRACT-2026-08-04.md`
 - D4 change contract, engineering verification, APK checksum, device cases D4-01..08: `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md`
@@ -341,7 +517,83 @@ The working tree contains a reviewed **D1 engineering-complete / acceptance-pend
 - Representative-device layout, interaction, and performance evidence remains the explicit D1 acceptance item; no device pass is claimed.
 - Every Phase 0 device/provider/restore/legal/UAT/security/signing row above remains **PENDING**. The new debug APK is not a formal or production release.
 - No PHP/platform work was started.
+
+### ETP domain specification incorporated into planning — 2026-08-07
+
+- Adopted external specification:
+  `V:\Co work\Titan\audit-program-designer\SAAGAR_CONTROL_CENTRE_ETP_MODULE_SPEC.md`
+  version 1.0.
+- It is the domain/target-design authority for report catalogues, fingerprints,
+  mappings, reconciliation and tests. The consolidated Android plan and an
+  approved change contract remain authoritative for privacy, sealed storage,
+  platform scope and acceptance.
+- HEMW remains mandatory for E1 both-store completion; version 1.0 currently
+  contains WLMHW and Service evidence and cannot close that gate.
+- Raw PII retention and server/REST assumptions were not adopted. Android keeps
+  the stricter pre-write PII drop, unknown-field refusal, offline native SQLite
+  and API-23 requirements. PHP remains excluded.
+- Delivery is consolidated into ETP-A Retail ingestion, ETP-B sealed facts/UI,
+  ETP-C verified reconciliation/views, and ETP-D Service extension.
+- Earlier E1 work exists separately at `agent/e1-etp-import` commit `070841e`.
+  Selectively integrate it only after reviewing the five saved policy findings;
+  do not merge the branch blindly.
+
+### Planning shared-runtime completion and seeded APK — 2026-08-07
+
+- Branch `agent/c1-mah4-foundation`; implementation base HEAD
+  `7ae0e0c8421d82c9bd4937a4684c0f8b25ab34c8`.
+- Working tree remains intentionally dirty. Nothing in this phase was committed
+  or pushed.
+- MAH-3 baseline: 168/168 browser cases. Planning post-extraction matrix:
+  12/12, with zero readiness or hard-geometry failures.
+- Manifest schema 2 binds `www/shared/module-runtime.js`; Planning uses it at
+  all six original helper positions. Business CSS and JavaScript retain their
+  baseline hashes.
+- Verification: MAH-3 11/11, MAH-4 37/37, modular 63/63, security 100/100,
+  offline 256/256 and complete glob 352/352.
+- Seeded review APK:
+  `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`;
+  6,633,967 bytes; SHA-256
+  `0BC2EC1D51802D2D1FECFB486CC555609930D0096057EE1F22EDD0F1F00517FF`.
+- Build parity verified the manifest and shared runtime. Source and generated
+  Android shells were restored to `DEMO_SEED_ENABLED = false`.
+- This debug APK and browser evidence do not establish physical-device,
+  native-language, production-signing or production acceptance.
+- On first reported opening, the fail-closed storage screen showed
+  `STORE_UNAVAILABLE`; one safe retry recovered it, after which the owner
+  reported the app working normally. This is owner-reported smoke evidence,
+  not formal device acceptance. App data was not cleared.
+- Preserve excluded draft `verification/mah3-visual-review/review.js`.
+- Next: DSR and QMS shared-runtime canaries before MAH-4 Stage B.
 - Nothing in this checkpoint is committed or pushed; owner review/approval is required first.
+
+### 2026-08-07 — MAH Runtime Completion canary gate
+
+- DSR access/timer and QMS timer/mobile-menu shared-runtime canaries are complete.
+- QMS rendered review passed 12/12 cases with zero readiness, hard-geometry or
+  root-overflow findings. Direct rendered interactions passed menu open, scrim
+  close, and CRO Rotation navigation with drawer closure.
+- Exact QMS evidence:
+  `verification/mah3-visual-review/MAH3-QMS-CANARY-EVIDENCE-2026-08-07.json`.
+- Verification: MAH-3 19/19, modular 63/63, offline 256/256, complete glob
+  360/360; `git diff --check` has no whitespace errors.
+- Browser evidence does not establish physical-device or native-language
+  acceptance. MAH-4 Stage B is unblocked but has not started.
+- Working tree remains intentionally dirty. No commit or push was performed.
+
+### 2026-08-07 — MAH-4 Stage B Planning canary
+
+- Stage B has started with Planning only. The shell and module completed the
+  exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle in rendered browser
+  testing; frame removal occurred after `DISPOSED:planning`.
+- The second shared runtime is manifest-bound and covered by Android package
+  parity checks. MAH-3 is 19/19, MAH-4 42/42, modular 68/68, offline 256/256
+  and the complete glob 365/365.
+- `ST_ERROR`, timeout/error rendered cases, API-23 evidence and the remaining
+  ten-module rollout are pending. Raw `ST_AUDIT` migration remains blocked.
+- Resume from
+  `verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md`.
+- No commit, push or APK build was performed.
 ### Pause / exact resume point
 
 - Work stopped at the owner's request because the device battery was low. All edits are saved locally; no commit or push was made.
@@ -606,3 +858,21 @@ pending owner review.
   from branch `agent/d1-d3-native-sqlite`; use Git history for its immutable
   commit identifier.
 - No PHP/platform work was started.
+
+## Current handoff — MAH-4 Stage B runtime completion (2026-08-07)
+
+Resume from `verification/MAH4-STAGE-B-RUNTIME-COMPLETION-2026-08-07.md`.
+The eleven-module lifecycle rollout, `ST_ERROR`, and rendered deterministic
+timeout/error cases are complete and regression green. API-23 source-level
+compatibility evidence passes, but no API-23 device/emulator was available, so
+physical acceptance is still open. Raw legacy `ST_AUDIT` migration remains
+blocked. Preserve the intentionally dirty tree and do not commit, push or build
+an APK without owner approval.
+
+## MAH-4 remaining-runtime closeout handoff — 2026-08-07
+
+Resume from `verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md`.
+The MAH-4 runtime API-23 timing/entropy evidence and raw audit retirement are
+complete. Full tests are 369/369. Do not reopen raw before/after transport.
+Whole-app stock-WebView API-23 syntax compatibility is a newly identified,
+separate follow-on; emulator evidence is not owner physical-device acceptance.

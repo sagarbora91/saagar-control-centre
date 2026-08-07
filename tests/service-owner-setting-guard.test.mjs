@@ -4,20 +4,16 @@ import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { loadModuleBundle } from './lib/module-bundle.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const index = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
-
-function modules() {
-  const match = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;/);
-  assert.ok(match, 'expected embedded module registry');
-  return JSON.parse(match[1]);
-}
+const moduleBundle = loadModuleBundle();
 
 function decoded(id) {
-  const module = modules().find(value => value.id === id);
-  assert.ok(module, `expected ${id} module`);
-  return Buffer.from(module.html_b64, 'base64').toString('utf8');
+  const module = moduleBundle.find(function (value) { return value.id === id; });
+  assert.ok(module, 'expected ' + id + ' module');
+  return module.html;
 }
 
 function extractFunction(source, name) {

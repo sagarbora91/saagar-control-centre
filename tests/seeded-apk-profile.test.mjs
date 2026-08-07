@@ -18,6 +18,10 @@ test('production-oriented source remains clean while the seeded builder targets 
   assert.match(index, /\bvar\s+DEMO_SEED_ENABLED\s*=\s*false\s*;/);
   assert.doesNotMatch(index, /\bvar\s+DEMO_SEED_ENABLED\s*=\s*true\s*;/);
   assert.match(build, /generatedIndexPath/);
+  assert.match(build, /sourceManifestPath/);
+  assert.match(build, /generatedManifestPath/);
+  assert.ok(build.includes('sourceManifest.equals(generatedManifest)'));
+  assert.ok(build.includes('shellAt <= manifestAt'));
   assert.match(build, /var DEMO_SEED_ENABLED = true;/);
   assert.match(build, /daysBack:\s*730/);
   assert.match(build, /walkInsPerWorkingDay:\s*25/);

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "profileId": "mh1-modular-protection-2026-08-06",
+  "baseline": {
+    "branch": "main",
+    "head": "c04bc98255a78d45b08ac449d88365b22d033f28",
+    "workingTree": "intentionally-dirty",
+    "visualBaselinesCaptured": false,
+    "physicalDeviceAccepted": false
+  },
+  "languages": ["en", "mr", "hi"],
+  "viewports": [
+    { "id": "phone-360", "width": 360, "height": 800, "uiMode": "mobile" },
+    { "id": "phone-412", "width": 412, "height": 915, "uiMode": "mobile" },
+    { "id": "compact-800", "width": 800, "height": 600, "uiMode": "mobile" },
+    { "id": "desktop-1365", "width": 1365, "height": 768, "uiMode": "desktop" }
+  ],
+  "surfaces": [
+    "shell-home",
+    "settings-home",
+    "settings-detail",
+    "stock",
+    "service",
+    "qms",
+    "dsr",
+    "expense",
+    "grooming",
+    "cro_audit",
+    "payroll",
+    "leave",
+    "tax",
+    "planning"
+  ],
+  "minimumVisualCases": 168,
+  "commonModuleAssets": [
+    "../../mobile-layout.css",
+    "../../app-i18n.js"
+  ],
+  "commonModuleMarkers": [
+    "st-v5-iframe-shim",
+    "st-v5-safety-net",
+    "st-v5-module-audit-bridge",
+    "st-v5-home-fab"
+  ],
+  "accessBridgeModules": ["stock", "service", "dsr", "expense"],
+  "modules": [
+    {
+      "id": "stock",
+      "path": "modules/stock/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"stock\"", ".store-nav", ".tab-nav"],
+      "reviewStates": ["opening-entry", "closing-lock", "variance-report"]
+    },
+    {
+      "id": "service",
+      "path": "modules/service/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"service\"", ".stage-chips"],
+      "reviewStates": ["new-order", "workboard", "delivery-close"]
+    },
+    {
+      "id": "qms",
+      "path": "modules/qms/index.html",
+      "risk": "high",
+      "responsiveSelectors": [".q-tabs"],
+      "reviewStates": ["queue", "customer-intake", "manager-workspace"]
+    },
+    {
+      "id": "dsr",
+      "path": "modules/dsr/index.html",
+      "risk": "high",
+      "responsiveSelectors": [".tab-nav"],
+      "reviewStates": ["daily-entry", "non-purchase", "manager-audit"]
+    },
+    {
+      "id": "expense",
+      "path": "modules/expense/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"expense\"", ".twrap"],
+      "reviewStates": ["entry", "cash-statement", "ledger-report"]
+    },
+    {
+      "id": "grooming",
+      "path": "modules/grooming/index.html",
+      "risk": "medium",
+      "responsiveSelectors": [".tabs"],
+      "reviewStates": ["checklist", "daily-summary", "month-report"]
+    },
+    {
+      "id": "cro_audit",
+      "path": "modules/cro_audit/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"cro_audit\"", ".submit-dk"],
+      "reviewStates": ["audit-entry", "score-summary", "report-actions"]
+    },
+    {
+      "id": "payroll",
+      "path": "modules/payroll/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"payroll\"", ".bottom-nav"],
+      "reviewStates": ["attendance", "salary-computation", "payslip-report"]
+    },
+    {
+      "id": "leave",
+      "path": "modules/leave/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"leave\"", ".header-actions", ".cal-wrapper"],
+      "reviewStates": ["request", "calendar", "approvals"]
+    },
+    {
+      "id": "tax",
+      "path": "modules/tax/index.html",
+      "risk": "high",
+      "responsiveSelectors": ["data-mod=\"tax\"", ".hd-right", ".view-tabs"],
+      "reviewStates": ["action-centre", "compliance-entry", "evidence-report"]
+    },
+    {
+      "id": "planning",
+      "path": "modules/planning/index.html",
+      "risk": "medium",
+      "responsiveSelectors": [".tabs"],
+      "reviewStates": ["festival-plan", "targets", "prep-checklist"]
+    }
+  ]
+}

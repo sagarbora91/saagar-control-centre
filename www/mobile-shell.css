@@ -1,0 +1,59 @@
+/* Phone-only shell remediation. Desktop layout is intentionally unchanged. */
+@media (max-width: 480px) {
+  html.bcc-mobile button,
+  html.bcc-mobile input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  html.bcc-mobile select,
+  html.bcc-mobile textarea,
+  html.bcc-mobile .btn,
+  html.bcc-mobile [role="button"] { min-height: 44px !important; }
+  html.bcc-mobile .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    padding: calc(7px + var(--safe-top)) 10px 8px;
+  }
+  html.bcc-mobile .brand { width: 100%; gap: 8px; }
+  html.bcc-mobile .mark { width: 34px; height: 34px; border-radius: 9px; }
+  html.bcc-mobile .brand-meta h1 {
+    display: block;
+    font-size: 17px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  html.bcc-mobile .brand-meta p { display: none; }
+  html.bcc-mobile .top-actions {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) repeat(3, 44px);
+    width: 100%;
+    gap: 6px;
+  }
+  html.bcc-mobile .topbar .role-select {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 44px;
+  }
+  html.bcc-mobile .top-actions .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+  html.bcc-mobile .build-badge[hidden] { display: none !important; }
+  html.bcc-mobile .build-badge:not([hidden]) {
+    align-self: center;
+    justify-self: start;
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  html.bcc-mobile .home-bar { align-items: flex-start; gap: 8px; }
+  html.bcc-mobile .home-store-context { min-width: 0; }
+  html.bcc-mobile .home-store { overflow-wrap: anywhere; }
+  html.bcc-mobile .home-store-picker select { min-height: 44px; }
+  html.bcc-mobile .home-bell { width: 44px; height: 44px; flex: 0 0 44px; }
+  html.bcc-mobile .hero-eye { min-width: 44px; min-height: 44px; }
+  html.bcc-mobile .botnav .tab { min-height: 56px; }
+  html.bcc-mobile a.refresh,
+  html.bcc-mobile .section-head a,
+  html.bcc-mobile .section-head button { min-height: 44px; display: inline-flex; align-items: center; }
+}

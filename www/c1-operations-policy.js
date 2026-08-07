@@ -1,0 +1,15 @@
+(function(root,factory){var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarC1OperationsPolicy=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  'use strict';
+  function n(v){v=Number(v);return Number.isFinite(v)?v:0;}
+  function text(v){return typeof v==='string'?v.trim():'';}
+  function iso(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'';}
+  function daysBetween(a,b){var x=Date.parse(iso(a)+'T00:00:00Z'),y=Date.parse(iso(b)+'T00:00:00Z');return Number.isFinite(x)&&Number.isFinite(y)?Math.floor((y-x)/86400000):null;}
+  function readiness(items){var a=Array.isArray(items)?items:[],missing=a.filter(function(x){return x&&x.required!==false&&!x.done;}).map(function(x){return text(x.label)||'Required item';});return{ok:missing.length===0,total:a.length,done:a.length-missing.length,missing:missing};}
+  function ageing(rows,today){return(Array.isArray(rows)?rows:[]).filter(function(r){return r&&String(r.status||'open').toLowerCase()!=='paid'&&n(r.balance||r.outstanding||r.amount)>0;}).map(function(r){var due=iso(r.dueDate||r.due||r.date),age=due?daysBetween(due,today):null;return{id:String(r.id||''),name:text(r.customer||r.name)||'Unassigned',amount:n(r.balance||r.outstanding||r.amount),dueDate:due,ageDays:age===null?null:Math.max(0,age),bucket:age===null?'unknown':age>60?'60+':age>30?'31-60':age>7?'8-30':'0-7'};}).sort(function(a,b){return(b.ageDays||-1)-(a.ageDays||-1)||b.amount-a.amount;});}
+  function monthVariance(current,previous){var c=n(current),p=n(previous),d=c-p;return{current:c,previous:p,delta:d,pct:p?Math.round(d/p*1000)/10:null};}
+  function coverage(active,away,minimum){var a=Math.max(0,n(active)),w=Math.max(0,n(away)),m=Math.max(0,n(minimum));return{active:a,away:w,available:Math.max(0,a-w),minimum:m,ok:Math.max(0,a-w)>=m,shortfall:Math.max(0,m-Math.max(0,a-w))};}
+  function coaching(records){var a=(Array.isArray(records)?records:[]).filter(function(r){return r&&Number.isFinite(Number(r.score!=null?r.score:r.pct));});if(!a.length)return{count:0,average:null,lowest:null,followups:0};var scores=a.map(function(r){return n(r.score!=null?r.score:r.pct);});return{count:a.length,average:Math.round(scores.reduce(function(x,y){return x+y;},0)/scores.length),lowest:Math.min.apply(Math,scores),followups:scores.filter(function(x){return x<80;}).length};}
+  function forecast(forecastValue,actualValue){var f=n(forecastValue),a=n(actualValue),d=a-f;return{forecast:f,actual:a,variance:d,attainment:f?Math.round(a/f*1000)/10:null};}
+  function taxReadiness(input){input=input&&typeof input==='object'?input:{};return readiness([{label:'Ledger reconciled',done:input.ledger===true},{label:'GST rates reviewed',done:input.rates===true},{label:'Supporting evidence complete',done:input.evidence===true},{label:'Return reviewed by owner/CA',done:input.review===true}]);}
+  return{readiness:readiness,ageing:ageing,monthVariance:monthVariance,coverage:coverage,coaching:coaching,forecast:forecast,taxReadiness:taxReadiness,daysBetween:daysBetween};
+});

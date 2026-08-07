@@ -5,12 +5,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { loadModuleBundle } from './lib/module-bundle.mjs';
 
 const require = createRequire(import.meta.url);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const index = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
 const policySource = fs.readFileSync(path.join(root, 'www/module-pin-policy.js'), 'utf8');
 const policy = require('../www/module-pin-policy.js');
+const moduleBundle = loadModuleBundle();
 
 const MODULE_IDS = [
   'stock',
@@ -147,18 +149,10 @@ function functionContaining(pattern, source = index) {
   return namedFunctions(source).find(item => pattern.test(item.source));
 }
 
-function parseModules() {
-  const match = index.match(/\bconst\s+MODULES\s*=\s*(\[[\s\S]*?\])\s*;/);
-  assert.ok(match, 'expected injected MODULES registry');
-  return JSON.parse(match[1]);
-}
-
 function decodedModule(id) {
-  const mod = parseModules().find(item => item.id === id);
-  assert.ok(mod, `expected ${id} module`);
-  return mod.html_b64
-    ? Buffer.from(mod.html_b64, 'base64').toString('utf8')
-    : fs.readFileSync(path.join(root, 'www', mod.src), 'utf8');
+  const mod = moduleBundle.find(function (item) { return item.id === id; });
+  assert.ok(mod, 'expected ' + id + ' module');
+  return mod.html;
 }
 
 function calledInjectionNames() {
