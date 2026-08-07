@@ -33,6 +33,8 @@ const generatedManifestPath = path.join(
 );
 const sourceRuntimePath = path.join(repoDir, 'www', 'shared', 'module-runtime.js');
 const generatedRuntimePath = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public', 'shared', 'module-runtime.js');
+const sourceMah4RuntimePath = path.join(repoDir, 'www', 'shared', 'mah4-runtime.js');
+const generatedMah4RuntimePath = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public', 'shared', 'mah4-runtime.js');
 const builtApkPath = path.join(
   androidDir,
   'app',
@@ -96,6 +98,9 @@ if (!sourceManifest.equals(generatedManifest)) {
 }
 if (!fs.readFileSync(sourceRuntimePath).equals(fs.readFileSync(generatedRuntimePath))) {
   throw new Error('Generated Android shared runtime does not byte-match www/shared/module-runtime.js');
+}
+if (!fs.readFileSync(sourceMah4RuntimePath).equals(fs.readFileSync(generatedMah4RuntimePath))) {
+  throw new Error('Generated Android MAH-4 runtime does not byte-match www/shared/mah4-runtime.js');
 }
 const generatedClean = fs.readFileSync(generatedIndexPath, 'utf8');
 const manifestTag = '<script src=' + JSON.stringify('module-manifest.js') + '></script>';

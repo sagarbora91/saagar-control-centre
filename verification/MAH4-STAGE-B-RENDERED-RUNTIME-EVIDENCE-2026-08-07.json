@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-07",
+  "environment": "loopback browser through the real shell",
+  "deviceAcceptance": false,
+  "moduleReadyCases": [
+    "READY:stock", "READY:service", "READY:qms", "READY:dsr", "READY:expense",
+    "READY:grooming", "READY:cro_audit", "READY:payroll", "READY:leave",
+    "READY:tax", "READY:planning"
+  ],
+  "deterministicRenderedCases": [
+    { "id": "ready-timeout", "status": "pass", "deadlineMs": 5000, "result": "ready-timeout" },
+    { "id": "init-error-fail-closed", "status": "pass", "result": "module-error:init.failed" },
+    { "id": "runtime-error-recoverable", "status": "pass", "result": "READY" },
+    { "id": "dispose-timeout", "status": "pass", "deadlineMs": 1500, "result": "dispose-timeout" }
+  ],
+  "boundaries": {
+    "api23RuntimeEmulator": "passed; see verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md",
+    "nativeLanguageAcceptance": false,
+    "rawLegacyAuditMigration": "retired; metadata-only correlated runtime active"
+  }
+}

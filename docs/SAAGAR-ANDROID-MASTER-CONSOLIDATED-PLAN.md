@@ -322,6 +322,74 @@ At minimum, permanently test:
 - restore-then-re-import reconnection; and
 - incentive block/clawback rules.
 
+### 6.9 ETP domain-specification adoption — 2026-08-07
+
+`V:\Co work\Titan\audit-program-designer\SAAGAR_CONTROL_CENTRE_ETP_MODULE_SPEC.md`
+version 1.0 is adopted as the **ETP domain and target-design specification**.
+It supplies the report catalogues, recognition fingerprints, source precedence,
+mapping semantics, duplicate/snapshot rules, coverage vocabulary,
+reconciliation inventory, test matrix and open confirmations for E1-E7.
+
+Authority order for implementation is:
+
+1. this consolidated Android plan and an approved phase change contract for
+   application scope, privacy, storage, platform and acceptance gates;
+2. the ETP Module Specification for report semantics and target behaviour;
+3. the referenced versioned machine-readable dictionaries and reconciliation
+   workbooks for exhaustive mappings; and
+4. untouched real exports for final recognition, parser and coverage evidence.
+
+The specification does not by itself authorize a production schema, parser,
+SQLite migration, import UI, backend, PHP work, metric publication or release.
+Every item labelled `CONFIRM` remains configurable or quarantined until the
+named business authority approves it.
+
+### 6.10 Android interpretation and conflict resolutions
+
+- HEMW remains mandatory before both-store schema freeze and acceptance even
+  though specification version 1.0 describes it as future/inactive. WLMHW-only
+  implementation must be visibly labelled partial and cannot satisfy E1.
+- The app must not persist complete raw workbooks or raw PII rows. It may retain
+  the untouched controlled source archive outside the app, non-sensitive
+  lineage, hashes and approved canonical fields. Known approved PII is dropped
+  before any app write; unknown fields fail closed or enter a metadata-safe
+  mapping queue.
+- Proposed REST endpoints, server-side permissions, HTTP jobs and workers are
+  target concepts only. The authorized implementation remains offline Android:
+  native SQLite transactions, local bounded job state, app authorization plus
+  fresh Owner reauthentication, and API-23 resource controls. No backend or PHP
+  service is inferred.
+- R001 and R022 share a 46-column signature. Exact headers identify the schema
+  family, but final report identity must additionally use an approved filename,
+  menu/export context or explicit operator confirmation. Ambiguous/header-only
+  files are never guessed.
+- Bare `ENCIRCLE` amount/flag semantics remain separate from identifier aliases
+  such as `ENCIRCLE NO`; unresolved contexts stay quarantined/configurable.
+- Service S001-S030 is an E7 extension after the four-report Retail import
+  pattern is proven. AW330 and CCPT remain linked but distinct source identities.
+
+### 6.11 Consolidated ETP delivery phases
+
+1. **ETP-A — Retail ingestion foundation:** deliberately integrate and re-audit
+   the earlier E1 candidate; finish R022/R025/R013/R003 recognition, PII drop,
+   exact-signature binding, required measures, deterministic dates, duplicate
+   identity and parser/API-23 selection. No persistence or UI before these
+   gates pass.
+2. **ETP-B — Sealed facts and import workflow:** separate sealed ETP SQLite
+   store, atomic staging/swap, preview/confirmation/result/history, re-import
+   lifecycle and permanent portable-backup exclusion. Activate WLMHW first;
+   HEMW only from its tested real pack.
+3. **ETP-C — Verified views and reconciliation:** R022/R025 common-grain totals,
+   R013 CRO attribution without extra revenue, R003 discount enrichment,
+   coverage/refusal states and E2-E6 read-only metrics.
+4. **ETP-D — Service extension:** S001-S030, Service-specific mappings and
+   reconciliations only after the Retail pattern and controls are accepted.
+
+The previous E1 candidate is isolated in Git history on
+`agent/e1-etp-import` at `070841e`. It must be audited and selectively
+integrated into the current line; do not merge that branch blindly or recreate
+the policy without comparing its tests and five documented review findings.
+
 ---
 
 ## 7. Phase 0 - Accept and freeze v2.9
@@ -1194,6 +1262,7 @@ scope.
 
 ### ETP/service scope
 
+- `V:\Co work\Titan\audit-program-designer\SAAGAR_CONTROL_CENTRE_ETP_MODULE_SPEC.md`
 - `V:\Co work\Titan\audit-program-designer\Saagar_ETP_Service_Report_Master.md`
 - The approved report/column, transaction, payment, status, movement, and
   reconciliation dictionaries referenced by that master.
@@ -1755,3 +1824,54 @@ bytes; SHA-256 `0BC2EC1D51802D2D1FECFB486CC555609930D0096057EE1F22EDD0F1F00517FF
 Next: DSR access/timer canary, then QMS timer/mobile-menu canary. MAH-4 Stage B
 remains gated until both complete. Shared CSS, module splitting, shell
 slimming, ETP and PHP remain outside this completed Planning phase.
+
+### MAH Runtime Completion canary gate complete — 2026-08-07
+
+The DSR access/timer and QMS timer/mobile-menu shared-runtime canaries are now
+complete. DSR passed its exact 12-case browser matrix. QMS passed all 12 exact
+viewport/language cases with zero readiness failures, zero hard geometry
+findings and zero shell/module root overflow; its rendered mobile drawer also
+passed open, scrim-close and navigation-close interactions. The shared runtime,
+manifest, MAH-3 source profile and MAH-4 lifecycle inventory are rebound to the
+same exact source identity.
+
+Post-canary verification passes MAH-3 19/19, modular 63/63, offline 256/256 and
+the complete test glob 360/360. `git diff --check` reports no whitespace errors
+(line-ending conversion notices only). This is browser engineering evidence,
+not physical-device or native-language acceptance. MAH-4 Stage B is now
+unblocked and is the next implementation stage; it has not started here.
+
+### MAH-4 Stage B Planning runtime canary started — 2026-08-07
+
+Stage B now has one bounded product canary. A manifest-bound offline runtime
+wires Planning through exact-origin INIT/READY and DISPOSE/DISPOSED correlation,
+CSPRNG instance identity, deterministic deadlines and reverse-order registered
+cleanup. Rendered browser evidence reached `READY:planning`, then
+`DISPOSED:planning` before the shell removed the frame.
+
+This is not the eleven-module rollout. `ST_ERROR`, API-23 timing/entropy and
+the other ten modules remain pending; legacy business messages are unchanged
+and raw `ST_AUDIT` migration remains blocked. Current gates pass MAH-3 19/19,
+MAH-4 42/42, modular 68/68, offline 256/256 and full 365/365. See
+`verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md`.
+
+## MAH-4 Stage B runtime completion — 2026-08-07
+
+The shared lifecycle runtime is now rolled out through DSR, QMS and all nine
+other external modules. All five control messages, deterministic timeout/error
+paths and integrity-bound module identities are implemented and regression
+green. The remaining MAH-4 acceptance work is limited to physical API-23
+timing/entropy evidence. Raw legacy `ST_AUDIT` migration remains a separate
+blocked policy item and was not folded into the lifecycle rollout. See
+`verification/MAH4-STAGE-B-RUNTIME-COMPLETION-2026-08-07.md`.
+
+## MAH-4 remaining-runtime closeout — 2026-08-07
+
+The MAH-4 API-23 timing/entropy gate and metadata-only audit migration are now
+complete. API-23 emulator measurements passed at 5,008 ms READY, 1,502 ms
+dispose, and 1,000/1,000 unique CSPRNG identities. Raw audit value transport
+was retired across all modules and the obsolete SQLite audit mirror removed.
+This does not claim whole-app API-23 production acceptance: the stock API-23
+WebView exposed older application-script syntax/polyfill incompatibilities that
+must be treated as a separate compatibility phase. See
+`verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md`.

@@ -351,7 +351,7 @@ test('all eight report variants and the batch slip schema are exact, bounded and
   assert.equal(validateMah4Payload('ST_REPORT', { reportType: 'payrollSlip', opts: dangerous }).code, 'payload-invalid:opts');
 });
 
-test('audit schema is metadata-only and raw legacy before/after migration remains blocked', () => {
+test('audit schema is metadata-only and retired raw legacy before/after stays rejected', () => {
   assert.equal(validateMah4Payload('ST_AUDIT', fixtures.ST_AUDIT.payload).ok, true);
   assert.equal(validateMah4Payload('ST_AUDIT', { action: 'module.storage.set', detail: { key: 'customer' }, before: 'PII', after: 'PII' }).code, 'payload-unknown-field');
   const raw = { type: 'ST_AUDIT', action: 'module.storage.set', detail: { module: 'qms', key: 'customer', beforeBytes: 3, afterBytes: 3 }, before: 'old', after: 'new' };
@@ -593,13 +593,13 @@ test('instance IDs require an injectable secure random source and protocol statu
   assert.equal(MAH4_TIMING.readyTimeoutMs, 5000);
   assert.equal(MAH4_TIMING.disposeTimeoutMs, 1500);
   assert.equal(MAH4_TIMING.dedupWindowEntriesPerInstance, 256);
-  assert.equal(MAH4_PROTOCOL_STATUS.runtimeLoaded, false);
+  assert.equal(MAH4_PROTOCOL_STATUS.runtimeLoaded, true);
   assert.equal(MAH4_PROTOCOL_STATUS.stageAComplete, true);
-  assert.equal(MAH4_PROTOCOL_STATUS.stage, 'stage-a-engineering-complete-runtime-blocked');
-  assert.equal(MAH4_PROTOCOL_STATUS.api23TimingAccepted, false);
-  assert.equal(MAH4_PROTOCOL_STATUS.api23InstanceEntropyAccepted, false);
-  assert.equal(MAH4_PROTOCOL_STATUS.expectedOriginAccepted, false);
-  assert.equal(MAH4_PROTOCOL_STATUS.deadlineModel, 'synthetic-injected-scheduler');
-  assert.equal(MAH4_PROTOCOL_STATUS.parserLimitationsAcceptedForStageB, false);
-  assert.match(MAH4_PROTOCOL_STATUS.auditMigration, /^blocked-/);
+  assert.equal(MAH4_PROTOCOL_STATUS.stage, 'stage-b-runtime-complete');
+  assert.equal(MAH4_PROTOCOL_STATUS.api23TimingAccepted, true);
+  assert.equal(MAH4_PROTOCOL_STATUS.api23InstanceEntropyAccepted, true);
+  assert.equal(MAH4_PROTOCOL_STATUS.expectedOriginAccepted, true);
+  assert.equal(MAH4_PROTOCOL_STATUS.deadlineModel, 'api23-emulator-measured-plus-synthetic-injected-scheduler');
+  assert.equal(MAH4_PROTOCOL_STATUS.parserLimitationsAcceptedForStageB, true);
+  assert.equal(MAH4_PROTOCOL_STATUS.auditMigration, 'retired-metadata-only-runtime');
 });

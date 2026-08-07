@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "evidenceId": "mah3-planning-runtime-canary-2026-08-07",
+  "evidenceId": "mah3-dsr-runtime-canary-2026-08-07",
   "reviewer": "Codex / engineering review",
   "profileSha256": "707e35d725b8c07896ed8cbfb26d718bc2ec21692d6b1607ccf9c05ec7fe1376",
   "wwwTreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
-  "planningSha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be",
+  "dsrSha256": "4b3cd976db9e6d7b5953edf0be54a01c6d97f4ccd5c09abe90b5fed48975518b",
   "runtimeSha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
   "matrix": {
-    "surface": "planning",
+    "surface": "dsr",
     "viewports": [
       "phone-360",
       "phone-412",
@@ -26,29 +26,30 @@
     "passed": 12,
     "readinessFailures": 0,
     "hardGeometryFindings": 0,
+    "rootOverflowFindings": 0,
     "defects": 0,
     "deferred": 0
   },
   "cases": [
-    "planning__phone-360__en",
-    "planning__phone-360__mr",
-    "planning__phone-360__hi",
-    "planning__phone-412__en",
-    "planning__phone-412__mr",
-    "planning__phone-412__hi",
-    "planning__compact-800__en",
-    "planning__compact-800__mr",
-    "planning__compact-800__hi",
-    "planning__desktop-1365__en",
-    "planning__desktop-1365__mr",
-    "planning__desktop-1365__hi"
+    "dsr__phone-360__en",
+    "dsr__phone-360__mr",
+    "dsr__phone-360__hi",
+    "dsr__phone-412__en",
+    "dsr__phone-412__mr",
+    "dsr__phone-412__hi",
+    "dsr__compact-800__en",
+    "dsr__compact-800__mr",
+    "dsr__compact-800__hi",
+    "dsr__desktop-1365__en",
+    "dsr__desktop-1365__mr",
+    "dsr__desktop-1365__hi"
   ],
   "observations": [
-    "All twelve cases passed the immutable review runner readiness gate.",
-    "All twelve cases reported zero hard geometry findings.",
-    "The Planning document set data-mod=planning through the shared mobile stage.",
-    "Phone-360 Marathi and desktop-1365 English were visually inspected after the automated matrix.",
-    "Advisory warnings were tap-floor candidates, not hard failures."
+    "All twelve cases passed the identity-bound runner readiness gate.",
+    "All twelve cases reported zero hard geometry and zero root-overflow findings.",
+    "Phone, compact and desktop layouts were visually inspected after extraction.",
+    "The source-guarded access bridge and the 20-second reconciliation interval/cleanup pair remain intact.",
+    "Advisory tap-floor and fixed-overlap candidates were not hard failures and did not make controls unreachable."
   ],
   "acceptance": {
     "browserCanaryPassed": true,

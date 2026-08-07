@@ -2017,6 +2017,7 @@ html.bcc-mobile #todayView.active{display:block}
 <div class="toast" id="toast"></div>
 
 <script src="module-manifest.js"></script>
+<script src="shared/mah4-runtime.js"></script>
 <script>
 /* Module metadata is validated synchronously by module-manifest.js. Keep this
    compatibility alias while the shell and external C1 closure consume MODULES. */
@@ -8092,7 +8093,13 @@ function renderAbout(){
 /* ═══════════════════════════════════════════════════════════════════════
    MODULE OPEN / CLOSE  + INJECTIONS  (preserves V4 contract)
    ═══════════════════════════════════════════════════════════════════════ */
-function showMainView(){
+var __mah4Host=null, __mah4CloseNext=null;
+function showMainView(__mah4Forced){
+  if(!__mah4Forced && __mah4Host){
+    __mah4CloseNext=function(){ showMainView(true); };
+    if(__mah4Host.dispose('home')) return;
+    __mah4CloseNext=null;
+  }
   var __wasTax = (activeModuleId === 'tax');
   activeModuleId = null;
   try{setSecureWindowForModule(null);}catch(e){}
@@ -8141,6 +8148,11 @@ function navigateToModule(id, date){
   if(id===activeModuleId){ openModule(id); return; }
   if(activeModuleId && isModuleDirty()){
     if(!confirm('Leave this screen? Unsaved entries will be lost.')) return;
+  }
+  if(activeModuleId && __mah4Host){
+    __mah4CloseNext=function(){ openModule(id); };
+    if(__mah4Host.dispose('switch')) return;
+    __mah4CloseNext=null;
   }
   openModule(id);
 }
@@ -8257,12 +8269,28 @@ function buildModuleSrc(mod){
   $('loader').classList.remove('hidden');
   setTimeout(()=>{
     const __f = $('moduleFrame');
+    var __host=null;
+    try{
+      if(window.SaagarMah4Runtime){
+        __host=window.SaagarMah4Runtime.createHost({frame:__f,moduleId:id,onAudit:function(meta){
+          auditLog(meta.action,{module:meta.moduleId,storageKeyHash:meta.storageKeyHash,beforeBytes:meta.beforeBytes,afterBytes:meta.afterBytes});
+          if(!activeModuleId && activeView==='home') renderHome();
+        },onClosed:function(){
+          if(__mah4Host!==__host)return;
+          __mah4Host=null;
+          var __next=__mah4CloseNext; __mah4CloseNext=null;
+          if(typeof __next==='function')__next();
+          else if(activeModuleId===id){ try{toast('Planning closed because its secure runtime did not complete.');}catch(_){} showMainView(true); }
+        }});
+        __mah4Host=__host;
+      }
+    }catch(e){ __host=null; __mah4Host=null; }
     let __hidden=false;
     const __hide=()=>{ if(__hidden)return; __hidden=true; $('loader').classList.add('hidden'); };
     // Hide the loader when the iframe ACTUALLY finishes loading (heavy modules like Payroll keep
     // painting well past a fixed 300ms timer — the old fixed timeout caused a blank/half-rendered
     // flash that felt like a freeze). The normal hide path is the load event below; it is unchanged.
-    try{ __f.addEventListener('load', function(){ if(__safetyTO) clearTimeout(__safetyTO); __hide(); try{ applyDateToFrame(); }catch(_){} try{ applyLangToFrame(getLang()); }catch(_){} try{ notifyModuleAccessChanged(); }catch(_){} try{ __stTargetPending=null; }catch(_){} }, { once:true }); }catch(e){}
+    try{ __f.addEventListener('load', function(){ if(__safetyTO) clearTimeout(__safetyTO); __hide(); try{ applyDateToFrame(); }catch(_){} try{ applyLangToFrame(getLang()); }catch(_){} try{ notifyModuleAccessChanged(); }catch(_){} try{ if(__host)__host.loaded({language:getLang(),date:viewDate(),uiMode:getUiMode()}); }catch(_){} try{ __stTargetPending=null; }catch(_){} }, { once:true }); }catch(e){}
     // Loader safety net = LAST-RESORT hang guard only. The iframe `load` event (above) is the real
     // "module finished" signal and fires reliably even for opaque-origin srcdoc on the device, so it
     // does the normal hide. This timer was briefly 1200ms, but a HEAVY module (payroll/dsr/expense)
@@ -8274,7 +8302,7 @@ function buildModuleSrc(mod){
     // (A buildModuleSrc throw and the iframe `error` event still surface their own errors immediately.)
     let __safetyTO = setTimeout(function(){ if(__hidden) return; __hide(); showModuleLoadError(id); }, 9000);
     // A hard iframe error (rare for srcdoc, but cheap to honour) trips the same affordance immediately.
-    try{ __f.addEventListener('error', function(){ if(__hidden) return; if(__safetyTO) clearTimeout(__safetyTO); __hide(); showModuleLoadError(id); }, { once:true }); }catch(e){}
+    try{ __f.addEventListener('error', function(){ if(__hidden) return; if(__safetyTO) clearTimeout(__safetyTO); try{if(__host)__host.fail('frame-error');}catch(_){} __hide(); showModuleLoadError(id); }, { once:true }); }catch(e){}
     try{
       // Option C: injectIframeShim is the OUTERMOST wrapper so its script element is prepended to
       // the iframe <head> LAST — making it the FIRST executed script, ahead of injectMobileMode's boot
@@ -8535,7 +8563,7 @@ function injectEmployeeAssist(html, moduleId){
 
 function injectModuleAuditBridge(html, moduleId){
   const bridge = `
-<scr`+`ipt id="st-v5-module-audit-bridge">(function(){var moduleId='${moduleId}';var nativeSet=localStorage.setItem.bind(localStorage);var nativeRemove=localStorage.removeItem.bind(localStorage);var sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;parent.postMessage({type:'ST_AUDIT',action:action,detail:{module:moduleId,key:key,beforeBytes:String(before||'').length,afterBytes:String(after||'').length},before:before,after:after},'*')}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();<\/scr`+`ipt>`;
+<scr`+`ipt id="st-v5-module-audit-bridge">(function(){var nativeSet=localStorage.setItem.bind(localStorage),nativeRemove=localStorage.removeItem.bind(localStorage),sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;if(window.SaagarMah4&&window.SaagarMah4.audit)window.SaagarMah4.audit(action,String(key),before,after)}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();<\/scr`+`ipt>`;
   return __injBeforeBodyEnd(html, bridge);
 }
 
@@ -8978,6 +9006,10 @@ window.addEventListener('unhandledrejection', e => {
 });
 window.addEventListener('message', e => {
   if(!e || !e.data) return;
+  if(__mah4Host && e.data.channel==='saagar.module'){
+    try{ __mah4Host.message(e); }catch(_){}
+    return;
+  }
   var __mf=$('moduleFrame'), __fromModule=!!(__mf&&__mf.contentWindow&&e.source===__mf.contentWindow);
   if(/^ST_(PRINT|REPORT|REPORT_BATCH|SHARE|WA|WA_LINK|AUDIT|OPEN_MODULE|BACK_HOME)$/.test(String(e.data.type||'')) && !__fromModule){
     try{ auditLog('module.message.denied',{type:String(e.data.type||'').slice(0,40)}); }catch(_){}
@@ -8991,10 +9023,7 @@ window.addEventListener('message', e => {
   if(e.data.type === 'ST_SHARE') stShareBridge(e.data);
   if(e.data.type === 'ST_WA') { try{ openWAComposer(e.data.module || activeModuleId, e.data.recordId, e.data.templateId); }catch(_){ } }
   if(e.data.type === 'ST_WA_LINK') { try{ openControlledWhatsApp(e.data.url, e.data.scopeId||((activeModuleId||'module')+'-message'), e.data.purposeId||'customer-communication'); }catch(_){ } }
-  if(e.data.type === 'ST_AUDIT' && e.data.action){
-    auditLog(e.data.action, e.data.detail||{}, e.data.before ?? null, e.data.after ?? null);
-    if(!activeModuleId && activeView==='home') renderHome();
-  }
+  /* ST_AUDIT is accepted only by the correlated MAH-4 host above. */
 });
 
 /* Share bridge: a module posts {type:'ST_SHARE', file?:Blob, text?, fileName, title} and we

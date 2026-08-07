@@ -1009,6 +1009,18 @@ export function createMah4Inventory(root = defaultRoot) {
     throw new Error('MAH-4 found an unclassified syntactic postMessage call');
   }
   const proposedControlTypesPresent = PROPOSED_CONTROL_TYPES.filter(type => activeStTypes.includes(type));
+  const renderedCasesReviewed = mah3.review?.visualBaselinesCaptured === true ? mah3.matrix.minimumVisualCases : 0;
+  const planningRuntimeWired = modules.find(unit => unit.moduleId === 'planning')?.scripts.includes('../../shared/mah4-runtime.js') === true;
+  const allModulesRuntimeWired = modules.length === manifest.modules.length
+    && modules.every(unit => unit.scripts.includes('../../shared/mah4-runtime.js'));
+  const canaryPassed = name => {
+    try {
+      const evidence = JSON.parse(fs.readFileSync(path.join(root, 'verification', 'mah3-visual-review', `MAH3-${name}-CANARY-EVIDENCE-2026-08-07.json`), 'utf8'));
+      return evidence.results?.reviewed === 12 && evidence.results?.passed === 12 && evidence.results?.defects === 0;
+    } catch { return false; }
+  };
+  const dsrCanaryPassed = canaryPassed('DSR');
+  const qmsCanaryPassed = canaryPassed('QMS');
 
   return {
     schemaVersion: 3,
@@ -1125,13 +1137,14 @@ export function createMah4Inventory(root = defaultRoot) {
       iframeLoadHooks: dynamicLocal.iframeLoadHooks
     },
     gates: {
-      mah3RenderedCasesReviewed: 0,
+      mah3RenderedCasesReviewed: renderedCasesReviewed,
       mah3RenderedCaseTotal: 168,
-      refactorGateReady: false,
-      planningRuntimeWired: false,
-      dsrCanaryPassed: false,
-      qmsCanaryPassed: false,
-      mah4RuntimeImplemented: false,
+      refactorGateReady: renderedCasesReviewed === 168 && dsrCanaryPassed && qmsCanaryPassed,
+      planningRuntimeWired,
+      dsrCanaryPassed,
+      qmsCanaryPassed,
+      mah4RuntimeImplemented: allModulesRuntimeWired
+        && proposedControlTypesPresent.length === PROPOSED_CONTROL_TYPES.length,
       physicalDeviceAccepted: false,
       nativeLanguageAccepted: false,
       productionAccepted: false

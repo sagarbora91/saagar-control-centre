@@ -1,20 +1,16 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-07 (Asia/Kolkata), C1 through MAH-4 Stage-A publication checkpoint
+**Updated:** 2026-08-07 (Asia/Kolkata), MAH-4 Stage-B Planning canary checkpoint
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
 **Programme status:** D1-D5 remain on `main`; the cumulative C1/MAH-1–MAH-4 Stage-A engineering tranche is committed and pushed on `agent/c1-mah4-foundation` at implementation commit `0909972`, pending review/merge. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
 
 > **Latest active resume point:**
-> verification/C1-MAH4-PUBLICATION-CHECKPOINT-2026-08-07.md.
-> The MAH-4 evidence authority beneath that publication checkpoint is
-> verification/MAH4-MESSAGE-LIFECYCLE-STAGE-A-CHECKPOINT-2026-08-07.md.
-> MAH-4 Stage A is engineering-complete as an identity-bound, non-product
-> executable specification. Direct sends are 74 syntactic / 68 configured;
-> dynamic-aware totals are 75/69, while accepted configured behavior remains
-> 68 because the extra Integration Bridge route fails the source guard. Product
-> runtime was not edited. Stage B remains blocked by MAH-3 0/168 and the
-> Planning → DSR → QMS canary chain. The review branch is public and pushed;
-> `main` remains at the D5 baseline until review/merge.
+> verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md.
+> MAH-4 Stage B has started with a Planning-only product canary. The rendered
+> exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle passed. `ST_ERROR`,
+> timeout/error rendered cases, API-23 evidence and the remaining ten modules
+> are pending. The working tree is intentionally dirty and this Stage-B work
+> has not been committed or pushed.
 
 ## Current MAH-4 message/lifecycle update
 
@@ -522,6 +518,26 @@ The working tree contains a reviewed **D1 engineering-complete / acceptance-pend
 - Every Phase 0 device/provider/restore/legal/UAT/security/signing row above remains **PENDING**. The new debug APK is not a formal or production release.
 - No PHP/platform work was started.
 
+### ETP domain specification incorporated into planning — 2026-08-07
+
+- Adopted external specification:
+  `V:\Co work\Titan\audit-program-designer\SAAGAR_CONTROL_CENTRE_ETP_MODULE_SPEC.md`
+  version 1.0.
+- It is the domain/target-design authority for report catalogues, fingerprints,
+  mappings, reconciliation and tests. The consolidated Android plan and an
+  approved change contract remain authoritative for privacy, sealed storage,
+  platform scope and acceptance.
+- HEMW remains mandatory for E1 both-store completion; version 1.0 currently
+  contains WLMHW and Service evidence and cannot close that gate.
+- Raw PII retention and server/REST assumptions were not adopted. Android keeps
+  the stricter pre-write PII drop, unknown-field refusal, offline native SQLite
+  and API-23 requirements. PHP remains excluded.
+- Delivery is consolidated into ETP-A Retail ingestion, ETP-B sealed facts/UI,
+  ETP-C verified reconciliation/views, and ETP-D Service extension.
+- Earlier E1 work exists separately at `agent/e1-etp-import` commit `070841e`.
+  Selectively integrate it only after reviewing the five saved policy findings;
+  do not merge the branch blindly.
+
 ### Planning shared-runtime completion and seeded APK — 2026-08-07
 
 - Branch `agent/c1-mah4-foundation`; implementation base HEAD
@@ -550,6 +566,34 @@ The working tree contains a reviewed **D1 engineering-complete / acceptance-pend
 - Preserve excluded draft `verification/mah3-visual-review/review.js`.
 - Next: DSR and QMS shared-runtime canaries before MAH-4 Stage B.
 - Nothing in this checkpoint is committed or pushed; owner review/approval is required first.
+
+### 2026-08-07 — MAH Runtime Completion canary gate
+
+- DSR access/timer and QMS timer/mobile-menu shared-runtime canaries are complete.
+- QMS rendered review passed 12/12 cases with zero readiness, hard-geometry or
+  root-overflow findings. Direct rendered interactions passed menu open, scrim
+  close, and CRO Rotation navigation with drawer closure.
+- Exact QMS evidence:
+  `verification/mah3-visual-review/MAH3-QMS-CANARY-EVIDENCE-2026-08-07.json`.
+- Verification: MAH-3 19/19, modular 63/63, offline 256/256, complete glob
+  360/360; `git diff --check` has no whitespace errors.
+- Browser evidence does not establish physical-device or native-language
+  acceptance. MAH-4 Stage B is unblocked but has not started.
+- Working tree remains intentionally dirty. No commit or push was performed.
+
+### 2026-08-07 — MAH-4 Stage B Planning canary
+
+- Stage B has started with Planning only. The shell and module completed the
+  exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle in rendered browser
+  testing; frame removal occurred after `DISPOSED:planning`.
+- The second shared runtime is manifest-bound and covered by Android package
+  parity checks. MAH-3 is 19/19, MAH-4 42/42, modular 68/68, offline 256/256
+  and the complete glob 365/365.
+- `ST_ERROR`, timeout/error rendered cases, API-23 evidence and the remaining
+  ten-module rollout are pending. Raw `ST_AUDIT` migration remains blocked.
+- Resume from
+  `verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md`.
+- No commit, push or APK build was performed.
 ### Pause / exact resume point
 
 - Work stopped at the owner's request because the device battery was low. All edits are saved locally; no commit or push was made.
@@ -814,3 +858,21 @@ pending owner review.
   from branch `agent/d1-d3-native-sqlite`; use Git history for its immutable
   commit identifier.
 - No PHP/platform work was started.
+
+## Current handoff — MAH-4 Stage B runtime completion (2026-08-07)
+
+Resume from `verification/MAH4-STAGE-B-RUNTIME-COMPLETION-2026-08-07.md`.
+The eleven-module lifecycle rollout, `ST_ERROR`, and rendered deterministic
+timeout/error cases are complete and regression green. API-23 source-level
+compatibility evidence passes, but no API-23 device/emulator was available, so
+physical acceptance is still open. Raw legacy `ST_AUDIT` migration remains
+blocked. Preserve the intentionally dirty tree and do not commit, push or build
+an APK without owner approval.
+
+## MAH-4 remaining-runtime closeout handoff — 2026-08-07
+
+Resume from `verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md`.
+The MAH-4 runtime API-23 timing/entropy evidence and raw audit retirement are
+complete. Full tests are 369/369. Do not reopen raw before/after transport.
+Whole-app stock-WebView API-23 syntax compatibility is a newly identified,
+separate follow-on; emulator evidence is not owner physical-device acceptance.

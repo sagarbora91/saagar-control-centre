@@ -111,12 +111,9 @@
   /* ── module-iframe writes arrive via the existing ST_AUDIT postMessage
         (injectModuleAuditBridge). Mirror them into the DB too. ── */
   function installIframeBridge() {
-    window.addEventListener('message', function (e) {
-      if (!ready || !e.data || e.data.type !== 'ST_AUDIT' || !e.data.action) return;
-      var key = e.data.detail && e.data.detail.key; if (!key || String(key) === LOG_KEY) return;
-      if (e.data.action === 'module.storage.set') kvUpsert(key, e.data.after == null ? '' : e.data.after);
-      else if (e.data.action === 'module.storage.remove') kvDelete(key);
-    });
+    /* Module writes already persist through SaagarStore. Audit messages are
+       metadata-only and are never used as a payload transport. */
+    return true;
   }
 
   /* ── reconcile localStorage <-> DB at startup ── */

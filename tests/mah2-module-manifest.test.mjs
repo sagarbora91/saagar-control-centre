@@ -52,16 +52,23 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
   assert.equal(api.has('unknown'), false);
 });
 
-test('MAH-3 manifest binds the one synchronous shared runtime to local bytes and SHA-256', () => {
-  assert.equal(api.sharedAssets.length, 1);
+test('manifest binds both synchronous shared runtimes to local bytes and SHA-256', () => {
+  assert.equal(api.sharedAssets.length, 2);
   const runtime = api.sharedAssets[0];
   assert.deepEqual(Object.keys(runtime), ['id', 'version', 'file', 'bytes', 'sha256']);
   assert.equal(runtime.id, 'module-runtime');
   assert.equal(runtime.version, 1);
   assert.equal(runtime.file, 'shared/module-runtime.js');
-  const bytes = fs.readFileSync(path.join(root, 'www', runtime.file));
-  assert.equal(runtime.bytes, bytes.length);
-  assert.equal(runtime.sha256, crypto.createHash('sha256').update(bytes).digest('hex'));
+  const mah4Runtime = api.sharedAssets[1];
+  assert.equal(mah4Runtime.id, 'mah4-runtime');
+  assert.equal(mah4Runtime.version, 1);
+  assert.equal(mah4Runtime.file, 'shared/mah4-runtime.js');
+  assert.equal(api.getShared('mah4-runtime'), mah4Runtime);
+  for (const asset of api.sharedAssets) {
+    const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
+    assert.equal(asset.bytes, bytes.length, asset.id);
+    assert.equal(asset.sha256, crypto.createHash('sha256').update(bytes).digest('hex'), asset.id);
+  }
 });
 
 test('MAH-2 manifest binds every exact local path to its raw bytes and SHA-256', () => {

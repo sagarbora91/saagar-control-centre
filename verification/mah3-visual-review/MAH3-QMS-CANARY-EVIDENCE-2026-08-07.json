@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "mah3-qms-runtime-canary-2026-08-07",
+  "reviewer": "Codex / engineering review",
+  "profileSha256": "707e35d725b8c07896ed8cbfb26d718bc2ec21692d6b1607ccf9c05ec7fe1376",
+  "wwwTreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
+  "qmsSha256": "e64d421e302e99e7131918fb7384314a7b889085c5aaff5a499a52a9b98ccdba",
+  "runtimeSha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
+  "matrix": {
+    "surface": "qms",
+    "viewports": [
+      "phone-360",
+      "phone-412",
+      "compact-800",
+      "desktop-1365"
+    ],
+    "languages": [
+      "en",
+      "mr",
+      "hi"
+    ],
+    "totalCases": 12
+  },
+  "results": {
+    "reviewed": 12,
+    "passed": 12,
+    "readinessFailures": 0,
+    "hardGeometryFindings": 0,
+    "rootOverflowFindings": 0,
+    "defects": 0,
+    "deferred": 0
+  },
+  "cases": [
+    "qms__phone-360__en",
+    "qms__phone-360__mr",
+    "qms__phone-360__hi",
+    "qms__phone-412__en",
+    "qms__phone-412__mr",
+    "qms__phone-412__hi",
+    "qms__compact-800__en",
+    "qms__compact-800__mr",
+    "qms__compact-800__hi",
+    "qms__desktop-1365__en",
+    "qms__desktop-1365__mr",
+    "qms__desktop-1365__hi"
+  ],
+  "interactionChecks": {
+    "mobileMenuVisible": true,
+    "menuOpensDrawer": true,
+    "scrimClosesDrawer": true,
+    "navigationClosesDrawer": true,
+    "navigationTarget": "rotation",
+    "navigationTargetActivated": true
+  },
+  "observations": [
+    "All 12 exact QMS browser cases passed readiness with zero hard findings and zero shell or module root overflow.",
+    "The reconstructed mobile menu was exercised on the direct rendered QMS surface: open, scrim close, reopen, and CRO Rotation navigation closure all passed.",
+    "Advisory warning counts were retained and were not treated as formal device defects."
+  ],
+  "acceptance": {
+    "browserRendered": true,
+    "physicalDevice": false,
+    "nativeLanguage": false,
+    "productionData": false
+  },
+  "stageBRevalidation": {
+    "kind": "non-visual runtime-script identity rebind",
+    "renderedRuntimeEvidence": "verification/MAH4-STAGE-B-RENDERED-RUNTIME-EVIDENCE-2026-08-07.json",
+    "visualAcceptanceScopeExpanded": false
+  }
+}

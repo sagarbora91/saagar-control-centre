@@ -9,23 +9,25 @@
     "runtimeRefactorApplied": true,
     "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
-    "nativeLanguageAccepted": false
+    "nativeLanguageAccepted": false,
+    "stageBIdentityRebound": true,
+    "stageBRenderedRuntimeEvidence": "verification/MAH4-STAGE-B-RENDERED-RUNTIME-EVIDENCE-2026-08-07.json"
   },
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
-    "fileCount": 64,
-    "totalBytes": 7757327,
-    "treeSha256": "f1c8334eac04a9cd721c6317a378bdd7a592c21070711ee726eca396234c1e14",
+    "fileCount": 65,
+    "totalBytes": 7745833,
+    "treeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 715655,
-        "sha256": "a7d08ead406ca23977ab3504946b7e9356cf30b9ac16987cfa0a6e2c71b15f50"
+        "bytes": 716901,
+        "sha256": "fbf58e2f0b010dfc8879f3cdb13e98738856e023f6438e1c749eef9276f1d911"
       },
       {
         "path": "www/module-manifest.js",
-        "bytes": 15075,
-        "sha256": "b6009e3c08e53464a365e8f786f7c256d5a5664df170c90474803796995909d1"
+        "bytes": 15504,
+        "sha256": "ce9ab95306dd7075074876fba02ad7a5216ce48dfe566ac414bd8cbd0a156f78"
       },
       {
         "path": "www/app-i18n.js",
@@ -64,23 +66,23 @@
       },
       {
         "path": "www/modules/planning/index.html",
-        "bytes": 48170,
-        "sha256": "79b045c86656c6de82e5c572470f5ea2baf9c78444b0305660e6d6ded2014658"
+        "bytes": 48319,
+        "sha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be"
       },
       {
         "path": "www/modules/dsr/index.html",
-        "bytes": 229752,
-        "sha256": "a67e37ccb6e6c484ae6d4b8f27ee32cde623838171a57a518c177cdfabf7faca"
+        "bytes": 217502,
+        "sha256": "4b3cd976db9e6d7b5953edf0be54a01c6d97f4ccd5c09abe90b5fed48975518b"
       },
       {
         "path": "www/modules/qms/index.html",
-        "bytes": 214644,
-        "sha256": "39095347e51f8cb80dec1765ac9f94b41d53700d91c46577b8e6cd9fc06d2b09"
+        "bytes": 202450,
+        "sha256": "e64d421e302e99e7131918fb7384314a7b889085c5aaff5a499a52a9b98ccdba"
       },
       {
         "path": "www/shared/module-runtime.js",
-        "bytes": 13887,
-        "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b"
+        "bytes": 14974,
+        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
       }
     ]
   },
@@ -141,8 +143,8 @@
   },
   "sharedRuntimeCandidates": {
     "planning": {
-      "moduleBytes": 48170,
-      "moduleSha256": "79b045c86656c6de82e5c572470f5ea2baf9c78444b0305660e6d6ded2014658",
+      "moduleBytes": 48319,
+      "moduleSha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be",
       "inlineTimeouts": 0,
       "mutationObservers": 0,
       "intervals": 0,
@@ -166,8 +168,8 @@
       },
       "runtimeAsset": {
         "path": "www/shared/module-runtime.js",
-        "bytes": 13887,
-        "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b"
+        "bytes": 14974,
+        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
       },
       "extractionApplied": true,
       "originalBlocks": [

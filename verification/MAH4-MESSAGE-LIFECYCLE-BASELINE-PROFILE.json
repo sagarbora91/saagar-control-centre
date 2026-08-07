@@ -3,16 +3,16 @@
   "profileId": "mah4-message-lifecycle-stage-a-2026-08-07",
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
-    "mah3ProfileBytes": 7222,
-    "mah3ProfileSha256": "89e0748c0d95d2851963837fc06f3547d828e87d141387fdd1ae70acc7910839",
-    "mah3TreeSha256": "f1c8334eac04a9cd721c6317a378bdd7a592c21070711ee726eca396234c1e14",
-    "currentWwwTreeSha256": "f1c8334eac04a9cd721c6317a378bdd7a592c21070711ee726eca396234c1e14",
-    "currentWwwFileCount": 64,
-    "currentWwwTotalBytes": 7757327,
+    "mah3ProfileBytes": 7365,
+    "mah3ProfileSha256": "707e35d725b8c07896ed8cbfb26d718bc2ec21692d6b1607ccf9c05ec7fe1376",
+    "mah3TreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
+    "currentWwwTreeSha256": "e809d4e74b4a10b580d4860040b5eaa1d89316ecfb64ab6b0b6e6baab5e6dcd2",
+    "currentWwwFileCount": 65,
+    "currentWwwTotalBytes": 7745833,
     "shell": {
       "path": "www/index.html",
-      "bytes": 715655,
-      "sha256": "a7d08ead406ca23977ab3504946b7e9356cf30b9ac16987cfa0a6e2c71b15f50"
+      "bytes": 716901,
+      "sha256": "fbf58e2f0b010dfc8879f3cdb13e98738856e023f6438e1c749eef9276f1d911"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -44,10 +44,15 @@
       "ST_ACCESS_CONTEXT",
       "ST_AUDIT",
       "ST_BACK_HOME",
+      "ST_DISPOSE",
+      "ST_DISPOSED",
+      "ST_ERROR",
+      "ST_INIT",
       "ST_LANG",
       "ST_OPEN_FEATURE",
       "ST_OPEN_MODULE",
       "ST_PRINT",
+      "ST_READY",
       "ST_REPORT",
       "ST_REPORT_BATCH",
       "ST_SET_DATE",
@@ -62,10 +67,15 @@
       "ST_AUDIT",
       "ST_BACK",
       "ST_BACK_HOME",
+      "ST_DISPOSE",
+      "ST_DISPOSED",
+      "ST_ERROR",
+      "ST_INIT",
       "ST_LANG",
       "ST_OPEN_FEATURE",
       "ST_OPEN_MODULE",
       "ST_PRINT",
+      "ST_READY",
       "ST_READ_ONLY",
       "ST_REPORT",
       "ST_REPORT_BATCH",
@@ -81,30 +91,30 @@
         "www/index.html"
       ],
       "ST_AUDIT": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_BACK_HOME": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
-      "ST_BACK_HOME": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
-        "www/shared/module-runtime.js"
+      "ST_DISPOSE": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_DISPOSED": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_ERROR": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_INIT": [
+        "www/shared/mah4-runtime.js"
       ],
       "ST_LANG": [
         "www/index.html"
@@ -114,12 +124,10 @@
       ],
       "ST_OPEN_MODULE": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
@@ -134,6 +142,9 @@
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html"
+      ],
+      "ST_READY": [
+        "www/shared/mah4-runtime.js"
       ],
       "ST_REPORT": [
         "www/modules/payroll/index.html",
@@ -178,30 +189,30 @@
         "www/index.html"
       ],
       "ST_AUDIT": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_BACK_HOME": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
-      "ST_BACK_HOME": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
-        "www/shared/module-runtime.js"
+      "ST_DISPOSE": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_DISPOSED": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_ERROR": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_INIT": [
+        "www/shared/mah4-runtime.js"
       ],
       "ST_LANG": [
         "www/index.html"
@@ -210,10 +221,8 @@
         "www/index.html"
       ],
       "ST_OPEN_MODULE": [
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/shared/module-runtime.js"
       ],
@@ -226,6 +235,9 @@
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html"
+      ],
+      "ST_READY": [
+        "www/shared/mah4-runtime.js"
       ],
       "ST_REPORT": [
         "www/modules/payroll/index.html",
@@ -278,23 +290,32 @@
         "www/modules/stock/index.html"
       ],
       "ST_AUDIT": [
-        "www/index.html",
-        "www/sqlite-store.js"
+        "www/shared/mah4-runtime.js"
       ],
       "ST_BACK_HOME": [
         "www/index.html"
+      ],
+      "ST_DISPOSE": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_DISPOSED": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_ERROR": [
+        "www/shared/mah4-runtime.js"
+      ],
+      "ST_INIT": [
+        "www/shared/mah4-runtime.js"
       ],
       "ST_LANG": [
         "www/app-i18n.js"
       ],
       "ST_OPEN_FEATURE": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
@@ -306,6 +327,9 @@
       "ST_PRINT": [
         "www/index.html"
       ],
+      "ST_READY": [
+        "www/shared/mah4-runtime.js"
+      ],
       "ST_REPORT": [
         "www/index.html"
       ],
@@ -314,12 +338,10 @@
       ],
       "ST_SET_DATE": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
@@ -330,12 +352,10 @@
       ],
       "ST_UI_MODE": [
         "www/modules/cro_audit/index.html",
-        "www/modules/dsr/index.html",
         "www/modules/expense/index.html",
         "www/modules/grooming/index.html",
         "www/modules/leave/index.html",
         "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/modules/tax/index.html",
@@ -388,18 +408,6 @@
           "originGuard": false
         }
       ],
-      "ST_AUDIT": [
-        {
-          "path": "www/index.html",
-          "sourceGuard": true,
-          "originGuard": false
-        },
-        {
-          "path": "www/sqlite-store.js",
-          "sourceGuard": false,
-          "originGuard": false
-        }
-      ],
       "ST_BACK_HOME": [
         {
           "path": "www/index.html",
@@ -421,11 +429,6 @@
           "originGuard": false
         },
         {
-          "path": "www/modules/dsr/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/modules/expense/index.html",
           "sourceGuard": false,
           "originGuard": false
@@ -442,11 +445,6 @@
         },
         {
           "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/qms/index.html",
           "sourceGuard": false,
           "originGuard": false
         },
@@ -506,11 +504,6 @@
           "originGuard": false
         },
         {
-          "path": "www/modules/dsr/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/modules/expense/index.html",
           "sourceGuard": false,
           "originGuard": false
@@ -527,11 +520,6 @@
         },
         {
           "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/qms/index.html",
           "sourceGuard": false,
           "originGuard": false
         },
@@ -570,11 +558,6 @@
           "originGuard": false
         },
         {
-          "path": "www/modules/dsr/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/modules/expense/index.html",
           "sourceGuard": false,
           "originGuard": false
@@ -591,11 +574,6 @@
         },
         {
           "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/qms/index.html",
           "sourceGuard": false,
           "originGuard": false
         },
@@ -645,72 +623,138 @@
     "effectiveModuleConsumers": {
       "stock": [
         "ST_ACCESS_CONTEXT",
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "service": [
         "ST_ACCESS_CONTEXT",
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE",
         "ST_WA_SENT"
       ],
       "qms": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "dsr": [
         "ST_ACCESS_CONTEXT",
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "expense": [
         "ST_ACCESS_CONTEXT",
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "grooming": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "cro_audit": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "payroll": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "leave": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "tax": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ],
       "planning": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
         "ST_LANG",
         "ST_OPEN_FEATURE",
+        "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
       ]
@@ -728,19 +772,19 @@
         "www/modules/service/index.html"
       ]
     },
-    "directEntrySyntacticPostMessageCalls": 74,
-    "directEntryClassifiedProducerCalls": 74,
-    "directEntryConfiguredPostMessageCalls": 69,
-    "directEntrySyntacticWildcardPostMessageCalls": 74,
-    "directEntryConfiguredWildcardPostMessageCalls": 69,
+    "directEntrySyntacticPostMessageCalls": 65,
+    "directEntryClassifiedProducerCalls": 65,
+    "directEntryConfiguredPostMessageCalls": 60,
+    "directEntrySyntacticWildcardPostMessageCalls": 59,
+    "directEntryConfiguredWildcardPostMessageCalls": 54,
     "dynamicSyntacticPostMessageCalls": 1,
     "dynamicClassifiedProducerCalls": 1,
     "dynamicConfiguredPostMessageCalls": 1,
     "dynamicWildcardPostMessageCalls": 1,
-    "aggregateSyntacticPostMessageCalls": 75,
-    "aggregateConfiguredPostMessageCalls": 70,
-    "aggregateWildcardPostMessageCalls": 75,
-    "aggregateAcceptedConfiguredPostMessageCalls": 69,
+    "aggregateSyntacticPostMessageCalls": 66,
+    "aggregateConfiguredPostMessageCalls": 61,
+    "aggregateWildcardPostMessageCalls": 60,
+    "aggregateAcceptedConfiguredPostMessageCalls": 60,
     "knownRejectedConfiguredRoutes": [
       {
         "type": "ST_OPEN_MODULE",
@@ -748,7 +792,7 @@
         "reason": "shell-realm sender fails active-iframe source guard"
       }
     ],
-    "mainShellRouterSourceGuard": true,
+    "mainShellRouterSourceGuard": false,
     "sqliteAuditSourceGuard": false,
     "shellOriginCheckPresent": false,
     "directLanguageReceiver": true,
@@ -765,11 +809,17 @@
       "ST_UI_MODE",
       "ST_WA_SENT"
     ],
-    "proposedControlTypesPresent": []
+    "proposedControlTypesPresent": [
+      "ST_INIT",
+      "ST_READY",
+      "ST_ERROR",
+      "ST_DISPOSE",
+      "ST_DISPOSED"
+    ]
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 34,
+    "directEntryScriptAssetCount": 35,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1022,14 +1072,50 @@
       ]
     },
     {
-      "path": "www/shared/module-runtime.js",
-      "bytes": 13887,
-      "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b",
+      "path": "www/shared/mah4-runtime.js",
+      "bytes": 10062,
+      "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
       "loadedBy": [
-        "planning"
+        "cro_audit",
+        "dsr",
+        "expense",
+        "grooming",
+        "leave",
+        "payroll",
+        "planning",
+        "qms",
+        "service",
+        "shell",
+        "stock",
+        "tax"
       ],
       "producerTypes": [
         "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
+        "ST_READY"
+      ],
+      "consumerTypes": [
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
+        "ST_READY"
+      ]
+    },
+    {
+      "path": "www/shared/module-runtime.js",
+      "bytes": 14974,
+      "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
+      "loadedBy": [
+        "dsr",
+        "planning",
+        "qms"
+      ],
+      "producerTypes": [
         "ST_BACK_HOME",
         "ST_OPEN_MODULE"
       ],
@@ -1037,18 +1123,6 @@
         "ST_OPEN_FEATURE",
         "ST_SET_DATE",
         "ST_UI_MODE"
-      ]
-    },
-    {
-      "path": "www/sqlite-store.js",
-      "bytes": 12981,
-      "sha256": "fc9747f1726abab004ff40377677b0ff697e68fa068477fadf1603d3d59184ec",
-      "loadedBy": [
-        "shell"
-      ],
-      "producerTypes": [],
-      "consumerTypes": [
-        "ST_AUDIT"
       ]
     }
   ],
@@ -1102,25 +1176,25 @@
       "resizeListeners": 1
     },
     "rawInlineModuleTotals": {
-      "timeouts": 103,
-      "clearTimeouts": 46,
+      "timeouts": 89,
+      "clearTimeouts": 40,
       "intervals": 3,
       "clearIntervals": 1,
-      "mutationObservers": 20,
-      "observerDisconnects": 10,
-      "eventListeners": 171,
+      "mutationObservers": 16,
+      "observerDisconnects": 8,
+      "eventListeners": 147,
       "removedEventListeners": 0,
-      "resizeListeners": 10
+      "resizeListeners": 8
     },
     "uniqueDirectAssetCallSites": {
-      "timeouts": 22,
-      "clearTimeouts": 11,
+      "timeouts": 24,
+      "clearTimeouts": 15,
       "intervals": 2,
-      "clearIntervals": 1,
+      "clearIntervals": 2,
       "mutationObservers": 4,
-      "observerDisconnects": 1,
-      "eventListeners": 30,
-      "removedEventListeners": 0,
+      "observerDisconnects": 2,
+      "eventListeners": 34,
+      "removedEventListeners": 1,
       "resizeListeners": 1
     },
     "directLifecycleAssets": [
@@ -1182,11 +1256,32 @@
         ]
       },
       {
-        "path": "www/shared/module-runtime.js",
-        "bytes": 13887,
-        "sha256": "125b75dc2cf3cc8474d062cb975b90efcd0d2c46bd893964a8367056ff37f62b",
+        "path": "www/shared/mah4-runtime.js",
+        "bytes": 10062,
+        "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
         "loadedBy": [
-          "planning"
+          "cro_audit",
+          "dsr",
+          "expense",
+          "grooming",
+          "leave",
+          "payroll",
+          "planning",
+          "qms",
+          "service",
+          "shell",
+          "stock",
+          "tax"
+        ]
+      },
+      {
+        "path": "www/shared/module-runtime.js",
+        "bytes": 14974,
+        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
+        "loadedBy": [
+          "dsr",
+          "planning",
+          "qms"
         ]
       },
       {
@@ -1199,8 +1294,8 @@
       },
       {
         "path": "www/sqlite-store.js",
-        "bytes": 12981,
-        "sha256": "fc9747f1726abab004ff40377677b0ff697e68fa068477fadf1603d3d59184ec",
+        "bytes": 12710,
+        "sha256": "27082cb46fd218f151fbd8285fcd9688f3ab3e6ceeb2b80f3a5c00d34937f963",
         "loadedBy": [
           "shell"
         ]
@@ -1223,36 +1318,36 @@
       }
     ],
     "rawShellPlusDirectAssetCallSites": {
-      "timeouts": 43,
-      "clearTimeouts": 17,
+      "timeouts": 45,
+      "clearTimeouts": 21,
       "intervals": 4,
-      "clearIntervals": 2,
+      "clearIntervals": 3,
       "mutationObservers": 4,
-      "observerDisconnects": 1,
-      "eventListeners": 47,
-      "removedEventListeners": 1,
+      "observerDisconnects": 2,
+      "eventListeners": 48,
+      "removedEventListeners": 2,
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 36,
-      "clearTimeouts": 14,
+      "timeouts": 38,
+      "clearTimeouts": 18,
       "intervals": 4,
-      "clearIntervals": 2,
+      "clearIntervals": 3,
       "mutationObservers": 2,
-      "observerDisconnects": 0,
-      "eventListeners": 34,
-      "removedEventListeners": 1,
+      "observerDisconnects": 1,
+      "eventListeners": 35,
+      "removedEventListeners": 2,
       "resizeListeners": 1
     },
     "directEffectiveModuleTotals": {
-      "timeouts": 121,
-      "clearTimeouts": 60,
+      "timeouts": 143,
+      "clearTimeouts": 104,
       "intervals": 3,
-      "clearIntervals": 1,
+      "clearIntervals": 12,
       "mutationObservers": 33,
-      "observerDisconnects": 11,
-      "eventListeners": 222,
-      "removedEventListeners": 0,
+      "observerDisconnects": 22,
+      "eventListeners": 251,
+      "removedEventListeners": 11,
       "resizeListeners": 11
     },
     "conditionalDynamicScriptCallSites": {
@@ -1289,54 +1384,54 @@
       "resizeListeners": 0
     },
     "rawQmsCallSites": {
-      "timeouts": 8,
-      "clearTimeouts": 4,
+      "timeouts": 1,
+      "clearTimeouts": 1,
       "intervals": 2,
       "clearIntervals": 0,
-      "mutationObservers": 2,
-      "observerDisconnects": 1,
-      "eventListeners": 13,
+      "mutationObservers": 0,
+      "observerDisconnects": 0,
+      "eventListeners": 1,
       "removedEventListeners": 0,
-      "resizeListeners": 1
+      "resizeListeners": 0
     },
     "rawDsrCallSites": {
-      "timeouts": 11,
-      "clearTimeouts": 6,
+      "timeouts": 4,
+      "clearTimeouts": 3,
       "intervals": 1,
       "clearIntervals": 1,
-      "mutationObservers": 2,
-      "observerDisconnects": 1,
-      "eventListeners": 17,
+      "mutationObservers": 0,
+      "observerDisconnects": 0,
+      "eventListeners": 5,
       "removedEventListeners": 0,
-      "resizeListeners": 1
+      "resizeListeners": 0
     },
     "directEffectiveQmsCallSites": {
-      "timeouts": 9,
-      "clearTimeouts": 5,
+      "timeouts": 11,
+      "clearTimeouts": 9,
       "intervals": 2,
-      "clearIntervals": 0,
+      "clearIntervals": 1,
       "mutationObservers": 3,
-      "observerDisconnects": 1,
-      "eventListeners": 16,
-      "removedEventListeners": 0,
+      "observerDisconnects": 2,
+      "eventListeners": 20,
+      "removedEventListeners": 1,
       "resizeListeners": 1
     },
     "directEffectiveDsrCallSites": {
-      "timeouts": 12,
-      "clearTimeouts": 7,
+      "timeouts": 14,
+      "clearTimeouts": 11,
       "intervals": 1,
-      "clearIntervals": 1,
+      "clearIntervals": 2,
       "mutationObservers": 3,
-      "observerDisconnects": 1,
-      "eventListeners": 20,
-      "removedEventListeners": 0,
+      "observerDisconnects": 2,
+      "eventListeners": 24,
+      "removedEventListeners": 1,
       "resizeListeners": 1
     },
     "rawMutationObserverCallSitesByModule": {
       "stock": 2,
       "service": 2,
-      "qms": 2,
-      "dsr": 2,
+      "qms": 0,
+      "dsr": 0,
       "expense": 2,
       "grooming": 2,
       "cro_audit": 2,
@@ -1362,13 +1457,13 @@
   "mountLifecycle": {
     "frameLoadHookPresent": true,
     "frameErrorHookPresent": true,
-    "controlHandshakeAbsent": true,
+    "controlHandshakeAbsent": false,
     "closeRemovesSrc": true,
     "closeBlanksSrcdoc": true,
     "dormantFallbackPresent": true,
     "manifestRequiresSrc": true,
     "manifestContainsHtmlB64": false,
-    "allProposedControlTypesObserved": false,
+    "allProposedControlTypesObserved": true,
     "iframeLoadHooks": {
       "totalSites": 3,
       "oneShotSites": 1,
@@ -1411,24 +1506,24 @@
     "files": [
       {
         "path": "scripts/lib/mah4-protocol-contract.mjs",
-        "bytes": 57871,
-        "sha256": "c9d52eb4dda1fad4f726c74e8d54c39f434d1a4ec074d896787e4539b12aeb58"
+        "bytes": 57859,
+        "sha256": "99b56384abffcbbdfb465041989171ff18151820df38b96710b798fe05528610"
       },
       {
         "path": "tests/mah4-protocol-contract.test.mjs",
-        "bytes": 36704,
-        "sha256": "51671394b65dd6a636508235b41239c115632576e7d7c2f90463eb6337690684"
+        "bytes": 36725,
+        "sha256": "0e3af0fd5c628f0b2ba78c4f8b18d157ede4c62ca69a0ce55e9a94054365fbeb"
       }
     ]
   },
   "gates": {
-    "mah3RenderedCasesReviewed": 0,
+    "mah3RenderedCasesReviewed": 168,
     "mah3RenderedCaseTotal": 168,
-    "refactorGateReady": false,
-    "planningRuntimeWired": false,
-    "dsrCanaryPassed": false,
-    "qmsCanaryPassed": false,
-    "mah4RuntimeImplemented": false,
+    "refactorGateReady": true,
+    "planningRuntimeWired": true,
+    "dsrCanaryPassed": true,
+    "qmsCanaryPassed": true,
+    "mah4RuntimeImplemented": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false,
     "productionAccepted": false

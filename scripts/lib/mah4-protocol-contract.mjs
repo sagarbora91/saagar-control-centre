@@ -1305,15 +1305,15 @@ export class Mah4LifecycleOracle {
 }
 
 export const MAH4_PROTOCOL_STATUS = deepFreeze({
-  stage: 'stage-a-engineering-complete-runtime-blocked',
-  runtimeLoaded: false,
+  stage: 'stage-b-runtime-complete',
+  runtimeLoaded: true,
   stageAComplete: true,
-  api23TimingAccepted: false,
-  api23InstanceEntropyAccepted: false,
-  expectedOriginAccepted: false,
-  deadlineModel: 'synthetic-injected-scheduler',
-  auditMigration: MAH4_MESSAGE_CONTRACTS.ST_AUDIT.legacyMigration,
-  parserLimitationsAcceptedForStageB: false
+  api23TimingAccepted: true,
+  api23InstanceEntropyAccepted: true,
+  expectedOriginAccepted: true,
+  deadlineModel: 'api23-emulator-measured-plus-synthetic-injected-scheduler',
+  auditMigration: 'retired-metadata-only-runtime',
+  parserLimitationsAcceptedForStageB: true
 });
 
 export function mah4ContractCounts() {
