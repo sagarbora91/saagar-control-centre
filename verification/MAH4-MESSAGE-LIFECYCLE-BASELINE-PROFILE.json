@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7365,
-    "mah3ProfileSha256": "fd92eb74997eee3d5e8afa2e1454a7fa4217f0e4b6ad71f0d7da6edecefcf8bf",
-    "mah3TreeSha256": "13deb48ea5a5b934751e08cfee59cf1d7a0593d3b2b98d8033cedbd334156937",
-    "currentWwwTreeSha256": "13deb48ea5a5b934751e08cfee59cf1d7a0593d3b2b98d8033cedbd334156937",
-    "currentWwwFileCount": 65,
-    "currentWwwTotalBytes": 7726843,
+    "mah3ProfileSha256": "355b4aa2ff6a9ea4b7ee6d2933ce3ff23e1552eb57c8390df577a92ad818163b",
+    "mah3TreeSha256": "c93a6b935176bf7179d7c852a7107ca5e94553b475a92cbda44426bc32403b34",
+    "currentWwwTreeSha256": "c93a6b935176bf7179d7c852a7107ca5e94553b475a92cbda44426bc32403b34",
+    "currentWwwFileCount": 80,
+    "currentWwwTotalBytes": 7945720,
     "shell": {
       "path": "www/index.html",
-      "bytes": 708153,
-      "sha256": "9708bdea2dde2567d70c780c13d92185ad035ea1eee877723a1de6f977bcf230"
+      "bytes": 711234,
+      "sha256": "fbb6aab2b259c79494b66db152a407ef82abf1ae34e3f156da8b6c80241407ca"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -819,7 +819,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 35,
+    "directEntryScriptAssetCount": 50,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1187,13 +1187,13 @@
       "resizeListeners": 8
     },
     "uniqueDirectAssetCallSites": {
-      "timeouts": 24,
+      "timeouts": 25,
       "clearTimeouts": 15,
       "intervals": 2,
       "clearIntervals": 2,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 34,
+      "eventListeners": 38,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
@@ -1309,6 +1309,22 @@
         ]
       },
       {
+        "path": "www/vendor/fflate-0.8.3.min.js",
+        "bytes": 33044,
+        "sha256": "462ef8041fc970e3615a20a9dd2b2e3047a073b2da729ef4f02b634bba8b7b83",
+        "loadedBy": [
+          "shell"
+        ]
+      },
+      {
+        "path": "www/vendor/read-excel-file-9.3.7.min.js",
+        "bytes": 51749,
+        "sha256": "081c20d5feeb517b92397338c2696df872a0c9fd17922a05f2d864d877fa5c01",
+        "loadedBy": [
+          "shell"
+        ]
+      },
+      {
         "path": "www/whatsapp-share.js",
         "bytes": 16136,
         "sha256": "273635356eaf9ae1cfec1a02097444f03c14b53ae8bf1d9b0b3c7cbcde129591",
@@ -1318,24 +1334,24 @@
       }
     ],
     "rawShellPlusDirectAssetCallSites": {
-      "timeouts": 45,
+      "timeouts": 46,
       "clearTimeouts": 21,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 48,
+      "eventListeners": 52,
       "removedEventListeners": 2,
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 38,
+      "timeouts": 39,
       "clearTimeouts": 18,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 2,
       "observerDisconnects": 1,
-      "eventListeners": 35,
+      "eventListeners": 39,
       "removedEventListeners": 2,
       "resizeListeners": 1
     },

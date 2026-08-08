@@ -17,13 +17,14 @@
     "test:mobile": "node --test tests/mobile-layout-remediation.test.mjs",
     "test:settings": "node --test tests/settings-navigation-architecture.test.mjs",
     "test:language": "node --test tests/language-localization.test.mjs",
+    "test:etp": "node --test tests/e1-etp-import-foundation.test.mjs tests/etp-xlsx-preflight.test.mjs tests/etp-xlsx-parser-policy.test.mjs tests/etp-retail-profile-parser.test.mjs tests/etp-retail-xlsx-loader.test.mjs tests/etp-store-lifecycle-policy.test.mjs tests/etp-reconciliation-policy.test.mjs tests/etp-native-store.test.mjs tests/etp-native-store-contract.test.mjs tests/etp-native-api23-evidence-contract.test.mjs tests/etp-import-coordinator.test.mjs tests/etp-import-runtime.test.mjs tests/etp-recovery-integration.test.mjs tests/etp-recovery-shell-integration.test.mjs tests/etp-import-ui.test.mjs",
     "test:manifest": "node --test tests/mah2-module-manifest.test.mjs",
     "test:mah3": "node --test tests/mah3-visual-review.test.mjs tests/mah3-visual-review-server.test.mjs tests/mah3-shared-runtime.test.mjs tests/mah-runtime-canaries.test.mjs",
     "review:mah3": "node scripts/mah3-visual-review-server.mjs",
     "audit:mah4": "node scripts/audit-mah4-message-lifecycle.mjs",
     "test:mah4": "node --test tests/mah4-contract-source.test.mjs tests/mah4-message-lifecycle-baseline.test.mjs tests/mah4-protocol-contract.test.mjs tests/mah4-stage-b-runtime.test.mjs",
     "test:modular": "node --test tests/mah2-module-manifest.test.mjs tests/mh1-modular-inventory.test.mjs tests/mh1-modular-protection.test.mjs tests/mah3-visual-review.test.mjs tests/mah3-visual-review-server.test.mjs tests/mah3-shared-runtime.test.mjs tests/mah4-contract-source.test.mjs tests/mah4-message-lifecycle-baseline.test.mjs tests/mah4-protocol-contract.test.mjs tests/mah4-stage-b-runtime.test.mjs",
-    "pretest:offline": "npm run test:c1 && npm run test:mobile && npm run test:settings && npm run test:language && npm run test:modular",
+    "pretest:offline": "npm run test:c1 && npm run test:mobile && npm run test:settings && npm run test:language && npm run test:etp && npm run test:modular",
     "test:offline": "node --test tests/d5-stock-modular-extraction.test.mjs tests/d5-stock-variance-policy.test.mjs tests/d5-stock-controls-integration.test.mjs tests/native-incremental-storage.test.mjs tests/native-incremental-storage-runtime.test.mjs tests/native-storage-recovery-runtime.test.mjs tests/native-storage-info-runtime.test.mjs tests/storage-recovery-policy.test.mjs tests/storage-capacity-policy.test.mjs tests/storage-capacity-shell-integration.test.mjs tests/eng04-security.test.mjs tests/source-integrity.test.mjs tests/module-pin-policy.test.mjs tests/module-pin-shell-integration.test.mjs tests/module-pin-security-regression.test.mjs tests/module-access-context-runtime.test.mjs tests/service-owner-setting-guard.test.mjs tests/export-sinks.test.mjs tests/report-csv.test.mjs tests/portable-backup.test.mjs tests/financial-golden.test.mjs tests/failure-injection.test.mjs tests/legal-minimum.test.mjs tests/legal-intake-idempotency.test.mjs tests/offdevice-backup.test.mjs tests/persistence-acceptance.test.mjs tests/d1-reauth.test.mjs tests/d1-store-context.test.mjs tests/d1-dashboard-policy.test.mjs tests/d1-attention-policy.test.mjs tests/d2-qms-policy.test.mjs tests/d2-qms-integration.test.mjs tests/d3-service-workboard-policy.test.mjs tests/d3-service-integration.test.mjs tests/d4-dsr-completion-policy.test.mjs tests/d4-dsr-integration.test.mjs tests/seeded-apk-profile.test.mjs tests/backdate-crash-regression.test.mjs",
     "test:seeded-runtime": "node --test tests/seeded-apk-runtime.test.mjs",
     "prepare:api23": "node scripts/prepare-api23-assets.mjs",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.7",
     "@babel/preset-env": "^7.29.7",
-    "@capacitor/cli": "^6.1.2"
+    "@capacitor/cli": "^6.1.2",
+    "read-excel-file": "9.3.7"
   }
 }

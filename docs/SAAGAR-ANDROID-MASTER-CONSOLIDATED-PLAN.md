@@ -1890,3 +1890,68 @@ the Capacitor bridge and `SaagarNativeStore` active. Chrome 44 lacks WebAssembly
 the supported evidence is the native-storage fallback, not WebAssembly support.
 Physical-device, owner UAT and production-signing gates remain open. See
 `verification/CODE-CLOSURE-API23-COMPATIBILITY-2026-08-07.md`.
+
+## ETP-A0 no-write import policy — 2026-08-08
+
+The first C2/ETP-A internal gate is implemented as a pure, unintegrated policy
+module. It resolves the prior five policy-review findings: approved PII is
+dropped before persistable output while unknown fields fail closed; bare
+`ENCIRCLE` is distinct from identifier aliases; report-specific identifiers and
+measures are mandatory and rows bind to their exact detected signatures; date
+plausibility is deterministic; and reduced synthetic R013/R003/R022/R025 tests
+do not overclaim real-source acceptance. Deterministic PII-free batch lineage
+is retained.
+
+This does not start parsing, schema freeze, sealed persistence, import UI or
+verified metrics. Those remain blocked by missing HEMW exports, unapproved
+both-store dictionaries and reconciliation semantics, and parser-specific
+licence/security/APK-size/memory/API-23 evidence. See
+`verification/ETP-A0-IMPORT-POLICY-CHECKPOINT-2026-08-08.md`.
+
+## ETP-A1 parser evaluation foundation — 2026-08-08
+
+The first parser candidate (`read-excel-file@9.3.7`, MIT) is pinned for
+development-only evaluation behind an independent bounded OOXML preflight. A
+private aggregate-only run matched all four WLMHW report structures in under
+one second each, and a generated 5,000-row workbook passed on stock API-23 / Chrome
+44 in 537 ms with a 1 ms maximum heartbeat delay. The generated evaluation
+payload was then removed and is not part of the application runtime.
+
+The candidate is **not approved**: every tested required identifier in the real
+WLMHW files arrived as a numeric cell, so text fidelity and leading zeros cannot
+be proven. Numeric required identifiers now fail the evaluation gate pending an
+approved dictionary rule and both-store evidence. Malicious XML/relationship
+coverage, repeat-run memory/stress evidence and physical-device evidence also
+remain open. See
+`verification/ETP-A1-PARSER-EVALUATION-CHECKPOINT-2026-08-08.md`.
+
+## Consolidated Retail Verified Data Path — active 2026-08-08
+
+The safe pre-production contracts now extend through bounded OOXML/XML threat
+inspection, lexical numeric-type preservation/refusal, isolated store/FY/period
+lifecycle, exact four-report manifests, deterministic source-hash idempotency,
+restore-to-reimport fencing, explicit reconciliation-rule validation,
+scaled-integer comparison, coverage states and verified-view publication
+refusal. The policies remain deterministic; the bounded runtime and UI are now
+loaded but cannot publish real WLMHW data while required numeric identifiers
+remain unapproved.
+
+The mandatory internal gate has not been waived. The supplied Retail dictionary
+and REC-002 rule now drive one shared WLMHW/HEMW profile, parser, encrypted store
+and responsive import UI. E2-E6 figures cannot publish until numeric identifier
+semantics, real HEMW conformance and remaining acceptance evidence close. The
+open evidence and decision register is
+`docs/ETP-RETAIL-VERIFIED-DATA-PATH-DECISION-REGISTER-2026-08-08.md`; resume from
+`verification/ETP-RETAIL-VERIFIED-DATA-PATH-CHECKPOINT-2026-08-08.md`.
+
+### Native ETP generation-store scaffold
+
+A separate native `saagar-etp.db` and matching bounded adapter now implement
+scope-keyed staging, native hash verification, atomic active-generation pointers,
+restore fencing and reset primitives without freezing report-specific fact
+columns. It uses a dedicated non-exportable Android Keystore AES-256-GCM key for
+versioned authenticated chunk envelopes and a bounded generation seal for status
+verification. Authenticated dictionary-projected reads and verified
+restore/factory-reset fencing are wired. API-23 emulator crypto/tamper/reset
+evidence passed; physical-device, true process-death, disk-full/corruption and
+real HEMW evidence remain open. SQLite contains no plaintext fact payload column.
