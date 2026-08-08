@@ -17,8 +17,8 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.schemaVersion, 3);
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
-  assert.equal(inventory.upstream.currentWwwFileCount, 65);
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7726843);
+  assert.equal(inventory.upstream.currentWwwFileCount, 80);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7945720);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
@@ -97,7 +97,7 @@ test('MAH-4 resolves direct message assets and listener-local trust posture', ()
 test('MAH-4 freezes conditional local loaders and persistent iframe hooks separately', () => {
   const dynamic = inventory.scriptDiscovery.dynamicLocal;
   assert.equal(inventory.scriptDiscovery.mode, 'direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory');
-  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 35);
+  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 50);
   assert.equal(inventory.scriptDiscovery.dynamicLocalAssetsInventoried, true);
   assert.equal(dynamic.loaderGroupCount, 5);
   assert.equal(dynamic.scriptRouteCount, 10);
@@ -170,10 +170,10 @@ test('MAH-4 freezes qualified lifecycle call-site buckets without claiming clean
     timeouts: 7, intervals: 0, mutationObservers: 2, eventListeners: 13, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.uniqueDirectAssetTotals), {
-    timeouts: 24, intervals: 2, mutationObservers: 4, eventListeners: 34, resizeListeners: 1
+    timeouts: 25, intervals: 2, mutationObservers: 4, eventListeners: 38, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.configuredEffectiveShell), {
-    timeouts: 38, intervals: 4, mutationObservers: 2, eventListeners: 35, resizeListeners: 1
+    timeouts: 39, intervals: 4, mutationObservers: 2, eventListeners: 39, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.moduleTotals), {
     timeouts: 89, intervals: 3, mutationObservers: 16, eventListeners: 147, resizeListeners: 8

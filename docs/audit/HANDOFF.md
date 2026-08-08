@@ -1,7 +1,26 @@
 # Saagar Control Centre - Safe and Lawful Android Closure Handoff
 
-**Updated:** 2026-08-07 (Asia/Kolkata), Code Closure API-23 compatibility
+**Updated:** 2026-08-08 (Asia/Kolkata), ETP-A1 parser evaluation foundation
 **Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
+**ETP resume point:** `verification/ETP-RETAIL-VERIFIED-DATA-PATH-CHECKPOINT-2026-08-08.md`.
+The consolidated Retail phase now has pure/no-write A0 policy, bounded parser
+and XML threat gates, numeric-identifier refusal, sealed-store lifecycle and an
+explicit reconciliation/publication engine. These modules are not app-loaded.
+Production parsing, runtime import wiring, UI and verified views remain gated
+because HEMW is absent and identifiers, dictionaries, reconciliation and
+device/owner evidence are not approved. The isolated encrypted SQLite scaffold
+is implemented but is not runtime-activated.
+The generic separate native generation-store and its bounded bridge are present
+and compile. The owner approved Keystore AES-256-GCM chunk
+envelopes and the scaffold now stores ciphertext only. Real API-23 crypto,
+tamper, crash, disk-full and corruption evidence remains required; do not call
+this production fact persistence yet.
+The shared WLMHW/HEMW browser import runtime and responsive ETP shell route are
+now implemented with pinned offline XLSX/ZIP assets, exact four-report parsing,
+REC-002 reconciliation, encrypted publication, authenticated reads and
+restore/reset fencing. API-23 emulator crypto/tamper/reset evidence passed, but
+physical-device, true process-death, disk-full/corruption and real HEMW evidence
+remain open. Real WLMHW rows deliberately stop at numeric-identifier review.
 **Current reconciliation (supersedes historical status text below):** D1-D5,
 C1 and MAH-1 through MAH-4 are integrated on `main`. Whole-app API-23
 engineering compatibility is emulator verified. Nothing is production

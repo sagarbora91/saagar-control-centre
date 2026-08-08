@@ -872,6 +872,23 @@ html.bcc-mobile,html.bcc-mobile body{overflow-x:hidden}
 <!-- R0-W3: passphrase-encrypted portable container + verified restore coordinator. -->
 <script src="portable-backup.js"></script>
 <script src="restore-engine.js"></script>
+<script src="etp-recovery-integration.js"></script>
+<!-- Pinned, offline-only Retail ETP runtime. Load order is contractual: local
+     XLSX/ZIP engines, pure policies, native bridge, coordinator, facade, UI. -->
+<script src="vendor/fflate-0.8.3.min.js"></script>
+<script src="vendor/read-excel-file-9.3.7.min.js"></script>
+<script src="etp-import-foundation.js"></script>
+<script src="etp-xlsx-preflight.js"></script>
+<script src="etp-xlsx-parser-policy.js"></script>
+<script src="etp-retail-profile.js"></script>
+<script src="etp-retail-table-parser.js"></script>
+<script src="etp-retail-xlsx-loader.js"></script>
+<script src="etp-store-lifecycle-policy.js"></script>
+<script src="etp-reconciliation-policy.js"></script>
+<script src="etp-native-store.js"></script>
+<script src="etp-import-coordinator.js"></script>
+<script src="etp-import-runtime.js"></script>
+<script src="etp-import-ui.js"></script>
 <!-- R1 LEG-01..10: purpose register, collection notices, separate promotional
      consent, global suppression, rights register and human-gate evidence. -->
 <script src="legal-control.js"></script>
@@ -1669,6 +1686,11 @@ html.bcc-mobile #todayView.active{display:block}
 
       <!-- Backup -->
       <div class="sub-section hidden" id="subBackup">
+        <div class="card card-pad">
+          <h4><span class="em">📥</span> Retail ETP reports</h4>
+          <p>Import the exact R003, R013, R022 and R025 exports for WLMHW or HEMW. Reports are validated and reconciled before anything is published.</p>
+          <button class="btn gold" onclick="window.SaagarEtpImportUi&&window.SaagarEtpImportUi.open()">Open ETP import</button>
+        </div>
         <div class="card card-pad storage-capacity-card" id="storageCapacityCard" aria-busy="false">
           <div class="storage-capacity-head">
             <div class="storage-drive-icon" aria-hidden="true">
@@ -7228,6 +7250,21 @@ function previewRestorePayload(parsed, source){
   }catch(e){ toast('Restore blocked: '+String(e&&e.message||e)); }
 }
 function restoreCanonical(v){ return window.SaagarPortableBackup.canonical(v); }
+const ETP_SCOPE_REGISTRY_KEY='saagar_etp_scope_registry';
+function etpRecoveryRuntime(){
+  var C=window.Capacitor, nativePlatform=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());
+  var plugin=C&&C.Plugins&&C.Plugins.SaagarEtpStore;
+  if(!nativePlatform&&!plugin)return null;
+  var api=window.SaagarEtpRecoveryIntegration;
+  var made=api&&typeof api.createFromCapacitor==='function'?api.createFromCapacitor(plugin):null;
+  if(!made||!made.ok)throw new Error('ETP recovery service is unavailable. Nothing was accepted.');
+  return made.integration;
+}
+function restoredEtpScopes(){
+  var raw=tryJSON(safeGet(ETP_SCOPE_REGISTRY_KEY))||[];
+  if(!Array.isArray(raw))throw new Error('ETP scope registry is invalid. Nothing was accepted.');
+  return raw.map(function(value){return {scopeKey:String(value&&value.scopeKey||value||'')};});
+}
 function evidenceComparable(list){
   return (Array.isArray(list)?list:[]).map(function(e){return {itemKey:String(e.itemKey||''),name:String(e.name||''),type:String(e.type||''),dataURL:String(e.dataURL||'')};})
     .sort(function(a,b){return restoreCanonical(a).localeCompare(restoreCanonical(b));});
@@ -7290,6 +7327,11 @@ async function restoreValidatedBackup(){
       }
       if(bundle.applyQms&&engineOn){
         var q=await qmsReadArchiveForBackup(true); if(restoreCanonical(q||[])!==restoreCanonical(bundle.qmsArchive)) throw new Error('Archived-visit read-back control total failed.');
+      }
+      var etpRecovery=etpRecoveryRuntime();
+      if(etpRecovery){
+        var fenced=await etpRecovery.fenceRestoredScopes(restoredEtpScopes());
+        if(!fenced||!fenced.ok)throw new Error('ETP restore fence failed ('+String(fenced&&fenced.code||'unknown')+'). Nothing was accepted.');
       }
     },
     rollback:async function(before){
@@ -7482,8 +7524,20 @@ function factoryResetSafetyBackup(keys){
 }
 /* §reset-safety: the actual wipe — body unchanged from the original factoryReset tail; only runs
    AFTER factoryResetSafetyBackup resolves ok. */
-function factoryResetWipe(keys){
+async function factoryResetWipe(keys){
   const done = keys.length;
+  try{
+    var etpRecovery=etpRecoveryRuntime();
+    if(etpRecovery){
+      var etpReset=await etpRecovery.resetForFactoryReset('RESET_ETP_STORE');
+      if(!etpReset||!etpReset.ok)throw new Error(String(etpReset&&etpReset.code||'ETP_RESET_FAILED'));
+    }
+  }catch(e){
+    try{auditLog('app.factory_reset_aborted',{reason:'etp-reset-failed',code:String(e&&e.message||e)});}catch(_e){}
+    alert('Factory reset ABORTED because the encrypted ETP store could not be cleared. No app reload was started.\n\n'+String(e&&e.message||e));
+    toast('Factory reset aborted — ETP storage was not cleared.');
+    return false;
+  }
   // Option C (§13.5): when storage-core owns the store, do an ATOMIC, AWAITED wipe of MEM +
   // bcc.sqlite(+.bak/.tmp) + WAL + 'migrated' marker + photos + native LS (and re-stamp the demo
   // guard) via SaagarStore._reset(), and reload ONLY after it resolves — so a debounced persist or
