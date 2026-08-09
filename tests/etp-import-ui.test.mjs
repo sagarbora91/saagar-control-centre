@@ -7,7 +7,7 @@ const api=require('../www/etp-import-ui.js');
 const source=fs.readFileSync(new URL('../www/etp-import-ui.js',import.meta.url),'utf8');
 const shell=fs.readFileSync(new URL('../www/index.html',import.meta.url),'utf8');
 
-function ready(ui){ui.setScope('storeCode','HEMW');ui.setScope('financialYear','2026-27');ui.setScope('periodStart','2026-04-01');ui.setScope('periodEnd','2026-04-30');for(const id of api.REPORTS)ui.setFile(id,{name:id+'.xlsx'});}
+function ready(ui){ui.setScope('storeCode','HEMW');ui.setScope('financialYear','2026-27');ui.setScope('periodStart','2026-04-01');ui.setScope('periodEnd','2026-04-30');ui.setCoverageConfirmed(true);for(const id of api.REPORTS)ui.setFile(id,{name:id+'.xlsx'});}
 
 test('UI requires one exact file for all four reports and fails closed without runtime',async()=>{
   const ui=api.create();
@@ -35,6 +35,7 @@ test('responsive source has a desktop overview and mobile stacked controls with 
   assert.match(source,/@media\(max-width:699px\)/);
   assert.match(source,/\.etp-grid,\.etp-files\{grid-template-columns:1fr\}/);
   assert.match(source,/No sales totals are shown here/);
+  assert.match(source,/complete selected period/);
   assert.doesNotMatch(source,/₹|salesTotal|revenueTotal/);
 });
 

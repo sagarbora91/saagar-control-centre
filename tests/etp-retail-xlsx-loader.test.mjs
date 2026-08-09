@@ -74,10 +74,13 @@ test('approved numeric measures preserve lexical decimal text', () => {
   assert.equal(result.rows[0].fields.netValue, '10.25');
 });
 
-test('numeric identifiers and numeric non-measure fields remain rejected', () => {
+test('safe integer identifiers are text while ambiguous identifiers and numeric context remain rejected', () => {
   const identifierRows = rows();
   identifierRows[1][identifierRows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = numeric.numericLexical('123');
-  assert.equal(tableParser.parse({ rows: identifierRows, fileLabel: 'Revenue Report.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED');
+  assert.equal(tableParser.parse({ rows: identifierRows, fileLabel: 'Revenue Report.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).rows[0].fields.invoiceNumber, '123');
+  const ambiguousRows = rows();
+  ambiguousRows[1][ambiguousRows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = numeric.numericLexical('123.0');
+  assert.equal(tableParser.parse({ rows: ambiguousRows, fileLabel: 'Revenue Report.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED');
   const contextRows = rows();
   contextRows[1][contextRows[0].findIndex((header) => foundation.normalizeHeader(header) === 'STORE_NAME')] = numeric.numericLexical('123');
   assert.equal(tableParser.parse({ rows: contextRows, fileLabel: 'Revenue Report.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_NUMERIC_FIELD_UNAPPROVED');

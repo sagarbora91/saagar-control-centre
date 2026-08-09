@@ -9,6 +9,7 @@ test('shell loads the ETP recovery boundary and portable payload never embeds ET
   const backup = index.slice(index.indexOf('function backupPayload()'), index.indexOf('function requestBackupPassphrase'));
   assert.doesNotMatch(backup, /etpFacts|saagar-etp\.db|payload_envelope|readFacts/);
   assert.match(backup, /localStorage:\s*store/);
+  assert.match(index, /k==='saagar_etp_scope_registry' \|\| k==='saagar_etp_control_registry_v1'/);
 });
 
 test('verified restore fences restored ETP scopes before success is recorded', () => {

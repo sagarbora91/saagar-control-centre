@@ -885,7 +885,11 @@ html.bcc-mobile,html.bcc-mobile body{overflow-x:hidden}
 <script src="etp-retail-xlsx-loader.js"></script>
 <script src="etp-store-lifecycle-policy.js"></script>
 <script src="etp-reconciliation-policy.js"></script>
+<script src="etp-core-contract.js"></script>
 <script src="etp-native-store.js"></script>
+<script src="etp-control-registry.js"></script>
+<script src="etp-verified-reader.js"></script>
+<script src="etp-worker-client.js"></script>
 <script src="etp-import-coordinator.js"></script>
 <script src="etp-import-runtime.js"></script>
 <script src="etp-import-ui.js"></script>
@@ -2580,7 +2584,7 @@ function appControlKeys(){ return [PROTECTED_MODULES_KEY,MODULE_PIN_POLICY_KEY,A
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
 function restoreBlockedKeys(){ return [ADMIN_PIN_KEY, ADMIN_MODE_KEY, CURRENT_ROLE_KEY, CURRENT_STORE_KEY, ROLE_ACCESS_KEY, STAFF_PIN_KEY, PIN_ATTEMPTS_KEY, OFFDEVICE_BACKUP_KEY, EXPORT_REGISTER_KEY, RESTORE_DRILL_KEY, RESTORE_ACCEPTANCE_KEY, LAST_MODULE_RESET_KEY, PRODUCTION_DEVICE_KEY, HIGHEST_BUILD_KEY]; }   /* Device-local control evidence cannot be forged by restore. */
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
-function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
+function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || k==='saagar_etp_scope_registry' || k==='saagar_etp_control_registry_v1' || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); } /* ETP receipts/scope are portable control metadata; fact rows remain excluded and restored scopes are fenced for re-import. */
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
 function ownerModuleForKey(k){ return MODULES.find(m=>keyMatchesModule(k,m.id)); }
 function keysForModule(id){ return Object.keys(allStorage()).filter(k=>keyMatchesModule(k,id)); }

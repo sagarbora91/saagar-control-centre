@@ -1,4 +1,4 @@
-/* ETP-A1 parser-boundary policy. Pure/no-write and not app-loaded. */
+/* ETP parser-boundary policy. App-loaded, pure and no-write. */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -23,7 +23,18 @@
     var normalized = text(value);
     return normalized == null ? '' : normalized.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
   }
-  function inspectTable(rows, requiredIdentifiers) {
+  function identifierText(value, policy) {
+    if (!isNumericToken(value)) return text(value);
+    var rule = policy && policy.mode === 'EXACT_INTEGER_TEXT' ? policy : null;
+    if (!rule) return null;
+    var lexical = value.lexical, maxDigits = Number(rule.maxDigits);
+    if (!Number.isSafeInteger(maxDigits) || maxDigits < 1 || maxDigits > 15) return null;
+    /* Excel numeric cells cannot prove display-only leading zeros. Accept only
+       the exact stored integer lexical value; never pad, round or expand. */
+    if (!/^(?:0|[1-9]\d*)$/.test(lexical) || lexical.length > maxDigits) return null;
+    return lexical;
+  }
+  function inspectTable(rows, requiredIdentifiers, identifierPolicy) {
     if (!Array.isArray(rows) || !rows.length || !Array.isArray(rows[0])) return refusal('XLSX_HEADER_INVALID', 'header');
     if (rows.length - 1 > MAX_ROWS) return refusal('XLSX_ROW_LIMIT_EXCEEDED');
     if (rows[0].length > MAX_COLUMNS) return refusal('XLSX_COLUMN_LIMIT_EXCEEDED');
@@ -48,12 +59,12 @@
       }
       for (required = 0; required < identifiers.length; required += 1) {
         var identifier = row[seen[identifiers[required]]];
-        if (isNumericToken(identifier)) return refusal('XLSX_IDENTIFIER_NUMERIC_UNVERIFIED', 'identifier');
-        var identifierText = text(identifier);
-        if (!identifierText) return refusal('XLSX_IDENTIFIER_MISSING', 'identifier');
+        var normalizedIdentifier = identifierText(identifier, identifierPolicy);
+        if (isNumericToken(identifier) && !normalizedIdentifier) return refusal('XLSX_IDENTIFIER_NUMERIC_UNVERIFIED', 'identifier');
+        if (!normalizedIdentifier) return refusal('XLSX_IDENTIFIER_MISSING', 'identifier');
       }
     }
     return Object.freeze({ ok: true, code: 'XLSX_TABLE_ACCEPTED', stage: 'table', rows: rows.length - 1, columns: headers.length, nonblankCells: cells });
   }
-  return Object.freeze({ LIMITS: Object.freeze({ maxRows: MAX_ROWS, maxColumns: MAX_COLUMNS, maxCells: MAX_CELLS, maxCellText: MAX_CELL_TEXT }), numericLexical: numericLexical, isNumericToken: isNumericToken, inspectTable: inspectTable });
+  return Object.freeze({ LIMITS: Object.freeze({ maxRows: MAX_ROWS, maxColumns: MAX_COLUMNS, maxCells: MAX_CELLS, maxCellText: MAX_CELL_TEXT }), numericLexical: numericLexical, isNumericToken: isNumericToken, identifierText: identifierText, inspectTable: inspectTable });
 });

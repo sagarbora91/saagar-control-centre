@@ -19,7 +19,7 @@
   function validDependencies(options) {
     var pipeline = options && options.pipeline, store = options && options.store, policy = options && options.lifecyclePolicy;
     return policy && ['create', 'validateScope', 'transition', 'attachManifest', 'manifestIdentity', 'publish'].every(function (name) { return requireMethod(policy, name); }) &&
-      pipeline && ['preflight', 'parse', 'validate', 'reconcile'].every(function (name) { return requireMethod(pipeline, name); }) &&
+      pipeline && ['preflight', 'parse', 'validate', 'reconcile', 'authorizePublication'].every(function (name) { return requireMethod(pipeline, name); }) &&
       store && ['beginStage', 'appendChunk', 'finishStage', 'publish'].every(function (name) { return requireMethod(store, name); });
   }
   function reportSet(chunks, manifest) {
@@ -54,13 +54,13 @@
         }));
       }
 
-      var checked = await pipeline.preflight({ scope: lifecycle.scope, files: request.files });
+      var checked = await pipeline.preflight({ scope: lifecycle.scope, files: request.files, coverageDeclaration: request.coverageDeclaration });
       if (!checked || !checked.ok) return fail('ETP_PREFLIGHT_REJECTED', 'PREFLIGHT', checked);
       lifecycle = advance(policy, lifecycle, 'PREFLIGHT_PASS');
-      var parsed = await pipeline.parse({ scope: lifecycle.scope, files: request.files, preflight: checked });
+      var parsed = await pipeline.parse({ scope: lifecycle.scope, files: request.files, preflight: checked, coverageDeclaration: request.coverageDeclaration });
       if (!parsed || !parsed.ok) return fail('ETP_PARSE_REJECTED', 'PARSE', parsed);
       lifecycle = advance(policy, lifecycle, 'PARSE_PASS');
-      var validated = await pipeline.validate({ scope: lifecycle.scope, parsed: parsed });
+      var validated = await pipeline.validate({ scope: lifecycle.scope, parsed: parsed, coverageDeclaration: request.coverageDeclaration });
       if (!validated || !validated.ok || !record(validated.manifest) || !reportSet(validated.chunks, validated.manifest)) return fail('ETP_POLICY_REJECTED', 'VALIDATE', validated);
       lifecycle = advance(policy, lifecycle, 'POLICY_PASS');
 
@@ -85,12 +85,15 @@
       if (!attached || !attached.ok) return fail('ETP_MANIFEST_REJECTED', 'STAGE_FINISH', attached);
       lifecycle = attached.lifecycle;
 
-      var reconciled = await pipeline.reconcile({ scope: lifecycle.scope, manifest: lifecycle.manifest, validated: validated });
+      var reconciled = await pipeline.reconcile({ scope: lifecycle.scope, manifest: lifecycle.manifest, validated: validated, coverageDeclaration: request.coverageDeclaration });
       if (!reconciled || !reconciled.ok || reconciled.status !== 'PASS') return fail('ETP_RECONCILIATION_REJECTED', 'RECONCILE', reconciled);
       lifecycle = advance(policy, lifecycle, 'RECONCILE_PASS');
       lifecycle = advance(policy, lifecycle, 'REQUEST_CONFIRMATION');
       if (!lifecycle) return fail('ETP_LIFECYCLE_INVALID', 'CONFIRM');
-      if (request.confirmed !== true) return { ok: true, changed: false, awaitingConfirmation: true, lifecycle: lifecycle };
+      if (request.confirmed !== true) return { ok: true, changed: false, awaitingConfirmation: true, lifecycle: lifecycle, reconciliation: reconciled, coverage: reconciled.coverage || null };
+
+      var authorization = await pipeline.authorizePublication({ scope: lifecycle.scope, lifecycle: lifecycle });
+      if (!authorization || authorization.ok !== true) return fail('ETP_PUBLICATION_AUTH_REQUIRED', 'CONFIRM');
 
       nativeResult = await store.publish(lifecycle);
       if (!nativeResult || !nativeResult.ok) return fail(nativeResult && nativeResult.code || 'ETP_PUBLISH_FAILED', 'PUBLISH', nativeResult);
@@ -101,6 +104,8 @@
     async function confirm(lifecycle) {
       var checked = policy.validateLifecycle(lifecycle);
       if (!checked || !checked.ok || lifecycle.state !== 'AWAITING_CONFIRMATION') return fail('ETP_CONFIRMATION_STATE_INVALID', 'CONFIRM');
+      var authorization = await pipeline.authorizePublication({ scope: lifecycle.scope, lifecycle: lifecycle });
+      if (!authorization || authorization.ok !== true) return fail('ETP_PUBLICATION_AUTH_REQUIRED', 'CONFIRM');
       var nativeResult = await store.publish(lifecycle);
       if (!nativeResult || !nativeResult.ok) return fail(nativeResult && nativeResult.code || 'ETP_PUBLISH_FAILED', 'PUBLISH', nativeResult);
       var published = policy.publish(lifecycle);

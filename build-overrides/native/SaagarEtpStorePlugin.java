@@ -34,6 +34,7 @@ public class SaagarEtpStorePlugin extends Plugin {
     String scope=scope(call,"beginStage"), gen=token(call,"generationId","beginStage"); if(scope==null||gen==null)return;
     SQLiteDatabase db=null;
     try{ db=db(); begin(db);
+      db.delete("generation","scope_key=? AND state IN ('STAGING','SEALED')",new String[]{scope});
       if(exists(db,"SELECT 1 FROM generation WHERE scope_key=? AND generation_id=?",scope,gen)) fail("GENERATION_EXISTS",false);
       ContentValues v=new ContentValues(); v.put("scope_key",scope);v.put("generation_id",gen);v.put("state","STAGING");v.put("created_at",System.currentTimeMillis());
       if(db.insert("generation",null,v)==-1)fail("DB_IO_FAILED",true); commit(db); ok(call,"state","STAGING");
@@ -67,7 +68,7 @@ public class SaagarEtpStorePlugin extends Plugin {
     String scope=scope(call,"publishStage"),gen=token(call,"generationId","publishStage");JSObject manifest=call.getObject("manifest");if(scope==null||gen==null)return;if(!validManifest(manifest,scope,gen)){bad(call,"publishStage");return;}SQLiteDatabase db=null;
     try{db=db();begin(db);requireState(db,scope,gen,"SEALED");try(Cursor c=db.rawQuery("SELECT manifest FROM generation WHERE scope_key=? AND generation_id=?",new String[]{scope,gen})){if(!c.moveToFirst()||!manifest.toString().equals(c.getString(0)))fail("MANIFEST_MISMATCH",false);}
       ContentValues p=new ContentValues();p.put("scope_key",scope);p.put("active_generation_id",gen);p.put("restore_fence",0);db.insertWithOnConflict("scope_pointer",null,p,SQLiteDatabase.CONFLICT_REPLACE);
-      ContentValues v=new ContentValues();v.put("state","PUBLISHED");v.put("published_at",System.currentTimeMillis());db.update("generation",v,"scope_key=? AND generation_id=? AND state='SEALED'",new String[]{scope,gen});commit(db);JSObject out=new JSObject();out.put("ok",true);out.put("state","ACCEPTED");out.put("activeGenerationId",gen);call.resolve(out);
+      ContentValues v=new ContentValues();v.put("state","PUBLISHED");v.put("published_at",System.currentTimeMillis());db.update("generation",v,"scope_key=? AND generation_id=? AND state='SEALED'",new String[]{scope,gen});db.execSQL("DELETE FROM generation WHERE scope_key=? AND generation_id<>? AND generation_id NOT IN (SELECT generation_id FROM generation WHERE scope_key=? AND generation_id<>? AND state='PUBLISHED' ORDER BY published_at DESC LIMIT 1)",new Object[]{scope,gen,scope,gen});commit(db);JSObject out=new JSObject();out.put("ok",true);out.put("state","ACCEPTED");out.put("activeGenerationId",gen);call.resolve(out);
     }catch(Throwable t){rollback(db);reject(call,"publishStage",t);}
   }
 

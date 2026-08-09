@@ -188,6 +188,8 @@ export function createStorageCoreHarness(options = {}) {
     crypto: webcrypto,
     Capacitor: { Plugins: plugins },
     __BOOT_TIMEOUT_MS: options.bootTimeoutMs ?? 100,
+    __NATIVE_READ_TIMEOUT_MS: options.nativeReadTimeoutMs ?? options.bootTimeoutMs ?? 100,
+    __NATIVE_READ_STALL_TIMEOUT_MS: options.nativeReadStallTimeoutMs ?? options.bootTimeoutMs ?? 100,
     __SAAGAR_BUILD_ID: options.buildId || {
       appVersion: 'test-version',
       apkBuild: 'test-build'

@@ -1,4 +1,4 @@
-/* Shared Retail ETP table parser. Pure/no-write and deliberately not app-loaded. */
+/* Shared Retail ETP table parser. App-loaded, pure and no-write. */
 (function (root, factory) {
   var api = factory(root && root.SaagarEtpImportFoundation, root && root.SaagarEtpXlsxParserPolicy, root && root.SaagarEtpRetailProfile);
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -13,12 +13,23 @@
   function refusal(code, details) { return Object.freeze({ ok: false, code: code, details: details || null }); }
   function isoCompact(value) {
     if (value instanceof Date && Number.isFinite(value.getTime())) return value.toISOString().slice(0, 10).replace(/-/g, '');
+    if (parserPolicy.isNumericToken(value)) {
+      if (value.lexical === '0') return '';
+      if (/^\d{8}$/.test(value.lexical)) {
+        var y=Number(value.lexical.slice(0,4)),m=Number(value.lexical.slice(4,6)),d=Number(value.lexical.slice(6,8)),direct=new Date(Date.UTC(y,m-1,d));
+        return direct.getUTCFullYear()===y&&direct.getUTCMonth()===m-1&&direct.getUTCDate()===d?value.lexical:null;
+      }
+      if (!/^[1-9]\d{0,6}$/.test(value.lexical)) return null;
+      var serial = Number(value.lexical); if (!Number.isSafeInteger(serial) || serial === 60 || serial > 2958465) return null;
+      var excelDate = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+      return Number.isFinite(excelDate.getTime()) ? excelDate.toISOString().slice(0, 10).replace(/-/g, '') : null;
+    }
     var text = String(value == null ? '' : value).trim();
     return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text.replace(/-/g, '') : text;
   }
-  function scalar(value, isIdentifier, isDate, isApprovedNumeric) {
+  function scalar(value, isIdentifier, isDate, isApprovedNumeric, identifierPolicy) {
     if (isDate) return isoCompact(value);
-    if (parserPolicy.isNumericToken(value)) return isIdentifier ? { error: 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED' } :
+    if (parserPolicy.isNumericToken(value)) return isIdentifier ? (parserPolicy.identifierText(value, identifierPolicy) || { error: 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED' }) :
       (isApprovedNumeric ? value.lexical : { error: 'XLSX_NUMERIC_FIELD_UNAPPROVED' });
     if (typeof value === 'number') return { error: 'XLSX_NUMERIC_TYPE_UNTRACKED' };
     if (value instanceof Date) return null;
@@ -34,17 +45,18 @@
     Object.keys(report.fields).forEach(function (raw) { outputByHeader[foundation.normalizeHeader(raw)] = report.fields[raw]; });
     var identifierOutputs = Object.create(null);
     report.requiredIdentifiers.forEach(function (name) { identifierOutputs[name] = true; });
+    report.numericTextOutputs.forEach(function (name) { identifierOutputs[name] = true; });
     var numericOutputs = Object.create(null);
     report.numericOutputs.forEach(function (name) { numericOutputs[name] = true; });
     var requiredSourceHeaders = Object.keys(outputByHeader).filter(function (header) { return identifierOutputs[outputByHeader[header]]; });
-    var structural = parserPolicy.inspectTable(input.rows, requiredSourceHeaders);
+    var structural = parserPolicy.inspectTable(input.rows, requiredSourceHeaders, report.numericIdentifierPolicy);
     if (!structural.ok) return structural;
     var rows = [], adapters = profile.adapters(), datePolicy = input.datePolicy;
     for (var rowIndex = 1; rowIndex < input.rows.length; rowIndex += 1) {
       var source = {}, row = input.rows[rowIndex] || [];
       for (var column = 0; column < normalizedHeaders.length; column += 1) {
         var output = outputByHeader[normalizedHeaders[column]], value = row[column];
-        var converted = scalar(value, !!identifierOutputs[output], normalizedHeaders[column] === foundation.normalizeHeader(report.businessDateHeader), !!numericOutputs[output]);
+        var converted = scalar(value, !!identifierOutputs[output], /Date$/i.test(String(output||'')), !!numericOutputs[output], report.numericIdentifierPolicy);
         if (converted && converted.error) return refusal(converted.error, { row: rowIndex + 1, header: headers[column] });
         if (converted === null) return refusal('XLSX_CELL_TYPE_UNSUPPORTED', { row: rowIndex + 1, header: headers[column] });
         source[headers[column]] = converted;

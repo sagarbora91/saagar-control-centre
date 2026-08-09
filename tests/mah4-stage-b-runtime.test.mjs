@@ -129,8 +129,9 @@ test('metadata audit hashes repeated storage keys with canonical SHA-256 and que
   } });
   await Promise.all([firstAudit, secondAudit]);
   const audits = posted.filter(item => item.message.type === 'ST_AUDIT').map(item => item.message.payload);
+  const auditsByAction = Object.fromEntries(audits.map(audit => [audit.action, audit]));
   assert.equal(audits.length, 2);
-  assert.equal(audits[0].storageKeyHash, crypto.createHash('sha256').update('customer-key').digest('hex'));
-  assert.equal(audits[1].storageKeyHash, crypto.createHash('sha256').update('second-key').digest('hex'));
+  assert.equal(auditsByAction['module.storage.set'].storageKeyHash, crypto.createHash('sha256').update('customer-key').digest('hex'));
+  assert.equal(auditsByAction['module.storage.remove'].storageKeyHash, crypto.createHash('sha256').update('second-key').digest('hex'));
   assert.deepEqual(Object.keys(audits[0]).sort(), ['action','afterBytes','beforeBytes','storageKeyHash']);
 });

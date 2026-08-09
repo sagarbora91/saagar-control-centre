@@ -1955,3 +1955,37 @@ verification. Authenticated dictionary-projected reads and verified
 restore/factory-reset fencing are wired. API-23 emulator crypto/tamper/reset
 evidence passed; physical-device, true process-death, disk-full/corruption and
 real HEMW evidence remain open. SQLite contains no plaintext fact payload column.
+
+## Retail ETP Core Contract Closure — 2026-08-09
+
+The bounded pre-Modular-HTML ETP core is now frozen as
+`retail-etp-core-v1` for R003, R013, R022 and R025. WLMHW and HEMW share the
+same exact report signatures and one versioned profile. Numeric identifiers are
+accepted only as exact non-negative integer lexical values of at most 15 digits;
+the app never pads, rounds or reconstructs leading zeroes. India business dates,
+store/FY/period scope, explicit complete-period declarations, manager
+reauthorization, source identities, receipts, bounded history and report-specific
+verified reads are part of the contract.
+
+Blocking REC-002 is frozen at invoice/date grain with INV `+1`, SR `-1` and BC
+`-1`. It compares signed R022 invoice quantity/net value with aggregated R025
+quantity/net amount, using exact quantity and ₹1-per-invoice money tolerance.
+Both real history packs passed with zero REC-002 differences: 4,658 WLMHW invoice
+groups and 708 HEMW invoice groups. R013 attribution and R003 discount checks are
+non-revenue enrichment controls; their real-pack differences remain visible
+exceptions rather than being converted into sales. Unresolved PAYMENTTYPE25 is
+quarantined and excluded from persisted/verified facts (2,802 WLMHW rows and 18
+HEMW rows in the evaluated packs).
+
+The runtime uses an offline bounded worker, rejects unsafe OOXML before parsing,
+drops approved PII before persistence, stages facts into the separate encrypted
+native ETP store, reconciles before atomic publication, keeps current plus one
+previous generation, writes a metadata-only verified receipt, and fences restored
+scopes until re-import. Portable backups contain the receipt/scope registry but no
+ETP facts, workbook bytes or raw PII.
+
+This closes the engineering contract needed before completing Modular HTML. It
+does not claim physical-device acceptance, a successful real production batch,
+E2–E6 presentation/analytics, Service ETP, PHP/server work, production signing,
+or release acceptance. The real-source evidence is aggregate-only in
+`verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json`.

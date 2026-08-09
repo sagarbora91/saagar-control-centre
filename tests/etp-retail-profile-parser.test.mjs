@@ -72,10 +72,34 @@ test('filename or selected report cannot contradict detected signature', () => {
   assert.equal(parse('R013', 'WLMHW', { selectedReportId: 'R025' }).code, 'REPORT_SELECTION_CONTRADICTS_HEADER');
 });
 
-test('numeric identifiers continue to fail closed', () => {
+test('WLMHW and HEMW ETP report-code filename prefixes normalize to one profile', () => {
+  assert.equal(parse('R003','WLMHW',{fileLabel:'W003_All_Discount_Type.xlsx'}).ok,true);
+  assert.equal(parse('R003','HEMW',{fileLabel:'H003_All_Discount_Type.xlsx'}).ok,true);
+});
+
+test('exact safe integer identifiers are canonical text without guessed padding', () => {
   const rows = table('R025');
   rows[1][rows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = policy.numericLexical('123');
-  assert.equal(parser.parse({ rows, fileLabel: 'SDB Variantwise Sales.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED');
+  const result = parser.parse({ rows, fileLabel: 'SDB Variantwise Sales.xlsx', expectedStoreCode: 'WLMHW', datePolicy });
+  assert.equal(result.ok, true);
+  assert.equal(result.rows[0].fields.invoiceNumber, '123');
+  assert.equal(profile.IDENTIFIER_POLICY.leadingZeroRepair, false);
+});
+
+test('ambiguous numeric identifier forms remain fail closed', () => {
+  for (const lexical of ['00123', '123.0', '1e3', '-1', '1234567890123456']) {
+    const rows = table('R025');
+    rows[1][rows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = policy.numericLexical(lexical);
+    assert.equal(parser.parse({ rows, fileLabel: 'SDB Variantwise Sales.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED', lexical);
+  }
+});
+
+test('Excel serial dates convert deterministically while zero placeholders stay blank', () => {
+  const rows=table('R003'),ref=rows[0].findIndex(header=>foundation.normalizeHeader(header)==='INVOICE_REF_DATE');
+  rows[1][ref]=policy.numericLexical('0');
+  assert.equal(parser.parse({rows,fileLabel:'All Discount Type.xlsx',expectedStoreCode:'WLMHW',datePolicy}).rows[0].fields.invoiceRefDate,'');
+  rows[1][ref]=policy.numericLexical('46000');
+  assert.match(parser.parse({rows,fileLabel:'All Discount Type.xlsx',expectedStoreCode:'WLMHW',datePolicy}).rows[0].fields.invoiceRefDate,/^\d{8}$/);
 });
 
 test('wrong and mixed stores fail before publication', () => {

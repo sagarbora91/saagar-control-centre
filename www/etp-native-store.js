@@ -1,5 +1,5 @@
 /* ETP native fact-store bridge.
-   App-unloaded by design. This boundary accepts only policy-validated metadata and
+   App-loaded bridge. This boundary accepts only policy-validated metadata and
    explicitly approved canonical fact fields; it never accepts workbook material. */
 (function (root, factory) {
   var api = factory(root);

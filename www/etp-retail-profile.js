@@ -1,4 +1,4 @@
-/* Shared Retail ETP profile. Pure/no-write and deliberately not app-loaded. */
+/* Shared Retail ETP profile. App-loaded, pure and no-write. */
 (function (root, factory) {
   var api = factory(root && root.SaagarEtpImportFoundation);
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -6,7 +6,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (foundation) {
   'use strict';
   if (!foundation && typeof require === 'function') foundation = require('./etp-import-foundation.js');
-  var VERSION = 'retail-etp-2026-08-08.1';
+  var VERSION = 'retail-etp-core-v1';
+  var IDENTIFIER_POLICY = Object.freeze({ mode: 'EXACT_INTEGER_TEXT', maxDigits: 15, leadingZeroRepair: false });
   var STORES = Object.freeze(['WLMHW', 'HEMW']);
   var COMMON = [
     ['TRANS_TYPE', 'transactionTypeRaw'], ['STORE CODE', 'storeCode'],
@@ -78,16 +79,19 @@
     }
   };
   function freezeDefinition(definition) {
-    var fields = {}, headers = [], numericOutputs = [];
+    var fields = {}, headers = [], numericOutputs = [], numericTextOutputs = [];
     definition.columns.forEach(function (pair) { fields[pair[0]] = pair[1]; headers.push(pair[0]); });
     definition.columns.forEach(function (pair) {
       if (/(?:quantity|amount|value|discount|charges|gross|ucp|roundOff|rate|encircleAmountOrFlag)$/i.test(pair[1])) numericOutputs.push(pair[1]);
+      if (/(?:number|year|code|timestamp)$/i.test(pair[1]) && pair[1] !== 'storeCode') numericTextOutputs.push(pair[1]);
     });
     definition.pii.forEach(function (header) { headers.push(header); });
     return Object.freeze({
       aliases: Object.freeze(definition.aliases.slice()), businessDateHeader: definition.date,
       fields: Object.freeze(fields), dropHeaders: Object.freeze(definition.pii.slice()),
       requiredIdentifiers: Object.freeze(definition.identifiers.slice()),
+      numericIdentifierPolicy: IDENTIFIER_POLICY,
+      numericTextOutputs: Object.freeze(numericTextOutputs),
       requiredMeasures: Object.freeze(definition.measures.slice()),
       numericOutputs: Object.freeze(numericOutputs),
       exactHeaders: Object.freeze(headers),
@@ -114,7 +118,7 @@
   }
   function normalizeFileAlias(value) {
     return String(value || '').split(/[\\/]/).pop().replace(/\.xlsx$/i, '')
-      .replace(/^\d{12}_/, '').replace(/^R\d{3}[_ -]+/i, '').split(/\s+-\s+/)[0]
+      .replace(/^\d{12}_/, '').replace(/^[RWH]\d{3}[_ -]+/i, '').split(/\s+-\s+/)[0]
       .toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
   }
   function detect(headers, fileLabel, selectedReportId) {
@@ -127,6 +131,6 @@
     return Object.freeze({ ok: true, code: 'REPORT_DETECTED', reportId: detected,
       signature: headerResult.signature, signatureKey: headerResult.signatureKey });
   }
-  return Object.freeze({ VERSION: VERSION, STORES: STORES, REPORTS: REPORTS,
+  return Object.freeze({ VERSION: VERSION, STORES: STORES, REPORTS: REPORTS, IDENTIFIER_POLICY: IDENTIFIER_POLICY,
     adapters: adapters, signatures: signatures, normalizeFileAlias: normalizeFileAlias, detect: detect });
 });

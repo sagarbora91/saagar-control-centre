@@ -21,7 +21,8 @@ function harness(overrides = {}) {
     preflight: async value => (calls.push(['preflight', value]), overrides.preflight || { ok: true }),
     parse: async value => (calls.push(['parse', value]), overrides.parse || { ok: true, workbookSet: true }),
     validate: async value => (calls.push(['validate', value]), overrides.validate || { ok: true, ...data }),
-    reconcile: async value => (calls.push(['reconcile', value]), overrides.reconcile || { ok: true, status: 'PASS' })
+    reconcile: async value => (calls.push(['reconcile', value]), overrides.reconcile || { ok: true, status: 'PASS' }),
+    authorizePublication: async value => (calls.push(['authorize', value]), overrides.authorize || { ok: true })
   };
   const store = {
     beginStage: async value => (calls.push(['begin', value]), overrides.begin || { ok: true }),
@@ -41,7 +42,7 @@ test('runs the complete verified transaction and publishes only after reconcilia
   assert.equal(result.ok, true);
   assert.equal(result.changed, true);
   assert.equal(result.lifecycle.state, 'ACCEPTED');
-  assert.deepEqual(h.calls.map(x => x[0]), ['preflight', 'parse', 'validate', 'begin', 'append', 'append', 'append', 'append', 'finish', 'reconcile', 'publish']);
+  assert.deepEqual(h.calls.map(x => x[0]), ['preflight', 'parse', 'validate', 'begin', 'append', 'append', 'append', 'append', 'finish', 'reconcile', 'authorize', 'publish']);
 });
 
 test('keeps publication untouched when staging fails', async () => {
@@ -92,6 +93,13 @@ test('requires explicit confirmation after successful reconciliation', async () 
   const accepted = await h.confirm(result.lifecycle);
   assert.equal(accepted.ok, true);
   assert.equal(accepted.lifecycle.state, 'ACCEPTED');
+});
+
+test('manager authorization fails closed before native publication', async () => {
+  const h = harness({ authorize: { ok: false } });
+  const result = await h.run(request);
+  assert.equal(result.code, 'ETP_PUBLICATION_AUTH_REQUIRED');
+  assert.equal(h.calls.some(x => x[0] === 'publish'), false);
 });
 
 test('supports a zero-activity report without inventing a fact chunk', async () => {

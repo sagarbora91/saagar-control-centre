@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7365,
-    "mah3ProfileSha256": "355b4aa2ff6a9ea4b7ee6d2933ce3ff23e1552eb57c8390df577a92ad818163b",
-    "mah3TreeSha256": "c93a6b935176bf7179d7c852a7107ca5e94553b475a92cbda44426bc32403b34",
-    "currentWwwTreeSha256": "c93a6b935176bf7179d7c852a7107ca5e94553b475a92cbda44426bc32403b34",
-    "currentWwwFileCount": 80,
-    "currentWwwTotalBytes": 7945720,
+    "mah3ProfileSha256": "b5ff7a011bd451f9974b30ee48c24fde5259391bb4d1bd9d9ada0508106ef99f",
+    "mah3TreeSha256": "337a4d7bde8ac0ba22392611052b7d1cd9095a8480a48d9d91c0311fb63f1800",
+    "currentWwwTreeSha256": "337a4d7bde8ac0ba22392611052b7d1cd9095a8480a48d9d91c0311fb63f1800",
+    "currentWwwFileCount": 85,
+    "currentWwwTotalBytes": 7973553,
     "shell": {
       "path": "www/index.html",
-      "bytes": 711234,
-      "sha256": "fbb6aab2b259c79494b66db152a407ef82abf1ae34e3f156da8b6c80241407ca"
+      "bytes": 711622,
+      "sha256": "92125a1a5e29c15c4e27a7854377b228ead2dde9c244820ebb3f2d55a2b9982f"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -762,6 +762,9 @@
     "nonStProducerPaths": {
       "__edit_mode_available": [
         "www/modules/service/index.html"
+      ],
+      "PARSE_FOUR_REPORTS": [
+        "www/etp-worker-client.js"
       ]
     },
     "nonStConsumerPaths": {
@@ -772,19 +775,19 @@
         "www/modules/service/index.html"
       ]
     },
-    "directEntrySyntacticPostMessageCalls": 65,
-    "directEntryClassifiedProducerCalls": 65,
-    "directEntryConfiguredPostMessageCalls": 60,
+    "directEntrySyntacticPostMessageCalls": 66,
+    "directEntryClassifiedProducerCalls": 66,
+    "directEntryConfiguredPostMessageCalls": 61,
     "directEntrySyntacticWildcardPostMessageCalls": 59,
     "directEntryConfiguredWildcardPostMessageCalls": 54,
     "dynamicSyntacticPostMessageCalls": 1,
     "dynamicClassifiedProducerCalls": 1,
     "dynamicConfiguredPostMessageCalls": 1,
     "dynamicWildcardPostMessageCalls": 1,
-    "aggregateSyntacticPostMessageCalls": 66,
-    "aggregateConfiguredPostMessageCalls": 61,
+    "aggregateSyntacticPostMessageCalls": 67,
+    "aggregateConfiguredPostMessageCalls": 62,
     "aggregateWildcardPostMessageCalls": 60,
-    "aggregateAcceptedConfiguredPostMessageCalls": 60,
+    "aggregateAcceptedConfiguredPostMessageCalls": 61,
     "knownRejectedConfiguredRoutes": [
       {
         "type": "ST_OPEN_MODULE",
@@ -819,7 +822,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 50,
+    "directEntryScriptAssetCount": 54,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1072,6 +1075,18 @@
       ]
     },
     {
+      "path": "www/etp-worker-client.js",
+      "bytes": 1701,
+      "sha256": "bc0b7e1f0ffdfef90c0017ea6843f1ebbe9d6393ec410313ae1eab547a105b9a",
+      "loadedBy": [
+        "shell"
+      ],
+      "producerTypes": [
+        "PARSE_FOUR_REPORTS"
+      ],
+      "consumerTypes": []
+    },
+    {
       "path": "www/shared/mah4-runtime.js",
       "bytes": 10062,
       "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
@@ -1187,8 +1202,8 @@
       "resizeListeners": 8
     },
     "uniqueDirectAssetCallSites": {
-      "timeouts": 25,
-      "clearTimeouts": 15,
+      "timeouts": 27,
+      "clearTimeouts": 19,
       "intervals": 2,
       "clearIntervals": 2,
       "mutationObservers": 4,
@@ -1248,6 +1263,14 @@
         ]
       },
       {
+        "path": "www/etp-worker-client.js",
+        "bytes": 1701,
+        "sha256": "bc0b7e1f0ffdfef90c0017ea6843f1ebbe9d6393ec410313ae1eab547a105b9a",
+        "loadedBy": [
+          "shell"
+        ]
+      },
+      {
         "path": "www/saagar-report.js",
         "bytes": 165641,
         "sha256": "b6d156fec2b985c35ac9c6d031393287263cb416aa31ffd74ac8435f0b8f9952",
@@ -1302,8 +1325,8 @@
       },
       {
         "path": "www/storage-core.js",
-        "bytes": 82449,
-        "sha256": "aaf77728a7c6fc9aacd33303e2294f09bdbe200ad90cd96a2a8b0beedb3b9864",
+        "bytes": 88172,
+        "sha256": "4e8accc0689dcf71be26c08ab494fd135d21bc742ae6cd4607d08509575994fb",
         "loadedBy": [
           "shell"
         ]
@@ -1334,8 +1357,8 @@
       }
     ],
     "rawShellPlusDirectAssetCallSites": {
-      "timeouts": 46,
-      "clearTimeouts": 21,
+      "timeouts": 48,
+      "clearTimeouts": 25,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 4,
@@ -1345,8 +1368,8 @@
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 39,
-      "clearTimeouts": 18,
+      "timeouts": 41,
+      "clearTimeouts": 22,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 2,
