@@ -1,904 +1,139 @@
-# Saagar Control Centre - Safe and Lawful Android Closure Handoff
+# SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-08 (Asia/Kolkata), ETP-A1 parser evaluation foundation
-**Purpose:** the single resume point for the Android safe-and-lawful closure and the V6 improvement programme.
-**ETP resume point:** `verification/ETP-RETAIL-VERIFIED-DATA-PATH-CHECKPOINT-2026-08-08.md`.
-The consolidated Retail phase now has pure/no-write A0 policy, bounded parser
-and XML threat gates, numeric-identifier refusal, sealed-store lifecycle and an
-explicit reconciliation/publication engine. These modules are not app-loaded.
-Production parsing, runtime import wiring, UI and verified views remain gated
-because HEMW is absent and identifiers, dictionaries, reconciliation and
-device/owner evidence are not approved. The isolated encrypted SQLite scaffold
-is implemented but is not runtime-activated.
-The generic separate native generation-store and its bounded bridge are present
-and compile. The owner approved Keystore AES-256-GCM chunk
-envelopes and the scaffold now stores ciphertext only. Real API-23 crypto,
-tamper, crash, disk-full and corruption evidence remains required; do not call
-this production fact persistence yet.
-The shared WLMHW/HEMW browser import runtime and responsive ETP shell route are
-now implemented with pinned offline XLSX/ZIP assets, exact four-report parsing,
-REC-002 reconciliation, encrypted publication, authenticated reads and
-restore/reset fencing. API-23 emulator crypto/tamper/reset evidence passed, but
-physical-device, true process-death, disk-full/corruption and real HEMW evidence
-remain open. Real WLMHW rows deliberately stop at numeric-identifier review.
-**Current reconciliation (supersedes historical status text below):** D1-D5,
-C1 and MAH-1 through MAH-4 are integrated on `main`. Whole-app API-23
-engineering compatibility is emulator verified. Nothing is production
-accepted; physical-device, UAT, legal and signing gates remain open.
-**Programme status:** D1-D5 remain on `main`; the cumulative C1/MAH-1–MAH-4 Stage-A engineering tranche is committed and pushed on `agent/c1-mah4-foundation` at implementation commit `0909972`, pending review/merge. **Nothing is production accepted.** No formal device pass, UAT, legal approval, or production signing has been performed.
+**Updated:** 2026-08-09 (Asia/Kolkata)
+**Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+**Status:** product engineering anchor published; audit tooling not yet frozen or run.
 
-> **Latest active resume point:**
-> `verification/CODE-CLOSURE-API23-COMPATIBILITY-2026-08-07.md`.
-> This code-closure checkpoint supersedes the older Planning-canary resume text
-> immediately below. Stock Chrome 44 rendered the shell and all eleven external
-> modules with Capacitor and native storage active. ETP/PHP remain excluded.
-> MAH-4 Stage B has started with a Planning-only product canary. The rendered
-> exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle passed. `ST_ERROR`,
-> timeout/error rendered cases, API-23 evidence and the remaining ten modules
-> are pending. The working tree is intentionally dirty and this Stage-B work
-> has not been committed or pushed.
-
-## Current MAH-4 message/lifecycle update
-
-- Stage A is engineering-complete without changing a product byte. Profile
-  schema 3 binds the exact MAH-3 `www` tree, reconciled direct/dynamic inventory,
-  executable protocol/lifecycle oracle and its synthetic tests.
-- The oracle freezes 20 exact contracts, authorization, immutable compatibility
-  normalization, correlation, state, deadlines, deduplication and synchronous
-  tracked cleanup. Raw legacy `ST_AUDIT` migration remains blocked.
-- Verification is green: focused MAH-4 **37/37**, combined modular **58/58**,
-  explicit offline **256/256**, and complete regression glob **347/347**.
-- This is engineering evidence only. Runtime loading, API-23 timing/entropy,
-  expected origin, browser/device/native-language and production acceptance
-  remain false.
-- Stage B remains blocked by MAH-3 rendered review (`0/168`) and the complete
-  Planning → DSR → QMS canary chain. Exact evidence and next steps are in the
-  final MAH-4 Stage-A checkpoint above.
-
-## Current MAH-3 shared-runtime canary update
-
-- Phase 3 is explicitly bound to the post-C1 shared-runtime canary, not the
-  master-plan money phase, C3 release or historical module splitting.
-- A loopback-only manual runner binds the raw profile, complete `www` snapshot
-  and runner bundle to exact SHA-256 identities and serves immutable bytes.
-- All 168 cases use real shell-hosted surfaces; modules open through
-  `openModule()` and both shell and nested geometry are recorded.
-- A deterministic non-PII Planning fixture covers targets, actuals and
-  checklist layout. Empty/default topology remains the coverage limit for the
-  other ten modules; all review states are not claimed.
-- The in-app browser process failed at Windows ACL sandbox startup. Rendered
-  review is therefore 0/168 and `visualBaselinesCaptured=false`.
-- MAH-3-focused verification remains green at 7/7. The current combined modular
-  gate is 58/58, explicit offline is 256/256 and complete regression glob is
-  347/347 after MAH-4 Stage A.
-- Planning runtime extraction, manifest shared-asset binding, DSR/QMS canaries,
-  MAH-4 Stage-B runtime wiring and CSS extraction remain gated on reviewed
-  evidence with `refactorGateReady=true`.
-- Run `npm run review:mah3`; export/import is identity-bound and never upgrades
-  browser evidence into device or native-language acceptance.
-
-## Current MAH-2 shared architecture update
-
-- One synchronous schema-v1 manifest is authoritative for all eleven modules;
-  its records and lookup API are immutable and fail closed on schema/path drift.
-- The shell, inventory, extraction tools, security-test loaders and seeded build
-  now consume or verify the external authority instead of parsing an inline array.
-- Every module byte count/SHA matches. Stale base64 diagnostics and dead prewarm
-  scheduling were corrected; the separately gated historical fallback remains.
-- MAH-4 Stage-A specification is complete. Shared runtime, MAH-4 Stage-B product
-  wiring, CSS extraction and module splitting have not started. Planning follows
-  only after the pending rendered baseline.
-- Full evidence and exact next steps are in the MAH-2 checkpoint above.
-
-## Current MAH-1 modular protection update
-
-- The owner authorized MAH-1 on 2026-08-06 as a post-C1 protection workstream;
-  it is not the legacy ETP “Phase 1” and does not admit PHP or storage work.
-- A reproducible inventory now covers the shell and all eleven modules:
-  paths, bytes/SHA, assets, messages, parent dependencies, storage literals,
-  inline scripts/styles, tables, timers, observers and breakpoints.
-- The versioned profile defines 14 surfaces × 4 viewports × 3 languages = 168
-  minimum visual cases and permanently records that visual/device acceptance is
-  still false until evidence exists.
-- The modular suite is 8/8 green and is part of the offline pre-gate. A verified
-  narrow-Desktop leak was fixed by scoping every phone-shell selector to
-  `html.bcc-mobile`.
-- External-file/base64 migration is complete, but the full historical M0–M6
-  target is not: shared runtime, module splits, shell slimming and rendered
-  baselines remain open. See the latest MAH-1 checkpoint above.
-
-## Current C1 completion update
-
-- All eleven modules are external local files; no runtime `html_b64` payloads
-  remain. D2/D3/D4 patchers and their patcher-only test are retired.
-- D6-D12 non-ETP controls are implemented through the shared offline C1 control
-  desk and shell traceability card. D7 incentive and ETP-derived D10 metrics are
-  explicitly pending C2.
-- Phone remediation now covers the shell and all eleven modules. Browser
-  engineering checks passed at 360/390/412 portrait, 800 landscape and 1365
-  desktop; this is not physical-device acceptance.
-- Settings is no longer a clipped horizontal tab rail. It is an 11-route,
-  grouped vertical Settings home with search and live summaries; phones use an
-  explicit home/detail/Back stack and desktop uses master/detail. Existing
-  security, backup, privacy, sync and reset handlers are preserved.
-- Verification: C1 12/12; mobile 6/6; Settings 8/8; language 4/4; modular 8/8;
-  full 297/297; offline 256/256 after the C1, mobile, Settings, language and
-  modular pre-gates; two-year seeded runtime 1/1; the earlier Gradle debug
-  assembly passed.
-- Shared language propagation is fixed across the shell and all eleven modules.
-  A resumed bounded vocabulary pass raised each Marathi/Hindi dictionary to 860
-  unique phrases and a static-candidate audit measured 1,155/1,641 (70.4%). This
-  is engineering coverage only: proper names and business data remain unchanged,
-  while dense Service, Payroll, QMS, Tax and legal/domain wording still needs a
-  fluent native review.
-- Review APK: `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`,
-  6,793,233 bytes, SHA-256
-  `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`.
-- Clean source and generated Android assets were restored to
-  `DEMO_SEED_ENABLED=false` after packaging.
-- The owner authorized publication; the cumulative engineering tree is now
-  committed and pushed for review on `agent/c1-mah4-foundation`. A live
-  wide-browser recheck was blocked by the browser's localhost safety
-  policy, so no new wide-desktop visual evidence is claimed. Formal device
-  acceptance stays open. See
-  `verification/C1-CONSOLIDATED-ENGINEERING-CHECKPOINT-2026-08-04.md`.
-  Responsive details are in
-  `verification/C1-MOBILE-LAYOUT-REMEDIATION-2026-08-04.md`; the Settings-only
-  checkpoint is
-  `verification/C1-SETTINGS-NAVIGATION-REDESIGN-2026-08-04.md`.
-
-## Current D5 completion update
-
-- D5 is committed and pushed; `main` = `origin/main` =
-  `c04bc98255a78d45b08ac449d88365b22d033f28`.
-- D5-M1 and D5-S1-S3 are engineering-complete: external Stock module, pure
-  variance policy, additive brand-day triage, advisory Stock/DSR/QMS
-  reconciliation, and ranked variance drill-down.
-- Owner choices: approved eight-value taxonomy; reconciliation never blocks the
-  D5 lock; Store Manager is the default owner.
-- Verification: focused D5 15/15; full glob 275/275; offline 272/272;
-  `git diff --check` passed.
-- APK: `V:\Co work\Projects\Retail\SaagarCC-D5-Complete-debug.apk`, 6,689,698
-  bytes, SHA-256
-  `2437E400B90698D4A4BBB1F5AB2FCD596FBA13E7F9884A7CF74EB9758B2F1A54`.
-  Package/version/min API, v1/v2 debug signatures, and packaged policy/Stock
-  assets were verified.
-- The owner subsequently reported "all cool" for the complete D5 APK. Record
-  this as owner-reported D5-S1-S3 smoke evidence, not formal acceptance: device
-  metadata, named observations, and evidence files were not supplied.
-
-## Consolidated phase direction - 2026-08-04
-
-The owner directed fewer, larger phases and fewer repetitive APK test cycles.
-The controlling phase/cadence document is
-`docs/SAAGAR-MINIMUM-PHASE-CONSOLIDATED-STRATEGY-2026-08-04.md`: C1 completes
-remaining Android engineering and migration, C2 completes E1-E6, and C3 runs
-one consolidated formal acceptance and production release campaign. Automated
-tests and restartable commits remain internal safeguards, not owner-facing
-phases. C1 engineering, architecture catch-up, D6-D12 controls, the mobile
-defect sweep, and the Settings navigation redesign are complete and published
-on the review branch. The current post-C1 action is the MAH-3 rendered
-baseline; runtime extraction stays
-gated until that review is complete. MAH-4 Stage A is complete and returns for
-Stage B only after Planning → DSR → QMS. C2 remains blocked on representative
-ETP exports and owner data decisions.
-
-## Read this first
-
-- `main` and `origin/main` remain at `c04bc98255a78d45b08ac449d88365b22d033f28` (D5 pushed 2026-08-04). The current C1/MAH-1/MAH-2/MAH-3/MAH-4 Stage-A engineering tree is committed and pushed on `agent/c1-mah4-foundation`; implementation commit `0909972`.
-- **Current automated evidence:** MAH-4 focused 37/37, modular 58/58, C1 12/12,
-  mobile 6/6, Settings 8/8 and language 4/4 pass; the explicit offline suite
-  is 256/256 and the complete glob is 347/347. Rendered review remains 0/168.
-- **The build needs the bundled JDK 17**, not the system Java 8: `JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10"`. Gradle 8.2.1 will not run on Java 8.
-- PHP platform work (Track B / P1 onward) is **deferred by the owner and outside the current scope**. Do not start it without fresh owner direction.
-- **The two blocking inputs are both owner-side:** the Phase 0 nominations form (unblocks every formal device gate) and the ETP sample exports from both stores (unblocks the entire E-series). C1 code is ready for owner review; E-series implementation must not invent the missing exports.
-
-## Repository and build snapshot
+## Current repository authority
 
 | Item | Current fact |
 |---|---|
-| Pushed baseline | `c04bc98255a78d45b08ac449d88365b22d033f28` on `origin/main` - D5 Stock controls and first modular extraction. |
-| Review publication | `agent/c1-mah4-foundation`, implementation commit `0909972` - cumulative C1 plus MAH-1 through MAH-4 Stage A; not merged to `main`. |
-| Permanent regression suite | MAH-4 **37/37**, modular **58/58**, C1 **12/12**, mobile **6/6**, Settings **8/8**, language **4/4**, explicit offline **256/256**, full glob **347/347** (2026-08-07). |
-| Current debug APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` - 6,793,233 bytes, SHA-256 `CAA15D9409ED5B9973E42CD67B1ACD213F656399454A2E38D79738237DEB1341`. All eleven modules are real local assets; phone remediation and the Settings navigation redesign are included. Debug/device review only. |
-| APK identity | `com.saagartraders.bcc`, version 2.9, versionCode 209, min API 23, target API 34. |
-| APK posture | `android:allowBackup=false`; **debug certificate**; suitable for device acceptance only. All four native plugins present in the dex. |
-| Production signing | Fails closed when production signing secrets are absent. No production release exists. |
-| Seed posture | Clean source has `DEMO_SEED_ENABLED=false`; the seeded APK sets it `true` only at packaging time in the git-ignored `android/` output, never in committed source. Never use demo data for production acceptance. |
-
-**Older APKs and hashes referenced further down this file are superseded** by
-the current C1 review APK above. They must not be used for a current functional
-or mobile-layout pass.
-
-## Programme inventory - 2026-08-04
-
-### Current authoritative inventory
-
-- D1-D5 are committed and pushed on baseline `c04bc982...`.
-- C1 is engineering-complete and published for review on
-  `agent/c1-mah4-foundation`: all eleven modules are external,
-  D6-D12 non-ETP controls are present, base64 patchers are retired, and the
-  shell/module phone defect sweep is green in browser rendering. The later
-  Settings redesign is green in source/runtime tests but still needs owner
-  device layout evidence because automated localhost browser control was
-  unavailable after crash recovery.
-- Explicit commit/push approval was received and used for the review branch.
-  Owner formal device evidence and all C3 acceptance gates remain pending.
-- C2/E1-E6 remains blocked on representative raw R022, R025, R013, and R003
-  exports for WLMHW and HEMW plus the documented dictionaries, reconciliation,
-  date, parser, unknown-code, and incentive decisions.
-- PHP, optional E7, and F1-F15 remain excluded/deferred unless the owner gives
-  fresh direction.
-
-The detailed inventory immediately below records the pre-C1 planning state and
-is retained for traceability. Where it conflicts with this current inventory,
-the current inventory and the consolidated C1 checkpoint control.
-
-### Historical pre-C1 inventory - superseded
-
-| Item | Evidence |
-|---|---|
-| Phase 0 - encrypted storage, owner access, storage recovery, R1 legal minimum | merged `f76d4ab` |
-| **D1** Home "Today" view, store context, reauth explanations, backup health | `4177701` (2026-07-30) |
-| **D2** QMS fast arrive→outcome, follow-up priority, duplicate suggestion | `4177701` |
-| **D3** Service workboard, pickup readiness, customer-safe status, exceptions | `4177701` |
-| **D4** DSR completion meter, submit prompts, no-sales acknowledgement | `9b54a44` (2026-08-04) |
-
-**4 of 12 D-series waves are done. The E- and F-series have not started.**
-
-Defects fixed while verifying D4, all pre-existing:
-- `apply-d2-qms.mjs` and `apply-d3-service.mjs` injected code carrying the patcher file's own line endings, so output depended on how git checked the script out;
-- all three patchers dropped one byte per run from the `MODULES` line (greedy `\s*` swallowing the CR) - invisible in git, which normalises `index.html` to LF on commit and CRLF on checkout;
-- `tests/seeded-apk-runtime.test.mjs` asserted stock on the 730-day window's raw boundaries, which land on a Sunday two days in seven while the seed skips Sundays.
-
-### Remaining - blocked on people, not code
-
-1. **Phase 0 acceptance.** 69-case functional catalogue + 4 drills + 9 operational gates, all open. See "Non-negotiable acceptance gates still pending" below and `verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md` §6-§7.
-2. **D4 acceptance.** 8 device cases (D4-01..08) in `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md` §9. Unsigned debug APK only.
-3. **Owner nominations form.** `verification/PHASE-0-DEVICE-ACCEPTANCE-NOMINATIONS-FORM-2026-08-02.md`, outstanding since 2026-08-02. Nothing device-side starts without it.
-
-### Remaining - blocked on owner inputs
-
-**E-series: 7 waves, none started.** E1 exists only as a draft on branch `agent/e1-etp-import` (1 commit, not on main).
-
-E1 import layer → E2 DSR computed views → E3 CRO reconciliation → E4 planning and targets → E5 incentive → E6 exception monitoring → E7 service-centre *(optional)*.
-
-Frozen pending seven owner inputs (see `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`): sample ETP exports from **both** stores; dictionary approvals; the R022↔R025 reconciliation rule; date policy; unknown-code handling; XLSX parser choice; incentive scheme source. **E2-E6 all depend on E1's frozen schema, so this is the single largest blocker in the programme.**
-
-### Remaining - ready to build now, no blockers
-
-**8 D-series waves:** D5 stock variance triage · D6 cash/expense · D7 payroll · D8 leave coverage · D9 tax readiness · D10 grooming + CRO coaching · D11 festival planner · D12 reports polish and closure.
-
-D7 and D10 are *better* after the E-series supplies verified data but are not blocked by it.
-
-### Modular HTML migration - decided 2026-08-04, incremental variant
-
-`www/index.html` is 3,087,060 chars and **77.9% of it is eleven base64-embedded module payloads**. Every module change is string surgery against that base64, which is the direct cause of the patcher defect class fixed on 2026-08-04. Strategy: `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`.
-
-**The owner chose the incremental variant:** each D-wave extracts the module it touches into real files under `www/modules/<id>/`, rather than a separate big-bang migration stage. D5 carries the first extraction (M1) behind a hybrid boot - stock via `iframe.src`, the other ten still `srcdoc`.
-
-**Riskiest single step in the programme:** `srcdoc` iframes inherit the parent origin, which is why `window.parent.SaagarReauth` resolves. `src` iframes do not. `capacitor.config.json` sets `androidScheme: https` / `hostname: localhost`, so a relative `src` *should* stay same-origin - **that must be device-proven at M1 before anything depends on it.**
-
-**Orphan gap - act on this.** 11 modules; the remaining waves cover only 8. **qms, service and dsr shipped as D2/D3/D4 before the incremental decision and have no future wave to ride on.** The three patchers `scripts/apply-d2-qms.mjs`, `apply-d3-service.mjs`, `apply-d4-dsr.mjs` exist for exactly those three modules, so while they survive the whole base64 fragility class stays alive. **Recommended: a dedicated M1-catchup phase for those three immediately after D5 proves the extraction, then delete all three patchers.** Folding them into D12 instead keeps the patchers alive for seven more waves.
-
-**Recorded from D5 recon:** `injectUniformCSS` is 32,442 chars of CSS injected into *every* module at open time; ten inject functions total 54,280 chars. That CSS blob is the `shared/base.css` of the target architecture and the largest single de-duplication win.
-
-### Phase count to the end of ETP
-
-| Stage | Phases | Detail |
-|---|---|---|
-| **A** build + incremental migration | **13** | M0 harness · D5 · M1-catchup + retire patchers · D6-D12 (7) · M2 shared assets · M4 shell slimming · M6 guard rails |
-| **C** device acceptance and error fixing | **1** | Owner-time bound, not engineering bound |
-| **E** ETP verification layer | **6-7** | E1-E6 plus optional E7 |
-| **F** PHP platform / Track B | unscoped | Deferred; needs fresh owner direction |
-
-**Historical estimate superseded:** the former "4 complete and 20 remaining" count predates D5 and C1 consolidation. Use the minimum-phase strategy and the MAH-1 checkpoint for current sequencing; ETP and PHP remain excluded here.
-
-### Remaining - backlog
-
-**F-series: 15 candidates, none started, none ranked.** The road plan requires ranking before any build. Highest-value by its own reasoning: **F1** banking reconciliation (~₹96.6L open/unbanked, the largest single control gap), **F5** PAN/Form-60 register (statutory, bills ≥ ₹2L), **F6** GST outward split check (known live discrepancy). Full list in `docs/V6-IMPROVEMENT-ROAD-PLAN.md` §6.
-
-### Housekeeping debt
-
-- **16 remote branches**, most stale (`back-button-2.9`, `test/year-*`, `scroll-*`, …). `agent/d1-d3-native-sqlite` and `agent/storage-recovery-p0` are fully merged and safe to delete. **`agent/e1-etp-import` must be kept** - it holds the E1 draft.
-- `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md` still carries a stale "D1 design approved ✋ PENDING" gate; D1 shipped 2026-07-30. Its E-series gates are all genuinely open.
-- **No `.gitattributes` rule for `*.mjs` or `index.html`.** This is the root cause of the line-ending bug class fixed twice on 2026-08-04. Pinning them to LF would prevent recurrence but rewrites endings across the working tree on next checkout - do it deliberately, not as a side effect.
-
-### Working tree
-
-The cumulative engineering tree is committed and pushed on
-`agent/c1-mah4-foundation`; `main` remains at `c04bc98255a78d45b08ac449d88365b22d033f28`.
-Only the unused superseded `verification/mah3-visual-review/review.js` draft is
-intentionally left local and untracked. Do not add or delete it accidentally.
-
-### Multi-agent handoff protocol
-
-More than one agent works this repository. To make handovers verifiable:
-
-| Marker | Value |
-|---|---|
-| **Historical Claude-authored trust anchor** | `62132c4` - suite 260/260, `test:offline` 257/257, tree clean; retained as history, not the current resume state |
-| **Onboarding prompt for a fresh agent** | `docs/AGENT-RESUME-PROMPT-2026-08-04.md` §1 |
-| **Files any agent must keep current** | same file, §2 |
-| **Prompt to verify another agent's work, then resume** | `docs/CLAUDE-VERIFY-AND-RESUME-PROMPT.md` §1 |
-
-The older resume/verification prompts still describe the historical `62132c4`
-clean-tree trust anchor. They are not the current resume point; use the
-publication checkpoint at the top of this handoff. Refresh those prompts only
-after Sagar approves a new baseline commit.
-
-**Current rule:** review the publication branch and its draft PR before merge.
-The 2026-08-07 approval covered this publication only; any later commit, merge,
-direct-main push or production action requires its own authority.
-
-This repository has a specific failure history that verification must target:
-
-1. **Tests that pass while the app is broken.** The D1 rebuild deleted the Home screen's DOM hosts (`#heroNet`, `#quickGrid`, `#eodHost`, `#cust360Result`, …) while the JS still rendered into them. The suite stayed green because those tests are regex checks against JS source, not DOM assertions. Detection: for every `id="x"` removed from `www/index.html`, grep for a surviving `$('x')`.
-2. **Silent CI skips.** `npm run test:offline` lists files explicitly; a new test file not added to that list never runs.
-3. **Patcher fragility.** Any change to `scripts/apply-d*.mjs` must preserve byte-level idempotency, line-ending independence, and the `MODULES` line terminator.
-4. **Stale documents believed over code.** When a document and the repository disagree, the repository is right and the document is the defect.
-5. **Undeclared payload drift.** A commit touching `www/index.html` must change only the module payloads it claims to; verify every other module's `sha256` is unchanged.
-## Roadmap cross-check
-
-| Workstream | Engineering state | Roadmap exit state |
-|---|---|---|
-| P0 and original P1 register | Closed in the prior wave history. | No current build action. |
-| R0-W1 - named access | Complete in prior commits: named identity, PIN policy/lockout, re-authentication, access logging, and launch lock. | Protected by the permanent security suite; still included in final device/security acceptance. |
-| R0-W2 - encryption core | Encryption at rest is live (`3cb84fc`) with Keystore key wrapping and degraded-mode controls. | Related storage, migration, and device evidence remains part of final acceptance. |
-| R0-W3 - backup and restore | BKP-01/02/04-08 source controls are in the pushed close-out; BKP-03 is source-complete and pushed in `273e73d`. | The restore-drill and provider/device evidence (including BKP-09) remain open. |
-| R0-W4 - export and release safety | Source-complete in `55ceabd`: SEC-08 through SEC-13 plus ENG-01/02/04 regression coverage and release tooling. | Production signing, device-hardening evidence, and the full ENG-03 device/UAT matrix remain open. |
-| R1 - legal minimum | Source controls and first-draft policy pack are complete in `55ceabd`. | Owner/counsel approval, operational rollout, and incident rehearsal remain open. |
-| V6 D-series (improvement) | D1-D4 merged; D5-D12 not started, unblocked. | Each wave needs its own device cases and owner acceptance; D4's are open. |
-| V6 E-series (ETP verification) | Not started. E1 draft on `agent/e1-etp-import` only. | Blocked on seven owner inputs; E1 schema must freeze before E2-E6 can be designed. |
-| V6 F-series (new functionality) | Not started, not ranked. | Ranking required before any build. |
-| Track B - PHP platform | Explicitly deferred by owner. | Not part of the current closure; no implementation work is authorised. |
-
-## What the Android closure now contains
-
-### R0-W3: backup, restore, and recovery
-
-- Portable `.sccbak` backups use AES-256-GCM with an authenticated manifest, checksums, coverage for photos/evidence, deterministic control totals, and source/store/date/version preview.
-- Restore validates before apply, quarantines tampered material, takes a pre-restore snapshot, reads back the result, and makes rollback/rollback-verification failures explicit.
-- Factory/module reset requires owner acceptance of a verified restore and a new rollback backup. Backup failure escalates after 36 hours.
-- Private on-device backup retention uses 7 daily, 5 weekly, and 12 monthly generations.
-- BKP-03 adds an owner-selected, provider-backed Storage Access Framework folder. Built-in external storage, Downloads, and Media providers are rejected because they are still on-device.
-- A random 256-bit scheduled-backup key is protected by Android Keystore for unattended backup and separately recoverable through the owner passphrase envelope. JavaScript receives neither the provider URI nor the passphrase.
-- Scheduled delivery is verified by readback SHA-256 and byte count, bound to the approved destination and standing owner export grant, and GFS-pruned to 7 daily / 5 weekly / 12 monthly copies.
-
-### R0-W4: export, release, and permanent regression controls
-
-- Exports are disabled by default; they require Admin PIN plus fresh owner re-authentication and are recorded in a metadata-only, non-erasable export register.
-- Existing export, share, WhatsApp, CSV, PDF, CA-pack, evidence-ZIP, and backup routes are controlled; broken policy/register/posture fails closed.
-- Support output is sanitised. Debug, debugger, ADB, test-key, root, and unsafe device posture are guarded, and sensitive payroll/tax screens use the secure-window control.
-- Financial golden cases, failure-injection coverage, export tests, source-integrity tests, and security release gates are permanent in the offline suite.
-
-### R1: legal-minimum implementation and draft policy
-
-- Field/purpose/basis/access/retention register with unknown-field rejection at intake.
-- Itemised collection notices at queue and service intake; promotional consent separated from operational messaging; STOP/withdrawal suppression checked at controlled send routes.
-- Rights and grievance register, identity evidence, legal-hold decision, minor/guardian rule, disclosure controls, incident clock/playbook, and manual retention schedule.
-- First-draft policy pack: `legal/R1-LEGAL-MINIMUM-CONTROL-PACK.md`. It is a draft for owner, counsel, and CA review, not an approved legal instrument.
-
-### BKP-03, DAT-02, and API policy delta in v2.9
-
-- **API-22 exception retired:** minSdkVersion is now 23; API-22 devices cannot install the v2.9 build. Native production eligibility also requires Android M/API 23 or later.
-- **BKP-03:** automatic delivery checks after the private-backup check at launch and every six hours while the app is active. The first active use of a new day makes the daily off-device generation. There is no closed-app Android background worker in this scope.
-- **DAT-02:** `db.export()` remains synchronous. The risky whole-storage worker rewrite was deliberately not performed without real-device evidence. The implemented outcome gate collects timing-only evidence for five encrypted saves; if either accepted device fails it, the worker/storage-engine rewrite becomes required work.
-
-## Non-negotiable acceptance gates still pending
-
-No source test, APK build, or debug signature may mark these rows passed. Record a named person, date, device, observed result, and evidence link for each.
-
-| Gate | Evidence required |
-|---|---|
-| Provider enrollment | Owner enables controlled exports, selects the approved Drive/OneDrive/provider folder, completes one-time approval, and records provider/account ownership. |
-| BKP-03 delivery and retention | Immediate run proves daily, `latest`, weekly, and monthly `.sccbak` files; verified timestamp/bytes; real provider GFS pruning and rename/fallback behavior over the acceptance window. |
-| Destination binding and escalation | Revoke/change the provider permission and prove the next run blocks without advancing success; prove denied/unavailable provider reaches the 36-hour action state. |
-| Portable cross-device recovery | On a separate/fresh device, recover a scheduled `.sccbak` with the owner passphrase and reconcile control totals. Separately show that device-bound private snapshots reject clearly. |
-| Primary restore drill | Create a portable backup, reset/wipe test state, preview, restore, read back, and record owner-accepted control totals. |
-| Older API-23-class device drill | Repeat the restore and storage observations on the oldest supported device. |
-| Legacy and failure paths | Exercise plaintext DATA migration/sidecar cleanup, legacy Documents purge (accessible and denied paths), unavailable Keystore, interrupted/full storage, and no-false-success behavior. |
-| DAT-02 primary device | At the agreed real data volume, run five complete encrypted saves: export p95 <=150 ms, visible frame-gap p95 <=250 ms, total-save p95 <=3000 ms, no error and no ANR. |
-| DAT-02 API-23-class device | Run the same five-save gate and record the same thresholds on the older supported device. A failure on either device reopens the worker rewrite. |
-| Device-security posture | On an approved production-signed device, exercise root/debug/ADB/developer-mode indicators and screenshot blocking where required. |
-| Production key custody and release | Supply production keystore outside source control, name two custodians and recovery process, create signed release, and verify certificate/checksum against the release register. |
-| Staff UAT / ENG-03 | Named users complete QMS, service, export-denial, rights, backup, and restore scenarios; defects are triaged. |
-| Legal and owner approval | Approve privacy contact, notices, retention schedule, processor/confidentiality terms, child rule, and breach roles. Counsel review remains required. |
-| Incident rehearsal / BKP-09 | Run and minute the breach tabletop and the first wiped-device restore drill; train the two recovery custodians and establish the future drill cadence. |
-
-## Known boundaries that must not be hidden
-
-- The v2.9 APK is debug-signed and cannot be installed on API-22. It is not a production release.
-- BKP-03 runs at first active use of a new day and during an active session; it does not run while the WebView app is closed. A native OS background scheduler would be a separate, explicitly authorised expansion.
-- DAT-02 has an outcome-based device gate, not a claim that persistence has already moved off the UI thread. `db.export()` is still synchronous.
-- A rooted or running device is outside the protection claim. Android Keystore material can be lost on uninstall, factory reset, or lock-screen credential change; portable passphrase recovery remains essential.
-- Keep all evidence metadata-only. Do not place customer data, provider URIs, PINs, passphrases, backup keys, or production signing material in Git, logs, or this handoff.
-
-## Safe resume order
-
-**Pick the track that is actually unblocked.** As of 2026-08-04 the remaining
-C1 action is owner review and publication; C2 data engineering waits on exports.
-
-**Track 1 - C1 review and publication.** Install the current named seeded APK.
-Verify Settings category reachability, search, phone detail Back, Android
-hardware/gesture Back, Appearance, People, Security, Data & backup and desktop
-master/detail. Record this as owner-reported smoke unless the formal evidence
-catalogue is completed. If satisfactory, the owner may explicitly authorize a
-scoped commit and push of the dirty C1/Settings tree.
-
-**Track 2 - E-series, blocked.** Chase the seven owner inputs in `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`. Freeze E1's schema only once real exports from both stores are in hand. Do not design E2-E6 before then.
-
-**Track 3 - device and Phase 0 acceptance, blocked on the nominations form.** Once it arrives:
-
-1. **Authorise the controlled two-device test pass**: nominate two devices (API 23+), an approved off-device provider folder/account, and a 12+ character recovery passphrase.
-2. **Run the module-wise functional catalogue** on the current seeded APK (`SaagarCC-C1-DemoData-2Years-v2.9.apk`) using `SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`'s test IDs (CORE/QMS/SVC/DSR/STK/EXP/GRM/CRO/PAY/LEV/TAX/PLN/RPT/SEC/LEG). Stop on any P0/P1 defect.
-3. **Run the four device drills** from `DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md` (DAT-02 five-save, BKP-03 provider delivery, cross-device restore, legacy migration) on both devices and record a dated evidence log using the template at the end of that script.
-4. **If a device gate fails, make only the targeted correction.** In particular, any DAT-02 failure means the worker/storage-engine rewrite is required before acceptance can continue.
-5. **Obtain legal/owner and operating evidence** while the app is being exercised: policy approval, staff UAT, incident rehearsal, and restore-custodian evidence.
-6. **Only after production key custody is in place,** create and verify the signed production release. Never substitute the debug APK for it.
-
-## Build and verification commands
-
-Run from `V:\Co work\Projects\Retail\saagar-control-centre`.
-
-The Android build needs the bundled JDK 17 — system Java 8 will not run Gradle 8.2.1:
-
-```bash
-JAVA_HOME="V:/Co work/Projects/Retail/.android-build/jdk17/jdk-17.0.19+10" npm run build:apk
-```
-
-```powershell
-npm run test:c1
-npm run test:mobile
-npm run test:settings
-npm run test:offline
-npm run test:seeded-runtime
-npm run build:apk:seeded-2y
-```
-
-The D2/D3/D4 patchers are retired and deleted; do not recreate or run them.
-`build:apk` performs the Capacitor sync and reapplies Android overrides.
-`build:release` is expected to stop with `Signed release blocked` until real
-production signing credentials are supplied; that is the correct fail-closed
-result.
-
-## Evidence and references
-
-**Current programme (2026-08-02 onward):**
-
-- Programme blueprint, D/E/F waves, live sequence and phase count: `docs/V6-IMPROVEMENT-ROAD-PLAN.md`
-- Current C1 Settings navigation architecture and test/APK evidence: `verification/C1-SETTINGS-NAVIGATION-REDESIGN-2026-08-04.md`
-- Modular HTML migration strategy (M0-M6, the equivalence oracle, the origin risk): `docs/MODULAR-HTML-MIGRATION-STRATEGY-2026-08-04.md`
-- D5 change contract — variance triage + the first extraction, with three open owner questions: `docs/audit/D5-STOCK-CHANGE-CONTRACT-2026-08-04.md`
-- D4 change contract, engineering verification, APK checksum, device cases D4-01..08: `docs/audit/D4-DSR-CHANGE-CONTRACT-2026-08-04.md`
-- D2 / D3 change contracts: `docs/audit/D2-QMS-CHANGE-CONTRACT-2026-07-30.md`, `docs/audit/D3-SERVICE-CHANGE-CONTRACT-2026-07-30.md`
-- Phase 0 acceptance gates and exit rule: `verification/PHASE-0-CLOSURE-STATUS-AND-EVIDENCE-PACK-2026-08-02.md`
-- Owner nominations form (outstanding): `verification/PHASE-0-DEVICE-ACCEPTANCE-NOMINATIONS-FORM-2026-08-02.md`
-- Phase 1 / E-series prerequisites: `docs/PHASE-1-PREREQUISITES-CHECKLIST-2026-08-02.md`
-- Owner communication covering both phases: `docs/OWNER-COMMUNICATION-PHASE-0-AND-PHASE-1-2026-08-02.md`
-
-**Earlier closure evidence:**
-
-- Current v2.9 verification: `verification/BKP03-DAT02-API23-2026-07-29.md`
-- Pushed R0/R1 close-out verification: `verification/R0-R1-CLOSEOUT-2026-07-29.md`
-- Device acceptance script (DAT-02 / BKP-03 / cross-device restore / legacy migration): `verification/DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md`
-- Seeded-APK module-wise test readiness + full test catalogue (CORE/QMS/SVC/DSR/STK/EXP/GRM/CRO/PAY/LEV/TAX/PLN/RPT/SEC/LEG): `verification/SEED-APK-MODULE-WISE-TEST-READINESS-2026-07-29.md`
-- Module functionality and improvement inventory (post-test prioritisation aid, not approved scope): `verification/MODULE-FUNCTIONALITY-IMPROVEMENT-INVENTORY-2026-07-29.md`
-- R1 first-draft policy pack: `legal/R1-LEGAL-MINIMUM-CONTROL-PACK.md`
-- Earlier R0 slice evidence: `docs/audit/R0-W1-*.md`, `docs/audit/R0-W2-*.md`, `docs/audit/R0-W3-S*.md`
-- Strategic roadmap: `V:\Co work\Projects\Retail\Road Map planing\Saagar_Control_Centre_Development_and_Security_Roadmap_v1.0.md`
-- Execution plan: `V:\Co work\Projects\Retail\Road Map planing\SCC_Opus_Execution_Plan_v1.0.md`
-
-## Historical anchors
-
-- `22eec9b` - R0-W3 S3: seal private auto-backups.
-- `96a9870` - R0-W3 S4: off-device backup safety hardening.
-- `55ceabd` - pushed R0/R1 engineering close-out.
-- `273e73d` - pushed build 2.9: BKP-03 automatic encrypted off-device backup (3rd native plugin, Storage Access Framework), DAT-02 persistence acceptance gate (storage-core instrumentation only - the `through=_seq; raw=db.export()` sync invariant is preserved), and the API-23 production floor. Physical-device acceptance (provider delivery drill, cross-device restore, five-save at real data volume) remains PENDING.
-- `bf0a9e3` - added the device acceptance script (`DEVICE-TEST-SCRIPT-BKP03-DAT02-RESTORE.md`); no source change.
-- `49d531b` - added the module-improvement inventory and the seeded-APK module-wise test readiness report (with the full functional test catalogue); no source change.
-
-- `4177701` - D1, D2, D3 and the native SQLite scale fix.
-- `f76d4ab` - Phase 0 merge: storage recovery, SQLite capacity, owner access, 210-test suite.
-- `9b54a44` - D4 merge: DSR completion meter, no-sales acknowledgement, patcher idempotency fixes, stale-D1-doc cleanup.
-
-The next session should begin with the repository snapshot and programme inventory above, not with the older wave-by-wave instructions. This file supersedes the 2026-07-24 handoff state.
-
----
-
-# HISTORICAL RECORD - superseded, do not act on
-
-Everything below is a dated trail of earlier checkpoints, kept for provenance. **Its "current state" claims are stale**: the baselines, APK checksums, test counts and uncommitted-work notes were true when written and are not true now. The authoritative current state is the snapshot and inventory at the top of this file.
-
-In particular: sections below describe D1/D2/D3 as uncommitted working-tree checkpoints. They shipped in `4177701` on 2026-07-30 and are merged.
-
----
-
-## Uncommitted continuation — 2026-07-29
-
-The working tree contains a reviewed **D1 engineering-complete / acceptance-pending** checkpoint after baseline `49d531b`.
-
-### Implemented
-
-- Reauthentication clarity: purpose, one-use expiry, safe cancellation, distinct denial/lockout feedback, one deliberate retry, and metadata-only outcome auditing.
-- Persistent dashboard store context from active Organisation branches, safe `All stores` fallback, audited switching, global visibility, restore-blocked persistence, and immediate rerender.
-- Honest legacy behavior: explicitly tagged facts can be store-filtered; untagged-only facts stay labelled combined; mixed data excludes and reports unassigned/unknown rows. Device-wide activity and customer greetings are hidden from a single-store view.
-- Role-relevant Home/Today, Today-run/EOD, attention/modal, activity, greetings, and shared brief; Admin bypass remains unchanged.
-- Canonical Today reconciliation fixes for Stock alias de-duplication, Expense income/void exclusion, Cash `closed` completion, and Service `dateRec`.
-- Attention de-duplication through stable keys/action-title identity, one consolidated Payroll/Leave staff-sync row, and strongest-priority retention.
-- One backup-health action covering private failure, plaintext fallback, legacy cleanup, and off-device recency. Local repair is sequenced before a fresh encrypted share; policy load/evaluation failure produces a high-priority review row. Restore acceptance and unsafe-device posture remain distinct.
-- Four pure policy modules and permanent regressions registered in `npm run test:offline`.
-
-### Verification
-
-- Focused D1: **17/17 passed**.
-- Full offline: **71/71 passed**.
-- `git diff --check`: passed.
-- `npm run build:apk`: passed; Capacitor sync packaged all four policy modules.
-- Local review APK: `android/app/build/outputs/apk/debug/app-debug.apk` — 7,541,261 bytes — SHA-256 `59F86F4870F779E259F8A4F1D9F573759AA506719F965D67BBDD5355185B91BB`.
-
-### Still open / do not overclaim
-
-- The store selector is workflow context, not authenticated staff-to-store assignment or proven cross-store privacy isolation.
-- Representative-device layout, interaction, and performance evidence remains the explicit D1 acceptance item; no device pass is claimed.
-- Every Phase 0 device/provider/restore/legal/UAT/security/signing row above remains **PENDING**. The new debug APK is not a formal or production release.
-- No PHP/platform work was started.
-
-### ETP domain specification incorporated into planning — 2026-08-07
-
-- Adopted external specification:
-  `V:\Co work\Titan\audit-program-designer\SAAGAR_CONTROL_CENTRE_ETP_MODULE_SPEC.md`
-  version 1.0.
-- It is the domain/target-design authority for report catalogues, fingerprints,
-  mappings, reconciliation and tests. The consolidated Android plan and an
-  approved change contract remain authoritative for privacy, sealed storage,
-  platform scope and acceptance.
-- HEMW remains mandatory for E1 both-store completion; version 1.0 currently
-  contains WLMHW and Service evidence and cannot close that gate.
-- Raw PII retention and server/REST assumptions were not adopted. Android keeps
-  the stricter pre-write PII drop, unknown-field refusal, offline native SQLite
-  and API-23 requirements. PHP remains excluded.
-- Delivery is consolidated into ETP-A Retail ingestion, ETP-B sealed facts/UI,
-  ETP-C verified reconciliation/views, and ETP-D Service extension.
-- Earlier E1 work exists separately at `agent/e1-etp-import` commit `070841e`.
-  Selectively integrate it only after reviewing the five saved policy findings;
-  do not merge the branch blindly.
-
-### Planning shared-runtime completion and seeded APK — 2026-08-07
-
-- Branch `agent/c1-mah4-foundation`; implementation base HEAD
-  `7ae0e0c8421d82c9bd4937a4684c0f8b25ab34c8`.
-- Working tree remains intentionally dirty. Nothing in this phase was committed
-  or pushed.
-- MAH-3 baseline: 168/168 browser cases. Planning post-extraction matrix:
-  12/12, with zero readiness or hard-geometry failures.
-- Manifest schema 2 binds `www/shared/module-runtime.js`; Planning uses it at
-  all six original helper positions. Business CSS and JavaScript retain their
-  baseline hashes.
-- Verification: MAH-3 11/11, MAH-4 37/37, modular 63/63, security 100/100,
-  offline 256/256 and complete glob 352/352.
-- Seeded review APK:
-  `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`;
-  6,633,967 bytes; SHA-256
-  `0BC2EC1D51802D2D1FECFB486CC555609930D0096057EE1F22EDD0F1F00517FF`.
-- Build parity verified the manifest and shared runtime. Source and generated
-  Android shells were restored to `DEMO_SEED_ENABLED = false`.
-- This debug APK and browser evidence do not establish physical-device,
-  native-language, production-signing or production acceptance.
-- On first reported opening, the fail-closed storage screen showed
-  `STORE_UNAVAILABLE`; one safe retry recovered it, after which the owner
-  reported the app working normally. This is owner-reported smoke evidence,
-  not formal device acceptance. App data was not cleared.
-- Preserve excluded draft `verification/mah3-visual-review/review.js`.
-- Next: DSR and QMS shared-runtime canaries before MAH-4 Stage B.
-- Nothing in this checkpoint is committed or pushed; owner review/approval is required first.
-
-### 2026-08-07 — MAH Runtime Completion canary gate
-
-- DSR access/timer and QMS timer/mobile-menu shared-runtime canaries are complete.
-- QMS rendered review passed 12/12 cases with zero readiness, hard-geometry or
-  root-overflow findings. Direct rendered interactions passed menu open, scrim
-  close, and CRO Rotation navigation with drawer closure.
-- Exact QMS evidence:
-  `verification/mah3-visual-review/MAH3-QMS-CANARY-EVIDENCE-2026-08-07.json`.
-- Verification: MAH-3 19/19, modular 63/63, offline 256/256, complete glob
-  360/360; `git diff --check` has no whitespace errors.
-- Browser evidence does not establish physical-device or native-language
-  acceptance. MAH-4 Stage B is unblocked but has not started.
-- Working tree remains intentionally dirty. No commit or push was performed.
-
-### 2026-08-07 — MAH-4 Stage B Planning canary
-
-- Stage B has started with Planning only. The shell and module completed the
-  exact-origin INIT/READY and DISPOSE/DISPOSED lifecycle in rendered browser
-  testing; frame removal occurred after `DISPOSED:planning`.
-- The second shared runtime is manifest-bound and covered by Android package
-  parity checks. MAH-3 is 19/19, MAH-4 42/42, modular 68/68, offline 256/256
-  and the complete glob 365/365.
-- `ST_ERROR`, timeout/error rendered cases, API-23 evidence and the remaining
-  ten-module rollout are pending. Raw `ST_AUDIT` migration remains blocked.
-- Resume from
-  `verification/MAH4-STAGE-B-PLANNING-CANARY-2026-08-07.md`.
-- No commit, push or APK build was performed.
-### Pause / exact resume point
-
-- Work stopped at the owner's request because the device battery was low. All edits are saved locally; no commit or push was made.
-- D1 source implementation is complete against master-plan §8.2. Its representative-device evidence and every Phase 0 physical gate remain pending.
-- The E1 prerequisite audit located the WLMHW source archive and dictionaries at `V:\Co work\Titan\audit-program-designer\Retail\TITAN ALL REPORT.zip` and the adjacent mapping files. No equivalent HEMW ETP export set was found; the Helios annual-analysis workbook is a derived summary, not the required report set. Do not freeze E1 headers or start the import parser until both-store samples exist.
-- The Developer Documentation schema/migration Word files describe the deferred PHP platform and must not be used as authority to start PHP work. The current Android master blueprint remains the applicable architecture reference.
-- No E1 or D2 implementation code was changed after the verified D1 checkpoint. A read-only D2 audit had begun only to prepare a fallback; it was stopped before implementation.
-- Resume by rechecking `git status`, then either obtain the HEMW R022/R025/R013/R003 samples for E1 or explicitly approve a documented D2 interleave/change contract. Preserve all current uncommitted files.
-
-### Crash-recovery checkpoint — 2026-07-30
-
-- The owner resumed work and D2 QMS was interleaved because E1 remains blocked by the missing HEMW raw exports. The system then crashed; implementation stopped immediately.
-- Saved new files: `www/qms-policy.js`, `www/qms-persistence.js`, `tests/d2-qms-policy.test.mjs`, and `scripts/apply-d2-qms.mjs`.
-- `www/index.html` contains the D2 QMS embedded rewrite and loads both new runtime files. Recovery verification after the crash found the QMS payload intact: 156,125 decoded UTF-8 bytes, declared bytes equal actual bytes, SHA-256 metadata matched, and marker `D2-QMS-2026-07-30` was present.
-- Completed isolated D2 checks: 10/10 policy/persistence tests passed. The deterministic embed script was run twice successfully after its marker recovery fix; the second run reported “already applied.”
-- Focused integration check reached 25/26 passing. The only failure is an outdated whitespace-sensitive assertion in `tests/legal-minimum.test.mjs`; the embedded QMS still calls `qmsLegalCapture(c, noMobile)` and blocks on `!legalResult.ok`, but the refactor formats the statement across lines. Update only that regex, then rerun focused/full checks.
-- Broader full-suite and APK build checks have **not** been run for D2. D2 is partial and must not be reported engineering-complete or device-accepted.
-- No commit or push was made. No PHP work was started. Preserve all existing uncommitted D1 and user files.
-### Final D2 recovery checkpoint — 2026-07-30
-
-This section supersedes the provisional crash-recovery checkpoint above.
-
-- `main` and `origin/main` remain at `49d531b`; there are no unpushed commits.
-- D1 remains engineering-complete/acceptance-pending.
-- E1 remains blocked by missing HEMW R022/R025/R013/R003 raw exports.
-- D2 is now engineering-complete in the uncommitted working tree and locally
-  verified; device, staff, legal, owner, and release acceptance remain pending.
-
-#### D2 implementation saved
-
-- Added pure QMS policy and persistence controls, deterministic embedding, and
-  permanent D2/legal regressions.
-- Duplicate review is exact 10-digit-mobile and same India business day only,
-  requires complete operator review, exposes no merge path, and excludes
-  name/DOB/fuzzy/no-mobile matching.
-- Fast intake/outcome, skip review, canonical lost/conversion reasons,
-  deterministic follow-up priority, India business dates, guarded settings,
-  form restoration, and persisted rollback are active.
-- A metadata-only pending-intake token preserves the customer/queue identity
-  across a process restart without storing mobile/name/DOB/consent.
-- Legal intake uses customer-bound `qms-intake:<customerId>` idempotency,
-  forward-resumes partial evidence, conflicts before mutation, and blocks
-  promotion when consent/suppression evidence is corrupt.
-- The D2 patcher verifies bytes/hash/markers/helper uniqueness and self-heals
-  every individually missing retry/legal/entry helper. Intact reruns are
-  byte-identical.
-
-#### Final local evidence
-
-- Focused D2/legal: **48/48 passed**.
-- Full offline suite: **123/123 passed**.
-- Patch and test syntax: passed.
-- Independent final review: no remaining P0/P1/P2 finding in reviewed scope.
-- Embedded QMS: 166,462 bytes, SHA-256
-  `aa9402cc05aadb430224705d53b75df83b2e4bdac29a8c5fd4f96cf344c018f4`.
-- `npm run build:apk`: passed.
-- Local review APK:
-  `android/app/build/outputs/apk/debug/app-debug.apk`, 7,553,056 bytes,
-  SHA-256
-  `D2206B09C199579DE2E4A83F20F070D5C51042700ECB8F701541ED41ABF1141F`.
-- Packaged identity: version 2.9, versionCode 209, minSdk 23, targetSdk 34.
-- Full contract:
-  `docs/audit/D2-QMS-CHANGE-CONTRACT-2026-07-30.md`.
-
-#### Do not overclaim
-
-- No D2 physical-device case, staff UAT, legal/owner acceptance, Phase 0 gate,
-  production signing, or formal release is passed.
-- Real-device performance/tap time, small-screen/keyboard, rotation/relaunch,
-  process-kill retry, India-midnight, duplicate/reason usability, legal/
-  no-mobile/guardian/suppression, controlled call/WhatsApp, representative
-  volume, and backup/restore/reset behavior remain open.
-- The D1 store selector is workflow context, not authenticated store
-  authorization. QMS store isolation and authenticated current-CRO identity are
-  not proven.
-- The current APK is debug-signed and built from an uncommitted tree. It is for
-  review only and is not a controlled release.
-- No PHP/platform work was started. Nothing was committed or pushed.
-
-#### Safe next action
-
-Review the uncommitted D1+D2 changes and run the D2 device/UAT acceptance set.
-In parallel, obtain the missing HEMW raw exports; do not resume E1 schema/parser
-implementation until both-store samples exist.
-### Final D3 Service checkpoint — 2026-07-30
-
-This section supersedes the earlier D1+D2-only safe-next-action statement.
-
-- `main` and `origin/main` remain at `49d531b`; there are no unpushed commits.
-- D1, D2, and D3 are engineering-complete in the uncommitted working tree.
-- Their representative-device, staff, owner, legal, and release acceptance
-  remains pending.
-- E1 remains blocked by missing HEMW R022/R025/R013/R003 raw exports.
-
-#### D3 implementation saved
-
-- Added `www/service-workboard-policy.js`,
-  `www/service-persistence.js`, deterministic embedding in
-  `scripts/apply-d3-service.mjs`, and permanent D3 tests.
-- Added the controlled Service workboard, legacy stage normalization,
-  readiness gate, override reauthentication/audit, metadata-minimized
-  exceptions, fixed customer-safe status wording, and numeric stage dispatch.
-- D3 transitions clone the case set, make one adapter write, update memory only
-  after success, and restore the last persisted set on failure.
-- Fixed stale subtotal after the final estimate row is removed and updated an
-  existing automatic warranty reminder instead of silently leaving its old
-  date.
-- The form stage control is display-only; the workboard owns stage changes.
-- The embed patcher verifies metadata and helper uniqueness, is byte-idempotent,
-  self-heals a missing owned helper, and repairs the stylesheet/print separator
-  defect caught by full source-integrity testing.
-
-#### Final local evidence
-
-- Focused D3: **21/21 passed**.
-- Full offline suite: **144/144 passed**.
-- `git diff --check`: passed (line-ending warnings only).
-- Embedded Service: 230,602 bytes, SHA-256
-  `ffb40f919a20eedc0162185af881a918b7725b22f8e7b65d5463a4f1f8be5afa`.
-- `npm run build:apk`: passed.
-- Local review APK:
-  `android/app/build/outputs/apk/debug/app-debug.apk`, 7,562,266 bytes,
-  SHA-256
-  `5062FC2253ED5E294B03C0E589306D9B5BBD664BCCD744F9A7CC0F7E5554C685`.
-- Packaged identity: version 2.9, versionCode 209, minSdk 23, targetSdk 34.
-- Full contract:
-  `docs/audit/D3-SERVICE-CHANGE-CONTRACT-2026-07-30.md`.
-
-#### Do not overclaim
-
-- No D3 physical-device case, staff UAT, legal/owner acceptance, Phase 0 gate,
-  production signing, or formal release is passed.
-- Existing Service cases have no authoritative store tag. The workboard is
-  explicitly combined/untagged and does not prove WLMHW/HEMW isolation.
-- Actor/adviser text is an operational label, not authenticated staff identity.
-- Ready-notification state is local evidence and is not a delivery receipt.
-- The current APK is debug-signed and built from an uncommitted tree. It is for
-  review only.
-- No PHP/platform work was started. Nothing was committed or pushed.
-
-#### Safe next action without ETP exports
-
-Review the uncommitted D1+D2+D3 changes. The next implementation package that
-can be considered without ETP data is D5/D6 only after its own change contract
-and dependency audit; D4, D10, D11, E2-E6, and all verified-sales/incentive
-work remain ETP-dependent. Device/UAT acceptance for D1-D3 and the Phase 0
-drills can proceed independently when representative devices and custodians are
-available.
-### Two-year seeded review APK checkpoint — 2026-07-30
-
-The owner requested a review APK with two years of dummy data. The separate
-artifact is complete and saved:
-
-- `V:\Co work\Projects\Retail\SaagarCC-DemoData-2Years-D1-D3-v2.9.apk`
-- 7,562,722 bytes
-- SHA-256
-  `4545DA621EB13AB540F3631D8D0C24A8CBC8A09B44C0F16B1A9549F14E948CF4`
-- version 2.9 / versionCode 209 / minSdk 23 / targetSdk 34
-
-The `two-year-review-v1` seed spans 730 days back plus today, targets 25
-synthetic QMS walk-ins per working day, retains recent QMS in live storage,
-archives older QMS, includes WLMHW/HEMW review data, 24 locked payroll months,
-monthly tax history, both-store Stock history, and varied D3 Service stages,
-readiness, overdue, and repeat-repair cases. Demo contacts start with `1`, and
-the app shows a `SYNTHETIC DEMO DATA · DO NOT CONTACT` banner.
-
-The dedicated builder modifies only the generated Android asset, copies the
-seeded APK, and restores the generated asset in `finally`. Direct inspection
-confirmed the APK has seed=true and 730/25 defaults; its packaged
-`demo-seed.js` exactly matches the tested source. Both ordinary source and
-generated Android assets are back to seed=false with 365/50 fallbacks.
-
-Local evidence:
-
-- seed/build regressions: **5/5 passed**;
-- full 730-day runtime smoke: **1/1 passed**;
-- permanent offline suite: **149/149 passed**;
-- seeded build: passed twice with the same bytes/hash.
-
-Repeat commands:
-
-```powershell
-npm run test:offline
-npm run test:seeded-runtime
-npm run build:apk:seeded-2y
-```
-
-Full evidence is
-`verification/SEEDED-APK-2YEAR-D1-D3-2026-07-30.md`.
-
-No device acceptance was claimed. First-launch seed time/memory/ANR, archive
-file behavior, layout/interaction at volume, staff UAT, backup/restore/reset,
-and every formal release gate remain pending. The two store labels do not prove
-authenticated isolation. No PHP/platform work was started. No commit or push
-was made.
-### 2026-07-30 - native incremental SQLite scale-crash checkpoint
-
-**State:** storage-engine implementation and local verification complete;
-representative-device crash regression, DAT-02, recovery, and release acceptance
-remain **PENDING**.
-
-Device review invalidated the earlier two-year seeded artifact: back-date
-selection could close the app, and module views closed after roughly the
-six-second persistence debounce. The second failure reopened the storage-engine
-rewrite under section 7.4. Reducing synthetic history was explicitly rejected
-because it would not solve growth of real data.
-
-Implemented:
-
-- native Android SQLite durability through the registered
-  `SaagarNativeStorePlugin`, using WAL-mode `SQLiteOpenHelper` with no new Maven
-  dependency;
-- per-record SHA-256 identifiers and Keystore-DEK AES-GCM `SBKV1` envelopes, so
-  normal saves write only changed records in bounded transactions;
-- bounded paged startup, one-time verified migration from the legacy encrypted
-  `bcc.sqlite`, and legacy snapshot fallback only when the native plugin is
-  unavailable;
-- staging-table publication for seeds/restores: bounded batches are verified,
-  then atomically swapped into the live table, so interruption retains the
-  previous accepted dataset;
-- native-aware WAL replay, delete/clear, factory reset, diagnostics, and
-  logical backup/restore compatibility; and
-- back-date render coalescing plus shared/cached heavy Home/Today facts.
-
-Evidence:
-
-- native static/runtime storage regressions **6/6**;
-- permanent offline suite **159/159**;
-- full 730-day seed runtime **1/1**;
-- Android/Capacitor Java compile and debug assembly passed;
-- packaged DEX contains `SaagarNativeStorePlugin` and packaged web assets
-  contain native dispatch plus atomic bulk verification;
-- current seeded review APK: 7,617,377 bytes, SHA-256
-  `77111CE3E9967C224340C10B4CE70B5487678E3080CEA7CEB96A5DF7F1FABEBD`.
-
-The earlier hashes `4545DA...` and `6B7B77...` are superseded and must not be
-used. Full evidence and device retest steps are in
-`verification/NATIVE-INCREMENTAL-SQLITE-CRASH-CHECKPOINT-2026-07-30.md`.
-
-No device-only row changed to passed. Required evidence still includes module
-open for at least 15 seconds, early back dates, save/wait/relaunch, process
-kill/restart, two-device DAT-02, and backup/restore/reset/interrupted-bulk
-recovery at representative volume. The compatibility layer still holds active
-key/value data in WebView memory; module-level paged repositories remain a
-future scale slice beyond this first native durability phase.
-
-No PHP/platform work was started. All changes remain uncommitted and unpushed
-pending owner review.
-
-### Owner device smoke and publishing handoff - 2026-07-30
-
-- The owner reports that the current two-year seeded APK, SHA-256
-  `77111CE3E9967C224340C10B4CE70B5487678E3080CEA7CEB96A5DF7F1FABEBD`,
-  is working correctly on the review device after the native SQLite rewrite.
-- The previously reported immediate back-date close and roughly five-to-six
-  second module close were not reported again during this smoke.
-- This is useful real-device crash-regression evidence, but it is not a
-  controlled completion of the module catalogue or Phase 0 drills: device
-  identity/API, timings, memory, process-kill/restart, two-device DAT-02,
-  backup/restore/reset, and interrupted-bulk evidence were not supplied.
-- The owner approved commit and push. The reviewed checkpoint is published
-  from branch `agent/d1-d3-native-sqlite`; use Git history for its immutable
-  commit identifier.
-- No PHP/platform work was started.
-
-## Current handoff — MAH-4 Stage B runtime completion (2026-08-07)
-
-Resume from `verification/MAH4-STAGE-B-RUNTIME-COMPLETION-2026-08-07.md`.
-The eleven-module lifecycle rollout, `ST_ERROR`, and rendered deterministic
-timeout/error cases are complete and regression green. API-23 source-level
-compatibility evidence passes, but no API-23 device/emulator was available, so
-physical acceptance is still open. Raw legacy `ST_AUDIT` migration remains
-blocked. Preserve the intentionally dirty tree and do not commit, push or build
-an APK without owner approval.
-
-## MAH-4 remaining-runtime closeout handoff — 2026-08-07
-
-Resume from `verification/MAH4-API23-AUDIT-MIGRATION-CLOSEOUT-2026-08-07.md`.
-The MAH-4 runtime API-23 timing/entropy evidence and raw audit retirement are
-complete. Full tests are 369/369. Do not reopen raw before/after transport.
-Whole-app stock-WebView API-23 syntax compatibility is a newly identified,
-separate follow-on; emulator evidence is not owner physical-device acceptance.
+| Product branch | `agent/etp-retail-runtime` |
+| Product anchor | `88ba11842613f29173f436a39ca60f12b33e5085` |
+| GitHub branch | `origin/agent/etp-retail-runtime` resolves to the same product anchor |
+| Product closure | Storage large-record update hotfix plus Retail ETP Core Contract Closure |
+| Local dirt before this document is committed | modified `docs/audit/HANDOFF.md`; untracked `docs/audit/AUDIT-PROGRAM-v1.md` |
+| Product source outside the anchor | none |
+| PHP/platform work | excluded until fresh owner authorization |
+| Modular HTML | external-file migration complete; full modular hardening still pending |
+
+The historical statement that `www/storage-core.js` and thirteen other product
+files were an in-flight dirty hotfix is superseded. Those changes are committed
+and pushed in `88ba118`.
+
+## Product evidence at `88ba118`
+
+- Complete offline regression: **492/492 passed**.
+- ETP suite: **128/128 passed**.
+- Modular suite: **72/72 passed**.
+- Main offline/storage/security suite: **262/262 passed**.
+- Normal, non-seeded debug APK build passed for version 2.9, versionCode 209,
+  minSdk 23 and targetSdk 34.
+- APK path: `android/app/build/outputs/apk/debug/app-debug.apk`.
+- APK size: 7,326,431 bytes.
+- APK SHA-256:
+  `A5502378EB5877BCD3CAA36172DBC7D6777ABE19FAF340A81053F6D5BCDBCDDB`.
+- Native ETP API-23 emulator instrumentation: **2/2 passed**.
+
+The rebuilt APK's install-replace harness did not reach candidate installation:
+its baseline synthetic seed exceeded the fixed ten-minute harness budget twice.
+No update-in-place pass is claimed for `A5502378…`. The earlier passing storage
+evidence remains bound only to its earlier APK hash.
+
+## Retail ETP core status
+
+`retail-etp-core-v1` is frozen for R003, R013, R022 and R025 across WLMHW and
+HEMW. The runtime is app-loaded and includes bounded offline OOXML preflight,
+worker parsing, the shared profile, coordinator, import UI, encrypted native
+generation store, metadata-only control receipt, verified reader and
+restore/re-import fencing.
+
+Real aggregate-only conformance established:
+
+- identical frozen report signatures across WLMHW and HEMW;
+- blocking REC-002 passed with zero differences for 4,658 WLMHW and 708 HEMW
+  invoice/date groups;
+- R013 attribution exceptions remain visible: 136 WLMHW and 33 HEMW;
+- R003 discount exceptions remain visible: 162 WLMHW and 6 HEMW;
+- unresolved PAYMENTTYPE25 is quarantined and excluded from persisted/verified
+  facts: 2,802 WLMHW and 18 HEMW non-zero rows;
+- workbook bytes, raw rows and raw PII remain outside the app and repository.
+
+Controlling ETP evidence:
+
+- `verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md`
+- `verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json`
+- `verification/STORAGE-UPDATE-LARGE-RECORD-HOTFIX-HANDOFF-2026-08-08.md`
+
+## Modular HTML status
+
+All eleven business modules are external local HTML files and active base64
+module payloads are retired. This is not the same as complete modular
+architecture. Remaining migration work includes:
+
+- splitting the 711 KB shell into stable controllers and surfaces;
+- moving repeated module JavaScript and CSS behind shared versioned contracts;
+- adopting the shared module runtime across the remaining modules;
+- introducing one versioned web-to-native device gateway;
+- preserving the intentional native boundary for Keystore, SQLite, files,
+  notifications, lifecycle and security;
+- removing dormant compatibility machinery only after migration evidence;
+- adding strict before/after capability and rendered-layout guard rails.
+
+The next product change is not authorized until the audit baseline is frozen.
+
+## Audit identity model
+
+The audit uses two immutable identities:
+
+1. **Product baseline SHA:** `88ba11842613f29173f436a39ca60f12b33e5085`.
+2. **Audit tooling SHA:** the later commit containing the reviewed program and
+   complete tested runner.
+
+The tooling commit must change only audit documentation, audit scripts/tests and
+package command metadata. Its product fingerprint must exactly equal the
+fingerprint computed from `88ba118`.
+
+Audit output must be produced from an isolated clean worktree. Build, browser
+and mutation probes may write only inside disposable worktrees. The live source
+tree is never the audit target.
+
+## Required sequence
+
+1. Correct and commit the two audit documents separately above `88ba118`.
+2. Build and test the complete A1–A11 runner.
+3. Commit and freeze the audit tooling.
+4. Prove the product fingerprint still equals `88ba118`.
+5. Run the audit from an isolated clean snapshot.
+6. Commit and push immutable baseline evidence separately.
+7. Consolidate findings into an ordered strategy.
+8. Begin Modular HTML remediation only under separate owner authorization.
+9. Re-run the identical frozen audit version after migration.
+
+## Open acceptance gates
+
+These remain open and must never be inferred from source tests or emulator
+evidence:
+
+- owner physical update-in-place smoke for the final APK hash;
+- physical API-23/OEM WebView import and document-provider evidence;
+- process-death, disk-full, corruption, background/rotation and low-storage ETP
+  evidence;
+- real production native ETP publication and operational acceptance;
+- user-facing treatment of R003/R013 exceptions;
+- approved PAYMENTTYPE25 mapping;
+- E2–E6 presentation/analytics, Service ETP and PHP/server work;
+- fluent native-language review, staff UAT and legal review;
+- production signing and release acceptance.
+
+## Authority rule
+
+Code is authoritative for what the current app does. Approved contracts,
+dictionaries and source evidence are authoritative for what it must do. Any
+disagreement is an audit finding. `unmeasured` never means `pass`.
+
+## Historical record
+
+Earlier branch positions, APK hashes, dirty-tree checkpoints and test totals are
+preserved by Git history and the dated documents under `verification/`. They are
+immutable historical evidence, not current resume instructions.
