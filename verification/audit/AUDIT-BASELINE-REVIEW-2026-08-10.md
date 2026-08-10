@@ -98,20 +98,52 @@ Cause, verified: `android/gradle/wrapper/gradle-wrapper.properties` sets
 `distributionUrl=…/gradle-8.2.1-all.zip`. Receipt v2 deliberately gives each
 build a **fresh isolated `GRADLE_USER_HOME`**, so the wrapper cannot see the
 `gradle-8.2.1-all` distribution cached in the default `~/.gradle`, and must
-download it. This host has no network access to `services.gradle.org`, so
-`gradlew --version` exits non-zero and `buildToolchainIdentity()` throws.
+download it, and that download fails, so `gradlew --version` exits non-zero and
+`buildToolchainIdentity()` throws.
 
-**This is the isolation requirement colliding with an offline host — not a
-runner defect and not a product defect.** The runner failed closed: A9-01/02/05
-are `unmeasured` with `TWO_BUILD_EVIDENCE_ABSENT`, never a false pass. A9-03
-(production seed enablement) and A9-04 (module manifest byte/hash integrity,
-11 modules + 2 shared assets, 0 mismatches) still measured and passed.
+### 4.1 CORRECTION (2026-08-10, after the evidence commit)
+
+The first version of this section stated the download fails because "this host
+has no network access to `services.gradle.org`". **That stated cause was wrong**
+and is corrected here. The observed A9 result is unchanged; only the explanation
+of the download failure was inaccurate.
+
+The host **does** have general network access — `git fetch origin` and the push
+of the evidence commit both succeeded against GitHub. `services.gradle.org` is
+nevertheless unreachable from here, for a different reason:
+
+```text
+curl -I https://services.gradle.org/distributions/gradle-8.2.1-all.zip
+curl: (35) schannel: next InitializeSecurityContext failed:
+      CRYPT_E_NO_REVOCATION_CHECK (0x80092012)
+      - The revocation function was unable to check revocation for the certificate.
+```
+
+The TLS handshake fails because Windows schannel cannot reach the certificate
+**revocation** endpoint — characteristic of a proxy, firewall or TLS-inspection
+layer, not of an absent connection.
+
+**Consequence for the deferred re-run:** "re-run on a networked host" is *not*
+sufficient, and option 2 below is not the cheap fix it was described as. This
+machine is networked and still fails. The TLS/revocation path to Gradle's CDN
+must be resolved first, or the re-run will reproduce exactly the same
+`AUDIT_BUILD_GRADLE_UNAVAILABLE`.
+
+**The isolation requirement is still what exposes this** — a build reusing the
+default `~/.gradle` would never touch the network — but the blocker is TLS
+reachability, not offline-ness. Neither a runner defect nor a product defect.
+The runner failed closed: A9-01/02/05 are `unmeasured` with
+`TWO_BUILD_EVIDENCE_ABSENT`, never a false pass. A9-03 (production seed
+enablement) and A9-04 (module manifest byte/hash integrity, 11 modules +
+2 shared assets, 0 mismatches) still measured and passed.
 
 Options for the owner, none of which may be taken unilaterally — all touch
 frozen tooling or the environment:
 1. **Accept as an open gate.** Honest, costs the reproducibility evidence.
-2. **Re-run with network access** so the wrapper can fetch its distribution.
-   No code change; the cleanest path.
+2. **Resolve the TLS/revocation path to `services.gradle.org`, then re-run.**
+   No code change, but it requires fixing the proxy/inspection layer first —
+   see the correction above. Simply moving to another networked host is not
+   guaranteed to help unless that host can complete the handshake.
 3. Pre-seed the isolated `GRADLE_USER_HOME` from the local cache. This weakens
    the receipt-v2 isolation contract and is a post-freeze tooling change —
    **post-baseline backlog**, not admissible under addendum §2.
