@@ -84,13 +84,32 @@ function storagePolicy(index) {
   const blockedBody = functionBody(index, 'restoreBlockedKeys');
   const blockedArray = /return\s*\[([\s\S]*?)\]/.exec(blockedBody)?.[1] || '';
   const restoreBlocked = new Set(stringTokens(blockedArray, symbols));
+  /* Entries may be a CONSTANT NAME declared in the shell (resolved through
+     `symbols`) or a raw key literal, because many device-local keys are written
+     as literals at their use site and have no constant to resolve. */
   const deviceNames = [
     'ADMIN_PIN_KEY', 'ADMIN_MODE_KEY', 'OFFDEVICE_BACKUP_KEY', 'EXPORT_REGISTER_KEY',
     'RESTORE_DRILL_KEY', 'RESTORE_ACCEPTANCE_KEY', 'LAST_MODULE_RESET_KEY', 'PRODUCTION_DEVICE_KEY',
     'HIGHEST_BUILD_KEY', 'PIN_ATTEMPTS_KEY', 'CURRENT_ROLE_KEY', 'CURRENT_STORE_KEY',
-    'ROLE_ACCESS_KEY', 'STAFF_PIN_KEY', 'UI_MODE_KEY', 'TEXT_SIZE_KEY'
+    'ROLE_ACCESS_KEY', 'STAFF_PIN_KEY', 'UI_MODE_KEY',
+    /* TEXT_SIZE_KEY is deliberately NOT device-local. Wave-13 P1-39 exports and
+       restores saagar_text_size through appControlKeys(), re-validating it in
+       getTextSize(). Declaring it device-local while the restore policy allows
+       it was the single A4-03 contradiction. */
+
+    /* Device-local secret. Must never enter a portable backup. */
+    'st_v2_pin_salt',
+    /* Device state markers: meaningless on another device and re-established
+       locally, so exporting them would resurrect stale state on restore. */
+    'bcc_docs_purged_v1', 'saagar_demo_seeded', 'saagar_native_store_migrated_v1',
+    'saagar_gate_status', 'saagar_role_switch_lock_v1', 'saagar_acting_as',
+    /* Device-local operational logs and last-run markers. */
+    'bcc_autobackup_last', 'bcc_autobackup_log', 'bcc_autobackup_plaintext_warning',
+    'saagar_sqlite_log', 'saagar_rpt_log', 'saagar_rpt_recent', 'saagar_exceptions',
+    /* Per-device UI/session preferences. */
+    'st_v2_admin_idle_min', 'saagar_selected_date', 'ui_day_closed', 'ui_hide_amounts'
   ];
-  const explicitDeviceLocal = new Set(deviceNames.map(name => symbols.get(name)).filter(Boolean));
+  const explicitDeviceLocal = new Set(deviceNames.map(name => symbols.get(name) || name).filter(Boolean));
   const evidenceKeys = new Set([
     'OFFDEVICE_BACKUP_KEY', 'EXPORT_REGISTER_KEY', 'RESTORE_DRILL_KEY', 'RESTORE_ACCEPTANCE_KEY',
     'LAST_MODULE_RESET_KEY', 'PRODUCTION_DEVICE_KEY', 'HIGHEST_BUILD_KEY'

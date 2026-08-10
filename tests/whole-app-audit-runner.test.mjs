@@ -1156,6 +1156,34 @@ test('A3 resolves quoted-argument handlers, comment apostrophes, member calls an
   assert.equal(boundCheck.metric.unresolvedActionBindings, 0);
 });
 
+test('A4 classifies declared device-local keys and keeps the text-size key portable', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a4.mjs')).href);
+  const context = buildContext(ROOT);
+  const result = await module.run({ ...context,
+    options: { mode: 'baseline', productBaseline: PRODUCT_BASELINE_SHA } });
+  const classification = result.checks.find(item => item.id === 'A4-02');
+  const consistency = result.checks.find(item => item.id === 'A4-03');
+
+  // A4-03: saagar_text_size is exported and restored via appControlKeys (Wave-13
+  // P1-39), so declaring it device-local contradicted the restore policy.
+  assert.equal(consistency.metric.contradictions, 0);
+  assert.equal(consistency.result, 'pass');
+
+  const unclassified = new Set(classification.evidence
+    .filter(item => item.code === 'UNCLASSIFIED_STORAGE').map(item => item.artifact));
+  // Real keys that were previously unclassified must now carry a classification.
+  for (const key of ['st_v2_pin_salt', 'bcc_autobackup_log', 'saagar_rpt_log',
+    'saagar_role_switch_lock_v1', 'ui_hide_amounts', 'saagar_selected_date']) {
+    assert.ok(!unclassified.has(`local-storage:${key}`), `${key} must be classified`);
+  }
+  // The PIN salt is a device-local secret: it must never be treated as portable.
+  const census = result.checks.find(item => item.id === 'A4-01');
+  const salt = census.metric.inventory
+    .find(item => item.artifactId === 'local-storage:st_v2_pin_salt');
+  assert.ok(salt, 'the pin salt must appear in the artifact census');
+  assert.equal(salt.classification, 'device-local');
+});
+
 test('A3-02 is vetoed by capability id ambiguity but never by an unresolved binding', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a3.mjs')).href);
   const evaluate = async shell => {
