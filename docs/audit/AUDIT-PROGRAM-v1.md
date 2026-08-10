@@ -2,7 +2,7 @@
 
 **Created:** 2026-08-09 (Asia/Kolkata)
 **Purpose:** one repeatable audit run before Modular HTML remediation and the same frozen audit after it.
-**Status:** specification ready for runner implementation; baseline not yet run.
+**Status:** runner implemented; final verification/tooling freeze/baseline pending.
 
 ## 1. Scope and authority
 
@@ -16,6 +16,8 @@
 
 ### 1.2 Authority order
 
+`docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2026-08-09.md` is the controlling authority for runner closure until baseline evidence is committed. Where it narrows, tightens or supersedes anything in this document, the addendum wins; this document governs only what the addendum leaves untouched. Once baseline evidence is committed, this document resumes sole authority. The addendum is a required audit-tooling input — a missing addendum is `AUDIT_TOOLING_FILESET_MISMATCH` — and, like this document, it is an audit-control path excluded from the product fingerprint.
+
 Code is authoritative for what the app currently does. Approved contracts, dictionaries and source evidence are authoritative for what it must do. Any disagreement is a finding; neither side silently overrides the other.
 
 Documents are classified as `current-authority`, `superseded-checkpoint` or `historical-evidence`. Historical claims are evaluated against their stated date and scope, not against current HEAD.
@@ -24,14 +26,14 @@ Documents are classified as `current-authority`, `superseded-checkpoint` or `his
 
 Every run records:
 
-- `productBaselineSha`;
-- `auditToolingSha`;
-- `auditProgramVersion`;
+- `productBaselineSha`, `targetSha` and mode (`baseline` or `comparison`);
+- `auditToolingSha` and the complete audit-tooling fileset fingerprint (file count, total bytes and tree SHA-256);
+- `auditProgramVersion`, fixed for this program as `saagar-whole-app-audit-v1.0.0`;
 - runner path, byte count and SHA-256;
-- tracked-tree and product-tree SHA-256;
+- tracked-tree, worktree and product-tree SHA-256;
 - module manifest SHA-256;
 - toolchain and OS versions;
-- exact command and options;
+- a sanitized semantic invocation: command name and normalized options, with target/output paths replaced and external inputs represented only by safe metadata;
 - start/end timestamps and elapsed time.
 
 The product fingerprint covers product-relevant tracked paths and excludes only audit control/evidence paths. The tooling commit must prove its product fingerprint equals the fingerprint at `88ba118`.
@@ -42,13 +44,18 @@ If the runner changes, increment its version and rerun the pre-migration baselin
 
 The runner refuses to start unless:
 
-1. the audit target is a clean Git worktree at an exact commit;
-2. the requested product anchor exists and is an ancestor of the tooling SHA;
-3. the target product fingerprint matches the declared anchor for a baseline run, or the recorded migration target for a comparison run;
-4. the complete declared test registry is available;
-5. Node, JDK, Gradle, OS and relevant browser/device identities are recorded.
+1. the target root is a clean, detached, linked Git worktree rather than the primary worktree;
+2. `HEAD` exactly equals `--target-sha`;
+3. `--run-tests` is present and the complete declared offline suite can produce valid, fully passing per-suite summaries;
+4. the product anchor exists and is an ancestor of both the tooling commit and target; a baseline target must retain the anchor's exact product fingerprint;
+5. `--audit-tooling-sha` exists, is an ancestor of the target, and its complete declared tooling fileset and fingerprint exactly match the tooling bytes at the target;
+6. the output directory is absent or empty and physically outside every repository worktree; its final 7-12 hexadecimal characters are an exact prefix of `targetSha`.
 
-Audit output is written outside the audited worktree. Mutation, build and browser probes run only inside disposable worktrees or disposable copies. The runner verifies the audited tree hash before and after every probe.
+Browser, timing and physical-device evidence are optional inputs, not startup preconditions. When qualifying evidence is absent or cannot be authorized, the applicable A6/A10 check is `unmeasured`; it is never inferred to pass.
+
+Audit output is written outside the audited worktree. A5 mutation capture and the two A9 builds are runner-controlled: the runner creates fresh disposable detached worktrees at the exact target and verifies identity and cleanup. No ambient `node_modules` junction exists and there is no fallback to one: each disposable worktree installs its own dependencies with `npm ci --ignore-scripts --no-audit --no-fund`. A bounded dependency-closure identity (`fileCount`, `totalBytes`, `sha256` — aggregates only, never paths or contents) is measured after install, before Gradle and after the build, and all three must match. Each build runs under its own isolated `GRADLE_USER_HOME`, threaded through the build command so the build actually uses it, with a bounded Gradle distribution identity taken before and after. Both builds must agree exactly on the receipt-v2 record; disagreement fails `toolchainMatch`. Each build must start without an `android` directory, bootstrap it with the fixed `npm run add:android` command, and bind post-bootstrap/post-build hashes and configuration into its receipt. The audited tree fingerprint is checked before and after the controlled probes.
+
+There are no public `--mutation-evidence` or `--build-evidence` inputs. External or hand-authored JSON cannot authorize A5 or A9; their pass paths require module-private runner provenance. Probe failure produces a bounded `unmeasured` supporting artifact, not a false pass.
 
 No audit output may contain a suspected secret value, raw PII, workbook bytes, workbook rows, raw storage values or raw parser/native exceptions.
 
@@ -75,27 +82,46 @@ Informational checks pass only when their measurement completes successfully; th
 
 An `unmeasured` mandatory check remains an open gate even when it has no defect severity.
 
+### 4.1 Conservative static-discovery rule (A7 and A8)
+
+A7 and A8 decide over static discovery that cannot prove it saw everything. For those checks the absence of a heuristic hit is not evidence of compliance:
+
+| Observation | Result |
+|---|---|
+| Definite violation found | `fail` |
+| No violation **and** explicit complete discovery authority | `pass` |
+| No violation, no complete discovery authority | `unmeasured` |
+
+A heuristically clean run never reports `pass` on its own. `pass` requires the check to declare explicit complete discovery authority (`metric.staticDiscoveryComplete === true`); anything less is `unmeasured` and remains an open gate. Comparison follows the same rule: C-07 treats a message contract as matching only when both sides are `pass` **and** both declare complete discovery authority.
+
+A7-04 is exempt because it decides over a closed, hash-bound set rather than heuristic discovery.
+
 ## 5. Output contract
 
-The external run directory is `<YYYY-MM-DD>-<HHMMSS>-<short-product-sha>` and contains:
+The external run directory is `<YYYY-MM-DD>-<HHMMSS>-<7-to-12-character-targetSha-prefix>`. It contains exactly 18 files: `EVIDENCE-MANIFEST.json` plus these 17 authenticated artifacts:
 
 ```text
+EVIDENCE-MANIFEST.json
 RUN.json
 A1-architecture.json
 A2-duplication.json
 A3-capabilities.json
 A4-storage.json
 A5-tests.json
+A5-MUTATIONS.json
 A6-ui.json
 A7-protocol.json
 A8-security.json
 A9-build.json
+A9-BUILD-COMPARISON.json
 A10-performance.json
 A11-documentation.json
 OPEN-GATES.json
 FINDINGS.json
 SUMMARY.md
 ```
+
+`EVIDENCE-MANIFEST.json` declares exactly the other 17 files and authenticates each by byte count and SHA-256. No extra file is accepted when baseline evidence is loaded.
 
 Each check emits stable fields:
 
@@ -113,7 +139,7 @@ Each check emits stable fields:
 }
 ```
 
-Evidence strings and arrays are bounded and deterministically sorted. JSON is the authority; `SUMMARY.md` is generated and never hand-edited.
+Evidence strings and arrays are bounded. Central deterministic ordering is applied where it is stated, not universally: check `evidence` arrays are the only arrays that are centrally sorted **and deduplicated and length-bounded** together; `checks` is sorted by check id, and `findings` and `mandatoryUnmeasured` are sorted by id, without deduplication. Any other array in the output keeps the order its producing check assigns, which may be meaningful (for example measurement or discovery order) and is not normalised. JSON is the authority; `SUMMARY.md` is generated and never hand-edited.
 
 ## 6. Audit catalogue
 
@@ -145,7 +171,7 @@ Primary artefact: deterministic blast-radius matrix.
 - **A3-04:** defined-never-referenced candidates; informational.
 - **A3-05:** documented capability without implementation is P1.
 
-The migration gate is semantic capability equivalence by stable `capabilityId`, not equality of function names or handler structure. Owner-approved capability changes must appear in the comparison allowlist.
+The migration gate is semantic capability equivalence by stable `capabilityId`, not equality of function names or handler structure. A changed capability is accepted only through the identity-bound `capabilityApprovals` entries defined in Section 7.
 
 ### A4 — Data and storage integrity
 
@@ -168,6 +194,8 @@ ETP facts are intentionally `re-derivable-excluded`; their control receipt and s
 
 Raw test count and assertion ratios are supporting metrics, not standalone quality gates.
 
+For each registered mutation, the frozen helper runs exactly `node --test --test-reporter=tap <registered-test-file>`. Detection requires a non-zero exit and the exact registered TAP subtest line `not ok <number> - <expectedAssertion>`, with `AssertionError` or `ERR_ASSERTION` in that subtest's failure block and no setup/module/syntax failure. A generic command failure, a differently named failing test or external JSON is not mutation detection.
+
 ### A6 — UI, responsive behavior, i18n and accessibility
 
 - **A6-01:** shared design-token divergence is P2.
@@ -177,6 +205,8 @@ Raw test count and assertion ratios are supporting metrics, not standalone quali
 - **A6-05:** each mandatory matrix cell requires identity-bound rendered evidence; absent cells are `unmeasured`, never pass.
 
 Browser evidence does not establish physical-device or native-language acceptance.
+
+The external-evidence trust policy is currently closed (`trustedSignerCount: 0`). Therefore A6 rendered evidence and A10 browser/device attestations remain `unmeasured` even if structurally valid external JSON is supplied; no such file can authorize a pass until a controlled signer/trust root is separately provisioned and frozen.
 
 ### A7 — Protocol stability
 
@@ -202,11 +232,13 @@ Browser evidence does not establish physical-device or native-language acceptanc
 - **A9-04:** module manifest byte/hash mismatch is P0.
 - **A9-05:** release signing that does not fail closed without secrets is P0.
 
+A9-01/02/05 consume only the runner-controlled two-build comparison and its post-bootstrap/post-override receipts. Ignored ambient `android/**` files and external comparison JSON are never authoritative.
+
 ### A10 — Performance and resources
 
 - **A10-01:** shell bytes/lines/parse time; pre-run informational, post-run must not increase by more than 5% and shell bytes must decrease.
 - **A10-02:** per-module bytes/open time; post-run p95 may not regress by more than 10% under the identical environment.
-- **A10-03:** total shipped application asset bytes; post-run may not increase by more than 5% without an owner-approved reason.
+- **A10-03:** total shipped application asset bytes; post-run must not increase by more than 5%.
 - **A10-04:** DAT-02 five-save device gate; `unmeasured` without qualifying physical evidence.
 - **A10-05:** close/reopen retained-memory delta; post-close retained delta must return within 10% of the pre-open baseline after two collection cycles. `unmeasured` without a compatible instrumentation source.
 
@@ -222,12 +254,53 @@ Browser evidence does not establish physical-device or native-language acceptanc
 
 The post-migration comparison is valid only with the identical audit program and runner version, or after rerunning the baseline with the new version.
 
-Mandatory rules:
+Comparison approval is not a generic allowlist. If supplied, it must be one identity-bound JSON envelope with this exact semantic schema:
+
+```json
+{
+  "format": "SAAGAR_AUDIT_COMPARISON_APPROVALS",
+  "schemaVersion": 1,
+  "identity": {
+    "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+    "auditToolingSha": "<40-hex frozen tooling commit>",
+    "baselineManifestSha256": "<64-hex baseline EVIDENCE-MANIFEST hash>",
+    "baselineTargetSha": "<40-hex baseline target>",
+    "productBaselineSha": "88ba11842613f29173f436a39ca60f12b33e5085",
+    "targetSha": "<40-hex comparison target>"
+  },
+  "migrationScope": {
+    "checkIds": ["A3-02"],
+    "reason": "<non-empty migration reason>",
+    "approvedBy": "<owner identity>"
+  },
+  "capabilityApprovals": [
+    {
+      "capabilityId": "<stable capabilityId>",
+      "change": "added | removed | changed",
+      "reason": "<non-empty reason>",
+      "approvedBy": "<owner identity>"
+    }
+  ],
+  "findingWaivers": [
+    {
+      "checkId": "A3-02",
+      "severity": "P0 | P1",
+      "findingSha256": "<64-hex hash of the exact current finding>",
+      "reason": "<non-empty reason>",
+      "approvedBy": "<owner identity>"
+    }
+  ]
+}
+```
+
+`migrationScope.checkIds` must contain unique valid A1-01 through A11-99 identifiers. Capability approvals must exactly match a current `capabilityId` plus `added`, `removed` or `changed`; duplicates and stale entries fail. A finding waiver is valid only for a persistent in-scope P0/P1 whose severity and deterministic hash of `{id,result,severity,metric,evidence}` match the current finding; duplicates, stale entries and identity mismatch fail.
+
+Mandatory comparison rules:
 
 - every mandatory baseline-measured check remains measurable;
-- semantic capability IDs and outcomes remain equivalent except explicit owner-approved deltas;
+- semantic capability IDs and outcomes remain equivalent except exact valid `capabilityApprovals`;
 - no new P0/P1 finding;
-- migration-scope P0/P1 findings are zero unless explicitly owner-waived;
+- persistent migration-scope P0/P1 findings have exact valid `findingWaivers` and do not regress beyond that waiver;
 - storage classification gaps are zero;
 - critical-control behavioral coverage cannot regress;
 - duplication decreases;
@@ -259,6 +332,35 @@ The audit measures and recommends. It does not remediate product code.
 7. Consolidate findings.
 8. Begin Modular HTML remediation only after separate owner authorization.
 9. Re-run this exact audit after migration and apply §7.
+
+### 9.1 Baseline command after tooling freeze
+
+Run this from the clean detached linked worktree whose `HEAD` is the frozen tooling commit. It is executable PowerShell and derives identity from that exact `HEAD`, so this document does not embed a self-referential tooling SHA:
+
+```powershell
+$targetSha = (git rev-parse HEAD).Trim()
+$auditOutput = Join-Path ([System.IO.Path]::GetTempPath()) ((Get-Date -Format 'yyyy-MM-dd-HHmmss') + '-' + $targetSha.Substring(0, 12))
+node scripts/audit/run.mjs `
+  --root (Get-Location).Path `
+  --output $auditOutput `
+  --product-baseline 88ba11842613f29173f436a39ca60f12b33e5085 `
+  --target-sha $targetSha `
+  --audit-tooling-sha $targetSha `
+  --mode baseline `
+  --run-tests
+```
+
+The baseline command deliberately has no build- or mutation-evidence flags. The runner performs both captures internally. Omitting browser/device evidence is permitted and produces explicit `unmeasured` gates under the closed trust policy.
+
+### 9.2 Comparison command
+
+The comparison run uses the migration target's exact `HEAD` for `--target-sha`, reuses the frozen audit tooling commit for `--audit-tooling-sha`, points `--baseline-evidence` at the committed 18-file baseline directory, uses a fresh output name ending in the comparison target prefix, and sets `--mode comparison --run-tests`. The runner proves the frozen tooling commit is an ancestor and that all tooling bytes still match it. Optional `--comparison-approval` is accepted only when it matches the Section 7 schema and exact baseline/current identity. Optional UI/performance inputs remain subject to the closed external-evidence trust policy.
+
+In outline, after setting `$targetSha`, `$auditToolingSha`, `$baselineEvidence` and a fresh external `$auditOutput`:
+
+```powershell
+node scripts/audit/run.mjs --root (Get-Location).Path --output $auditOutput --product-baseline 88ba11842613f29173f436a39ca60f12b33e5085 --target-sha $targetSha --audit-tooling-sha $auditToolingSha --mode comparison --baseline-evidence $baselineEvidence --run-tests
+```
 
 ## 10. Explicit non-claims
 

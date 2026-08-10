@@ -2,7 +2,69 @@
 
 **Updated:** 2026-08-09 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
-**Status:** product engineering anchor published; audit tooling not yet frozen or run.
+**Status:** product engineering anchor published; audit tooling **not yet frozen or run**. Runner closure U0/U1/U2 complete; **U3/U4 next**, then U5.
+
+> ## ⚑ RESUME HERE — audit runner closure, U3/U4
+>
+> **Paste-in prompt:** `verification/audit/RESUME-PROMPT-U3-U4-2026-08-09.md`
+> (the fenced block is self-contained; every path and edit anchor verified present).
+>
+> **Process authority:** `docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2026-08-09.md`.
+> Read it, then the U0/U1 progress checkpoint, then the crash checkpoint, and use
+> the base program only for requirements the addendum has not narrowed.
+>
+> | Tripwire | Expected |
+> |---|---|
+> | Branch / HEAD | `agent/etp-retail-runtime` / `2ef99dcc2c90beba029d79014afe23edfe1f4c36` |
+> | Product anchor | `88ba11842613f29173f436a39ca60f12b33e5085` |
+> | Runner self-test | **53/53**, zero fail/cancelled/skipped/todo |
+> | Canonical modules | 24 under `scripts/audit/**/*.mjs`, all `node --check` clean |
+> | Staging / `git diff --check` | empty / clean |
+> | Tracked product files | **295**, fingerprint equal to the anchor |
+> | Temporary patch hold | **59** — 11 in-repo `scripts/audit/final-*.patch`, 48 external `controlled-*.patch` |
+>
+> Only `docs/audit/`, `scripts/audit/`, `verification/audit/` and
+> `tests/whole-app-audit-runner.test.mjs` may appear in `git status`. Anything
+> else is a product leak — stop and report.
+>
+> **Nothing has been committed or pushed.** No controlled build, no mutation
+> capture, no baseline. `53/53` is fixture self-test evidence only.
+
+## Runner closure progress
+
+| Slice | State |
+|---|---|
+| **U0** Gradle launcher CWD independence | done — `.\gradlew.bat` form; a bare name failed under `NoDefaultCurrentDirectoryInExePath=1` |
+| **U1** Conservative A7/A8/C-07 semantics | done — heuristic-clean is `unmeasured`, never `pass`; A7-04 and A8-01 deliberately unchanged |
+| **U2** Controlled-build receipt v2 | done — ambient `node_modules` junction removed, per-worktree `npm ci`, bounded dependency/Gradle closure identities, isolated `GRADLE_USER_HOME`, schema v2 end-to-end, two-build agreement |
+| **U3** Addendum into tooling identity | **next** — and carries a freeze blocker, below |
+| **U4** Base-program reconciliation | next — four wording items |
+| **U5** Verification, freeze, baseline | blocked on owner approval of the 59-file temp inventory |
+
+Detail and per-file hashes: `verification/audit/AUDIT-RUNNER-CLOSURE-PROGRESS-U0-U1-2026-08-09.md`.
+
+### ⚠ Freeze blocker found 2026-08-09 — fix inside U3
+
+`scripts/audit/lib.mjs` `isAuditControlPath()` is a **different function** from
+`runner-support.mjs` `isAuditToolingPath()`, and it does not match the closure
+addendum. Verified:
+
+```
+isProductPath('docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2026-08-09.md') === true
+```
+
+The addendum is untracked today, so the product fingerprint is still 295 files
+and still equals `88ba118`. But exit-sequence **step 12 commits the addendum**.
+The moment it is tracked it counts as a product file, the count becomes 296, and
+step 10/17 — *recompute the product fingerprint and require exact equality with
+`88ba118`* — **fails. The freeze cannot complete.**
+
+Fix: add the addendum to `isAuditControlPath()`, as `docs/audit/HANDOFF.md` and
+`docs/audit/AUDIT-PROGRAM-v1.md` already are. Prefer a stable prefix rule over a
+dated exact string so the next addendum does not reintroduce it.
+
+This is **not** scope expansion under addendum §2 — it fixes a false *rejection*
+that blocks the exit sequence, the same class as U0.
 
 ## Current repository authority
 
