@@ -1,0 +1,299 @@
+{
+  "auditId": "A10",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "ATTESTED_SHELL_TIMING_REQUIRED",
+          "path": "www/index.html"
+        }
+      ],
+      "id": "A10-01",
+      "mandatory": false,
+      "metric": {
+        "baselineShellBytes": null,
+        "byteDeltaPercent": null,
+        "captureIdentitySha256": null,
+        "mode": "baseline",
+        "shellBytes": 711722,
+        "shellLines": 9677,
+        "shellParseMs": null,
+        "shellTimingSamples": 0,
+        "timingIdentityStatus": "BROWSER_TIMING_SCHEMA_INVALID"
+      },
+      "notes": "Timing remains unmeasured without a Git-committed, source-bound browser capture containing 5-30 samples.",
+      "result": "unmeasured",
+      "rule": "Record shell bytes and identity-bound parse samples; comparison size may not exceed the frozen threshold.",
+      "severity": "INFO",
+      "title": "Shell size and parse performance"
+    },
+    {
+      "evidence": [
+        {
+          "bytes": 182542,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "cro_audit",
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "bytes": 217502,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "dsr",
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "bytes": 210008,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "expense",
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "bytes": 130225,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "grooming",
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "bytes": 209029,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "leave",
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "bytes": 310590,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "payroll",
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "bytes": 48319,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "planning",
+          "path": "www/modules/planning/index.html"
+        },
+        {
+          "bytes": 202450,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "qms",
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "bytes": 283068,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "service",
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "bytes": 245880,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "stock",
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "bytes": 272729,
+          "code": "ATTESTED_MODULE_OPEN_TIMING_REQUIRED",
+          "moduleId": "tax",
+          "path": "www/modules/tax/index.html"
+        }
+      ],
+      "id": "A10-02",
+      "mandatory": false,
+      "metric": {
+        "baselineOpenP95Ms": null,
+        "captureIdentitySha256": null,
+        "measuredTimingModules": 0,
+        "mode": "baseline",
+        "moduleSizes": [
+          {
+            "bytes": 182542,
+            "lines": 2833,
+            "moduleId": "cro_audit",
+            "path": "www/modules/cro_audit/index.html"
+          },
+          {
+            "bytes": 217502,
+            "lines": 3880,
+            "moduleId": "dsr",
+            "path": "www/modules/dsr/index.html"
+          },
+          {
+            "bytes": 210008,
+            "lines": 2542,
+            "moduleId": "expense",
+            "path": "www/modules/expense/index.html"
+          },
+          {
+            "bytes": 130225,
+            "lines": 1698,
+            "moduleId": "grooming",
+            "path": "www/modules/grooming/index.html"
+          },
+          {
+            "bytes": 209029,
+            "lines": 3523,
+            "moduleId": "leave",
+            "path": "www/modules/leave/index.html"
+          },
+          {
+            "bytes": 310590,
+            "lines": 4060,
+            "moduleId": "payroll",
+            "path": "www/modules/payroll/index.html"
+          },
+          {
+            "bytes": 48319,
+            "lines": 536,
+            "moduleId": "planning",
+            "path": "www/modules/planning/index.html"
+          },
+          {
+            "bytes": 202450,
+            "lines": 1989,
+            "moduleId": "qms",
+            "path": "www/modules/qms/index.html"
+          },
+          {
+            "bytes": 283068,
+            "lines": 5012,
+            "moduleId": "service",
+            "path": "www/modules/service/index.html"
+          },
+          {
+            "bytes": 245880,
+            "lines": 3956,
+            "moduleId": "stock",
+            "path": "www/modules/stock/index.html"
+          },
+          {
+            "bytes": 272729,
+            "lines": 3782,
+            "moduleId": "tax",
+            "path": "www/modules/tax/index.html"
+          }
+        ],
+        "modules": 11,
+        "openP95Ms": null,
+        "sizesSha256": "9071b0d068408eacfe0157ba439953c01328e3629a0ab2f929bdf2b13d44dda6",
+        "timingIdentityStatus": "BROWSER_TIMING_SCHEMA_INVALID"
+      },
+      "notes": "Module sizes are static; timings remain unmeasured without a complete committed capture and a matching baseline capture in comparison mode.",
+      "result": "unmeasured",
+      "rule": "Record every module byte count and 5-30 source-bound open-time samples; identical-environment comparison p95 may not regress by more than ten percent.",
+      "severity": "INFO",
+      "title": "Per-module size and open performance"
+    },
+    {
+      "evidence": [
+        {
+          "code": "SHIPPED_ASSET_SIZE_MEASURED",
+          "currentBytes": 7974761,
+          "path": "www/"
+        }
+      ],
+      "id": "A10-03",
+      "mandatory": false,
+      "metric": {
+        "baselineTotalBytes": null,
+        "byGroup": [
+          {
+            "bytes": 5398794,
+            "group": "(root)"
+          },
+          {
+            "bytes": 153796,
+            "group": "fonts"
+          },
+          {
+            "bytes": 2312342,
+            "group": "modules"
+          },
+          {
+            "bytes": 25036,
+            "group": "shared"
+          },
+          {
+            "bytes": 84793,
+            "group": "vendor"
+          }
+        ],
+        "deltaPercent": null,
+        "fileCount": 85,
+        "inventorySha256": "c57f4a45c330e98c1c54123527caa3d846fce2924bc727a44e0b5982f46458e1",
+        "mode": "baseline",
+        "totalBytes": 7974761
+      },
+      "notes": "This freezes the static pre-migration asset-size measurement.",
+      "result": "pass",
+      "rule": "Total tracked shipped www asset bytes may not increase by more than five percent after migration without an owner-approved reason.",
+      "severity": "INFO",
+      "title": "Total shipped application asset bytes"
+    },
+    {
+      "evidence": [
+        {
+          "code": "COMMITTED_OWNER_DEVICE_DAT02_ACCEPTANCE_REQUIRED"
+        }
+      ],
+      "id": "A10-04",
+      "mandatory": true,
+      "metric": {
+        "apkSha256": null,
+        "deviceIdentitySha256": null,
+        "environmentIdentitySha256": null,
+        "failedSaves": null,
+        "identityStatus": "COMMITTED_DEVICE_ACCEPTANCE_REQUIRED",
+        "instrumentationIdentitySha256": null,
+        "measuredSaves": 0,
+        "measurements": null,
+        "physicalDeviceEvidence": false,
+        "requiredSaves": 5,
+        "thresholds": {
+          "exportP95Ms": 150,
+          "frameGapP95Ms": 250,
+          "totalP95Ms": 3000
+        }
+      },
+      "notes": "External or synthetic JSON cannot establish this gate. It requires a source-bound record already committed under the controlled device-acceptance path, explicit owner acceptance, and an APK match.",
+      "result": "unmeasured",
+      "rule": "Five qualifying saves must complete on a physical device under the controlled DAT-02 procedure.",
+      "severity": "P0",
+      "title": "DAT-02 five-save physical-device gate"
+    },
+    {
+      "evidence": [
+        {
+          "code": "COMMITTED_OWNER_DEVICE_MEMORY_ACCEPTANCE_REQUIRED"
+        }
+      ],
+      "id": "A10-05",
+      "mandatory": true,
+      "metric": {
+        "allowedDeltaBytes": null,
+        "apkSha256": null,
+        "collectionCycles": 0,
+        "compatibleInstrumentation": false,
+        "deviceIdentitySha256": null,
+        "environmentIdentitySha256": null,
+        "identityStatus": "COMMITTED_DEVICE_ACCEPTANCE_REQUIRED",
+        "instrumentationIdentitySha256": null,
+        "postCloseBytes": null,
+        "preOpenBytes": null,
+        "requiredCollectionCycles": 2,
+        "retainedDeltaBytes": null
+      },
+      "notes": "Legacy summaries, external JSON and synthetic fixtures remain unmeasured; only a committed owner/device acceptance record can establish this gate.",
+      "result": "unmeasured",
+      "rule": "After close and two collection cycles, retained memory must return within ten percent of the pre-open baseline.",
+      "severity": "P1",
+      "title": "Close/reopen retained-memory delta"
+    }
+  ],
+  "metrics": {
+    "browserTimingAttested": false,
+    "moduleBytes": 2312342,
+    "physicalDeviceChecksMeasured": 0,
+    "shellBytes": 711722,
+    "shippedAssetBytes": 7974761
+  },
+  "title": "Performance and resources"
+}
