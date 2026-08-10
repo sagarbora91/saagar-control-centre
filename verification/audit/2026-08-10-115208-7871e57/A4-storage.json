@@ -1,0 +1,3645 @@
+{
+  "auditId": "A4",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A4-01",
+      "mandatory": true,
+      "metric": {
+        "artifactLimit": 2500,
+        "artifacts": 187,
+        "blindSpots": 0,
+        "files": 24,
+        "indexedDb": 1,
+        "inventory": [
+          {
+            "artifactId": "file:bcc.dek",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "bcc.dek",
+            "operations": [
+              "declared",
+              "file-access"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:bcc.dek*",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "bcc.dek*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "storage-core",
+            "pattern": true,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:bcc.sqlite",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "bcc.sqlite",
+            "operations": [
+              "declared",
+              "file-access"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:bcc.sqlite*",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "bcc.sqlite*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "storage-core",
+            "pattern": true,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:CACHE:computed-1b2d8edce059",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "CACHE:computed-1b2d8edce059",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:CACHE:computed-22b074c0fdb3",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "CACHE:computed-22b074c0fdb3",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:CACHE:computed-60644ad034dc",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "CACHE:computed-60644ad034dc",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:CACHE:computed-f974a07ea498",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "CACHE:computed-f974a07ea498",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:CACHE:Saagar_Archive_before_",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "CACHE:Saagar_Archive_before_",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "export-control",
+            "pattern": false,
+            "reset": "cache-or-owner-file-management",
+            "restore": "not-restored",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:computed-a0af9f865bf6",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "computed-a0af9f865bf6",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:computed-c63739dde7a9",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "computed-c63739dde7a9",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:DATA:bcc.sqlite",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:bcc.sqlite",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DATA:computed-257023669bc8",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:computed-257023669bc8",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:DATA:computed-8415154d3011",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:computed-8415154d3011",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:DATA:computed-aaf9a2d185dd",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:computed-aaf9a2d185dd",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "file:DATA:saagar_qms_archive.json.tmp",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:saagar_qms_archive.json.tmp",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "qms",
+            "pattern": false,
+            "reset": "qms-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DATA:SaagarBCC-Backups/pre-reset-",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DATA:SaagarBCC-Backups/pre-reset-",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "auto-backup",
+            "pattern": false,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DOCUMENTS:SaagarBCC-Backups*",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DOCUMENTS:SaagarBCC-Backups*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "auto-backup",
+            "pattern": true,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DOCUMENTS:SaagarBCC-Backups/*",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DOCUMENTS:SaagarBCC-Backups/*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "auto-backup",
+            "pattern": true,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DOCUMENTS:SaagarBCC-Backups/pre-reset-",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DOCUMENTS:SaagarBCC-Backups/pre-reset-",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "auto-backup",
+            "pattern": false,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:DOCUMENTS:SaagarBCC-Reports/*",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "DOCUMENTS:SaagarBCC-Reports/*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "export-control",
+            "pattern": true,
+            "reset": "cache-or-owner-file-management",
+            "restore": "not-restored",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:saagar-photos*",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "saagar-photos*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:SaagarBCC-Backups",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "SaagarBCC-Backups",
+            "operations": [
+              "declared"
+            ],
+            "owner": "auto-backup",
+            "pattern": false,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "file:SaagarBCC-Backups*",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "file",
+            "name": "SaagarBCC-Backups*",
+            "operations": [
+              "file-access"
+            ],
+            "owner": "auto-backup",
+            "pattern": true,
+            "reset": "retention-or-owner-purge",
+            "restore": "same-device-backup-flow",
+            "unresolved": false
+          },
+          {
+            "artifactId": "indexeddb:saagar_evidence",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "indexeddb",
+            "name": "saagar_evidence",
+            "operations": [
+              "open"
+            ],
+            "owner": "shell-evidence",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "keystore-alias:saagar_dek_kek_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "keystore-alias",
+            "name": "saagar_dek_kek_v1",
+            "operations": [
+              "open-or-create"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "native-reset-or-uninstall",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "keystore-alias:saagar_etp_fact_aes256_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "keystore-alias",
+            "name": "saagar_etp_fact_aes256_v1",
+            "operations": [
+              "open-or-create"
+            ],
+            "owner": "etp-native-store",
+            "pattern": false,
+            "reset": "native-reset-or-uninstall",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:$",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "$",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:${EMP_MASTER_KEY}",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "${EMP_MASTER_KEY}",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:${MK_CUSTOMERS}",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "${MK_CUSTOMERS}",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:bcc_autobackup_last",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "bcc_autobackup_last",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:bcc_autobackup_log",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "bcc_autobackup_log",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:bcc_autobackup_plaintext_warning",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "bcc_autobackup_plaintext_warning",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:bcc_docs_purged_v1",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "bcc_docs_purged_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:className",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "className",
+            "operations": [
+              "property-access"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:computed-02d5aeb43e4a",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-02d5aeb43e4a",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-0544886a5d00",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-0544886a5d00",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-0701dc44c392",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-0701dc44c392",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-0821f8c29cdb",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-0821f8c29cdb",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-0a7717c8bdb5",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-0a7717c8bdb5",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-0ff2a18ad6e2",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-0ff2a18ad6e2",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-1cc3b4183d9d",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-1cc3b4183d9d",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-23e76cd8d504",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-23e76cd8d504",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-2b3c84f3c54f",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-2b3c84f3c54f",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-2c70e12b7a06",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-2c70e12b7a06",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-358c72ff1acf",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-358c72ff1acf",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-3620f4ff654a",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-3620f4ff654a",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-376af56a908d",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-376af56a908d",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-37fecfa0a885",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-37fecfa0a885",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-3c26c13da490",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-3c26c13da490",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-47aa7345abe6",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-47aa7345abe6",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-47e194408371",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-47e194408371",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-4e7697043850",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-4e7697043850",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-523c48c1d828",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-523c48c1d828",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-55d560d930a8",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-55d560d930a8",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-598d7f74f327",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-598d7f74f327",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-5a293968b781",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-5a293968b781",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-5cf144e10804",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-5cf144e10804",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-600e8113bb58",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-600e8113bb58",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-63d08515ab9f",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-63d08515ab9f",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-713c95448142",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-713c95448142",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-73b043cf2586",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-73b043cf2586",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-77ec7a7374e4",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-77ec7a7374e4",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-8254c329a928",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-8254c329a928",
+            "operations": [
+              "dynamic-member",
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-867b4bf4357a",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-867b4bf4357a",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-87beb772bcea",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-87beb772bcea",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-89d0acd12330",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-89d0acd12330",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-8bd052bdd12d",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-8bd052bdd12d",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-92dbd5fe4b59",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-92dbd5fe4b59",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-94a4a1fed536",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-94a4a1fed536",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-975a2486c225",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-975a2486c225",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-9c0ca42b9bac",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-9c0ca42b9bac",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-9dbadeea44ab",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-9dbadeea44ab",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-a4a80adf7672",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-a4a80adf7672",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-a5b46b86183d",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-a5b46b86183d",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-a77e6163c761",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-a77e6163c761",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-ba28e95bfd1e",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-ba28e95bfd1e",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-be8fa27cdb48",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-be8fa27cdb48",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-bf53b97ebe11",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-bf53b97ebe11",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-c8192e184a27",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-c8192e184a27",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-ca8bdca64685",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-ca8bdca64685",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-cc6e84d0433c",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-cc6e84d0433c",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-ce5342510e0e",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-ce5342510e0e",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-cf58d7fb0377",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-cf58d7fb0377",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-d1388d4c9249",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-d1388d4c9249",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-d3358fb54abe",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-d3358fb54abe",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-dfc6cdab12f6",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-dfc6cdab12f6",
+            "operations": [
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-f8dee5330c16",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-f8dee5330c16",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-f950cbc47b92",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-f950cbc47b92",
+            "operations": [
+              "clear"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-fad1cc7df664",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-fad1cc7df664",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-fbb043f3a774",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-fbb043f3a774",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:computed-fd4a03953ac4",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "computed-fd4a03953ac4",
+            "operations": [
+              "key"
+            ],
+            "owner": "unassigned",
+            "pattern": true,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": true
+          },
+          {
+            "artifactId": "local-storage:cro_audits_v3",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "cro_audits_v3",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "cro_audit",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:cro_s_v3",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "cro_s_v3",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "cro_audit",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:gm_expenses",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "gm_expenses",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "expense",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:gm_vendors",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "gm_vendors",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "expense",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:In",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "In",
+            "operations": [
+              "property-access"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_blackouts_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_blackouts_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_caps_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_caps_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_entitlements_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_entitlements_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_v2",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_v2",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_v3",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_v3",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:leavedesk_weekoff_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "leavedesk_weekoff_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "leave",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:Old",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "Old",
+            "operations": [
+              "property-access"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:payroll_fnf_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "payroll_fnf_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "payroll",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:payroll_suite_v1_2026",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "payroll_suite_v1_2026",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "payroll",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:retail_queue_management_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "retail_queue_management_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "qms",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_acting_as",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_acting_as",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_active_staff_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_active_staff_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_appstate",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_appstate",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "stock",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_brands",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_brands",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "stock",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_bridge_config",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_bridge_config",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_bus",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_bus",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_cro_audit_feed",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_cro_audit_feed",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_cros",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_cros",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "stock",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_current_role_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_current_role_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_current_store_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_current_store_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_customer_master_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_customer_master_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_demo_seeded",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_demo_seeded",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_dsr_staff",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_dsr_staff",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "dsr",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_employee_master_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_employee_master_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_etp_scope_registry",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_etp_scope_registry",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_exceptions",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_exceptions",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_festival_calendar_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_festival_calendar_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "planning",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_gate_status",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_gate_status",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_grooming_",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_grooming_",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "grooming",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_grooming_*",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_grooming_*",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "grooming",
+            "pattern": true,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_invoice_seq_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_invoice_seq_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "service",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_lang",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_lang",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_master_brands",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_master_brands",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_master_customers",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_master_customers",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_master_vendors",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_master_vendors",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_native_store_migrated_v1",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_native_store_migrated_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_org_master_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_org_master_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_payroll_attendance_feed",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_payroll_attendance_feed",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_role_access_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_role_access_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_role_master_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_role_master_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_role_switch_lock_v1",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_role_switch_lock_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_rpt_log",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_rpt_log",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_rpt_recent",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_rpt_recent",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_selected_date",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_selected_date",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_sqlite_log",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_sqlite_log",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_staff_login_required_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_staff_login_required_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_staff_pins_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_staff_pins_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_stock_*",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_stock_*",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "stock",
+            "pattern": true,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_tax_payable",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_tax_payable",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_text_size",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_text_size",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "allowed",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_udhaar_ledger_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_udhaar_ledger_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "expense",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_ui_mode",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_ui_mode",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "excluded",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_wsf_settings_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_wsf_settings_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "service",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:saagar_wsf_v2",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "saagar_wsf_v2",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "service",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_admin_idle_min",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_admin_idle_min",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_admin_mode",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_admin_mode",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_admin_pin_hash",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_admin_pin_hash",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_highest_build_v1",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_highest_build_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_last_backup",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_last_backup",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_last_module_reset_v1",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_last_module_reset_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_last_offdevice_backup",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_last_offdevice_backup",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_launch_lock",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_launch_lock",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_offdevice_backup_config_v1",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_offdevice_backup_config_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_owner_setup_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_owner_setup_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_pin_attempts_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_pin_attempts_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_pin_policy_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_pin_policy_v1",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_pin_salt",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v2_pin_salt",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_production_device_v1",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_production_device_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_restore_acceptance_pending_v1",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_restore_acceptance_pending_v1",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v2_restore_drill_accepted_v1",
+            "classification": "device-local",
+            "evidenceArtifact": true,
+            "kind": "local-storage",
+            "name": "st_v2_restore_drill_accepted_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v3_activity_log",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v3_activity_log",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v3_module_pin_policy_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v3_module_pin_policy_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v4_audit_log",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v4_audit_log",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v5_attn_state_v1",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v5_attn_state_v1",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:st_v5_owner_name",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "st_v5_owner_name",
+            "operations": [
+              "getItem",
+              "removeItem",
+              "setItem"
+            ],
+            "owner": "shell",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:tanishq_statements",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "tanishq_statements",
+            "operations": [
+              "getItem"
+            ],
+            "owner": "expense",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:taxcal_v2",
+            "classification": "portable",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "taxcal_v2",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "tax",
+            "pattern": false,
+            "reset": "module-or-factory-reset",
+            "restore": "validated-restore",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:textContent",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "textContent",
+            "operations": [
+              "property-access"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:This",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "This",
+            "operations": [
+              "property-access"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:ui_day_closed",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "ui_day_closed",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "local-storage:ui_hide_amounts",
+            "classification": "unclassified",
+            "evidenceArtifact": false,
+            "kind": "local-storage",
+            "name": "ui_hide_amounts",
+            "operations": [
+              "getItem",
+              "setItem"
+            ],
+            "owner": "unassigned",
+            "pattern": false,
+            "reset": "unknown",
+            "restore": "unknown",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-database:saagar-etp.db",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "native-database",
+            "name": "saagar-etp.db",
+            "operations": [
+              "open"
+            ],
+            "owner": "etp-native-store",
+            "pattern": false,
+            "reset": "scope-or-store-reset",
+            "restore": "excluded-and-fenced",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-database:saagar-native-kv.db",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "native-database",
+            "name": "saagar-native-kv.db",
+            "operations": [
+              "open"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-preferences:saagar_offdevice_v1",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "native-preferences",
+            "name": "saagar_offdevice_v1",
+            "operations": [
+              "open"
+            ],
+            "owner": "offdevice-backup",
+            "pattern": false,
+            "reset": "app-reset-or-uninstall",
+            "restore": "blocked",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:generation",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "generation",
+            "operations": [
+              "create"
+            ],
+            "owner": "etp-native-store",
+            "pattern": false,
+            "reset": "scope-or-store-reset",
+            "restore": "excluded-and-fenced",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:kv",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "kv",
+            "operations": [
+              "create"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:kv_stage",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "kv_stage",
+            "operations": [
+              "create"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:meta",
+            "classification": "device-local",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "meta",
+            "operations": [
+              "create"
+            ],
+            "owner": "storage-core",
+            "pattern": false,
+            "reset": "factory-reset",
+            "restore": "logical-key-restore-only",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:scope_pointer",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "scope_pointer",
+            "operations": [
+              "create"
+            ],
+            "owner": "etp-native-store",
+            "pattern": false,
+            "reset": "scope-or-store-reset",
+            "restore": "excluded-and-fenced",
+            "unresolved": false
+          },
+          {
+            "artifactId": "native-table:stage_chunk",
+            "classification": "re-derivable-excluded",
+            "evidenceArtifact": false,
+            "kind": "native-table",
+            "name": "stage_chunk",
+            "operations": [
+              "create"
+            ],
+            "owner": "etp-native-store",
+            "pattern": false,
+            "reset": "scope-or-store-reset",
+            "restore": "excluded-and-fenced",
+            "unresolved": false
+          }
+        ],
+        "inventoryComplete": true,
+        "inventorySha256": "68154f5c5cc5e1d6225b1a155e90e8a5d7f2328a4978e24b133c0003717115ab",
+        "keystoreAliases": 2,
+        "localStorage": 151,
+        "nativeDatabases": 2,
+        "nativeTables": 6,
+        "runtimeFiles": 74
+      },
+      "notes": "The metric inventory is the exact comparison contract and intentionally excludes source line/location fields.",
+      "result": "pass",
+      "rule": "Produce one bounded, exact and location-independent contract row for every persistent artifact; zero census, dynamic blind spots and overflow are unmeasured.",
+      "severity": "INFO",
+      "title": "Persistent-artifact census"
+    },
+    {
+      "evidence": [
+        {
+          "artifact": "file:CACHE:computed-1b2d8edce059",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1946,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "file:CACHE:computed-22b074c0fdb3",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1576,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "file:CACHE:computed-60644ad034dc",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 126,
+          "path": "www/offdevice-backup.js"
+        },
+        {
+          "artifact": "file:CACHE:computed-f974a07ea498",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 163,
+          "path": "www/whatsapp-share.js"
+        },
+        {
+          "artifact": "file:DATA:computed-257023669bc8",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7657,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "file:DATA:computed-8415154d3011",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7653,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "file:DATA:computed-aaf9a2d185dd",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7728,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "file:computed-a0af9f865bf6",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 986,
+          "path": "www/storage-core.js"
+        },
+        {
+          "artifact": "file:computed-c63739dde7a9",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 100,
+          "path": "www/photo-store.js"
+        },
+        {
+          "artifact": "file:saagar-photos*",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 96,
+          "path": "www/photo-store.js"
+        },
+        {
+          "artifact": "local-storage:$",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4933,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "artifact": "local-storage:${EMP_MASTER_KEY}",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 8629,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:${MK_CUSTOMERS}",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 8629,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:In",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 67,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:Old",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2571,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "artifact": "local-storage:This",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 16,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:bcc_autobackup_last",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 373,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:bcc_autobackup_log",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 89,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:bcc_autobackup_plaintext_warning",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 149,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:bcc_docs_purged_v1",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4484,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:className",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 8998,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-02d5aeb43e4a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3369,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0544886a5d00",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 5842,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0701dc44c392",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1991,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0821f8c29cdb",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 765,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-0a7717c8bdb5",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 5266,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0ff2a18ad6e2",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-1cc3b4183d9d",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-23e76cd8d504",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-2b3c84f3c54f",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 8582,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-2c70e12b7a06",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-358c72ff1acf",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3942,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-3620f4ff654a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3264,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-376af56a908d",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 974,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-37fecfa0a885",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7641,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-3c26c13da490",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-47aa7345abe6",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 139,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:computed-47e194408371",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7591,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-4e7697043850",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7427,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-523c48c1d828",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2196,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-55d560d930a8",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-598d7f74f327",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7444,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-5a293968b781",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 19,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "artifact": "local-storage:computed-5cf144e10804",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3910,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-600e8113bb58",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3271,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-63d08515ab9f",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1453,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-713c95448142",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2397,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-73b043cf2586",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 147,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-77ec7a7374e4",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2234,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-8254c329a928",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 76,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:computed-867b4bf4357a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 128,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:computed-87beb772bcea",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3662,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-89d0acd12330",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 19,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-8bd052bdd12d",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 5391,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-92dbd5fe4b59",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7356,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-94a4a1fed536",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 15,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "artifact": "local-storage:computed-975a2486c225",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2567,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-9c0ca42b9bac",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 19,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-9dbadeea44ab",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 166,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-a4a80adf7672",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-a5b46b86183d",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1961,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-a77e6163c761",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 685,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-ba28e95bfd1e",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1106,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-be8fa27cdb48",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 5382,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-bf53b97ebe11",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 223,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-c8192e184a27",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2113,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-ca8bdca64685",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3312,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-cc6e84d0433c",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2113,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-ce5342510e0e",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-cf58d7fb0377",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1866,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-d1388d4c9249",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 73,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:computed-d3358fb54abe",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2075,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-dfc6cdab12f6",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3497,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-f8dee5330c16",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 296,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-f950cbc47b92",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-fad1cc7df664",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 835,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-fbb043f3a774",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7958,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-fd4a03953ac4",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2561,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_acting_as",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 12,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:saagar_bus",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 870,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_cro_audit_feed",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2513,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_demo_seeded",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 15,
+          "path": "www/demo-seed.js"
+        },
+        {
+          "artifact": "local-storage:saagar_exceptions",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4230,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_gate_status",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4184,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_native_store_migrated_v1",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 824,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_payroll_attendance_feed",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3765,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_role_switch_lock_v1",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2750,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_rpt_log",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1959,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:saagar_rpt_recent",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2016,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:saagar_selected_date",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2502,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_sqlite_log",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 51,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:saagar_tax_payable",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2991,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "artifact": "local-storage:st_v2_admin_idle_min",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2784,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:st_v2_offdevice_backup_config_v1",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 17,
+          "path": "www/offdevice-backup.js"
+        },
+        {
+          "artifact": "local-storage:st_v2_pin_salt",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1265,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:textContent",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 8998,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:ui_day_closed",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4223,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:ui_hide_amounts",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4319,
+          "path": "www/index.html"
+        }
+      ],
+      "id": "A4-02",
+      "mandatory": true,
+      "metric": {
+        "device-local": 33,
+        "forbidden": 0,
+        "portable": 50,
+        "re-derivable-excluded": 6,
+        "unclassifiedArtifacts": 98
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Every persistent artifact has exactly one authoritative classification, owner, restore behavior and reset behavior",
+      "severity": "P0",
+      "title": "Persistent-artifact classification"
+    },
+    {
+      "evidence": [
+        {
+          "artifact": "local-storage:saagar_text_size",
+          "code": "DEVICE_LOCAL_ALLOWED_BY_RESTORE_POLICY",
+          "line": 9347,
+          "path": "www/index.html"
+        }
+      ],
+      "id": "A4-03",
+      "mandatory": true,
+      "metric": {
+        "contradictions": 1
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Declared classification and actual backup/restore use must not contradict each other",
+      "severity": "P0",
+      "title": "Storage classification/use consistency"
+    },
+    {
+      "evidence": [],
+      "id": "A4-04",
+      "mandatory": true,
+      "metric": {
+        "restorableDeviceLocalEvidence": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Device-local control evidence must never be restorable",
+      "severity": "INFO",
+      "title": "Device-local evidence restore boundary"
+    },
+    {
+      "evidence": [],
+      "id": "A4-05",
+      "mandatory": true,
+      "metric": {
+        "definiteMismatches": 0,
+        "nativeSchemasParsed": 7
+      },
+      "notes": "The deterministic probe validates explicit native SQL write columns against declared schemas and does not infer defects from dynamic object access.",
+      "result": "pass",
+      "rule": "Report only statically definite persisted-field mismatches; dynamic JavaScript object shapes are not guessed",
+      "severity": "INFO",
+      "title": "Definite persisted-field read/write mismatch"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "MODULE_STORAGE_GATEWAY_MISSING",
+          "path": "www/modules/tax/index.html"
+        }
+      ],
+      "id": "A4-06",
+      "mandatory": true,
+      "metric": {
+        "gatewayBypasses": 8,
+        "modulesChecked": 11
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "A module using persistent or device storage must enter through the manifest-bound shared storage gateway",
+      "severity": "P1",
+      "title": "Declared storage/device gateway enforcement"
+    }
+  ],
+  "metrics": {
+    "artifacts": 187,
+    "classifications": {
+      "device-local": 33,
+      "forbidden": 0,
+      "portable": 50,
+      "re-derivable-excluded": 6
+    },
+    "unclassifiedArtifacts": 98
+  },
+  "title": "Data and storage integrity"
+}
