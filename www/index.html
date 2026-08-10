@@ -1635,17 +1635,17 @@ html.bcc-mobile #todayView.active{display:block}
         </div>
         <div class="card card-pad">
           <h4><span class="em">🏷️</span> Brands / products</h4>
-          <div class="row"><input id="mb-name" placeholder="brand name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><select id="mb-store" style="padding:9px;border:1px solid var(--gray-300);border-radius:8px"><option value="">All stores</option><option value="titanworld">Titan World</option><option value="helios">Helios</option></select><button class="btn p" onclick="masterAdd('brands')">Add</button></div>
+          <div class="row"><input id="mb-name" placeholder="brand name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><select id="mb-store" style="padding:9px;border:1px solid var(--gray-300);border-radius:8px"><option value="">All stores</option><option value="titanworld">Titan World</option><option value="helios">Helios</option></select><button data-action="master-add-brands" class="btn p" onclick="masterAdd('brands')">Add</button></div>
           <div id="mTblBrands" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
           <h4><span class="em">🧾</span> Vendors / payees</h4>
-          <div class="row"><input id="mv-name" placeholder="vendor name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mv-gstin" placeholder="GSTIN (optional)" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('vendors')">Add</button></div>
+          <div class="row"><input id="mv-name" placeholder="vendor name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mv-gstin" placeholder="GSTIN (optional)" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button data-action="master-add-vendors" class="btn p" onclick="masterAdd('vendors')">Add</button></div>
           <div id="mTblVendors" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
           <h4><span class="em">👤</span> Customers</h4>
-          <div class="row"><input id="mc-name" placeholder="customer name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mc-mobile" placeholder="mobile" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('customers')">Add</button></div>
+          <div class="row"><input id="mc-name" placeholder="customer name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mc-mobile" placeholder="mobile" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button data-action="master-add-customers" class="btn p" onclick="masterAdd('customers')">Add</button></div>
           <div id="mTblCustomers" style="margin-top:10px"></div>
         </div>
       </div>

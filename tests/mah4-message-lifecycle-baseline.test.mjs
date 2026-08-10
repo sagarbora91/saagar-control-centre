@@ -18,7 +18,10 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
   assert.equal(inventory.upstream.currentWwwFileCount, 85);
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7973553);
+  // +1208 bytes on 2026-08-10: 38 inert `data-action` attributes added to
+  // disambiguate conflicting A3-02 capability IDs, plus the refreshed module
+  // manifest identities. No behaviour change; file count is unchanged.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7974761);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',

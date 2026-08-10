@@ -1028,7 +1028,7 @@ html body td select,html body th select{
   <div class="modal">
     <div class="modal-hd">
       <div class="modal-title">Manage Firms</div>
-      <button class="modal-close" onclick="closeFirmModal()">✕</button>
+      <button data-action="firm-modal-close" class="modal-close" onclick="closeFirmModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="firm-list" id="firm-list"></div>
@@ -1087,7 +1087,7 @@ html body td select,html body th select{
         </div>
         <div class="ff-actions">
           <button class="btn-save-firm" onclick="saveFirm()">💾 Save Firm</button>
-          <button class="btn-cancel-firm" onclick="resetFirmForm()">Cancel</button>
+          <button data-action="firm-form-reset" class="btn-cancel-firm" onclick="resetFirmForm()">Cancel</button>
         </div>
       </div>
     </div>
@@ -1099,7 +1099,7 @@ html body td select,html body th select{
   <div class="modal">
     <div class="modal-hd">
       <div class="modal-title">Manage Compliance</div>
-      <button class="modal-close" onclick="closeMasterModal()">✕</button>
+      <button data-action="master-modal-close" class="modal-close" onclick="closeMasterModal()">✕</button>
     </div>
     <div class="modal-body">
       <div class="firm-form" id="master-form">
@@ -1177,7 +1177,7 @@ html body td select,html body th select{
         </div>
         <div class="ff-actions">
           <button class="btn-save-firm" onclick="saveCustomObligation()">💾 Save Obligation</button>
-          <button class="btn-cancel-firm" onclick="resetMasterForm()">Cancel</button>
+          <button data-action="master-form-reset" class="btn-cancel-firm" onclick="resetMasterForm()">Cancel</button>
         </div>
       </div>
       <div class="master-list" id="master-list"></div>
@@ -1190,7 +1190,7 @@ html body td select,html body th select{
   <div class="modal">
     <div class="modal-hd">
       <div class="modal-title">🔔 Action Center — across all firms</div>
-      <button class="modal-close" onclick="closeActionCenter()">✕</button>
+      <button data-action="action-center-close" class="modal-close" onclick="closeActionCenter()">✕</button>
     </div>
     <div class="modal-body">
       <div id="ac-body"></div>

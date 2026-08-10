@@ -2048,8 +2048,8 @@ html body td select,html body th select{
           <div class="watch-photo" id="wp-box">
             <div class="wp-label">📷 Watch Photo — Received Condition <span class="wp-hint">proof of condition at receipt</span></div>
             <div class="wp-actions">
-              <label class="wp-btn">📷 Camera<input type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhoto(this)"></label>
-              <label class="wp-btn">🖼 Upload<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhoto(this)"></label>
+              <label class="wp-btn">📷 Camera<input data-action="watch-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhoto(this)"></label>
+              <label class="wp-btn">🖼 Upload<input data-action="watch-photo-upload" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhoto(this)"></label>
               <button type="button" class="wp-btn wp-remove" id="wp-remove" style="display:none" onclick="removeWatchPhoto()">✕ Remove</button>
             </div>
             <div class="wp-preview" id="wp-preview" style="display:none"><img id="wp-preview-img" alt="Watch photo — received"></div>
@@ -2431,8 +2431,8 @@ html body td select,html body th select{
             <div class="watch-photo" id="wp-after-box" style="margin-bottom:16px">
               <div class="wp-label">📷 Watch Photo — After Service <span class="wp-hint">optional — condition at delivery</span></div>
               <div class="wp-actions">
-                <label class="wp-btn">📷 Camera<input type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
-                <label class="wp-btn">🖼 Upload<input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
+                <label class="wp-btn">📷 Camera<input data-action="watch-photo-after-camera" type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
+                <label class="wp-btn">🖼 Upload<input data-action="watch-photo-after-upload" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
                 <button type="button" class="wp-btn wp-remove" id="wp-after-remove" style="display:none" onclick="removeWatchPhotoAfter()">✕ Remove</button>
               </div>
               <div class="wp-preview" id="wp-after-preview" style="display:none"><img id="wp-after-img" alt="Watch photo — after service"></div>

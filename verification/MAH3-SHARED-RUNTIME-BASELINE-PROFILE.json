@@ -16,18 +16,18 @@
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
     "fileCount": 85,
-    "totalBytes": 7973553,
-    "treeSha256": "337a4d7bde8ac0ba22392611052b7d1cd9095a8480a48d9d91c0311fb63f1800",
+    "totalBytes": 7974761,
+    "treeSha256": "cc40a8c0593776ae0a6229b875671d7de08c4607aaf4c53d3792bff495b6bce6",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 711622,
-        "sha256": "92125a1a5e29c15c4e27a7854377b228ead2dde9c244820ebb3f2d55a2b9982f"
+        "bytes": 711722,
+        "sha256": "cd1bf9ba63c9b0a3c29320103bc76bcff44938f6bc6924cd183642bcd60038aa"
       },
       {
         "path": "www/module-manifest.js",
         "bytes": 15504,
-        "sha256": "ce9ab95306dd7075074876fba02ad7a5216ce48dfe566ac414bd8cbd0a156f78"
+        "sha256": "a2ff9c8e6c4de4c808ccdeb9e3931f97a95c5a1e860016ef30c26ca8d0674f16"
       },
       {
         "path": "www/app-i18n.js",
