@@ -323,7 +323,7 @@ function a5MutationEnvelope(context, auditToolingSha) {
   };
 }
 
-test('audit tooling preserves the exact 88ba118 product fingerprint using Git blobs', () => {
+test('audit tooling preserves the exact product anchor fingerprint using Git blobs', () => {
   const current = buildContext(ROOT).productFingerprint;
   const baseline = commitProductFingerprint(PRODUCT_BASELINE_SHA);
   assert.deepEqual({ fileCount: current.fileCount, totalBytes: current.totalBytes,
@@ -559,7 +559,7 @@ test('platform npm launcher is behaviorally executable', () => {
 });
 
 test('CLI requires frozen tooling identity, full tests, external evidence mode and canonical output name', () => {
-  const output = path.join(os.tmpdir(), '2026-08-09-123456-88ba118');
+  const output = path.join(os.tmpdir(), `2026-08-09-123456-${PRODUCT_BASELINE_SHA.slice(0, 7)}`);
   const base = ['--root', ROOT, '--output', output, '--product-baseline', PRODUCT_BASELINE_SHA,
     '--target-sha', PRODUCT_BASELINE_SHA, '--audit-tooling-sha', 'a'.repeat(40),
     '--mode', 'baseline', '--run-tests'];
@@ -603,7 +603,7 @@ test('path containment handles prefix traps and different Windows volumes', () =
 });
 
 test('public build and mutation JSON flags are removed from the audit CLI pass path', () => {
-  const output = path.join(os.tmpdir(), '2026-08-09-123456-88ba118');
+  const output = path.join(os.tmpdir(), `2026-08-09-123456-${PRODUCT_BASELINE_SHA.slice(0, 7)}`);
   const base = ['--root', ROOT, '--output', output, '--product-baseline', PRODUCT_BASELINE_SHA,
     '--target-sha', PRODUCT_BASELINE_SHA, '--audit-tooling-sha', 'a'.repeat(40),
     '--mode', 'baseline', '--run-tests'];
@@ -1092,6 +1092,105 @@ test('Gradle launcher executes through the platform-safe wrapper contract', () =
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
+});
+
+test('A3 resolves quoted-argument handlers, comment apostrophes, member calls and bindingless form controls', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a3.mjs')).href);
+  // Every handler below is genuinely defined; none may be reported unresolved.
+  const script = [
+    'function llKey(k){ return k; }',
+    'function afterComment(){',
+    "  /* Union the central Brand Master, mirrors Stock's own brands: '' / 'titanworld' */",
+    '  return 1;',
+    '}',
+    'function usesComment(){ return afterComment(); }'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', [
+      // 1. quoted argument inside a double-quoted handler attribute
+      `<button onclick="llKey('1')">1</button>`,
+      // 2. handler declared after a comment containing an odd number of apostrophes
+      `<button onclick="usesComment()">C</button>`,
+      // 3. qualified/member call — the method is not a top-level handler
+      `<button onclick="if(window.SaagarReport)SaagarReport.openHub()">Hub</button>`,
+      // 4. form value controls with no binding at all
+      '<select id="emFirm"></select>',
+      '<textarea id="emNotes"></textarea>'
+    ].join('\n')],
+    ['www/shared/a3-probe.js', script]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({ files, productFiles: files, modules: [],
+    exists: file => sources.has(file), read: file => sources.get(file) || '' });
+  const check = result.checks.find(item => item.id === 'A3-02');
+  const actions = check.metric.inventory.filter(item => item.category === 'visible-action');
+
+  // 1-3: the three buttons are inventoried and none is unresolved.
+  assert.equal(check.metric.unresolvedActionBindings, 0);
+  assert.equal(actions.length, 3);
+
+  const quoted = actions.find(item => item.outcome.bindings
+    .some(binding => binding.referencedHandlers.some(handler => handler.name === 'llKey')));
+  assert.ok(quoted, 'a handler with a quoted argument must resolve');
+
+  const afterComment = actions.find(item => item.outcome.bindings
+    .some(binding => binding.referencedHandlers.some(handler => handler.name === 'usesComment')));
+  assert.ok(afterComment, 'a handler declared after an apostrophe comment must be registered');
+
+  const member = actions.find(item => item.outcome.bindings.some(binding => binding.qualifiedCalls.includes('openHub')));
+  assert.ok(member, 'a member call must be captured as a qualified contract');
+  assert.deepEqual(member.outcome.bindings.flatMap(binding => binding.referencedHandlers), [],
+    'a member method must not be looked up as a top-level handler');
+
+  // 4: bindingless select and textarea are form value controls, not visible actions.
+  assert.equal(actions.filter(item => ['select', 'textarea'].includes(item.outcome.element)).length, 0);
+
+  // A bound select IS still an action.
+  const bound = new Map([['www/index.html', '<select id="s" onchange="llKey(\'x\')"></select>'],
+    ['www/shared/a3-probe.js', script]]);
+  const boundFiles = [...bound.keys()].sort();
+  const boundResult = await module.run({ files: boundFiles, productFiles: boundFiles, modules: [],
+    exists: file => bound.has(file), read: file => bound.get(file) || '' });
+  const boundCheck = boundResult.checks.find(item => item.id === 'A3-02');
+  assert.equal(boundCheck.metric.inventory.filter(item => item.outcome && item.outcome.element === 'select').length, 1);
+  assert.equal(boundCheck.metric.unresolvedActionBindings, 0);
+});
+
+test('A3-02 is vetoed by capability id ambiguity but never by an unresolved binding', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a3.mjs')).href);
+  const evaluate = async shell => {
+    const sources = new Map([['www/index.html', shell],
+      ['www/shared/a3-veto.js', 'function fnA(){ return 1; }\nfunction fnB(){ return 2; }']]);
+    const files = [...sources.keys()].sort();
+    const result = await module.run({ files, productFiles: files, modules: [],
+      exists: file => sources.has(file), read: file => sources.get(file) || '' });
+    return result.checks.find(item => item.id === 'A3-02');
+  };
+
+  // An unresolvable handler is evidence only: it must never enter blockingCauses.
+  const unresolved = await evaluate('<button onclick="totallyUndefinedFn()">Go</button>');
+  assert.ok(unresolved.metric.unresolvedActionBindings > 0);
+  assert.ok(!unresolved.metric.blockingCauses.includes('CAPABILITY_ID_CONFLICT'));
+  assert.equal(unresolved.metric.conflictingIds, 0);
+  assert.ok(unresolved.evidence.some(item => item.code === 'ACTION_HANDLER_BINDING_UNRESOLVED'),
+    'an unresolved binding must still be reported as evidence');
+
+  // Two elements with identical identity but different outcomes DO veto the verdict.
+  const conflicting = await evaluate(
+    '<button onclick="fnA()">Save</button>\n<button onclick="fnB()">Save</button>');
+  assert.ok(conflicting.metric.conflictingIds > 0);
+  assert.ok(conflicting.metric.blockingCauses.includes('CAPABILITY_ID_CONFLICT'));
+  assert.equal(conflicting.result, 'unmeasured');
+  assert.match(conflicting.notes, /not measurable/);
+  assert.ok(conflicting.evidence.some(item => item.code === 'CAPABILITY_ID_CONFLICT'));
+
+  // Conflict-deciding evidence can never be crowded out by unresolved rows.
+  const many = Array.from({ length: 80 }, (_, index) => `<button onclick="missing${index}()">B${index}</button>`).join('\n');
+  const flooded = await evaluate(`${many}\n<button onclick="fnA()">Save</button>\n<button onclick="fnB()">Save</button>`);
+  assert.ok(flooded.metric.unresolvedActionBindings >= 80);
+  assert.ok(flooded.evidence.some(item => item.code === 'CAPABILITY_ID_CONFLICT'),
+    'the conflict must survive an evidence array flooded with unresolved bindings');
+  assert.ok(flooded.evidence.some(item => item.code === 'UNRESOLVED_ACTION_BINDING_EVIDENCE_TRUNCATED'));
 });
 
 test('A3 visible action identity survives a handler swap while its bound outcome changes', async () => {
@@ -1848,7 +1947,7 @@ test('the closure addendum is required audit tooling and its absence is rejected
 test('committing the closure addendum cannot move the 295-file product fingerprint', () => {
   // Freeze blocker, 2026-08-09: the addendum was classified as a product file, so
   // exit-sequence step 12 (commit it) would have broken step 10/17's exact-equality
-  // check against anchor 88ba118 by pushing the count 295 -> 296.
+  // check against the product anchor by pushing the count 295 -> 296.
   const addendum = 'docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2026-08-09.md';
   assert.equal(isProductPath(addendum), false);
   assert.equal(isProductPath('docs/audit/AUDIT-PROGRAM-v1.md'), false);

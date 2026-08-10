@@ -8,11 +8,24 @@
 
 ### 1.1 Product scope
 
-- Product anchor: `88ba11842613f29173f436a39ca60f12b33e5085`.
+- Product anchor: `f4da822378047b2fca5178953de079fa60d2d894` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see §1.3).
 - Android/offline application, native overrides, web application, tests, build controls and current authoritative documentation.
 - Includes `retail-etp-core-v1` for R003/R013/R022/R025.
 - Excludes PHP/server work, Service ETP and unbuilt E2–E6 presentation.
 - External real workbooks are identified only by safe hash and aggregate metadata. The audit never copies workbook bytes, rows, headers or raw PII.
+
+### 1.3 Product anchor history
+
+| Anchor | From | Reason |
+|---|---|---|
+| `88ba11842613f29173f436a39ca60f12b33e5085` | 2026-08-09 | Original frozen pre-migration snapshot. |
+| `f4da822378047b2fca5178953de079fa60d2d894` | 2026-08-10 | Re-anchored after 38 inert `data-action` attributes disambiguated 25 conflicting A3-02 capability IDs. |
+
+The anchor is the frozen **pre-migration** product snapshot, and the tooling and baseline gates require an exact product-fingerprint match against it, so any product change forces an explicit re-anchor decision rather than silent drift.
+
+Re-anchoring on 2026-08-10 was justified because the change is migration **preparation**, not migration: at `88ba118` the acceptance oracle was broken — A3-02 was `unmeasured` on 23 conflicting capability IDs, so one ID could map to several different behaviours and a before/after comparison could not have proved anything. The new anchor is the same product with a working oracle (A3-02 `pass`, 0 conflicts).
+
+Baseline evidence taken against `88ba118` (`verification/audit/2026-08-10-115208-7871e57`, run status `complete-with-findings-or-gaps`) remains valid history for that commit but is **superseded** as the comparison baseline. Comparison runs must use evidence produced against the current anchor.
 
 ### 1.2 Authority order
 
@@ -36,7 +49,7 @@ Every run records:
 - a sanitized semantic invocation: command name and normalized options, with target/output paths replaced and external inputs represented only by safe metadata;
 - start/end timestamps and elapsed time.
 
-The product fingerprint covers product-relevant tracked paths and excludes only audit control/evidence paths. The tooling commit must prove its product fingerprint equals the fingerprint at `88ba118`.
+The product fingerprint covers product-relevant tracked paths and excludes only audit control/evidence paths. The tooling commit must prove its product fingerprint equals the fingerprint at the product anchor.
 
 If the runner changes, increment its version and rerun the pre-migration baseline. Results from different runner versions are not directly comparable.
 
@@ -166,7 +179,7 @@ Primary artefact: deterministic blast-radius matrix.
 ### A3 — Semantic capability inventory
 
 - **A3-01:** internal function inventory; informational and expected to change.
-- **A3-02:** stable semantic capabilities covering routes, visible actions, permissions, persisted outcomes and failure posture; measurement failure P1.
+- **A3-02:** stable semantic capabilities covering routes, visible actions, permissions, persisted outcomes and failure posture; measurement failure P1. The verdict is decided by **ID stability and uniqueness only** — a duplicate ID carrying a different outcome, an empty category, an actionless module or an overflowed inventory makes the inventory unmeasurable, and `metric.blockingCauses` names exactly which applied. **Unresolved action bindings do not decide the verdict**; they are reported as bounded evidence (`ACTION_HANDLER_BINDING_UNRESOLVED`) and as `metric.unresolvedActionBindings`. Binding resolution is heuristic static discovery over inline handlers, aliases and delegation and cannot be completed without full JavaScript lexing, so requiring zero unresolved bindings made a mandatory gate permanently unsatisfiable and masked the ID-stability signal the check exists to provide. Owner decision, 2026-08-10. Capability IDs derive from tag, type, key and stable attributes and never from the handler, so an unresolved binding cannot affect ID identity.
 - **A3-03:** DOM host/reference reconciliation; a definite missing host is P0.
 - **A3-04:** defined-never-referenced candidates; informational.
 - **A3-05:** documented capability without implementation is P1.
@@ -265,7 +278,7 @@ Comparison approval is not a generic allowlist. If supplied, it must be one iden
     "auditToolingSha": "<40-hex frozen tooling commit>",
     "baselineManifestSha256": "<64-hex baseline EVIDENCE-MANIFEST hash>",
     "baselineTargetSha": "<40-hex baseline target>",
-    "productBaselineSha": "88ba11842613f29173f436a39ca60f12b33e5085",
+    "productBaselineSha": "f4da822378047b2fca5178953de079fa60d2d894",
     "targetSha": "<40-hex comparison target>"
   },
   "migrationScope": {
@@ -326,7 +339,7 @@ The audit measures and recommends. It does not remediate product code.
 1. Commit this reviewed program and the current handoff above `88ba118`.
 2. Implement all A1–A11 checks and runner contract.
 3. Test and freeze the tooling in a separate commit.
-4. Verify the tooling commit has the identical product fingerprint as `88ba118`.
+4. Verify the tooling commit has the identical product fingerprint as the product anchor.
 5. Run the complete audit from an isolated clean snapshot.
 6. Commit and push immutable baseline evidence separately.
 7. Consolidate findings.
@@ -343,7 +356,7 @@ $auditOutput = Join-Path ([System.IO.Path]::GetTempPath()) ((Get-Date -Format 'y
 node scripts/audit/run.mjs `
   --root (Get-Location).Path `
   --output $auditOutput `
-  --product-baseline 88ba11842613f29173f436a39ca60f12b33e5085 `
+  --product-baseline f4da822378047b2fca5178953de079fa60d2d894 `
   --target-sha $targetSha `
   --audit-tooling-sha $targetSha `
   --mode baseline `
@@ -359,7 +372,7 @@ The comparison run uses the migration target's exact `HEAD` for `--target-sha`, 
 In outline, after setting `$targetSha`, `$auditToolingSha`, `$baselineEvidence` and a fresh external `$auditOutput`:
 
 ```powershell
-node scripts/audit/run.mjs --root (Get-Location).Path --output $auditOutput --product-baseline 88ba11842613f29173f436a39ca60f12b33e5085 --target-sha $targetSha --audit-tooling-sha $auditToolingSha --mode comparison --baseline-evidence $baselineEvidence --run-tests
+node scripts/audit/run.mjs --root (Get-Location).Path --output $auditOutput --product-baseline f4da822378047b2fca5178953de079fa60d2d894 --target-sha $targetSha --audit-tooling-sha $auditToolingSha --mode comparison --baseline-evidence $baselineEvidence --run-tests
 ```
 
 ## 10. Explicit non-claims

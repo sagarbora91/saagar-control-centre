@@ -3,6 +3,7 @@ import { auditResult, makeCheck, sha256 } from '../lib.mjs';
 
 const MAX_FUNCTIONS = 4000;
 const MAX_CAPABILITIES = 2500;
+const MAX_UNRESOLVED_EVIDENCE = 50;
 const MAX_HOSTS = 5000;
 
 function lineAt(text, offset) {
@@ -19,9 +20,16 @@ function slug(value) {
   return normalized || `h-${sha256(String(value || '')).slice(0, 16)}`;
 }
 
+/* The value is read with the OPPOSITE quote allowed inside it. A single
+   character class such as ([^"']*) cannot express that, and silently returned
+   '' for every value containing the other quote — which in this product means
+   almost every real inline handler, because handlers take string arguments:
+   onclick="llKey('1')" resolved to no binding at all. `handlerStrippedAttributes`
+   below already used the correct alternation; this is the same idiom. */
 function attribute(tag, name) {
-  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(["'])([^"']*)\\1`, 'i'));
-  return match ? match[2].trim() : '';
+  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+  const value = match ? (match[1] !== undefined ? match[1] : match[2]) : '';
+  return value.trim();
 }
 
 function maskElementContent(source, names) {
@@ -56,6 +64,11 @@ function normalizeExpression(value) {
     .replace(/\s+/g, ' ').replace(/;+$/, '').trim();
 }
 
+/* Comments are skipped. Without this an apostrophe inside a comment — English
+   possessives and quoted words are common, e.g. "Stock's own brands" or
+   "'titanworld'" — opened a phantom string that consumed the rest of the scan.
+   matchingBrace then returned -1 and handlerRegistry silently dropped that
+   function, so genuinely defined handlers were reported as unresolved. */
 function matchingBrace(source, open) {
   let depth = 0, quote = '', escaped = false;
   for (let index = open; index < source.length; index += 1) {
@@ -64,6 +77,18 @@ function matchingBrace(source, open) {
       if (escaped) escaped = false;
       else if (character === '\\') escaped = true;
       else if (character === quote) quote = '';
+      continue;
+    }
+    if (character === '/' && source[index + 1] === '*') {
+      const end = source.indexOf('*/', index + 2);
+      if (end < 0) return -1;
+      index = end + 1;
+      continue;
+    }
+    if (character === '/' && source[index + 1] === '/') {
+      const end = source.indexOf('\n', index + 2);
+      if (end < 0) return -1;
+      index = end;
       continue;
     }
     if (character === "'" || character === '"' || character === '`') { quote = character; continue; }
@@ -128,22 +153,42 @@ function handlerRegistry(context) {
 }
 
 const NON_HANDLER_CALLS = new Set(['if', 'for', 'while', 'switch', 'catch', 'function', 'return',
-  'preventDefault', 'stopPropagation', 'trim', 'toLowerCase', 'toUpperCase', 'String', 'Number', 'Boolean']);
+  'preventDefault', 'stopPropagation', 'trim', 'toLowerCase', 'toUpperCase', 'String', 'Number', 'Boolean',
+  /* Literals and operators can precede '(' in a real expression and are never
+     handler names: onclick="x ? f() : null" previously yielded 'null'. */
+  'null', 'undefined', 'true', 'false', 'typeof', 'void', 'delete', 'new', 'in', 'of', 'else', 'do', 'try']);
+
+/* A qualified call names a contract on another object — SaagarReport.openHub(),
+   document.getElementById(...).click(). Its method name is NOT a top-level
+   handler and must not be looked up as one; doing so reported working controls
+   as unresolved. The qualified names are still captured, so a change to the
+   called contract remains visible to before/after comparison. */
+function handlerNames(normalized) {
+  const bare = new Set();
+  const qualified = new Set();
+  for (const match of normalized.matchAll(/(\.\s*)?\b([A-Za-z_$][\w$]*)\s*(?=\()/g)) {
+    if (match[1]) { qualified.add(match[2]); continue; }
+    if (!NON_HANDLER_CALLS.has(match[2])) bare.add(match[2]);
+  }
+  return { bare, qualified };
+}
 
 function eventBinding(event, kind, expression, handlers, native = false) {
   const normalized = normalizeExpression(expression);
   const names = new Set();
+  let qualifiedCalls = [];
   if (!native) {
-    for (const match of normalized.matchAll(/\b([A-Za-z_$][\w$]*)\s*(?=\()/g)) {
-      if (!NON_HANDLER_CALLS.has(match[1])) names.add(match[1]);
-    }
+    const extracted = handlerNames(normalized);
+    for (const name of extracted.bare) names.add(name);
+    qualifiedCalls = [...extracted.qualified].sort();
     if (/^[A-Za-z_$][\w$]*$/.test(normalized)) names.add(normalized);
   }
   const unknown = [...names].filter(name => !handlers.has(name)).sort();
   const referencedHandlers = [...names].filter(name => handlers.has(name)).sort()
     .flatMap(name => handlers.get(name).map(bodySha256 => ({ name, bodySha256 })));
-  return { event, kind, expressionSha256: sha256(normalized), referencedHandlers,
-    unresolved: !native && (unknown.length > 0 || (/^[A-Za-z_$][\w$]*$/.test(normalized) && !referencedHandlers.length)) };
+  return { event, kind, expressionSha256: sha256(normalized), referencedHandlers, qualifiedCalls,
+    unresolved: !native && (unknown.length > 0 ||
+      (/^[A-Za-z_$][\w$]*$/.test(normalized) && !referencedHandlers.length)) };
 }
 
 function addIndexedBinding(index, id, binding) {
@@ -156,11 +201,34 @@ function selectorEventBindings(context, handlers) {
   const index = new Map();
   for (const surface of semanticSurfaces(context)) for (const segment of scriptSegments(surface.file, surface.source)) {
     const source = segment.source;
-    const aliases = new Map();
-    for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*document\s*\.\s*(getElementById|querySelector)\s*\(\s*(['"])([^'"]+)\3\s*\)/g)) {
-      const id = match[2] === 'querySelector' ? (/^#([A-Za-z][\w:.-]*)$/.exec(match[4])?.[1] || '') : match[4];
-      if (id) aliases.set(match[1], id);
+    /* An alias binds only from its own assignment until that identifier is
+       assigned again. A single Map keyed by name attributed EVERY later
+       `name.addEventListener(...)` in the segment to the first element the name
+       ever referred to — and short names such as `b` are reused constantly, so
+       unrelated handlers were attributed to whichever element happened to be
+       first. Assignments to something other than a document lookup invalidate
+       the alias rather than silently keeping the stale element. */
+    const aliasTimeline = new Map();
+    const noteAlias = (name, offset, id) => {
+      if (!aliasTimeline.has(name)) aliasTimeline.set(name, []);
+      aliasTimeline.get(name).push({ offset, id });
+    };
+    for (const match of source.matchAll(/\b(?:const|let|var\s+|)\s*([A-Za-z_$][\w$]*)\s*=\s*([^;\r\n]{0,200})/g)) {
+      const selector = /^document\s*\.\s*(getElementById|querySelector)\s*\(\s*(['"])([^'"]+)\2\s*\)/.exec(match[2]);
+      if (!selector) { noteAlias(match[1], match.index, ''); continue; }
+      const id = selector[1] === 'querySelector' ? (/^#([A-Za-z][\w:.-]*)$/.exec(selector[3])?.[1] || '') : selector[3];
+      noteAlias(match[1], match.index, id);
     }
+    for (const entries of aliasTimeline.values()) entries.sort((a, b) => a.offset - b.offset);
+    const aliasAt = (name, offset) => {
+      const entries = aliasTimeline.get(name);
+      if (!entries) return '';
+      let current = '';
+      for (const entry of entries) { if (entry.offset > offset) break; current = entry.id; }
+      return current;
+    };
+    const aliases = new Map();
+    for (const [name, entries] of aliasTimeline) if (entries.some(entry => entry.id)) aliases.set(name, name);
     const directAdd = [
       /document\s*\.\s*getElementById\s*\(\s*(['"])([^'"]+)\1\s*\)\s*\.\s*addEventListener\s*\(\s*(['"])(click|change|submit|input)\3\s*,\s*([^,\)\r\n]{1,500})/g,
       /document\s*\.\s*querySelector\s*\(\s*(['"])#([A-Za-z][\w:.-]*)\1\s*\)\s*\.\s*addEventListener\s*\(\s*(['"])(click|change|submit|input)\3\s*,\s*([^,\)\r\n]{1,500})/g
@@ -175,13 +243,13 @@ function selectorEventBindings(context, handlers) {
     for (const pattern of directOn) for (const match of source.matchAll(pattern)) {
       addIndexedBinding(index, match[2], eventBinding(match[3], 'event-property', match[4], handlers));
     }
-    for (const [alias, id] of aliases) {
+    for (const alias of aliases.keys()) {
       const escaped = escapeRegExp(alias);
       const add = new RegExp(`\\b${escaped}\\s*\\.\\s*addEventListener\\s*\\(\\s*(['"])(click|change|submit|input)\\1\\s*,\\s*([^,\\)\\r\\n]{1,500})`, 'g');
-      for (const match of source.matchAll(add)) addIndexedBinding(index, id,
+      for (const match of source.matchAll(add)) addIndexedBinding(index, aliasAt(alias, match.index),
         eventBinding(match[2], 'alias-addEventListener', match[3], handlers));
       const assign = new RegExp(`\\b${escaped}\\s*\\.\\s*on(click|change|submit|input)\\s*=\\s*([^;\\r\\n]{1,500})`, 'g');
-      for (const match of source.matchAll(assign)) addIndexedBinding(index, id,
+      for (const match of source.matchAll(assign)) addIndexedBinding(index, aliasAt(alias, match.index),
         eventBinding(match[1], 'alias-event-property', match[2], handlers));
     }
   }
@@ -249,6 +317,12 @@ function visibleActions(surface, handlers, indexedBindings) {
     }
     if (tag === 'a' && !href && attribute(attrs, 'role').toLowerCase() !== 'button' && !bindings.length) continue;
     if (tag === 'input' && !/^(?:button|submit|reset|image)$/.test(type) && !bindings.length) continue;
+    /* A select or textarea carrying no event binding is a form value control
+       read at submit time, exactly like the bindingless non-button input
+       excluded on the line above. Including one and excluding the other was an
+       inconsistency that reported ordinary form fields as unbound actions. A
+       select that DOES carry a binding is still inventoried as an action. */
+    if ((tag === 'select' || tag === 'textarea') && !bindings.length) continue;
     const contracts = bindings.map(({ unresolved: ignored, ...binding }) => binding)
       .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
     const signature = `${tag}\0${type}\0${identity.key}\0${identity.stableAttributesSha256}`;
@@ -440,8 +514,28 @@ export async function run(context) {
   const documented = documentedClaims(context);
   const capabilityIds = new Set(semantic.capabilities.map(item => item.capabilityId));
   const missingDocumented = documented.claims.filter(item => !capabilityIds.has(item.capabilityId));
-  const semanticIncomplete = semantic.overflow || semantic.conflicts.length > 0 || semantic.missingCategories.length > 0 ||
-    semantic.actionlessModules.length > 0 || semantic.unresolvedActions.length > 0;
+  /* A3-02's verdict is about the STABILITY AND UNIQUENESS OF CAPABILITY IDS,
+     because that inventory is the before/after acceptance oracle for the
+     migration. Anything that makes an ID ambiguous, missing or truncated still
+     blocks: an overflowed inventory, a duplicate ID carrying a different
+     outcome, an empty category, or a module with no actions at all.
+
+     An unresolved action BINDING does not affect ID identity — IDs derive from
+     tag, type, key and stable attributes, never from the handler. Binding
+     resolution is heuristic static discovery over inline handlers, aliases and
+     delegation, and it cannot be completed without full JavaScript lexing;
+     requiring zero unresolved bindings made a mandatory gate permanently
+     unsatisfiable and hid the ID-stability signal it exists to provide.
+     Unresolved bindings are therefore reported as bounded evidence and as an
+     explicit metric, never silently dropped, but they no longer veto the
+     verdict. Owner decision, 2026-08-10. */
+  const semanticBlockingCauses = [
+    ...(semantic.overflow ? ['CAPABILITY_INVENTORY_LIMIT_EXCEEDED'] : []),
+    ...(semantic.conflicts.length ? ['CAPABILITY_ID_CONFLICT'] : []),
+    ...(semantic.missingCategories.length ? ['CAPABILITY_CATEGORY_EMPTY'] : []),
+    ...(semantic.actionlessModules.length ? ['MODULE_ACTION_INVENTORY_EMPTY'] : [])
+  ];
+  const semanticIncomplete = semanticBlockingCauses.length > 0;
   const documentedResult = documented.unavailable.length || documented.claims.length === 0
     ? 'unmeasured' : missingDocumented.length ? 'fail' : 'pass';
 
@@ -462,16 +556,28 @@ export async function run(context) {
         categories: semantic.categoryCounts, inventory: semantic.capabilities.slice(0, MAX_CAPABILITIES),
         inventorySha256: sha256(JSON.stringify(semantic.capabilities)), actionlessModules: semantic.actionlessModules,
         missingCategories: semantic.missingCategories, conflictingIds: semantic.conflicts.length,
-        unresolvedActionBindings: semantic.unresolvedActions.length },
-      rule: 'Generate stable capability IDs for routes, visible actions, permissions, persisted outcomes and failure posture; every action outcome is bound to a deterministic native or script event contract.',
+        unresolvedActionBindings: semantic.unresolvedActions.length,
+        /* Exactly why the verdict is unmeasured. Empty means the inventory is
+           stable and unique; unresolved bindings never appear here. */
+        blockingCauses: semanticBlockingCauses },
+      rule: 'Generate stable, unique capability IDs for routes, visible actions, permissions, persisted outcomes and failure posture. A duplicate ID carrying a different outcome, an empty category, an actionless module or an overflowed inventory is not measurable. Unresolved action bindings are reported as evidence and do not decide the verdict.',
       evidence: [
         ...semantic.conflicts.map(item => ({ path: item.path, code: 'CAPABILITY_ID_CONFLICT', capabilityId: item.capabilityId })),
         ...semantic.actionlessModules.map(moduleId => ({ code: 'MODULE_ACTION_INVENTORY_EMPTY', moduleId })),
         ...semantic.missingCategories.map(category => ({ code: 'CAPABILITY_CATEGORY_EMPTY', category })),
-        ...semantic.unresolvedActions,
+        /* Bounded so that verdict-deciding rows can never be crowded out of the
+           evidence array. A previous run reported 23 conflicts in the metric but
+           surfaced only 10, because unresolved rows consumed the shared cap. */
+        ...semantic.unresolvedActions.slice(0, MAX_UNRESOLVED_EVIDENCE),
+        ...(semantic.unresolvedActions.length > MAX_UNRESOLVED_EVIDENCE
+          ? [{ code: 'UNRESOLVED_ACTION_BINDING_EVIDENCE_TRUNCATED',
+            unresolved: semantic.unresolvedActions.length, shown: MAX_UNRESOLVED_EVIDENCE }]
+          : []),
         ...(semantic.overflow ? [{ code: 'CAPABILITY_INVENTORY_LIMIT_EXCEEDED', capabilities: semantic.capabilities.length, limit: MAX_CAPABILITIES }] : [])
       ],
-      notes: semanticIncomplete ? 'Static evidence was incomplete, so semantic capability coverage is not reported as passed.' : 'Capability IDs describe behavior-facing surfaces; internal function names are deliberately excluded.'
+      notes: semanticIncomplete
+        ? `The capability inventory is not measurable: ${semanticBlockingCauses.join(', ')}.`
+        : `Capability IDs describe behavior-facing surfaces; internal function names are deliberately excluded. ${semantic.unresolvedActions.length} action binding(s) could not be statically resolved; they are reported as evidence and do not affect ID stability.`
     }),
     makeCheck({
       id: 'A3-03', title: 'DOM host/reference reconciliation',
