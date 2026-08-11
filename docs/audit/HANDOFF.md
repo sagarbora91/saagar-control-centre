@@ -1,31 +1,55 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-11 (Asia/Kolkata)
+**Updated:** 2026-08-12 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
-**Status:** audit runner **frozen**; **Gate 0 baseline complete and committed**. Modular HTML migration Phase 1 is unblocked and awaits owner authorization.
+**Status:** Modular HTML Phases 1–3 are implemented and published as a draft candidate. API 23 emulator engineering acceptance passed. A2-04 and aggregate migration-test coverage are resolved. The exact 106-row capability ledger is complete and test-enforced. **Post-migration comparison gate C-02 remains blocked only on identity-bound owner approval and the committed-target comparison run; do not merge PR #5 yet.**
 
-> ## ⚑ RESUME HERE — Modular HTML migration, Phase 1
+> ## ⚑ RESUME HERE — reconcile the post-migration audit candidate
 >
-> **Plan:** `docs/MODULAR-MIGRATION-ROADMAP-2026-08-10.md` — one gate and three phases.
-> Gate 0 is **closed**. Phase 1 (shared spine) is next and needs owner authorization
-> to begin, per closure addendum step 16.
+> **Plan:** `docs/MODULAR-MIGRATION-ROADMAP-2026-08-10.md` — Gate 0 plus three implementation phases.
+> Do not restart the migration. Review the committed candidate, reconcile the exact
+> audit deltas below, rerun the controlled comparison, and only then consider merge.
 >
-> | Tripwire | Expected |
+> | Tripwire | Current fact |
 > |---|---|
-> | Branch / HEAD | `agent/etp-retail-runtime` / `b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb` |
-> | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` (Gate 0 anchor; history in `AUDIT-PROGRAM-v1.md` §1.3) |
+> | Branch / HEAD | `agent/modular-phase1-shared-spine-v2` / `3b2c6b08f5fe70a1d4e8e3747dd54fe138acf66a` |
+> | Upstream | `github/agent/modular-phase1-shared-spine-v2`; local and upstream SHAs match |
+> | Draft PR | [#5 Complete modular HTML migration and API 23 support](https://github.com/sagarbora91/saagar-control-centre/pull/5), targeting `main` |
+> | Gate 0 product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` (frozen pre-migration authority) |
 > | Gate 0 baseline evidence | `verification/audit/2026-08-11-113428-b9f04b5` |
-> | Runner self-test | **58/58**, zero fail/cancelled/skipped/todo |
-> | Offline product suite | **492/492** |
-> | Canonical audit modules | 24 under `scripts/audit/**/*.mjs`, all `node --check` clean |
-> | Tracked product files | **296**, fingerprint equal to the anchor |
-> | Capability inventory (the oracle) | **655 capabilities, 0 conflicts, A3-02 `pass`** |
-> | Temporary patch hold | **59** — 11 in-repo `scripts/audit/final-*.patch`, 48 external `controlled-*.patch` |
+> | Gate 0 capability oracle | **655 capabilities / 0 conflicts** |
+> | Current direct A3-02 measurement | **660 capabilities / 0 conflicts**, `pass` uniqueness but **+5 versus Gate 0** using the restored frozen analyser semantics |
+> | Current direct A2 measurement | A2-01 pass; A2-03 pass; **A2-04 pass (0 duplicated constants)**; A2-05 pass |
+> | Product regression | `npm run test:offline` passes; canonical modular aggregate is **86/86**, including all migration contracts and the exact capability ledger |
+> | Capability review ledger | `verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json`: **106 exact pending approvals**, deterministic delta SHA-256 `0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a` |
+> | Aggregate coverage | resolved: Phase 1 shared spine, shell frame controller and capability-ledger tests are declared by `test:modular` and therefore `test:offline` |
+> | Audit self-test on candidate | **55/58**: tracked-test registry passes. The three remaining failures are the frozen tooling-commit/product-anchor isolation assertions; the migration candidate correctly has a different product fingerprint from Gate 0. |
+> | API 23 emulator | clean install, dashboard, 11-module grid, Stock Register, restart persistence and logcat smoke passed |
+> | Seeded APK | `SaagarCC-C1-DemoData-2Years-v2.9.apk`, 6,981,352 bytes, SHA-256 `24D96B698FC66D50D5C5FB5077BB07D5ED9AB35769F9AD1BBF76448E1ADF8894`; debug-signed v1/v2 |
 >
-> **The single rule that governs the migration:** the capability inventory must come
-> out **exactly** 655 / 0 conflicts. Everything else compares by direction; this one
-> is exact equality, and it is the only mechanism that catches a control silently
-> lost while markup moves between files.
+> **The migration rule remains the frozen Gate 0 rule:** the capability inventory
+> must be exactly **655 / 0 conflicts** unless an approved comparison proves each
+> intentional delta. The earlier 659/+4 result used a candidate-only analyser
+> suppression and was invalid. With the frozen analyser restored the product-only
+> result is 660/+5; see `verification/MODULAR-CAPABILITY-DELTA-RECONCILIATION-2026-08-12.md`.
+
+### Exact resume order
+
+1. Keep PR #5 in draft; do not merge or relabel emulator evidence as physical-device acceptance.
+2. Review `verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json` and explicitly approve or reject its exact 106 rows. Do not infer approval from implementation or test success.
+3. Bind an approval envelope to the frozen tooling SHA, baseline manifest, baseline target, product anchor and final committed candidate target SHA.
+4. Run the isolated committed-target comparison audit with the external approval envelope and verify C-02 reports 106 approved / 0 unapproved / 0 stale / 0 invalid.
+5. Keep the Gate 0 product anchor frozen; do not re-anchor the migration candidate in place of performing the before/after comparison.
+6. Update the draft PR with the comparison evidence. Physical-device owner acceptance and production signing remain separate release gates.
+
+### Handoff-update validation
+
+- `git diff --check`: pass (Windows LF/CRLF conversion warning only).
+- `npm run test:offline`: pass after the A2-04 fix, identity refresh, and aggregate coverage update.
+- `npm run test:modular`: 86/86 pass.
+- `node --test tests/phase1-shared-spine.test.mjs`: 6/6 pass; it now enforces current 660/0 plus the exact pending 106-row comparison ledger instead of asserting false equivalence with 655.
+- Direct current audit measurement: A3-02 660 capabilities / 0 conflicts with frozen analyser semantics; A2-04 pass with 0 duplicates; A8-05 0 unapproved calls / 42 unresolved dynamic targets.
+- `node --test tests/whole-app-audit-runner.test.mjs`: 55/58 pass. The registry issue is closed; three frozen tooling/product-anchor isolation assertions reject using the changed migration product as the pre-migration tooling anchor. No result is represented as a complete comparison pass.
 
 ## Gate 0 baseline — the frozen "before"
 
@@ -62,13 +86,17 @@ release acceptance, and 19 fails plus 15 unmeasured remain open gates.
 
 | Item | Current fact |
 |---|---|
-| Product branch | `agent/etp-retail-runtime`, pushed to `origin` |
-| Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
+| Candidate branch | `agent/modular-phase1-shared-spine-v2`, pushed to GitHub |
+| Candidate commit | `3b2c6b08f5fe70a1d4e8e3747dd54fe138acf66a` |
+| Draft review | PR [#5](https://github.com/sagarbora91/saagar-control-centre/pull/5); **do not merge until audit reconciliation closes** |
+| Frozen Gate 0 product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Audit tooling SHA | `b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb` |
 | Comparison baseline | `verification/audit/2026-08-11-113428-b9f04b5` |
 | Superseded baselines | `2026-08-10-115208-7871e57` (anchor `88ba118`), `2026-08-10-130643-57507ef` (anchor `f4da822`) — valid history, not comparison inputs |
+| Post-migration comparison | **not yet validly closed**; all 106 deltas are exact and test-enforced, but owner approval and the identity-bound committed-target comparison are still pending |
 | PHP/platform work | excluded until fresh owner authorization |
-| Modular HTML | external-file migration complete; M2/M3/M4/M6 open — see the roadmap |
+| Modular HTML | Phases 1–3 implemented; engineering candidate committed/pushed; audit/merge/physical acceptance still open |
+| API 23 | emulator engineering acceptance recorded in `verification/API23-EMULATOR-ACCEPTANCE-2026-08-11.md`; not physical-device acceptance |
 
 ## Open P0s and their dispositions
 
@@ -79,8 +107,8 @@ Full reasoning in `docs/audit/P0-DECISIONS-2026-08-10.md`.
 | A4-03 storage classification contradiction | **fixed**, passes |
 | A4-02 artifact classification | 98 → 73; remainder is runtime-computed filenames, an analyser limit |
 | A8-02 export policy bypass | 9 → 2; both remaining are guard shapes the analyser cannot prove |
-| A8-03 fail-open authentication | **signed design, not a defect.** `SaagarReauth` must ALLOW rather than brick; remedy is moving re-auth onto the Slice D DOM keypad — device-gated, Phase 3 |
-| A8-05 unapproved remote runtime | real risk, 47 wildcard `postMessage` calls forming the shell↔module backbone — device-gated, Phase 1 |
+| A8-03 fail-open authentication | Phase 3 moved reauthentication onto the Slice D DOM keypad. Current aggregate static result still fails with 10 fail-open-shaped and 237 unresolved paths; this needs comparison/classification and is not claimed closed. |
+| A8-05 unapproved remote runtime | Phase 1 removed the 47 owned wildcard shell↔module calls. Current direct metric is 0 unapproved calls and 42 unresolved dynamic targets, so the conservative verdict remains `unmeasured`. |
 
 A real security defect was found and fixed while working these: in the
 evidence-file export path an empty `catch` swallowed a throwing `authorize()`,
@@ -100,10 +128,11 @@ export (`fccd115`).
 
 ## Audit identity model
 
-1. **Product baseline SHA** — the frozen pre-migration snapshot. The tooling and
-   baseline gates require an exact product-fingerprint match, so **every product
-   change forces an explicit re-anchor**. Four anchors so far; history and
-   reasoning in `AUDIT-PROGRAM-v1.md` §1.3.
+1. **Product baseline SHA** — the frozen pre-migration snapshot. Tooling and
+   baseline runs require its exact product fingerprint. The four historical
+   pre-migration re-anchors and their reasons are in `AUDIT-PROGRAM-v1.md`
+   §1.3; after Gate 0, migration product changes are evaluated by comparison
+   and do not silently move this anchor.
 2. **Audit tooling SHA** — the commit containing the reviewed program and complete
    tested runner. Its product fingerprint must equal the anchor's.
 
@@ -119,21 +148,31 @@ broken something here before:
 1. Regenerate module manifest, golden hashes, MAH-3 and MAH-4 profiles.
 2. Bump the MAH-4 frozen `www` byte total deliberately — that guard exists to
    force acknowledgement of a `www` change.
-3. Run 492/492 offline **and** the 58/58 audit self-test.
-4. **Re-anchor.** A product change without one blocks every future baseline with
-   `AUDIT_TOOLING_PRODUCT_FINGERPRINT_DRIFT`.
-5. Re-baseline, then device-test.
+3. Run `npm run test:offline`; it includes every migration-specific contract,
+   including the shared-spine, frame-controller and capability-ledger tests.
+4. Compare A3-02 against the frozen inventory by identity, not only its `pass`
+   verdict. A unique but changed inventory is still a migration blocker.
+5. During migration, keep the approved Gate 0 anchor frozen and run the
+   identity-bound comparison from a clean committed target. A changed product
+   must not be substituted for the pre-migration baseline.
+6. Device-test the candidate without relabeling emulator evidence as physical
+   acceptance.
 
 Note: `docs/audit/` is audit control **except** `*-CHANGE-CONTRACT-*.md`, which are
 approved product specifications and stay inside the product fingerprint.
 
 ## Open acceptance gates
 
-Ten, all human- or device-owned, none inferable from source tests or emulator
-evidence: owner physical update-in-place smoke; physical API-23/OEM import and
-document-provider evidence; ETP process-death/disk-full/corruption/rotation/
-low-storage evidence; real production native ETP publication; user-facing
-R003/R013 exception treatment; approved PAYMENTTYPE25 mapping; fluent
+Engineering/audit gates now open before merge: obtain explicit owner approval
+for the exact 106-row capability ledger and run the identity-bound
+committed-target comparison audit. Aggregate migration-test coverage and the
+A2-04 duplicate-authority finding are closed.
+
+External release gates remain human- or device-owned and are never inferred from
+source tests or emulator evidence: owner physical update-in-place smoke; physical
+API-23/OEM import and document-provider evidence; ETP process-death/disk-full/
+corruption/rotation/low-storage evidence; real production native ETP publication;
+user-facing R003/R013 exception treatment; approved PAYMENTTYPE25 mapping; fluent
 native-language review; staff UAT; legal review; production signing and release.
 
 ## Authority rule
@@ -147,3 +186,8 @@ disagreement is an audit finding. **`unmeasured` never means `pass`.**
 Earlier branch positions, APK hashes, dirty-tree checkpoints and test totals are
 preserved by Git history and the dated documents under `verification/`. They are
 immutable historical evidence, not current resume instructions.
+
+The Phase 1–3 closure documents were written before publication and therefore
+contain then-accurate statements that commit/push had not occurred. Publication
+later occurred at `3b2c6b0`; this handoff supersedes those statements for current
+resume status without rewriting their historical context.

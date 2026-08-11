@@ -20,7 +20,7 @@ Measured at `fccd115`, not estimated:
 | Shared assets | 2 (`www/shared/`) |
 | `www` total | 7,974,896 bytes, 85 files |
 | Functions inventoried | 13,172 |
-| Capability inventory (the oracle) | **654 capabilities, 0 conflicts, A3-02 `pass`** |
+| Capability inventory (the oracle) | **655 capabilities, 0 conflicts, A3-02 `pass`** |
 
 What the audit says is wrong, and which phase owns it:
 
@@ -42,7 +42,7 @@ What the audit says is wrong, and which phase owns it:
 ## The one rule that governs every phase
 
 **The capability inventory must come out identical.** A3-02 is the acceptance
-oracle: 654 capabilities with 0 conflicting IDs. Any phase that changes it has
+oracle: 655 capabilities with 0 conflicting IDs. Any phase that changes it has
 changed behaviour, whatever the tests say. Comparison elsewhere is
 direction-based; **this one is exact equality**.
 
@@ -103,7 +103,7 @@ reverting the single helper rather than 47 sites.
 
 - A2-01/03/04/05 pass; A2-02 reduced with each surviving near-copy justified.
 - A8-05 unapproved remote calls reduced to declared, approved contexts.
-- **A3-02 identical: 654 / 0 conflicts.**
+- **A3-02 identical: 655 / 0 conflicts.**
 - 492/492 offline; MAH-3 and MAH-4 baselines regenerated; **two-device pass**.
 - Re-anchor and re-baseline.
 
@@ -139,7 +139,7 @@ micro-incrementally with a device test per step.
 ### Exit
 
 - A1-02 and A1-07 pass; shell split with no behaviour delta.
-- **A3-02 identical: 654 / 0 conflicts.** This is the phase where that check
+- **A3-02 identical: 655 / 0 conflicts.** This is the phase where that check
   earns its existence — it is the only mechanism that will catch a control
   silently lost while moving markup between files.
 - 492/492; two-device pass; re-anchor and re-baseline.

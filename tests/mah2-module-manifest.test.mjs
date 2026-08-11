@@ -77,7 +77,7 @@ test('manifest binds both synchronous shared runtimes to local bytes and SHA-256
 
 test('module bridge is a versioned local boundary for shell-owned capabilities', () => {
   const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
-  assert.match(bridge, /var VERSION = 1;/);
+  assert.match(bridge, /var MODULE_BRIDGE_VERSION = 1;/);
   for (const name of ['adminPinCheck', 'ownerSession', 'sharedStorage', 'evidence', 'legal', 'reauth', 'report', 'qmsPolicy', 'photo', 'ensureJsZip']) {
     assert.match(bridge, new RegExp(`\\b${name}: getter`), name);
   }

@@ -2,7 +2,7 @@
   'use strict';
   if (root.SaagarModuleBridge) return;
 
-  var VERSION = 1;
+  var MODULE_BRIDGE_VERSION = 1;
   var parentWindow = null;
   try { parentWindow = root.parent && root.parent !== root ? root.parent : null; } catch (_) {}
 
@@ -17,7 +17,7 @@
     return { enumerable: true, get: read };
   }
 
-  var api = { version: VERSION };
+  var api = { version: MODULE_BRIDGE_VERSION };
   Object.defineProperties(api, {
     waConfig: getter(function () { return parentValue('WA_CFG'); }),
     adminPinCheck: getter(function () { return parentValue('SaagarAdminPinCheck'); }),

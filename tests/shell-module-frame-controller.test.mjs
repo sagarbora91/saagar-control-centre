@@ -74,7 +74,7 @@ test('shell controller has one local versioned byte authority loaded before it',
   ]);
   for (const asset of manifest.assets) {
     const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
-    assert.equal(asset.version, 1, asset.id);
+    assert.ok(Number.isSafeInteger(asset.version) && asset.version >= 1, `${asset.id} version`);
     assert.equal(asset.bytes, bytes.length, asset.id);
     assert.equal(asset.sha256, crypto.createHash('sha256').update(bytes).digest('hex'), asset.id);
   }

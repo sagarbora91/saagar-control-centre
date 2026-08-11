@@ -8,6 +8,7 @@ import { buildContext } from '../scripts/audit/lib.mjs';
 import { run as auditA2 } from '../scripts/audit/audits/a2.mjs';
 import { run as auditA3 } from '../scripts/audit/audits/a3.mjs';
 import { run as auditA8 } from '../scripts/audit/audits/a8.mjs';
+import { buildCapabilityDeltaLedger } from '../scripts/analyze-modular-capability-delta.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const modulesRoot = path.join(root, 'www', 'modules');
@@ -82,9 +83,11 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   }
 });
 
-test('Phase 1 audit exit keeps capability identity and closes owned authority gates', async () => {
+test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {
   const context = buildContext(root);
-  const [a2, a3, a8] = await Promise.all([auditA2(context), auditA3(context), auditA8(context)]);
+  const [a2, a3, a8, ledger] = await Promise.all([
+    auditA2(context), auditA3(context), auditA8(context), buildCapabilityDeltaLedger(root)
+  ]);
   const byId = result => Object.fromEntries(result.checks.map(check => [check.id, check]));
   const a2Checks = byId(a2);
   for (const id of ['A2-01', 'A2-03', 'A2-04', 'A2-05']) assert.equal(a2Checks[id].result, 'pass', id);
@@ -92,8 +95,11 @@ test('Phase 1 audit exit keeps capability identity and closes owned authority ga
   assert.ok(a2Checks['A2-02'].metric.similarityEdges < 1997);
   const capability = byId(a3)['A3-02'];
   assert.equal(capability.result, 'pass');
-  assert.equal(capability.metric.capabilities, 655);
+  assert.equal(capability.metric.capabilities, 660);
   assert.equal(capability.metric.conflictingIds, 0);
+  assert.equal(ledger.baseline.capabilities, 655);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 106);
+  assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);
 });

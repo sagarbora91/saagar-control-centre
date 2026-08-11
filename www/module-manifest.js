@@ -202,8 +202,8 @@
       "id": "module-bridge",
       "version": 1,
       "file": "shared/module-bridge.js",
-      "bytes": 2352,
-      "sha256": "b72b9c8fc909c9c322426d4f7a9fef0e5e6f0ba5d0cb498b6dae096d27cbcec1"
+      "bytes": 2380,
+      "sha256": "584dd7ea16488d1ee791d95a39c43101063d43b4843a40b66bba9400de61d396"
     },
     {
       "id": "module-runtime",
