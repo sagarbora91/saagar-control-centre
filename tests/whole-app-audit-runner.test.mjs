@@ -1972,21 +1972,40 @@ test('the closure addendum is required audit tooling and its absence is rejected
   }
 });
 
-test('committing the closure addendum cannot move the 295-file product fingerprint', () => {
-  // Freeze blocker, 2026-08-09: the addendum was classified as a product file, so
-  // exit-sequence step 12 (commit it) would have broken step 10/17's exact-equality
-  // check against the product anchor by pushing the count 295 -> 296.
+test('committing an audit-control document cannot move the product fingerprint', () => {
+  /* Freeze blocker, 2026-08-09: the closure addendum counted as a product file, so
+     committing it would have broken the anchor's exact-equality check. It RECURRED
+     on 2026-08-10 when P0-DECISIONS-2026-08-10.md was committed and the anchor gate
+     began failing with AUDIT_TOOLING_PRODUCT_FINGERPRINT_DRIFT — which is why the
+     rule is now the whole docs/audit/ prefix instead of a list of named files.
+
+     The count assertion is deliberately RELATIVE. The invariant is that adding an
+     audit-control document does not MOVE the product total; pinning a literal made
+     this fail whenever an unrelated product file was added, which is noise. */
   const addendum = 'docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2026-08-09.md';
-  assert.equal(isProductPath(addendum), false);
-  assert.equal(isProductPath('docs/audit/AUDIT-PROGRAM-v1.md'), false);
-  // The rule is a stable prefix, so the NEXT addendum cannot reintroduce the blocker.
-  assert.equal(isProductPath('docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2027-01-01.md'), false);
-  assert.equal(isProductPath('docs/audit/AUDIT-PROGRAM-v2.md'), true);
+  const controlDocuments = [addendum, 'docs/audit/P0-DECISIONS-2026-08-10.md',
+    'docs/audit/AUDIT-PROGRAM-v1.md', 'docs/audit/HANDOFF.md',
+    'docs/audit/AUDIT-PROGRAM-v1-CLOSURE-ADDENDUM-2027-01-01.md',
+    'docs/audit/SOME-FUTURE-AUDIT-NOTE.md'];
+  for (const file of controlDocuments) assert.equal(isProductPath(file), false, file);
+  // Outside docs/audit/ stays product, including sibling documentation.
+  assert.equal(isProductPath('docs/MODULAR-MIGRATION-ROADMAP-2026-08-10.md'), true);
+  assert.equal(isProductPath('docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md'), true);
+  /* Change contracts live under docs/audit/ but are approved PRODUCT
+     specifications, not audit control. Excluding them would let a behavioural
+     contract change without moving the product fingerprint. */
+  for (const contract of ['docs/audit/D5-STOCK-CHANGE-CONTRACT-2026-08-04.md',
+    'docs/audit/D2-QMS-CHANGE-CONTRACT-2026-07-30.md',
+    'docs/audit/MAH4-MESSAGE-LIFECYCLE-CHANGE-CONTRACT-2026-08-06.md']) {
+    assert.equal(isProductPath(contract), true, contract);
+  }
   const tracked = git(['ls-files', '-z'], null).toString('utf8').split('\0').filter(Boolean)
     .map(value => value.replaceAll('\\', '/'));
-  const withAddendum = [...new Set([...tracked, addendum])].filter(isProductPath);
-  assert.equal(withAddendum.length, 295);
-  assert.equal(commitProductFingerprint(PRODUCT_BASELINE_SHA).fileCount, 295);
+  const baseline = tracked.filter(isProductPath).length;
+  const withControlDocuments = [...new Set([...tracked, ...controlDocuments])].filter(isProductPath);
+  assert.equal(withControlDocuments.length, baseline,
+    'adding audit-control documents must not change the product file count');
+  assert.equal(commitProductFingerprint(PRODUCT_BASELINE_SHA).fileCount, baseline);
 });
 
 test('A7 ignores comment and string decoys while inventorying computed protocol forms', async () => {

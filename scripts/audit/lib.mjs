@@ -10,7 +10,7 @@ export const AUDIT_VERSION = 'saagar-whole-app-audit-v1.0.0';
    product-fingerprint match, so every product change forces an explicit
    re-anchor rather than silent drift. Current anchor is the SEC-08 fail-closed
    fix; 88ba118 and f4da822 are superseded as comparison baselines. */
-export const PRODUCT_BASELINE_SHA = 'fccd115cfefe136ce541331700b5a43b8269e898';
+export const PRODUCT_BASELINE_SHA = '8f96480ec6ddfc99016af43a7369f57a06cb9fd6';
 
 export function posix(value) {
   return String(value).replaceAll('\\', '/');
@@ -53,9 +53,19 @@ export function isAuditControlPath(file) {
   const value = posix(file);
   return value.startsWith('scripts/audit/') ||
     value === 'tests/whole-app-audit-runner.test.mjs' ||
-    value === 'docs/audit/HANDOFF.md' ||
-    AUDIT_PROGRAM_PATTERN.test(value) ||
-    /^docs\/audit\/AUDIT-CONSOLIDATED-STRATEGY-/.test(value) ||
+    /* docs/audit/ is audit control EXCEPT change contracts. Naming individual
+       files was the recurring defect: the U3 freeze blocker was a committed
+       addendum counting as a product file, and it recurred when
+       P0-DECISIONS-2026-08-10.md was committed and broke the anchor gate with
+       AUDIT_TOOLING_PRODUCT_FINGERPRINT_DRIFT.
+
+       But a blanket prefix is WRONG in the other direction: docs/audit/ also
+       holds `*-CHANGE-CONTRACT-*.md` (D2-QMS, D3-SERVICE, D4-DSR, D5-STOCK, C1,
+       MAH1-MAH4). Those are approved PRODUCT specifications that the audit
+       measures the product against — excluding them would let a behavioural
+       contract change without moving the product fingerprint, which is exactly
+       the silent drift the anchor exists to prevent. */
+    (value.startsWith('docs/audit/') && !/-CHANGE-CONTRACT-/.test(value)) ||
     value.startsWith('verification/audit/');
 }
 
