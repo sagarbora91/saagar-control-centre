@@ -66,6 +66,28 @@ function enclosingFunction(spans, offset) {
     .sort((left, right) => (left.end - left.start) - (right.end - right.start))[0] || null;
 }
 
+/* Every enclosing scope, innermost first. */
+function enclosingChain(spans, offset) {
+  return spans.filter(row => row.resolved && row.start <= offset && row.end > offset)
+    .sort((left, right) => (left.end - left.start) - (right.end - right.start));
+}
+
+/* A delivery guard in ANY enclosing scope, not only the innermost one.
+   A sink inside a callback - .catch(function(e){ downloadFallback(opts); }) -
+   is still downstream of a guard executed earlier in the function that built
+   that callback, because the callback cannot run unless the guarded function
+   got past its own guard first. Checking only the innermost scope judged the
+   anonymous callback, which has no guard of its own, and reported a guarded
+   delivery path as a bypass. The guard must still appear BEFORE the sink within
+   whichever scope carries it, so this proves the ordering rather than assuming
+   it, and an unguarded ancestor chain still fails closed. */
+function scopeChainGuarded(spans, offset, aliases) {
+  for (const scope of enclosingChain(spans, offset)) {
+    if (hasOwnerScopeFailClosedDeliveryGuard(scope.body, offset - scope.start, aliases)) return true;
+  }
+  return false;
+}
+
 function callText(source, offset) {
   const open = source.indexOf('(', offset);
   if (open < 0 || open - offset > 160) return source.slice(offset, offset + 600);
@@ -167,6 +189,26 @@ function hasTopLevelTerminal(block) {
   return false;
 }
 
+/* Split on a logical operator at bracket depth 0 only, so a nested call such as
+   `f(a || b)` is never split. */
+function splitTopLevel(condition, operator) {
+  const parts = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < condition.length; index += 1) {
+    const char = condition[index];
+    if (char === '(' || char === '[' || char === '{') depth += 1;
+    else if (char === ')' || char === ']' || char === '}') depth -= 1;
+    else if (depth === 0 && condition.startsWith(operator, index)) {
+      parts.push(condition.slice(start, index));
+      index += operator.length - 1;
+      start = index + 1;
+    }
+  }
+  parts.push(condition.slice(start));
+  return parts;
+}
+
 function hasOwnerScopeFailClosedDeliveryGuard(body, sinkOffset, aliases = new Map()) {
   const prefix = body.slice(0, Math.max(0, sinkOffset));
   const code = codeOnly(prefix);
@@ -182,7 +224,16 @@ function hasOwnerScopeFailClosedDeliveryGuard(body, sinkOffset, aliases = new Ma
     const condition = codeOnly(prefix.slice(conditionOpen + 1, conditionEnd - 1));
     const guard = new RegExp('^\\s*!\\s*\\(?\\s*' + guardCall +
       '\\s*\\([^)]*\\)\\s*\\)?\\s*$');
-    if (!guard.test(condition)) continue;
+    /* A compound OR guard counts. `if (!api || typeof api.beginDelivery !== 'function'
+       || !api.beginDelivery(token)) { return blocked; }` is STRICTER than the bare
+       `if (!beginDelivery(token))` this matcher used to require - it additionally
+       refuses when the control is missing or is not callable - yet an anchored
+       whole-condition match rejected it and reported a hardened delivery path as a
+       bypass. With `||`, any true disjunct enters the blocking branch, so it is
+       sufficient that ONE disjunct is the fail-closed guard call. AND-joined
+       conditions are deliberately not accepted: there every term must be true to
+       block, so a single guard disjunct would not prove fail-closed behaviour. */
+    if (!splitTopLevel(condition, '||').some(part => guard.test(part))) continue;
     let cursor = conditionEnd;
     while (/\s/.test(prefix[cursor] || '')) cursor += 1;
     if (prefix[cursor] === '{') {
@@ -207,8 +258,7 @@ function helperCallsitesControlled(file, source, spans, owner, aliases, sink) {
     if (spans.some(span => span.name === owner.name && match.index >= span.start && match.index <= span.open)) continue;
     const caller = enclosingFunction(spans, match.index);
     if (!caller) { calls.push(false); continue; }
-    const relative = match.index - caller.start;
-    calls.push(hasOwnerScopeFailClosedDeliveryGuard(caller.body, relative, aliases));
+    calls.push(scopeChainGuarded(spans, match.index, aliases));
   }
   return calls.length > 0 && calls.every(Boolean);
 }
@@ -216,7 +266,7 @@ function helperCallsitesControlled(file, source, spans, owner, aliases, sink) {
 function sinkIsControlled(file, source, spans, offset, sink, aliases) {
   const owner = enclosingFunction(spans, offset);
   if (!owner) return false;
-  if (hasOwnerScopeFailClosedDeliveryGuard(owner.body, offset - owner.start, aliases)) return true;
+  if (scopeChainGuarded(spans, offset, aliases)) return true;
   return helperCallsitesControlled(file, source, spans, owner, aliases, sink);
 }
 

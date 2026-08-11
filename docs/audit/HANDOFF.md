@@ -16,7 +16,7 @@
 > | Tripwire | Expected |
 > |---|---|
 > | Branch / HEAD | `agent/etp-retail-runtime` / `2ef99dcc2c90beba029d79014afe23edfe1f4c36` |
-> | Product anchor | `f4da822378047b2fca5178953de079fa60d2d894` (re-anchored 2026-08-10 from `88ba118`) |
+> | Product anchor | `fccd115cfefe136ce541331700b5a43b8269e898` (re-anchored 2026-08-10 from `88ba118`) |
 > | Runner self-test | **53/53**, zero fail/cancelled/skipped/todo |
 > | Canonical modules | 24 under `scripts/audit/**/*.mjs`, all `node --check` clean |
 > | Staging / `git diff --check` | empty / clean |
@@ -71,7 +71,7 @@ that blocks the exit sequence, the same class as U0.
 | Item | Current fact |
 |---|---|
 | Product branch | `agent/etp-retail-runtime` |
-| Product anchor | `f4da822378047b2fca5178953de079fa60d2d894` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see AUDIT-PROGRAM-v1 section 1.3) |
+| Product anchor | `fccd115cfefe136ce541331700b5a43b8269e898` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see AUDIT-PROGRAM-v1 section 1.3) |
 | GitHub branch | `origin/agent/etp-retail-runtime` resolves to the same product anchor |
 | Product closure | Storage large-record update hotfix plus Retail ETP Core Contract Closure |
 | Local dirt before this document is committed | modified `docs/audit/HANDOFF.md`; untracked `docs/audit/AUDIT-PROGRAM-v1.md` |
@@ -148,7 +148,7 @@ The next product change is not authorized until the audit baseline is frozen.
 
 The audit uses two immutable identities:
 
-1. **Product baseline SHA:** `f4da822378047b2fca5178953de079fa60d2d894` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see `AUDIT-PROGRAM-v1.md` §1.3).
+1. **Product baseline SHA:** `fccd115cfefe136ce541331700b5a43b8269e898` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see `AUDIT-PROGRAM-v1.md` §1.3).
 2. **Audit tooling SHA:** the later commit containing the reviewed program and
    complete tested runner.
 

@@ -8,7 +8,7 @@
 
 ### 1.1 Product scope
 
-- Product anchor: `f4da822378047b2fca5178953de079fa60d2d894` (re-anchored 2026-08-10 from `88ba11842613f29173f436a39ca60f12b33e5085`; see §1.3).
+- Product anchor: `fccd115cfefe136ce541331700b5a43b8269e898` (see §1.3 for anchor history).
 - Android/offline application, native overrides, web application, tests, build controls and current authoritative documentation.
 - Includes `retail-etp-core-v1` for R003/R013/R022/R025.
 - Excludes PHP/server work, Service ETP and unbuilt E2–E6 presentation.
@@ -20,6 +20,7 @@
 |---|---|---|
 | `88ba11842613f29173f436a39ca60f12b33e5085` | 2026-08-09 | Original frozen pre-migration snapshot. |
 | `f4da822378047b2fca5178953de079fa60d2d894` | 2026-08-10 | Re-anchored after 38 inert `data-action` attributes disambiguated 25 conflicting A3-02 capability IDs. |
+| `fccd115cfefe136ce541331700b5a43b8269e898` | 2026-08-10 | Re-anchored after the SEC-08 fail-closed fix at `www/index.html:6358`, where a throwing `authorize()` fell through to `window.open`. |
 
 The anchor is the frozen **pre-migration** product snapshot, and the tooling and baseline gates require an exact product-fingerprint match against it, so any product change forces an explicit re-anchor decision rather than silent drift.
 
@@ -278,7 +279,7 @@ Comparison approval is not a generic allowlist. If supplied, it must be one iden
     "auditToolingSha": "<40-hex frozen tooling commit>",
     "baselineManifestSha256": "<64-hex baseline EVIDENCE-MANIFEST hash>",
     "baselineTargetSha": "<40-hex baseline target>",
-    "productBaselineSha": "f4da822378047b2fca5178953de079fa60d2d894",
+    "productBaselineSha": "fccd115cfefe136ce541331700b5a43b8269e898",
     "targetSha": "<40-hex comparison target>"
   },
   "migrationScope": {
@@ -356,7 +357,7 @@ $auditOutput = Join-Path ([System.IO.Path]::GetTempPath()) ((Get-Date -Format 'y
 node scripts/audit/run.mjs `
   --root (Get-Location).Path `
   --output $auditOutput `
-  --product-baseline f4da822378047b2fca5178953de079fa60d2d894 `
+  --product-baseline fccd115cfefe136ce541331700b5a43b8269e898 `
   --target-sha $targetSha `
   --audit-tooling-sha $targetSha `
   --mode baseline `
@@ -372,7 +373,7 @@ The comparison run uses the migration target's exact `HEAD` for `--target-sha`, 
 In outline, after setting `$targetSha`, `$auditToolingSha`, `$baselineEvidence` and a fresh external `$auditOutput`:
 
 ```powershell
-node scripts/audit/run.mjs --root (Get-Location).Path --output $auditOutput --product-baseline f4da822378047b2fca5178953de079fa60d2d894 --target-sha $targetSha --audit-tooling-sha $auditToolingSha --mode comparison --baseline-evidence $baselineEvidence --run-tests
+node scripts/audit/run.mjs --root (Get-Location).Path --output $auditOutput --product-baseline fccd115cfefe136ce541331700b5a43b8269e898 --target-sha $targetSha --audit-tooling-sha $auditToolingSha --mode comparison --baseline-evidence $baselineEvidence --run-tests
 ```
 
 ## 10. Explicit non-claims

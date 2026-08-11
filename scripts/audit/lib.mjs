@@ -4,16 +4,13 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 export const AUDIT_VERSION = 'saagar-whole-app-audit-v1.0.0';
-/* Re-anchored 2026-08-10 from 88ba11842613f29173f436a39ca60f12b33e5085.
-   The anchor is the frozen pre-migration product snapshot, and product bytes
-   changed when 38 data-action attributes were added to disambiguate conflicting
-   A3-02 capability ids (commit f4da822). That is migration PREPARATION, not
-   migration: at 88ba118 the acceptance oracle was broken — A3-02 was unmeasured
-   on 23 conflicting ids — so a before/after comparison against it could not have
-   proved anything. The new anchor is the same product with a working oracle
-   (A3-02 pass, 0 conflicts). Baseline evidence taken against 88ba118
-   (verification/audit/2026-08-10-115208-7871e57) is historical and superseded. */
-export const PRODUCT_BASELINE_SHA = 'f4da822378047b2fca5178953de079fa60d2d894';
+/* Anchor history and the reasoning for each move live in
+   docs/audit/AUDIT-PROGRAM-v1.md section 1.3. The anchor is the frozen
+   pre-migration product snapshot and the tooling/baseline gates require an exact
+   product-fingerprint match, so every product change forces an explicit
+   re-anchor rather than silent drift. Current anchor is the SEC-08 fail-closed
+   fix; 88ba118 and f4da822 are superseded as comparison baselines. */
+export const PRODUCT_BASELINE_SHA = 'fccd115cfefe136ce541331700b5a43b8269e898';
 
 export function posix(value) {
   return String(value).replaceAll('\\', '/');

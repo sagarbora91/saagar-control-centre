@@ -319,6 +319,25 @@ function classify(artifact, policy) {
   if (artifact.kind === 'keystore-alias') return { classification: 'device-local', owner: /etp/i.test(artifact.name) ? 'etp-native-store' : 'storage-core', restore: 'blocked', reset: 'native-reset-or-uninstall', evidenceArtifact: false };
   if (artifact.kind === 'native-preferences') return { classification: 'device-local', owner: 'offdevice-backup', restore: 'blocked', reset: 'app-reset-or-uninstall', evidenceArtifact: false };
   if (artifact.kind === 'file') {
+    /* Directory-scoped classification is applied BEFORE the unresolved
+       short-circuit. A file artifact whose NAME is computed at runtime still has
+       a statically known DIRECTORY, and the directory alone determines the
+       classification: everything the app writes under CACHE is re-derivable, and
+       everything under app-private DATA is device-local, whatever the filename
+       turns out to be. Short-circuiting on `unresolved` first left these
+       permanently unclassifiable and was the bulk of A4-02 — the same class of
+       audit blind spot as the A3-02 parser defects, and it must not be answered
+       by rewriting computed filenames into literals in the product. */
+    if (/^CACHE:/.test(artifact.name)) {
+      return { classification: 're-derivable-excluded', owner: 'export-control',
+        restore: 'not-restored', reset: 'cache-or-owner-file-management',
+        evidenceArtifact: false, directoryScoped: artifact.unresolved || undefined };
+    }
+    if (/^DATA:/.test(artifact.name)) {
+      return { classification: 'device-local', owner: 'storage-core',
+        restore: 'logical-key-restore-only', reset: 'factory-reset',
+        evidenceArtifact: false, directoryScoped: artifact.unresolved || undefined };
+    }
     if (artifact.unresolved) return { classification: null, owner: null, restore: 'unknown', reset: 'unknown', evidenceArtifact: false };
     if (/saagar_qms_archive\.json/.test(bareName)) return { classification: 'portable', owner: 'qms', restore: 'validated-restore', reset: 'qms-or-factory-reset', evidenceArtifact: false };
     if (/saagar-etp\.db/.test(bareName)) return { classification: 're-derivable-excluded', owner: 'etp-native-store', restore: 'excluded-and-fenced', reset: 'scope-or-store-reset', evidenceArtifact: false };
