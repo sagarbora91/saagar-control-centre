@@ -21,7 +21,9 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // +1208 bytes on 2026-08-10: 38 inert `data-action` attributes added to
   // disambiguate conflicting A3-02 capability IDs, plus the refreshed module
   // manifest identities. No behaviour change; file count is unchanged.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7974761);
+  // +135 bytes on 2026-08-10: SEC-08 fail-closed fix at www/index.html:6358 —
+  // a throwing authorize() no longer falls through to window.open.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7974896);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',

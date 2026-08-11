@@ -6355,7 +6355,7 @@ window.SaagarEvidence = (function(){
               });
               if(token&&window.SaagarShare&&v.blob){ window.SaagarShare.share({ exportToken:token, file:v.blob, fileName:v.name, title:'Evidence file' }); res(true); return; }
               if(!token){ rej('owner approval required'); return; }
-            }catch(e){}
+            }catch(e){ rej('owner approval required'); return; }   /* SEC-08 fail-closed: a throwing authorize() must NOT fall through to window.open below */
             try{ var url=URL.createObjectURL(v.blob); window.open(url,'_blank'); setTimeout(function(){ try{URL.revokeObjectURL(url);}catch(e){} }, 60000); res(true); }catch(e){ rej(e); }
           };
           rq.onerror=function(){ rej(rq.error); };
