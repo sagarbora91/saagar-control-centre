@@ -1,0 +1,158 @@
+{
+  "classification": "EMULATOR_ENGINEERING_ONLY",
+  "formalDeviceAcceptance": false,
+  "createdAt": "2026-08-08T14:25:33.226Z",
+  "serial": "emulator-5554",
+  "api": 23,
+  "package": "com.saagartraders.bcc",
+  "generated": {
+    "records": 6567,
+    "largePlaintextBodyChars": 3145865
+  },
+  "baseline": {
+    "path": "C:\\Users\\Sagar\\.codex\\visualizations\\2026\\08\\01\\019fbeba-bffa-7e23-91e9-c9bd796fedb7\\saagar-storage-baseline-896344ed.apk",
+    "sha256": "896344ed0bf845685776084a9def341934ee89aa0512cdabc23a6d6209272646"
+  },
+  "candidate": {
+    "path": "V:\\Co work\\Projects\\Retail\\saagar-control-centre\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "sha256": "4147dfcd2fc5a6c76a1246f092f6e9b970dad4642bae9ef0d83006d9290f5804"
+  },
+  "seed": {
+    "ok": true,
+    "generatedRecords": 6567,
+    "largeChars": 3145887,
+    "largeSha256": "d0cbf489ca042612746506d06c5a2ca3a45d7f28b80535a226f7e92c2699b92d",
+    "sentinel0": "{\"synthetic\":true,\"index\":0,\"pad\":\"PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP\"}",
+    "sentinelLast": "{\"synthetic\":true,\"index\":6565,\"pad\":\"PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP\"}",
+    "status": {
+      "contractVersion": 1,
+      "available": true,
+      "schemaVersion": 2,
+      "rows": 6567,
+      "stagedRows": 0,
+      "migrated": true,
+      "integrity": "ok",
+      "storage": {
+        "totalBytes": 790536192,
+        "availableBytes": 522330112,
+        "freeBytes": 539107328,
+        "databaseBytes": 6713344,
+        "walBytes": 17332872,
+        "shmBytes": 65536,
+        "journalBytes": 0,
+        "nativeStoreBytes": 24111752
+      }
+    }
+  },
+  "uidBefore": "10063",
+  "installReplace": "Performing Push Install\r\n\tpkg: /data/local/tmp/app-debug.apk\r\r\nSuccess",
+  "uidAfter": "10063",
+  "verify": {
+    "ok": true,
+    "generatedRecordsFound": 6567,
+    "largeChars": 3145887,
+    "largeSha256": "d0cbf489ca042612746506d06c5a2ca3a45d7f28b80535a226f7e92c2699b92d",
+    "sentinel0": "{\"synthetic\":true,\"index\":0,\"pad\":\"PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP\"}",
+    "sentinelLast": "{\"synthetic\":true,\"index\":6565,\"pad\":\"PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP\"}",
+    "status": {
+      "ready": true,
+      "dirty": true,
+      "dirtyKeys": 4,
+      "lastSavedAt": "2026-08-08T14:25:50.847Z",
+      "lastError": "",
+      "hasFS": true,
+      "migrated": true,
+      "dbFromFile": true,
+      "rows": 6576,
+      "encState": "encrypted-keystore",
+      "storageBlocked": false,
+      "authorityPending": false,
+      "persistenceMode": "native-incremental",
+      "nativeRows": 6576,
+      "recovery": {
+        "state": "ready",
+        "code": "",
+        "title": "Secure storage needs recovery",
+        "message": "SAAGAR could not verify its protected database and has blocked stale fallback data. Retry once, then copy the diagnostics for support. Do not clear app data.",
+        "stage": "ready",
+        "attempt": 1,
+        "canRetry": true,
+        "canRestore": false,
+        "nativeMarker": false,
+        "pluginPresent": true,
+        "schemaVersion": 2,
+        "expectedRows": 6567,
+        "loadedRows": 6567,
+        "storage": {
+          "totalBytes": 790536192,
+          "availableBytes": 522342400,
+          "freeBytes": 539119616,
+          "databaseBytes": 6713344,
+          "walBytes": 17332872,
+          "shmBytes": 65536,
+          "journalBytes": 0,
+          "nativeStoreBytes": 24111752
+        }
+      },
+      "nativeStatus": {
+        "contractVersion": 1,
+        "available": true,
+        "schemaVersion": 2,
+        "rows": 6567,
+        "stagedRows": 0,
+        "migrated": true,
+        "integrity": "ok",
+        "storage": {
+          "totalBytes": 790536192,
+          "availableBytes": 522342400,
+          "freeBytes": 539119616,
+          "databaseBytes": 6713344,
+          "walBytes": 17332872,
+          "shmBytes": 65536,
+          "journalBytes": 0,
+          "nativeStoreBytes": 24111752
+        }
+      }
+    },
+    "recovery": {
+      "state": "ready",
+      "code": "",
+      "title": "Secure storage needs recovery",
+      "message": "SAAGAR could not verify its protected database and has blocked stale fallback data. Retry once, then copy the diagnostics for support. Do not clear app data.",
+      "stage": "ready",
+      "attempt": 1,
+      "canRetry": true,
+      "canRestore": false,
+      "nativeMarker": false,
+      "pluginPresent": true,
+      "schemaVersion": 2,
+      "expectedRows": 6567,
+      "loadedRows": 6567,
+      "storage": {
+        "totalBytes": 790536192,
+        "availableBytes": 522342400,
+        "freeBytes": 539119616,
+        "databaseBytes": 6713344,
+        "walBytes": 17332872,
+        "shmBytes": 65536,
+        "journalBytes": 0,
+        "nativeStoreBytes": 24111752
+      }
+    }
+  },
+  "logcat": "--------- beginning of main\r\r\n--------- beginning of system\r\r\n08-08 19:55:46.263  2598  2598 I chromium: [INFO:library_loader_hooks.cc(120)] Chromium logging enabled: level = 0, default verbosity = 0\r\r\n08-08 19:55:46.280  2598  2598 W chromium: [WARNING:resource_bundle.cc(285)] locale_file_path.empty()\r\r\n08-08 19:55:46.457  2598  2625 W chromium: [WARNING:data_reduction_proxy_config.cc(423)] SPDY proxy OFF at startup\r\r\n",
+  "checks": {
+    "installReplaceSucceeded": true,
+    "uidPreserved": true,
+    "verifyJobSucceeded": true,
+    "generatedRecordCountPreserved": true,
+    "sentinelsPreserved": true,
+    "largeLengthPreserved": true,
+    "largeHashPreserved": true,
+    "runtimeReady": true,
+    "runtimeNotBlocked": true,
+    "rowCountsReconciled": true,
+    "nativeIncrementalMode": true
+  },
+  "pass": true
+}

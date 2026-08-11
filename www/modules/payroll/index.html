@@ -1152,7 +1152,7 @@ html body td select,html body th select{
 
   <div class="sheet-actions">
     <div class="left-actions">
-      <button class="btn primary" onclick="addEmployee()">+ Add Employee</button>
+      <button data-action="add-employee" class="btn primary" onclick="addEmployee()">+ Add Employee</button>
       <button class="btn" onclick="dupLastRow()">Duplicate Last</button>
       <button class="btn" onclick="openHelp()">Formula Help</button>
       <button class="btn" onclick="openAttImport()" id="btn-att-import">⇄ Import Attendance</button>
@@ -1329,7 +1329,7 @@ html body td select,html body th select{
   </section>
   <section class="summary" id="ms-summary"></section>
   <div class="sheet-actions">
-    <div class="left-actions"><button class="btn primary" onclick="addMasterEmployee()">+ Add Employee</button></div>
+    <div class="left-actions"><button data-action="add-master-employee" class="btn primary" onclick="addMasterEmployee()">+ Add Employee</button></div>
     <div class="right-actions"><button class="btn" onclick="recalcAll()">↺ Refresh</button></div>
   </div>
   <section class="table-wrap">
@@ -1722,7 +1722,7 @@ html body td select,html body th select{
   <div class="modal">
     <div class="modal-hd">
       <div class="modal-title">Formula Help</div>
-      <button class="close-btn" onclick="closeHelp()">×</button>
+      <button data-action="help-close" class="close-btn" onclick="closeHelp()">×</button>
     </div>
     <div class="modal-body">
       <p><b>How it works:</b> Set up staff in <b>Employee Master</b>, enter days in <b>Attendance</b>, review computed pay, approve &amp; lock, then export <b>Salary Slips</b>.</p>
@@ -1742,7 +1742,7 @@ html body td select,html body th select{
   <div class="modal" style="max-width:880px">
     <div class="modal-hd">
       <div class="modal-title">Import Attendance — DSR / Leave feed</div>
-      <button class="close-btn" onclick="closeAttImport()">×</button>
+      <button data-action="att-import-close" class="close-btn" onclick="closeAttImport()">×</button>
     </div>
     <div class="modal-body" id="att-import-body"></div>
   </div>

@@ -880,7 +880,7 @@ html body td select,html body th select{
       </div>
       <div class="btn-row">
         <span id="open-lock-badge" style="display:none" class="lk-badge">🔒 Locked</span>
-        <button class="btn btn-outline btn-sm no-print" onclick="printOpeningReg()">🖨 Print</button>
+        <button data-action="print-opening-register" class="btn btn-outline btn-sm no-print" onclick="printOpeningReg()">🖨 Print</button>
         <button class="btn btn-navy btn-sm no-print" id="btn-lock-open" onclick="toggleLock('opening')">Lock Opening</button>
       </div>
     </div>
@@ -931,7 +931,7 @@ html body td select,html body th select{
       </div>
       <div class="btn-row">
         <span id="mov-submitted-badge" style="display:none" class="lk-badge">✓ Submitted</span>
-        <button class="btn btn-outline btn-sm no-print" onclick="printMovementsReg()">🖨 Print</button>
+        <button data-action="print-movements-register" class="btn btn-outline btn-sm no-print" onclick="printMovementsReg()">🖨 Print</button>
         <button class="btn btn-outline btn-sm no-print" id="btn-reopen-mov" style="display:none" onclick="reopenMovements()">🔓 Re-open</button>
         <button class="btn btn-gold no-print" id="btn-submit-mov" onclick="submitMovements()">Submit &amp; Proceed to Closing →</button>
       </div>
@@ -972,7 +972,7 @@ html body td select,html body th select{
       </div>
       <div class="btn-row">
         <span id="close-lock-badge" style="display:none" class="lk-badge">🔒 Locked</span>
-        <button class="btn btn-outline btn-sm no-print" onclick="printClosingReg()">🖨 Print</button>
+        <button data-action="print-closing-register" class="btn btn-outline btn-sm no-print" onclick="printClosingReg()">🖨 Print</button>
         <button class="btn btn-navy btn-sm no-print" id="btn-lock-close" onclick="toggleLock('closing')">Lock Closing</button>
       </div>
     </div>
@@ -1020,7 +1020,7 @@ html body td select,html body th select{
       </div>
       <div class="btn-row no-print">
         <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ Export CSV</button>
-        <button class="btn btn-gold btn-sm"    onclick="printSummaryReg()">🖨 Print A4</button>
+        <button data-action="print-summary-register" class="btn btn-gold btn-sm"    onclick="printSummaryReg()">🖨 Print A4</button>
       </div>
     </div>
     <div class="scards" id="sum-cards"></div>
@@ -1070,7 +1070,7 @@ html body td select,html body th select{
           <option value="4">Offender ≥ 4 days</option>
           <option value="5">Offender ≥ 5 days</option>
         </select>
-        <button class="btn btn-gold btn-sm" onclick="printMonthlyReg()">🖨 Print A4</button>
+        <button data-action="print-monthly-register" class="btn btn-gold btn-sm" onclick="printMonthlyReg()">🖨 Print A4</button>
       </div>
     </div>
     <div class="info-bar">
@@ -1143,7 +1143,7 @@ html body td select,html body th select{
         <div class="cro-list" id="cro-list"></div>
         <div class="add-row">
           <input type="text" class="finp" id="cro-inp" placeholder="Enter CRO name" onkeydown="if(event.key==='Enter')addCRO()">
-          <button class="btn btn-navy btn-sm" onclick="addCRO()">+ Add</button>
+          <button data-action="add-cro" class="btn btn-navy btn-sm" onclick="addCRO()">+ Add</button>
         </div>
       </div>
 
@@ -1173,7 +1173,7 @@ html body td select,html body th select{
         <div id="brand-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;max-height:260px;overflow-y:auto;"></div>
         <div class="add-row" id="brand-add-row">
           <input type="text" class="finp" id="brand-inp" placeholder="New brand name (e.g. NEBULA)" onkeydown="if(event.key==='Enter')addBrand()">
-          <button class="btn btn-navy btn-sm" onclick="addBrand()">+ Add</button>
+          <button data-action="add-brand" class="btn btn-navy btn-sm" onclick="addBrand()">+ Add</button>
         </div>
         <button class="btn btn-outline btn-sm" style="margin-top:8px;font-size:11px;" onclick="resetBrandsToDefault()">↺ Reset to defaults</button>
       </div>
@@ -1207,7 +1207,7 @@ html body td select,html body th select{
     <div class="modal-err" id="sm-pw-err"></div>
     <div class="modal-btns">
       <button class="btn btn-navy btn-sm" onclick="smAuthSubmit()">Login</button>
-      <button class="btn btn-outline btn-sm" onclick="smAuthCancel()">Cancel</button>
+      <button data-action="sm-auth-cancel" class="btn btn-outline btn-sm" onclick="smAuthCancel()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1225,7 +1225,7 @@ html body td select,html body th select{
     <div class="modal-err" id="del-err"></div>
     <div class="modal-btns">
       <button class="btn btn-red btn-sm" id="del-submit-btn" disabled onclick="delConfirmSubmit()">⚠ Delete Everything</button>
-      <button class="btn btn-outline btn-sm" onclick="delCancel()">Cancel</button>
+      <button data-action="delete-cancel" class="btn btn-outline btn-sm" onclick="delCancel()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1241,7 +1241,7 @@ html body td select,html body th select{
     <div class="modal-err" id="clk-err"></div>
     <div class="modal-btns">
       <button class="btn btn-navy btn-sm" id="clk-confirm-btn" onclick="doLockClosing()">🔒 Lock &amp; Sign Off</button>
-      <button class="btn btn-outline btn-sm" onclick="closeLockCancel()">Cancel</button>
+      <button data-action="lock-cancel" class="btn btn-outline btn-sm" onclick="closeLockCancel()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1256,7 +1256,7 @@ html body td select,html body th select{
     <div class="modal-err" id="rop-err"></div>
     <div class="modal-btns">
       <button class="btn btn-navy btn-sm" id="rop-confirm-btn" disabled onclick="doReopenConfirm()">🔓 Unlock &amp; Record</button>
-      <button class="btn btn-outline btn-sm" onclick="reopenCancel()">Cancel</button>
+      <button data-action="reopen-cancel" class="btn btn-outline btn-sm" onclick="reopenCancel()">Cancel</button>
     </div>
   </div>
 </div>

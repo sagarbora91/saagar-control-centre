@@ -872,6 +872,27 @@ html.bcc-mobile,html.bcc-mobile body{overflow-x:hidden}
 <!-- R0-W3: passphrase-encrypted portable container + verified restore coordinator. -->
 <script src="portable-backup.js"></script>
 <script src="restore-engine.js"></script>
+<script src="etp-recovery-integration.js"></script>
+<!-- Pinned, offline-only Retail ETP runtime. Load order is contractual: local
+     XLSX/ZIP engines, pure policies, native bridge, coordinator, facade, UI. -->
+<script src="vendor/fflate-0.8.3.min.js"></script>
+<script src="vendor/read-excel-file-9.3.7.min.js"></script>
+<script src="etp-import-foundation.js"></script>
+<script src="etp-xlsx-preflight.js"></script>
+<script src="etp-xlsx-parser-policy.js"></script>
+<script src="etp-retail-profile.js"></script>
+<script src="etp-retail-table-parser.js"></script>
+<script src="etp-retail-xlsx-loader.js"></script>
+<script src="etp-store-lifecycle-policy.js"></script>
+<script src="etp-reconciliation-policy.js"></script>
+<script src="etp-core-contract.js"></script>
+<script src="etp-native-store.js"></script>
+<script src="etp-control-registry.js"></script>
+<script src="etp-verified-reader.js"></script>
+<script src="etp-worker-client.js"></script>
+<script src="etp-import-coordinator.js"></script>
+<script src="etp-import-runtime.js"></script>
+<script src="etp-import-ui.js"></script>
 <!-- R1 LEG-01..10: purpose register, collection notices, separate promotional
      consent, global suppression, rights register and human-gate evidence. -->
 <script src="legal-control.js"></script>
@@ -1614,17 +1635,17 @@ html.bcc-mobile #todayView.active{display:block}
         </div>
         <div class="card card-pad">
           <h4><span class="em">🏷️</span> Brands / products</h4>
-          <div class="row"><input id="mb-name" placeholder="brand name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><select id="mb-store" style="padding:9px;border:1px solid var(--gray-300);border-radius:8px"><option value="">All stores</option><option value="titanworld">Titan World</option><option value="helios">Helios</option></select><button class="btn p" onclick="masterAdd('brands')">Add</button></div>
+          <div class="row"><input id="mb-name" placeholder="brand name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><select id="mb-store" style="padding:9px;border:1px solid var(--gray-300);border-radius:8px"><option value="">All stores</option><option value="titanworld">Titan World</option><option value="helios">Helios</option></select><button data-action="master-add-brands" class="btn p" onclick="masterAdd('brands')">Add</button></div>
           <div id="mTblBrands" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
           <h4><span class="em">🧾</span> Vendors / payees</h4>
-          <div class="row"><input id="mv-name" placeholder="vendor name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mv-gstin" placeholder="GSTIN (optional)" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('vendors')">Add</button></div>
+          <div class="row"><input id="mv-name" placeholder="vendor name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mv-gstin" placeholder="GSTIN (optional)" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button data-action="master-add-vendors" class="btn p" onclick="masterAdd('vendors')">Add</button></div>
           <div id="mTblVendors" style="margin-top:10px"></div>
         </div>
         <div class="card card-pad">
           <h4><span class="em">👤</span> Customers</h4>
-          <div class="row"><input id="mc-name" placeholder="customer name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mc-mobile" placeholder="mobile" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button class="btn p" onclick="masterAdd('customers')">Add</button></div>
+          <div class="row"><input id="mc-name" placeholder="customer name" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1;min-width:140px"><input id="mc-mobile" placeholder="mobile" style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px"><button data-action="master-add-customers" class="btn p" onclick="masterAdd('customers')">Add</button></div>
           <div id="mTblCustomers" style="margin-top:10px"></div>
         </div>
       </div>
@@ -1669,6 +1690,11 @@ html.bcc-mobile #todayView.active{display:block}
 
       <!-- Backup -->
       <div class="sub-section hidden" id="subBackup">
+        <div class="card card-pad">
+          <h4><span class="em">📥</span> Retail ETP reports</h4>
+          <p>Import the exact R003, R013, R022 and R025 exports for WLMHW or HEMW. Reports are validated and reconciled before anything is published.</p>
+          <button class="btn gold" onclick="window.SaagarEtpImportUi&&window.SaagarEtpImportUi.open()">Open ETP import</button>
+        </div>
         <div class="card card-pad storage-capacity-card" id="storageCapacityCard" aria-busy="false">
           <div class="storage-capacity-head">
             <div class="storage-drive-icon" aria-hidden="true">
@@ -2558,7 +2584,7 @@ function appControlKeys(){ return [PROTECTED_MODULES_KEY,MODULE_PIN_POLICY_KEY,A
    EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
 function restoreBlockedKeys(){ return [ADMIN_PIN_KEY, ADMIN_MODE_KEY, CURRENT_ROLE_KEY, CURRENT_STORE_KEY, ROLE_ACCESS_KEY, STAFF_PIN_KEY, PIN_ATTEMPTS_KEY, OFFDEVICE_BACKUP_KEY, EXPORT_REGISTER_KEY, RESTORE_DRILL_KEY, RESTORE_ACCEPTANCE_KEY, LAST_MODULE_RESET_KEY, PRODUCTION_DEVICE_KEY, HIGHEST_BUILD_KEY]; }   /* Device-local control evidence cannot be forged by restore. */
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
-function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); }
+function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || k==='saagar_etp_scope_registry' || k==='saagar_etp_control_registry_v1' || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); } /* ETP receipts/scope are portable control metadata; fact rows remain excluded and restored scopes are fenced for re-import. */
 function appStorage(){ const store=allStorage(); const out={}; Object.keys(store).filter(isWhitelistedAppKey).sort().forEach(k=>out[k]=store[k]); return out; }
 function ownerModuleForKey(k){ return MODULES.find(m=>keyMatchesModule(k,m.id)); }
 function keysForModule(id){ return Object.keys(allStorage()).filter(k=>keyMatchesModule(k,id)); }
@@ -6329,7 +6355,7 @@ window.SaagarEvidence = (function(){
               });
               if(token&&window.SaagarShare&&v.blob){ window.SaagarShare.share({ exportToken:token, file:v.blob, fileName:v.name, title:'Evidence file' }); res(true); return; }
               if(!token){ rej('owner approval required'); return; }
-            }catch(e){}
+            }catch(e){ rej('owner approval required'); return; }   /* SEC-08 fail-closed: a throwing authorize() must NOT fall through to window.open below */
             try{ var url=URL.createObjectURL(v.blob); window.open(url,'_blank'); setTimeout(function(){ try{URL.revokeObjectURL(url);}catch(e){} }, 60000); res(true); }catch(e){ rej(e); }
           };
           rq.onerror=function(){ rej(rq.error); };
@@ -7228,6 +7254,21 @@ function previewRestorePayload(parsed, source){
   }catch(e){ toast('Restore blocked: '+String(e&&e.message||e)); }
 }
 function restoreCanonical(v){ return window.SaagarPortableBackup.canonical(v); }
+const ETP_SCOPE_REGISTRY_KEY='saagar_etp_scope_registry';
+function etpRecoveryRuntime(){
+  var C=window.Capacitor, nativePlatform=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());
+  var plugin=C&&C.Plugins&&C.Plugins.SaagarEtpStore;
+  if(!nativePlatform&&!plugin)return null;
+  var api=window.SaagarEtpRecoveryIntegration;
+  var made=api&&typeof api.createFromCapacitor==='function'?api.createFromCapacitor(plugin):null;
+  if(!made||!made.ok)throw new Error('ETP recovery service is unavailable. Nothing was accepted.');
+  return made.integration;
+}
+function restoredEtpScopes(){
+  var raw=tryJSON(safeGet(ETP_SCOPE_REGISTRY_KEY))||[];
+  if(!Array.isArray(raw))throw new Error('ETP scope registry is invalid. Nothing was accepted.');
+  return raw.map(function(value){return {scopeKey:String(value&&value.scopeKey||value||'')};});
+}
 function evidenceComparable(list){
   return (Array.isArray(list)?list:[]).map(function(e){return {itemKey:String(e.itemKey||''),name:String(e.name||''),type:String(e.type||''),dataURL:String(e.dataURL||'')};})
     .sort(function(a,b){return restoreCanonical(a).localeCompare(restoreCanonical(b));});
@@ -7290,6 +7331,11 @@ async function restoreValidatedBackup(){
       }
       if(bundle.applyQms&&engineOn){
         var q=await qmsReadArchiveForBackup(true); if(restoreCanonical(q||[])!==restoreCanonical(bundle.qmsArchive)) throw new Error('Archived-visit read-back control total failed.');
+      }
+      var etpRecovery=etpRecoveryRuntime();
+      if(etpRecovery){
+        var fenced=await etpRecovery.fenceRestoredScopes(restoredEtpScopes());
+        if(!fenced||!fenced.ok)throw new Error('ETP restore fence failed ('+String(fenced&&fenced.code||'unknown')+'). Nothing was accepted.');
       }
     },
     rollback:async function(before){
@@ -7482,8 +7528,20 @@ function factoryResetSafetyBackup(keys){
 }
 /* §reset-safety: the actual wipe — body unchanged from the original factoryReset tail; only runs
    AFTER factoryResetSafetyBackup resolves ok. */
-function factoryResetWipe(keys){
+async function factoryResetWipe(keys){
   const done = keys.length;
+  try{
+    var etpRecovery=etpRecoveryRuntime();
+    if(etpRecovery){
+      var etpReset=await etpRecovery.resetForFactoryReset('RESET_ETP_STORE');
+      if(!etpReset||!etpReset.ok)throw new Error(String(etpReset&&etpReset.code||'ETP_RESET_FAILED'));
+    }
+  }catch(e){
+    try{auditLog('app.factory_reset_aborted',{reason:'etp-reset-failed',code:String(e&&e.message||e)});}catch(_e){}
+    alert('Factory reset ABORTED because the encrypted ETP store could not be cleared. No app reload was started.\n\n'+String(e&&e.message||e));
+    toast('Factory reset aborted — ETP storage was not cleared.');
+    return false;
+  }
   // Option C (§13.5): when storage-core owns the store, do an ATOMIC, AWAITED wipe of MEM +
   // bcc.sqlite(+.bak/.tmp) + WAL + 'migrated' marker + photos + native LS (and re-stamp the demo
   // guard) via SaagarStore._reset(), and reload ONLY after it resolves — so a debounced persist or

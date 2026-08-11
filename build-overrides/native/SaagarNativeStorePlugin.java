@@ -43,6 +43,9 @@ public class SaagarNativeStorePlugin extends Plugin {
     private static final int MAX_PAGE_ROWS = 64;
     private static final int DEFAULT_PAGE_BYTES = 2 * 1024 * 1024;
     private static final int MAX_PAGE_BYTES = 8 * 1024 * 1024;
+    private static final int DEFAULT_RECORD_CHUNK_CHARS = 256 * 1024;
+    private static final int MAX_RECORD_CHUNK_CHARS = 512 * 1024;
+    private static final int MAX_INLINE_CURSOR_PAYLOAD_CHARS = 512 * 1024;
     private StoreDb helper;
 
     @Override
@@ -186,6 +189,7 @@ public class SaagarNativeStorePlugin extends Plugin {
             rejectArgument(call, "readPage");
             return;
         }
+        int maxInlineChars = Math.min(maxBytes, MAX_INLINE_CURSOR_PAYLOAD_CHARS);
 
         JSArray rows = new JSArray();
         String last = after;
@@ -193,13 +197,35 @@ public class SaagarNativeStorePlugin extends Plugin {
         boolean hasMore = false;
         JSObject out = null;
         Throwable failure = null;
-        String sql = "SELECT key_id,payload,updated_seq FROM kv WHERE key_id>? ORDER BY key_id LIMIT ?";
+        String sql = "SELECT key_id,CASE WHEN length(payload)<=CAST(? AS INTEGER) THEN payload ELSE NULL END,updated_seq,length(payload) "
+            + "FROM kv WHERE key_id>? ORDER BY key_id LIMIT ?";
         try {
             SQLiteDatabase db = db();
-            try (Cursor cursor = db.rawQuery(sql, new String[] { after, String.valueOf(limit + 1) })) {
+            try (Cursor cursor = db.rawQuery(sql, new String[] {
+                String.valueOf(maxInlineChars), after, String.valueOf(limit + 1)
+            })) {
                 while (cursor.moveToNext()) {
                     String id = cursor.getString(0);
+                    int payloadChars = cursor.getInt(3);
+                    if (payloadChars > maxInlineChars) {
+                        if (rows.length() == 0) {
+                            JSObject oversized = new JSObject();
+                            oversized.put("keyId", id);
+                            oversized.put("seq", cursor.getLong(2));
+                            oversized.put("chars", payloadChars);
+                            out = new JSObject();
+                            out.put("rows", rows);
+                            out.put("afterKeyId", after);
+                            out.put("done", false);
+                            out.put("bytes", 0);
+                            out.put("oversized", oversized);
+                        } else {
+                            hasMore = true;
+                        }
+                        break;
+                    }
                     String payload = cursor.getString(1);
+                    if (payload == null) throw new NativeStoreFailure("DB_READ_FAILED", true);
                     int bytes = payload == null ? 0 : payload.getBytes(StandardCharsets.UTF_8).length;
                     if (rows.length() >= limit || (rows.length() > 0 && used + bytes > maxBytes)) {
                         hasMore = true;
@@ -217,16 +243,67 @@ public class SaagarNativeStorePlugin extends Plugin {
                     hasMore = true;
                 }
             }
-            out = new JSObject();
-            out.put("rows", rows);
-            out.put("afterKeyId", last);
-            out.put("done", !hasMore);
-            out.put("bytes", used);
+            if (out == null) {
+                out = new JSObject();
+                out.put("rows", rows);
+                out.put("afterKeyId", last);
+                out.put("done", !hasMore);
+                out.put("bytes", used);
+            }
         } catch (Throwable t) {
             failure = t;
         }
         if (failure != null) {
             rejectNative(call, "readPage", failure);
+            return;
+        }
+        call.resolve(out);
+    }
+
+    @PluginMethod
+    public void readRecordChunk(PluginCall call) {
+        String keyId = call.getString("keyId");
+        Integer offsetValue = call.getInt("offset");
+        Integer limitValue = call.getInt("limit");
+        if (keyId == null || !keyId.matches("[a-f0-9]{64}") || offsetValue == null
+            || offsetValue < 0 || offsetValue > MAX_BATCH_BYTES
+            || (limitValue != null && (limitValue < 64 * 1024 || limitValue > MAX_RECORD_CHUNK_CHARS))) {
+            rejectArgument(call, "readRecordChunk");
+            return;
+        }
+        int offset = offsetValue;
+        int limit = limitValue == null ? DEFAULT_RECORD_CHUNK_CHARS : limitValue;
+        JSObject out = null;
+        Throwable failure = null;
+        try {
+            SQLiteDatabase db = db();
+            try (Cursor cursor = db.rawQuery(
+                "SELECT substr(payload,?,?),length(payload),updated_seq FROM kv WHERE key_id=?",
+                new String[] { String.valueOf(offset + 1), String.valueOf(limit), keyId })) {
+                if (!cursor.moveToFirst()) throw new NativeStoreFailure("DB_READ_FAILED", true);
+                String chunk = cursor.getString(0);
+                int totalChars = cursor.getInt(1);
+                if (totalChars < 1 || totalChars > MAX_BATCH_BYTES) {
+                    throw new NativeStoreFailure("DB_READ_FAILED", true);
+                }
+                int nextOffset = offset + (chunk == null ? 0 : chunk.length());
+                if (offset >= totalChars || nextOffset <= offset || nextOffset > totalChars || nextOffset - offset > limit) {
+                    throw new NativeStoreFailure("DB_READ_FAILED", true);
+                }
+                out = new JSObject();
+                out.put("keyId", keyId);
+                out.put("chunk", chunk);
+                out.put("offset", offset);
+                out.put("nextOffset", nextOffset);
+                out.put("totalChars", totalChars);
+                out.put("seq", cursor.getLong(2));
+                out.put("done", nextOffset == totalChars);
+            }
+        } catch (Throwable t) {
+            failure = t;
+        }
+        if (failure != null) {
+            rejectNative(call, "readRecordChunk", failure);
             return;
         }
         call.resolve(out);
@@ -468,10 +545,13 @@ public class SaagarNativeStorePlugin extends Plugin {
             return "DB_READ_ONLY";
         }
         if (failure instanceof SQLiteException) {
-            return "readPage".equals(operation) ? "DB_READ_FAILED" : "DB_IO_FAILED";
+            return ("readPage".equals(operation) || "readRecordChunk".equals(operation)) ? "DB_READ_FAILED" : "DB_IO_FAILED";
         }
         if (failure instanceof IllegalArgumentException) {
             return "INVALID_ARGUMENT";
+        }
+        if ("readPage".equals(operation) || "readRecordChunk".equals(operation)) {
+            return "DB_READ_FAILED";
         }
         return "STORE_UNAVAILABLE";
     }

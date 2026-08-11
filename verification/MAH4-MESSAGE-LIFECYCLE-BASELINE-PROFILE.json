@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7365,
-    "mah3ProfileSha256": "fd92eb74997eee3d5e8afa2e1454a7fa4217f0e4b6ad71f0d7da6edecefcf8bf",
-    "mah3TreeSha256": "13deb48ea5a5b934751e08cfee59cf1d7a0593d3b2b98d8033cedbd334156937",
-    "currentWwwTreeSha256": "13deb48ea5a5b934751e08cfee59cf1d7a0593d3b2b98d8033cedbd334156937",
-    "currentWwwFileCount": 65,
-    "currentWwwTotalBytes": 7726843,
+    "mah3ProfileSha256": "a27123c6112e2e10b85cd0be00d97443c7de66eb869d2d2a02cedd804a8d40d1",
+    "mah3TreeSha256": "6eea8a6c82bbbbb63c7db16a368c99d3bf5ce543818fc74ef7ff703f35b809c8",
+    "currentWwwTreeSha256": "6eea8a6c82bbbbb63c7db16a368c99d3bf5ce543818fc74ef7ff703f35b809c8",
+    "currentWwwFileCount": 85,
+    "currentWwwTotalBytes": 7974896,
     "shell": {
       "path": "www/index.html",
-      "bytes": 708153,
-      "sha256": "9708bdea2dde2567d70c780c13d92185ad035ea1eee877723a1de6f977bcf230"
+      "bytes": 711857,
+      "sha256": "5730dafe5ea01611d435ec14e42a3f53c103a258666f498ef4d0f06f26c69d6b"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -762,6 +762,9 @@
     "nonStProducerPaths": {
       "__edit_mode_available": [
         "www/modules/service/index.html"
+      ],
+      "PARSE_FOUR_REPORTS": [
+        "www/etp-worker-client.js"
       ]
     },
     "nonStConsumerPaths": {
@@ -772,19 +775,19 @@
         "www/modules/service/index.html"
       ]
     },
-    "directEntrySyntacticPostMessageCalls": 65,
-    "directEntryClassifiedProducerCalls": 65,
-    "directEntryConfiguredPostMessageCalls": 60,
+    "directEntrySyntacticPostMessageCalls": 66,
+    "directEntryClassifiedProducerCalls": 66,
+    "directEntryConfiguredPostMessageCalls": 61,
     "directEntrySyntacticWildcardPostMessageCalls": 59,
     "directEntryConfiguredWildcardPostMessageCalls": 54,
     "dynamicSyntacticPostMessageCalls": 1,
     "dynamicClassifiedProducerCalls": 1,
     "dynamicConfiguredPostMessageCalls": 1,
     "dynamicWildcardPostMessageCalls": 1,
-    "aggregateSyntacticPostMessageCalls": 66,
-    "aggregateConfiguredPostMessageCalls": 61,
+    "aggregateSyntacticPostMessageCalls": 67,
+    "aggregateConfiguredPostMessageCalls": 62,
     "aggregateWildcardPostMessageCalls": 60,
-    "aggregateAcceptedConfiguredPostMessageCalls": 60,
+    "aggregateAcceptedConfiguredPostMessageCalls": 61,
     "knownRejectedConfiguredRoutes": [
       {
         "type": "ST_OPEN_MODULE",
@@ -819,7 +822,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 35,
+    "directEntryScriptAssetCount": 54,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1072,6 +1075,18 @@
       ]
     },
     {
+      "path": "www/etp-worker-client.js",
+      "bytes": 1701,
+      "sha256": "bc0b7e1f0ffdfef90c0017ea6843f1ebbe9d6393ec410313ae1eab547a105b9a",
+      "loadedBy": [
+        "shell"
+      ],
+      "producerTypes": [
+        "PARSE_FOUR_REPORTS"
+      ],
+      "consumerTypes": []
+    },
+    {
       "path": "www/shared/mah4-runtime.js",
       "bytes": 10062,
       "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
@@ -1187,13 +1202,13 @@
       "resizeListeners": 8
     },
     "uniqueDirectAssetCallSites": {
-      "timeouts": 24,
-      "clearTimeouts": 15,
+      "timeouts": 27,
+      "clearTimeouts": 19,
       "intervals": 2,
       "clearIntervals": 2,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 34,
+      "eventListeners": 38,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
@@ -1245,6 +1260,14 @@
           "payroll",
           "planning",
           "tax"
+        ]
+      },
+      {
+        "path": "www/etp-worker-client.js",
+        "bytes": 1701,
+        "sha256": "bc0b7e1f0ffdfef90c0017ea6843f1ebbe9d6393ec410313ae1eab547a105b9a",
+        "loadedBy": [
+          "shell"
         ]
       },
       {
@@ -1302,8 +1325,24 @@
       },
       {
         "path": "www/storage-core.js",
-        "bytes": 82449,
-        "sha256": "aaf77728a7c6fc9aacd33303e2294f09bdbe200ad90cd96a2a8b0beedb3b9864",
+        "bytes": 88172,
+        "sha256": "4e8accc0689dcf71be26c08ab494fd135d21bc742ae6cd4607d08509575994fb",
+        "loadedBy": [
+          "shell"
+        ]
+      },
+      {
+        "path": "www/vendor/fflate-0.8.3.min.js",
+        "bytes": 33044,
+        "sha256": "462ef8041fc970e3615a20a9dd2b2e3047a073b2da729ef4f02b634bba8b7b83",
+        "loadedBy": [
+          "shell"
+        ]
+      },
+      {
+        "path": "www/vendor/read-excel-file-9.3.7.min.js",
+        "bytes": 51749,
+        "sha256": "081c20d5feeb517b92397338c2696df872a0c9fd17922a05f2d864d877fa5c01",
         "loadedBy": [
           "shell"
         ]
@@ -1318,24 +1357,24 @@
       }
     ],
     "rawShellPlusDirectAssetCallSites": {
-      "timeouts": 45,
-      "clearTimeouts": 21,
+      "timeouts": 48,
+      "clearTimeouts": 25,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 48,
+      "eventListeners": 52,
       "removedEventListeners": 2,
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 38,
-      "clearTimeouts": 18,
+      "timeouts": 41,
+      "clearTimeouts": 22,
       "intervals": 4,
       "clearIntervals": 3,
       "mutationObservers": 2,
       "observerDisconnects": 1,
-      "eventListeners": 35,
+      "eventListeners": 39,
       "removedEventListeners": 2,
       "resizeListeners": 1
     },

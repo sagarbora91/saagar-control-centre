@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+const require=createRequire(import.meta.url),api=require('../www/etp-worker-client.js'),source=fs.readFileSync(new URL('../www/etp-import-worker.js',import.meta.url),'utf8');
+test('worker client transfers workbook buffers and terminates after a bounded response',async()=>{let instance;class Worker{constructor(){instance=this;}postMessage(value,transfer){this.transfer=transfer;queueMicrotask(()=>this.onmessage({data:{ok:true,reports:{}}}));}terminate(){this.terminated=true;}}const made=api.create({Worker,url:'worker.js',timeoutMs:1000}),bytes=new Uint8Array([1,2]);const result=await made.client.parse({items:[{bytes},{bytes:new Uint8Array(1)},{bytes:new Uint8Array(1)},{bytes:new Uint8Array(1)}],scope:{},datePolicy:{}});assert.equal(result.ok,true);assert.equal(instance.transfer.length,4);assert.equal(instance.terminated,true);});
+test('hung workers fail with a stable timeout and are terminated',async()=>{let instance;class Worker{constructor(){instance=this;}postMessage(){}terminate(){this.terminated=true;}}const result=await api.create({Worker,timeoutMs:1000}).client.parse({items:[],scope:{},datePolicy:{}});assert.equal(result.code,'XLSX_TIMEOUT');assert.equal(instance.terminated,true);});
+test('worker is offline-only and never logs or returns raw exceptions',()=>{assert.match(source,/importScripts\('vendor\/fflate-0\.8\.3/);assert.match(source,/PARSE_FOUR_REPORTS/);assert.doesNotMatch(source,/console\.|error\.message|filename|localStorage|fetch\(|XMLHttpRequest/);});
