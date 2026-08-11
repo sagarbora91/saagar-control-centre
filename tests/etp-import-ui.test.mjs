@@ -43,4 +43,8 @@ test('shell exposes the dedicated ETP route and loads its external module',()=>{
   assert.match(shell,/<script src="etp-import-ui\.js"><\/script>/);
   assert.match(shell,/Open ETP import/);
   assert.match(shell,/SaagarEtpImportUi\.open/);
+  const reports=shell.slice(shell.indexOf('id="reportsView"'),shell.indexOf('id="configView"'));
+  const settings=shell.slice(shell.indexOf('id="configView"'),shell.indexOf('</main>'));
+  assert.match(reports,/id="reportsEtpImportCard"[\s\S]*Open ETP import/);
+  assert.doesNotMatch(settings,/Retail ETP reports|Open ETP import/);
 });

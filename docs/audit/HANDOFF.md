@@ -2,6 +2,52 @@
 
 **Updated:** 2026-08-12 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+
+## Corrective physical-test checkpoint - 2026-08-12
+
+This checkpoint supersedes the older APK and candidate values below.
+
+- Physical-device testing of APK SHA-256
+  `1C61CEED674B648CC46464B6F3F17211B51FA7936679E7352B8CC85019F5A92B`
+  is **FAIL**: Expense Manager rendered a blank body, and Retail ETP import was
+  mapped under Settings instead of Reports. Do not approve or redistribute that
+  artifact.
+- Expense root cause: the API-23 asset transform resolved a quote-bearing CSS
+  custom property inside an inline JavaScript string. The generated Chrome 44
+  script was invalid even though the source page worked in a modern browser.
+  The transform now keeps all script bytes opaque while resolving CSS variables
+  in HTML/CSS, with a parser regression test.
+- Retail ETP import is now owned by the Reports view and is absent from Settings.
+- Replacement seeded APK:
+  `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`,
+  7,053,364 bytes, SHA-256
+  `E6B26939D7AB0C3F64E79025B5E62F689DE93DCDF3EEEE5D6346F98B93963757`;
+  debug-signed with APK signature schemes v1 and v2.
+- Replacement emulator result: **PASS** on Android 6.0 / API 23. Verified clean
+  install and seed, Expense dashboard render with no syntax/console error, ETP
+  card visible in Reports, ETP absent from Settings, package
+  `com.saagartraders.bcc` version 2.9 (209), minimum SDK 23.
+- Replacement physical-device result: **PASS** on Samsung SM-T875 / Android 13,
+  explicitly reported by the owner after checking the corrected Expense and ETP
+  routing. Exact evidence is recorded in
+  `verification/PHYSICAL-DEVICE-ACCEPTANCE-2026-08-12.md`.
+- Regression result: focused corrective suite 22/22; canonical modular aggregate
+  86/86; main offline suite 262/262; `git diff --check` pass.
+- Corrective publication branch: `agent/modular-phase1-shared-spine-v2`. Resolve
+  its exact final candidate identity with `git rev-parse HEAD`; capability
+  approval must bind that identity rather than any earlier SHA.
+
+Resume in this order:
+
+1. Commit and push the corrective source/evidence and update the candidate
+   target SHA.
+2. Rebind any capability approval envelope to that final committed target;
+   approval against an earlier candidate identity is not reusable.
+3. Run the identity-bound post-migration comparison against the final committed
+   target.
+4. Keep PR #5 in draft until the comparison closes. Physical-device acceptance
+   of the corrective seeded APK is complete; separate external release gates in
+   this handoff remain open.
 **Status:** Modular HTML Phases 1–3 are implemented and published as a draft candidate. API 23 emulator engineering acceptance passed. A2-04 and aggregate migration-test coverage are resolved. The exact 106-row capability ledger is complete and test-enforced. **Post-migration comparison gate C-02 remains blocked only on identity-bound owner approval and the committed-target comparison run; do not merge PR #5 yet.**
 
 > ## ⚑ RESUME HERE — reconcile the post-migration audit candidate

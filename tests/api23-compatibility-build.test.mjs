@@ -16,6 +16,9 @@ test('repository pins a reproducible API-23 emulator toolchain and npm workflow'
   assert.match(pkg.scripts['android:configure'], /android-emulator\.ps1 configure/);
   assert.match(pkg.scripts['android:preflight'], /android-emulator\.ps1 preflight/);
   assert.match(pkg.scripts['emulator:api23:start'], /android-emulator\.ps1 start/);
+  assert.match(emulator, /function Get-AvdSerials/);
+  assert.match(emulator, /& \$adb -s \$serial emu kill/);
+  assert.doesNotMatch(emulator, /& \$adb wait-for-device/);
   assert.match(emulator, /\.android-build/);
   assert.match(emulator, /system-images\\android-23\\default\\x86_64/);
   assert.match(emulator, /sdk\.dir=/);

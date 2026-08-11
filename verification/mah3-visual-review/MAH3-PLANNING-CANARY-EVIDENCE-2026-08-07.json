@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "evidenceId": "mah3-planning-runtime-canary-2026-08-07",
   "reviewer": "Codex / engineering review",
-  "profileSha256": "a19a6944a70643eebb3bf6d2eccf4d2608775cd37bf034f85da99ed47bb96703",
-  "wwwTreeSha256": "05bbaf66e565857025ba8247edd0001dc77090160867552024226f37644fe269",
+  "profileSha256": "94dfe470c3c7a133581855cc884aa6772b4e49b88e2708a9ee31e1921249bc07",
+  "wwwTreeSha256": "dac7dd14d92518881105419082e8e6780478ad3fa39158cc2a6735d38421a6b6",
   "planningSha256": "49bb70aa484f29914871ede7caa5f14bb178a72afe393739fec4983e669c40f4",
   "runtimeSha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
   "matrix": {

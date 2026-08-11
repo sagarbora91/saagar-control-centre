@@ -323,6 +323,11 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
         <h2>Reports</h2>
         <p class="sub">Cross-module rollups computed from your saved data. Tap a card to expand.</p>
       </div>
+      <div class="card card-pad" id="reportsEtpImportCard">
+        <h4><span class="em">📥</span> Retail ETP reports</h4>
+        <p>Import the exact R003, R013, R022 and R025 exports for WLMHW or HEMW. Reports are validated and reconciled before anything is published.</p>
+        <button class="btn gold" onclick="window.SaagarEtpImportUi&&window.SaagarEtpImportUi.open()">Open ETP import</button>
+      </div>
       <div id="reportsList"></div>
     </section>
 
@@ -582,11 +587,6 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 
       <!-- Backup -->
       <div class="sub-section hidden" id="subBackup">
-        <div class="card card-pad">
-          <h4><span class="em">📥</span> Retail ETP reports</h4>
-          <p>Import the exact R003, R013, R022 and R025 exports for WLMHW or HEMW. Reports are validated and reconciled before anything is published.</p>
-          <button class="btn gold" onclick="window.SaagarEtpImportUi&&window.SaagarEtpImportUi.open()">Open ETP import</button>
-        </div>
         <div class="card card-pad storage-capacity-card" id="storageCapacityCard" aria-busy="false">
           <div class="storage-capacity-head">
             <div class="storage-drive-icon" aria-hidden="true">

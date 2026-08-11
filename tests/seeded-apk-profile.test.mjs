@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
+import { transformHtml } from '../scripts/prepare-api23-assets.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoDir = path.resolve(here, '..');
@@ -27,6 +28,27 @@ test('production-oriented source remains clean while the seeded builder targets 
   assert.match(build, /walkInsPerWorkingDay:\s*25/);
   assert.match(build, /finally\s*\{[\s\S]*generatedClean/);
   assert.doesNotMatch(build, /writeFileSync\(sourceIndexPath/);
+
+  const variables = new Map([
+    ['font-serif', "'DM Serif Display',Georgia,serif"],
+    ['navy', '#0d2340']
+  ]);
+  const transformed = transformHtml(
+    '<html><head><style>.title{color:var(--navy)}</style></head><body>' +
+      '<div style="color:var(--navy)">Safe</div>' +
+      '<script>var card=\'<div style="font-family:var(--font-serif)">Value</div>\';</script>' +
+      '</body></html>',
+    'api23-css-string-fixture.html',
+    variables
+  );
+  assert.match(transformed, /\.title\{color:#0d2340\}/);
+  assert.match(transformed, /<div style="color:#0d2340">Safe<\/div>/);
+  const inline = [...transformed.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)]
+    .map(match => match[1])
+    .find(body => body.includes('font-family:var(--font-serif)'));
+  assert.ok(inline);
+  assert.match(inline, /font-family:var\(--font-serif\)/);
+  assert.doesNotThrow(() => new vm.Script(inline));
 });
 
 test('demo shell exposes an unmistakable synthetic-data profile and banner only when active', () => {

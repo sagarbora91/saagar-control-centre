@@ -16,13 +16,13 @@
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
     "fileCount": 100,
-    "totalBytes": 7727695,
-    "treeSha256": "05bbaf66e565857025ba8247edd0001dc77090160867552024226f37644fe269",
+    "totalBytes": 7727711,
+    "treeSha256": "dac7dd14d92518881105419082e8e6780478ad3fa39158cc2a6735d38421a6b6",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 575899,
-        "sha256": "cf13d42c9bca10cd762d4d5fffb4deab5c71167dc0f837e49f015a955bfc57c0"
+        "bytes": 575915,
+        "sha256": "6c0aefea69fa34dc72eccda8b60068dddd3fa8f04a6d7b40f8ca68ee7ffe95fc"
       },
       {
         "path": "www/module-manifest.js",

@@ -58,6 +58,29 @@ function Ensure-Avd {
   if ($LASTEXITCODE -ne 0) { throw "Could not create AVD $AvdName" }
 }
 
+function Get-AvdSerials {
+  $deviceLines = @(& $adb devices)
+  foreach ($line in $deviceLines) {
+    if ($line -notmatch '^(emulator-\d+)\s+device\s*$') { continue }
+    $serial = $Matches[1]
+    $previousErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+      $avdReply = @(& $adb -s $serial emu avd name 2>$null)
+      $avdExitCode = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $previousErrorAction
+    }
+    if ($avdExitCode -ne 0) { continue }
+    $reportedName = $avdReply |
+      Where-Object { $_ -and $_.Trim() -ne 'OK' } |
+      Select-Object -First 1
+    if ($reportedName -and $reportedName.Trim() -eq $AvdName) {
+      Write-Output $serial
+    }
+  }
+}
+
 Set-AndroidEnvironment
 Assert-Toolchain
 
@@ -80,26 +103,31 @@ switch ($Action) {
   'start' {
     Ensure-AndroidProject
     Ensure-Avd
-    $running = @(& $adb devices | Select-String '^emulator-\d+\s+device')
-    if (-not $running) {
+    $serial = @(Get-AvdSerials) | Select-Object -First 1
+    if (-not $serial) {
       $arguments = @('-avd', $AvdName, '-no-window', '-no-audio', '-no-boot-anim', '-gpu', 'swiftshader_indirect')
       if ($ColdBoot) { $arguments += @('-no-snapshot', '-wipe-data') }
       Start-Process -FilePath $emulator -ArgumentList $arguments -WindowStyle Hidden | Out-Null
     }
-    & $adb wait-for-device
     $deadline = (Get-Date).AddMinutes(3)
+    $booted = ''
     do {
-      $booted = (& $adb shell getprop sys.boot_completed 2>$null).Trim()
+      if (-not $serial) { $serial = @(Get-AvdSerials) | Select-Object -First 1 }
+      if ($serial) { $booted = (& $adb -s $serial shell getprop sys.boot_completed 2>$null).Trim() }
       if ($booted -eq '1') { break }
       Start-Sleep -Seconds 2
     } while ((Get-Date) -lt $deadline)
     if ($booted -ne '1') { throw 'API 23 emulator did not finish booting within three minutes.' }
-    Write-Output "API 23 emulator ready: $(& $adb get-serialno)"
+    Write-Output "API 23 emulator ready: $serial ($AvdName)"
   }
   'stop' {
-    $running = @(& $adb devices | Select-String '^emulator-\d+\s+device')
-    if ($running) { & $adb emu kill | Out-Null }
-    Write-Output 'API 23 emulator stopped.'
+    $serials = @(Get-AvdSerials)
+    foreach ($serial in $serials) { & $adb -s $serial emu kill | Out-Null }
+    if ($serials.Count -eq 0) {
+      Write-Output "API 23 emulator already stopped: $AvdName"
+    } else {
+      Write-Output "API 23 emulator stopped: $($serials -join ', ') ($AvdName)"
+    }
   }
   'status' {
     & $adb devices -l

@@ -29,7 +29,9 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // Chrome-44 flex layout fallback and refreshed shell asset identity.
   // +28 bytes on 2026-08-12: behavior-neutral module bridge version-authority
   // rename closes A2-04 while preserving the public version value.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7727695);
+  // +16 bytes on 2026-08-12: Retail ETP import moves from Settings to Reports
+  // and gains a stable Reports-owned card identifier.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7727711);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
