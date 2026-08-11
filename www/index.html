@@ -13,832 +13,12 @@
      origin loads instantly and offline. font-display:swap means system fallbacks (declared in the
      stacks below) paint first, so there is never a blocking wait. DM Sans is a variable font: the
      400 and 500 latin subsets are the same file, so one woff2 backs both weights. -->
-<style id="st-v5-fonts">
-@font-face{font-family:'DM Sans';font-style:normal;font-weight:400;font-display:swap;src:url("fonts/DMSans-400.woff2") format("woff2")}
-@font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url("fonts/DMSans-400.woff2") format("woff2")}
-@font-face{font-family:'DM Serif Display';font-style:normal;font-weight:400;font-display:swap;src:url("fonts/DMSerifDisplay-400.woff2") format("woff2")}
-</style>
+<link rel="stylesheet" href="shell-fonts.css">
 <style>:root{color-scheme:light only}</style>
-<style>
-/* ═════════════════════════════════════════════════════════════════════════
-   SAAGAR TRADERS — BUSINESS CONTROL CENTRE  V5  (APK build = APK_BUILD const, currently 2.9)
-   Single-file shell. Drop into assets/public/index.html. (The About page shows the live
-   APP_VERSION / APK_BUILD via JS — see ~line 5014; keep those constants as the source of truth.)
-   Modules are declared by the versioned local module-manifest.js asset.
-   Same auto-backup.js + whatsapp-share.js + html2pdf scripts as before.
-   ═════════════════════════════════════════════════════════════════════════ */
-
-:root{
-  /* Brand palette — verbatim from the design system */
-  --navy:#0d2340; --navy-mid:#1a3a5c; --navy-light:#264d7a;
-  --gold:#b8922a; --gold-light:#d4a843; --gold-pale:#fdf6e3;
-  --cream:#faf8f3; --paper:#ffffff; --white:#ffffff;
-  --red:#b91c1c; --red-pale:#fef2f2; --red-mid:#fca5a5;
-  --amber:#b45309; --amber-pale:#fffbeb;
-  --green:#166534; --green-pale:#f0fdf4; --green-mid:#bbf7d0;
-  --blue:#1d4ed8;  --blue-pale:#eff6ff;
-  --gray-50:#fafafa; --gray-100:#f4f4f5; --gray-200:#e4e4e7;
-  --gray-300:#d4d4d8; --gray-400:#a1a1aa; --gray-500:#71717a;
-  --gray-600:#52525b; --gray-700:#3f3f46; --gray-800:#27272a;
-  --shadow-sm:0 1px 2px rgba(13,35,64,.06);
-  --shadow:0 2px 12px rgba(13,35,64,.08);
-  --shadow-md:0 6px 20px rgba(13,35,64,.10);
-  --shadow-lg:0 18px 40px rgba(13,35,64,.16);
-  --radius:12px; --radius-lg:16px; --radius-xl:22px;
-  --font-sans:'DM Sans',system-ui,'Segoe UI',Roboto,Arial,sans-serif;
-  --font-serif:'DM Serif Display',Georgia,'Times New Roman',serif;
-  --safe-top:env(safe-area-inset-top,0px);
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
-body{
-  font-family:var(--font-sans);
-  background:var(--cream);color:var(--gray-800);font-size:14px;line-height:1.45;
-  overscroll-behavior:none;
-}
-button,input,select,textarea{font:inherit;color:inherit}
-button{cursor:pointer;background:none;border:none}
-button:disabled{opacity:.55;cursor:not-allowed}
-.hidden{display:none !important}
-code{font-family:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-
-/* ── APP SHELL ─────────────────────────────────────────────────────────── */
-.app{
-  position:fixed;inset:0;display:grid;
-  grid-template-rows:auto 1fr auto;
-  background:var(--cream);
-}
-
-/* ── TOPBAR ────────────────────────────────────────────────────────────── */
-.topbar{
-  background:var(--navy);color:#fff;
-  padding:calc(10px + var(--safe-top)) 16px 10px;
-  display:flex;align-items:center;gap:12px;
-  box-shadow:0 1px 0 rgba(255,255,255,.06),0 2px 12px rgba(13,35,64,.18);
-  z-index:30;
-}
-.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.mark{
-  width:38px;height:38px;border-radius:11px;
-  background:linear-gradient(135deg,var(--gold),var(--gold-light));
-  display:grid;place-items:center;color:var(--navy);
-  font-family:'DM Serif Display',serif;font-size:18px;
-  box-shadow:0 6px 14px rgba(184,146,42,.35),inset 0 1px 0 rgba(255,255,255,.4);
-  flex-shrink:0;
-}
-.brand-meta{min-width:0;flex:1}
-.brand-meta h1{
-  font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;
-  color:var(--gold-light);letter-spacing:.2px;line-height:1.1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.brand-meta p{
-  font-size:10px;color:rgba(255,255,255,.55);font-weight:500;
-  letter-spacing:.08em;text-transform:uppercase;margin-top:2px;
-}
-.top-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.icon-btn{
-  width:38px;height:38px;border-radius:11px;
-  background:rgba(255,255,255,.08);color:#fff;
-  display:grid;place-items:center;transition:all .15s;
-  position:relative;
-}
-.icon-btn:hover,.icon-btn:active{background:rgba(255,255,255,.16)}
-/* Audit fix L-LIVE-1: at phone widths the top-actions row was flex-shrink:0 (~272px, incl. a 140px role
-   select), collapsing .brand-meta to ~0 — the brand name vanished and the overflow:visible subtitle spilled
-   right, overlapping the role selector ("CON…Store Manager…CENTRE"). Let the actions compress, cap the role
-   select (`.topbar .role-select` beats the base `.role-select{max-width:140px}` at :794), and drop the
-   redundant subtitle so the ellipsized brand name has the row. Shell-only, no module impact. */
-@media(max-width:480px){
-  .top-actions{flex-shrink:1;min-width:0;gap:4px}
-  .topbar .role-select{max-width:104px;min-width:44px;flex-shrink:1}
-  .brand-meta p{display:none}
-}
-.icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.admin-dot{
-  position:absolute;top:7px;right:7px;width:8px;height:8px;border-radius:50%;
-  background:var(--green);border:2px solid var(--navy);display:none;
-}
-body.admin-on .admin-dot{display:block}
-.version-pill{
-  font-size:10px;font-weight:700;color:var(--gold-light);
-  background:rgba(184,146,42,.18);border:1px solid rgba(184,146,42,.35);
-  padding:3px 8px;border-radius:999px;letter-spacing:.06em;
-}
-
-/* ── MAIN VIEW SCROLLER ────────────────────────────────────────────────── */
-.main{
-  overflow:hidden auto;-webkit-overflow-scrolling:touch;
-  padding:14px 14px 18px;
-  background:var(--cream);
-}
-/* Wave-13 P1-39: Text-size "Large" — modest zoom on the chrome scroller only (NOT the fixed topbar/botnav or the module overlay). */
-html.st-textsize-large #mainContent{zoom:1.12}
-.view{display:none;animation:fadeIn .25s ease}
-.view.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── BOTTOM NAV ────────────────────────────────────────────────────────── */
-.botnav{
-  background:var(--navy-mid);color:#fff;
-  display:grid;grid-template-columns:repeat(4,1fr);
-  padding:6px 4px calc(6px + var(--safe-bottom));
-  box-shadow:0 -2px 14px rgba(13,35,64,.18);
-  z-index:30;
-}
-.tab{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:8px 4px 6px;gap:3px;
-  color:rgba(255,255,255,.55);font-size:10px;font-weight:600;
-  letter-spacing:.04em;border-radius:10px;
-  transition:color .15s,background .15s;position:relative;
-  min-height:50px;
-}
-.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.tab.active{color:var(--gold-light)}
-.tab.active::before{
-  content:"";position:absolute;top:2px;left:30%;right:30%;height:3px;
-  background:var(--gold-light);border-radius:0 0 4px 4px;
-}
-.tab:active{background:rgba(255,255,255,.06)}
-
-/* ── PAGE HEADER (per view) ────────────────────────────────────────────── */
-.page-head{margin-bottom:14px}
-.page-head h2{
-  font-family:'DM Serif Display',serif;font-size:24px;font-weight:400;
-  color:var(--navy);line-height:1.1;
-}
-.page-head .sub{color:var(--gray-600);font-size:13px;margin-top:3px}
-.page-head .greet{
-  font-size:12px;color:var(--gold);font-weight:600;text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:3px;
-}
-
-/* ── SECTION HEADERS ───────────────────────────────────────────────────── */
-.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 10px}
-.section-head h3{
-  font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;
-  color:var(--navy);line-height:1;
-}
-.section-head .link{
-  font-size:12px;font-weight:700;color:var(--gold);
-  display:inline-flex;align-items:center;gap:4px;
-}
-.section-head .link:active{color:var(--navy)}
-
-/* ── CARDS (uniform panel pattern) ─────────────────────────────────────── */
-.card{
-  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
-  box-shadow:var(--shadow);padding:14px;margin-bottom:12px;
-}
-.card-pad{padding:16px}
-.card h4{
-  font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;
-  display:flex;align-items:center;gap:8px;
-}
-.card h4 .em{font-size:18px}
-.card p{font-size:13px;color:var(--gray-600);line-height:1.5}
-
-/* ── KPI GRID ──────────────────────────────────────────────────────────── */
-.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.kpi{
-  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
-  padding:12px 13px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
-}
-.kpi::after{
-  content:"";position:absolute;top:0;right:0;width:60px;height:60px;
-  background:radial-gradient(circle at top right,rgba(184,146,42,.10),transparent 70%);
-  pointer-events:none;
-}
-.kpi .label{
-  font-size:10px;color:var(--gray-500);font-weight:700;
-  text-transform:uppercase;letter-spacing:.08em;
-}
-.kpi .value{
-  font-family:'DM Serif Display',serif;font-size:26px;font-weight:400;
-  color:var(--navy);line-height:1.1;margin:5px 0 3px;
-}
-.kpi .note{font-size:11px;color:var(--gray-600);line-height:1.3}
-.kpi .value.green{color:var(--green)}
-.kpi .value.amber{color:var(--amber)}
-.kpi .value.red{color:var(--red)}
-
-/* ── TODAY'S BRIEF (hero card on Home) ─────────────────────────────────── */
-.brief{
-  background:linear-gradient(135deg,var(--navy),var(--navy-mid));
-  color:#fff;border-radius:var(--radius-lg);padding:16px;
-  box-shadow:var(--shadow-md);position:relative;overflow:hidden;
-  margin-bottom:14px;
-}
-.brief::before{
-  content:"";position:absolute;top:-30px;right:-30px;width:130px;height:130px;
-  background:radial-gradient(circle,rgba(184,146,42,.20),transparent 70%);pointer-events:none;
-}
-.brief-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;position:relative}
-.brief-head .date-tag{
-  font-size:10px;font-weight:700;color:var(--gold-light);
-  text-transform:uppercase;letter-spacing:.08em;
-}
-.brief-head h3{
-  font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;
-  color:#fff;margin-top:2px;line-height:1.15;
-}
-.brief-share{
-  font-size:11px;font-weight:700;color:var(--navy);
-  background:var(--gold-light);padding:7px 11px;border-radius:999px;
-  display:inline-flex;align-items:center;gap:5px;flex-shrink:0;
-}
-.brief-share svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.4}
-.brief-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;position:relative}
-.brief-stat{
-  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);
-  border-radius:10px;padding:9px 10px;
-}
-.brief-stat b{
-  display:block;font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;
-  color:#fff;line-height:1.1;
-}
-.brief-stat span{font-size:10px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-.brief-stat.tappable{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.brief-stat.tappable:active{transform:scale(.96);border-color:rgba(255,255,255,.30)}
-.brief-line{
-  font-size:12px;color:rgba(255,255,255,.85);margin-top:11px;
-  display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:relative;
-}
-.brief-line .pill{
-  background:#f1f5f9;border:1px solid #e2e8f0;color:#334155;
-  padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;
-}
-.brief-line .pill.warn{background:#fff7ed;border-color:#fed7aa;color:#b45309}
-.brief-line .pill.ok{background:#ecfdf3;border-color:#bbf7d0;color:#166534}
-.brief-line .pill.bad{background:#fef2f2;border-color:#fecaca;color:#b91c1c}
-
-/* ── MODULE HEALTH STRIP ───────────────────────────────────────────────── */
-/* Horizontally scrollable (like .cat-tabs) so NO module tile is ever hidden on
-   small phones — every module stays reachable by swiping the strip sideways. */
-.health-strip{
-  display:flex;gap:6px;overflow-x:auto;
-  padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;
-}
-.health-strip::-webkit-scrollbar{display:none}
-.health-tile{
-  flex:0 0 auto;min-width:62px;
-  background:var(--paper);border:1px solid var(--gray-200);border-radius:10px;
-  padding:9px 6px;text-align:center;cursor:pointer;
-  transition:transform .12s,box-shadow .12s,border-color .12s;
-}
-.health-tile:active{transform:scale(.95)}
-.health-tile.ok{border-color:var(--green-mid);background:linear-gradient(180deg,var(--green-pale),#fff)}
-.health-tile.warn{border-color:#fde68a;background:linear-gradient(180deg,var(--amber-pale),#fff)}
-.health-tile.empty{background:var(--gray-50)}
-.health-tile .h-icon{font-size:18px;line-height:1}
-.health-tile .h-name{
-  font-size:9px;font-weight:700;color:var(--navy);
-  margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  letter-spacing:.02em;
-}
-.health-tile .h-dot{
-  width:6px;height:6px;border-radius:50%;display:inline-block;margin-top:3px;
-  background:var(--gray-400);
-}
-.health-tile.ok .h-dot{background:var(--green)}
-.health-tile.warn .h-dot{background:var(--amber)}
-
-/* ── QUICK ACTIONS ─────────────────────────────────────────────────────── */
-.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.quick{
-  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
-  padding:11px 8px;text-align:center;
-  transition:transform .12s,border-color .12s;
-  display:flex;flex-direction:column;align-items:center;gap:5px;
-}
-.quick:active{transform:scale(.96);border-color:var(--gold)}
-.quick .qicon{
-  width:36px;height:36px;border-radius:11px;
-  background:var(--gold-pale);color:var(--navy);
-  display:grid;place-items:center;font-size:18px;
-  border:1px solid rgba(184,146,42,.20);
-}
-.quick strong{
-  display:block;font-size:11px;color:var(--navy);font-weight:700;
-  letter-spacing:.01em;line-height:1.25;
-}
-
-/* ── BUTTONS ───────────────────────────────────────────────────────────── */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:9px 14px;border-radius:10px;font-weight:700;font-size:13px;
-  background:#fff;color:var(--navy);border:1px solid var(--gray-300);
-  box-shadow:var(--shadow-sm);transition:all .12s;
-  white-space:nowrap;
-}
-.btn:active{transform:scale(.97)}
-.btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
-.btn.gold{background:var(--gold);color:#fff;border-color:var(--gold)}
-.btn.green{background:var(--green);color:#fff;border-color:var(--green)}
-.btn.red{background:#fff;color:var(--red);border-color:var(--red-mid)}
-.btn.outline-gold{background:#fff;color:var(--gold);border-color:var(--gold)}
-.btn.small{padding:6px 10px;font-size:12px;border-radius:8px}
-.btn.tiny{padding:4px 8px;font-size:11px;border-radius:7px}
-.btn.block{display:flex;width:100%}
-.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
-
-/* ── ACTIVITY LIST ─────────────────────────────────────────────────────── */
-.activity-item{
-  display:flex;align-items:center;gap:10px;padding:9px 0;
-  border-bottom:1px solid var(--gray-200);
-}
-.activity-item:last-child{border-bottom:none}
-.activity-ico{
-  width:34px;height:34px;border-radius:10px;background:var(--gold-pale);
-  display:grid;place-items:center;font-size:16px;flex-shrink:0;
-  border:1px solid rgba(184,146,42,.18);
-}
-.activity-text{flex:1;min-width:0}
-.activity-text strong{
-  display:block;font-size:13px;color:var(--navy);font-weight:700;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.activity-text span{font-size:11px;color:var(--gray-500)}
-
-/* ── ATTENTION ROW ─────────────────────────────────────────────────────── */
-.attn{
-  display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;
-  background:#fff;border:1px solid var(--gray-200);border-radius:10px;
-  padding:10px 11px;margin-bottom:7px;
-}
-.attn .dot{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 4px rgba(29,78,216,.12)}
-.attn .dot.green{background:var(--green);box-shadow:0 0 0 4px rgba(22,101,52,.12)}
-.attn .dot.orange{background:var(--amber);box-shadow:0 0 0 4px rgba(180,83,9,.14)}
-.attn .dot.red{background:var(--red);box-shadow:0 0 0 4px rgba(185,28,28,.12)}
-.attn-text strong{display:block;font-size:13px;color:var(--navy);font-weight:700;line-height:1.25}
-.attn-text span{display:block;font-size:11px;color:var(--gray-500);margin-top:2px}
-/* Wave-13 P1-38: Attention dismiss/snooze controls (occupy the existing third auto cell of the .attn grid). */
-.attn-acts{display:flex;gap:6px;align-items:center}
-.attn-ico-btn{border:1px solid var(--gray-300);background:#fff;color:var(--gray-600);width:26px;height:26px;border-radius:7px;font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
-.attn-ico-btn:hover{background:var(--gray-50);color:var(--navy)}
-.attn.snoozed{opacity:.6}
-.attn-csec{font-size:10px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
-@media(max-width:480px){
-  .attn{grid-template-columns:auto minmax(0,1fr);align-items:start}
-  .attn-acts{grid-column:2;flex-wrap:wrap;margin-top:4px}
-  .attn-ico-btn{width:40px;height:40px;font-size:15px}
-}
-
-/* ── EMPTY STATES ──────────────────────────────────────────────────────── */
-.empty{
-  border:1px dashed var(--gray-300);border-radius:var(--radius);
-  padding:24px 16px;text-align:center;color:var(--gray-500);
-  background:var(--gray-50);font-size:13px;
-}
-.empty .em{font-size:32px;display:block;margin-bottom:8px;opacity:.5}
-
-/* ── MODULES VIEW (cards) ──────────────────────────────────────────────── */
-.search-bar{margin-bottom:12px;position:relative}
-.search-input{
-  width:100%;height:42px;border:1px solid var(--gray-300);border-radius:11px;
-  padding:0 14px 0 38px;background:#fff;font-size:13px;
-}
-.search-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,42,.15)}
-.search-bar::before{
-  content:"";position:absolute;left:13px;top:50%;transform:translateY(-50%);
-  width:16px;height:16px;
-  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2363748b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") no-repeat center/contain;
-}
-.cat-tabs{
-  display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;
-  padding-bottom:2px;scrollbar-width:none;
-}
-.cat-tabs::-webkit-scrollbar{display:none}
-.cat-tab{
-  padding:7px 13px;border-radius:999px;background:#fff;
-  border:1px solid var(--gray-300);color:var(--gray-600);
-  font-size:12px;font-weight:700;white-space:nowrap;
-}
-.cat-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
-.module-grid{display:grid;grid-template-columns:1fr;gap:10px}
-.mcard{
-  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
-  padding:14px;display:flex;align-items:flex-start;gap:11px;
-  box-shadow:var(--shadow-sm);
-}
-.mcard-icon{
-  width:44px;height:44px;border-radius:12px;background:var(--gold-pale);
-  display:grid;place-items:center;font-size:22px;flex-shrink:0;
-  border:1px solid rgba(184,146,42,.20);
-}
-.mcard-body{flex:1;min-width:0}
-.mcard-body h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:3px}
-.mcard-body p{font-size:12px;color:var(--gray-600);line-height:1.35;margin-bottom:8px}
-.mcard-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tag{
-  font-size:10px;font-weight:700;color:var(--gold);background:var(--gold-pale);
-  border:1px solid rgba(184,146,42,.20);padding:2px 7px;border-radius:999px;
-  text-transform:uppercase;letter-spacing:.04em;
-}
-.status-pill{
-  font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;
-  background:var(--gray-100);color:var(--gray-500);border:1px solid var(--gray-200);
-}
-.status-pill.has{background:var(--green-pale);color:var(--green);border-color:var(--green-mid)}
-.status-pill.lock{background:var(--amber-pale);color:var(--amber);border-color:#fde68a}
-
-/* ── REPORTS VIEW ──────────────────────────────────────────────────────── */
-.rep-card{
-  background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);
-  margin-bottom:12px;overflow:hidden;
-}
-.rep-head{
-  display:flex;align-items:center;gap:10px;padding:13px 14px;
-  cursor:pointer;background:#fff;
-}
-.rep-head .em{font-size:22px}
-.rep-head .ttl{flex:1;min-width:0}
-.rep-head .ttl strong{display:block;font-size:14px;font-weight:700;color:var(--navy)}
-.rep-head .ttl span{display:block;font-size:11px;color:var(--gray-500);margin-top:1px}
-.rep-head .chev{
-  width:24px;height:24px;display:grid;place-items:center;color:var(--gray-400);
-  transition:transform .2s;
-}
-.rep-card.open .rep-head .chev{transform:rotate(90deg);color:var(--gold)}
-.rep-body{
-  display:none;padding:0 14px 14px;border-top:1px solid var(--gray-200);
-}
-.rep-card.open .rep-body{display:block}
-.rep-body .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.score-pill{
-  display:inline-block;padding:2px 8px;border-radius:999px;
-  font-size:11px;font-weight:700;
-}
-.score-pill.sp100{background:var(--green-pale);color:var(--green)}
-.score-pill.sphigh{background:#dcfce7;color:var(--green)}
-.score-pill.spmid{background:var(--amber-pale);color:var(--amber)}
-.score-pill.splow{background:var(--red-pale);color:var(--red)}
-
-/* ── TABLE ─────────────────────────────────────────────────────────────── */
-.table-wrap{
-  overflow-x:auto;border:1px solid var(--gray-200);border-radius:10px;
-  margin-top:8px;-webkit-overflow-scrolling:touch;
-}
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{
-  background:var(--navy);color:#fff;text-align:left;
-  padding:8px 9px;font-weight:600;white-space:nowrap;font-size:11px;
-  text-transform:uppercase;letter-spacing:.04em;
-}
-.tbl td{padding:8px 9px;border-bottom:1px solid var(--gray-200);vertical-align:top}
-.tbl tr:last-child td{border-bottom:0}
-.tbl tr.mine{background:var(--gold-pale)}
-.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
-.tbl input,.tbl select{
-  width:100%;border:1px solid var(--gray-300);border-radius:7px;
-  padding:5px 7px;background:#fff;font-size:12px;
-}
-
-/* ── CONFIG SUBTABS ────────────────────────────────────────────────────── */
-.subtabs{
-  display:flex;gap:4px;overflow-x:auto;margin-bottom:14px;
-  border-bottom:2px solid var(--gray-200);padding-bottom:0;
-  scrollbar-width:none;
-}
-.subtabs::-webkit-scrollbar{display:none}
-.subtab{
-  padding:9px 14px;font-size:12px;font-weight:700;color:var(--gray-500);
-  white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px;
-  transition:all .15s;
-}
-.subtab.active{color:var(--navy);border-bottom-color:var(--gold)}
-.security-status-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
-.module-pin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
-.module-pin-option{display:flex;align-items:center;gap:10px;min-width:0;padding:11px 12px;border:1px solid var(--gray-200);border-radius:10px;background:var(--gray-50);cursor:pointer}
-.module-pin-option:hover{border-color:var(--gold);background:var(--gold-pale)}
-.module-pin-option.is-disabled{cursor:not-allowed;opacity:.62}
-.module-pin-option input{width:20px;height:20px;min-width:20px;accent-color:var(--gold)}
-.module-pin-copy{min-width:0}
-.module-pin-copy strong{display:block;color:var(--navy);font-size:13px}
-.module-pin-copy span{display:block;color:var(--gray-500);font-size:11px;line-height:1.35;margin-top:2px}
-@media(max-width:600px){.module-pin-grid{grid-template-columns:1fr}}
-.storage-capacity-card{overflow:hidden;border-color:#cfd8e3;background:linear-gradient(180deg,#fff,#f8fafc)}
-.storage-capacity-head{display:flex;align-items:center;gap:12px}
-.storage-capacity-copy{flex:1;min-width:0}
-.storage-capacity-copy h4{margin:0}
-.storage-capacity-copy p{margin:3px 0 0;color:var(--gray-600);font-size:12px}
-.storage-drive-icon{width:46px;height:38px;flex:none;display:grid;place-items:center;border-radius:9px;background:#eef4f8;color:#237ca7;border:1px solid #d5e2ea}
-.storage-drive-icon svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.storage-capacity-meter{height:16px;margin-top:14px;overflow:hidden;border:1px solid #b8c0c8;border-radius:2px;background:#e5e7eb;box-shadow:inset 0 1px 2px rgba(13,35,64,.12)}
-.storage-capacity-fill{width:0;height:100%;background:linear-gradient(90deg,#168fc4,#2da7d7);transition:width .25s ease}
-.storage-capacity-labels{display:flex;justify-content:space-between;gap:12px;margin-top:6px;color:var(--gray-600);font-size:11px;font-variant-numeric:tabular-nums}
-.storage-capacity-db{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid var(--gray-200);font-size:12px}
-.storage-capacity-db strong{color:var(--navy);font-variant-numeric:tabular-nums;text-align:right}
-.storage-capacity-detail{margin:6px 0 0!important;color:var(--gray-500)!important;font-size:11px!important;line-height:1.45}
-@media(max-width:600px){.storage-capacity-head{align-items:flex-start;flex-wrap:wrap}.storage-capacity-copy{min-width:calc(100% - 62px)}.storage-capacity-head .btn{margin-left:58px}.storage-capacity-db{align-items:flex-start}}
-
-/* ── REPORTS dashboard (consolidated hub) ──────────────────────────────── */
-.rep-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.rep-controls .subtabs{display:flex;gap:2px;border-bottom:2px solid var(--gray-200)}
-.rep-controls input[type=date],.rep-controls input[type=month]{font-family:inherit;font-size:13px;font-weight:600;color:var(--navy);padding:7px 10px;border:1px solid var(--gray-300);border-radius:8px;background:#fff}
-.rcard{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden}
-.rcard>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;padding:13px 15px;color:var(--navy);background:linear-gradient(180deg,#fff,#fbfaf6)}
-.rcard>summary::-webkit-details-marker{display:none}
-.rcard>summary::after{content:'⌄';margin-left:auto;color:var(--gold);font-size:18px;line-height:1;transition:transform .2s}
-.rcard[open]>summary::after{transform:rotate(180deg)}
-.rcard>summary b{font-size:14px;font-weight:700}
-.rcard>summary small{color:var(--gray-500);font-weight:600;font-size:11.5px}
-.r-icon{font-size:18px;line-height:1}
-.r-body{padding:13px 15px;border-top:1px solid var(--gray-100)}
-.r-body>p{font-size:13px;color:var(--gray-800);line-height:1.5}
-.r-h5{font-size:12px;font-weight:700;color:var(--navy);margin:12px 0 6px;text-transform:uppercase;letter-spacing:.5px}
-.r-foot{font-size:11.5px;color:var(--gray-500);margin-top:8px}
-.r-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.snap{white-space:pre-wrap;font-family:'DM Sans',monospace;font-size:12.5px;line-height:1.6;background:var(--cream);border:1px solid var(--gray-200);border-radius:8px;padding:12px;color:var(--gray-800);margin:0}
-.age-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-@media(max-width:560px){.age-grid{grid-template-columns:repeat(2,1fr)}}
-.age-card{background:var(--gray-100);border-radius:9px;padding:11px 8px;text-align:center;border:1px solid var(--gray-200)}
-.age-card b{display:block;font-size:21px;font-weight:800;line-height:1.1;color:var(--navy)}
-.age-card span{font-size:10.5px;color:var(--gray-600);font-weight:600}
-.age-card.green{background:var(--green-pale);border-color:var(--green-mid)}.age-card.green b{color:var(--green)}
-.age-card.amber{background:var(--amber-pale);border-color:#fde68a}.age-card.amber b{color:var(--amber)}
-.age-card.orange{background:#fff4ed;border-color:#fed7aa}.age-card.orange b{color:#c2410c}
-.age-card.red{background:var(--red-pale);border-color:#fecaca}.age-card.red b{color:var(--red)}
-.exp-totals{display:flex;gap:8px;flex-wrap:wrap}
-.exp-total{flex:1;min-width:90px;background:var(--cream);border:1px solid var(--gray-200);border-radius:9px;padding:10px 12px;text-align:center}
-.exp-total b{display:block;font-size:18px;font-weight:800;color:var(--navy)}
-.exp-total span{font-size:10.5px;color:var(--gray-600);font-weight:600}
-.exp-total b.green{color:var(--green)}.exp-total b.amber{color:var(--amber)}.exp-total b.red{color:var(--red)}
-.trend-grid{display:flex;align-items:flex-end;gap:2px;height:64px;padding:6px 0;border-bottom:1px solid var(--gray-200)}
-.trend-bar{flex:1;min-width:3px;border-radius:2px 2px 0 0;background:var(--gray-300)}
-.trend-bar.green{background:var(--green)}.trend-bar.amber{background:var(--gold)}.trend-bar.red{background:var(--red)}.trend-bar.idle{background:var(--gray-200)}
-.trend-foot{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--gray-600)}
-.data-table{width:100%;border-collapse:collapse;font-size:12.5px}
-.data-table.small{font-size:12px}
-.data-table th{text-align:left;padding:7px 8px;border-bottom:2px solid var(--gray-200);color:var(--gray-600);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
-.data-table td{padding:7px 8px;border-bottom:1px solid var(--gray-100);color:var(--gray-800);vertical-align:top}
-.data-table .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.data-table .num.green{color:var(--green);font-weight:700}.data-table .num.amber{color:var(--amber);font-weight:700}.data-table .num.red{color:var(--red);font-weight:700}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--gray-400);vertical-align:middle}
-.dot.green{background:var(--green)}.dot.amber{background:var(--gold)}.dot.red{background:var(--red)}
-
-/* ── FIELD GRIDS (forms) ───────────────────────────────────────────────── */
-.field-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:10px}
-.field-grid .full{grid-column:1/-1}
-.field label{
-  display:block;font-size:10px;font-weight:700;color:var(--gray-500);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;
-}
-.field input,.field select,.field textarea{
-  width:100%;border:1px solid var(--gray-300);border-radius:9px;
-  padding:8px 10px;background:#fff;font-size:13px;color:var(--gray-800);
-}
-.field input:focus,.field select:focus,.field textarea:focus{
-  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,42,.12);
-}
-
-/* ── EMP STATS GRID ────────────────────────────────────────────────────── */
-.emp-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
-.emp-stat{
-  background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:10px;
-}
-.emp-stat .label{
-  font-size:10px;color:var(--gray-500);font-weight:700;
-  text-transform:uppercase;letter-spacing:.05em;
-}
-.emp-stat .value{
-  font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;
-  color:var(--navy);line-height:1.1;margin-top:3px;
-}
-.emp-stat .note{font-size:11px;color:var(--gray-500);margin-top:2px}
-.emp-badge{
-  display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:999px;
-  font-size:10px;font-weight:700;
-  background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);
-}
-.emp-badge.active{background:var(--green-pale);color:var(--green);border-color:var(--green-mid)}
-.emp-badge.inactive{background:var(--red-pale);color:var(--red);border-color:#fecaca}
-
-/* ── BANNER NOTES ──────────────────────────────────────────────────────── */
-.note-banner{
-  background:var(--blue-pale);border:1px solid #bfdbfe;color:#1e3a8a;
-  border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;
-  margin-bottom:10px;line-height:1.4;
-}
-.note-banner.warn{background:var(--amber-pale);border-color:#fde68a;color:var(--amber)}
-.note-banner.danger{background:var(--red-pale);border-color:#fecaca;color:var(--red)}
-
-/* ── MODULE OVERLAY (when a module is open) ────────────────────────────── */
-.module-screen{
-  position:fixed;inset:0;background:#fff;z-index:100;
-  display:grid;grid-template-rows:auto 1fr;grid-template-columns:minmax(0,1fr);
-  padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);
-}
-.module-bar{
-  background:var(--navy);color:#fff;
-  padding:10px 12px;display:flex;align-items:center;gap:8px;
-  box-shadow:0 2px 10px rgba(13,35,64,.18);
-}
-.module-bar .back{
-  width:34px;height:34px;border-radius:9px;
-  background:rgba(255,255,255,.10);color:#fff;
-  display:grid;place-items:center;
-}
-.module-bar .back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4}
-.module-title{flex:1;min-width:0}
-.module-title h3{
-  font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;
-  color:var(--gold-light);line-height:1.1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.module-title p{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
-.module-bar .m-action{
-  width:34px;height:34px;border-radius:9px;
-  background:rgba(255,255,255,.10);color:#fff;
-  display:grid;place-items:center;
-}
-.module-bar .m-action svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
-/* Toolbar overflow — DESKTOP: render everything inline (menu is just a transparent
-   wrapper, the "…" toggle is hidden), so desktop behaviour is unchanged. */
-.m-overflow{display:contents}
-.m-overflow-toggle{display:none}
-.m-overflow-menu{display:contents}
-.m-overflow-menu .m-ovi span{display:none}
-/* Toolbar overflow — MOBILE: keep BACK + title + primary Share visible; collapse the
-   rest into a "…" dropdown. Actions are MOVED (not display:none), still fully clickable. */
-html.bcc-mobile .m-overflow{display:block;position:relative}
-html.bcc-mobile .m-overflow-toggle{display:grid}
-html.bcc-mobile .m-overflow-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;min-width:188px;background:#fff;color:var(--navy);border:1px solid var(--gray-200);border-radius:12px;box-shadow:0 12px 32px rgba(13,35,64,.28);padding:6px;z-index:120}
-html.bcc-mobile .m-overflow.open .m-overflow-menu{display:block}
-html.bcc-mobile .m-overflow-menu .m-ovi{display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start;border-radius:8px;padding:9px 11px;background:none;color:var(--navy)}
-html.bcc-mobile .m-overflow-menu .m-ovi svg{width:17px;height:17px;stroke:var(--navy)}
-html.bcc-mobile .m-overflow-menu .m-ovi span{display:inline;font:600 13px var(--font-sans);white-space:nowrap}
-html.bcc-mobile .m-overflow-menu .m-ovi:active{background:var(--gray-100)}
-.frame-wrap{position:relative;overflow:hidden;background:#fff;min-width:0;max-width:100%;box-sizing:border-box}
-.module-frame{width:100%;height:100%;border:0;display:block;min-width:0;max-width:100%;box-sizing:border-box}
-.loader{
-  position:absolute;inset:0;background:rgba(250,248,243,.85);
-  display:grid;place-items:center;z-index:5;
-}
-.loader-card{
-  background:#fff;border:1px solid var(--gray-200);border-radius:14px;
-  padding:14px 18px;display:flex;align-items:center;gap:10px;
-  box-shadow:var(--shadow-md);color:var(--navy);font-weight:700;
-}
-.spin{
-  width:18px;height:18px;border:3px solid var(--gray-200);
-  border-top-color:var(--gold);border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── MODAL ─────────────────────────────────────────────────────────────── */
-.modal-backdrop{
-  position:fixed;inset:0;background:rgba(13,35,64,.55);
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-  display:flex;align-items:flex-end;justify-content:center;
-  padding:0;z-index:200;
-}
-@media(min-width:600px){.modal-backdrop{align-items:center;padding:20px}}
-.modal{
-  width:100%;max-width:540px;max-height:88vh;overflow:auto;
-  background:#fff;border-radius:18px 18px 0 0;
-  box-shadow:var(--shadow-lg);
-  animation:slideUp .25s cubic-bezier(.2,.9,.3,1);
-}
-@media(min-width:600px){.modal{border-radius:18px;width:auto;min-width:380px}}
-@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-head{
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:14px 16px;border-bottom:1px solid var(--gray-200);
-  position:sticky;top:0;background:#fff;z-index:2;
-}
-.modal-head h3{
-  font-family:'DM Serif Display',serif;font-size:17px;font-weight:400;color:var(--navy);
-}
-.modal-close{
-  width:30px;height:30px;border-radius:8px;background:var(--gray-100);
-  display:grid;place-items:center;color:var(--gray-600);
-}
-.modal-body{padding:16px}
-
-/* ── TOAST ─────────────────────────────────────────────────────────────── */
-.toast{
-  position:fixed;left:50%;bottom:calc(80px + var(--safe-bottom));
-  transform:translateX(-50%) translateY(18px);
-  background:var(--navy);color:#fff;
-  padding:11px 18px;border-radius:999px;
-  font-size:13px;font-weight:700;
-  box-shadow:var(--shadow-lg);z-index:300;
-  opacity:0;pointer-events:none;transition:.22s cubic-bezier(.2,.9,.3,1);
-  max-width:90vw;text-align:center;
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ── CHART / MINI BAR ──────────────────────────────────────────────────── */
-.mini-bar{display:inline-block;width:60px;height:6px;background:var(--gray-200);border-radius:3px;vertical-align:middle;margin:0 4px}
-.mini-fill{display:block;height:6px;border-radius:3px;background:var(--green)}
-.trend-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--gray-100)}
-.trend-row:last-child{border-bottom:0}
-.trend-row .day{width:64px;color:var(--gray-500);font-weight:600;font-size:11px}
-.trend-row .bar{flex:1;height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden}
-.trend-row .bar i{display:block;height:8px;border-radius:4px}
-.trend-row .val{width:48px;text-align:right;font-weight:700;color:var(--navy)}
-
-/* ── RESPONSIVE (tablets / desktop) ────────────────────────────────────── */
-@media(min-width:600px){
-  .kpi-grid{grid-template-columns:repeat(4,1fr)}
-  .quick-grid{grid-template-columns:repeat(4,1fr)}
-  .module-grid{grid-template-columns:repeat(2,1fr)}
-  .field-grid{grid-template-columns:repeat(3,1fr)}
-  .emp-stats{grid-template-columns:repeat(4,1fr)}
-  .main{padding:18px 22px 26px}
-}
-@media(min-width:900px){
-  .module-grid{grid-template-columns:repeat(3,1fr)}
-}
-/* (Removed the ≤380px rule that re-gridded the health strip to 4 columns and hid
-   tiles 8+. The strip is now a horizontal scroller, so every module stays visible
-   on the narrowest phones — swipe sideways to reach the rest.) */
-
-/* ── PRINT (for in-app print, mostly modules handle this themselves) ──── */
-@media print{
-  .topbar,.botnav,.toast,.search-bar,.cat-tabs,.module-bar{display:none !important}
-  .app{position:static;overflow:visible}
-  .main{overflow:visible;padding:0}
-}
-/* Module PRINT PREVIEW + print bridge: a module posts {type:'ST_PRINT',title,css,html,orientation?}
-   and the shell shows an on-screen PREVIEW (visible, scrollable) with Print / Save-PDF / Share
-   actions, then prints/saves from this top-level host. window.print() inside the srcdoc iframe is
-   blank on the Android WebView (it prints the TOP document, which is hidden in @media print) and
-   clips long content; an on-screen preview + html2pdf Save/Share is the reliable cross-device path. */
-#st-print-host{display:none}
-html.st-preview-open{overflow:hidden !important}
-html.st-preview-open #st-print-host{display:flex;flex-direction:column;position:fixed;inset:0;z-index:2147483646;background:#3a3d42}
-#st-print-host .sp-toolbar{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:9px 12px;background:#0d2340;color:#fff;box-shadow:0 1px 6px rgba(0,0,0,.35)}
-#st-print-host .sp-ttl{font-weight:600;font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#st-print-host .sp-acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-#st-print-host .sp-btn{-webkit-appearance:none;appearance:none;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.10);color:#fff;font:inherit;font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:7px;cursor:pointer;line-height:1;white-space:nowrap}
-#st-print-host .sp-btn:active{background:rgba(255,255,255,.22)}
-#st-print-host .sp-btn.primary{background:#b8922a;border-color:#b8922a}
-#st-print-host .sp-btn.close{background:transparent;border-color:transparent;font-size:16px;padding:6px 9px}
-#st-print-host .sp-scroll{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:16px;display:flex;justify-content:center;align-items:flex-start}
-#st-print-host .sp-paper{background:#fff;width:210mm;max-width:100%;box-sizing:border-box;padding:12mm;box-shadow:0 3px 18px rgba(0,0,0,.45);border-radius:2px}
-html.st-preview-land #st-print-host .sp-paper{width:297mm}
-#st-print-host .sp-busy{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.5);color:#fff;font-size:15px;font-weight:600;z-index:5}
-html.st-preview-busy #st-print-host .sp-busy{display:flex}
-/* Shared default PRINT THEME (.stp-*) injected into every preview so module print bodies stay lean & consistent */
-#sp-doc{font-family:'DM Sans',Arial,sans-serif;color:#1a1a1a;font-size:9pt;line-height:1.4;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-#sp-doc *{box-sizing:border-box}
-#sp-doc .stp-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;border-bottom:2.5px solid #0d2340;padding-bottom:8px;margin-bottom:12px}
-#sp-doc .stp-brand{font-family:Georgia,'Times New Roman',serif;font-size:16pt;font-weight:700;color:#0d2340;letter-spacing:.01em}
-#sp-doc .stp-brand small{display:block;font-family:'DM Sans',Arial,sans-serif;font-size:7.5pt;font-weight:500;color:#888;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
-#sp-doc .stp-title{font-family:Georgia,serif;font-size:12pt;font-weight:700;color:#b8922a;text-transform:uppercase;letter-spacing:.05em;text-align:right;white-space:nowrap}
-#sp-doc .stp-title small{display:block;font-family:'DM Sans',Arial,sans-serif;font-size:8pt;font-weight:500;color:#666;letter-spacing:0;text-transform:none;margin-top:3px}
-#sp-doc .stp-meta{display:flex;flex-wrap:wrap;gap:3px 22px;font-size:8.5pt;color:#333;margin-bottom:12px}
-#sp-doc .stp-meta b{color:#0d2340}
-#sp-doc .stp-sec{margin-bottom:12px;page-break-inside:avoid}
-#sp-doc .stp-sec-t{background:#0d2340;color:#fff;font-size:8pt;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:4px 8px;border-radius:2px;margin-bottom:6px}
-#sp-doc table.stp-table{width:100%;border-collapse:collapse;font-size:8.5pt}
-#sp-doc table.stp-table th{background:#0d2340;color:#fff;text-align:left;font-size:7pt;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:5px 7px}
-#sp-doc table.stp-table td{padding:4px 7px;border-bottom:0.5px solid #ddd;vertical-align:top}
-#sp-doc table.stp-table tr:nth-child(even) td{background:#f7f7f9}
-#sp-doc table.stp-table tfoot td{background:#eef0f4;font-weight:700;color:#0d2340;border-top:1.5px solid #0d2340}
-#sp-doc .stp-r{text-align:right}#sp-doc .stp-c{text-align:center}
-#sp-doc .stp-mut{color:#888}#sp-doc .stp-tot{font-weight:700;color:#0d2340}
-#sp-doc .stp-foot{border-top:0.5px solid #ccc;margin-top:14px;padding-top:6px;font-size:7pt;color:#999;text-align:center;letter-spacing:.02em}
-#sp-doc .stp-empty{font-size:8pt;color:#aaa;font-style:italic;padding:8px;border:0.5px dashed #ddd;border-radius:3px}
-#sp-doc .stp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-#sp-doc .stp-card{border:0.5px solid #ddd;border-radius:4px;padding:7px 9px}
-#sp-doc .stp-card h4{margin:0 0 4px;font-size:7.5pt;text-transform:uppercase;letter-spacing:.04em;color:#0d2340}
-#sp-doc .stp-card .v{font-size:13pt;font-weight:700;color:#0d2340}
-@media print{
-  html.st-printing #modalBackdrop{display:none !important}
-  html.st-printing #st-print-host{display:block !important;position:absolute;inset:0;visibility:visible;background:#fff;z-index:2147483647;padding:0;margin:0;overflow:visible}
-  html.st-printing #st-print-host *{visibility:visible}
-  html.st-printing #st-print-host .sp-toolbar,html.st-printing #st-print-host .sp-busy{display:none !important;visibility:hidden !important}
-  html.st-printing #st-print-host .sp-scroll{display:block !important;overflow:visible;padding:0;background:#fff}
-  html.st-printing #st-print-host .sp-paper{box-shadow:none;border-radius:0;width:auto;max-width:none;padding:0;margin:0}
-  html.st-printing #st-print-host #sp-doc{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}
-@media print{ @page{size:A4;margin:11mm 13mm} }
-</style>
+<link rel="stylesheet" href="shell-core.css">
 <!-- Mobile mode: set the flag BEFORE first paint (default 'mobile') so there is no Desktop→Mobile flash -->
 <script>try{var __nativeAuthority=localStorage.getItem('saagar_native_store_migrated_v1')==='1';var __m=__nativeAuthority?null:localStorage.getItem('saagar_ui_mode');var __mob=(__m==='mobile')||(__m!=='desktop'&&(window.innerWidth||document.documentElement.clientWidth||0)<900);if(__mob)document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>
-<style id="bcc-mobile-shell">
-/* Display-mode segmented control (Settings Hub) — always styled (not gated) */
-.seg{display:flex;gap:8px;margin-top:8px}
-.seg-btn{flex:1;padding:11px 12px;border:1.5px solid var(--gray-300);background:var(--paper);border-radius:10px;font:700 13px var(--font-sans);color:var(--gray-600);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
-.seg-btn.active{border-color:var(--navy);background:var(--navy);color:var(--paper)}
-#uiModeBtn span{font-size:18px;line-height:1}
-.role-select{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;font:600 12px 'DM Sans',sans-serif;padding:5px 8px;max-width:140px}
-.role-select option{color:#111}
-/* Shell chrome in Mobile mode: keep content a comfortable centered column even on a wide screen */
-html.bcc-mobile .main{max-width:560px;margin-left:auto;margin-right:auto}
-/* B: keep the Business-Modules grid single-column in Mobile mode so the 560px clamp is never
-   over-columnised by the min-width:600/900 desktop rules (which pushed the right card column past
-   .main and got clipped by overflow-x:hidden → the "3 cards cut off"). */
-html.bcc-mobile .module-grid{grid-template-columns:1fr !important}
-/* Phase 0 (mobile overhaul) — kill residual horizontal overflow at the shell level */
-html.bcc-mobile,html.bcc-mobile body{overflow-x:hidden}
-</style>
+<link rel="stylesheet" href="shell-mobile.css">
 <!-- sql.js (WASM) — defines initSqlJs. Loaded in <head> BEFORE storage-core so its async
      boot (DOM-ready) can find it. When the flag is OFF, storage-core early-returns and this is
      unused here (sqlite-store.js below is the active engine and also uses the same initSqlJs). -->
@@ -914,301 +94,13 @@ try{ window.__DEMO_SEED_ACTIVE = __DEMO_SEED_ACTIVE; }catch(e){}   /* read-only 
 if(!__DEMO_SEED_ACTIVE) return;   /* clean / production build: no dummy data is ever loaded — the ONLY path that continues is flag===true */
 try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 50; }catch(e){}   /* generated seeded builds replace only these defaults */
 try{window.__SAAGAR_DEMO_PROFILE=Object.freeze({id:(window.__SEED_DAYS>=700?'two-year-review-v1':'large-review-v1'),daysBack:Number(window.__SEED_DAYS)||365,walkInsPerWorkingDay:Number(window.__SEED_WALK)||50,syntheticOnly:true,stores:['WLMHW','HEMW']});}catch(e){}
-try{document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('__saagar-demo-banner'))return;var p=window.__SAAGAR_DEMO_PROFILE||{};var b=document.createElement('div');b.id='__saagar-demo-banner';b.setAttribute('role','status');b.style.cssText='position:fixed;right:10px;bottom:10px;z-index:2147483645;background:#0d2340;color:#fff;border:2px solid #b8922a;border-radius:10px;padding:8px 11px;font:600 11px/1.35 DM Sans,Arial,sans-serif;box-shadow:0 2px 12px rgba(13,35,64,.28);max-width:260px';b.textContent='SYNTHETIC DEMO DATA · '+((Number(p.daysBack)||0)+1)+' DAYS · WLMHW + HEMW · DO NOT CONTACT';document.body.appendChild(b);});}catch(e){}
+try{document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('__saagar-demo-banner'))return;var p=window.__SAAGAR_DEMO_PROFILE||{};var b=document.createElement('div');b.id='__saagar-demo-banner';b.setAttribute('role','status');b.setAttribute('data-no-i18n','true');b.style.cssText='position:fixed;right:10px;bottom:76px;pointer-events:none;z-index:2147483645;background:#0d2340;color:#fff;border:2px solid #b8922a;border-radius:10px;padding:8px 11px;font:600 11px/1.35 DM Sans,Arial,sans-serif;box-shadow:0 2px 12px rgba(13,35,64,.28);max-width:260px';b.textContent='SYNTHETIC DEMO DATA · '+((Number(p.daysBack)||0)+1)+' DAYS · WLMHW + HEMW · DO NOT CONTACT';document.body.appendChild(b);});}catch(e){}
 if(window.SaagarStore&&typeof window.SaagarStore.whenReady==='function'){window.SaagarStore.whenReady(function(){var s=document.createElement('script');s.async=false;s.src='demo-seed.js';document.head.appendChild(s);});}
 else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OFF: parser-blocking, identical timing to today's static tag */
 })();</script>
-<style id="rpt-redesign">
-/* ===== REPORTS REDESIGN — "Find & Send" (UI only; report generation untouched) ===== */
-.rpt-search{position:relative;display:block}
-.rpt-search input{width:100%;min-height:44px;font-size:16px;font-family:'DM Sans',sans-serif;font-weight:600;color:var(--navy);padding:10px 12px 10px 38px;border:1px solid var(--gray-200);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm)}
-.rpt-search input::placeholder{color:var(--gray-400);font-weight:500}
-.rpt-search input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,146,42,.12)}
-.rpt-search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--gray-400);pointer-events:none}
-.rpt-count{font-size:12px;font-weight:700;color:var(--gray-600)}
-.rpt-period{display:flex;align-items:center;gap:8px}
-.rpt-step{width:44px;height:44px;flex:none;border-radius:12px;display:grid;place-items:center;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);color:var(--navy);font-size:20px;line-height:1;cursor:pointer}
-.rpt-step:active{transform:scale(.96)}
-.rpt-period .valwrap{position:relative;flex:1;display:flex}
-.rpt-period .val{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;background:var(--gold-pale);border:1px solid #efe2b8;color:var(--navy);font-family:'DM Serif Display',serif;font-size:17px;line-height:1;text-align:center;padding:0 8px}
-.rpt-period .valwrap input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px;border:0}
-@media(max-width:599px){.modal.hub-sheet{max-width:100%;max-height:100vh;height:100dvh;border-radius:0;overflow:hidden;display:flex;flex-direction:column}.modal.hub-sheet .modal-head{flex:0 0 auto}.modal.hub-sheet .modal-body{flex:1 1 auto;min-height:0;padding:0;display:flex;overflow:hidden}}
-.hub-wrap{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;width:100%}
-.hub-list{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 4px}
-.hub-sec{margin-top:14px}
-.hub-sec:first-child{margin-top:6px}
-.hub-sec-h{display:flex;align-items:center;gap:7px;font-family:'DM Sans',sans-serif;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-500);margin:0 0 8px}
-.hub-sec-h::before{content:'';width:3px;height:13px;border-radius:2px;background:var(--gold)}
-.hub-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:52px;padding:9px 12px;margin-bottom:8px;background:#fff;border:1px solid var(--gray-200);border-radius:12px;box-shadow:var(--shadow-sm);color:var(--navy);cursor:pointer}
-.hub-row:active{transform:scale(.985);background:var(--gray-50)}
-.hub-row .ico{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:17px;background:var(--gold-pale);border:1px solid #efe2b8}
-.hub-row .ttl{flex:1;min-width:0;font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;line-height:1.2}
-.hub-row .scope{font-size:10px;font-weight:700;color:var(--gray-500);background:var(--gray-100);border:1px solid var(--gray-200);border-radius:999px;padding:2px 8px;flex:none}
-.hub-row .go{color:var(--gold);font-size:15px;flex:none}
-.hub-row.recent .ico{background:var(--navy);border-color:var(--navy);color:var(--gold-light)}
-.hub-packs{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.hub-pack{display:flex;align-items:center;gap:12px;width:100%;text-align:left;min-height:56px;padding:10px 13px;background:var(--navy);border:1px solid var(--navy);border-radius:12px;color:#fff;box-shadow:var(--shadow-sm);cursor:pointer}
-.hub-pack:active{transform:scale(.985)}
-.hub-pack .ico{width:34px;height:34px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:17px;background:rgba(255,255,255,.12)}
-.hub-pack .ttl{flex:1;min-width:0;display:flex;flex-direction:column;font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;line-height:1.25}
-.hub-pack .ttl small{font-weight:500;font-size:11px;opacity:.82;margin-top:1px}
-.hub-pack .go{color:var(--gold-light);font-size:16px;flex:none}
-.hub-hist{align-self:flex-start;background:none;border:0;color:var(--navy-light);font:600 12.5px 'DM Sans',sans-serif;padding:6px 2px;cursor:pointer;text-decoration:underline}
-.hub-empty{padding:22px 8px;text-align:center;color:var(--gray-500);font-size:13px}
-.hub-help{font-size:12px;color:var(--gray-500);line-height:1.5;padding:12px 0 16px;margin:0}
-.hub-bar{flex:0 0 auto;background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08);padding:10px 16px calc(10px + var(--safe-bottom));display:flex;flex-direction:column;gap:9px}
-@media(min-width:600px){.hub-list{max-height:48vh}.hub-bar{position:static;box-shadow:none}}
-.rep-stick{position:sticky;top:0;z-index:5;background:var(--cream);margin:-16px -16px 12px;padding:14px 16px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow-sm)}
-.rep-stick .subtabs{margin-bottom:0}
-.rcard.is-hidden{display:none}
-.rcard>summary .stat{margin-left:auto;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;line-height:1.3;background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200)}
-.rcard>summary::after{margin-left:8px}
-.stat.green{color:var(--green);background:var(--green-pale);border-color:var(--green-mid)}
-.stat.amber{color:var(--amber);background:var(--amber-pale);border-color:#fde68a}
-.stat.red{color:var(--red);background:var(--red-pale);border-color:#fecaca}
-.age-card b,.exp-total b{font-family:'DM Serif Display',serif;font-weight:400}
-.age-card b{font-size:24px}
-.exp-total b{font-size:21px}
-.r-breakdown{margin-top:10px;border-top:1px dashed var(--gray-200);padding-top:8px}
-.r-breakdown>summary{list-style:none;cursor:pointer;font-size:12px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px;min-height:36px}
-.r-breakdown>summary::-webkit-details-marker{display:none}
-.r-breakdown>summary::after{content:'⌄';color:var(--gold);transition:transform .2s}
-.r-breakdown[open]>summary::after{transform:rotate(180deg)}
-.r-breakdown[open]>summary{color:var(--navy)}
-.btn.small.pdf{color:var(--gold);border-color:var(--gold);background:#fff}
-.btn.small.pdf:active{background:var(--gold-pale)}
-.rcard>summary small{font-size:12.5px;color:var(--gray-600)}
-@media(max-width:560px){.hub-row .scope{display:none}}
-/* ---- exact-PDF report preview ---- */
-.modal.pdf-sheet{max-width:760px}
-@media(max-width:599px){.modal.pdf-sheet{max-width:100%;max-height:100vh;height:100dvh;border-radius:0;display:flex;flex-direction:column}.modal.pdf-sheet .modal-body{flex:1 1 auto;min-height:0;padding:0;display:flex;overflow:hidden}}
-.pp-wrap{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;width:100%}
-.pp-scroll{flex:1 1 auto;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--gray-100);padding:14px;text-align:center}
-.pp-scroll canvas{max-width:100%;height:auto;background:#fff;box-shadow:var(--shadow);margin:0 auto 12px;display:block;border:1px solid var(--gray-200)}
-.pp-status{padding:34px 16px;text-align:center;color:var(--gray-500);font-size:13px}
-.pp-note{margin:12px 14px 0;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:600;background:var(--amber-pale);color:var(--amber);border:1px solid #fde68a}
-.pp-bar{flex:0 0 auto;display:flex;gap:8px;padding:10px 14px calc(10px + var(--safe-bottom));background:#fff;border-top:1px solid var(--gray-200);box-shadow:0 -2px 12px rgba(13,35,64,.08)}
-.pp-bar .btn{flex:1;min-height:46px;display:flex;align-items:center;justify-content:center;gap:6px;font-weight:700}
-.pp-bar .btn.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
-@media print{
-  body{visibility:hidden}
-  #modalBackdrop,#modalBackdrop *{visibility:visible}
-  #modalBackdrop{position:absolute!important;inset:0;background:#fff!important;display:block!important}
-  .pp-bar,.modal-head,.modal-close,.pp-note{display:none!important}
-  .pp-scroll{overflow:visible!important;background:#fff!important;padding:0!important}
-  .pp-scroll canvas{box-shadow:none!important;border:0!important;page-break-after:always;max-width:100%}
-}
-</style>
-<style id="st-v51-redesign">
-/* ═════════════════════════════════════════════════════════════════════════
-   HOME + MODULES REDESIGN (V5.1) — additive only. Phone-first; the ≥768px
-   block at the end expands to a left nav rail + inline Today column + wider
-   module grid. Re-uses the navy/gold tokens already defined above.
-   ═════════════════════════════════════════════════════════════════════════ */
-
-/* The app shell is a grid; its children defaulted to min-width:auto, so a grid
-   column could resolve to the content's min-content (wider than the phone viewport)
-   and the surplus got clipped by html{overflow:hidden}. Pin the children to min-width:0
-   so every column tracks the viewport and inner content wraps/scrolls as intended.
-   (Latent before; the richer 4-stat hero just made the clipping visible.) */
-.app>.topbar,.app>.main,.app>.botnav{min-width:0}
-
-/* ── Home surface topbar (store name + bell) ─────────────────────────────── */
-.home-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.home-store-context{display:flex;align-items:center;gap:10px;min-width:0;flex:1;flex-wrap:wrap}
-.home-store{font-family:var(--font-serif);font-size:21px;font-weight:400;color:var(--navy);line-height:1.1;letter-spacing:.2px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.home-store-picker{display:inline-flex;align-items:center;gap:5px;color:var(--gray-600);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-.home-store-picker select{min-height:36px;max-width:180px;padding:6px 28px 6px 9px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--navy);font:600 12px var(--font-sans)}
-.store-context-pill{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid rgba(184,146,42,.45);border-radius:999px;background:var(--gold-pale);color:var(--navy);font-size:10px;font-weight:700;white-space:nowrap}
-.home-bell{position:relative;width:40px;height:40px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
-.home-bell:active{transform:scale(.95)}
-.home-bell svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
-.home-bell-dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid #fff;display:none}
-.home-bell-dot.on{display:block}
-.home-greet{margin-bottom:12px}
-
-/* ── HERO CARD (navy) ────────────────────────────────────────────────────── */
-.hero{
-  background:linear-gradient(135deg,var(--navy),var(--navy-mid));
-  color:#fff;border-radius:var(--radius-lg);padding:14px;
-  box-shadow:var(--shadow-md);position:relative;overflow:hidden;margin-bottom:14px;
-}
-.hero::before{content:"";position:absolute;top:-34px;right:-34px;width:140px;height:140px;background:radial-gradient(circle,rgba(184,146,42,.20),transparent 70%);pointer-events:none}
-/* The date stepper (#homeDateBar) is rendered by reflectSelectedDate(); inside the hero
-   we just give it some breathing room. Its own inline styles still win for the amber state. */
-.hero #homeDateBar{position:relative;z-index:1}
-@media(max-width:599px){
-  .hero #homeDateBar{flex-wrap:wrap}
-  .hero #homeDateBar .valwrap{min-width:0}
-  .hero #homeDateBar>.btn.small{width:100%;min-height:44px}
-}
-.hero-past{position:relative;z-index:1}
-.hero-past:empty{display:none}
-.hero-past-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(217,119,6,.22);border:1px solid rgba(245,158,11,.5);color:#fde68a;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin:2px 8px 0 0}
-.hero-net{display:flex;flex-direction:column;margin:12px 0 4px;position:relative;z-index:1}
-.hero-net-label{font-size:10px;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.08em}
-.hero-net-value{font-family:var(--font-serif);font-weight:400;font-size:40px;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px}
-.hero-net-value.neg{color:#fca5a5}
-.hero-eye{position:absolute;right:0;top:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:0;cursor:pointer}
-.hero-eye:active{transform:scale(.94);border-color:rgba(255,255,255,.3)}
-.hero-eye svg{width:17px;height:17px;stroke:var(--gold-light);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
-.hero-stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:9px 8px;text-align:left;display:block;width:100%;min-width:0}
-/* Audit fix L-LIVE-2: long ₹ values (₹29,900 etc.) exceeded the 64px min grid track; with the grid item's
-   default min-width:auto the track grew to the content and the KPI row overflowed the hero (clipped by
-   overflow:hidden). min-width:0 above caps the track at 1fr; on phones widen the min track + trim the value
-   font so the numbers fit fully instead of being cut. */
-@media(max-width:420px){ .hero-stats{grid-template-columns:repeat(auto-fit,minmax(84px,1fr))} .hero-stat b{font-size:17px} }
-.hero-stat.tappable:active{transform:scale(.96);border-color:rgba(255,255,255,.3)}
-.hero-stat b{display:block;font-family:var(--font-serif);font-weight:400;font-size:19px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
-.hero-stat span{display:block;font-size:9.5px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:13px;position:relative;z-index:1;
-  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;color:#fde9b8;font-size:12.5px;font-weight:700}
-.hero-foot:active{background:rgba(255,255,255,.16)}
-.hero-foot svg{width:16px;height:16px;flex:none;stroke:var(--gold-light);fill:none;stroke-width:2.4}
-
-/* ── TODAY DETAIL VIEW ───────────────────────────────────────────────────── */
-.today-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.today-back{width:38px;height:38px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
-.today-back:active{transform:scale(.95)}
-.today-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4}
-.today-title{flex:1;min-width:0}
-.today-title h2{font-family:var(--font-serif);font-size:24px;font-weight:400;color:var(--navy);line-height:1.05}
-.today-title .sub{color:var(--gray-600);font-size:12.5px;margin-top:2px}
-.today-pdf{width:38px;height:38px;flex:none;border-radius:11px;background:var(--navy);border:1px solid var(--navy);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:#fff}
-.today-pdf:active{transform:scale(.95)}
-.today-pdf svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2}
-/* Today's own date stepper re-uses the .rpt-period look via JS-set inline styles. */
-
-/* Horizontal scrollers (category pills, config subtabs) used to contribute their
-   full non-wrapping content width to the grid item's intrinsic size, inflating the
-   shell column past the viewport (the 3rd tile column got clipped). width:0 +
-   min-width:100% makes each scroller take exactly its parent's width and scroll
-   internally, so it no longer pushes the column wider. */
-.cat-tabs,.subtabs{min-width:100%;width:0}
-/* Keep the main scroller filling the shell column on phones (it otherwise shrink-
-   wrapped to content once the scroller stopped inflating it). */
-html.bcc-mobile .main{width:100%;justify-self:stretch}
-
-/* ── MODULES — tile grid grouped under category headers ──────────────────── */
-/* #moduleGrid is reused as a plain block container; the JS now emits its own
-   grouped grid markup so block-level headers can sit between rows. */
-#moduleGrid.tilegrid{display:block}
-.mod-group{margin-bottom:6px}
-.mod-group-h{display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-500);margin:14px 0 9px}
-.mod-group:first-child .mod-group-h{margin-top:2px}
-.mod-group-h::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--gold)}
-.mod-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.mtile{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:13px 9px 11px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;min-height:96px;justify-content:center;position:relative}
-.mtile:active{transform:scale(.96);border-color:var(--gold)}
-.mtile.ok{border-color:var(--green-mid)}
-.mtile.warn{border-color:#fde68a}
-.mtile .mt-icon{width:42px;height:42px;border-radius:12px;background:var(--gold-pale);border:1px solid rgba(184,146,42,.20);display:grid;place-items:center;font-size:21px}
-.mtile .mt-name{font-size:11.5px;font-weight:700;color:var(--navy);line-height:1.2}
-.mtile .mt-lock{position:absolute;top:7px;right:8px;font-size:11px}
-.mtile .mt-dot{width:6px;height:6px;border-radius:50%;background:var(--gray-300)}
-.mtile.ok .mt-dot{background:var(--green)}
-.mtile.warn .mt-dot{background:var(--amber)}
-
-/* ═════ WIDE SCREENS (tablet / desktop) — additive, ≥768px only ═════════════ */
-@media(min-width:768px){
-  /* App shell → persistent LEFT nav rail instead of bottom bar */
-  .app{grid-template-rows:auto 1fr;grid-template-columns:212px 1fr;
-       grid-template-areas:"top top" "nav main"}
-  .topbar{grid-area:top}
-  .main{grid-area:main}
-  .botnav{
-    grid-area:nav;grid-template-columns:1fr;align-content:start;gap:4px;
-    padding:14px 12px calc(14px + var(--safe-bottom));
-    box-shadow:1px 0 14px rgba(13,35,64,.14);
-  }
-  .botnav .tab{flex-direction:row;justify-content:flex-start;gap:12px;font-size:13px;letter-spacing:.02em;
-    padding:12px 14px;min-height:48px;border-radius:10px}
-  .botnav .tab svg{width:20px;height:20px}
-  .botnav .tab.active{background:rgba(255,255,255,.10)}
-  .botnav .tab.active::before{top:14%;bottom:14%;left:auto;right:0;width:3px;height:auto;border-radius:4px 0 0 4px}
-
-  /* HOME becomes a 2-column dashboard: the scroller itself grids Home (col 1) next to
-     the Today detail (col 2). Other views are display:none so they leave the grid flow,
-     leaving exactly these two in-flow items. */
-  body[data-view="home"] .main{
-    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
-    column-gap:22px;align-items:start;
-  }
-  body[data-view="home"] #homeView.active{min-width:0}
-  /* Inline Today as column 2: force it visible and let it scroll independently
-     (sticky so the left column drives the page scroll, Today scrolls within itself). */
-  body[data-view="home"] #todayView{
-    display:block;min-width:0;position:sticky;top:0;
-    max-height:calc(100vh - 44px - var(--safe-top) - var(--safe-bottom));
-    overflow:auto;-webkit-overflow-scrolling:touch;
-  }
-  body[data-view="home"] #todayView .today-back{display:none}
-  body[data-view="home"] #todayView .today-head{margin-top:0}
-
-  /* When Today is the *active* view on wide screens (phone-narrow path on a tablet), show normally. */
-  body[data-view="today"] #todayView .today-back{display:grid}
-
-  /* Module tiles: 4–5 per row on wide screens */
-  .mod-tiles{grid-template-columns:repeat(4,1fr)}
-}
-@media(min-width:1100px){
-  .mod-tiles{grid-template-columns:repeat(5,1fr)}
-}
-/* Mobile-mode (forced narrow column) must not trigger the desktop rail even on a
-   wide device — keep the phone layout the user explicitly chose. */
-html.bcc-mobile .app{grid-template-rows:auto 1fr auto;grid-template-columns:none;grid-template-areas:none}
-html.bcc-mobile .topbar,html.bcc-mobile .main{grid-area:auto}
-html.bcc-mobile .botnav{grid-area:auto;grid-template-columns:repeat(4,1fr);box-shadow:0 -2px 14px rgba(13,35,64,.18);padding:6px 4px calc(6px + var(--safe-bottom))}
-html.bcc-mobile .botnav .tab{flex-direction:column;justify-content:center;padding:8px 4px 6px;min-height:50px}
-/* Mobile mode: no 2-column dashboard — Home and Today swap like normal views. */
-html.bcc-mobile body[data-view="home"] .main{display:block}
-html.bcc-mobile body[data-view="home"] #todayView{position:static;display:none;max-height:none;overflow:visible}
-html.bcc-mobile #todayView.active{display:block}
-</style>
-<style id="st-shell-features">
-/* ═══════════════════════════════════════════════════════════════════════
-   ADDITIVE SHELL FEATURES — build badge, universal feature-search results,
-   module-load error affordance. Tokens only (navy/gold/grays/radius/fonts).
-   Nothing here overrides a redesign rule; all selectors are new ids/classes.
-   ═══════════════════════════════════════════════════════════════════════ */
-/* Build badge (topbar corner) */
-.build-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;
-  font:800 10px/1 var(--font-sans);letter-spacing:.07em;text-transform:uppercase;flex:none;
-  border:1px solid transparent;box-shadow:var(--shadow-sm);user-select:none}
-.build-badge[hidden]{display:none}
-.build-badge.demo{background:var(--gold-pale);color:var(--gold);border-color:#efe2b8}
-.build-badge.test{background:var(--navy);color:var(--gold-light);border-color:var(--navy)}
-.build-badge.prod{background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200)}
-@media(max-width:380px){.build-badge{display:none}}   /* keep tiny phones uncluttered */
-
-/* Universal feature-search results — grouped, beneath the module tiles */
-.feat-group{margin-top:6px}
-.feat-group .feat-count{display:inline-block;margin-left:6px;font:800 11px var(--font-sans);color:var(--gold);
-  background:var(--gold-pale);border:1px solid #efe2b8;border-radius:999px;padding:1px 7px;vertical-align:middle}
-.feat-modgrp{margin:0 0 10px}
-.feat-modgrp-h{font:800 11px/1 var(--font-sans);letter-spacing:.05em;text-transform:uppercase;
-  color:var(--gray-500);margin:8px 2px 6px}
-.feat-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;min-height:48px;
-  padding:9px 12px;margin-bottom:7px;background:var(--paper);border:1px solid var(--gray-200);
-  border-radius:var(--radius);box-shadow:var(--shadow-sm);color:var(--navy);font:inherit;cursor:pointer;
-  transition:transform .12s,border-color .12s}
-.feat-row:hover{border-color:var(--gold)}
-.feat-row:active{transform:scale(.99);background:var(--gray-50)}
-.feat-row .feat-ic{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;
-  font-size:16px;background:var(--gold-pale);border:1px solid #efe2b8}
-.feat-row .feat-lbl{flex:1;min-width:0;font:600 14px var(--font-sans);line-height:1.25}
-.feat-row .feat-go{flex:none;color:var(--gold);font-size:18px;line-height:1}
-
-/* Module-load error affordance — overlays the frame exactly where the loader sat */
-.mod-load-error{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;gap:12px;
-  align-items:center;justify-content:center;width:100%;height:100%;
-  background:var(--cream);border:0;cursor:pointer;font:inherit;color:var(--navy);padding:24px;text-align:center}
-.mod-load-error.on{display:flex}
-.mod-load-error .mle-ic{font-size:34px;line-height:1}
-.mod-load-error .mle-txt{font:700 15px var(--font-sans);color:var(--navy)}
-.mod-load-error::after{content:'Tap anywhere to try again';font:600 12px var(--font-sans);color:var(--gray-500)}
-</style>
+<link rel="stylesheet" href="shell-report.css">
+<link rel="stylesheet" href="shell-redesign.css">
+<link rel="stylesheet" href="shell-features.css">
 <link rel="stylesheet" href="mobile-shell.css">
 <link rel="stylesheet" href="settings-navigation.css">
 <script src="app-i18n.js"></script>
@@ -1231,7 +123,7 @@ html.bcc-mobile #todayView.active{display:block}
      PAINT EARLY (IIFE below, raw native-LS read) → DECIDE LATE (reEvalLaunchLock under whenReady). -->
 <div id="st-v5-launch-lock" tabindex="-1" style="display:none;position:fixed;inset:0;z-index:2147483647;background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;font-family:'DM Sans',Arial,sans-serif;-webkit-user-select:none;user-select:none">
   <div style="font-size:44px;font-weight:800;letter-spacing:2px;margin-bottom:6px;margin-top:auto">ST</div>
-  <div style="opacity:.85;margin-bottom:14px;font-size:15px">Enter Admin PIN to open</div>
+  <div id="llPurpose" style="opacity:.85;margin-bottom:14px;font-size:15px">Enter Admin PIN to open</div>
   <div id="llDots" style="min-height:28px;font-size:22px;letter-spacing:8px;margin-bottom:4px">&nbsp;</div>
   <div id="llMsg" style="min-height:20px;font-size:13px;color:#f3c96b;margin-bottom:12px;text-align:center;padding:0 20px">&nbsp;</div>
   <div style="display:grid;grid-template-columns:repeat(3,72px);gap:10px;justify-content:center">
@@ -2043,7 +935,10 @@ html.bcc-mobile #todayView.active{display:block}
 <div class="toast" id="toast"></div>
 
 <script src="module-manifest.js"></script>
+<script src="shared/module-runtime.js"></script>
 <script src="shared/mah4-runtime.js"></script>
+<script src="shell-asset-manifest.js"></script>
+<script src="shared/shell-module-frame-controller.js"></script>
 <script>
 /* Module metadata is validated synchronously by module-manifest.js. Keep this
    compatibility alias while the shell and external C1 closure consume MODULES. */
@@ -2863,7 +1758,7 @@ function llEl(){ return document.getElementById('st-v5-launch-lock'); }
 function llVisible(){ var d=llEl(); return !!(d && d.style.display!=='none'); }
 function llSetMsg(t){ try{ var m=document.getElementById('llMsg'); if(m) m.textContent=(t||' '); }catch(e){} }
 function llRenderDots(){ try{ var d=document.getElementById('llDots'); if(d) d.textContent=(__llBuf?Array(__llBuf.length+1).join('●'):' '); }catch(e){} }
-function llKey(k){ try{ if(k==='bk') __llBuf=__llBuf.slice(0,-1); else if(__llBuf.length<32) __llBuf+=String(k); llRenderDots(); }catch(e){} }
+function llKey(k){ try{ if(__raState){raKey(k);return;}if(k==='bk') __llBuf=__llBuf.slice(0,-1); else if(__llBuf.length<32) __llBuf+=String(k); llRenderDots(); }catch(e){} }
 function llStopTimer(){ if(__llTimer){ try{ clearInterval(__llTimer); }catch(e){} __llTimer=null; } }
 function llCountdown(){   /* live 'Try again in Xs' — updates the message line, NEVER hides the overlay */
   llStopTimer();
@@ -2874,6 +1769,7 @@ function llCountdown(){   /* live 'Try again in Xs' — updates the message line
 }
 function llDismiss(){ __llUnlocked=true; __llBuf=''; llStopTimer(); try{ var d=llEl(); if(d) d.style.display='none'; }catch(e){} }
 function llSubmit(){
+  if(__raState){raSubmit();return;}
   var pin=__llBuf;
   try{
     var rem=pinLockRemaining('admin');                       /* Slice C: check BEFORE verify — a locked scope never reaches verifyPin */
@@ -2891,7 +1787,7 @@ function llSubmit(){
   }catch(e){ __llBuf=''; llRenderDots(); llSetMsg('Something went wrong — try again'); }   /* verify-path errors keep the overlay UP (state unknown ≠ unlocked); the SHOW decision is what fails open */
 }
 function llKeydownHandler(e){   /* physical-keyboard path + focus containment; capture phase */
-  if(!llVisible()) return;
+  if(!llVisible()||__raState) return;
   if(e.key>='0' && e.key<='9'){ e.preventDefault(); llKey(e.key); }
   else if(e.key==='Backspace'){ e.preventDefault(); llKey('bk'); }
   else if(e.key==='Enter'){ e.preventDefault(); llSubmit(); }
@@ -3014,9 +1910,9 @@ function refreshDevicePosture(showToast){
     if(showToast)toast('Device posture check failed.');return __devicePosture;
   });
 }
-function setProductionDevice(on){
+async function setProductionDevice(on){
   if(!isAdmin){unlockAdmin();renderDevicePosture();return;}
-  if(!SaagarReauth((on?'Enable':'Disable')+' production-device mode')){renderDevicePosture();return;}
+  if(!await SaagarReauth((on?'Enable':'Disable')+' production-device mode')){renderDevicePosture();return;}
   if(!on){safeRemove(PRODUCTION_DEVICE_KEY);auditLog('security.productionDevice',{on:false});renderDevicePosture();toast('Production-device mode disabled.');return;}
   refreshDevicePosture(false).then(function(p){
     if(!p||!p.native||p.unsafe||__downgradeDetected){renderDevicePosture();alert('Production mode cannot be enabled on this device/build. Resolve the listed debug, root, downgrade or USB-debugging warnings and install a signed release build.');return;}
@@ -3040,49 +1936,70 @@ window.SaagarDeviceSecurity={allowSensitive:allowSensitiveDeviceAction,refresh:r
 
 /* ═══════════════════════════════════════════════════════════════════════
    R0-W1 SEC-04 — STEP-UP RE-AUTHENTICATION (Slice B)
-   One synchronous boolean gate for sensitive/irreversible acts (full-data
+   One asynchronous boolean gate for sensitive/irreversible acts (full-data
    export, money locks/voids/approvals). Deliberately NO caching and NO
    "if(isAdmin) skip": session age is not proof of presence — SEC-04 is
    about who is holding the device RIGHT NOW, not who unlocked it earlier.
-   Every call re-prompts.
-   FAIL-OPEN BY CONSTRUCTION (R0 hard rule — the owner can NEVER be locked
-   out): no Admin PIN configured => returns true immediately, zero prompts,
-   today's behaviour byte-for-byte. This is the single load-bearing line.
-   VERIFY-ONLY: built on promptVerifyOnly, so it NEVER touches isAdmin /
+   Every call re-challenges on the shared Slice D DOM keypad.
+   PHASE 3 FAIL-CLOSED: a missing PIN, unavailable keypad, concurrent challenge
+   or verifier exception denies the action. Callers await an exact true result.
+   VERIFY-ONLY: built on verifyPin, so it NEVER touches isAdmin /
    currentRole / ADMIN_MODE_KEY — a re-auth can neither grant nor revoke
-   privilege. prompt()-cancel => p===null => promptVerifyOnly returns false
-   => DENY, and every call site early-returns BEFORE any mutation.
+   privilege. DOM Cancel resolves false, and every call site returns before mutation.
    Ships NO new localStorage key (D7): always-on whenever a PIN exists.
    Top-level function declaration => hoisted AND a window property, so module
    iframes reach it as window.parent.SaagarReauth (same pattern as
    qmsArchiveLookup, in production since Wave 7).
    ═══════════════════════════════════════════════════════════════════════ */
-function SaagarReauth(reason){
-  if(!hasAdminPin()) return true;                                   /* FAIL-OPEN: no PIN on this device => never gate */
-  var __r = String(reason||'action');
-  var ok = false, result = null, attempt = 1;
-  var policy = window.SaagarReauthPolicy;
+var __raState=null, __raBuf='', __raTimer=null;
+function raEl(){return document.getElementById('st-v5-launch-lock');}
+function raVisible(){var d=raEl();return !!(d&&d.style.display!=='none');}
+function raSet(id,value){try{var d=document.getElementById(id);if(d)d.textContent=value||'\u00a0';}catch(e){}}
+function raRenderDots(){raSet('llDots',__raBuf?Array(__raBuf.length+1).join('●'):'\u00a0');}
+function raKey(k){if(!__raState)return;if(k==='bk')__raBuf=__raBuf.slice(0,-1);else if(__raBuf.length<32)__raBuf+=String(k);raRenderDots();}
+function raStopTimer(){if(__raTimer){clearInterval(__raTimer);__raTimer=null;}}
+function raFinish(result){var state=__raState;if(!state)return;__raState=null;__raBuf='';raStopTimer();raRenderDots();try{var c=document.getElementById('raCancelBtn');if(c)c.remove();raSet('llPurpose','Enter Admin PIN to open');var d=raEl();if(d)d.style.display='none';}catch(e){}state.resolve(result);}
+function raCountdown(){
+  raStopTimer();
+  var tick=function(){var r=0;try{r=pinLockRemaining('admin');}catch(e){r=1;}if(r>0)raSet('llMsg','Owner approval is temporarily locked. Try again in '+r+'s.');else{raStopTimer();raSet('llMsg','Enter the Admin PIN.');}};
+  tick();__raTimer=setInterval(tick,1000);
+}
+function raCancel(){if(__raState)raFinish({ok:false,status:'cancelled',attempts:__raState.attempt});}
+function raSubmit(){
+  var state=__raState;if(!state)return;
   try{
-    do {
-      var msg = policy && policy.promptText
-        ? policy.promptText(__r, attempt)
-        : ('Confirm Admin PIN to continue:\n\n'+__r+'\n\nCancel keeps your data unchanged.');
-      result = promptVerifyOnlyResult(msg);
-      ok = !!(result&&result.ok);
-      if(ok) break;
-      if(!(policy&&policy.canRetry&&policy.canRetry(result.status,attempt))) break;
-      attempt++;
-    } while(attempt<=2);
-  }
-  catch(e){ return true; }                                          /* FAIL-OPEN: a throwing prompt (WebView quirk) must ALLOW, never brick */
-  var status = ok ? 'approved' : (result&&result.status)||'denied';
-  if(!ok && status==='incorrect' && attempt>=2) status='incorrect-final';
-  if(!ok){
-    var feedback = policy&&policy.outcomeText ? policy.outcomeText(status,result&&result.lockSeconds) : 'Owner approval denied. No changes were made.';
-    try{ if(feedback) toast(feedback); }catch(e){}
-  }
-  try{ auditLog(ok?'reauth.ok':'reauth.deny',{reason:__r,outcome:status,attempts:attempt}); }catch(e){}   /* guarded: the audit sink can never abort the caller */
-  return !!ok;
+    var rem=pinLockRemaining('admin');if(rem>0){__raBuf='';raRenderDots();raCountdown();return;}
+    if(!__raBuf){raSet('llMsg','Enter your Admin PIN.');return;}
+    var pin=__raBuf;__raBuf='';raRenderDots();
+    if(verifyPin(pin)){recordPinSuccess('admin');raFinish({ok:true,status:'approved',attempts:state.attempt});return;}
+    recordPinFail('admin');var after=pinLockRemaining('admin');
+    if(after>0){raFinish({ok:false,status:'locked',lockSeconds:after,attempts:state.attempt});return;}
+    if(state.attempt>=2){raFinish({ok:false,status:'incorrect-final',attempts:state.attempt});return;}
+    state.attempt++;raSet('llMsg','The previous PIN was incorrect. Try once more.');
+  }catch(e){raFinish({ok:false,status:'error',attempts:state.attempt});}
+}
+function raKeydownHandler(e){
+  if(!raVisible())return;
+  if(e.key>='0'&&e.key<='9'){e.preventDefault();raKey(e.key);}else if(e.key==='Backspace'){e.preventDefault();raKey('bk');}else if(e.key==='Enter'){e.preventDefault();raSubmit();}else if(e.key==='Escape'){e.preventDefault();raCancel();}else if(e.key==='Tab'){e.preventDefault();}
+}
+document.addEventListener('keydown',raKeydownHandler,true);
+function reauthKeypadResult(reason){
+  return new Promise(function(resolve){
+    if(__raState){resolve({ok:false,status:'busy',attempts:0});return;}
+    var rem=0;try{rem=pinLockRemaining('admin');}catch(e){resolve({ok:false,status:'error',attempts:0});return;}
+    if(rem>0){resolve({ok:false,status:'locked',lockSeconds:rem,attempts:0});return;}
+    var d=raEl();if(!d){resolve({ok:false,status:'unavailable',attempts:0});return;}
+    __raState={resolve:resolve,attempt:1};__raBuf='';raRenderDots();raSet('llPurpose','Owner approval required — '+String(reason||'complete this protected action').replace(/\s+/g,' ').trim().slice(0,180));raSet('llMsg','Approval is for this action only. Cancel keeps data unchanged.');
+    var cancel=document.createElement('button');cancel.type='button';cancel.id='raCancelBtn';cancel.textContent='Cancel';cancel.style.cssText='min-width:120px;min-height:44px;margin:14px 0 24px;border:1px solid rgba(255,255,255,.4);border-radius:10px;background:transparent;color:#fff;font:600 14px inherit';cancel.onclick=raCancel;d.appendChild(cancel);d.style.display='flex';try{d.focus();}catch(e){}
+  });
+}
+async function SaagarReauth(reason){
+  var __r=String(reason||'action'),result={ok:false,status:'denied',attempts:0};
+  try{if(hasAdminPin())result=await reauthKeypadResult(__r);else result={ok:false,status:'unavailable',attempts:0};}catch(e){result={ok:false,status:'error',attempts:0};}
+  var ok=result.ok===true,status=result.status||'denied';
+  if(!ok){var policy=window.SaagarReauthPolicy;var feedback=policy&&policy.outcomeText?policy.outcomeText(status,result.lockSeconds):'';try{toast(feedback||'Owner approval denied. No changes were made.');}catch(e){}}
+  try{auditLog(ok?'reauth.ok':'reauth.deny',{reason:__r,outcome:status,attempts:result.attempts||0});}catch(e){}
+  return ok;
 }
 window.SaagarReauth = SaagarReauth;                                  /* explicit export for same-origin module iframes (window.parent.SaagarReauth) */
 function moduleAccessSnapshot(){
@@ -3095,7 +2012,7 @@ window.SaagarOwnerSession=Object.freeze({
   read:moduleAccessSnapshot
 });
 function notifyModuleAccessChanged(){
-  try{ const frame=$('moduleFrame'); if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type:'ST_ACCESS_CONTEXT'},'*'); }catch(e){}
+  try{ const frame=$('moduleFrame'); if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type:'ST_ACCESS_CONTEXT'},SaagarModuleRuntime.targetOrigin); }catch(e){}
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -3151,7 +2068,7 @@ function reflectLangUI(){ try{ var l=getLang(); document.querySelectorAll('#lang
 function applyLangToFrame(l){
   try{
     var frame=$('moduleFrame');
-    if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type:'ST_LANG',lang:l||getLang()},'*');
+    if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type:'ST_LANG',lang:l||getLang()},SaagarModuleRuntime.targetOrigin);
     if(frame&&frame.contentWindow&&frame.contentWindow.SaagarI18n) frame.contentWindow.SaagarI18n.apply(l||getLang());
   }catch(e){}
 }
@@ -4834,7 +3751,7 @@ function forwardFeatureTarget(target){
     var f = $('moduleFrame');
     if(f && f.contentWindow){
       try{ f.contentWindow.__stTarget = target; }catch(e){}                          // direct ref (same-origin srcdoc)
-      try{ f.contentWindow.postMessage({type:'ST_OPEN_FEATURE', target:target}, '*'); }catch(e){}
+      try{ f.contentWindow.postMessage({type:'ST_OPEN_FEATURE', target:target},SaagarModuleRuntime.targetOrigin); }catch(e){}
       // Where a module already exposes a tab switcher, best-effort call it by a few common names.
       try{ var w=f.contentWindow; var fn = w.stOpenFeature || w.switchTab || w.showTab || w.gotoTab;
         if(typeof fn==='function') fn(target); }catch(e){}
@@ -6164,7 +5081,7 @@ function waSend(){
       const rec = waCurRec();
       const rid = rec && rec.id;
       const fr = document.getElementById('moduleFrame');
-      if(rid && fr && fr.contentWindow) fr.contentWindow.postMessage({ type:'ST_WA_SENT', recordId: rid, text: text }, '*');
+      if(rid && fr && fr.contentWindow) fr.contentWindow.postMessage({ type:'ST_WA_SENT', recordId: rid, text: text },SaagarModuleRuntime.targetOrigin);
     }
   } catch(e){}
   shareText(text, 'Saagar_WA_'+(__waId||'msg')+'_'+todayIso());
@@ -6346,9 +5263,9 @@ window.SaagarEvidence = (function(){
     return open().then(function(db){
       return new Promise(function(res, rej){
         try{ var tx=db.transaction('files','readonly'); var rq=tx.objectStore('files').get(id);
-          rq.onsuccess=function(){ var v=rq.result; if(!v){ rej('not found'); return; }
+          rq.onsuccess=async function(){ var v=rq.result; if(!v){ rej('not found'); return; }
             try{
-              var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+              var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
                 exportId:'evidence-file-open',kind:(String(v.name||'').split('.').pop()||'file'),
                 scopeId:'evidence-file',scopeLabel:'one evidence file',module:'tax',rowCount:1,
                 fileName:v.name,purposeId:'compliance-evidence'
@@ -6495,14 +5412,14 @@ window.SaagarEvidence = (function(){
    WhatsApp composer's waSend, …) keeps calling shareText(); it now routes through
    the unified SaagarShare chain above. Behavior with no Capacitor/Web-Share is the
    same download-as-.txt as before. */
-function shareText(text, fileBase){
-  var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+async function shareText(text, fileBase){
+  var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
     exportId:'shell-text-share',kind:'text',scopeId:'shell-message',scopeLabel:'message or owner summary',
     module:activeModuleId||'shell',rowCount:1,fileName:(fileBase||'Saagar')+'.txt',purposeId:'business-communication'
   });
   return token ? window.SaagarShare.share({ exportToken:token, text:text, fileBase:fileBase, title:'Saagar Traders' }) : Promise.resolve({blocked:true});
 }
-function openControlledWhatsApp(url, scopeId, purposeId){
+async function openControlledWhatsApp(url, scopeId, purposeId){
   url=String(url||'');
   if(!/^https:\/\/wa\.me\//i.test(url)){
     try{auditLog('whatsapp.link.denied',{reason:'invalid-destination'});}catch(e){}
@@ -6531,7 +5448,7 @@ function openControlledWhatsApp(url, scopeId, purposeId){
       }catch(e){}
     }
   }
-  var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+  var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
     exportId:'customer-whatsapp-open',kind:'text',scopeId:scopeId||'customer-message',
     scopeLabel:'one customer WhatsApp message',module:activeModuleId||'shell',rowCount:1,
     purposeId:purposeId||'customer-communication'
@@ -6884,11 +5801,11 @@ function exportBackupConfirmed(){
     var __pass=requestBackupPassphrase(true);
     if(!__pass){ window.__stBackupPayload=null; closeModal(); return; }
     toast('Encrypting backup…');
-    portableContainerText(payload,__pass).then(function(__sealed){
+    portableContainerText(payload,__pass).then(async function(__sealed){
       var __rows=Object.keys(payload.localStorage||{}).reduce(function(n,k){ try{var v=JSON.parse(payload.localStorage[k]);return n+(Array.isArray(v)?v.length:(v&&typeof v==='object'?Object.keys(v).length:1));}catch(e){return n+1;} },0)
         +(payload.photos?Object.keys(payload.photos).length:0)+(payload.qmsArchive?payload.qmsArchive.length:0)+(payload.evidence?payload.evidence.length:0);
       var __fname=`${payload.manifest ? `SaagarCC_migration_${todayIso()}` : `Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}`}.sccbak`;
-      var __token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+      var __token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
         exportId:payload.manifest?'backup-migration-download':'backup-portable-download',
         kind:'sccbak',scopeId:payload.manifest?'full-migration':'full-portable-backup',
         scopeLabel:payload.manifest?'full migration bundle':'full portable backup',module:'shell',
@@ -6968,11 +5885,11 @@ function shareBackup(){
     var pass=requestBackupPassphrase(true);
     if(!pass) return null;
     toast('Encrypting portable backup…');
-    return portableContainerText(payload,pass).then(function(sealed){
+    return portableContainerText(payload,pass).then(async function(sealed){
       const fname=`Saagar_Traders_Backup_${todayIso()}_${new Date().toTimeString().slice(0,8).replace(/:/g,'')}.sccbak`;
       var rows=Object.keys(payload.localStorage||{}).reduce(function(n,k){ try{var v=JSON.parse(payload.localStorage[k]);return n+(Array.isArray(v)?v.length:(v&&typeof v==='object'?Object.keys(v).length:1));}catch(e){return n+1;} },0)
         +(payload.photos?Object.keys(payload.photos).length:0)+(payload.qmsArchive?payload.qmsArchive.length:0)+(payload.evidence?payload.evidence.length:0);
-      __exportToken=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+      __exportToken=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
         exportId:'backup-portable-share',kind:'sccbak',scopeId:'full-portable-backup',
         scopeLabel:'full portable backup',module:'shell',rowCount:rows,fileName:fname,purposeId:'off-device-business-continuity'
       });
@@ -7493,10 +6410,10 @@ function factoryResetSafetyBackup(keys){
     if(!Object.keys(payload.localStorage).length) throw new Error('backup payload came out empty');
     var pass=requestBackupPassphrase(true);
     if(!pass) return {ok:false,error:'recovery passphrase was not completed'};
-    return portableContainerText(payload,pass).then(function(sealed){
+    return portableContainerText(payload,pass).then(async function(sealed){
       var rows=Object.keys(payload.localStorage||{}).length+(payload.photos?Object.keys(payload.photos).length:0)+(payload.qmsArchive?payload.qmsArchive.length:0)+(payload.evidence?payload.evidence.length:0);
       var fname='Saagar_Traders_PreReset_' + todayIso() + '_' + new Date().toTimeString().slice(0,8).replace(/:/g,'') + '.sccbak';
-      var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+      var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
         exportId:'factory-reset-safety-backup',kind:'sccbak',scopeId:'pre-factory-reset',
         scopeLabel:'pre-reset safety backup',module:'shell',rowCount:rows,fileName:fname,purposeId:'destructive-action-safety'
       });
@@ -7604,7 +6521,7 @@ async function archiveOldData(){
   const payload={ app:'Saagar Traders Business Control Centre', type:'archive', archivedBefore:cutoff, createdAt:new Date().toISOString(), count:keys.length, localStorage:data };
   const text = JSON.stringify(payload,null,2);
   const fname = 'Saagar_Archive_before_'+cutoff+'_'+todayIso()+'.json';
-  const token = window.SaagarExportControl&&window.SaagarExportControl.authorize({
+  const token = window.SaagarExportControl&&await window.SaagarExportControl.authorize({
     exportId:'old-data-archive',kind:'json',scopeId:'historical-day-records',scopeLabel:'historical day-record archive',
     module:'shell',rowCount:keys.length,fileName:fname,purposeId:'retention-archive'
   });
@@ -7883,10 +6800,10 @@ function renderExportPolicy(){
     box.textContent=(p&&p.damaged?'Policy damaged — exports blocked.':(p&&p.enabled?'Enabled · fresh approval for manual exports; bound standing approval for automatic backup':'Disabled · no file or bulk-data export can leave the app'))+' · '+count+' registered attempt'+(count===1?'':'s');
   }
 }
-function setExportPolicy(on){
+async function setExportPolicy(on){
   var api=window.SaagarExportControl;
   if(!api){ try{toast('Export control unavailable — exports remain blocked.');}catch(e){} renderExportPolicy(); return; }
-  api.setEnabled(!!on);
+  await api.setEnabled(!!on);
   renderExportPolicy();
 }
 function openExportRegister(){
@@ -8105,9 +7022,9 @@ function buildSupportBundle(){
     supportProcess:{liveBackupProhibited:true,deletionCertificateRequired:true,certificateMustReference:id}
   };
 }
-function exportSupportBundle(){
+async function exportSupportBundle(){
   var bundle=buildSupportBundle(), text=JSON.stringify(bundle,null,2), fname=bundle.bundleId+'.json';
-  var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+  var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
     exportId:'sanitised-support-bundle',kind:'json',scopeId:'diagnostics-only',
     scopeLabel:'sanitised diagnostics only',module:'shell',rowCount:bundle.recentEvents.length,
     fileName:fname,purposeId:'technical-support'
@@ -8281,120 +7198,20 @@ function seedModuleFromMaster(id){
     }
   }catch(e){}
 }
-/* Perf: building a module's iframe document = base64-decode (up to ~180 KB) +
-   seven string-rewrite passes. That output is deterministic per module (mobile
-   vs desktop is a runtime class toggle, and live data is read from storage at
-   iframe boot — neither is baked in), so build it once and reuse it. This turns
-   every later open / switch / reload into a cache hit; the iframe still re-mounts
-   each time, so the module always boots with fresh data. */
-const __moduleSrcCache = Object.create(null);
-function loadExternalModuleHtml(mod){
-  if(!mod || !mod.src) throw new Error('Module source is unavailable.');
-  const request=new XMLHttpRequest();
-  request.open('GET',mod.src,false);
-  request.send(null);
-  if((request.status!==0 && (request.status<200||request.status>=300)) || !request.responseText){
-    throw new Error('Module source could not be loaded: '+mod.id);
-  }
-  return request.responseText;
-}
-function buildModuleSrc(mod){
-  if(__moduleSrcCache[mod.id]) return __moduleSrcCache[mod.id];
-  const base=injectLegacyManagerPasswordGuard(loadExternalModuleHtml(mod),mod.id);
-  const built=injectIframeShim(
-    injectSafetyNet(
-      injectMobileMode(
-        injectUniformCSS(
-          injectModuleAccessBridge(
-            injectModuleAuditBridge(
-              injectEmployeeAssist(
-                injectModuleHideCSS(injectBackHome(base,mod.title,mod.id),mod.id),
-                mod.id
-              ),mod.id
-            ),mod.id
-          )
-        ),mod.id
-      )
-    )
-  );
-  __moduleSrcCache[mod.id]=built;
-  return built;
-}function openModule(id){
-  const mod = moduleById(id); if(!mod) return;
-  if((id==='payroll'||id==='tax')&&!allowSensitiveDeviceAction()){toast('This production device is restricted because its security posture is unsafe or unavailable.');return;}
-  if(!ensureModuleAccess(id)) return;
-  try{ seedModuleFromMaster(id); }catch(e){}
-  logActivity(id);
-  if(SENSITIVE_VIEWS.indexOf(id)>=0){ try{ auditLog('access.open',{module:id,role:currentRole(),admin:isAdmin}); }catch(e){} }   /* R0-W1 SEC-07: log sensitive-view opens (person+role via auditLog actor). Guarded — must never throw/brick module open. */
-  activeModuleId = id;
-  try{setSecureWindowForModule(id);}catch(e){}
-  $('activeTitle').textContent = mod.title;
-  $('activeSub').textContent = (mod.category||'')+' · '+(mod.priority||'');
-  $('mainContent').style.setProperty('display','none');
-  $('moduleScreen').classList.remove('hidden');
-  $('botnav').classList.add('hidden');
-  hideModuleLoadError();   // clear any stale "couldn't open" affordance from a previous attempt
-  $('loader').classList.remove('hidden');
-  setTimeout(()=>{
-    const __f = $('moduleFrame');
-    var __host=null;
-    try{
-      if(window.SaagarMah4Runtime){
-        __host=window.SaagarMah4Runtime.createHost({frame:__f,moduleId:id,onAudit:function(meta){
-          auditLog(meta.action,{module:meta.moduleId,storageKeyHash:meta.storageKeyHash,beforeBytes:meta.beforeBytes,afterBytes:meta.afterBytes});
-          if(!activeModuleId && activeView==='home') renderHome();
-        },onClosed:function(){
-          if(__mah4Host!==__host)return;
-          __mah4Host=null;
-          var __next=__mah4CloseNext; __mah4CloseNext=null;
-          if(typeof __next==='function')__next();
-          else if(activeModuleId===id){ try{toast('Planning closed because its secure runtime did not complete.');}catch(_){} showMainView(true); }
-        }});
-        __mah4Host=__host;
-      }
-    }catch(e){ __host=null; __mah4Host=null; }
-    let __hidden=false;
-    const __hide=()=>{ if(__hidden)return; __hidden=true; $('loader').classList.add('hidden'); };
-    // Hide the loader when the iframe ACTUALLY finishes loading (heavy modules like Payroll keep
-    // painting well past a fixed 300ms timer — the old fixed timeout caused a blank/half-rendered
-    // flash that felt like a freeze). The normal hide path is the load event below; it is unchanged.
-    try{ __f.addEventListener('load', function(){ if(__safetyTO) clearTimeout(__safetyTO); __hide(); try{ applyDateToFrame(); }catch(_){} try{ applyLangToFrame(getLang()); }catch(_){} try{ notifyModuleAccessChanged(); }catch(_){} try{ if(__host)__host.loaded({language:getLang(),date:viewDate(),uiMode:getUiMode()}); }catch(_){} try{ __stTargetPending=null; }catch(_){} }, { once:true }); }catch(e){}
-    // Loader safety net = LAST-RESORT hang guard only. The iframe `load` event (above) is the real
-    // "module finished" signal and fires reliably even for opaque-origin srcdoc on the device, so it
-    // does the normal hide. This timer was briefly 1200ms, but a HEAVY module (payroll/dsr/expense)
-    // booting against full SEEDED DATA on a slow phone blocks the main thread well past 1200ms — and
-    // because a srcdoc iframe shares the parent thread, the overdue timer then fired and showed
-    // "Couldn't open — tap to retry" even though the module had in fact loaded (retry only "worked"
-    // because buildModuleSrc is memoised on the 2nd open). Raised to 9000ms so a slow-but-successful
-    // first open clears via `load` long before it trips; the affordance now appears only on a true hang.
-    // (A buildModuleSrc throw and the iframe `error` event still surface their own errors immediately.)
-    let __safetyTO = setTimeout(function(){ if(__hidden) return; __hide(); showModuleLoadError(id); }, 9000);
-    // A hard iframe error (rare for srcdoc, but cheap to honour) trips the same affordance immediately.
-    try{ __f.addEventListener('error', function(){ if(__hidden) return; if(__safetyTO) clearTimeout(__safetyTO); try{if(__host)__host.fail('frame-error');}catch(_){} __hide(); showModuleLoadError(id); }, { once:true }); }catch(e){}
-    try{
-      // Option C: injectIframeShim is the OUTERMOST wrapper so its script element is prepended to
-      // the iframe <head> LAST — making it the FIRST executed script, ahead of injectMobileMode's boot
-      // and ahead of the audit bridge. That guarantees module code + the audit bridge's instance-
-      // level localStorage override both see the shimmed Storage.prototype already in place. The
-      // shim self-guards on parent.SaagarStore.enabled, so when the flag is OFF it is a pure no-op.
-      // buildModuleSrc memoises this whole chain per module (see above): first open pays the cost,
-      // every later open / switch / reload is a cache hit.
-      if(mod.src){
-        __f.removeAttribute('srcdoc');
-        __f.src = mod.src;
-      }else{
-        __f.removeAttribute('src');
-        __f.srcdoc = buildModuleSrc(mod);
-      }
-    }catch(e){
-      if(__safetyTO) clearTimeout(__safetyTO);
-      try{ __f.removeAttribute('src'); }catch(_){}
-      __f.srcdoc = `<h1 style="font-family:DM Sans,sans-serif;color:#b91c1c">Could not open module</h1><p>${escapeHtml(e.message)}</p>`;
-      __hide();
-    }
-  }, 50);
-}
-/* Loader error affordance (additive): a brief, dismiss-on-retry overlay shown ONLY when an open never
+function openModule(id){
+  return window.SaagarShellModuleFrameController.open(id,{
+    moduleById:moduleById,allowSensitiveDeviceAction:allowSensitiveDeviceAction,ensureModuleAccess:ensureModuleAccess,
+    seedModuleFromMaster:seedModuleFromMaster,logActivity:logActivity,auditLog:auditLog,sensitiveViews:SENSITIVE_VIEWS,
+    currentRole:currentRole,isAdmin:function(){return isAdmin;},setActiveModuleId:function(value){activeModuleId=value;},
+    setSecureWindowForModule:setSecureWindowForModule,element:$,hideModuleLoadError:hideModuleLoadError,
+    activeModuleId:function(){return activeModuleId;},activeView:function(){return activeView;},renderHome:renderHome,
+    moduleHost:function(){return __mah4Host;},setModuleHost:function(value){__mah4Host=value;},
+    takeModuleCloseNext:function(){var value=__mah4CloseNext;__mah4CloseNext=null;return value;},showMainView:showMainView,
+    applyDateToFrame:applyDateToFrame,applyLangToFrame:applyLangToFrame,getLang:getLang,
+    notifyModuleAccessChanged:notifyModuleAccessChanged,viewDate:viewDate,getUiMode:getUiMode,
+    clearPendingTarget:function(){__stTargetPending=null;},showModuleLoadError:showModuleLoadError,escapeHtml:escapeHtml,toast:toast
+  });
+}/* Loader error affordance (additive): a brief, dismiss-on-retry overlay shown ONLY when an open never
    produced a load event within the safety window (or the iframe errored). Retry re-runs openModule for
    the same id. Lives inside .frame-wrap (created lazily) so it overlays exactly where the loader did. */
 function showModuleLoadError(id){
@@ -8413,8 +7230,8 @@ function showModuleLoadError(id){
 }
 function hideModuleLoadError(){ try{ const b=$('moduleLoadError'); if(b){ b.classList.remove('on'); b.onclick=null; } }catch(e){} }
 function reloadModule(){ if(activeModuleId) openModule(activeModuleId); }
-function printModule(){
-  var __token=window.SaagarExportControl&&window.SaagarExportControl.authorize({exportId:'module-print',kind:'print',scopeId:'current-module-print',scopeLabel:'current module print',module:activeModuleId||'unknown',rowCount:0,purposeId:'hard-copy-business-record'});
+async function printModule(){
+  var __token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({exportId:'module-print',kind:'print',scopeId:'current-module-print',scopeLabel:'current module print',module:activeModuleId||'unknown',rowCount:0,purposeId:'hard-copy-business-record'});
   if(!__token) return;
   if(!window.SaagarExportControl.beginDelivery(__token)) return;
   try{ $('moduleFrame').contentWindow.focus(); $('moduleFrame').contentWindow.print(); }
@@ -8447,601 +7264,6 @@ function toggleModuleOverflow(ev){
   }catch(e){}
 }
 
-/* Insert a fragment before the LAST </body> (the real document close).
-   Modules like Payroll/CRO-Audit contain </body> inside JS print/letterhead
-   strings BEFORE the real one — replacing the first </body> corrupted them. */
-/* Phase 2B: hide redundant in-module MASTER UIs now managed centrally in the
-   Settings Hub. CSS-only (no JS) — operational controls (role, SM-login) stay. */
-function injectModuleHideCSS(html, moduleId){
-  const HIDE = {
-    /* Employees are created ONLY in Settings → People and flow into every module.
-       Hide each module's own "add employee/CRO/staff" entry point so nobody creates a
-       divergent record. Viewing/managing the synced list is unaffected. */
-    leave:   '.btn-teal{display:none !important}' /* "Staff Master" */,
-    qms:     '[onclick="addCroToMaster()"],[onclick^="editCro"],[onclick^="toggleCro"]{display:none !important}' /* add + edit/deactivate CRO — managed in Settings → People */,
-    dsr:     '#new-staff-inp,[onclick="addStaff()"],#lform-sm .lf-group{display:none !important}' /* staff master + duplicate module password */,
-    payroll: '[onclick="addEmployee()"],[onclick="addMasterEmployee()"]{display:none !important}' /* "+ Add Employee" (both tabs) */,
-    /* Phase 1: brands/vendors are created in Settings → Masters and flow into the modules. */
-    expense: '#vn,[onclick="addVendor()"]{display:none !important}' /* Vendors-tab add (payee autocomplete stays) */,
-    stock:   '#brand-inp,[onclick="addBrand()"]{display:none !important}' /* SM "+ Add" brand */
-  };
-  const css = HIDE[moduleId]; if(!css) return html;
-  const tag = '<style id="st-v5-hide-css">'+css+'</style>';
-  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, tag+'\n</head>');
-  return tag + html;
-}
-function __injBeforeBodyEnd(html, frag){
-  var idx = html.toLowerCase().lastIndexOf('</body>');
-  if(idx >= 0) return html.slice(0, idx) + frag + '\n' + html.slice(idx);
-  return html + frag;
-}
-function injectLegacyManagerPasswordGuard(html,moduleId){
-  if(moduleId!=='stock'&&moduleId!=='dsr') return html;
-  const legacyPattern=/if \(!stored\) return pw === 'Gold';/;
-  if(legacyPattern.test(String(html))) throw new Error('Legacy manager credential is present for '+moduleId);
-  return String(html);
-}
-function injectModuleAccessBridge(html,moduleId){
-  if(!['service','expense','stock','dsr'].includes(moduleId)) return html;
-  const ownerCheck="function isSuperAdmin(){ try{ return !!(window.parent&&window.parent.SaagarOwnerSession&&window.parent.SaagarOwnerSession.isOwnerActive()); }catch(e){ return false; } }";
-  if(moduleId==='service'||moduleId==='expense'){
-    const compact=String(html).replace(/\s+/g,'');
-    const count=compact.split(ownerCheck.replace(/\s+/g,'')).length-1;
-    if(count!==1) throw new Error('Owner access contract mismatch for '+moduleId);
-  }
-  const mid=JSON.stringify(String(moduleId));
-  const bridge=`
-<scr`+`ipt id="st-v5-module-access-bridge">(function(){
-var moduleId=${mid},lastContext=null;
-function readContext(){
-  try{
-    var api=window.parent&&window.parent.SaagarOwnerSession;
-    if(api&&typeof api.read==='function'){
-      var value=api.read()||{};
-      return {isOwner:value.isOwner===true,role:String(value.role||''),isManager:value.isManager===true};
-    }
-  }catch(e){}
-  return {isOwner:false,role:'',isManager:false};
-}
-function accessMessage(text){
-  try{ var err=document.getElementById('login-err'); if(err&&moduleId==='dsr') err.textContent=text; }catch(e){}
-  try{ if(typeof toast==='function') moduleId==='stock'?toast(text,'err'):toast(text,'warn'); }catch(e){}
-}
-function refreshOwnerControls(){
-  try{
-    if(moduleId==='service'&&typeof renderDash==='function') renderDash();
-    if(moduleId==='expense'&&typeof render==='function') render();
-  }catch(e){}
-}
-function revokeManagerIfNeeded(context){
-  try{
-    if(moduleId==='stock'&&!context.isManager&&typeof st!=='undefined'&&st.mode==='sm'&&typeof commitMode==='function') commitMode('cro');
-    if(moduleId==='dsr'&&!context.isManager&&typeof st!=='undefined'&&st.screen==='sm'&&typeof logout==='function') logout();
-  }catch(e){}
-}
-function syncContext(){
-  var context=readContext();
-  revokeManagerIfNeeded(context);
-  if(!lastContext||lastContext.isOwner!==context.isOwner) refreshOwnerControls();
-  lastContext=context;
-}
-function setup(){
-  if(moduleId==='service'||moduleId==='expense') window.isSuperAdmin=function(){ return readContext().isOwner===true; };
-  if(moduleId==='stock'){
-    var originalSetMode=window.setMode,originalGoTab=window.goTab;
-    if(typeof originalSetMode==='function') window.setMode=function(mode){
-      if(mode==='sm'){
-        if(readContext().isManager){ try{ var modal=document.getElementById('sm-auth-modal'); if(modal) modal.style.display='none'; if(typeof commitMode==='function') commitMode('sm'); }catch(e){} }
-        else accessMessage('Switch to Owner or Store Manager in the app header.');
-        return;
-      }
-      return originalSetMode.apply(this,arguments);
-    };
-    if(typeof originalGoTab==='function') window.goTab=function(tab){
-      if(tab==='settings'&&typeof st!=='undefined'&&st.mode!=='sm'){
-        if(!readContext().isManager){ accessMessage('Switch to Owner or Store Manager in the app header.'); return; }
-        try{ if(typeof commitMode==='function') commitMode('sm'); }catch(e){}
-      }
-      return originalGoTab.apply(this,arguments);
-    };
-  }
-  if(moduleId==='dsr'){
-    var originalSetLoginRole=window.setLoginRole;
-    if(typeof originalSetLoginRole==='function') window.setLoginRole=function(role){
-      if(role==='sm'){
-        if(readContext().isManager){ try{ var err=document.getElementById('login-err'); if(err) err.textContent=''; if(typeof showScreen==='function') showScreen('sm'); if(typeof goSMTab==='function') goSMTab('submissions'); }catch(e){} }
-        else{ try{ originalSetLoginRole.call(this,'staff'); }catch(e){} accessMessage('Switch to Owner or Store Manager in the app header.'); }
-        return;
-      }
-      return originalSetLoginRole.apply(this,arguments);
-    };
-    window.loginSM=function(){
-      if(!readContext().isManager){ accessMessage('Switch to Owner or Store Manager in the app header.'); return; }
-      try{ var err=document.getElementById('login-err'); if(err) err.textContent=''; if(typeof showScreen==='function') showScreen('sm'); if(typeof goSMTab==='function') goSMTab('submissions'); }catch(e){}
-    };
-    try{ var password=document.getElementById('sm-pw-inp'); if(password&&password.parentElement) password.parentElement.style.display='none'; var button=document.querySelector('#lform-sm .btn-login'); if(button) button.textContent='Open Manager workspace'; }catch(e){}
-  }
-  syncContext();
-}
-window.addEventListener('message',function(event){ if(event&&event.source===window.parent&&event.data&&event.data.type==='ST_ACCESS_CONTEXT') syncContext(); });
-setup();
-})();<\/scr`+`ipt>`;
-  return __injBeforeBodyEnd(html,bridge);
-}
-/* Option C (Phase 3) — iframe storage shim. Injected as the FIRST script of every module
-   srcdoc (prepended to <head>), so it runs before module scripts AND before the audit bridge.
-   It delegates the iframe's Storage.prototype to parent.SaagarStore (synchronous, same-origin),
-   making MEM the working store for module reads/writes too. SELF-GUARDING: if parent.SaagarStore
-   is absent or not enabled (flag OFF) it is a no-op → module iframes use the shared native
-   localStorage exactly as today. The shim is injected UNCONDITIONALLY (it self-guards). */
-function injectIframeShim(html){
-  // §15 photo bridge: also publish window.SaagarPhoto INTO the iframe, forwarding to parent.SaagarStore.photo
-  // (async; same-origin srcdoc so the direct parent ref is fine). Defined ONLY when the engine is enabled AND
-  // a photo facade exists — so a flag-OFF build leaves window.SaagarPhoto undefined and modules take the legacy
-  // base64 path (capability-detected via `window.SaagarPhoto && window.SaagarPhoto.enabled`).
-  var shim = '<scr'+'ipt id="st-v5-iframe-shim">(function(){try{var P=window.parent&&window.parent.SaagarStore;if(!P||!P.enabled)return;var SP=Storage.prototype;SP.getItem=function(k){return P.get(k);};SP.setItem=function(k,v){return P.set(k,v);};SP.removeItem=function(k){return P.remove(k);};SP.clear=function(){try{console.warn("[st-shim] localStorage.clear() ignored inside a module (shared store)");}catch(e){}};SP.key=function(i){return P.keys()[i]||null;};try{Object.defineProperty(SP,"length",{configurable:true,get:function(){return P.length();}});}catch(e){}try{var __ls={getItem:function(k){return P.get(k);},setItem:function(k,v){return P.set(k,v);},removeItem:function(k){return P.remove(k);},clear:function(){},key:function(i){return P.keys()[i]||null;}};try{Object.defineProperty(__ls,"length",{get:function(){return P.length();}});}catch(e){}Object.defineProperty(window,"localStorage",{configurable:true,get:function(){return __ls;}});}catch(e){}var PP=P.photo;if(PP&&PP.put){window.SaagarPhoto={enabled:true,refId:function(m,r,f){return PP.refId(m,r,f);},put:function(id,d){return Promise.resolve(PP.put(id,d));},get:function(id){return Promise.resolve(PP.get(id));},remove:function(id){return Promise.resolve(PP.remove(id));}};}}catch(e){}})();<\/scr'+'ipt>';
-  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+shim);   // FIRST in <head>
-  if(/<\/head>/i.test(html))    return html.replace(/<\/head>/i, shim+'\n</head>');
-  return shim + html;
-}
-/* Rec #7: contextual "next-step" chips per module (1-2 each), mirroring Sagar's daily flow
-   QMS→DSR→Stock + the bridge's own QMS→DSR/WSC links. Chips post ST_OPEN_MODULE (guarded). */
-const NEXT_STEPS = {
-  qms:      [{id:'dsr',   label:'Record in DSR →'}],
-  dsr:      [{id:'stock', label:'Update Stock →'}],
-  grooming: [{id:'qms',   label:'Open Queue →'}],
-  service:  [{id:'qms',   label:'Back to Queue →'}],
-  expense:  [{id:'tax',   label:'Check Tax →'}]
-};
-function injectBackHome(html, title, moduleId){
-  const steps = JSON.stringify(NEXT_STEPS[moduleId] || []);
-  const dock = `
-<style id="st-v5-back-style">
-#st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(135deg,#0d2340,#18385f);border:2px solid rgba(184,146,42,.7);color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(13,35,64,.35);
-  transition:transform .15s,box-shadow .15s,border-color .15s;padding:0;outline:none}
-#st-v5-home-fab:hover{transform:scale(1.12);box-shadow:0 8px 26px rgba(13,35,64,.45);border-color:#b8922a}
-#st-v5-home-fab:active{transform:scale(.96)}
-#st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-@media print{#st-v5-home-fab{display:none!important}}
-@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}#st-v5-next-chips{bottom:124px;right:14px}}
-#st-v5-next-chips{position:fixed;bottom:140px;right:22px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-#st-v5-next-chips button{background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;border:1px solid rgba(184,146,42,.7);border-radius:999px;padding:8px 14px;font:700 12px 'DM Sans',Arial,sans-serif;box-shadow:0 6px 18px rgba(13,35,64,.35);cursor:pointer}
-@media print{#st-v5-next-chips{display:none!important}}
-/* Auto-hide both FABs while a module modal/overlay is open (boot script toggles st-v5-modalopen),
-   so they never sit over a dialog's Cancel/inputs. On mobile the boot script also reserves bottom
-   safe-area so the FABs never cover the last row / per-row action buttons. */
-html.st-v5-modalopen #st-v5-home-fab,html.st-v5-modalopen #st-v5-next-chips{display:none!important}
-/* Mobile nav aids only — on Desktop the persistent left nav + back button cover this, and the FABs overlapped module content. */
-html:not(.bcc-mobile) #st-v5-home-fab,html:not(.bcc-mobile) #st-v5-next-chips{display:none!important}
-</style>
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
-<div id="st-v5-next-chips"></div>
-<scr`+`ipt id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});var steps=${steps};var host=document.getElementById('st-v5-next-chips');if(host&&steps.length){steps.forEach(function(s){var c=document.createElement('button');c.type='button';c.textContent=s.label;c.onclick=function(){try{parent.postMessage({type:'ST_OPEN_MODULE',id:s.id},'*')}catch(e){}};host.appendChild(c);});}var R=document.documentElement;function onM(){try{return R.classList.contains('bcc-mobile');}catch(e){return false;}}function pad(){try{if(!onM()){if(document.body)document.body.style.removeProperty('padding-bottom');return;}if(!document.body)return;var ih=window.innerHeight||0,need=0;['st-v5-home-fab','st-v5-next-chips'].forEach(function(id){var el=document.getElementById(id);if(!el)return;var cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;var r=el.getBoundingClientRect();if(!r.height)return;var fb=ih-r.top;if(fb>need)need=fb;});if(need>0)document.body.style.setProperty('padding-bottom',Math.ceil(need+16)+'px','important');}catch(e){}}function modalUp(){try{var q=document.querySelectorAll('[class~="modal"],[class~="overlay"],[class~="sheet"],[role="dialog"],#firm-modal,.drawer');var iw=window.innerWidth||0,ih=window.innerHeight||0;for(var i=0;i<q.length;i++){var el=q[i],cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0')continue;var r=el.getBoundingClientRect();if(r.width>=iw*0.5&&r.height>=120&&r.bottom>0&&r.top<ih)return true;}return false;}catch(e){return false;}}function tick(){try{R.classList.toggle('st-v5-modalopen',modalUp());pad();}catch(e){}}var sch=function(){clearTimeout(tick._t);tick._t=setTimeout(tick,180);};if(document.readyState!=='loading')tick();else document.addEventListener('DOMContentLoaded',tick);[400,1200].forEach(function(d){setTimeout(tick,d);});window.addEventListener('resize',sch);try{new MutationObserver(sch).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});}catch(e){}})();<\/scr`+`ipt>`;
-  return __injBeforeBodyEnd(html, dock);
-}
-
-function injectEmployeeAssist(html, moduleId){
-  const CUST_SEL = ({qms:['#custName'], service:['#f-cn','#f-an','#f-dcs']})[moduleId] || [];
-  const custSelJS = JSON.stringify(CUST_SEL);
-  const assist = `
-<style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style><scr`+`ipt id="st-v5-emp-assist-script">(function(){var KEY='${EMP_MASTER_KEY}';var CKEY='${MK_CUSTOMERS}';var CSEL=${custSelJS};function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}function unav(){try{var g=JSON.parse(localStorage.getItem('saagar_gate_status')||'{}');var u=(g&&g.unavailable)||{};var s={};Object.keys(u).forEach(function(k){if(u[k]&&u[k].leave)s[k]=1;});return s;}catch(e){return{}}}function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');var bl=unav();return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name&&!bl[String(e.name).trim().toLowerCase()]}):[]}catch(e){return[]}}function readC(){try{var x=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(x)?x.filter(function(c){return c&&c.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var custs=CSEL.length?readC():[];var __act='';try{__act=localStorage.getItem('saagar_acting_as')||'';}catch(e){}var __g='';try{__g=localStorage.getItem('saagar_gate_status')||'';}catch(e){}var sig='E:'+emps.map(function(e){return e.name}).join('|')+'||C:'+custs.map(function(c){return c.name}).join('|')+'||G:'+__g.length;var selA=['#cro-inp','#staff-name-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-dtn','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(el.readOnly||el.disabled)return;if(el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list');if(__act&&!el.__stPre&&el.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|number|date|file)$/i.test(el.type||'')&&!el.value){el.value=__act;el.__stPre=1;}})})}if(custs.length){CSEL.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-customer-list')el.setAttribute('list','st-v5-customer-list')})})}var dl=document.getElementById('st-v5-employee-list');var cOk=CSEL.length?!!document.getElementById('st-v5-customer-list'):true;if(sig===__sig&&dl&&cOk)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+esc(e.name)+'"></option>'}).join('');if(CSEL.length){var cdl=document.getElementById('st-v5-customer-list');if(!cdl){cdl=document.createElement('datalist');cdl.id='st-v5-customer-list';document.body.appendChild(cdl)}cdl.innerHTML=custs.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.mobile?' label="'+esc(c.mobile)+'"':'')+'></option>'}).join('')}__sig=sig;}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();<\/scr`+`ipt>`;
-  return __injBeforeBodyEnd(html, assist);
-}
-
-function injectModuleAuditBridge(html, moduleId){
-  const bridge = `
-<scr`+`ipt id="st-v5-module-audit-bridge">(function(){var nativeSet=localStorage.setItem.bind(localStorage),nativeRemove=localStorage.removeItem.bind(localStorage),sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;if(window.SaagarMah4&&window.SaagarMah4.audit)window.SaagarMah4.audit(action,String(key),before,after)}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();<\/scr`+`ipt>`;
-  return __injBeforeBodyEnd(html, bridge);
-}
-
-/* FIXED in V5: enforces DM Serif Display + DM Sans + navy/gold, matching modules' own design system
-   (V4 forced Inter onto everything, which broke the look). */
-function injectUniformCSS(html){
-  const css = `
-<style id="st-v5-uniform-css">
-/* No remote @import — app is fully offline (INTERNET permission removed); a render-blocking
-   font fetch that can never resolve was a likely cause of module-open stalls. System fonts below. */
-/* ── VISIBILITY FIX ── force light rendering so Android WebView dark-mode
-   (algorithmic darkening / force-dark) cannot invert text to invisible.
-   This is the root cause of "some text not visible" on phones/tablets. */
-:root{color-scheme:light only}
-html{color-scheme:light only;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-html,body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important;forced-color-adjust:none}
-h1,h2,h3,h4,h5,.title,.headline,.brand,.heading{font-family:'DM Serif Display',Georgia,serif !important;letter-spacing:.2px}
-/* Don't fight module's own colors — only normalize font + base focus ring */
-*:focus-visible{outline:2px solid #b8922a;outline-offset:1px}
-button,input,select,textarea{font-family:inherit}
-/* keep date/number/select text from going invisible on some Android WebViews */
-input,select,textarea{-webkit-text-fill-color:currentColor;opacity:1}
-input::placeholder,textarea::placeholder{-webkit-text-fill-color:#7a8699;opacity:1}
-/* ── RESPONSIVE SAFETY (tablet + mobile), conservative so module layouts stay intact ── */
-img,svg,video,canvas{max-width:100%;height:auto}
-*{ -webkit-tap-highlight-color:rgba(184,146,42,.18) }
-@media(max-width:920px){
-  body{ padding-bottom:72px !important }                 /* clear the back-home FAB + injected gate banner */
-  table{ display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch }
-  thead,tbody,tr{ width:max-content; min-width:100% }
-}
-@media(max-width:640px){
-  html{ font-size:15px }
-  button,.btn,a.btn,[role=button]{ min-height:40px }
-  input,select,textarea{ min-height:38px; font-size:16px }   /* 16px stops iOS/Android zoom-on-focus */
-}
-@media print{ body{background:#fff !important;color:#000 !important} }
-
-/* ════════════════════════════════════════════════════════════════════════
-   GLOBAL FLOORS — accessibility minimums applied to EVERY module iframe
-   (this block is injected unconditionally, mobile AND desktop). Two rules:
-     1. No on-screen text smaller than 11px.
-     2. Every interactive control is at least 44x44 with a real tap target.
-   These are FLOORS: they only raise values that fall below the minimum, so
-   module typography/spacing above the floor is untouched. !important is
-   required because module + MOBILE_CSS rules set their own sizes with
-   !important (some shrink table/label text to 9px and inputs below 44px).
-   ════════════════════════════════════════════════════════════════════════ */
-/* 1a — baseline text floor (NOT !important): max(11px,1em) keeps each element's
-   inherited/declared size when it is already >=11px, and lifts anything smaller
-   to 11px. Because it is low-priority, any module rule that sets a size >=11px
-   still wins; this only catches unset or sub-11px text. svg/script/style are
-   excluded so we never touch vector or non-rendered nodes. */
-html body *:not(svg):not(svg *):not(script):not(style){
-  font-size:max(11px, 1em);
-}
-/* 1b — hard floor (!important) for the small-text leaves that modules + MOBILE_CSS
-   deliberately shrink to 9–10px (table cells, chips, captions, *-sub/-meta/-hint
-   labels). Flooring these to 11px is the intent of the accessibility minimum.
-   These are genuine small-text leaves, so 11px will not distort hierarchy. */
-html body small,
-html body .h-name,html body th,html body td,
-html body .leave-chip,html body .mt,html body .badge,html body .chip,html body .pill,html body .tag,
-html body figcaption,html body caption,html body legend,
-html body [class*="-sub"],html body [class*="-meta"],html body [class*="-hint"],
-html body [class*="-note"],html body [class*="-cap"],html body [class*="-label"],
-html body [class*="-time"],html body [class*="-date"]{
-  font-size:max(11px, 1em) !important;
-}
-/* 2 — interactive control floor: 44px min hit area + readable size. Covers
-   normal controls AND tiny icon/delete/close/remove buttons that often ship at
-   ~24–32px. The [class*=…] matches are scoped to button/a/[role=button] so a
-   wrapper div like .delete-modal is never affected. min-width keeps icon-only
-   buttons square-ish. */
-html body button,
-html body input:not([type=hidden]):not([type=checkbox]):not([type=radio]),
-html body select,html body textarea,
-html body a.btn,html body [role=button],html body label.btn,
-html body .btn,html body .icon-btn,html body .iconbtn,
-html body button[class*="close"],html body button[class*="delete"],html body button[class*="remove"],
-html body button[class*="-del"],html body button[class*="icon"],
-html body a[class*="close"],html body a[class*="delete"],html body a[class*="remove"]{
-  min-height:44px !important;
-  min-width:44px;
-}
-/* keep checkbox/radio compact but tappable (don't stretch the box itself) */
-html body input[type=checkbox],html body input[type=radio]{
-  min-width:18px !important;min-height:18px !important;
-}
-/* inputs/selects inside dense table cells: keep the 44px hit area but allow
-   the cell width to drive horizontal size so tables don't blow out. */
-html body td button,html body th button,
-html body td input,html body th input,
-html body td select,html body th select{
-  min-width:0;
-}
-</style>`;
-  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, css+'\n</head>');
-  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+css);
-  return css + html;
-}
-
-/* ── MOBILE MODE (Desktop ⇄ Mobile toggle) ─────────────────────────────────────
-   A class-gated, WIDTH-INDEPENDENT mobile layer injected into every module iframe.
-   It is active ONLY when html.bcc-mobile is present (the shell toggles it from the
-   saagar_ui_mode setting, default 'mobile'). Desktop mode = no class = byte-identical
-   to before — every rule is scoped under html.bcc-mobile (base) or
-   html.bcc-mobile[data-mod="<id>"] (per module), so it can never touch Desktop mode or
-   another module. A tiny boot script (in <head>, runs before paint) sets data-mod +
-   the class from localStorage (shared same-origin) and live-updates on toggle. The
-   per-module rules were authored against each module's REAL selectors. */
-const MOBILE_CSS = `
-/* base layer (all modules) */
-html.bcc-mobile table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-html.bcc-mobile thead,html.bcc-mobile tbody,html.bcc-mobile tr{width:max-content;min-width:100%}
-html.bcc-mobile .table-wrap,html.bcc-mobile .twrap,html.bcc-mobile .table-scroll,html.bcc-mobile .tbl-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch}
-html.bcc-mobile input,html.bcc-mobile select,html.bcc-mobile textarea{font-size:16px;max-width:100%}
-html.bcc-mobile td input,html.bcc-mobile td select,html.bcc-mobile td textarea,html.bcc-mobile th input,html.bcc-mobile th select{font-size:13px}
-html.bcc-mobile button,html.bcc-mobile .btn,html.bcc-mobile a.btn,html.bcc-mobile [role=button]{min-height:42px}
-html.bcc-mobile img,html.bcc-mobile svg,html.bcc-mobile video,html.bcc-mobile canvas{max-width:100%;height:auto}
-html.bcc-mobile .fg{min-width:0}
-html.bcc-mobile body{padding-bottom:80px}
-/* qms off-canvas menu button (injected for qms only) */
-#st-v5-qms-menu{display:none}
-html.bcc-mobile[data-mod="qms"] #st-v5-qms-menu{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:10px;z-index:70;width:42px;height:42px;border-radius:10px;background:#0d2340;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
-/* stock */
-html.bcc-mobile[data-mod="stock"] .main{max-width:none !important;width:auto !important;margin:0 !important;padding:10px !important}
-html.bcc-mobile[data-mod="stock"] .scards{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
-html.bcc-mobile[data-mod="stock"] .scard{padding:10px !important}
-html.bcc-mobile[data-mod="stock"] .scard-val{font-size:21px !important}
-html.bcc-mobile[data-mod="stock"] .set-grid{grid-template-columns:1fr !important;gap:12px !important}
-html.bcc-mobile[data-mod="stock"] .sec-hdr{flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important}
-html.bcc-mobile[data-mod="stock"] .btn-row{width:100% !important}
-html.bcc-mobile[data-mod="stock"] .hdr{flex-wrap:wrap !important;gap:8px !important}
-html.bcc-mobile[data-mod="stock"] .add-row{flex-direction:column !important}
-html.bcc-mobile[data-mod="stock"] .rtbl{font-size:11px !important}
-html.bcc-mobile[data-mod="stock"] .rtbl thead th{padding:5px 3px !important;font-size:9px !important;letter-spacing:0 !important}
-html.bcc-mobile[data-mod="stock"] .rtbl td{padding:3px 3px !important}
-html.bcc-mobile[data-mod="stock"] .rtbl td.brand-td{padding-left:8px !important;font-size:10px !important}
-html.bcc-mobile[data-mod="stock"] .rtbl thead th.tl{padding-left:8px !important}
-/* stock-L02: register-cell inputs were min-height:0 — below the 44px tap floor, in the core daily-count
-   flow. Give them a reasonable tap height. stock-L01: the fixed input widths are for the WIDE scroll table
-   (1280xMobile); at phone widths (<=640) the module reflows .rtbl into stacked cards whose inputs should
-   fill the row, so only cap the width above 640 and let the module's card layout own the narrow case. */
-html.bcc-mobile[data-mod="stock"] .rtbl td .ni{min-height:40px !important;font-size:11px !important}
-html.bcc-mobile[data-mod="stock"] .rtbl td .si,html.bcc-mobile[data-mod="stock"] .rtbl td .cro-sel{min-height:40px !important;font-size:11px !important}
-@media(min-width:641px){
-html.bcc-mobile[data-mod="stock"] .rtbl td .ni{width:48px !important}
-html.bcc-mobile[data-mod="stock"] .rtbl td .si,html.bcc-mobile[data-mod="stock"] .rtbl td .cro-sel{width:80px !important}
-}
-html.bcc-mobile[data-mod="stock"] .modal-box{min-width:0 !important;max-width:92vw !important;padding:20px !important}
-/* service */
-html.bcc-mobile[data-mod="service"] .dash-wrap,html.bcc-mobile[data-mod="service"] .form-content{max-width:none !important;padding-left:14px !important;padding-right:14px !important}
-html.bcc-mobile[data-mod="service"] .form-layout{display:block !important;min-height:0 !important}
-/* Phase-0 fix: do NOT hide .form-sidebar on mobile — the module's own @media(max-width:720px) reflows it
-   into a sticky progress bar + horizontal step-chip rail (nav-0..nav-11). Hiding it left the 12-step New
-   Order form with no jump-nav (one ~10,000px scroll). The module hides .sidebar-actions itself, so only the rail shows. */
-html.bcc-mobile[data-mod="service"] .grid-2,html.bcc-mobile[data-mod="service"] .grid-3,html.bcc-mobile[data-mod="service"] .grid-4,html.bcc-mobile[data-mod="service"] .check-columns{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="service"] .stats-grid{grid-template-columns:1fr 1fr !important;gap:10px !important}
-html.bcc-mobile[data-mod="service"] .col-span-2,html.bcc-mobile[data-mod="service"] .col-span-full{grid-column:auto !important}
-html.bcc-mobile[data-mod="service"] .dash-hero,html.bcc-mobile[data-mod="service"] .form-topbar,html.bcc-mobile[data-mod="service"] .section-header{flex-wrap:wrap !important}
-html.bcc-mobile[data-mod="service"] .form-topbar-left,html.bcc-mobile[data-mod="service"] .form-topbar-right{flex-wrap:wrap !important;width:100% !important}
-html.bcc-mobile[data-mod="service"] .tweaks-panel{position:static !important;width:auto !important;margin:12px 14px !important;box-shadow:none !important}
-html.bcc-mobile[data-mod="service"] .est-totals{align-items:stretch !important}
-html.bcc-mobile[data-mod="service"] .tot-row{justify-content:space-between !important;gap:8px !important}
-html.bcc-mobile[data-mod="service"] .tot-row .tot-label{width:auto !important}
-html.bcc-mobile[data-mod="service"] .tot-input{width:120px !important}
-html.bcc-mobile[data-mod="service"] .cond-table,html.bcc-mobile[data-mod="service"] .est-table{font-size:11.5px !important}
-html.bcc-mobile[data-mod="service"] .cond-table th,html.bcc-mobile[data-mod="service"] .est-table th{padding:6px 6px !important}
-html.bcc-mobile[data-mod="service"] .cond-table td,html.bcc-mobile[data-mod="service"] .est-table td{padding:4px 5px !important}
-html.bcc-mobile[data-mod="service"] .cond-table td input,html.bcc-mobile[data-mod="service"] .cond-table td select,html.bcc-mobile[data-mod="service"] .est-table td input{min-height:36px !important;font-size:13px !important}
-html.bcc-mobile[data-mod="service"] .stat-value{overflow-wrap:anywhere !important}  /* svc-l2: a long ₹ Est. Revenue was clipped by the overflow:hidden stat card — wrap instead of truncate */
-/* qms */
-html.bcc-mobile[data-mod="qms"] body{display:block !important;overflow:auto !important}
-html.bcc-mobile[data-mod="qms"]{--sidebar:0px}
-html.bcc-mobile[data-mod="qms"] .main-area{margin-left:0 !important}
-html.bcc-mobile[data-mod="qms"] .role-banner{left:0 !important}
-html.bcc-mobile[data-mod="qms"] .sidebar{transform:translateX(-240px);transition:transform .25s;z-index:60;width:240px}
-html.bcc-mobile[data-mod="qms"] .sidebar.open{transform:translateX(0)}
-/* QMS mobile drawer needs a backdrop: the shell opens it via .open (the module's own
-   checkbox scrim is never wired up here), so without this the drawer floats over
-   un-dimmed, left-clipped content. Scrim sits below the sidebar (60) + button (70). */
-#st-v5-qms-scrim{display:none}
-html.bcc-mobile[data-mod="qms"] #st-v5-qms-scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:55;display:none}
-html.bcc-mobile[data-mod="qms"] #st-v5-qms-scrim.show{display:block}
-/* one hamburger only: the module's own checkbox button is redundant under the shell drawer */
-html.bcc-mobile[data-mod="qms"] .qms-menu-btn{display:none !important}
-html.bcc-mobile[data-mod="qms"] .topbar{padding-left:60px;position:relative}
-html.bcc-mobile[data-mod="qms"] .topbar .page-title{font-size:14px}
-html.bcc-mobile[data-mod="qms"] .kpi-grid,html.bcc-mobile[data-mod="qms"] .grid-2,html.bcc-mobile[data-mod="qms"] .grid-3,html.bcc-mobile[data-mod="qms"] .grid-auto,html.bcc-mobile[data-mod="qms"] .form-grid{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="qms"] .field.col3{grid-column:auto !important}
-html.bcc-mobile[data-mod="qms"] .audit-item{grid-template-columns:1fr auto !important;gap:6px}
-html.bcc-mobile[data-mod="qms"] .audit-time{grid-column:1/-1}
-html.bcc-mobile[data-mod="qms"] .content{padding:16px 14px 32px}
-html.bcc-mobile[data-mod="qms"] .modal{max-width:100% !important}
-html.bcc-mobile[data-mod="qms"] .tbl{font-size:12px}
-html.bcc-mobile[data-mod="qms"] .tbl th{padding:7px 9px;font-size:10px}
-html.bcc-mobile[data-mod="qms"] .tbl td{padding:8px 9px}
-html.bcc-mobile[data-mod="qms"] .tbl td.actions{flex-wrap:wrap}
-/* dsr */
-html.bcc-mobile[data-mod="dsr"] .sgrid,html.bcc-mobile[data-mod="dsr"] .mkt-grid,html.bcc-mobile[data-mod="dsr"] .score-grid,html.bcc-mobile[data-mod="dsr"] .audit-ar-grid,html.bcc-mobile[data-mod="dsr"] .fgrid2,html.bcc-mobile[data-mod="dsr"] .role-sw{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="dsr"] .dash-kpi-grid{grid-template-columns:1fr 1fr !important;gap:8px !important}
-html.bcc-mobile[data-mod="dsr"] .dkpi{padding:12px 8px !important}
-html.bcc-mobile[data-mod="dsr"] .dkpi-val{font-size:22px !important}
-html.bcc-mobile[data-mod="dsr"] .content-area{padding:12px !important}
-html.bcc-mobile[data-mod="dsr"] .audit-done-view{max-width:100% !important}
-html.bcc-mobile[data-mod="dsr"] .entry-item{width:100% !important;padding:14px 12px !important}
-html.bcc-mobile[data-mod="dsr"] .entry-hdr{flex-wrap:wrap !important;gap:4px 8px !important}
-html.bcc-mobile[data-mod="dsr"] .entry-detail{font-size:13px !important;word-break:break-word !important}
-html.bcc-mobile[data-mod="dsr"] .ptbl,html.bcc-mobile[data-mod="dsr"] .var-tbl{font-size:12px !important}
-html.bcc-mobile[data-mod="dsr"] .ptbl th,html.bcc-mobile[data-mod="dsr"] .ptbl td,html.bcc-mobile[data-mod="dsr"] .var-tbl th,html.bcc-mobile[data-mod="dsr"] .var-tbl td{padding:7px 8px !important;white-space:nowrap}
-/* expense */
-html.bcc-mobile[data-mod="expense"] .wrap{max-width:none !important}
-html.bcc-mobile[data-mod="expense"] .modal{max-width:none !important}
-html.bcc-mobile[data-mod="expense"] .fgrid,html.bcc-mobile[data-mod="expense"] .st-grid,html.bcc-mobile[data-mod="expense"] .deno{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="expense"] .kgrid{grid-template-columns:repeat(2,1fr) !important}
-html.bcc-mobile[data-mod="expense"] .deno-row{grid-template-columns:48px 1fr auto !important;gap:8px}
-html.bcc-mobile[data-mod="expense"] .tabs{-webkit-overflow-scrolling:touch}
-html.bcc-mobile[data-mod="expense"] .card-h{flex-wrap:wrap}
-html.bcc-mobile[data-mod="expense"] .card-h .actions{width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
-html.bcc-mobile[data-mod="expense"] .card-h .actions>*{flex:0 0 auto}
-html.bcc-mobile[data-mod="expense"] th{padding:7px 7px !important;font-size:11px !important;white-space:nowrap}
-html.bcc-mobile[data-mod="expense"] td{padding:6px 7px !important;font-size:11.5px !important}
-html.bcc-mobile[data-mod="expense"] table{font-size:11.5px !important}
-html.bcc-mobile[data-mod="expense"] .st-row{font-size:12px;gap:8px}
-html.bcc-mobile[data-mod="expense"] .fitem{grid-template-columns:auto 1fr;row-gap:4px}
-/* grooming */
-html.bcc-mobile[data-mod="grooming"] .wrap{max-width:100%}
-html.bcc-mobile[data-mod="grooming"] .frow{flex-direction:column;gap:11px}
-html.bcc-mobile[data-mod="grooming"] .fg{min-width:0}
-html.bcc-mobile[data-mod="grooming"] .statgrid{grid-template-columns:repeat(2,1fr);gap:9px}
-html.bcc-mobile[data-mod="grooming"] .filter-bar{flex-direction:column;align-items:stretch;gap:11px}
-html.bcc-mobile[data-mod="grooming"] .filter-bar .fg{flex:1 1 auto}
-html.bcc-mobile[data-mod="grooming"] .filter-bar .finput{width:100% !important}
-html.bcc-mobile[data-mod="grooming"] .filter-bar .btn2{width:100%;margin-bottom:0 !important}
-html.bcc-mobile[data-mod="grooming"] .mt{font-size:11px}
-html.bcc-mobile[data-mod="grooming"] .mt th,html.bcc-mobile[data-mod="grooming"] .mt td{padding:6px 7px}
-html.bcc-mobile[data-mod="grooming"] .mt th{white-space:normal}
-html.bcc-mobile[data-mod="grooming"] .cro-right{flex-wrap:wrap;justify-content:flex-end}
-/* cro_audit */
-html.bcc-mobile[data-mod="cro_audit"] .sc-grid{grid-template-columns:repeat(2,1fr) !important}
-html.bcc-mobile[data-mod="cro_audit"] .rgroup{grid-template-columns:repeat(2,1fr) !important}
-html.bcc-mobile[data-mod="cro_audit"] .kpi-strip,html.bcc-mobile[data-mod="cro_audit"] .stat-grid{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="cro_audit"] .wrap{max-width:none !important;padding:12px 10px 60px !important}
-html.bcc-mobile[data-mod="cro_audit"] .modal{max-width:none !important}
-html.bcc-mobile[data-mod="cro_audit"] .frow,html.bcc-mobile[data-mod="cro_audit"] .hi-filters{flex-direction:column;gap:9px}
-html.bcc-mobile[data-mod="cro_audit"] .fg{min-width:0 !important;width:100%;flex:1 1 auto}
-html.bcc-mobile[data-mod="cro_audit"] .mrow{flex-wrap:wrap}
-html.bcc-mobile[data-mod="cro_audit"] .mbar-wrap,html.bcc-mobile[data-mod="cro_audit"] .sb-bar,html.bcc-mobile[data-mod="cro_audit"] .thr-bwrap,html.bcc-mobile[data-mod="cro_audit"] .wm-bar-wrap{display:none !important}
-html.bcc-mobile[data-mod="cro_audit"] .minp{width:90px !important;min-height:40px}
-html.bcc-mobile[data-mod="cro_audit"] .ph,html.bcc-mobile[data-mod="cro_audit"] .tabs,html.bcc-mobile[data-mod="cro_audit"] .score-banner{padding-left:12px !important;padding-right:12px !important}
-/* payroll */
-/* Header: the module only compacts it at <=640px, so on wider phones/foldables the
-   5 action buttons wrap inside the fixed 50px sticky bar and spill over the title.
-   Make the bar height auto so a wrapped button row sits cleanly below the brand,
-   drop the sub-line, and let the brand ellipsize. Width-independent (bcc-mobile). */
-html.bcc-mobile[data-mod="payroll"] .hd{height:auto !important;min-height:50px;flex-wrap:wrap;padding:8px 10px;gap:6px 8px}
-html.bcc-mobile[data-mod="payroll"] .hd-brand{flex:1 1 auto;min-width:0}
-html.bcc-mobile[data-mod="payroll"] .hd-text{min-width:0}
-html.bcc-mobile[data-mod="payroll"] .hd-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-html.bcc-mobile[data-mod="payroll"] .hd-sub{display:none}
-html.bcc-mobile[data-mod="payroll"] .hd-right{flex-wrap:wrap;justify-content:flex-end;gap:5px;flex-shrink:0}
-html.bcc-mobile[data-mod="payroll"] .btn-hd{padding:5px 9px;font-size:11px}
-html.bcc-mobile[data-mod="payroll"] .wp{max-width:100% !important;margin:0 !important;padding:12px 10px 84px !important}
-html.bcc-mobile[data-mod="payroll"] .grid{grid-template-columns:1fr !important;gap:10px !important}
-html.bcc-mobile[data-mod="payroll"] .controls{grid-template-columns:1fr 1fr !important;gap:8px !important}
-html.bcc-mobile[data-mod="payroll"] .summary{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
-html.bcc-mobile[data-mod="payroll"] #pane-slips .stiles{grid-template-columns:repeat(2,1fr) !important}
-html.bcc-mobile[data-mod="payroll"] section[style*="minmax(240px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(220px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(180px"],html.bcc-mobile[data-mod="payroll"] div[style*="minmax(170px"]{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="payroll"] .hero{flex-direction:column;align-items:flex-start;padding:14px 16px}
-html.bcc-mobile[data-mod="payroll"] .sc-v,html.bcc-mobile[data-mod="payroll"] .hero-stat-v{overflow-wrap:anywhere !important}  /* payroll-L05/L06: long ₹ Net Payable / Total CTC were clipped by the overflow:hidden summary/hero tiles — wrap instead of truncate */
-html.bcc-mobile[data-mod="payroll"] .hero-r{width:100%}
-html.bcc-mobile[data-mod="payroll"] .tab-nav{position:static !important;overflow-x:auto;-webkit-overflow-scrolling:touch}
-html.bcc-mobile[data-mod="payroll"] .tab-btn{padding:0 13px;font-size:11px}
-html.bcc-mobile[data-mod="payroll"] .table-wrap{overflow-x:auto !important;-webkit-overflow-scrolling:touch;border-radius:10px}
-html.bcc-mobile[data-mod="payroll"] .table-scroll{overflow:auto !important;max-height:none !important}
-html.bcc-mobile[data-mod="payroll"] thead th{padding:6px 4px;font-size:9px}
-html.bcc-mobile[data-mod="payroll"] tbody td,html.bcc-mobile[data-mod="payroll"] tfoot td{padding:4px 3px}
-html.bcc-mobile[data-mod="payroll"] td input,html.bcc-mobile[data-mod="payroll"] td select,html.bcc-mobile[data-mod="payroll"] td textarea{font-size:13px;padding:5px 4px}
-html.bcc-mobile[data-mod="payroll"] td.calc-cell,html.bcc-mobile[data-mod="payroll"] td.final-cell,html.bcc-mobile[data-mod="payroll"] td.total-cell,html.bcc-mobile[data-mod="payroll"] td.locked,html.bcc-mobile[data-mod="payroll"] td.earn-cell,html.bcc-mobile[data-mod="payroll"] td.ded-cell,html.bcc-mobile[data-mod="payroll"] td.net-cell,html.bcc-mobile[data-mod="payroll"] td.ctc-cell,html.bcc-mobile[data-mod="payroll"] td.final-pay-cell,html.bcc-mobile[data-mod="payroll"] td.advance-cell{font-size:10px;padding:4px 3px}
-html.bcc-mobile[data-mod="payroll"] #pane-slips .stbl-wrap{max-height:none}
-html.bcc-mobile[data-mod="payroll"] .sheet-actions{flex-direction:column;align-items:stretch}
-html.bcc-mobile[data-mod="payroll"] .left-actions,html.bcc-mobile[data-mod="payroll"] .right-actions{justify-content:flex-start}
-/* leave */
-html.bcc-mobile[data-mod="leave"] .cal-wrapper{overflow-x:auto;-webkit-overflow-scrolling:touch}
-html.bcc-mobile[data-mod="leave"] .day-headers,html.bcc-mobile[data-mod="leave"] .cal-grid{min-width:336px}
-html.bcc-mobile[data-mod="leave"] .cal-cell{min-height:92px;padding:6px 5px}
-html.bcc-mobile[data-mod="leave"] .leave-chip{font-size:9.5px}
-html.bcc-mobile[data-mod="leave"] .stats-strip{flex-direction:column !important}
-html.bcc-mobile[data-mod="leave"] .stats-strip .stat-card{flex:1 1 100% !important;min-width:0 !important}
-html.bcc-mobile[data-mod="leave"] .capacity-grid,html.bcc-mobile[data-mod="leave"] .form-grid,html.bcc-mobile[data-mod="leave"] .detail-grid{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="leave"] main{max-width:100% !important;padding:13px !important}
-html.bcc-mobile[data-mod="leave"] .modal,html.bcc-mobile[data-mod="leave"] .modal-wide,html.bcc-mobile[data-mod="leave"] .modal-xl{max-width:100% !important}
-html.bcc-mobile[data-mod="leave"] .cal-nav{flex-wrap:wrap}
-html.bcc-mobile[data-mod="leave"] .month-label{min-width:0;font-size:22px}
-html.bcc-mobile[data-mod="leave"] .leave-chip,html.bcc-mobile[data-mod="leave"] .agenda-mini{white-space:normal}
-/* tax */
-html.bcc-mobile[data-mod="tax"] .wp,html.bcc-mobile[data-mod="tax"] .dash-wrap{max-width:none !important;margin:0 !important;padding:14px 10px 60px !important}
-html.bcc-mobile[data-mod="tax"] .mhd-note,html.bcc-mobile[data-mod="tax"] .cos-banner-sub,html.bcc-mobile[data-mod="tax"] .modal{max-width:100% !important}
-html.bcc-mobile[data-mod="tax"] .cos-grid,html.bcc-mobile[data-mod="tax"] .dash-grid-2,html.bcc-mobile[data-mod="tax"] .owner-grid,html.bcc-mobile[data-mod="tax"] .ng,html.bcc-mobile[data-mod="tax"] .ff-grid{grid-template-columns:1fr !important}
-html.bcc-mobile[data-mod="tax"] .focus-row{grid-template-columns:1fr !important;gap:4px !important;padding:10px 0 !important}
-html.bcc-mobile[data-mod="tax"] .dash-stats{grid-template-columns:1fr 1fr !important;gap:8px !important}
-html.bcc-mobile[data-mod="tax"] .mb-row{grid-template-columns:1fr 1fr !important;gap:2px 10px !important;padding:10px 12px !important}
-html.bcc-mobile[data-mod="tax"] .mb-row.header{display:none !important}
-html.bcc-mobile[data-mod="tax"] .mb-row .mb-num:last-child{display:block !important}
-html.bcc-mobile[data-mod="tax"] .view-tabs,html.bcc-mobile[data-mod="tax"] .q-tabs{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch}
-html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
-/* ─────────────────────────────────────────────────────────────────────────
-   SHARED MOBILE UTILITIES (additive, html.bcc-mobile-scoped, opt-in via class
-   except where noted). Provide reusable hooks modules can adopt incrementally.
-   ───────────────────────────────────────────────────────────────────────── */
-/* 1.3 Containment — keep wide children from forcing horizontal overflow.
-   Limited to these explicit hooks so it never collapses real flex/grid tracks. */
-html.bcc-mobile .contain,html.bcc-mobile [class*=grid],html.bcc-mobile .wrap,html.bcc-mobile .content > *{min-width:0;box-sizing:border-box;max-width:100%}
-/* 1.1 Tab chip strip utility — opt-in horizontally-scrollable chip row. */
-html.bcc-mobile .tab-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}
-html.bcc-mobile .tab-chips::-webkit-scrollbar{display:none}
-html.bcc-mobile .tab-chips>*{flex:0 0 auto;white-space:nowrap}
-/* 1.1 App-wide: turn EXISTING tab strips from squeeze-to-fit-and-overprint into
-   clean horizontal scrollers (class names confirmed present across modules/shell). */
-html.bcc-mobile .tab-nav,html.bcc-mobile .tabs,html.bcc-mobile .subtabs,html.bcc-mobile .cat-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-html.bcc-mobile .tab-nav::-webkit-scrollbar,html.bcc-mobile .tabs::-webkit-scrollbar,html.bcc-mobile .subtabs::-webkit-scrollbar,html.bcc-mobile .cat-tabs::-webkit-scrollbar{display:none}
-html.bcc-mobile .tab-nav>*,html.bcc-mobile .tabs>*,html.bcc-mobile .subtabs>*,html.bcc-mobile .cat-tabs>*{flex:0 0 auto;white-space:nowrap}
-/* 1.2 Table scroll boundary — opt-in wrapper to keep a wide table inside the column. */
-html.bcc-mobile .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-html.bcc-mobile .tbl-scroll td.sticky-col,html.bcc-mobile .tbl-scroll th.sticky-col{position:sticky;left:0;background:inherit;z-index:1}
-/* 1.2 Table-as-card base styles (rendered into a .card-list container by the boot helper). */
-html.bcc-mobile .card-list{display:block}
-html.bcc-mobile .bcc-card{display:block;border:1px solid var(--gray-200,#e5e7eb);border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#fff;box-shadow:0 1px 3px rgba(13,35,64,.06)}
-html.bcc-mobile .bcc-card-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px;line-height:1.35}
-html.bcc-mobile .bcc-card-row+.bcc-card-row{border-top:1px solid var(--gray-100,#f3f4f6)}
-html.bcc-mobile .bcc-card-label{color:var(--gray-500,#6b7280);font-weight:600;flex:0 0 auto;max-width:50%}
-html.bcc-mobile .bcc-card-val{text-align:right;min-width:0;word-break:break-word}
-/* 1.5 Sticky action bar base — modules add the markup later; class provides the chrome. */
-html.bcc-mobile .sticky-actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--gray-200,#e5e7eb);padding:8px 12px calc(8px + var(--safe-bottom,0px));display:flex;gap:8px;z-index:40}
-/* 1.6 Accordion base — minimal collapse; modules add markup later. */
-html.bcc-mobile .accordion-panel[hidden]{display:none}
-html.bcc-mobile .accordion-header{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
-html.bcc-mobile .accordion-header::after{content:"⌄";font-size:14px;line-height:1;opacity:.6;transition:transform .2s}
-html.bcc-mobile .accordion-header[aria-expanded="true"]::after{transform:rotate(180deg)}
-/* ── Deferred cosmetic polish (P2/P3 content-clip / overflow / bottom-chrome guards) — additive, mobile-scoped ── */
-/* wrap long unbroken names/tokens/free-text inside their card instead of clipping/overflowing */
-html.bcc-mobile[data-mod="qms"] .q-name{overflow-wrap:anywhere !important;word-break:break-word !important}          /* qms-L05 */
-html.bcc-mobile[data-mod="qms"] .audit-detail{overflow-wrap:anywhere !important;word-break:break-word !important}    /* qms-L08: JSON audit payload */
-html.bcc-mobile[data-mod="expense"] .kpi .v{overflow-wrap:anywhere !important;word-break:break-word !important}      /* expense-L1: arbitrary Top-head / Status text */
-html.bcc-mobile[data-mod="expense"] .name-cell{overflow-wrap:anywhere !important;word-break:break-word !important}   /* expense-L4: long vendor/customer name in card header */
-html.bcc-mobile[data-mod="cro_audit"] .mtitle{flex:1 !important;min-width:0 !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important}  /* cro_audit-06: long CRO name crowds ✕ */
-/* stage-filter chips: scroll on one line instead of ballooning to ~3 rows of 44px pills */
-html.bcc-mobile[data-mod="service"] .stage-chips{flex-wrap:nowrap !important;overflow-x:auto !important;-webkit-overflow-scrolling:touch !important}  /* svc-l3 */
-/* payroll Send-Slip card cell: let the two action buttons wrap instead of overflowing the narrow card */
-html.bcc-mobile[data-mod="payroll"] #ms-table tbody td[data-label="Send Slip"]{flex-wrap:wrap !important}            /* payroll-L09 */
-/* grooming Save FAB: keep it bottom-LEFT at all mobile widths (module only did so <=640) so it never sits over the shell's next-chip */
-html.bcc-mobile[data-mod="grooming"] #grm-float-save{left:14px !important;right:auto !important}                     /* grm-01 */
-/* transient toasts: lift clear of the shell bottom-nav / back-home FAB, and let long messages wrap */
-html.bcc-mobile[data-mod="payroll"] #app-toast{bottom:88px !important}                                               /* payroll toast over bottom-nav */
-html.bcc-mobile[data-mod="qms"] .toast{bottom:92px !important}                                                      /* qms-L11 */
-html.bcc-mobile[data-mod="planning"] .toast{bottom:98px !important}                                                 /* planning toast over FAB */
-html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !important;white-space:normal !important}   /* svc-l7: long toast wrap at mid-mobile width */
-`;
-function injectMobileMode(html, moduleId){
-  const mid = JSON.stringify(String(moduleId));
-  const css = '<style id="st-v5-mobile-css">'+MOBILE_CSS+'</style>';
-  const boot = '<scr'+'ipt id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod",'+mid+');function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return (x==="desktop"||x==="mobile")?x:'+JSON.stringify(getUiMode())+';}catch(e){return '+JSON.stringify(getUiMode())+';}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if('+mid+'==="qms"){var qClose=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(s)s.classList.remove("open");var sc=document.getElementById("st-v5-qms-scrim");if(sc)sc.classList.remove("show");};var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var sc=document.createElement("div");sc.id="st-v5-qms-scrim";sc.className="overlay";sc.onclick=qClose;(document.body||document.documentElement).appendChild(sc);var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(!s)return;var open=s.classList.toggle("open");var sc2=document.getElementById("st-v5-qms-scrim");if(sc2)sc2.classList.toggle("show",open);};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}var ON=function(){try{return document.documentElement.classList.contains("bcc-mobile");}catch(e){return false;}};function chipCenter(){try{if(!ON())return;var sel=".tab-chips .active,.tab-chips [aria-selected=true],.tab-nav .active,.tab-nav [aria-selected=true],.tabs .active,.tabs [aria-selected=true]";var el=document.querySelector(sel);if(el&&el.scrollIntoView)el.scrollIntoView({inline:"center",block:"nearest"});}catch(e){}}function buildCards(){try{if(!ON())return;var tbls=document.querySelectorAll("table.card-list:not([data-bcc-cards])");for(var t=0;t<tbls.length;t++){(function(tbl){try{tbl.setAttribute("data-bcc-cards","1");var heads=[];var ths=tbl.querySelectorAll("thead th");for(var h=0;h<ths.length;h++)heads.push((ths[h].textContent||"").trim());var rows=tbl.querySelectorAll("tbody tr");if(!rows.length)rows=tbl.querySelectorAll("tr");var box=document.createElement("div");box.className="card-list bcc-card-wrap";for(var r=0;r<rows.length;r++){var cells=rows[r].querySelectorAll("td");if(!cells.length)continue;var card=document.createElement("div");card.className="bcc-card";for(var c=0;c<cells.length;c++){var lbl=cells[c].getAttribute("data-label")||heads[c]||"";var row=document.createElement("div");row.className="bcc-card-row";if(lbl){var ls=document.createElement("span");ls.className="bcc-card-label";ls.textContent=lbl;row.appendChild(ls);}var vs=document.createElement("span");vs.className="bcc-card-val";vs.innerHTML=cells[c].innerHTML;row.appendChild(vs);card.appendChild(row);}box.appendChild(card);}tbl.style.display="none";if(tbl.parentNode)tbl.parentNode.insertBefore(box,tbl.nextSibling);}catch(e){}})(tbls[t]);}}catch(e){}}var bound=false;function bindDelegates(){try{if(bound||!document.body)return;bound=true;document.addEventListener("click",function(ev){try{if(!ON())return;var t=ev&&ev.target;if(!t)return;var ah=t.closest&&t.closest(".accordion-header");if(ah){var panel=ah.nextElementSibling;while(panel&&!(panel.classList&&panel.classList.contains("accordion-panel")))panel=panel.nextElementSibling;if(panel){var open=panel.hasAttribute("hidden");if(open)panel.removeAttribute("hidden");else panel.setAttribute("hidden","");ah.setAttribute("aria-expanded",open?"true":"false");}return;}var chip=t.closest&&t.closest(".tab-chips>*,.tab-nav>*,.tabs>*");if(chip)setTimeout(chipCenter,0);}catch(e){}},true);}catch(e){}}function boot(){try{bindDelegates();chipCenter();buildCards();}catch(e){}}if(document.readyState!=="loading")boot();else document.addEventListener("DOMContentLoaded",boot);window.addEventListener("load",function(){try{chipCenter();buildCards();}catch(e){}});}catch(e){}})();<\/scr'+'ipt>';
-  const frag = css + boot;
-  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+frag);
-  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, frag+'\n</head>');
-  return frag + html;
-}
-
-/* Interaction safety net — installed FIRST in every module so an out-of-sequence
-   tap (e.g. Save before selecting a row) can never freeze the screen. It does
-   NOT hide bugs: the error is still logged to the console; the user just gets a
-   gentle hint and the UI stays alive so they can retry the correct step.
-   Valid flows never throw, so they are completely unaffected. */
-function injectSafetyNet(html){
-  const net = `<scr`+`ipt id="st-v5-safety-net">(function(){
-  var box;
-  function hint(msg){
-    try{
-      if(!box){ box=document.createElement('div'); box.id='st-v5-hintbox';
-        box.style.cssText='position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:2147483647;'+
-        'background:#1a3a5c;color:#fff;font:600 13px/1.4 \\'DM Sans\\',Arial,sans-serif;padding:11px 16px;'+
-        'border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.3);border-left:4px solid #b8922a;max-width:86vw;text-align:center';
-        (document.body||document.documentElement).appendChild(box);
-      }
-      box.textContent=msg; box.style.display='block';
-      clearTimeout(box._t); box._t=setTimeout(function(){ if(box) box.style.display='none'; },3200);
-    }catch(e){}
-  }
-  window.addEventListener('error', function(ev){
-    var m=(ev&&ev.message)||'';
-    if(/null|undefined|not a function/i.test(m)){
-      console.warn('[safety-net] recovered from out-of-sequence action:', m);
-      hint('Please complete the previous step first — nothing was changed.');
-      ev.preventDefault(); return true;
-    }
-  }, true);
-  window.addEventListener('unhandledrejection', function(ev){
-    console.warn('[safety-net] async issue:', ev&&ev.reason);
-  });
-})();<\/scr`+`ipt>`;
-  if(/<head[^>]*>/i.test(html)) return html.replace(/(<head[^>]*>)/i, '$1\n'+net);
-  if(/<\/head>/i.test(html)) return html.replace(/<\/head>/i, net+'\n</head>');
-  return net + html;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   MODAL
-   ═══════════════════════════════════════════════════════════════════════ */
 function openModal(){ $('modalBackdrop').classList.remove('hidden'); }
 function closeModal(){ $('modalBackdrop').classList.add('hidden'); try{ var mc=document.querySelector('.modal'); if(mc) mc.classList.remove('hub-sheet','pdf-sheet'); }catch(e){} }
 
@@ -9074,7 +7296,7 @@ window.addEventListener('unhandledrejection', e => {
   startupErrors.push({type:'promise', message:String(e.reason && (e.reason.message||e.reason) || e.reason)});
 });
 window.addEventListener('message', e => {
-  if(!e || !e.data) return;
+  if(!e || !e.data || e.origin!==window.location.origin) return;
   if(__mah4Host && e.data.channel==='saagar.module'){
     try{ __mah4Host.message(e); }catch(_){}
     return;
@@ -9099,12 +7321,12 @@ window.addEventListener('message', e => {
    hand it to the unified SaagarShare helper (Capacitor Share on device, file download on
    desktop). Lets a srcdoc-iframe module export CSV/data despite its opaque origin, which can't
    reach SaagarShare directly or reliably trigger a download. */
-function stShareBridge(data){
+async function stShareBridge(data){
   try{
     data = data || {};
     var fname = data.fileName || 'Saagar-export.csv';
     if(!window.SaagarShare){ try{ toast('Sharing not available'); }catch(_){ } return; }
-    var token=window.SaagarExportControl&&window.SaagarExportControl.authorize({
+    var token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({
       exportId:data.exportId||((activeModuleId||'module')+'-file-export'),
       kind:String(fname).split('.').pop()||'file',scopeId:data.scopeId||((activeModuleId||'module')+'-records'),
       scopeLabel:data.scopeLabel||('module export: '+(activeModuleId||'unknown')),
@@ -9168,8 +7390,8 @@ function stPreviewClose(){
   __stPreview = null;
 }
 /* Native print from the preview (works on desktop / devices where window.print() is real). */
-function stPreviewPrint(){
-  var __token=window.SaagarExportControl&&window.SaagarExportControl.authorize({exportId:'module-preview-print',kind:'print',scopeId:'module-preview',scopeLabel:(__stPreview&&__stPreview.title)||'module print',module:activeModuleId||'shell',rowCount:0,purposeId:'hard-copy-business-record'});
+async function stPreviewPrint(){
+  var __token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({exportId:'module-preview-print',kind:'print',scopeId:'module-preview',scopeLabel:(__stPreview&&__stPreview.title)||'module print',module:activeModuleId||'shell',rowCount:0,purposeId:'hard-copy-business-record'});
   if(!__token) return;
   if(!window.SaagarExportControl.beginDelivery(__token)) return;
   var R = document.documentElement;
@@ -9226,9 +7448,9 @@ function stSavePdfBlob(blob, fname, token){
   try{ toast('PDF downloaded'); }catch(e){}
   return Promise.resolve();
 }
-function stPreviewSave(){
+async function stPreviewSave(){
   var fname=(__stPreview&&__stPreview.fileBase||'Saagar')+'.pdf';
-  var __token=window.SaagarExportControl&&window.SaagarExportControl.authorize({exportId:'module-preview-save',kind:'pdf',scopeId:'module-preview',scopeLabel:(__stPreview&&__stPreview.title)||'module PDF',module:activeModuleId||'shell',rowCount:0,fileName:fname,purposeId:'business-record-export'});
+  var __token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({exportId:'module-preview-save',kind:'pdf',scopeId:'module-preview',scopeLabel:(__stPreview&&__stPreview.title)||'module PDF',module:activeModuleId||'shell',rowCount:0,fileName:fname,purposeId:'business-record-export'});
   if(!__token) return;
   __stPreviewBusy(true);
   __stPreviewMakeBlob().then(function(blob){
@@ -9238,10 +7460,10 @@ function stPreviewSave(){
     .then(function(){ __stPreviewBusy(false); })
     .catch(function(e){ __stPreviewBusy(false); try{window.SaagarExportControl.recordOutcome(__token,'failed');}catch(_e){} try{ toast('Save failed: '+((e&&e.message)||e)); }catch(_){ } });
 }
-function stPreviewShare(){
+async function stPreviewShare(){
   var fname=(__stPreview&&__stPreview.fileBase||'Saagar')+'.pdf';
   var title=(__stPreview&&__stPreview.title)||'Saagar Traders';
-  var __token=window.SaagarExportControl&&window.SaagarExportControl.authorize({exportId:'module-preview-share',kind:'pdf',scopeId:'module-preview',scopeLabel:title,module:activeModuleId||'shell',rowCount:0,fileName:fname,purposeId:'business-record-export'});
+  var __token=window.SaagarExportControl&&await window.SaagarExportControl.authorize({exportId:'module-preview-share',kind:'pdf',scopeId:'module-preview',scopeLabel:title,module:activeModuleId||'shell',rowCount:0,fileName:fname,purposeId:'business-record-export'});
   if(!__token) return;
   __stPreviewBusy(true);
   __stPreviewMakeBlob().then(function(blob){
@@ -9325,13 +7547,13 @@ function getUiMode(){ try{ var m=safeGet(UI_MODE_KEY); if(m==='desktop'||m==='mo
 function applyUiModeToFrame(){
   try{ var f=$('moduleFrame'); var d=f&&f.contentDocument;
     if(d&&d.documentElement) d.documentElement.classList.toggle('bcc-mobile', getUiMode()==='mobile');
-    try{ if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_UI_MODE',mode:getUiMode()},'*'); }catch(e){}
+    try{ if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_UI_MODE',mode:getUiMode()},SaagarModuleRuntime.targetOrigin); }catch(e){}
   }catch(e){}
 }
 /* Phase 0 date rail — broadcast the viewed date to an open module iframe. Modules opt in
    later (Phases 1-3) via window.__stAsOf / the 'st-date' event; dormant no-op until then. */
 function applyDateToFrame(){
-  try{ var f=$('moduleFrame'); if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_SET_DATE',date:viewDate()},'*'); }catch(e){}
+  try{ var f=$('moduleFrame'); if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_SET_DATE',date:viewDate()},SaagarModuleRuntime.targetOrigin); }catch(e){}
 }
 function reflectUiModeUI(){ var m=getUiMode();
   try{ document.documentElement.classList.toggle('bcc-mobile', m==='mobile'); }catch(e){}

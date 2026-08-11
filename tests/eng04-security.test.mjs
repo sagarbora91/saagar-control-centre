@@ -19,9 +19,9 @@ function request(overrides = {}) {
   };
 }
 
-test('SEC-08 defaults to disabled and records the denied attempt without prompting', () => {
+test('SEC-08 defaults to disabled and records the denied attempt without prompting', async () => {
   const h = loadExportControl();
-  assert.equal(h.api.authorize(request()), false);
+  assert.equal(await h.api.authorize(request()), false);
   assert.equal(h.reauthCalls(), 0);
   assert.equal(h.api.policy().enabled, false);
   assert.equal(h.readRegister().length, 1);
@@ -29,33 +29,33 @@ test('SEC-08 defaults to disabled and records the denied attempt without prompti
   assert.equal(h.readRegister()[0].reason, 'policy-disabled');
 });
 
-test('SEC-08 blocks enabled exports when the Admin PIN is absent', () => {
+test('SEC-08 blocks enabled exports when the Admin PIN is absent', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy }, hasPin: false });
-  assert.equal(h.api.authorize(request()), false);
+  assert.equal(await h.api.authorize(request()), false);
   assert.equal(h.reauthCalls(), 0);
   assert.equal(h.readRegister()[0].reason, 'admin-pin-required');
 });
 
-test('SEC-08 records cancelled owner approval and releases no token', () => {
+test('SEC-08 records cancelled owner approval and releases no token', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy }, reauth: false });
-  assert.equal(h.api.authorize(request()), false);
+  assert.equal(await h.api.authorize(request()), false);
   assert.equal(h.reauthCalls(), 1);
   assert.equal(h.readRegister()[0].reason, 'owner-approval-denied');
 });
 
-test('SEC-08 blocks export when the register cannot be saved', () => {
+test('SEC-08 blocks export when the register cannot be saved', async () => {
   const values = new Map([[POLICY, enabledPolicy]]);
   const h = loadExportControl({
     safeGet: key => values.has(key) ? values.get(key) : null,
     safeSet: () => false
   });
-  assert.equal(h.api.authorize(request()), false);
+  assert.equal(await h.api.authorize(request()), false);
   assert.match(h.notices.join('\n'), /register could not be saved/i);
 });
 
-test('SEC-08 stores bounded metadata only and finalizes an approval once', () => {
+test('SEC-08 stores bounded metadata only and finalizes an approval once', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy } });
-  const token = h.api.authorize(request());
+  const token = await h.api.authorize(request());
   assert.match(token, /^exp_/);
   let row = h.readRegister()[0];
   assert.equal(row.status, 'approved');
@@ -81,9 +81,9 @@ test('SEC-08 stores bounded metadata only and finalizes an approval once', () =>
   assert.equal(h.readRegister()[0].status, 'shared');
 });
 
-test('SEC-08 treats damaged policy and register data as fail-closed', () => {
+test('SEC-08 treats damaged policy and register data as fail-closed', async () => {
   const damagedPolicy = loadExportControl({ seed: { [POLICY]: '{bad' } });
-  assert.equal(damagedPolicy.api.authorize(request()), false);
+  assert.equal(await damagedPolicy.api.authorize(request()), false);
   assert.match(damagedPolicy.notices.join('\n'), /damaged/i);
 
   const damagedRegister = loadExportControl({
@@ -92,36 +92,36 @@ test('SEC-08 treats damaged policy and register data as fail-closed', () => {
       st_v2_export_register_v1: '{bad'
     }
   });
-  assert.equal(damagedRegister.api.authorize(request()), false);
+  assert.equal(await damagedRegister.api.authorize(request()), false);
   assert.match(damagedRegister.notices.join('\n'), /register could not be saved/i);
 });
 
-test('SEC-08 policy changes require a PIN and fresh owner approval', () => {
+test('SEC-08 policy changes require a PIN and fresh owner approval', async () => {
   const noPin = loadExportControl({ hasPin: false });
-  assert.equal(noPin.api.setEnabled(true), false);
+  assert.equal(await noPin.api.setEnabled(true), false);
   assert.equal(noPin.readPolicy(), null);
 
   const cancelled = loadExportControl({ reauth: false });
-  assert.equal(cancelled.api.setEnabled(true), false);
+  assert.equal(await cancelled.api.setEnabled(true), false);
   assert.equal(cancelled.readPolicy(), null);
 
   const approved = loadExportControl();
-  assert.equal(approved.api.setEnabled(true), true);
+  assert.equal(await approved.api.setEnabled(true), true);
   assert.equal(approved.readPolicy().enabled, true);
-  assert.equal(approved.api.setEnabled(false), true);
+  assert.equal(await approved.api.setEnabled(false), true);
   assert.equal(approved.readPolicy().enabled, false);
 });
 
-test('SEC-12 unsafe production-device posture blocks export before owner prompting', () => {
+test('SEC-12 unsafe production-device posture blocks export before owner prompting', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy }, deviceSecurity: false });
-  assert.equal(h.api.authorize(request()), false);
+  assert.equal(await h.api.authorize(request()), false);
   assert.equal(h.reauthCalls(), 0);
   assert.equal(h.readRegister()[0].reason, 'device-posture-unsafe');
 });
-test('BKP-03 standing owner grant authorizes only the bound destination without daily prompting', () => {
+test('BKP-03 standing owner grant authorizes only the bound destination without daily prompting', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy } });
   const scheduled = request({ exportId: 'backup-auto-daily', kind: 'sccbak', scopeId: 'full-portable-backup', destinationId: 'aabbcc001122' });
-  const grant = h.api.approveScheduled(scheduled);
+  const grant = await h.api.approveScheduled(scheduled);
   assert.equal(grant.destinationId, 'aabbcc001122');
   assert.equal(h.reauthCalls(), 1);
 
@@ -134,13 +134,13 @@ test('BKP-03 standing owner grant authorizes only the bound destination without 
   assert.equal(h.readRegister()[1].approvalMode, 'standing-owner-grant');
 });
 
-test('BKP-03 standing grant fails closed for a changed destination or disabled export policy', () => {
+test('BKP-03 standing grant fails closed for a changed destination or disabled export policy', async () => {
   const h = loadExportControl({ seed: { [POLICY]: enabledPolicy } });
   const scheduled = request({ scopeId: 'full-portable-backup', destinationId: 'approved-destination' });
-  assert.ok(h.api.approveScheduled(scheduled));
+  assert.ok(await h.api.approveScheduled(scheduled));
   assert.equal(h.api.authorizeScheduled({ ...scheduled, destinationId: 'other-destination' }), false);
   assert.equal(h.readRegister()[0].reason, 'schedule-destination-mismatch');
-  assert.equal(h.api.setEnabled(false), true);
+  assert.equal(await h.api.setEnabled(false), true);
   assert.equal(h.api.authorizeScheduled(scheduled), false);
   assert.equal(h.readRegister()[0].reason, 'policy-disabled');
 });

@@ -15,19 +15,19 @@
   },
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
-    "fileCount": 85,
-    "totalBytes": 7974896,
-    "treeSha256": "6eea8a6c82bbbbb63c7db16a368c99d3bf5ce543818fc74ef7ff703f35b809c8",
+    "fileCount": 100,
+    "totalBytes": 7727667,
+    "treeSha256": "f521e7a914e31bdcde361e2049ee821cfb54fd719eed4ba1f547fe80ac2b7199",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 711857,
-        "sha256": "5730dafe5ea01611d435ec14e42a3f53c103a258666f498ef4d0f06f26c69d6b"
+        "bytes": 575899,
+        "sha256": "cf13d42c9bca10cd762d4d5fffb4deab5c71167dc0f837e49f015a955bfc57c0"
       },
       {
         "path": "www/module-manifest.js",
-        "bytes": 15504,
-        "sha256": "a2ff9c8e6c4de4c808ccdeb9e3931f97a95c5a1e860016ef30c26ca8d0674f16"
+        "bytes": 17535,
+        "sha256": "6f8440c6055ace291ad3ccfce86be905afcb9f858d360cebf9618b6becc8db9b"
       },
       {
         "path": "www/app-i18n.js",
@@ -66,23 +66,23 @@
       },
       {
         "path": "www/modules/planning/index.html",
-        "bytes": 48319,
-        "sha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be"
+        "bytes": 39564,
+        "sha256": "49bb70aa484f29914871ede7caa5f14bb178a72afe393739fec4983e669c40f4"
       },
       {
         "path": "www/modules/dsr/index.html",
-        "bytes": 217502,
-        "sha256": "4b3cd976db9e6d7b5953edf0be54a01c6d97f4ccd5c09abe90b5fed48975518b"
+        "bytes": 203945,
+        "sha256": "d02c00685c066b01a57c0f914562dc052142a031e5969626db4334f473d965eb"
       },
       {
         "path": "www/modules/qms/index.html",
-        "bytes": 202450,
-        "sha256": "e64d421e302e99e7131918fb7384314a7b889085c5aaff5a499a52a9b98ccdba"
+        "bytes": 192894,
+        "sha256": "03a517313a2439790383c45c2db1725df2c27c9b426dd78661db63bffc4beca4"
       },
       {
         "path": "www/shared/module-runtime.js",
-        "bytes": 14974,
-        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
+        "bytes": 20392,
+        "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47"
       }
     ]
   },
@@ -143,8 +143,8 @@
   },
   "sharedRuntimeCandidates": {
     "planning": {
-      "moduleBytes": 48319,
-      "moduleSha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be",
+      "moduleBytes": 39564,
+      "moduleSha256": "49bb70aa484f29914871ede7caa5f14bb178a72afe393739fec4983e669c40f4",
       "inlineTimeouts": 0,
       "mutationObservers": 0,
       "intervals": 0,
@@ -168,8 +168,8 @@
       },
       "runtimeAsset": {
         "path": "www/shared/module-runtime.js",
-        "bytes": 14974,
-        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
+        "bytes": 20392,
+        "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47"
       },
       "extractionApplied": true,
       "originalBlocks": [

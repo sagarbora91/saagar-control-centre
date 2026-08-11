@@ -1669,9 +1669,9 @@
       try { toast('Preparing ' + slips.length + ' slip(s)…'); } catch (e) {}
       var base = fileBase || 'Salary_Slips';
       return this.buildBatch(mode, slips)
-        .then(function (blob) {
+        .then(async function (blob) {
           var fname = base + (mode === 'zip' ? '.zip' : '.pdf');
-          var token = authorizeExport({
+          var token = await authorizeExport({
             exportId: 'payroll-slip-batch-share', kind: mode === 'zip' ? 'zip' : 'pdf',
             scopeId: 'payroll-slip-batch', scopeLabel: 'salary-slip batch', module: 'payroll',
             rowCount: slips.length, fileName: fname, purposeId: 'payroll-delivery'
@@ -1684,8 +1684,8 @@
       try { toast('Preparing report…'); } catch (e) {}
       var self = this;
       return new Promise(function (res) { setTimeout(res, 40); }).then(function () {
-        return self.build(type, opts).then(function (blob) {
-          var fname = filename(type, opts), token = authorizeExport({
+        return self.build(type, opts).then(async function (blob) {
+          var fname = filename(type, opts), token = await authorizeExport({
             exportId: 'report-generate-share', kind: 'pdf', scopeId: 'report-' + type,
             scopeLabel: (META[type] ? META[type].title : type) + ' report', module: (META[type] && META[type].module) || 'reports',
             rowCount: reportRowCount(type, opts), fileName: fname, purposeId: 'management-reporting'
@@ -1790,9 +1790,9 @@
         catch (e2) { fail(e2); }
       });
     },
-    savePreview: function () {
+    savePreview: async function () {
       var p = this._pp; if (!p || !p.blob) return;
-      var token = authorizeExport({
+      var token = await authorizeExport({
         exportId: 'report-preview-save', kind: 'pdf', scopeId: 'report-' + p.type,
         scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' report', module: 'reports',
         rowCount: reportRowCount(p.type, p.opts), fileName: p.fname, purposeId: 'management-reporting'
@@ -1801,11 +1801,11 @@
       try { this._logReport(p.type, 'save', p.opts); } catch (e) {}
       return this._saveBlob(p.blob, p.fname, token);
     },
-    savePreviewCsv: function () {
+    savePreviewCsv: async function () {
       var p = this._pp; if (!p || !CSV_REPORTS[p.type]) return;
       try {
         var artifact = modelToCsv(p.type, p.opts), fname = p.fname.replace(/\.pdf$/i, '.csv');
-        var token = authorizeExport({
+        var token = await authorizeExport({
           exportId: 'report-preview-csv', kind: 'csv', scopeId: 'report-' + p.type,
           scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' CSV', module: 'reports',
           rowCount: artifact.rowCount, fileName: fname, purposeId: 'register-reporting'
@@ -1815,9 +1815,9 @@
         return this._saveBlob(artifact.blob, fname, token);
       } catch (e) { try { toast('CSV could not be created: ' + ((e && e.message) || e)); } catch (_) {} }
     },
-    sharePreview: function () {
+    sharePreview: async function () {
       var p = this._pp; if (!p || !p.blob) return;
-      var token = authorizeExport({
+      var token = await authorizeExport({
         exportId: 'report-preview-share', kind: 'pdf', scopeId: 'report-' + p.type,
         scopeLabel: (META[p.type] ? META[p.type].title : p.type) + ' report', module: 'reports',
         rowCount: reportRowCount(p.type, p.opts), fileName: p.fname, purposeId: 'management-reporting'
@@ -1827,8 +1827,8 @@
       try { var mc = document.querySelector('.modal'); if (mc) mc.classList.remove('pdf-sheet'); if (window.closeModal) window.closeModal(); } catch (e) {}
       return shareBlob(p.blob, p.fname, token);
     },
-    printPreview: function () {
-      var p = this._pp || {}, token = authorizeExport({
+    printPreview: async function () {
+      var p = this._pp || {}, token = await authorizeExport({
         exportId: 'report-preview-print', kind: 'print', scopeId: 'report-' + (p.type || 'unknown'),
         scopeLabel: (META[p.type] ? META[p.type].title : 'report') + ' print', module: 'reports',
         rowCount: p.type ? reportRowCount(p.type, p.opts) : 0, purposeId: 'hard-copy-business-record'
@@ -1902,9 +1902,9 @@
       }).join('') + '</div><p class="hub-help">' + items.length + ' reports ready. <b>Save all</b> writes them to your phone, or <b>Send all</b> shares them together on WhatsApp.</p>';
       this._logReport('pack_' + (this._pack ? this._pack.scope : ''), 'view', { date: this._pack && this._pack.d, month: this._pack && this._pack.m });
     },
-    packSave: function () {
+    packSave: async function () {
       var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
-      var token = authorizeExport({
+      var token = await authorizeExport({
         exportId: 'report-pack-save', kind: 'pdf', scopeId: 'report-pack-' + ((this._pack && this._pack.scope) || 'period'),
         scopeLabel: 'report pack', module: 'reports', rowCount: items.length, fileName: 'Saagar-report-pack.pdf',
         purposeId: 'management-reporting'
@@ -1923,9 +1923,9 @@
       }, Promise.resolve()).then(function () { finishExport(token, 'downloaded'); try { toast('Saved ' + n + ' reports to Documents › SaagarBCC-Reports'); } catch (e) {} })
         .catch(function (e) { finishExport(token, 'failed'); throw e; });
     },
-    packSend: function () {
+    packSend: async function () {
       var items = (this._pack && this._pack.items) || []; if (!items.length) return Promise.resolve();
-      var token = authorizeExport({
+      var token = await authorizeExport({
         exportId: 'report-pack-share', kind: 'pdf', scopeId: 'report-pack-' + ((this._pack && this._pack.scope) || 'period'),
         scopeLabel: 'report pack', module: 'reports', rowCount: items.length, fileName: 'Saagar-report-pack.pdf',
         purposeId: 'management-reporting'

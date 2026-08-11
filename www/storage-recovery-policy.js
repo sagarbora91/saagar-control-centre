@@ -9,7 +9,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var CONTRACT_VERSION = 1;
+  var RECOVERY_CONTRACT_VERSION = 1;
   var DESCRIPTORS = {
     PLUGIN_MISSING: {
       title: 'Secure storage component is unavailable',
@@ -161,7 +161,7 @@
     var code = knownCode(input.code) || 'STORE_UNAVAILABLE';
     return {
       format: 'SAAGAR_STORAGE_RECOVERY',
-      contractVersion: CONTRACT_VERSION,
+      contractVersion: RECOVERY_CONTRACT_VERSION,
       createdAt: new Date().toISOString(),
       appVersion: String(input.appVersion || 'unknown').slice(0, 24),
       apkBuild: String(input.apkBuild || 'unknown').slice(0, 24),
@@ -181,7 +181,7 @@
   }
 
   return {
-    CONTRACT_VERSION: CONTRACT_VERSION,
+    RECOVERY_CONTRACT_VERSION: RECOVERY_CONTRACT_VERSION,
     descriptor: descriptor,
     diagnostics: diagnostics,
     finiteInteger: finiteInteger,

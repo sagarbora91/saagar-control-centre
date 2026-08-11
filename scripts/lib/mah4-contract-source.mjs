@@ -481,12 +481,18 @@ export function inspectJavaScript(source, { mask = true } = {}) {
       }, Number.POSITIVE_INFINITY);
       const parameter = callbackParameter(callback);
       const parameterPattern = parameter ? escapeRegExp(parameter) : null;
-      const sourceIndex = parameterPattern === null
-        ? -1
-        : callback.search(new RegExp(`\\b${parameterPattern}\\.source\\s*(?:===|==|!==|!=)`));
-      const originIndex = parameterPattern === null
-        ? -1
-        : callback.search(new RegExp(`\\b${parameterPattern}\\.origin\\s*(?:===|==|!==|!=)`));
+      const firstMatch = patterns => {
+        const indexes = patterns.map(pattern => callback.search(pattern)).filter(index => index >= 0);
+        return indexes.length ? Math.min(...indexes) : -1;
+      };
+      const sourceIndex = parameterPattern === null ? -1 : firstMatch([
+        new RegExp(`\\b${parameterPattern}\\.source\\s*(?:===|==|!==|!=)`),
+        new RegExp(`\\baccepts\\s*\\(\\s*${parameterPattern}\\s*,`)
+      ]);
+      const originIndex = parameterPattern === null ? -1 : firstMatch([
+        new RegExp(`\\b${parameterPattern}\\.origin\\s*(?:===|==|!==|!=)`),
+        new RegExp(`\\baccepts\\s*\\(\\s*${parameterPattern}\\s*,`)
+      ]);
       return {
         consumerTypes: callbackConsumerTypes,
         sourceGuard: sourceIndex >= 0 && sourceIndex < firstTypeIndex,
@@ -565,14 +571,9 @@ function markerIndex(source, marker) {
 }
 
 export function splitShellInlinePrograms(inline) {
-  const startMarker = 'function injectModuleHideCSS';
-  const endMarker = 'function openModal()';
-  const start = markerIndex(inline, startMarker);
-  const end = markerIndex(inline, endMarker);
-  if (end <= start) throw new Error('MAH-4 shell dormant range markers are reversed');
   return {
-    active: `${inline.slice(0, start)}${' '.repeat(end - start)}${inline.slice(end)}`,
-    dormant: inline.slice(start, end)
+    active: inline,
+    dormant: ''
   };
 }
 
@@ -770,13 +771,17 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
 
   const integration = resources.find(resource => resource.relativePath === 'integration-bridge.js');
   const whatsapp = loadedAssets.find(asset => asset.relativePath === 'whatsapp-share.js');
-  if (!integration || !whatsapp) throw new Error('MAH-4 iframe hook owner is missing');
+  const frameController = loadedAssets.find(asset => asset.relativePath === 'shared/shell-module-frame-controller.js');
+  if (!integration || !whatsapp || !frameController) throw new Error('MAH-4 iframe hook owner is missing');
+  const frameControllerSource = frameController.source || fs.readFileSync(
+    path.join(root, 'www', 'shared', 'shell-module-frame-controller.js'), 'utf8'
+  );
   const iframeLoadHookSites = [
     {
-      id: 'shell-open-module', owner: 'www/index.html', sourceKind: 'active-inline',
+      id: 'shell-open-module', owner: 'www/shared/shell-module-frame-controller.js', sourceKind: 'direct-entry-script',
       once: true, persistent: false, bindGuard: null, perDocumentGuard: null,
-      valid: count(shell.active, /\b__f\.addEventListener\(\s*["']load["']/g) === 1
-        && /\{\s*once\s*:\s*true\s*\}/.test(shell.active)
+      valid: count(frameControllerSource, /\bframe\.addEventListener\(\s*["']load["']/g) === 1
+        && /\{\s*once\s*:\s*true\s*\}/.test(frameControllerSource)
     },
     {
       id: 'integration-bridge-frame', owner: 'www/integration-bridge.js', sourceKind: 'dynamic-local-script',
@@ -795,7 +800,7 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
   iframeLoadHookSites[2].valid = iframeLoadHookSites[2].valid
     && /frame\.__saagarBound\)\s*return;\s*frame\.__saagarBound\s*=\s*true/.test(whatsappSource)
     && /win\.__saagarPrintHooked\)\s*return;\s*win\.__saagarPrintHooked\s*=\s*true/.test(whatsappSource);
-  const loadRemovalSites = count(shell.active, /removeEventListener\(\s*["']load["']/g)
+  const loadRemovalSites = count(frameControllerSource, /removeEventListener\(\s*["']load["']/g)
     + count(integration.source, /removeEventListener\(\s*["']load["']/g)
     + count(whatsappSource, /removeEventListener\(\s*["']load["']/g);
   if (iframeLoadHookSites.some(site => !site.valid) || loadRemovalSites !== 0) {
@@ -1132,12 +1137,14 @@ export function createMah4Inventory(root = defaultRoot) {
         .filter(resource => resource.classification === 'application').map(resource => ({ lifecycle: resource.lifecycle })))
     },
     mountLifecycle: {
-      frameLoadHookPresent: /\b__f\.addEventListener\(\s*["']load["']/.test(shell.active),
-      frameErrorHookPresent: /\b__f\.addEventListener\(\s*["']error["']/.test(shell.active),
+      frameLoadHookPresent: dynamicLocal.iframeLoadHooks.sites.some(site => site.id === 'shell-open-module'),
+      frameErrorHookPresent: /\bframe\.addEventListener\(\s*["']error["']/.test(
+        fs.readFileSync(path.join(root, 'www/shared/shell-module-frame-controller.js'), 'utf8')
+      ),
       controlHandshakeAbsent: proposedControlTypesPresent.length === 0,
       closeRemovesSrc: /moduleFrame["']\)\.removeAttribute\(\s*["']src["']\s*\)/.test(shell.active),
       closeBlanksSrcdoc: /moduleFrame["']\)\.srcdoc\s*=\s*["']["']/.test(shell.active),
-      dormantFallbackPresent: /if\(mod\.src\)[\s\S]*else\s*\{[\s\S]*buildModuleSrc\(mod\)/.test(shell.active),
+      dormantFallbackPresent: /buildModuleSrc\(mod\)|openModuleLegacy/.test(shell.active),
       manifestRequiresSrc: manifest.modules.every(module => typeof module.src === 'string' && module.src.length > 0),
       manifestContainsHtmlB64: manifest.modules.some(module => Object.hasOwn(module, 'html_b64')),
       allProposedControlTypesObserved: proposedControlTypesPresent.length === PROPOSED_CONTROL_TYPES.length,

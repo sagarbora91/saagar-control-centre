@@ -1,51 +1,50 @@
 {
   "stock": {
-    "bytes": 245880,
-    "sha256": "0e426ef548660c00eff8cce88cb5499d1d3183afaabc98e38bf11588620bd165"
+    "bytes": 220445,
+    "sha256": "3d323c7e961d0ec508fac05723f13b190c3c46ebda6e3d957178992b2437641b"
   },
   "service": {
-    "bytes": 283068,
-    "sha256": "afbd4001c1cf972f77cd95830e3a4418f3ec9d9a07939f9c06cb310aa73bb202"
+    "bytes": 258695,
+    "sha256": "107d1409419a6bb796e2a0e07d9f9fe05b9c36f2e16cd415524dcecf84ab5a78"
   },
   "qms": {
-    "bytes": 202450,
-    "sha256": "e64d421e302e99e7131918fb7384314a7b889085c5aaff5a499a52a9b98ccdba"
+    "bytes": 192894,
+    "sha256": "03a517313a2439790383c45c2db1725df2c27c9b426dd78661db63bffc4beca4"
   },
   "dsr": {
-    "bytes": 217502,
-    "sha256": "4b3cd976db9e6d7b5953edf0be54a01c6d97f4ccd5c09abe90b5fed48975518b"
+    "bytes": 203945,
+    "sha256": "d02c00685c066b01a57c0f914562dc052142a031e5969626db4334f473d965eb"
   },
   "expense": {
-    "bytes": 210008,
-    "sha256": "39deb2df3d88e3761dbeb61c03b5c1f8b3b0a825f2389f1de3b783d54bbe7c8c"
+    "bytes": 184024,
+    "sha256": "fbc64d2ad1860f4345908d7cc75754b91aca6271d6bebd13a9c333b76d6c8892"
   },
   "grooming": {
-    "bytes": 130225,
-    "sha256": "0d97a7d11c2db19271250655e4587f438c30484ed7ed43e43780fe7d250b24b5"
+    "bytes": 109224,
+    "sha256": "224ec04a802533bdc72f87732b95773aa9e8d405336feb945c098a1909b4ebc2"
   },
   "cro_audit": {
-    "bytes": 182542,
-    "sha256": "ea563aa5a7b612faa67ea8cc22b0ffea120fc7d0af01933440cb9d22aa708024"
+    "bytes": 160828,
+    "sha256": "ec8c0ba3c7bd6fea765d5f9958d9cb581e324e081a5cf9379072dea50c3288cf"
   },
   "payroll": {
-    "bytes": 310590,
-    "sha256": "75ba9e1169a37d0a3d04505f6182f5deb11fdad56bde9917b023ea73fd67439e"
+    "bytes": 288922,
+    "sha256": "a40db84381a796fb995fb01d62eeb7fcc5ca03cdfc3334ca36a941ec78e31dc3"
   },
   "leave": {
-    "bytes": 209029,
-    "sha256": "6f2b28b2c7f82f313808b9e299174c9c1ef43bbb390535d594b7464391b5732a"
+    "bytes": 187307,
+    "sha256": "acfa2dd051d29419e5c28f814ec665b155da7d513128390337cd986f7a99adc3"
   },
   "tax": {
-    "bytes": 272729,
-    "sha256": "50b476ba0d10c97b1d0a0973f8b644d059b96c58227015b7646373349ed78d62"
+    "bytes": 251378,
+    "sha256": "dd18724b966459a59ab411fd1b3624967d5d5e1452380b4534b2a47b801d684e"
   },
   "planning": {
-    "bytes": 48319,
-    "sha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be"
+    "bytes": 39564,
+    "sha256": "49bb70aa484f29914871ede7caa5f14bb178a72afe393739fec4983e669c40f4"
   },
   "_profile": {
     "uiMode": "mobile",
-    "injectionSourceSha256": "8a8eab7ee17cf1fa1d8d74675cf314cfb75a0f9fe600b1592d9e55cc9a6aa156",
     "offlineAssetsOnly": true,
     "allModulesExternal": true,
     "stageBIdentityRebound": true

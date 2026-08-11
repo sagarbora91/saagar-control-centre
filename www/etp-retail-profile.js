@@ -6,7 +6,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (foundation) {
   'use strict';
   if (!foundation && typeof require === 'function') foundation = require('./etp-import-foundation.js');
-  var VERSION = 'retail-etp-core-v1';
+  var ETP_PROFILE_VERSION = 'retail-etp-core-v1';
   var IDENTIFIER_POLICY = Object.freeze({ mode: 'EXACT_INTEGER_TEXT', maxDigits: 15, leadingZeroRepair: false });
   var STORES = Object.freeze(['WLMHW', 'HEMW']);
   var COMMON = [
@@ -131,6 +131,6 @@
     return Object.freeze({ ok: true, code: 'REPORT_DETECTED', reportId: detected,
       signature: headerResult.signature, signatureKey: headerResult.signatureKey });
   }
-  return Object.freeze({ VERSION: VERSION, STORES: STORES, REPORTS: REPORTS, IDENTIFIER_POLICY: IDENTIFIER_POLICY,
+  return Object.freeze({ ETP_PROFILE_VERSION: ETP_PROFILE_VERSION, STORES: STORES, REPORTS: REPORTS, IDENTIFIER_POLICY: IDENTIFIER_POLICY,
     adapters: adapters, signatures: signatures, normalizeFileAlias: normalizeFileAlias, detect: detect });
 });

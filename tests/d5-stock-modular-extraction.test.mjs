@@ -29,21 +29,23 @@ test('C1 externalizes every module with byte-verified metadata', () => {
   }
 });
 
-test('C1 shell uses relative iframe sources for external modules', () => {
-  assert.match(index, /if\(mod\.src\)\{/);
-  assert.match(index, /__f\.src = mod\.src/);
-  assert.match(index, /else\{[\s\S]*?__f\.srcdoc = buildModuleSrc\(mod\)/);
+test('C1 shell delegates relative iframe sources to the external frame controller', () => {
+  const controller = fs.readFileSync(path.join(repoDir, 'www/shared/shell-module-frame-controller.js'), 'utf8');
+  assert.match(index, /SaagarShellModuleFrameController\.open\(id,/);
+  assert.match(controller, /frame\.src = mod\.src/);
+  assert.doesNotMatch(index, /buildModuleSrc|openModuleLegacy|injectModuleHideCSS/);
+  assert.doesNotMatch(controller, /buildModuleSrc|loadExternalModuleHtml/);
   assert.doesNotMatch(metadata.src, /^(?:[a-z]+:)?\/\//i);
   modules.forEach(module => assert.doesNotMatch(module.src, /^(?:[a-z]+:)?\/\//i));
 });
 
-test('D5-M1 golden profile covers every module and pins injection drift', () => {
+test('D5-M1 golden profile covers every canonical module source', () => {
   const golden = JSON.parse(fs.readFileSync(
     path.join(repoDir, 'verification', 'module-build-golden-hashes.json'), 'utf8'
   ));
   assert.equal(golden._profile.uiMode, 'mobile');
   assert.equal(golden._profile.offlineAssetsOnly, true);
-  assert.match(golden._profile.injectionSourceSha256, /^[a-f0-9]{64}$/);
+  assert.equal(golden._profile.allModulesExternal, true);
   assert.deepEqual(
     Object.keys(golden).filter(key => !key.startsWith('_')).sort(),
     modules.map(module => module.id).sort()

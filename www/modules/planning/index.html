@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+<script src="../../shared/module-bridge.js"></script>
 <script src="../../shared/module-runtime.js"></script>
 <script src="../../shared/mah4-runtime.js"></script>
 <script id="st-v5-iframe-shim">SaagarModuleRuntime.run('storage',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 <script id="st-v5-safety-net">SaagarModuleRuntime.run('safety',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
+<link rel="stylesheet" href="../../shared/module-mobile-common.css">
 <style id="st-v5-mobile-css">
 /* base layer (all modules) */
 html.bcc-mobile table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -18,7 +20,7 @@ html.bcc-mobile .fg{min-width:0}
 html.bcc-mobile body{padding-bottom:80px}
 /* qms off-canvas menu button (injected for qms only) */
 #st-v5-qms-menu{display:none}
-html.bcc-mobile[data-mod="qms"] #st-v5-qms-menu{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:10px;z-index:70;width:42px;height:42px;border-radius:10px;background:#0d2340;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+
 /* stock */
 html.bcc-mobile[data-mod="stock"] .main{max-width:none !important;width:auto !important;margin:0 !important;padding:10px !important}
 html.bcc-mobile[data-mod="stock"] .scards{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
@@ -209,7 +211,7 @@ html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
    Limited to these explicit hooks so it never collapses real flex/grid tracks. */
 html.bcc-mobile .contain,html.bcc-mobile [class*=grid],html.bcc-mobile .wrap,html.bcc-mobile .content > *{min-width:0;box-sizing:border-box;max-width:100%}
 /* 1.1 Tab chip strip utility — opt-in horizontally-scrollable chip row. */
-html.bcc-mobile .tab-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}
+
 html.bcc-mobile .tab-chips::-webkit-scrollbar{display:none}
 html.bcc-mobile .tab-chips>*{flex:0 0 auto;white-space:nowrap}
 /* 1.1 App-wide: turn EXISTING tab strips from squeeze-to-fit-and-overprint into
@@ -222,16 +224,16 @@ html.bcc-mobile .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max
 html.bcc-mobile .tbl-scroll td.sticky-col,html.bcc-mobile .tbl-scroll th.sticky-col{position:sticky;left:0;background:inherit;z-index:1}
 /* 1.2 Table-as-card base styles (rendered into a .card-list container by the boot helper). */
 html.bcc-mobile .card-list{display:block}
-html.bcc-mobile .bcc-card{display:block;border:1px solid var(--gray-200,#e5e7eb);border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#fff;box-shadow:0 1px 3px rgba(13,35,64,.06)}
-html.bcc-mobile .bcc-card-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px;line-height:1.35}
+
+
 html.bcc-mobile .bcc-card-row+.bcc-card-row{border-top:1px solid var(--gray-100,#f3f4f6)}
 html.bcc-mobile .bcc-card-label{color:var(--gray-500,#6b7280);font-weight:600;flex:0 0 auto;max-width:50%}
 html.bcc-mobile .bcc-card-val{text-align:right;min-width:0;word-break:break-word}
 /* 1.5 Sticky action bar base — modules add the markup later; class provides the chrome. */
-html.bcc-mobile .sticky-actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--gray-200,#e5e7eb);padding:8px 12px calc(8px + var(--safe-bottom,0px));display:flex;gap:8px;z-index:40}
+
 /* 1.6 Accordion base — minimal collapse; modules add markup later. */
 html.bcc-mobile .accordion-panel[hidden]{display:none}
-html.bcc-mobile .accordion-header{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+
 html.bcc-mobile .accordion-header::after{content:"⌄";font-size:14px;line-height:1;opacity:.6;transition:transform .2s}
 html.bcc-mobile .accordion-header[aria-expanded="true"]::after{transform:rotate(180deg)}
 /* ── Deferred cosmetic polish (P2/P3 content-clip / overflow / bottom-chrome guards) — additive, mobile-scoped ── */
@@ -289,96 +291,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
   .toast.on{opacity:1}
 </style>
 
-<style id="st-v5-uniform-css">
-/* No remote @import — app is fully offline (INTERNET permission removed); a render-blocking
-   font fetch that can never resolve was a likely cause of module-open stalls. System fonts below. */
-/* ── VISIBILITY FIX ── force light rendering so Android WebView dark-mode
-   (algorithmic darkening / force-dark) cannot invert text to invisible.
-   This is the root cause of "some text not visible" on phones/tablets. */
-:root{color-scheme:light only}
-html{color-scheme:light only;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-html,body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important;forced-color-adjust:none}
-h1,h2,h3,h4,h5,.title,.headline,.brand,.heading{font-family:'DM Serif Display',Georgia,serif !important;letter-spacing:.2px}
-/* Don't fight module's own colors — only normalize font + base focus ring */
-*:focus-visible{outline:2px solid #b8922a;outline-offset:1px}
-button,input,select,textarea{font-family:inherit}
-/* keep date/number/select text from going invisible on some Android WebViews */
-input,select,textarea{-webkit-text-fill-color:currentColor;opacity:1}
-input::placeholder,textarea::placeholder{-webkit-text-fill-color:#7a8699;opacity:1}
-/* ── RESPONSIVE SAFETY (tablet + mobile), conservative so module layouts stay intact ── */
-img,svg,video,canvas{max-width:100%;height:auto}
-*{ -webkit-tap-highlight-color:rgba(184,146,42,.18) }
-@media(max-width:920px){
-  body{ padding-bottom:72px !important }                 /* clear the back-home FAB + injected gate banner */
-  table{ display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch }
-  thead,tbody,tr{ width:max-content; min-width:100% }
-}
-@media(max-width:640px){
-  html{ font-size:15px }
-  button,.btn,a.btn,[role=button]{ min-height:40px }
-  input,select,textarea{ min-height:38px; font-size:16px }   /* 16px stops iOS/Android zoom-on-focus */
-}
-@media print{ body{background:#fff !important;color:#000 !important} }
-
-/* ════════════════════════════════════════════════════════════════════════
-   GLOBAL FLOORS — accessibility minimums applied to EVERY module iframe
-   (this block is injected unconditionally, mobile AND desktop). Two rules:
-     1. No on-screen text smaller than 11px.
-     2. Every interactive control is at least 44x44 with a real tap target.
-   These are FLOORS: they only raise values that fall below the minimum, so
-   module typography/spacing above the floor is untouched. !important is
-   required because module + MOBILE_CSS rules set their own sizes with
-   !important (some shrink table/label text to 9px and inputs below 44px).
-   ════════════════════════════════════════════════════════════════════════ */
-/* 1a — baseline text floor (NOT !important): max(11px,1em) keeps each element's
-   inherited/declared size when it is already >=11px, and lifts anything smaller
-   to 11px. Because it is low-priority, any module rule that sets a size >=11px
-   still wins; this only catches unset or sub-11px text. svg/script/style are
-   excluded so we never touch vector or non-rendered nodes. */
-html body *:not(svg):not(svg *):not(script):not(style){
-  font-size:max(11px, 1em);
-}
-/* 1b — hard floor (!important) for the small-text leaves that modules + MOBILE_CSS
-   deliberately shrink to 9–10px (table cells, chips, captions, *-sub/-meta/-hint
-   labels). Flooring these to 11px is the intent of the accessibility minimum.
-   These are genuine small-text leaves, so 11px will not distort hierarchy. */
-html body small,
-html body .h-name,html body th,html body td,
-html body .leave-chip,html body .mt,html body .badge,html body .chip,html body .pill,html body .tag,
-html body figcaption,html body caption,html body legend,
-html body [class*="-sub"],html body [class*="-meta"],html body [class*="-hint"],
-html body [class*="-note"],html body [class*="-cap"],html body [class*="-label"],
-html body [class*="-time"],html body [class*="-date"]{
-  font-size:max(11px, 1em) !important;
-}
-/* 2 — interactive control floor: 44px min hit area + readable size. Covers
-   normal controls AND tiny icon/delete/close/remove buttons that often ship at
-   ~24–32px. The [class*=…] matches are scoped to button/a/[role=button] so a
-   wrapper div like .delete-modal is never affected. min-width keeps icon-only
-   buttons square-ish. */
-html body button,
-html body input:not([type=hidden]):not([type=checkbox]):not([type=radio]),
-html body select,html body textarea,
-html body a.btn,html body [role=button],html body label.btn,
-html body .btn,html body .icon-btn,html body .iconbtn,
-html body button[class*="close"],html body button[class*="delete"],html body button[class*="remove"],
-html body button[class*="-del"],html body button[class*="icon"],
-html body a[class*="close"],html body a[class*="delete"],html body a[class*="remove"]{
-  min-height:44px !important;
-  min-width:44px;
-}
-/* keep checkbox/radio compact but tappable (don't stretch the box itself) */
-html body input[type=checkbox],html body input[type=radio]{
-  min-width:18px !important;min-height:18px !important;
-}
-/* inputs/selects inside dense table cells: keep the 44px hit area but allow
-   the cell width to drive horizontal size so tables don't blow out. */
-html body td button,html body th button,
-html body td input,html body th input,
-html body td select,html body th select{
-  min-width:0;
-}
-</style>
+<link id="st-v5-uniform-css" rel="stylesheet" href="../../shared/module-uniform.css">
 <link rel="stylesheet" href="../../c1-control-desk.css">
 <script src="../../c1-operations-policy.js"></script>
 <script src="../../c1-control-desk.js" defer></script>
@@ -503,31 +416,12 @@ html body td select,html body th select{
   render();
 </script>
 
-<style id="st-v5-back-style">
-#st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(135deg,#0d2340,#18385f);border:2px solid rgba(184,146,42,.7);color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(13,35,64,.35);
-  transition:transform .15s,box-shadow .15s,border-color .15s;padding:0;outline:none}
-#st-v5-home-fab:hover{transform:scale(1.12);box-shadow:0 8px 26px rgba(13,35,64,.45);border-color:#b8922a}
-#st-v5-home-fab:active{transform:scale(.96)}
-#st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-@media print{#st-v5-home-fab{display:none!important}}
-@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}#st-v5-next-chips{bottom:124px;right:14px}}
-#st-v5-next-chips{position:fixed;bottom:140px;right:22px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-#st-v5-next-chips button{background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;border:1px solid rgba(184,146,42,.7);border-radius:999px;padding:8px 14px;font:700 12px 'DM Sans',Arial,sans-serif;box-shadow:0 6px 18px rgba(13,35,64,.35);cursor:pointer}
-@media print{#st-v5-next-chips{display:none!important}}
-/* Auto-hide both FABs while a module modal/overlay is open (boot script toggles st-v5-modalopen),
-   so they never sit over a dialog's Cancel/inputs. On mobile the boot script also reserves bottom
-   safe-area so the FABs never cover the last row / per-row action buttons. */
-html.st-v5-modalopen #st-v5-home-fab,html.st-v5-modalopen #st-v5-next-chips{display:none!important}
-/* Mobile nav aids only — on Desktop the persistent left nav + back button cover this, and the FABs overlapped module content. */
-html:not(.bcc-mobile) #st-v5-home-fab,html:not(.bcc-mobile) #st-v5-next-chips{display:none!important}
-</style>
+<link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
 <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 
-<style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style><script id="st-v5-emp-assist-script">SaagarModuleRuntime.run('employees',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
+<link id="st-v5-emp-assist-style" rel="stylesheet" href="../../shared/module-employee.css"><script id="st-v5-emp-assist-script">SaagarModuleRuntime.run('employees',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 
 <script id="st-v5-module-audit-bridge">SaagarModuleRuntime.run('audit',{schemaVersion:1,moduleId:'planning',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 <script id="mah4-stage-b-runtime">SaagarMah4Runtime.bootModule({moduleId:'planning'});</script>

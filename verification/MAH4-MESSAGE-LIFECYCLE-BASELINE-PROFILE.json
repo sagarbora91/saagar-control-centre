@@ -3,16 +3,16 @@
   "profileId": "mah4-message-lifecycle-stage-a-2026-08-07",
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
-    "mah3ProfileBytes": 7365,
-    "mah3ProfileSha256": "a27123c6112e2e10b85cd0be00d97443c7de66eb869d2d2a02cedd804a8d40d1",
-    "mah3TreeSha256": "6eea8a6c82bbbbb63c7db16a368c99d3bf5ce543818fc74ef7ff703f35b809c8",
-    "currentWwwTreeSha256": "6eea8a6c82bbbbb63c7db16a368c99d3bf5ce543818fc74ef7ff703f35b809c8",
-    "currentWwwFileCount": 85,
-    "currentWwwTotalBytes": 7974896,
+    "mah3ProfileBytes": 7366,
+    "mah3ProfileSha256": "a647f12c91b40b9d609497bc3169648a7ff52be484167d995db38da6b5b1e3dd",
+    "mah3TreeSha256": "f521e7a914e31bdcde361e2049ee821cfb54fd719eed4ba1f547fe80ac2b7199",
+    "currentWwwTreeSha256": "f521e7a914e31bdcde361e2049ee821cfb54fd719eed4ba1f547fe80ac2b7199",
+    "currentWwwFileCount": 100,
+    "currentWwwTotalBytes": 7727667,
     "shell": {
       "path": "www/index.html",
-      "bytes": 711857,
-      "sha256": "5730dafe5ea01611d435ec14e42a3f53c103a258666f498ef4d0f06f26c69d6b"
+      "bytes": 575899,
+      "sha256": "cf13d42c9bca10cd762d4d5fffb4deab5c71167dc0f837e49f015a955bfc57c0"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -94,14 +94,6 @@
         "www/shared/mah4-runtime.js"
       ],
       "ST_BACK_HOME": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_DISPOSE": [
@@ -123,25 +115,14 @@
         "www/index.html"
       ],
       "ST_OPEN_MODULE": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_PRINT": [
         "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
         "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
-        "www/modules/tax/index.html"
+        "www/shared/module-runtime.js"
       ],
       "ST_READY": [
         "www/shared/mah4-runtime.js"
@@ -192,14 +173,6 @@
         "www/shared/mah4-runtime.js"
       ],
       "ST_BACK_HOME": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_DISPOSE": [
@@ -221,20 +194,14 @@
         "www/index.html"
       ],
       "ST_OPEN_MODULE": [
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/service/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_PRINT": [
         "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
         "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/qms/index.html",
         "www/modules/service/index.html",
         "www/modules/stock/index.html",
-        "www/modules/tax/index.html"
+        "www/shared/module-runtime.js"
       ],
       "ST_READY": [
         "www/shared/mah4-runtime.js"
@@ -284,10 +251,7 @@
     },
     "consumerPaths": {
       "ST_ACCESS_CONTEXT": [
-        "www/modules/dsr/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html"
+        "www/shared/module-runtime.js"
       ],
       "ST_AUDIT": [
         "www/shared/mah4-runtime.js"
@@ -311,14 +275,6 @@
         "www/app-i18n.js"
       ],
       "ST_OPEN_FEATURE": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_OPEN_MODULE": [
@@ -337,28 +293,12 @@
         "www/index.html"
       ],
       "ST_SET_DATE": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_SHARE": [
         "www/index.html"
       ],
       "ST_UI_MODE": [
-        "www/modules/cro_audit/index.html",
-        "www/modules/expense/index.html",
-        "www/modules/grooming/index.html",
-        "www/modules/leave/index.html",
-        "www/modules/payroll/index.html",
-        "www/modules/service/index.html",
-        "www/modules/stock/index.html",
-        "www/modules/tax/index.html",
         "www/shared/module-runtime.js"
       ],
       "ST_WA": [
@@ -375,44 +315,29 @@
       "__activate_edit_mode": [
         {
           "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ],
       "__deactivate_edit_mode": [
         {
           "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ],
       "ST_ACCESS_CONTEXT": [
         {
-          "path": "www/modules/dsr/index.html",
+          "path": "www/shared/module-runtime.js",
           "sourceGuard": true,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/expense/index.html",
-          "sourceGuard": true,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/service/index.html",
-          "sourceGuard": true,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/stock/index.html",
-          "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_BACK_HOME": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_LANG": [
@@ -424,199 +349,79 @@
       ],
       "ST_OPEN_FEATURE": [
         {
-          "path": "www/modules/cro_audit/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/expense/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/grooming/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/leave/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/stock/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/tax/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/shared/module-runtime.js",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ],
       "ST_OPEN_MODULE": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_PRINT": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_REPORT": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_REPORT_BATCH": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_SET_DATE": [
         {
-          "path": "www/modules/cro_audit/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/expense/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/grooming/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/leave/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/stock/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/tax/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/shared/module-runtime.js",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ],
       "ST_SHARE": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_UI_MODE": [
         {
-          "path": "www/modules/cro_audit/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/expense/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/grooming/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/leave/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/payroll/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/stock/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
-          "path": "www/modules/tax/index.html",
-          "sourceGuard": false,
-          "originGuard": false
-        },
-        {
           "path": "www/shared/module-runtime.js",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ],
       "ST_WA": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_WA_LINK": [
         {
           "path": "www/index.html",
           "sourceGuard": true,
-          "originGuard": false
+          "originGuard": true
         }
       ],
       "ST_WA_SENT": [
         {
           "path": "www/modules/service/index.html",
-          "sourceGuard": false,
-          "originGuard": false
+          "sourceGuard": true,
+          "originGuard": true
         }
       ]
     },
@@ -649,6 +454,7 @@
         "ST_WA_SENT"
       ],
       "qms": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -687,6 +493,7 @@
         "ST_UI_MODE"
       ],
       "grooming": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -699,6 +506,7 @@
         "ST_UI_MODE"
       ],
       "cro_audit": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -711,6 +519,7 @@
         "ST_UI_MODE"
       ],
       "payroll": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -723,6 +532,7 @@
         "ST_UI_MODE"
       ],
       "leave": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -735,6 +545,7 @@
         "ST_UI_MODE"
       ],
       "tax": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -747,6 +558,7 @@
         "ST_UI_MODE"
       ],
       "planning": [
+        "ST_ACCESS_CONTEXT",
         "ST_AUDIT",
         "ST_DISPOSE",
         "ST_DISPOSED",
@@ -775,19 +587,19 @@
         "www/modules/service/index.html"
       ]
     },
-    "directEntrySyntacticPostMessageCalls": 66,
-    "directEntryClassifiedProducerCalls": 66,
-    "directEntryConfiguredPostMessageCalls": 61,
-    "directEntrySyntacticWildcardPostMessageCalls": 59,
-    "directEntryConfiguredWildcardPostMessageCalls": 54,
+    "directEntrySyntacticPostMessageCalls": 47,
+    "directEntryClassifiedProducerCalls": 47,
+    "directEntryConfiguredPostMessageCalls": 47,
+    "directEntrySyntacticWildcardPostMessageCalls": 0,
+    "directEntryConfiguredWildcardPostMessageCalls": 0,
     "dynamicSyntacticPostMessageCalls": 1,
     "dynamicClassifiedProducerCalls": 1,
     "dynamicConfiguredPostMessageCalls": 1,
     "dynamicWildcardPostMessageCalls": 1,
-    "aggregateSyntacticPostMessageCalls": 67,
-    "aggregateConfiguredPostMessageCalls": 62,
-    "aggregateWildcardPostMessageCalls": 60,
-    "aggregateAcceptedConfiguredPostMessageCalls": 61,
+    "aggregateSyntacticPostMessageCalls": 48,
+    "aggregateConfiguredPostMessageCalls": 48,
+    "aggregateWildcardPostMessageCalls": 1,
+    "aggregateAcceptedConfiguredPostMessageCalls": 47,
     "knownRejectedConfiguredRoutes": [
       {
         "type": "ST_OPEN_MODULE",
@@ -797,20 +609,11 @@
     ],
     "mainShellRouterSourceGuard": false,
     "sqliteAuditSourceGuard": false,
-    "shellOriginCheckPresent": false,
+    "shellOriginCheckPresent": true,
     "directLanguageReceiver": true,
-    "accessContextSourceGuardModules": [
-      "stock",
-      "service",
-      "dsr",
-      "expense"
-    ],
+    "accessContextSourceGuardModules": [],
     "unsourcedSharedReceiverTypes": [
-      "ST_LANG",
-      "ST_OPEN_FEATURE",
-      "ST_SET_DATE",
-      "ST_UI_MODE",
-      "ST_WA_SENT"
+      "ST_LANG"
     ],
     "proposedControlTypesPresent": [
       "ST_INIT",
@@ -822,7 +625,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 54,
+    "directEntryScriptAssetCount": 57,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1123,18 +926,29 @@
     },
     {
       "path": "www/shared/module-runtime.js",
-      "bytes": 14974,
-      "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
+      "bytes": 20392,
+      "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
       "loadedBy": [
+        "cro_audit",
         "dsr",
+        "expense",
+        "grooming",
+        "leave",
+        "payroll",
         "planning",
-        "qms"
+        "qms",
+        "service",
+        "shell",
+        "stock",
+        "tax"
       ],
       "producerTypes": [
         "ST_BACK_HOME",
-        "ST_OPEN_MODULE"
+        "ST_OPEN_MODULE",
+        "ST_PRINT"
       ],
       "consumerTypes": [
+        "ST_ACCESS_CONTEXT",
         "ST_OPEN_FEATURE",
         "ST_SET_DATE",
         "ST_UI_MODE"
@@ -1158,57 +972,57 @@
   "lifecycle": {
     "countingUnit": "static-call-sites-not-runtime-resource-instances",
     "rawInlineShellCallSites": {
-      "timeouts": 28,
-      "clearTimeouts": 9,
-      "intervals": 2,
-      "clearIntervals": 1,
-      "mutationObservers": 2,
-      "observerDisconnects": 1,
-      "eventListeners": 29,
-      "removedEventListeners": 1,
-      "resizeListeners": 2
-    },
-    "activeInlineShellCallSites": {
-      "timeouts": 21,
-      "clearTimeouts": 6,
-      "intervals": 2,
-      "clearIntervals": 1,
+      "timeouts": 19,
+      "clearTimeouts": 3,
+      "intervals": 3,
+      "clearIntervals": 2,
       "mutationObservers": 0,
       "observerDisconnects": 0,
-      "eventListeners": 16,
+      "eventListeners": 15,
+      "removedEventListeners": 1,
+      "resizeListeners": 1
+    },
+    "activeInlineShellCallSites": {
+      "timeouts": 19,
+      "clearTimeouts": 3,
+      "intervals": 3,
+      "clearIntervals": 2,
+      "mutationObservers": 0,
+      "observerDisconnects": 0,
+      "eventListeners": 15,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
     "dormantInlineShellCallSites": {
-      "timeouts": 7,
-      "clearTimeouts": 3,
+      "timeouts": 0,
+      "clearTimeouts": 0,
       "intervals": 0,
       "clearIntervals": 0,
-      "mutationObservers": 2,
-      "observerDisconnects": 1,
-      "eventListeners": 13,
+      "mutationObservers": 0,
+      "observerDisconnects": 0,
+      "eventListeners": 0,
       "removedEventListeners": 0,
-      "resizeListeners": 1
+      "resizeListeners": 0
     },
     "rawInlineModuleTotals": {
-      "timeouts": 89,
-      "clearTimeouts": 40,
+      "timeouts": 33,
+      "clearTimeouts": 16,
       "intervals": 3,
       "clearIntervals": 1,
-      "mutationObservers": 16,
-      "observerDisconnects": 8,
-      "eventListeners": 147,
+      "mutationObservers": 0,
+      "observerDisconnects": 0,
+      "eventListeners": 47,
       "removedEventListeners": 0,
-      "resizeListeners": 8
+      "resizeListeners": 0
     },
     "uniqueDirectAssetCallSites": {
-      "timeouts": 27,
-      "clearTimeouts": 19,
+      "timeouts": 29,
+      "clearTimeouts": 22,
       "intervals": 2,
       "clearIntervals": 2,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 38,
+      "eventListeners": 41,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
@@ -1272,8 +1086,8 @@
       },
       {
         "path": "www/saagar-report.js",
-        "bytes": 165641,
-        "sha256": "b6d156fec2b985c35ac9c6d031393287263cb416aa31ffd74ac8435f0b8f9952",
+        "bytes": 165737,
+        "sha256": "86f56c7ae9698804b826c66991254275f55908fd07922d503bb118a33fd087b6",
         "loadedBy": [
           "shell"
         ]
@@ -1299,12 +1113,29 @@
       },
       {
         "path": "www/shared/module-runtime.js",
-        "bytes": 14974,
-        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b",
+        "bytes": 20392,
+        "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
         "loadedBy": [
+          "cro_audit",
           "dsr",
+          "expense",
+          "grooming",
+          "leave",
+          "payroll",
           "planning",
-          "qms"
+          "qms",
+          "service",
+          "shell",
+          "stock",
+          "tax"
+        ]
+      },
+      {
+        "path": "www/shared/shell-module-frame-controller.js",
+        "bytes": 4276,
+        "sha256": "295819db2ec8cd82266fe8000507b871254f7d33ff17d3ff6491a8700e04691f",
+        "loadedBy": [
+          "shell"
         ]
       },
       {
@@ -1317,16 +1148,16 @@
       },
       {
         "path": "www/sqlite-store.js",
-        "bytes": 12519,
-        "sha256": "c9980fc2f0e5711215f31ee36fd7466666d9c88904311d06e8d7e675f8df0fe8",
+        "bytes": 12568,
+        "sha256": "9f4758bfc9f366397f0600ff10597e8785d00a7cb9cc2cd269a9ee4316eea9c6",
         "loadedBy": [
           "shell"
         ]
       },
       {
         "path": "www/storage-core.js",
-        "bytes": 88172,
-        "sha256": "4e8accc0689dcf71be26c08ab494fd135d21bc742ae6cd4607d08509575994fb",
+        "bytes": 89762,
+        "sha256": "a54938c4ead17d286c9bdc70facd86910d9dba4d3c33958ee967aa38a25df68f",
         "loadedBy": [
           "shell"
         ]
@@ -1349,8 +1180,8 @@
       },
       {
         "path": "www/whatsapp-share.js",
-        "bytes": 16136,
-        "sha256": "273635356eaf9ae1cfec1a02097444f03c14b53ae8bf1d9b0b3c7cbcde129591",
+        "bytes": 16160,
+        "sha256": "15cb5777c6ef7ab3d35efd417e5eb054b6ba47c66b57e152d86e2bc0187b4c7f",
         "loadedBy": [
           "shell"
         ]
@@ -1359,24 +1190,24 @@
     "rawShellPlusDirectAssetCallSites": {
       "timeouts": 48,
       "clearTimeouts": 25,
-      "intervals": 4,
-      "clearIntervals": 3,
+      "intervals": 5,
+      "clearIntervals": 4,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 52,
+      "eventListeners": 55,
       "removedEventListeners": 2,
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 41,
-      "clearTimeouts": 22,
-      "intervals": 4,
-      "clearIntervals": 3,
-      "mutationObservers": 2,
-      "observerDisconnects": 1,
-      "eventListeners": 39,
+      "timeouts": 48,
+      "clearTimeouts": 25,
+      "intervals": 5,
+      "clearIntervals": 4,
+      "mutationObservers": 4,
+      "observerDisconnects": 2,
+      "eventListeners": 55,
       "removedEventListeners": 2,
-      "resizeListeners": 1
+      "resizeListeners": 2
     },
     "directEffectiveModuleTotals": {
       "timeouts": 143,
@@ -1385,7 +1216,7 @@
       "clearIntervals": 12,
       "mutationObservers": 33,
       "observerDisconnects": 22,
-      "eventListeners": 251,
+      "eventListeners": 274,
       "removedEventListeners": 11,
       "resizeListeners": 11
     },
@@ -1440,7 +1271,7 @@
       "clearIntervals": 1,
       "mutationObservers": 0,
       "observerDisconnects": 0,
-      "eventListeners": 5,
+      "eventListeners": 4,
       "removedEventListeners": 0,
       "resizeListeners": 0
     },
@@ -1451,7 +1282,7 @@
       "clearIntervals": 1,
       "mutationObservers": 3,
       "observerDisconnects": 2,
-      "eventListeners": 20,
+      "eventListeners": 21,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
@@ -1467,16 +1298,16 @@
       "resizeListeners": 1
     },
     "rawMutationObserverCallSitesByModule": {
-      "stock": 2,
-      "service": 2,
+      "stock": 0,
+      "service": 0,
       "qms": 0,
       "dsr": 0,
-      "expense": 2,
-      "grooming": 2,
-      "cro_audit": 2,
-      "payroll": 2,
-      "leave": 2,
-      "tax": 2,
+      "expense": 0,
+      "grooming": 0,
+      "cro_audit": 0,
+      "payroll": 0,
+      "leave": 0,
+      "tax": 0,
       "planning": 0
     },
     "directEffectiveMutationObserverCallSitesByModule": {
@@ -1499,7 +1330,7 @@
     "controlHandshakeAbsent": false,
     "closeRemovesSrc": true,
     "closeBlanksSrcdoc": true,
-    "dormantFallbackPresent": true,
+    "dormantFallbackPresent": false,
     "manifestRequiresSrc": true,
     "manifestContainsHtmlB64": false,
     "allProposedControlTypesObserved": true,
@@ -1511,8 +1342,8 @@
       "sites": [
         {
           "id": "shell-open-module",
-          "owner": "www/index.html",
-          "sourceKind": "active-inline",
+          "owner": "www/shared/shell-module-frame-controller.js",
+          "sourceKind": "direct-entry-script",
           "once": true,
           "persistent": false,
           "bindGuard": null,

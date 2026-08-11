@@ -74,12 +74,12 @@ test('runtime localizes dynamic UI but excludes editable and business-data surfa
   assert.match(source, /data-i18n/);
 });
 
-test('shell broadcasts language changes to the active module', () => {
+test('shell broadcasts language changes to the active module', async () => {
   const setLang = shell.slice(shell.indexOf('function setLang('), shell.indexOf('/*', shell.indexOf('function setLang(')));
   assert.match(setLang, /applyLangToFrame\(l\)/);
   assert.match(shell, /postMessage\(\{type:'ST_LANG',lang:/);
-  const moduleLoad = shell.slice(shell.indexOf("__f.addEventListener('load'"), shell.indexOf('// Loader safety net'));
-  assert.match(moduleLoad, /applyLangToFrame\(getLang\(\)\)/);
+  const frameController = await readFile(new URL('shared/shell-module-frame-controller.js', root), 'utf8');
+  assert.match(frameController, /shell\.applyLangToFrame\(shell\.getLang\(\)\)/);
   const authoritativeRender = shell.slice(shell.indexOf('function doFirstRender(){'), shell.indexOf('// First render'));
   assert.match(authoritativeRender, /applyLang\(\);\s*reflectLangUI\(\)/);
   assert.doesNotMatch(shell, /data-i18n="cfg\.language">Language<\/span>\s*\/\s*भाषा/);

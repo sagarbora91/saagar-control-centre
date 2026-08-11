@@ -43,7 +43,7 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
   assert.equal(Object.isFrozen(api.modules), true);
   assert.equal(Object.isFrozen(api.sharedAssets), true);
   assert.equal(Object.isFrozen(api.sharedAssets[0]), true);
-  assert.equal(api.getShared('module-runtime'), api.sharedAssets[0]);
+  assert.equal(api.getShared('module-runtime'), api.sharedAssets[1]);
   assert.equal(api.getShared('unknown'), null);
   api.modules.forEach(module => assert.equal(Object.isFrozen(module), true, module.id));
   assert.equal(api.get('stock'), api.modules[0]);
@@ -53,21 +53,39 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
 });
 
 test('manifest binds both synchronous shared runtimes to local bytes and SHA-256', () => {
-  assert.equal(api.sharedAssets.length, 2);
-  const runtime = api.sharedAssets[0];
+  assert.equal(api.sharedAssets.length, 9);
+  const bridge = api.sharedAssets[0];
+  assert.equal(bridge.id, 'module-bridge');
+  assert.equal(bridge.file, 'shared/module-bridge.js');
+  const runtime = api.sharedAssets[1];
   assert.deepEqual(Object.keys(runtime), ['id', 'version', 'file', 'bytes', 'sha256']);
   assert.equal(runtime.id, 'module-runtime');
   assert.equal(runtime.version, 1);
   assert.equal(runtime.file, 'shared/module-runtime.js');
-  const mah4Runtime = api.sharedAssets[1];
+  const mah4Runtime = api.sharedAssets[2];
   assert.equal(mah4Runtime.id, 'mah4-runtime');
   assert.equal(mah4Runtime.version, 1);
   assert.equal(mah4Runtime.file, 'shared/mah4-runtime.js');
+  assert.deepEqual(api.sharedAssets.slice(3).map(asset => asset.id), ['module-uniform-css','module-back-css','module-employee-css','module-mobile-common-css','module-brand-tokens-css','module-delete-cell-css']);
   assert.equal(api.getShared('mah4-runtime'), mah4Runtime);
   for (const asset of api.sharedAssets) {
     const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
     assert.equal(asset.bytes, bytes.length, asset.id);
     assert.equal(asset.sha256, crypto.createHash('sha256').update(bytes).digest('hex'), asset.id);
+  }
+});
+
+test('module bridge is a versioned local boundary for shell-owned capabilities', () => {
+  const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
+  assert.match(bridge, /var VERSION = 1;/);
+  for (const name of ['adminPinCheck', 'ownerSession', 'sharedStorage', 'evidence', 'legal', 'reauth', 'report', 'qmsPolicy', 'photo', 'ensureJsZip']) {
+    assert.match(bridge, new RegExp(`\\b${name}: getter`), name);
+  }
+  for (const module of api.modules) {
+    const html = fs.readFileSync(path.join(root, 'www', module.src), 'utf8');
+    const bridgeAt = html.indexOf('../../shared/module-bridge.js');
+    const runtimeAt = html.indexOf('../../shared/module-runtime.js');
+    assert.ok(bridgeAt >= 0 && bridgeAt < runtimeAt, `${module.id} bridge load order`);
   }
 });
 

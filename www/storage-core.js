@@ -64,7 +64,7 @@
     var WAL_KEY = 'saagar_storage_wal';   /* §13.1 synchronous native-LS journal */
     var MIGRATED_KEY = 'saagar_storage_migrated';  /* §13.3 one-way marker: DB is authoritative */
     var NATIVE_MIGRATED_KEY = 'saagar_native_store_migrated_v1';  /* fail closed instead of opening a stale legacy snapshot */
-    var LOG_KEY = 'saagar_sqlite_log';
+    var STORAGE_LOG_KEY = 'saagar_sqlite_log';
     var DAT02_KEY = 'saagar_dat02_acceptance_v1';
     var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_native_store_migrated_v1': 1, 'saagar_sqlite_log': 1, 'saagar_dat02_acceptance_v1': 1 };
     var RecoveryPolicy = window.SaagarStorageRecoveryPolicy || null;
@@ -222,7 +222,7 @@
     function dataDir() { return 'DATA'; }
 
     function log(m) {
-      try { var a = JSON.parse(nGet.call(ls, LOG_KEY) || '[]'); if (!Array.isArray(a)) a = []; a.unshift({ at: new Date().toISOString(), m: '[core] ' + String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet.call(ls, LOG_KEY, JSON.stringify(a)); } catch (e) {}
+      try { var a = JSON.parse(nGet.call(ls, STORAGE_LOG_KEY) || '[]'); if (!Array.isArray(a)) a = []; a.unshift({ at: new Date().toISOString(), m: '[core] ' + String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet.call(ls, STORAGE_LOG_KEY, JSON.stringify(a)); } catch (e) {}
       try { console.log('[storage-core] ' + m); } catch (e) {}
     }
 
@@ -979,6 +979,12 @@
       log('boot timeout - native-LS fallback (MEM already hydrated at Step 0)'); setReady();
     }
     function bootLegacy(migrationPlugin) {
+      /* Android 6's factory WebView (Chrome 44) has no WebAssembly. Calling the
+         wasm sql.js loader there both rejects and leaves an uncaught internal
+         promise behind. A Capacitor build takes the native-first path in boot()
+         below; browser-only previews retain native localStorage without ever
+         invoking the unsupported loader. */
+      if (typeof WebAssembly !== 'object') { _nativeBooting = false; log('WebAssembly absent - native-LS fallback'); setReady(); return Promise.resolve(false); }
       if (typeof initSqlJs !== 'function') { _nativeBooting = false; log('sql.js absent - native-LS fallback'); setReady(); return Promise.resolve(false); }
       return initSqlJs({ locateFile: function (f) { return f; } }).then(function (_SQL) {
         if (_ready) return;
@@ -1072,6 +1078,25 @@
           });
         }
         if (wasNative) { blockNativeStore(inspected.code, 'native-status'); return false; }
+        /* Fresh API-23 installs must not depend on sql-wasm: migrate the Step-0
+           localStorage snapshot directly into the encrypted native incremental
+           store. This also makes the demo seed guard durable on its first write,
+           so a restart cannot reseed the two-year dataset. */
+        if (typeof WebAssembly !== 'object') {
+          _recovery.stage = 'native-migration';
+          return migrateToNative(plugin).then(function () {
+            if (attempt !== _activeBootAttempt || _storageBlocked) return false;
+            _authorityPending = false; _storageBlocked = false;
+            _recovery.state = 'ready'; _recovery.code = ''; _recovery.stage = 'ready';
+            setReady();
+            log('native-first migration active without WebAssembly');
+            return true;
+          }, function (e) {
+            if (attempt !== _activeBootAttempt) return false;
+            blockNativeStore(recoveryCode(e, 'STORE_UNAVAILABLE'), 'native-migration');
+            return false;
+          });
+        }
         return bootLegacy(plugin);
       }, function (e) {
         if (attempt !== _activeBootAttempt || _storageBlocked) return false;

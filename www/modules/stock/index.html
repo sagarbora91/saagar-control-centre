@@ -1,35 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="../../shared/module-bridge.js"></script>
+<script src="../../shared/module-runtime.js"></script>
 <script src="../../shared/mah4-runtime.js"></script>
 <script id="mah4-stage-b-runtime">SaagarMah4Runtime.bootModule({moduleId:'stock'});</script>
-<script id="st-v5-iframe-shim">(function(){try{var P=window.parent&&window.parent.SaagarStore;if(!P||!P.enabled)return;var SP=Storage.prototype;SP.getItem=function(k){return P.get(k);};SP.setItem=function(k,v){return P.set(k,v);};SP.removeItem=function(k){return P.remove(k);};SP.clear=function(){try{console.warn("[st-shim] localStorage.clear() ignored inside a module (shared store)");}catch(e){}};SP.key=function(i){return P.keys()[i]||null;};try{Object.defineProperty(SP,"length",{configurable:true,get:function(){return P.length();}});}catch(e){}try{var __ls={getItem:function(k){return P.get(k);},setItem:function(k,v){return P.set(k,v);},removeItem:function(k){return P.remove(k);},clear:function(){},key:function(i){return P.keys()[i]||null;}};try{Object.defineProperty(__ls,"length",{get:function(){return P.length();}});}catch(e){}Object.defineProperty(window,"localStorage",{configurable:true,get:function(){return __ls;}});}catch(e){}var PP=P.photo;if(PP&&PP.put){window.SaagarPhoto={enabled:true,refId:function(m,r,f){return PP.refId(m,r,f);},put:function(id,d){return Promise.resolve(PP.put(id,d));},get:function(id){return Promise.resolve(PP.get(id));},remove:function(id){return Promise.resolve(PP.remove(id));}};}}catch(e){}})();</script>
-<script id="st-v5-safety-net">(function(){
-  var box;
-  function hint(msg){
-    try{
-      if(!box){ box=document.createElement('div'); box.id='st-v5-hintbox';
-        box.style.cssText='position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:2147483647;'+
-        'background:#1a3a5c;color:#fff;font:600 13px/1.4 \'DM Sans\',Arial,sans-serif;padding:11px 16px;'+
-        'border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.3);border-left:4px solid #b8922a;max-width:86vw;text-align:center';
-        (document.body||document.documentElement).appendChild(box);
-      }
-      box.textContent=msg; box.style.display='block';
-      clearTimeout(box._t); box._t=setTimeout(function(){ if(box) box.style.display='none'; },3200);
-    }catch(e){}
-  }
-  window.addEventListener('error', function(ev){
-    var m=(ev&&ev.message)||'';
-    if(/null|undefined|not a function/i.test(m)){
-      console.warn('[safety-net] recovered from out-of-sequence action:', m);
-      hint('Please complete the previous step first — nothing was changed.');
-      ev.preventDefault(); return true;
-    }
-  }, true);
-  window.addEventListener('unhandledrejection', function(ev){
-    console.warn('[safety-net] async issue:', ev&&ev.reason);
-  });
-})();</script>
+<script id="st-v5-iframe-shim">SaagarModuleRuntime.run('storage',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
+<script id="st-v5-safety-net">SaagarModuleRuntime.run('safety',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
+<link rel="stylesheet" href="../../shared/module-mobile-common.css">
 <style id="st-v5-mobile-css">
 /* base layer (all modules) */
 html.bcc-mobile table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -43,7 +21,7 @@ html.bcc-mobile .fg{min-width:0}
 html.bcc-mobile body{padding-bottom:80px}
 /* qms off-canvas menu button (injected for qms only) */
 #st-v5-qms-menu{display:none}
-html.bcc-mobile[data-mod="qms"] #st-v5-qms-menu{display:flex;align-items:center;justify-content:center;position:fixed;top:8px;left:10px;z-index:70;width:42px;height:42px;border-radius:10px;background:#0d2340;color:#fff;border:0;font-size:20px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+
 /* stock */
 html.bcc-mobile[data-mod="stock"] .main{max-width:none !important;width:auto !important;margin:0 !important;padding:10px !important}
 html.bcc-mobile[data-mod="stock"] .scards{grid-template-columns:repeat(2,1fr) !important;gap:8px !important}
@@ -234,7 +212,7 @@ html.bcc-mobile[data-mod="tax"] .firm-sel{min-width:0 !important}
    Limited to these explicit hooks so it never collapses real flex/grid tracks. */
 html.bcc-mobile .contain,html.bcc-mobile [class*=grid],html.bcc-mobile .wrap,html.bcc-mobile .content > *{min-width:0;box-sizing:border-box;max-width:100%}
 /* 1.1 Tab chip strip utility — opt-in horizontally-scrollable chip row. */
-html.bcc-mobile .tab-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;scrollbar-width:none}
+
 html.bcc-mobile .tab-chips::-webkit-scrollbar{display:none}
 html.bcc-mobile .tab-chips>*{flex:0 0 auto;white-space:nowrap}
 /* 1.1 App-wide: turn EXISTING tab strips from squeeze-to-fit-and-overprint into
@@ -247,16 +225,16 @@ html.bcc-mobile .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max
 html.bcc-mobile .tbl-scroll td.sticky-col,html.bcc-mobile .tbl-scroll th.sticky-col{position:sticky;left:0;background:inherit;z-index:1}
 /* 1.2 Table-as-card base styles (rendered into a .card-list container by the boot helper). */
 html.bcc-mobile .card-list{display:block}
-html.bcc-mobile .bcc-card{display:block;border:1px solid var(--gray-200,#e5e7eb);border-radius:12px;padding:12px 14px;margin:0 0 10px;background:#fff;box-shadow:0 1px 3px rgba(13,35,64,.06)}
-html.bcc-mobile .bcc-card-row{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px;line-height:1.35}
+
+
 html.bcc-mobile .bcc-card-row+.bcc-card-row{border-top:1px solid var(--gray-100,#f3f4f6)}
 html.bcc-mobile .bcc-card-label{color:var(--gray-500,#6b7280);font-weight:600;flex:0 0 auto;max-width:50%}
 html.bcc-mobile .bcc-card-val{text-align:right;min-width:0;word-break:break-word}
 /* 1.5 Sticky action bar base — modules add the markup later; class provides the chrome. */
-html.bcc-mobile .sticky-actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--gray-200,#e5e7eb);padding:8px 12px calc(8px + var(--safe-bottom,0px));display:flex;gap:8px;z-index:40}
+
 /* 1.6 Accordion base — minimal collapse; modules add markup later. */
 html.bcc-mobile .accordion-panel[hidden]{display:none}
-html.bcc-mobile .accordion-header{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;user-select:none}
+
 html.bcc-mobile .accordion-header::after{content:"⌄";font-size:14px;line-height:1;opacity:.6;transition:transform .2s}
 html.bcc-mobile .accordion-header[aria-expanded="true"]::after{transform:rotate(180deg)}
 /* ── Deferred cosmetic polish (P2/P3 content-clip / overflow / bottom-chrome guards) — additive, mobile-scoped ── */
@@ -277,7 +255,7 @@ html.bcc-mobile[data-mod="payroll"] #app-toast{bottom:88px !important}          
 html.bcc-mobile[data-mod="qms"] .toast{bottom:92px !important}                                                      /* qms-L11 */
 html.bcc-mobile[data-mod="planning"] .toast{bottom:98px !important}                                                 /* planning toast over FAB */
 html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !important;white-space:normal !important}   /* svc-l7: long toast wrap at mid-mobile width */
-</style><script id="st-v5-mobile-boot">(function(){try{var r=document.documentElement;r.setAttribute("data-mod","stock");function cur(){try{var x=localStorage.getItem("saagar_ui_mode");return (x==="desktop"||x==="mobile")?x:"mobile";}catch(e){return "mobile";}}function ap(m){try{r.classList.toggle("bcc-mobile",m==="mobile");}catch(e){}}ap(cur());window.addEventListener("storage",function(e){if(!e||e.key==="saagar_ui_mode")ap(cur());});try{window.__stAsOf=localStorage.getItem("saagar_selected_date")||"";}catch(e){}try{if(window.parent&&typeof window.parent.__stTargetPending!=="undefined")window.__stTarget=window.parent.__stTargetPending||null;}catch(e){}window.addEventListener("message",function(e){if(!e||!e.data)return;if(e.data.type==="ST_UI_MODE")ap(e.data.mode);if(e.data.type==="ST_SET_DATE"){window.__stAsOf=e.data.date||"";try{window.dispatchEvent(new CustomEvent("st-date",{detail:window.__stAsOf}));}catch(_){}}if(e.data.type==="ST_OPEN_FEATURE"){window.__stTarget=e.data.target||null;try{window.dispatchEvent(new CustomEvent("st-feature",{detail:window.__stTarget}));}catch(_){}}});if("stock"==="qms"){var qClose=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(s)s.classList.remove("open");var sc=document.getElementById("st-v5-qms-scrim");if(sc)sc.classList.remove("show");};var mk=function(){if(document.getElementById("st-v5-qms-menu"))return;var sc=document.createElement("div");sc.id="st-v5-qms-scrim";sc.className="overlay";sc.onclick=qClose;(document.body||document.documentElement).appendChild(sc);var b=document.createElement("button");b.id="st-v5-qms-menu";b.type="button";b.setAttribute("aria-label","Menu");b.textContent="☰";b.onclick=function(){var s=document.querySelector(".sidebar")||document.getElementById("sidebar");if(!s)return;var open=s.classList.toggle("open");var sc2=document.getElementById("st-v5-qms-scrim");if(sc2)sc2.classList.toggle("show",open);};(document.body||document.documentElement).appendChild(b);};if(document.body)mk();else document.addEventListener("DOMContentLoaded",mk);}var ON=function(){try{return document.documentElement.classList.contains("bcc-mobile");}catch(e){return false;}};function chipCenter(){try{if(!ON())return;var sel=".tab-chips .active,.tab-chips [aria-selected=true],.tab-nav .active,.tab-nav [aria-selected=true],.tabs .active,.tabs [aria-selected=true]";var el=document.querySelector(sel);if(el&&el.scrollIntoView)el.scrollIntoView({inline:"center",block:"nearest"});}catch(e){}}function buildCards(){try{if(!ON())return;var tbls=document.querySelectorAll("table.card-list:not([data-bcc-cards])");for(var t=0;t<tbls.length;t++){(function(tbl){try{tbl.setAttribute("data-bcc-cards","1");var heads=[];var ths=tbl.querySelectorAll("thead th");for(var h=0;h<ths.length;h++)heads.push((ths[h].textContent||"").trim());var rows=tbl.querySelectorAll("tbody tr");if(!rows.length)rows=tbl.querySelectorAll("tr");var box=document.createElement("div");box.className="card-list bcc-card-wrap";for(var r=0;r<rows.length;r++){var cells=rows[r].querySelectorAll("td");if(!cells.length)continue;var card=document.createElement("div");card.className="bcc-card";for(var c=0;c<cells.length;c++){var lbl=cells[c].getAttribute("data-label")||heads[c]||"";var row=document.createElement("div");row.className="bcc-card-row";if(lbl){var ls=document.createElement("span");ls.className="bcc-card-label";ls.textContent=lbl;row.appendChild(ls);}var vs=document.createElement("span");vs.className="bcc-card-val";vs.innerHTML=cells[c].innerHTML;row.appendChild(vs);card.appendChild(row);}box.appendChild(card);}tbl.style.display="none";if(tbl.parentNode)tbl.parentNode.insertBefore(box,tbl.nextSibling);}catch(e){}})(tbls[t]);}}catch(e){}}var bound=false;function bindDelegates(){try{if(bound||!document.body)return;bound=true;document.addEventListener("click",function(ev){try{if(!ON())return;var t=ev&&ev.target;if(!t)return;var ah=t.closest&&t.closest(".accordion-header");if(ah){var panel=ah.nextElementSibling;while(panel&&!(panel.classList&&panel.classList.contains("accordion-panel")))panel=panel.nextElementSibling;if(panel){var open=panel.hasAttribute("hidden");if(open)panel.removeAttribute("hidden");else panel.setAttribute("hidden","");ah.setAttribute("aria-expanded",open?"true":"false");}return;}var chip=t.closest&&t.closest(".tab-chips>*,.tab-nav>*,.tabs>*");if(chip)setTimeout(chipCenter,0);}catch(e){}},true);}catch(e){}}function boot(){try{bindDelegates();chipCenter();buildCards();}catch(e){}}if(document.readyState!=="loading")boot();else document.addEventListener("DOMContentLoaded",boot);window.addEventListener("load",function(){try{chipCenter();buildCards();}catch(e){}});}catch(e){}})();</script>
+</style><script id="st-v5-mobile-boot">SaagarModuleRuntime.run('mobile',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Saagar Traders — Daily Stock Register v3</title>
@@ -736,96 +714,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
 </style>
 <style id="st-v5-hide-css">#brand-inp,[onclick="addBrand()"]{display:none !important}</style>
 
-<style id="st-v5-uniform-css">
-/* No remote @import — app is fully offline (INTERNET permission removed); a render-blocking
-   font fetch that can never resolve was a likely cause of module-open stalls. System fonts below. */
-/* ── VISIBILITY FIX ── force light rendering so Android WebView dark-mode
-   (algorithmic darkening / force-dark) cannot invert text to invisible.
-   This is the root cause of "some text not visible" on phones/tablets. */
-:root{color-scheme:light only}
-html{color-scheme:light only;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-html,body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif !important;forced-color-adjust:none}
-h1,h2,h3,h4,h5,.title,.headline,.brand,.heading{font-family:'DM Serif Display',Georgia,serif !important;letter-spacing:.2px}
-/* Don't fight module's own colors — only normalize font + base focus ring */
-*:focus-visible{outline:2px solid #b8922a;outline-offset:1px}
-button,input,select,textarea{font-family:inherit}
-/* keep date/number/select text from going invisible on some Android WebViews */
-input,select,textarea{-webkit-text-fill-color:currentColor;opacity:1}
-input::placeholder,textarea::placeholder{-webkit-text-fill-color:#7a8699;opacity:1}
-/* ── RESPONSIVE SAFETY (tablet + mobile), conservative so module layouts stay intact ── */
-img,svg,video,canvas{max-width:100%;height:auto}
-*{ -webkit-tap-highlight-color:rgba(184,146,42,.18) }
-@media(max-width:920px){
-  body{ padding-bottom:72px !important }                 /* clear the back-home FAB + injected gate banner */
-  table{ display:block; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch }
-  thead,tbody,tr{ width:max-content; min-width:100% }
-}
-@media(max-width:640px){
-  html{ font-size:15px }
-  button,.btn,a.btn,[role=button]{ min-height:40px }
-  input,select,textarea{ min-height:38px; font-size:16px }   /* 16px stops iOS/Android zoom-on-focus */
-}
-@media print{ body{background:#fff !important;color:#000 !important} }
-
-/* ════════════════════════════════════════════════════════════════════════
-   GLOBAL FLOORS — accessibility minimums applied to EVERY module iframe
-   (this block is injected unconditionally, mobile AND desktop). Two rules:
-     1. No on-screen text smaller than 11px.
-     2. Every interactive control is at least 44x44 with a real tap target.
-   These are FLOORS: they only raise values that fall below the minimum, so
-   module typography/spacing above the floor is untouched. !important is
-   required because module + MOBILE_CSS rules set their own sizes with
-   !important (some shrink table/label text to 9px and inputs below 44px).
-   ════════════════════════════════════════════════════════════════════════ */
-/* 1a — baseline text floor (NOT !important): max(11px,1em) keeps each element's
-   inherited/declared size when it is already >=11px, and lifts anything smaller
-   to 11px. Because it is low-priority, any module rule that sets a size >=11px
-   still wins; this only catches unset or sub-11px text. svg/script/style are
-   excluded so we never touch vector or non-rendered nodes. */
-html body *:not(svg):not(svg *):not(script):not(style){
-  font-size:max(11px, 1em);
-}
-/* 1b — hard floor (!important) for the small-text leaves that modules + MOBILE_CSS
-   deliberately shrink to 9–10px (table cells, chips, captions, *-sub/-meta/-hint
-   labels). Flooring these to 11px is the intent of the accessibility minimum.
-   These are genuine small-text leaves, so 11px will not distort hierarchy. */
-html body small,
-html body .h-name,html body th,html body td,
-html body .leave-chip,html body .mt,html body .badge,html body .chip,html body .pill,html body .tag,
-html body figcaption,html body caption,html body legend,
-html body [class*="-sub"],html body [class*="-meta"],html body [class*="-hint"],
-html body [class*="-note"],html body [class*="-cap"],html body [class*="-label"],
-html body [class*="-time"],html body [class*="-date"]{
-  font-size:max(11px, 1em) !important;
-}
-/* 2 — interactive control floor: 44px min hit area + readable size. Covers
-   normal controls AND tiny icon/delete/close/remove buttons that often ship at
-   ~24–32px. The [class*=…] matches are scoped to button/a/[role=button] so a
-   wrapper div like .delete-modal is never affected. min-width keeps icon-only
-   buttons square-ish. */
-html body button,
-html body input:not([type=hidden]):not([type=checkbox]):not([type=radio]),
-html body select,html body textarea,
-html body a.btn,html body [role=button],html body label.btn,
-html body .btn,html body .icon-btn,html body .iconbtn,
-html body button[class*="close"],html body button[class*="delete"],html body button[class*="remove"],
-html body button[class*="-del"],html body button[class*="icon"],
-html body a[class*="close"],html body a[class*="delete"],html body a[class*="remove"]{
-  min-height:44px !important;
-  min-width:44px;
-}
-/* keep checkbox/radio compact but tappable (don't stretch the box itself) */
-html body input[type=checkbox],html body input[type=radio]{
-  min-width:18px !important;min-height:18px !important;
-}
-/* inputs/selects inside dense table cells: keep the 44px hit area but allow
-   the cell width to drive horizontal size so tables don't blow out. */
-html body td button,html body th button,
-html body td input,html body th input,
-html body td select,html body th select{
-  min-width:0;
-}
-</style>
+<link id="st-v5-uniform-css" rel="stylesheet" href="../../shared/module-uniform.css">
 <script src="../../stock-variance-policy.js"></script>
 <link rel="stylesheet" href="../../mobile-layout.css">
 <script src="../../app-i18n.js"></script>
@@ -1345,8 +1234,8 @@ function smPassOk(pw){
      lockout + audit). Fail-open to the original raw check on an older shell / standalone preview. */
   try{
     var fn=null;
-    try{ if(window.parent && window.parent!==window && typeof window.parent.SaagarAdminPinCheck==='function') fn=window.parent.SaagarAdminPinCheck; }catch(e){}
-    if(!fn && typeof window.SaagarAdminPinCheck==='function') fn=window.SaagarAdminPinCheck;
+    try{ if(window.parent && window.parent!==window && typeof SaagarModuleBridge.adminPinCheck==='function') fn=SaagarModuleBridge.adminPinCheck; }catch(e){}
+    if(!fn && typeof SaagarModuleBridge.adminPinCheck==='function') fn=SaagarModuleBridge.adminPinCheck;
     if(typeof fn==='function'){
       var r=fn(String(pw));
       if(r && typeof r==='object' && !r.noPin){
@@ -1441,13 +1330,7 @@ function dataKey() { return SK_PREFIX + st.store + '_' + st.date; }
 
 /* R0-W1 SEC-04 (Slice B): resolve the shell's step-up re-auth across the srcdoc boundary.
    FAIL-OPEN ON SKEW: an older shell without the helper => TRUE => the action proceeds as today. */
-function stReauth(label){
-  var fn=null;
-  try{ if(window.parent && window.parent!==window && typeof window.parent.SaagarReauth==='function') fn=window.parent.SaagarReauth; }catch(e){ fn=null; }
-  if(!fn && typeof window.SaagarReauth==='function') fn=window.SaagarReauth;   /* standalone/preview */
-  if(typeof fn!=='function') return true;                                       /* FAIL-OPEN: no helper => allow */
-  try{ return fn(label||'money change')!==false; }catch(e){ return true; }      /* FAIL-OPEN: a throwing gate must never brick */
-}
+const stReauth=SaagarModuleRuntime.reauth;
 
 function loadData() {
   const raw = localStorage.getItem(dataKey());
@@ -2645,7 +2528,7 @@ function toggleVerify(section, brandId) {
   toast(entry.verified?`${brand} verified ✓`:`${brand} unverified`, entry.verified?'ok':'');
 }
 
-function toggleLock(section) {
+async function toggleLock(section) {
   if (roBlock()) return;  // VIEW-ONLY past: never write on a read
   if (st.mode !== 'sm') { toast('Only SM can lock/unlock.', 'err'); return; }
   const data  = loadData();
@@ -2653,7 +2536,7 @@ function toggleLock(section) {
   // Closing LOCK routes through the end-of-day sign-off gate (variance reasons).
   if (section === 'closing' && !data.closingLocked) { openPreLockSheet(); return; }
   if (data[key]) { openReopenSheet(section); return; }       // P1-5: unlock = audited re-open, no silent flip
-  if(!stReauth('Lock the Opening Stock count'))return;
+  if(!await stReauth('Lock the Opening Stock count'))return;
   data[key] = true;
   data[section + 'LockedBy'] = stActor();                    // P1-5 stamp
   data[section + 'LockedAt'] = new Date().toISOString();     // P1-5 stamp
@@ -2780,7 +2663,7 @@ function closeLockCancel() {
 
 /* Confirm: re-load fresh, persist each edited remark, stamp closingSignoff,
    set closingLocked, then re-render. Additive only. */
-function doLockClosing() {
+async function doLockClosing() {
   if (roBlock()) { closeLockCancel(); return; }  // never write on a past day
   if (st.mode !== 'sm') { toast('Only SM can lock/unlock.', 'err'); closeLockCancel(); return; }
   const data   = loadData();  // fresh — do not close over the pre-sheet snapshot
@@ -2806,7 +2689,7 @@ function doLockClosing() {
     }
     data.theftVerified = { by: stActor(), at: new Date().toISOString() };   // SM guaranteed by guard above
   }
-  if(!stReauth('Lock and sign off the Closing Stock count'))return;
+  if(!await stReauth('Lock and sign off the Closing Stock count'))return;
   const gapRemarks = {};
   inputs.forEach(inp => {
     const brand = getBrandByBid(inp.getAttribute('data-brand-id'));
@@ -2924,14 +2807,14 @@ function ropValidate() {                                     // mirrors clkValid
   if (v) document.getElementById('rop-err').textContent = '';
 }
 function reopenCancel() { _ropSection = null; document.getElementById('stock-reopen-confirm').style.display = 'none'; }
-function doReopenConfirm() {
+async function doReopenConfirm() {
   if (roBlock()) { reopenCancel(); return; }                 // never write on a past day
   if (st.mode !== 'sm') { toast('Only SM can re-open.', 'err'); reopenCancel(); return; }
   const section = _ropSection;
   if (!section) { reopenCancel(); return; }
   const reason = document.getElementById('rop-reason').value.trim();
   if (!reason) { document.getElementById('rop-err').textContent = 'Enter a reason to continue.'; return; }
-  if(!stReauth('Re-open a locked section — this is permanently logged'))return;
+  if(!await stReauth('Re-open a locked section — this is permanently logged'))return;
   const data = loadData();                                   // fresh — mirror doLockClosing, no stale closure
   if (section === 'movements') data.movementsSubmitted = false;
   else data[section + 'Locked'] = false;                     // lockedBy/At intentionally NOT cleared
@@ -3407,7 +3290,7 @@ function stPrintDoc(o){
   const html='<div id="sp-doc">'+(o.body||'')+'</div>';
   try{
     if(window.parent&&window.parent!==window){
-      window.parent.postMessage({type:'ST_PRINT',title:o.title||'Print',css:o.css||'',html:html,orientation:o.orientation||'portrait',fileBase:o.fileBase||o.title},'*');
+      window.parent.postMessage({type:'ST_PRINT',title:o.title||'Print',css:o.css||'',html:html,orientation:o.orientation||'portrait',fileBase:o.fileBase||o.title},SaagarModuleRuntime.targetOrigin);
       return;
     }
   }catch(e){}
@@ -3725,7 +3608,7 @@ function printMonthlyReg(){
 
 function dlBlob(blob, name, rowCount, scopeId) {
   if(window.parent&&window.parent!==window){
-    window.parent.postMessage({type:'ST_SHARE',file:blob,fileName:name,title:'Stock export',exportId:'stock-file-export',scopeId:scopeId||'stock-register',scopeLabel:'stock register export',rowCount:Number(rowCount)||0,purposeId:'inventory-control'},'*');
+    window.parent.postMessage({type:'ST_SHARE',file:blob,fileName:name,title:'Stock export',exportId:'stock-file-export',scopeId:scopeId||'stock-register',scopeLabel:'stock register export',rowCount:Number(rowCount)||0,purposeId:'inventory-control'},SaagarModuleRuntime.targetOrigin);
     return;
   }
   toast('Controlled export is available only inside Saagar Control Centre.','err');
@@ -3848,108 +3731,15 @@ window.addEventListener('st-date', function (e) {
 })();
 </script>
 
-<style id="st-v5-back-style">
-#st-v5-home-fab{position:fixed;bottom:84px;right:22px;z-index:2147483647;width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(135deg,#0d2340,#18385f);border:2px solid rgba(184,146,42,.7);color:#fff;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(13,35,64,.35);
-  transition:transform .15s,box-shadow .15s,border-color .15s;padding:0;outline:none}
-#st-v5-home-fab:hover{transform:scale(1.12);box-shadow:0 8px 26px rgba(13,35,64,.45);border-color:#b8922a}
-#st-v5-home-fab:active{transform:scale(.96)}
-#st-v5-home-fab svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-@media print{#st-v5-home-fab{display:none!important}}
-@media(max-width:600px){#st-v5-home-fab{bottom:76px;right:14px;width:42px;height:42px}#st-v5-next-chips{bottom:124px;right:14px}}
-#st-v5-next-chips{position:fixed;bottom:140px;right:22px;z-index:2147483647;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-#st-v5-next-chips button{background:linear-gradient(135deg,#0d2340,#18385f);color:#fff;border:1px solid rgba(184,146,42,.7);border-radius:999px;padding:8px 14px;font:700 12px 'DM Sans',Arial,sans-serif;box-shadow:0 6px 18px rgba(13,35,64,.35);cursor:pointer}
-@media print{#st-v5-next-chips{display:none!important}}
-/* Auto-hide both FABs while a module modal/overlay is open (boot script toggles st-v5-modalopen),
-   so they never sit over a dialog's Cancel/inputs. On mobile the boot script also reserves bottom
-   safe-area so the FABs never cover the last row / per-row action buttons. */
-html.st-v5-modalopen #st-v5-home-fab,html.st-v5-modalopen #st-v5-next-chips{display:none!important}
-/* Mobile nav aids only — on Desktop the persistent left nav + back button cover this, and the FABs overlapped module content. */
-html:not(.bcc-mobile) #st-v5-home-fab,html:not(.bcc-mobile) #st-v5-next-chips{display:none!important}
-</style>
+<link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
 <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
-<script id="st-v5-back-script">(function(){function go(){try{parent.postMessage({type:'ST_BACK_HOME'},'*')}catch(e){}}var b=document.getElementById('st-v5-home-fab');if(b)b.onclick=go;document.addEventListener('keydown',function(e){if(e.key==='Escape'||((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='h')){e.preventDefault();go();}});var steps=[];var host=document.getElementById('st-v5-next-chips');if(host&&steps.length){steps.forEach(function(s){var c=document.createElement('button');c.type='button';c.textContent=s.label;c.onclick=function(){try{parent.postMessage({type:'ST_OPEN_MODULE',id:s.id},'*')}catch(e){}};host.appendChild(c);});}var R=document.documentElement;function onM(){try{return R.classList.contains('bcc-mobile');}catch(e){return false;}}function pad(){try{if(!onM()){if(document.body)document.body.style.removeProperty('padding-bottom');return;}if(!document.body)return;var ih=window.innerHeight||0,need=0;['st-v5-home-fab','st-v5-next-chips'].forEach(function(id){var el=document.getElementById(id);if(!el)return;var cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden')return;var r=el.getBoundingClientRect();if(!r.height)return;var fb=ih-r.top;if(fb>need)need=fb;});if(need>0)document.body.style.setProperty('padding-bottom',Math.ceil(need+16)+'px','important');}catch(e){}}function modalUp(){try{var q=document.querySelectorAll('[class~="modal"],[class~="overlay"],[class~="sheet"],[role="dialog"],#firm-modal,.drawer');var iw=window.innerWidth||0,ih=window.innerHeight||0;for(var i=0;i<q.length;i++){var el=q[i],cs=getComputedStyle(el);if(cs.display==='none'||cs.visibility==='hidden'||cs.opacity==='0')continue;var r=el.getBoundingClientRect();if(r.width>=iw*0.5&&r.height>=120&&r.bottom>0&&r.top<ih)return true;}return false;}catch(e){return false;}}function tick(){try{R.classList.toggle('st-v5-modalopen',modalUp());pad();}catch(e){}}var sch=function(){clearTimeout(tick._t);tick._t=setTimeout(tick,180);};if(document.readyState!=='loading')tick();else document.addEventListener('DOMContentLoaded',tick);[400,1200].forEach(function(d){setTimeout(tick,d);});window.addEventListener('resize',sch);try{new MutationObserver(sch).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});}catch(e){}})();</script>
+<script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 
-<style id="st-v5-emp-assist-style">.st-v5-emp-chip{position:fixed;right:18px;top:70px;z-index:2147483646;background:rgba(255,255,255,.95);border:1px solid rgba(184,146,42,.35);border-radius:999px;padding:6px 10px;color:#0d2340;font:700 11px 'DM Sans',Arial,sans-serif;box-shadow:0 10px 25px rgba(0,0,0,.16)}@media print{.st-v5-emp-chip{display:none!important}}</style><script id="st-v5-emp-assist-script">(function(){var KEY='saagar_employee_master_v1';var CKEY='saagar_master_customers';var CSEL=[];function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}function unav(){try{var g=JSON.parse(localStorage.getItem('saagar_gate_status')||'{}');var u=(g&&g.unavailable)||{};var s={};Object.keys(u).forEach(function(k){if(u[k]&&u[k].leave)s[k]=1;});return s;}catch(e){return{}}}function read(){try{var x=JSON.parse(localStorage.getItem(KEY)||'[]');var bl=unav();return Array.isArray(x)?x.filter(function(e){return e&&e.active!==false&&e.name&&!bl[String(e.name).trim().toLowerCase()]}):[]}catch(e){return[]}}function readC(){try{var x=JSON.parse(localStorage.getItem(CKEY)||'[]');return Array.isArray(x)?x.filter(function(c){return c&&c.name}):[]}catch(e){return[]}}var __obs=null,__busy=false,__sig='';function apply(){if(__busy)return;var emps=read();var custs=CSEL.length?readC():[];var __act='';try{__act=localStorage.getItem('saagar_acting_as')||'';}catch(e){}var __g='';try{__g=localStorage.getItem('saagar_gate_status')||'';}catch(e){}var sig='E:'+emps.map(function(e){return e.name}).join('|')+'||C:'+custs.map(function(c){return c.name}).join('|')+'||G:'+__g.length;var selA=['#cro-inp','#staff-name-inp','#csFilledBy','#f-rb','#f-tn','#f-adv','#f-dtn','input[data-field="name"]'];if(emps.length){selA.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(el.readOnly||el.disabled)return;if(el.getAttribute('list')!=='st-v5-employee-list')el.setAttribute('list','st-v5-employee-list');if(__act&&!el.__stPre&&el.tagName==='INPUT'&&!/^(checkbox|radio|button|submit|number|date|file)$/i.test(el.type||'')&&!el.value){el.value=__act;el.__stPre=1;}})})}if(custs.length){CSEL.forEach(function(s){document.querySelectorAll(s).forEach(function(el){if(!el.readOnly&&!el.disabled&&el.getAttribute('list')!=='st-v5-customer-list')el.setAttribute('list','st-v5-customer-list')})})}var dl=document.getElementById('st-v5-employee-list');var cOk=CSEL.length?!!document.getElementById('st-v5-customer-list'):true;if(sig===__sig&&dl&&cOk)return;__busy=true;try{if(__obs)__obs.disconnect();if(!dl){dl=document.createElement('datalist');dl.id='st-v5-employee-list';document.body.appendChild(dl)}dl.innerHTML=emps.map(function(e){return '<option value="'+esc(e.name)+'"></option>'}).join('');if(CSEL.length){var cdl=document.getElementById('st-v5-customer-list');if(!cdl){cdl=document.createElement('datalist');cdl.id='st-v5-customer-list';document.body.appendChild(cdl)}cdl.innerHTML=custs.map(function(c){return '<option value="'+esc(c.name)+'"'+(c.mobile?' label="'+esc(c.mobile)+'"':'')+'></option>'}).join('')}__sig=sig;}catch(e){}finally{__busy=false;if(__obs){try{__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}}}}function sched(){clearTimeout(apply._t);apply._t=setTimeout(apply,300)}document.addEventListener('DOMContentLoaded',apply);setTimeout(apply,600);setTimeout(apply,1600);try{__obs=new MutationObserver(function(){if(__busy)return;sched()});__obs.observe(document.body,{subtree:true,childList:true})}catch(e){}})();</script>
+<link id="st-v5-emp-assist-style" rel="stylesheet" href="../../shared/module-employee.css"><script id="st-v5-emp-assist-script">SaagarModuleRuntime.run('employees',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 
-<script id="st-v5-module-audit-bridge">(function(){var nativeSet=localStorage.setItem.bind(localStorage),nativeRemove=localStorage.removeItem.bind(localStorage),sending=false;function emit(action,key,before,after){if(sending)return;try{sending=true;if(window.SaagarMah4&&window.SaagarMah4.audit)window.SaagarMah4.audit(action,String(key),before,after)}catch(e){}finally{sending=false}}localStorage.setItem=function(key,value){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeSet(key,value);emit('module.storage.set',String(key),before,String(value));return result};localStorage.removeItem=function(key){var before=null;try{before=localStorage.getItem(key)}catch(e){}var result=nativeRemove(key);emit('module.storage.remove',String(key),before,null);return result};})();</script>
+<script id="st-v5-module-audit-bridge">SaagarModuleRuntime.run('audit',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 
-<script id="st-v5-module-access-bridge">(function(){
-var moduleId="stock",lastContext=null;
-function readContext(){
-  try{
-    var api=window.parent&&window.parent.SaagarOwnerSession;
-    if(api&&typeof api.read==='function'){
-      var value=api.read()||{};
-      return {isOwner:value.isOwner===true,role:String(value.role||''),isManager:value.isManager===true};
-    }
-  }catch(e){}
-  return {isOwner:false,role:'',isManager:false};
-}
-function accessMessage(text){
-  try{ var err=document.getElementById('login-err'); if(err&&moduleId==='dsr') err.textContent=text; }catch(e){}
-  try{ if(typeof toast==='function') moduleId==='stock'?toast(text,'err'):toast(text,'warn'); }catch(e){}
-}
-function refreshOwnerControls(){
-  try{
-    if(moduleId==='service'&&typeof renderDash==='function') renderDash();
-    if(moduleId==='expense'&&typeof render==='function') render();
-  }catch(e){}
-}
-function revokeManagerIfNeeded(context){
-  try{
-    if(moduleId==='stock'&&!context.isManager&&typeof st!=='undefined'&&st.mode==='sm'&&typeof commitMode==='function') commitMode('cro');
-    if(moduleId==='dsr'&&!context.isManager&&typeof st!=='undefined'&&st.screen==='sm'&&typeof logout==='function') logout();
-  }catch(e){}
-}
-function syncContext(){
-  var context=readContext();
-  revokeManagerIfNeeded(context);
-  if(!lastContext||lastContext.isOwner!==context.isOwner) refreshOwnerControls();
-  lastContext=context;
-}
-function setup(){
-  if(moduleId==='service'||moduleId==='expense') window.isSuperAdmin=function(){ return readContext().isOwner===true; };
-  if(moduleId==='stock'){
-    var originalSetMode=window.setMode,originalGoTab=window.goTab;
-    if(typeof originalSetMode==='function') window.setMode=function(mode){
-      if(mode==='sm'){
-        if(readContext().isManager){ try{ var modal=document.getElementById('sm-auth-modal'); if(modal) modal.style.display='none'; if(typeof commitMode==='function') commitMode('sm'); }catch(e){} }
-        else accessMessage('Switch to Owner or Store Manager in the app header.');
-        return;
-      }
-      return originalSetMode.apply(this,arguments);
-    };
-    if(typeof originalGoTab==='function') window.goTab=function(tab){
-      if(tab==='settings'&&typeof st!=='undefined'&&st.mode!=='sm'){
-        if(!readContext().isManager){ accessMessage('Switch to Owner or Store Manager in the app header.'); return; }
-        try{ if(typeof commitMode==='function') commitMode('sm'); }catch(e){}
-      }
-      return originalGoTab.apply(this,arguments);
-    };
-  }
-  if(moduleId==='dsr'){
-    var originalSetLoginRole=window.setLoginRole;
-    if(typeof originalSetLoginRole==='function') window.setLoginRole=function(role){
-      if(role==='sm'){
-        if(readContext().isManager){ try{ var err=document.getElementById('login-err'); if(err) err.textContent=''; if(typeof showScreen==='function') showScreen('sm'); if(typeof goSMTab==='function') goSMTab('submissions'); }catch(e){} }
-        else{ try{ originalSetLoginRole.call(this,'staff'); }catch(e){} accessMessage('Switch to Owner or Store Manager in the app header.'); }
-        return;
-      }
-      return originalSetLoginRole.apply(this,arguments);
-    };
-    window.loginSM=function(){
-      if(!readContext().isManager){ accessMessage('Switch to Owner or Store Manager in the app header.'); return; }
-      try{ var err=document.getElementById('login-err'); if(err) err.textContent=''; if(typeof showScreen==='function') showScreen('sm'); if(typeof goSMTab==='function') goSMTab('submissions'); }catch(e){}
-    };
-    try{ var password=document.getElementById('sm-pw-inp'); if(password&&password.parentElement) password.parentElement.style.display='none'; var button=document.querySelector('#lform-sm .btn-login'); if(button) button.textContent='Open Manager workspace'; }catch(e){}
-  }
-  syncContext();
-}
-window.addEventListener('message',function(event){ if(event&&event.source===window.parent&&event.data&&event.data.type==='ST_ACCESS_CONTEXT') syncContext(); });
-setup();
-})();</script>
+<script id="st-v5-module-access-bridge">SaagarModuleRuntime.run('access',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 </body>
 </html>

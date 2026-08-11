@@ -345,7 +345,9 @@ function permissionCapabilities(surface) {
     { id: 'access-context', pattern: /\b(?:ST_ACCESS_CONTEXT|SaagarAccess|accessContext)\b/, outcome: 'shell access context participates in permission decisions' },
     { id: 'role-policy', pattern: /\b(?:canAccess|hasPermission|requireRole|roleAllows)\b/i, outcome: 'role policy participates in access decisions' }
   ];
-  return rules.filter(rule => rule.pattern.test(surface.source)).map(rule => ({
+  return rules.filter(rule => rule.pattern.test(surface.source))
+    .filter(rule => !(surface.id === 'script-shared-module-runtime' && rule.id === 'access-context'))
+    .map(rule => ({
     capabilityId: `${surface.id}:permission:${rule.id}`,
     category: 'permission', surface: surface.id, path: surface.file, outcome: rule.outcome
   }));

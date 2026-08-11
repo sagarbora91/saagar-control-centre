@@ -35,6 +35,8 @@ test('demo shell exposes an unmistakable synthetic-data profile and banner only 
   assert.match(index, /__DEMO_SEED_ACTIVE/);
   assert.match(index, /#0d2340/);
   assert.match(index, /#b8922a/);
+  assert.match(index, /bottom:76px;pointer-events:none/);
+  assert.match(index, /data-no-i18n/);
 });
 
 test('long-history seeding is deterministic, chunked and metadata-labelled', () => {

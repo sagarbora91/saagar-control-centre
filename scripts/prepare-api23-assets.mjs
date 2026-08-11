@@ -32,6 +32,27 @@ if(window.NodeList&&!NodeList.prototype.forEach)NodeList.prototype.forEach=Array
 if(window.HTMLCollection&&!HTMLCollection.prototype.forEach)HTMLCollection.prototype.forEach=Array.prototype.forEach;
 })();`;
 
+function collectCssVariables(source, target) {
+  for (const match of source.matchAll(/--([A-Za-z0-9_-]+)\s*:\s*([^;{}]+);/g)) {
+    if (!target.has(match[1])) target.set(match[1], match[2].trim());
+  }
+}
+
+function resolveCssVariables(source, variables) {
+  let output = source;
+  for (let pass = 0; pass < 8; pass++) {
+    let changed = false;
+    output = output.replace(/var\(\s*--([A-Za-z0-9_-]+)\s*(?:,\s*([^()]*))?\)/g, (whole, name, fallback) => {
+      const value = variables.get(name) || (fallback && fallback.trim());
+      if (!value) return whole;
+      changed = true;
+      return value;
+    });
+    if (!changed) break;
+  }
+  return output;
+}
+
 function babel(source, filename) {
   return transformSync(source, {
     filename,
@@ -43,7 +64,7 @@ function babel(source, filename) {
   }).code;
 }
 
-function transformHtml(source, filename) {
+function transformHtml(source, filename, cssVariables) {
   let count = 0;
   const transformed = source.replace(/<!--[\s\S]*?-->|<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi, (whole, attrs, body) => {
     if (whole.startsWith('<!--')) return whole;
@@ -51,9 +72,9 @@ function transformHtml(source, filename) {
     count += 1;
     return `<script${attrs}>\n${babel(body, `${filename}#inline-${count}`)}\n</script>`;
   });
-  return transformed
+  return resolveCssVariables(transformed
     .replace(/x=>x\.checked=true/g, 'function(x){x.checked=true;}')
-    .replace(/<head([^>]*)>/i, `<head$1>\n<script>${POLYFILLS}</script>`);
+    .replace(/<head([^>]*)>/i, `<head$1>\n<script>${POLYFILLS}</script>`), cssVariables);
 }
 
 function filesUnder(dir) {
@@ -77,11 +98,18 @@ fs.writeFileSync(
 
 const manifestPath = path.join(publicDir, 'module-manifest.js');
 const deferred = new Set([manifestPath]);
-for (const file of filesUnder(publicDir)) {
+const generatedFiles = filesUnder(publicDir);
+const cssVariables = new Map();
+for (const file of generatedFiles) {
+  const ext = path.extname(file).toLowerCase();
+  if (ext === '.css' || ext === '.html') collectCssVariables(fs.readFileSync(file, 'utf8'), cssVariables);
+}
+for (const file of generatedFiles) {
   if (deferred.has(file)) continue;
   const ext = path.extname(file).toLowerCase();
   if (ext === '.js') fs.writeFileSync(file, babel(fs.readFileSync(file, 'utf8'), file), 'utf8');
-  if (ext === '.html') fs.writeFileSync(file, transformHtml(fs.readFileSync(file, 'utf8'), file), 'utf8');
+  if (ext === '.css') fs.writeFileSync(file, resolveCssVariables(fs.readFileSync(file, 'utf8'), cssVariables), 'utf8');
+  if (ext === '.html') fs.writeFileSync(file, transformHtml(fs.readFileSync(file, 'utf8'), file, cssVariables), 'utf8');
 }
 
 let generatedManifest = fs.readFileSync(manifestPath, 'utf8');

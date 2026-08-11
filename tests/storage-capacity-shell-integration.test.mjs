@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const index = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
+const shellCss = fs.readFileSync(path.join(root, 'www/shell-core.css'), 'utf8');
 
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -58,8 +59,9 @@ test('Data & backup starts with an accessible Windows-style capacity card', () =
   assert.match(index.slice(cardAt, backupAt), /aria-valuemin="0"/);
   assert.match(index.slice(cardAt, backupAt), /aria-valuemax="100"/);
   assert.match(index.slice(cardAt, backupAt), /SAAGAR SQLite database/i);
-  assert.match(index, /\.storage-capacity-meter\b/);
-  assert.match(index, /\.storage-capacity-fill\b/);
+  assert.match(index, /href="shell-core\.css"/);
+  assert.match(shellCss, /\.storage-capacity-meter\b/);
+  assert.match(shellCss, /\.storage-capacity-fill\b/);
 });
 
 test('capacity refresh uses only the public store contract and ignores stale UI results', () => {
@@ -79,4 +81,3 @@ test('capacity refresh uses only the public store contract and ignores stale UI 
   assert.match(paint, /databaseLabel/);
   assert.match(backup, /refreshStorageCapacityCard\s*\(/);
 });
-

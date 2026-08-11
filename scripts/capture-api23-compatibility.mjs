@@ -32,7 +32,7 @@ const base = JSON.parse(await evaluate(`JSON.stringify({
 const ids = await evaluate(`SaagarModuleManifest.ids.slice()`);
 const modules = [];
 for (const id of ids) {
-  const opened = await evaluate(`(function(){try{var f=document.getElementById('moduleFrame');var s=buildModuleSrc(moduleById(${JSON.stringify(id)}));f.srcdoc=s;return JSON.stringify({ok:true,chars:s.length});}catch(e){return JSON.stringify({ok:false,error:String(e)});}})()`);
+  const opened = await evaluate(`(function(){try{var f=document.getElementById('moduleFrame');openModule(${JSON.stringify(id)});return JSON.stringify({ok:true,src:moduleById(${JSON.stringify(id)}).src,frameSrc:f.getAttribute('src')||''});}catch(e){return JSON.stringify({ok:false,error:String(e)});}})()`);
   await new Promise((resolve) => setTimeout(resolve, 1800));
   const value = await evaluate(`(function(){var f=document.getElementById('moduleFrame');var d=f&&f.contentDocument;var le=document.getElementById('moduleLoadError');return JSON.stringify({id:${JSON.stringify(id)},ok:!!(d&&d.body&&d.body.textContent.trim()),title:d?d.title:'',bodyChars:d&&d.body?d.body.textContent.trim().length:0,loadError:!!(le&&!le.classList.contains('hidden'))});})()`);
   const result = JSON.parse(value);

@@ -1,0 +1,165 @@
+/* ═════════════════════════════════════════════════════════════════════════
+   HOME + MODULES REDESIGN (V5.1) — additive only. Phone-first; the ≥768px
+   block at the end expands to a left nav rail + inline Today column + wider
+   module grid. Re-uses the navy/gold tokens already defined above.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* The app shell is a grid; its children defaulted to min-width:auto, so a grid
+   column could resolve to the content's min-content (wider than the phone viewport)
+   and the surplus got clipped by html{overflow:hidden}. Pin the children to min-width:0
+   so every column tracks the viewport and inner content wraps/scrolls as intended.
+   (Latent before; the richer 4-stat hero just made the clipping visible.) */
+.app>.topbar,.app>.main,.app>.botnav{min-width:0}
+
+/* ── Home surface topbar (store name + bell) ─────────────────────────────── */
+.home-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.home-store-context{display:flex;align-items:center;gap:10px;min-width:0;flex:1;flex-wrap:wrap}
+.home-store{font-family:var(--font-serif);font-size:21px;font-weight:400;color:var(--navy);line-height:1.1;letter-spacing:.2px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-store-picker{display:inline-flex;align-items:center;gap:5px;color:var(--gray-600);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.home-store-picker select{min-height:36px;max-width:180px;padding:6px 28px 6px 9px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--navy);font:600 12px var(--font-sans)}
+.store-context-pill{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid rgba(184,146,42,.45);border-radius:999px;background:var(--gold-pale);color:var(--navy);font-size:10px;font-weight:700;white-space:nowrap}
+.home-bell{position:relative;width:40px;height:40px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
+.home-bell:active{transform:scale(.95)}
+.home-bell svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+.home-bell-dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid #fff;display:none}
+.home-bell-dot.on{display:block}
+.home-greet{margin-bottom:12px}
+
+/* ── HERO CARD (navy) ────────────────────────────────────────────────────── */
+.hero{
+  background:linear-gradient(135deg,var(--navy),var(--navy-mid));
+  color:#fff;border-radius:var(--radius-lg);padding:14px;
+  box-shadow:var(--shadow-md);position:relative;overflow:hidden;margin-bottom:14px;
+}
+.hero::before{content:"";position:absolute;top:-34px;right:-34px;width:140px;height:140px;background:radial-gradient(circle,rgba(184,146,42,.20),transparent 70%);pointer-events:none}
+/* The date stepper (#homeDateBar) is rendered by reflectSelectedDate(); inside the hero
+   we just give it some breathing room. Its own inline styles still win for the amber state. */
+.hero #homeDateBar{position:relative;z-index:1}
+@media(max-width:599px){
+  .hero #homeDateBar{flex-wrap:wrap}
+  .hero #homeDateBar .valwrap{min-width:0}
+  .hero #homeDateBar>.btn.small{width:100%;min-height:44px}
+}
+.hero-past{position:relative;z-index:1}
+.hero-past:empty{display:none}
+.hero-past-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(217,119,6,.22);border:1px solid rgba(245,158,11,.5);color:#fde68a;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;margin:2px 8px 0 0}
+.hero-net{display:flex;flex-direction:column;margin:12px 0 4px;position:relative;z-index:1}
+.hero-net-label{font-size:10px;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.08em}
+.hero-net-value{font-family:var(--font-serif);font-weight:400;font-size:40px;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px}
+.hero-net-value.neg{color:#fca5a5}
+.hero-eye{position:absolute;right:0;top:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:0;cursor:pointer}
+.hero-eye:active{transform:scale(.94);border-color:rgba(255,255,255,.3)}
+.hero-eye svg{width:17px;height:17px;stroke:var(--gold-light);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
+.hero-stat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:9px 8px;text-align:left;display:block;width:100%;min-width:0}
+/* Audit fix L-LIVE-2: long ₹ values (₹29,900 etc.) exceeded the 64px min grid track; with the grid item's
+   default min-width:auto the track grew to the content and the KPI row overflowed the hero (clipped by
+   overflow:hidden). min-width:0 above caps the track at 1fr; on phones widen the min track + trim the value
+   font so the numbers fit fully instead of being cut. */
+@media(max-width:420px){ .hero-stats{grid-template-columns:repeat(auto-fit,minmax(84px,1fr))} .hero-stat b{font-size:17px} }
+.hero-stat.tappable:active{transform:scale(.96);border-color:rgba(255,255,255,.3)}
+.hero-stat b{display:block;font-family:var(--font-serif);font-weight:400;font-size:19px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
+.hero-stat span{display:block;font-size:9.5px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:13px;position:relative;z-index:1;
+  background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;color:#fde9b8;font-size:12.5px;font-weight:700}
+.hero-foot:active{background:rgba(255,255,255,.16)}
+.hero-foot svg{width:16px;height:16px;flex:none;stroke:var(--gold-light);fill:none;stroke-width:2.4}
+
+/* ── TODAY DETAIL VIEW ───────────────────────────────────────────────────── */
+.today-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.today-back{width:38px;height:38px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
+.today-back:active{transform:scale(.95)}
+.today-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4}
+.today-title{flex:1;min-width:0}
+.today-title h2{font-family:var(--font-serif);font-size:24px;font-weight:400;color:var(--navy);line-height:1.05}
+.today-title .sub{color:var(--gray-600);font-size:12.5px;margin-top:2px}
+.today-pdf{width:38px;height:38px;flex:none;border-radius:11px;background:var(--navy);border:1px solid var(--navy);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:#fff}
+.today-pdf:active{transform:scale(.95)}
+.today-pdf svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2}
+/* Today's own date stepper re-uses the .rpt-period look via JS-set inline styles. */
+
+/* Horizontal scrollers (category pills, config subtabs) used to contribute their
+   full non-wrapping content width to the grid item's intrinsic size, inflating the
+   shell column past the viewport (the 3rd tile column got clipped). width:0 +
+   min-width:100% makes each scroller take exactly its parent's width and scroll
+   internally, so it no longer pushes the column wider. */
+.cat-tabs,.subtabs{min-width:100%;width:0}
+/* Keep the main scroller filling the shell column on phones (it otherwise shrink-
+   wrapped to content once the scroller stopped inflating it). */
+html.bcc-mobile .main{width:100%;justify-self:stretch}
+
+/* ── MODULES — tile grid grouped under category headers ──────────────────── */
+/* #moduleGrid is reused as a plain block container; the JS now emits its own
+   grouped grid markup so block-level headers can sit between rows. */
+#moduleGrid.tilegrid{display:block}
+.mod-group{margin-bottom:6px}
+.mod-group-h{display:flex;align-items:center;gap:7px;font-family:var(--font-sans);font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-500);margin:14px 0 9px}
+.mod-group:first-child .mod-group-h{margin-top:2px}
+.mod-group-h::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--gold)}
+.mod-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mtile{background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:13px 9px 11px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;min-height:96px;justify-content:center;position:relative}
+.mtile:active{transform:scale(.96);border-color:var(--gold)}
+.mtile.ok{border-color:var(--green-mid)}
+.mtile.warn{border-color:#fde68a}
+.mtile .mt-icon{width:42px;height:42px;border-radius:12px;background:var(--gold-pale);border:1px solid rgba(184,146,42,.20);display:grid;place-items:center;font-size:21px}
+.mtile .mt-name{font-size:11.5px;font-weight:700;color:var(--navy);line-height:1.2}
+.mtile .mt-lock{position:absolute;top:7px;right:8px;font-size:11px}
+.mtile .mt-dot{width:6px;height:6px;border-radius:50%;background:var(--gray-300)}
+.mtile.ok .mt-dot{background:var(--green)}
+.mtile.warn .mt-dot{background:var(--amber)}
+
+/* ═════ WIDE SCREENS (tablet / desktop) — additive, ≥768px only ═════════════ */
+@media(min-width:768px){
+  /* App shell → persistent LEFT nav rail instead of bottom bar */
+  .app{grid-template-rows:auto 1fr;grid-template-columns:212px 1fr;
+       grid-template-areas:"top top" "nav main"}
+  .topbar{grid-area:top}
+  .main{grid-area:main}
+  .botnav{
+    grid-area:nav;grid-template-columns:1fr;align-content:start;gap:4px;
+    padding:14px 12px calc(14px + var(--safe-bottom));
+    box-shadow:1px 0 14px rgba(13,35,64,.14);
+  }
+  .botnav .tab{flex-direction:row;justify-content:flex-start;gap:12px;font-size:13px;letter-spacing:.02em;
+    padding:12px 14px;min-height:48px;border-radius:10px}
+  .botnav .tab svg{width:20px;height:20px}
+  .botnav .tab.active{background:rgba(255,255,255,.10)}
+  .botnav .tab.active::before{top:14%;bottom:14%;left:auto;right:0;width:3px;height:auto;border-radius:4px 0 0 4px}
+
+  /* HOME becomes a 2-column dashboard: the scroller itself grids Home (col 1) next to
+     the Today detail (col 2). Other views are display:none so they leave the grid flow,
+     leaving exactly these two in-flow items. */
+  body[data-view="home"] .main{
+    display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+    column-gap:22px;align-items:start;
+  }
+  body[data-view="home"] #homeView.active{min-width:0}
+  /* Inline Today as column 2: force it visible and let it scroll independently
+     (sticky so the left column drives the page scroll, Today scrolls within itself). */
+  body[data-view="home"] #todayView{
+    display:block;min-width:0;position:sticky;top:0;
+    max-height:calc(100vh - 44px - var(--safe-top) - var(--safe-bottom));
+    overflow:auto;-webkit-overflow-scrolling:touch;
+  }
+  body[data-view="home"] #todayView .today-back{display:none}
+  body[data-view="home"] #todayView .today-head{margin-top:0}
+
+  /* When Today is the *active* view on wide screens (phone-narrow path on a tablet), show normally. */
+  body[data-view="today"] #todayView .today-back{display:grid}
+
+  /* Module tiles: 4–5 per row on wide screens */
+  .mod-tiles{grid-template-columns:repeat(4,1fr)}
+}
+@media(min-width:1100px){
+  .mod-tiles{grid-template-columns:repeat(5,1fr)}
+}
+/* Mobile-mode (forced narrow column) must not trigger the desktop rail even on a
+   wide device — keep the phone layout the user explicitly chose. */
+html.bcc-mobile .app{grid-template-rows:auto 1fr auto;grid-template-columns:none;grid-template-areas:none}
+html.bcc-mobile .topbar,html.bcc-mobile .main{grid-area:auto}
+html.bcc-mobile .botnav{grid-area:auto;grid-template-columns:repeat(4,1fr);box-shadow:0 -2px 14px rgba(13,35,64,.18);padding:6px 4px calc(6px + var(--safe-bottom))}
+html.bcc-mobile .botnav .tab{flex-direction:column;justify-content:center;padding:8px 4px 6px;min-height:50px}
+/* Mobile mode: no 2-column dashboard — Home and Today swap like normal views. */
+html.bcc-mobile body[data-view="home"] .main{display:block}
+html.bcc-mobile body[data-view="home"] #todayView{position:static;display:none;max-height:none;overflow:visible}
+html.bcc-mobile #todayView.active{display:block}

@@ -7,18 +7,18 @@
   if (root) root.SaagarEtpRecoveryIntegration = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  var CONTRACT_VERSION = 1;
+  var ETP_RECOVERY_CONTRACT_VERSION = 1;
   function nativeStore(plugin) {
     if (!plugin || typeof plugin.fenceAfterRestore !== 'function' || typeof plugin.resetStore !== 'function') return null;
     return {
       fenceAfterRestore: async function (scope) {
         var key = String(scope && scope.scopeKey || '');
         if (!/^(WLMHW|HEMW)\|\d{4}-\d{2}\|\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/.test(key)) return { ok: false, code: 'ETP_SCOPE_INVALID' };
-        try { var result = await plugin.fenceAfterRestore({ contractVersion: CONTRACT_VERSION, scopeKey: key }); return result && result.ok === true ? { ok: true } : { ok: false, code: String(result && result.code || 'ETP_RESTORE_FENCE_FAILED') }; }
+        try { var result = await plugin.fenceAfterRestore({ contractVersion: ETP_RECOVERY_CONTRACT_VERSION, scopeKey: key }); return result && result.ok === true ? { ok: true } : { ok: false, code: String(result && result.code || 'ETP_RESTORE_FENCE_FAILED') }; }
         catch (error) { return { ok: false, code: String(error && error.code || 'ETP_RESTORE_FENCE_FAILED') }; }
       },
       resetStore: async function () {
-        try { var result = await plugin.resetStore({ contractVersion: CONTRACT_VERSION }); return result && result.ok === true ? { ok: true } : { ok: false, code: String(result && result.code || 'ETP_RESET_FAILED') }; }
+        try { var result = await plugin.resetStore({ contractVersion: ETP_RECOVERY_CONTRACT_VERSION }); return result && result.ok === true ? { ok: true } : { ok: false, code: String(result && result.code || 'ETP_RESET_FAILED') }; }
         catch (error) { return { ok: false, code: String(error && error.code || 'ETP_RESET_FAILED') }; }
       }
     };
