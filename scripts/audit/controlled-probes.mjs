@@ -258,13 +258,13 @@ function bootstrapAndroid(worktree, targetSha) {
 export function prepareControlledGradleWrapper(worktree) {
   const file = path.join(worktree, 'android', 'gradle', 'wrapper', 'gradle-wrapper.properties');
   const source = fs.readFileSync(file, 'utf8');
-  const matches = [...source.matchAll(/^networkTimeout=(\d+)\s*$/gm)];
+  const matches = [...source.matchAll(/^networkTimeout=(\d+)[^\S\r\n]*$/gm)];
   if (matches.length !== 1) fail('AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
   const value = Number(matches[0][1]);
   if (!Number.isSafeInteger(value) || value < 1 || value > GRADLE_WRAPPER_NETWORK_TIMEOUT_MS) {
     fail('AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
   }
-  const normalized = source.replace(/^networkTimeout=\d+\s*$/m,
+  const normalized = source.replace(/^networkTimeout=\d+[^\S\r\n]*$/m,
     `networkTimeout=${GRADLE_WRAPPER_NETWORK_TIMEOUT_MS}`);
   fs.writeFileSync(file, normalized, 'utf8');
 }

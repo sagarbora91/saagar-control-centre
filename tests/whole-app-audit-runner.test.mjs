@@ -2022,11 +2022,13 @@ test('controlled Gradle bootstrap uses Windows roots without overriding explicit
     fs.mkdirSync(wrapper, { recursive: true });
     const properties = path.join(wrapper, 'gradle-wrapper.properties');
     fs.writeFileSync(properties,
-      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.2.1-all.zip\nnetworkTimeout=10000\n');
+      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.2.1-all.zip\n' +
+      'networkTimeout=10000\nvalidateDistributionUrl=true\n');
     prepareControlledGradleWrapper(temporary);
     const normalized = fs.readFileSync(properties, 'utf8');
     assert.match(normalized, /^networkTimeout=120000$/m);
     assert.match(normalized, /^distributionUrl=https\\:\/\/services\.gradle\.org\//m);
+    assert.match(normalized, /^validateDistributionUrl=true$/m);
     fs.writeFileSync(properties, 'networkTimeout=10000\nnetworkTimeout=20000\n');
     assert.throws(() => prepareControlledGradleWrapper(temporary),
       error => error && error.message === 'AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
