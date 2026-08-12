@@ -49,7 +49,7 @@ const MAX_CLOSURE_FILES = 250_000;
 const MAX_CLOSURE_BYTES = 4 * 1024 * 1024 * 1024;
 const MAX_CLOSURE_FILE_BYTES = 512 * 1024 * 1024;
 
-function closureIdentity(root, code) {
+function closureIdentity(root, code, excludedDirectories = new Set()) {
   const base = path.resolve(root);
   const baseReal = fs.realpathSync.native(base);
   const rows = [];
@@ -68,7 +68,10 @@ function closureIdentity(root, code) {
         void resolved;
         continue;
       }
-      if (entry.isDirectory()) { walk(absolute); continue; }
+      if (entry.isDirectory()) {
+        if (!excludedDirectories.has(relative)) walk(absolute);
+        continue;
+      }
       if (!entry.isFile()) throw new Error(code);
       const fold = relative.toLowerCase();
       if (seenFold.has(fold) && seenFold.get(fold) !== relative) throw new Error(code);
@@ -110,7 +113,19 @@ function sameClosure(left, right) {
    re-measurement here. Same function both sides: a divergence means the tree
    changed, not that two implementations disagree. */
 export function dependencyClosureIdentity(nodeModulesRoot) {
-  return closureIdentity(nodeModulesRoot, 'AUDIT_BUILD_DEPENDENCY_CLOSURE_UNAVAILABLE');
+  /* Android Gradle treats these installed Capacitor Android projects as
+     included builds and writes compiler output back into their conventional
+     build/ directories. Exclude only those exact generated directories; every
+     package manifest, source, Gradle input, and all other installed bytes remain
+     hash-bound before and after the build. */
+  const generated = new Set([
+    '@capacitor/android/capacitor/build',
+    '@capacitor/app/android/build',
+    '@capacitor/filesystem/android/build',
+    '@capacitor/local-notifications/android/build',
+    '@capacitor/share/android/build'
+  ]);
+  return closureIdentity(nodeModulesRoot, 'AUDIT_BUILD_DEPENDENCY_CLOSURE_UNAVAILABLE', generated);
 }
 const SIGNING_CREDENTIALS = Object.freeze([
   { field: 'storeFile', environment: 'SAAGAR_KEYSTORE_FILE', kind: 'file' },
