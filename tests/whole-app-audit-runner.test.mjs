@@ -10,6 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
   controlledGradleEnvironment, dependencyClosureIdentity, gradleDistributionClosureIdentity,
+  gradleReadOnlyDependencyCacheIdentity,
   parseGradleJvmIdentity,
   spawnSyncCommandTree } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
@@ -209,6 +210,7 @@ function buildRecord(apkFile, toolchainTag = 'same', closureTag = 'same') {
       afterBuild: dependencyAggregate, stableThroughBuild: true },
     gradleDistribution: { before: gradleAggregate, after: gradleAggregate,
       stableThroughBuild: true, isolatedUserHome: true },
+    gradleReadOnlyDependencyCache: null,
     generatedAndroid, toolchain,
     artifact: { file: 'app-debug.apk', bytes: bytes.length, sha256: sha256(bytes),
       normalized: { entryCount: normalized.entryCount, totalUncompressedBytes: normalized.totalUncompressedBytes,
@@ -2141,6 +2143,33 @@ test('controlled Gradle seed copies only a fully identity-bound external distrib
     fs.writeFileSync(path.join(extracted, 'bin', 'gradle.bat'), 'tampered distribution\n');
     assert.throws(() => seedControlledGradleHome(ROOT, seed, rejectedTarget, expected),
       /AUDIT_CONTROLLED_GRADLE_SEED_IDENTITY_INVALID/);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('offline build receipts bind a stable read-only Gradle dependency cache', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-gradle-ro-cache-'));
+  try {
+    const cache = path.join(temporary, 'cache');
+    fs.mkdirSync(path.join(cache, 'modules-2', 'files-2.1'), { recursive: true });
+    fs.writeFileSync(path.join(cache, 'modules-2', 'files-2.1', 'artifact.jar'), 'verified artifact');
+    const aggregate = gradleReadOnlyDependencyCacheIdentity(cache);
+    const apk = path.join(temporary, 'app-debug.apk');
+    fs.writeFileSync(apk, testZip([{ name: 'classes.dex', body: 'offline-product' }]));
+    const record = () => {
+      const value = buildRecord(apk);
+      value.command = 'npm run build:apk -- --offline';
+      value.gradleReadOnlyDependencyCache = { before: aggregate, after: aggregate,
+        readOnly: true, offline: true, stableThroughBuild: true };
+      return value;
+    };
+    const agreeing = compareApks(apk, apk, record(), record());
+    assert.equal(agreeing.identityBound, true);
+    assert.equal(agreeing.toolchainMatch, true);
+    const drifted = record();
+    drifted.gradleReadOnlyDependencyCache.after = { ...aggregate, sha256: sha256('drift') };
+    assert.equal(compareApks(apk, apk, record(), drifted).identityBound, false);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }

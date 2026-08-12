@@ -861,6 +861,13 @@ export function gradleDistributionClosureIdentity(gradleUserHome, code =
   return closureIdentity(path.join(cache, extracted[0].name), code);
 }
 
+export function gradleReadOnlyDependencyCacheIdentity(cacheRoot, code =
+  'AUDIT_BUILD_GRADLE_READ_ONLY_CACHE_UNAVAILABLE') {
+  const root = path.resolve(cacheRoot);
+  if (!fs.statSync(path.join(root, 'modules-2'), { throwIfNoEntry: false })?.isDirectory()) throw new Error(code);
+  return closureIdentity(root, code);
+}
+
 function npmVersion(root) {
   const invocation = process.platform === 'win32'
     ? { command: process.env.ComSpec || 'cmd.exe', args: ['/d', '/s', '/c', 'npm.cmd --version'] }
@@ -977,10 +984,11 @@ export function buildToolchainIdentity(root, gradleUserHome = '') {
   return { ...value, fingerprint: canonicalSha256(value) };
 }
 
-function buildInvocation() {
+function buildInvocation(offline) {
+  const display = offline ? 'npm run build:apk -- --offline' : 'npm run build:apk';
   if (process.platform === 'win32') return { command: process.env.ComSpec || 'cmd.exe',
-    args: ['/d', '/s', '/c', 'npm.cmd run build:apk'], display: 'npm run build:apk' };
-  return { command: 'npm', args: ['run', 'build:apk'], display: 'npm run build:apk' };
+    args: ['/d', '/s', '/c', offline ? 'npm.cmd run build:apk -- --offline' : 'npm.cmd run build:apk'], display };
+  return { command: 'npm', args: offline ? ['run', 'build:apk', '--', '--offline'] : ['run', 'build:apk'], display };
 }
 
 export function captureBuild(options) {
@@ -993,6 +1001,15 @@ export function captureBuild(options) {
     throw new Error('AUDIT_BUILD_GRADLE_HOME_INVALID');
   }
   assertExternalPath(root, gradleUserHome, 'AUDIT_BUILD_GRADLE_HOME_MUST_BE_EXTERNAL');
+  const readOnlyCache = String(process.env.GRADLE_RO_DEP_CACHE || '');
+  const offline = process.env.SAAGAR_AUDIT_GRADLE_OFFLINE === '1';
+  if (!!readOnlyCache !== offline) throw new Error('AUDIT_BUILD_GRADLE_OFFLINE_CONFIGURATION_INVALID');
+  let readOnlyCacheBefore = null;
+  if (readOnlyCache) {
+    const cacheRoot = assertExternalPath(root, path.resolve(readOnlyCache),
+      'AUDIT_BUILD_GRADLE_READ_ONLY_CACHE_MUST_BE_EXTERNAL');
+    readOnlyCacheBefore = gradleReadOnlyDependencyCacheIdentity(cacheRoot);
+  }
   assertExternalPath(root, output, 'AUDIT_BUILD_OUTPUT_MUST_BE_EXTERNAL');
   if (fs.existsSync(output) && fs.readdirSync(output).length) throw new Error('AUDIT_BUILD_OUTPUT_NOT_EMPTY');
   const before = buildContext(root);
@@ -1020,7 +1037,7 @@ export function captureBuild(options) {
   const gradleDistributionBefore = gradleDistributionClosureIdentity(gradleUserHome,
     'AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE');
 
-  const invocation = buildInvocation();
+  const invocation = buildInvocation(offline);
   const startedAt = new Date();
   const built = command(invocation.command, invocation.args, root, 30 * 60 * 1000, gradleUserHome);
   const endedAt = new Date();
@@ -1030,6 +1047,13 @@ export function captureBuild(options) {
     'AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE');
   if (!sameClosure(gradleDistributionAfter, gradleDistributionBefore)) {
     throw new Error('AUDIT_BUILD_GRADLE_DISTRIBUTION_MUTATED');
+  }
+  let readOnlyCacheAfter = null;
+  if (readOnlyCache) {
+    readOnlyCacheAfter = gradleReadOnlyDependencyCacheIdentity(path.resolve(readOnlyCache));
+    if (!sameClosure(readOnlyCacheAfter, readOnlyCacheBefore)) {
+      throw new Error('AUDIT_BUILD_GRADLE_READ_ONLY_CACHE_MUTATED');
+    }
   }
   const dependencyClosureAfterBuild = dependencyClosureIdentity(path.join(root, 'node_modules'));
   if (!sameClosure(dependencyClosureAfterBuild, dependencyClosureBeforeGradle)) {
@@ -1077,6 +1101,13 @@ export function captureBuild(options) {
       stableThroughBuild: true,
       isolatedUserHome: true
     },
+    gradleReadOnlyDependencyCache: readOnlyCache ? {
+      before: readOnlyCacheBefore,
+      after: readOnlyCacheAfter,
+      readOnly: true,
+      offline: true,
+      stableThroughBuild: true
+    } : null,
     generatedAndroid,
     signingMode: 'debug',
     artifact: {
