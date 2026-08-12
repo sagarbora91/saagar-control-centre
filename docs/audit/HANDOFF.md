@@ -3,6 +3,43 @@
 **Updated:** 2026-08-12 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
+## Comparison measurement restoration checkpoint - 2026-08-12
+
+This checkpoint supersedes the older comparison resume/status statements below.
+
+- Governed audit tooling is frozen at
+  `937542f8b81099eed48ba8c4d21d1cd6382f5ad3`; its regression suite passes
+  **58/58**.
+- The refreshed Gate 0 baseline is committed at
+  `verification/audit/2026-08-12-143000-937542f`, bound to the same tooling
+  identity and frozen product anchor `8f96480ec6ddfc99016af43a7369f57a06cb9fd6`.
+- The exact comparison target is
+  `9b54d5bd003672434a7dac8be81efadd6b67f947`; its provisional comparison is
+  preserved at `verification/audit/2026-08-12-150000-9b54d5b` and all **506/506**
+  registered tests pass.
+- **C-01 is resolved and passes** with zero lost measurements. A7-04 passes with
+  zero binding mismatches, A11-03 passes with zero count mismatches, and A8-05
+  remains a measured fail-closed finding rather than becoming unmeasured.
+- **C-04 measurement is restored:** 187 baseline artifacts and 172 current
+  artifacts are compared exactly. The measured gate fails with 61 contract
+  deltas and 59 current unclassified artifacts; this is no longer an evidence
+  availability failure.
+- **C-07 measurement is restored:** 54 baseline and 47 current message-contract
+  rows are compared exactly. The measured gate fails with 15 contract deltas and
+  zero coupling regressions; this is no longer an evidence availability failure.
+- C-03 has zero new P0/P1 findings and zero finding regressions. Its provisional
+  result is `fail` only because no approval envelope is yet bound to the new
+  target/tooling/baseline identity. The capability delta set is unchanged at
+  exactly 106 rows with SHA-256
+  `0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a`.
+- Do not reuse the approval envelope bound to target `11bb84a`. Obtain the
+  owner's explicit identity-bound approval for target `9b54d5b`, tooling
+  `937542f`, and baseline manifest SHA-256
+  `8837522e88d04ff060205886cc3ec131b0bf7248e6b0af6e3151224612782bc1`, then
+  rerun the comparison with that envelope. Keep PR #5 in draft: C-04 and C-07
+  are now measured failures and require separate disposition after the approval
+  gate is closed.
+
 ## Corrective physical-test checkpoint - 2026-08-12
 
 This checkpoint supersedes the older APK and candidate values below.
