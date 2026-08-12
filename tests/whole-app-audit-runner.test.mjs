@@ -15,6 +15,7 @@ import { hasRunnerControlledProvenance,
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
 import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
+import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized } from '../scripts/audit/evidence-trust-root.mjs';
 import { COMPARISON_APPROVAL_FORMAT, comparisonFindingSha256, evaluateComparison } from '../scripts/audit/comparison.mjs';
@@ -32,6 +33,41 @@ const AUDITS = Object.freeze([
   ['A5', 'a5', 5], ['A6', 'a6', 5], ['A7', 'a7', 5], ['A8', 'a8', 5],
   ['A9', 'a9', 5], ['A10', 'a10', 5], ['A11', 'a11', 5]
 ]);
+
+test('A2 near-copy similarity preserves control-flow order after identifier normalization', () => {
+  const left = `
+    if (record.active) {
+      save(record.id);
+      audit(record.id);
+      publish(record.id);
+      return true;
+    }
+    deny(record.id);
+    return false;
+  `;
+  const renamedCopy = `
+    if (candidate.active) {
+      persist(candidate.key);
+      log(candidate.key);
+      release(candidate.key);
+      return true;
+    }
+    reject(candidate.key);
+    return false;
+  `;
+  const reordered = `
+    return false;
+    deny(record.id);
+    if (record.active) {
+      return true;
+      publish(record.id);
+      audit(record.id);
+      save(record.id);
+    }
+  `;
+  assert.equal(orderedTokenSimilarity(left, renamedCopy), 1);
+  assert.ok(orderedTokenSimilarity(left, reordered) < 0.9);
+});
 
 function git(args, encoding = 'utf8') {
   return execFileSync('git', ['-C', ROOT, ...args], {
