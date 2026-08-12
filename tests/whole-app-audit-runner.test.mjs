@@ -2108,6 +2108,10 @@ test('dependency identity excludes only exact Capacitor build outputs and detect
     fs.mkdirSync(path.join(temporary, 'unapproved', 'build'), { recursive: true });
     fs.writeFileSync(path.join(temporary, 'unapproved', 'build', 'payload.bin'), 'must remain bound\n');
     assert.notEqual(dependencyClosureIdentity(temporary).sha256, before.sha256);
+
+    const capture = fs.readFileSync(path.join(ROOT, 'scripts/audit/capture-build.mjs'), 'utf8');
+    assert.equal((capture.match(/dependencyClosureIdentity\(path\.join\(root, 'node_modules'\)\)/g) || []).length, 3,
+      'all live dependency re-measurements must use the reviewed generated-output policy');
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }

@@ -982,8 +982,7 @@ export function captureBuild(options) {
   /* The dependency closure the probe installed must still be exactly what is
      present now, before anything is generated. An install that drifted between
      `npm ci` and here invalidates the receipt. */
-  const dependencyClosureAfterInstall = closureIdentity(path.join(root, 'node_modules'),
-    'AUDIT_BUILD_DEPENDENCY_CLOSURE_UNAVAILABLE');
+  const dependencyClosureAfterInstall = dependencyClosureIdentity(path.join(root, 'node_modules'));
   if (!sameClosure(dependencyClosureAfterInstall, install.closure)) {
     throw new Error('AUDIT_BUILD_DEPENDENCY_CLOSURE_MUTATED');
   }
@@ -993,8 +992,7 @@ export function captureBuild(options) {
 
   /* Re-measured immediately before Gradle: generation runs between these two
      points and must not touch the installed closure. */
-  const dependencyClosureBeforeGradle = closureIdentity(path.join(root, 'node_modules'),
-    'AUDIT_BUILD_DEPENDENCY_CLOSURE_UNAVAILABLE');
+  const dependencyClosureBeforeGradle = dependencyClosureIdentity(path.join(root, 'node_modules'));
   if (!sameClosure(dependencyClosureBeforeGradle, dependencyClosureAfterInstall)) {
     throw new Error('AUDIT_BUILD_DEPENDENCY_CLOSURE_MUTATED');
   }
@@ -1013,8 +1011,7 @@ export function captureBuild(options) {
   if (!sameClosure(gradleDistributionAfter, gradleDistributionBefore)) {
     throw new Error('AUDIT_BUILD_GRADLE_DISTRIBUTION_MUTATED');
   }
-  const dependencyClosureAfterBuild = closureIdentity(path.join(root, 'node_modules'),
-    'AUDIT_BUILD_DEPENDENCY_CLOSURE_UNAVAILABLE');
+  const dependencyClosureAfterBuild = dependencyClosureIdentity(path.join(root, 'node_modules'));
   if (!sameClosure(dependencyClosureAfterBuild, dependencyClosureBeforeGradle)) {
     throw new Error('AUDIT_BUILD_DEPENDENCY_CLOSURE_MUTATED');
   }
