@@ -660,10 +660,16 @@ function structurallyApprovedDynamicTarget(file, source, offset, kind, expressio
   }
   if (kind === 'NAVIGATION') {
     if (/^URL\.createObjectURL\(/.test(value)) return true;
-    if ((file === 'www/module-manifest.js' && value === 'src') ||
+    const owner = enclosingFunction(spans, offset);
+    const assignment = source.slice(offset, Math.min(source.length, offset + 80));
+    if ((file === 'www/module-manifest.js' && value === 'src' && owner && owner.name === 'freezeModule' &&
+         /^\s*module\s*\.\s*src\s*=\s*src\b/.test(assignment) &&
+         /var\s+id\s*=\s*cleanString\s*\(\s*value\.id\b/.test(owner.body) &&
+         /MODULE_ID\.test\s*\(\s*id\s*\)/.test(owner.body) &&
+         /var\s+expectedPath\s*=\s*['"]modules\/['"]\s*\+\s*id\s*\+\s*['"]\/index\.html['"]/.test(owner.body) &&
+         /file\s*!==\s*expectedPath\s*\|\|\s*src\s*!==\s*expectedPath\s*\|\|\s*file\s*!==\s*src/.test(owner.body)) ||
         (file === 'www/shared/shell-module-frame-controller.js' && value === 'mod.src') ||
         (file === 'www/modules/expense/index.html' && value === 'r.result')) return true;
-    const owner = enclosingFunction(spans, offset);
     if (owner && owner.name === 'openControlledWhatsApp' && /String\(url\|\|['"]{2}\)/.test(value)) {
       const prefix = withoutBlockComments(owner.body.slice(0, Math.max(0, offset - owner.start)));
       if (/if\s*\(\s*!\s*\/\^https:\\\/\\\/wa\\\.me\\\/\/[a-z]*\.test\(url\)\s*\)\s*\{[\s\S]*?return\s+false\s*;/i.test(prefix)) return true;
