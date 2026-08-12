@@ -250,10 +250,18 @@ function validatedInstall(value) {
   return value;
 }
 
+function validatedReadOnlyDependencyCache(value) {
+  if (value === null || value === undefined) return null;
+  const expected = ['after', 'before', 'offline', 'readOnly', 'stableThroughBuild'];
+  const closure = validatedClosureSet(value, expected);
+  return closure && value.offline === true && value.readOnly === true ? closure : false;
+}
+
 function validateBuildRecord(value, apkBytes, normalized) {
   if (!value || value.format !== 'SAAGAR_AUDIT_BUILD_CAPTURE' || value.schemaVersion !== 2 ||
       !HEX_40.test(String(value.sourceSha || '')) || !value.productFingerprint ||
-      !HEX_64.test(String(value.productFingerprint.treeSha256 || '')) || value.command !== 'npm run build:apk' ||
+      !HEX_64.test(String(value.productFingerprint.treeSha256 || '')) ||
+      !['npm run build:apk', 'npm run build:apk -- --offline'].includes(value.command) ||
       value.cleanBefore !== true || value.cleanAfter !== true || value.signingMode !== 'debug' ||
       !value.isolation || value.isolation.rootKind !== 'detached-linked-worktree' ||
       value.isolation.linkedWorktree !== true || value.isolation.detachedHead !== true ||
@@ -288,7 +296,9 @@ function validateBuildRecord(value, apkBytes, normalized) {
     ['afterBuild', 'afterInstall', 'beforeGradle', 'stableThroughBuild']);
   const gradleDistribution = validatedClosureSet(value.gradleDistribution,
     ['after', 'before', 'isolatedUserHome', 'stableThroughBuild']);
-  if (!install || !dependencyClosure || !gradleDistribution) return null;
+  const readOnlyDependencyCache = validatedReadOnlyDependencyCache(value.gradleReadOnlyDependencyCache);
+  if (!install || !dependencyClosure || !gradleDistribution || readOnlyDependencyCache === false ||
+      (value.command.endsWith('--offline') !== !!readOnlyDependencyCache)) return null;
   return { sourceSha: value.sourceSha, productFingerprintSha256: value.productFingerprint.treeSha256,
     command: value.command, signingMode: value.signingMode, toolchainSha256: toolchain,
     installCommand: install.command, installOutputSha256: install.outputSha256,
@@ -297,6 +307,9 @@ function validateBuildRecord(value, apkBytes, normalized) {
     dependencyClosureTotalBytes: dependencyClosure.afterInstall.totalBytes,
     gradleDistributionSha256: gradleDistribution.before.sha256,
     gradleDistributionFileCount: gradleDistribution.before.fileCount,
+    gradleReadOnlyDependencyCacheSha256: readOnlyDependencyCache ? readOnlyDependencyCache.before.sha256 : '',
+    gradleReadOnlyDependencyCacheFileCount: readOnlyDependencyCache ? readOnlyDependencyCache.before.fileCount : 0,
+    offline: !!readOnlyDependencyCache,
     recipeSha256: value.toolchain.recipeSha256, commandOutputSha256: value.commandOutputSha256,
     elapsedMs: value.elapsedMs,
     bootstrapCommand: bootstrap.command, bootstrapOutputSha256: bootstrap.outputSha256,
@@ -342,6 +355,9 @@ export function compareApks(firstFile, secondFile, firstRecord = null, secondRec
     bound1.dependencyClosureTotalBytes === bound2.dependencyClosureTotalBytes &&
     bound1.gradleDistributionSha256 === bound2.gradleDistributionSha256 &&
     bound1.gradleDistributionFileCount === bound2.gradleDistributionFileCount);
+  const cacheMatch = !!(toolchainMatch && bound1.offline === bound2.offline &&
+    bound1.gradleReadOnlyDependencyCacheSha256 === bound2.gradleReadOnlyDependencyCacheSha256 &&
+    bound1.gradleReadOnlyDependencyCacheFileCount === bound2.gradleReadOnlyDependencyCacheFileCount);
   const firstSha = sha256(firstBytes);
   const secondSha = sha256(secondBytes);
   const rawEqual = firstSha === secondSha;
@@ -350,7 +366,7 @@ export function compareApks(firstFile, secondFile, firstRecord = null, secondRec
     format: 'SAAGAR_AUDIT_APK_COMPARISON',
     schemaVersion: 2,
     identityBound,
-    toolchainMatch,
+    toolchainMatch: cacheMatch,
     differenceClass: rawEqual ? 'identical' : normalizedEqual ? 'metadata-or-signing-only' : 'normalized-content',
     first: { bytes: firstBytes.length, sha256: firstSha, normalized: publicNormalized(normalized1), build: bound1 },
     second: { bytes: secondBytes.length, sha256: secondSha, normalized: publicNormalized(normalized2), build: bound2 },

@@ -39,12 +39,16 @@ function safeBuildEvidence(context) {
   const buildShape = build => build && typeof build === 'object' && !Array.isArray(build) &&
     HEX_40.test(String(build.sourceSha || '')) && HEX_64.test(String(build.productFingerprintSha256 || '')) &&
     HEX_64.test(String(build.toolchainSha256 || '')) && HEX_64.test(String(build.recipeSha256 || '')) &&
-    build.command === 'npm run build:apk' && build.bootstrapCommand === 'npm run add:android' &&
+    ['npm run build:apk', 'npm run build:apk -- --offline'].includes(build.command) &&
+    build.bootstrapCommand === 'npm run add:android' &&
     build.signingMode === 'debug' && GENERATED_HASH_FIELDS.every(field => HEX_64.test(String(build[field] || ''))) &&
     build.androidConfiguration && typeof build.androidConfiguration === 'object' &&
     build.gradle && typeof build.gradle === 'object' && HEX_64.test(String(build.gradle.outputSha256 || '')) &&
     build.gradle.daemonJvmMatchesJavaHome === true && typeof build.gradle.actualJvmVersion === 'string' &&
-    build.gradle.actualJvmVersion !== '' && build.gradle.actualJvmVersion === build.gradle.javaHomeJvmVersion;
+    build.gradle.actualJvmVersion !== '' && build.gradle.actualJvmVersion === build.gradle.javaHomeJvmVersion &&
+    typeof build.offline === 'boolean' && Number.isSafeInteger(build.gradleReadOnlyDependencyCacheFileCount) &&
+    (build.offline ? HEX_64.test(String(build.gradleReadOnlyDependencyCacheSha256 || '')) :
+      build.gradleReadOnlyDependencyCacheSha256 === '');
   if (!buildShape(firstBuild) || !buildShape(secondBuild)) {
     return { available: true, valid: false, source, code: 'BUILD_EVIDENCE_CAPTURE_BINDING_INVALID' };
   }
@@ -85,7 +89,10 @@ function safeBuildEvidence(context) {
     firstBuild.signingMode === secondBuild.signingMode;
   const generatedAgreement = GENERATED_HASH_FIELDS.every(field => firstBuild[field] === secondBuild[field]) &&
     canonicalSha256(firstBuild.androidConfiguration) === canonicalSha256(secondBuild.androidConfiguration) &&
-    canonicalSha256(firstBuild.gradle) === canonicalSha256(secondBuild.gradle);
+    canonicalSha256(firstBuild.gradle) === canonicalSha256(secondBuild.gradle) &&
+    firstBuild.offline === secondBuild.offline &&
+    firstBuild.gradleReadOnlyDependencyCacheSha256 === secondBuild.gradleReadOnlyDependencyCacheSha256 &&
+    firstBuild.gradleReadOnlyDependencyCacheFileCount === secondBuild.gradleReadOnlyDependencyCacheFileCount;
   const computedToolchainMatch = computedIdentityBound && generatedAgreement &&
     firstBuild.toolchainSha256 === secondBuild.toolchainSha256 &&
     firstBuild.recipeSha256 === secondBuild.recipeSha256;
