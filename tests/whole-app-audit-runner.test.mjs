@@ -9,7 +9,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
-  controlledGradleEnvironment, parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
+  controlledGradleEnvironment, parseGradleJvmIdentity,
+  spawnSyncCommandTree } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
   prepareControlledGradleWrapper, runControlledProbes,
   withControlledCleanup } from '../scripts/audit/controlled-probes.mjs';
@@ -2069,7 +2070,7 @@ test('controlled build timeout terminates Windows trees and cleanup preserves pr
   const probes = fs.readFileSync(path.join(ROOT, 'scripts/audit/controlled-probes.mjs'), 'utf8');
   assert.match(capture, /const GRADLE_IDENTITY_TIMEOUT_MS = 10 \* 60 \* 1000;/);
   assert.match(capture, /gradleInvocation\.cwd, GRADLE_IDENTITY_TIMEOUT_MS, gradleUserHome/);
-  assert.match(capture, /spawnSync\('taskkill\.exe', \['\/PID', String\(result\.pid\), '\/T', '\/F'\]/);
+  assert.match(capture, /spawnSync\('taskkill\.exe', \['\/PID', String\(child\.pid\), '\/T', '\/F'\]/);
   assert.match(probes, /if \(gradleReady\) stopControlledGradle\(worktree, gradleHome\)/);
   assert.ok(probes.indexOf('() => removeWorktree') < probes.indexOf('() => removeGradleHome'));
 
@@ -2083,6 +2084,44 @@ test('controlled build timeout terminates Windows trees and cleanup preserves pr
   assert.throws(() => withControlledCleanup(() => 'built', [
     () => { throw new Error('CLEANUP_FAILED'); }
   ]), /CLEANUP_FAILED/);
+
+  if (process.platform === 'win32') {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-tree-test-'));
+    const pidFile = path.join(temporary, 'descendant.pid');
+    let descendantPid = null;
+    try {
+      const ordinary = spawnSyncCommandTree(process.execPath,
+        ['-e', `process.stdout.write('ordinary-out'); process.stderr.write('ordinary-err'); process.exitCode=7`], {
+          cwd: temporary, encoding: 'utf8', windowsHide: true, timeout: 10_000,
+          maxBuffer: 1024 * 1024, env: process.env
+        });
+      assert.equal(ordinary.error, null);
+      assert.equal(ordinary.status, 7);
+      assert.equal(ordinary.stdout, 'ordinary-out');
+      assert.equal(ordinary.stderr, 'ordinary-err');
+
+      const powershell = `$child=Start-Process powershell.exe -ArgumentList '-NoProfile','-Command',` +
+        `'Start-Sleep -Seconds 60' -PassThru; Set-Content -LiteralPath '${pidFile}' ` +
+        `-Value $child.Id; Wait-Process -Id $child.Id`;
+      const result = spawnSyncCommandTree('powershell.exe', ['-NoProfile', '-Command', powershell], {
+        cwd: temporary, encoding: 'utf8', windowsHide: true, timeout: 1_000,
+        maxBuffer: 1024 * 1024, env: process.env
+      });
+      assert.equal(result.error?.code, 'ETIMEDOUT');
+      descendantPid = Number(fs.readFileSync(pidFile, 'utf8').trim());
+      assert.ok(Number.isSafeInteger(descendantPid) && descendantPid > 0);
+      const alive = spawnSync('powershell.exe', ['-NoProfile', '-Command',
+        `if (Get-Process -Id ${descendantPid} -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }`],
+      { windowsHide: true, timeout: 10_000 });
+      assert.notEqual(alive.status, 0, `timed-out descendant ${descendantPid} survived`);
+    } finally {
+      if (Number.isSafeInteger(descendantPid) && descendantPid > 0) {
+        spawnSync('taskkill.exe', ['/PID', String(descendantPid), '/T', '/F'],
+          { windowsHide: true, timeout: 10_000 });
+      }
+      fs.rmSync(temporary, { recursive: true, force: true });
+    }
+  }
 });
 
 test('large dependency closures are hash-bound outside the evidence array limit', () => {

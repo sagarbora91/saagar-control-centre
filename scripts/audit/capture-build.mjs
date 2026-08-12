@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { buildContext, compareText, sha256 } from './lib.mjs';
@@ -11,6 +11,9 @@ import { assertExternalPath, gradleVersionLauncher, verifyIsolatedWorktree } fro
 import { canonicalSha256, safeJson, safeError } from './schema.mjs';
 
 const GRADLE_IDENTITY_TIMEOUT_MS = 10 * 60 * 1000;
+const COMMAND_MAX_BUFFER = 256 * 1024 * 1024;
+const WINDOWS_HELPER_GRACE_MS = 45 * 1000;
+const WINDOWS_HELPER_MAX_TIMEOUT_MS = 35 * 60 * 1000;
 
 const GENERATED_ANDROID_FILES = Object.freeze([
   'android/app/build.gradle', 'android/app/src/main/AndroidManifest.xml',
@@ -78,7 +81,6 @@ function closureIdentity(root, code) {
   };
   if (!fs.statSync(base, { throwIfNoEntry: false })?.isDirectory()) throw new Error(code);
   walk(base);
-  rows.sort((a, b) => compareText(a.path, b.path));
   rows.sort((left, right) => compareText(left.path, right.path));
   /* A Gradle distribution legitimately exceeds the central evidence schema's
      6,000-row array bound. The paths never leave this function, so hash the
@@ -472,20 +474,159 @@ export function controlledGradleEnvironment(environment, gradleUserHome, platfor
   return env;
 }
 
-function command(command, args, cwd, timeout = 30000, gradleUserHome = '') {
-  const env = controlledGradleEnvironment(process.env, gradleUserHome);
-  const result = spawnSync(command, args, { cwd, encoding: 'utf8', windowsHide: true, timeout,
-    maxBuffer: 256 * 1024 * 1024, env });
-  if (process.platform === 'win32' && result.error && result.error.code === 'ETIMEDOUT' &&
-      Number.isSafeInteger(result.pid) && result.pid > 0) {
-    /* spawnSync terminates only its direct cmd.exe child on Windows. Terminate
-       the exact spawned process tree so a wrapper/downloader JVM cannot retain
-       the disposable worktree or Gradle home after the bounded timeout. */
-    spawnSync('taskkill.exe', ['/PID', String(result.pid), '/T', '/F'], {
-      cwd, encoding: 'utf8', windowsHide: true, timeout: 30_000,
+function windowsCommandRequest(encoded) {
+  const request = JSON.parse(Buffer.from(String(encoded || ''), 'base64url').toString('utf8'));
+  const keys = request && typeof request === 'object' && !Array.isArray(request)
+    ? Object.keys(request).sort(compareText) : [];
+  if (JSON.stringify(keys) !== JSON.stringify(['args', 'command', 'cwd', 'outputRoot', 'timeout']) ||
+      typeof request.command !== 'string' || !request.command || request.command.length > 32_768 ||
+      !Array.isArray(request.args) || request.args.length > 256 ||
+      request.args.some(value => typeof value !== 'string' || value.length > 32_768) ||
+      typeof request.cwd !== 'string' || !path.isAbsolute(request.cwd) ||
+      !fs.statSync(request.cwd, { throwIfNoEntry: false })?.isDirectory() ||
+      typeof request.outputRoot !== 'string' || !path.isAbsolute(request.outputRoot) ||
+      !fs.statSync(request.outputRoot, { throwIfNoEntry: false })?.isDirectory() ||
+      !Number.isSafeInteger(request.timeout) || request.timeout < 1 ||
+      request.timeout > WINDOWS_HELPER_MAX_TIMEOUT_MS) {
+    throw new Error('AUDIT_WINDOWS_COMMAND_REQUEST_INVALID');
+  }
+  return request;
+}
+
+/* This helper owns the live Windows process. Its timer can therefore terminate
+   the exact parent and all descendants before the parent PID disappears. A
+   post-spawnSync taskkill cannot do that because spawnSync has already killed
+   and reaped its direct child by the time it returns. */
+function runWindowsCommandHelper(encoded) {
+  const request = windowsCommandRequest(encoded);
+  const stdoutFile = path.join(request.outputRoot, 'stdout.bin');
+  const stderrFile = path.join(request.outputRoot, 'stderr.bin');
+  const metadataFile = path.join(request.outputRoot, 'result.json');
+  const pidFile = path.join(request.outputRoot, 'pid.txt');
+  const stdout = fs.openSync(stdoutFile, 'wx');
+  const stderr = fs.openSync(stderrFile, 'wx');
+  let child;
+  try {
+    child = spawn(request.command, request.args, {
+      cwd: request.cwd, env: process.env, windowsHide: true,
+      stdio: ['ignore', stdout, stderr]
+    });
+  } finally {
+    fs.closeSync(stdout);
+    fs.closeSync(stderr);
+  }
+  if (Number.isSafeInteger(child.pid) && child.pid > 0) {
+    fs.writeFileSync(pidFile, `${child.pid}\n`, { encoding: 'utf8', flag: 'wx' });
+  }
+  let terminationReason = null;
+  let spawnFailure = null;
+  let treeKill = null;
+  child.once('error', error => {
+    spawnFailure = { code: String(error && error.code || 'UNKNOWN').slice(0, 80),
+      message: String(error && error.message || 'COMMAND_SPAWN_FAILED').slice(0, 500) };
+  });
+  const terminateTree = reason => {
+    if (terminationReason) return;
+    terminationReason = reason;
+    const killed = spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
+      cwd: request.cwd, encoding: 'utf8', windowsHide: true, timeout: 30_000,
+      maxBuffer: 1024 * 1024, env: process.env
+    });
+    treeKill = { status: killed.status, signal: killed.signal || null,
+      errorCode: killed.error ? String(killed.error.code || 'UNKNOWN').slice(0, 80) : null };
+    if ((killed.error || killed.signal || killed.status !== 0) && child.exitCode === null) {
+      try { child.kill('SIGKILL'); } catch { /* The process may have exited at the timeout boundary. */ }
+    }
+  };
+  const timer = setTimeout(() => terminateTree('timeout'), request.timeout);
+  const outputMonitor = setInterval(() => {
+    const bytes = [stdoutFile, stderrFile].reduce((sum, file) =>
+      sum + Number(fs.statSync(file, { throwIfNoEntry: false })?.size || 0), 0);
+    if (bytes > COMMAND_MAX_BUFFER) terminateTree('output-limit');
+  }, 250);
+  child.once('close', (status, signal) => {
+    clearTimeout(timer);
+    clearInterval(outputMonitor);
+    const result = { pid: Number.isSafeInteger(child.pid) ? child.pid : null,
+      status, signal: signal || null, terminationReason, spawnFailure, treeKill };
+    try {
+      fs.writeFileSync(metadataFile, `${JSON.stringify(result)}\n`, { encoding: 'utf8', flag: 'wx' });
+    } catch (error) {
+      process.stderr.write(`${String(error && error.message || error).slice(0, 500)}\n`);
+      process.exitCode = 1;
+    }
+  });
+}
+
+function boundedCommandOutput(file) {
+  const stat = fs.statSync(file, { throwIfNoEntry: false });
+  if (!stat?.isFile()) return '';
+  if (stat.size > COMMAND_MAX_BUFFER) {
+    const error = new Error('AUDIT_COMMAND_OUTPUT_TOO_LARGE');
+    error.code = 'ENOBUFS';
+    throw error;
+  }
+  return fs.readFileSync(file, 'utf8');
+}
+
+function windowsCommand(commandName, args, cwd, timeout, env) {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-command-'));
+  const request = { args, command: commandName, cwd: path.resolve(cwd), outputRoot: temporary, timeout };
+  try {
+    const helper = spawnSync(process.execPath, [fileURLToPath(import.meta.url), '--windows-command-helper',
+      Buffer.from(JSON.stringify(request), 'utf8').toString('base64url')], {
+      cwd, encoding: 'utf8', windowsHide: true, timeout: timeout + WINDOWS_HELPER_GRACE_MS,
       maxBuffer: 1024 * 1024, env
     });
+    const pidFile = path.join(temporary, 'pid.txt');
+    const metadataFile = path.join(temporary, 'result.json');
+    /* If the helper itself failed, its early PID receipt still lets this parent
+       kill the exact live command tree rather than relying on a reaped helper
+       PID. This is a last-resort path after the helper's own bounded watchdog. */
+    if ((helper.error || helper.signal || helper.status !== 0 || !fs.existsSync(metadataFile)) &&
+        fs.statSync(pidFile, { throwIfNoEntry: false })?.isFile()) {
+      const pid = Number(fs.readFileSync(pidFile, 'utf8').trim());
+      if (Number.isSafeInteger(pid) && pid > 0) {
+        spawnSync('taskkill.exe', ['/PID', String(pid), '/T', '/F'], {
+          cwd, encoding: 'utf8', windowsHide: true, timeout: 30_000,
+          maxBuffer: 1024 * 1024, env
+        });
+      }
+    }
+    const stdout = boundedCommandOutput(path.join(temporary, 'stdout.bin'));
+    const stderr = boundedCommandOutput(path.join(temporary, 'stderr.bin'));
+    if (!fs.statSync(metadataFile, { throwIfNoEntry: false })?.isFile()) {
+      return { pid: helper.pid, status: null, signal: helper.signal || null,
+        error: helper.error || Object.assign(new Error('AUDIT_WINDOWS_COMMAND_HELPER_FAILED'),
+          { code: 'AUDIT_WINDOWS_COMMAND_HELPER_FAILED' }), stdout, stderr };
+    }
+    const metadata = JSON.parse(fs.readFileSync(metadataFile, 'utf8'));
+    let error = null;
+    if (metadata.terminationReason === 'timeout') {
+      error = Object.assign(new Error(`Command timed out after ${timeout}ms`), { code: 'ETIMEDOUT' });
+    } else if (metadata.terminationReason === 'output-limit') {
+      error = Object.assign(new Error('AUDIT_COMMAND_OUTPUT_TOO_LARGE'), { code: 'ENOBUFS' });
+    }
+    else if (metadata.spawnFailure) error = Object.assign(new Error(metadata.spawnFailure.message),
+      { code: metadata.spawnFailure.code });
+    return { pid: metadata.pid, status: metadata.terminationReason ? null : metadata.status,
+      signal: metadata.signal, error, stdout, stderr };
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
   }
+}
+
+export function spawnSyncCommandTree(commandName, args, options) {
+  if (process.platform === 'win32') {
+    return windowsCommand(commandName, args, options.cwd, options.timeout, options.env);
+  }
+  return spawnSync(commandName, args, options);
+}
+
+function command(command, args, cwd, timeout = 30000, gradleUserHome = '') {
+  const env = controlledGradleEnvironment(process.env, gradleUserHome);
+  const result = spawnSyncCommandTree(command, args, { cwd, encoding: 'utf8', windowsHide: true, timeout,
+    maxBuffer: COMMAND_MAX_BUFFER, env });
   return { result, output: `${result.stdout || ''}\n${result.stderr || ''}` };
 }
 
@@ -900,5 +1041,8 @@ function main() {
 }
 
 if (path.resolve(process.argv[1] || '') === fileURLToPath(import.meta.url)) {
-  try { main(); } catch (error) { process.stderr.write(`${JSON.stringify(safeError(error))}\n`); process.exitCode = 1; }
+  try {
+    if (process.argv[2] === '--windows-command-helper') runWindowsCommandHelper(process.argv[3]);
+    else main();
+  } catch (error) { process.stderr.write(`${JSON.stringify(safeError(error))}\n`); process.exitCode = 1; }
 }
