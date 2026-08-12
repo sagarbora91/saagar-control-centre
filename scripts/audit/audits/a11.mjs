@@ -14,8 +14,7 @@ const REQUIRED_TEST_SUITES = Object.freeze({
 });
 const CURRENT_TEST_CLAIM_DOCUMENTS = new Set([
   'docs/audit/HANDOFF.md',
-  'docs/audit/AUDIT-PROGRAM-v1.md',
-  'docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md'
+  'docs/audit/AUDIT-PROGRAM-v1.md'
 ]);
 const EXTERNAL_TEST_CLAIM_DOMAINS = new Set(['api23External', 'largeRecordFocused', 'storageRecoveryFocused']);
 

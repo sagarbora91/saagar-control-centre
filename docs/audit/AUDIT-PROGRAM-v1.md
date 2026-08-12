@@ -111,6 +111,8 @@ A heuristically clean run never reports `pass` on its own. `pass` requires the c
 
 A7-01 may use the runner-bound `a7-message-contract-census-v2` authority for its narrower inventory claim. Every supported sender/receiver site is included, and dynamic sites are retained as hash-bound unresolved contract rows; that authority does not upgrade A7-02, A7-03, A7-05 or any A8 absence claim. A7-04 is exempt because it decides over a closed, hash-bound set rather than heuristic discovery. A8-05 is also fail-closed: a discovered remote-capable call whose target cannot be validated is measured policy non-compliance (`fail`), not heuristic absence.
 
+A11-03 compares structured counts from the exact seven-suite audit invocation with present-release claims in `docs/audit/HANDOFF.md` and this audit program. Dated verification handoffs and the master consolidated plan's explicitly labelled v2.9 baseline/progress history are evidence for their own snapshots, not claims about the current audit target; focused/API-23 claims are recorded separately from the seven-suite aggregate.
+
 ## 5. Output contract
 
 The external run directory is `<YYYY-MM-DD>-<HHMMSS>-<7-to-12-character-targetSha-prefix>`. It contains exactly 18 files: `EVIDENCE-MANIFEST.json` plus these 17 authenticated artifacts:
