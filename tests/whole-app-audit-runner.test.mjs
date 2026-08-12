@@ -9,9 +9,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
-  parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
+  controlledGradleEnvironment, parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
-  runControlledProbes } from '../scripts/audit/controlled-probes.mjs';
+  prepareControlledGradleWrapper, runControlledProbes } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
 import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
@@ -1999,6 +1999,40 @@ test('controlled Gradle JVM identity requires the reported runtime to equal JAVA
   assert.throws(() => parseGradleJvmIdentity(
     'Gradle 8.11.1\nDaemon JVM: 17.0.19', path.resolve(os.tmpdir()), java),
   error => error && error.message === 'AUDIT_BUILD_GRADLE_IDENTITY_UNAVAILABLE');
+});
+
+test('controlled Gradle bootstrap uses Windows roots without overriding explicit trust and allows first download', () => {
+  const automatic = controlledGradleEnvironment({ GRADLE_OPTS: '-Dsample=true' }, 'isolated-home', 'win32');
+  assert.equal(automatic.GRADLE_USER_HOME, 'isolated-home');
+  assert.match(automatic.GRADLE_OPTS, /-Djavax\.net\.ssl\.trustStoreType=Windows-ROOT/);
+  const explicit = controlledGradleEnvironment({
+    GRADLE_OPTS: '-Djavax.net.ssl.trustStore=C:\\audit\\trust.jks'
+  }, 'isolated-home', 'win32');
+  assert.doesNotMatch(explicit.GRADLE_OPTS, /Windows-ROOT/);
+  const javaToolOptions = controlledGradleEnvironment({
+    JAVA_TOOL_OPTIONS: '-Djavax.net.ssl.trustStoreType=JKS'
+  }, 'isolated-home', 'win32');
+  assert.equal(javaToolOptions.GRADLE_OPTS, undefined);
+  const linux = controlledGradleEnvironment({}, 'isolated-home', 'linux');
+  assert.equal(linux.GRADLE_OPTS, undefined);
+
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-gradle-timeout-'));
+  const wrapper = path.join(temporary, 'android', 'gradle', 'wrapper');
+  try {
+    fs.mkdirSync(wrapper, { recursive: true });
+    const properties = path.join(wrapper, 'gradle-wrapper.properties');
+    fs.writeFileSync(properties,
+      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.2.1-all.zip\nnetworkTimeout=10000\n');
+    prepareControlledGradleWrapper(temporary);
+    const normalized = fs.readFileSync(properties, 'utf8');
+    assert.match(normalized, /^networkTimeout=120000$/m);
+    assert.match(normalized, /^distributionUrl=https\\:\/\/services\.gradle\.org\//m);
+    fs.writeFileSync(properties, 'networkTimeout=10000\nnetworkTimeout=20000\n');
+    assert.throws(() => prepareControlledGradleWrapper(temporary),
+      error => error && error.message === 'AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });
 
 test('external audit outputs are outside every canonical Git worktree and resist prefix and symlink traps', () => {

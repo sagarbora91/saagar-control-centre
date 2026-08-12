@@ -13,6 +13,7 @@ const COMMAND_BYTES = 256 * 1024 * 1024;
 const MUTATION_TIMEOUT_MS = 20 * 60 * 1000;
 const BOOTSTRAP_TIMEOUT_MS = 10 * 60 * 1000;
 const INSTALL_TIMEOUT_MS = 20 * 60 * 1000;
+const GRADLE_WRAPPER_NETWORK_TIMEOUT_MS = 120_000;
 const PROBE_KINDS = new Set(['build', 'mutation']);
 const provenanceRegistry = new WeakMap();
 const evidenceRegistry = new WeakMap();
@@ -249,6 +250,25 @@ function bootstrapAndroid(worktree, targetSha) {
     elapsedMs: Date.now() - started, outputSha256: sha256(output) });
 }
 
+/* Capacitor's fresh Android template allows only ten seconds for the Gradle
+   distribution download. That is shorter than a normal first fetch on the
+   controlled Windows runner and turns a healthy toolchain into an unmeasured
+   A9 gate. The generated Android tree is ignored and disposable, so normalize
+   only this one bounded property before its recipe hash is captured. */
+export function prepareControlledGradleWrapper(worktree) {
+  const file = path.join(worktree, 'android', 'gradle', 'wrapper', 'gradle-wrapper.properties');
+  const source = fs.readFileSync(file, 'utf8');
+  const matches = [...source.matchAll(/^networkTimeout=(\d+)\s*$/gm)];
+  if (matches.length !== 1) fail('AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
+  const value = Number(matches[0][1]);
+  if (!Number.isSafeInteger(value) || value < 1 || value > GRADLE_WRAPPER_NETWORK_TIMEOUT_MS) {
+    fail('AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
+  }
+  const normalized = source.replace(/^networkTimeout=\d+\s*$/m,
+    `networkTimeout=${GRADLE_WRAPPER_NETWORK_TIMEOUT_MS}`);
+  fs.writeFileSync(file, normalized, 'utf8');
+}
+
 function captureOneBuild(identity, tempRoot, index) {
   const worktree = path.join(tempRoot, `build-${index}`);
   const output = path.join(tempRoot, `capture-${index}`);
@@ -266,6 +286,7 @@ function captureOneBuild(identity, tempRoot, index) {
     const install = installDependencies(worktree);
     gradleHome = createGradleHome(tempRoot, index);
     const bootstrap = bootstrapAndroid(worktree, identity.targetSha);
+    prepareControlledGradleWrapper(worktree);
     captureBuild({ root: worktree, output, bootstrapReceipt: bootstrap,
       installReceipt: install, gradleUserHome: gradleHome });
     const apk = path.join(output, 'app-debug.apk');
