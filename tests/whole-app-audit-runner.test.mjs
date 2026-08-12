@@ -11,7 +11,8 @@ import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-
 import { parseGeneratedSigningConfiguration,
   controlledGradleEnvironment, parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
-  prepareControlledGradleWrapper, runControlledProbes } from '../scripts/audit/controlled-probes.mjs';
+  prepareControlledGradleWrapper, runControlledProbes,
+  withControlledCleanup } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
 import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
@@ -2063,14 +2064,32 @@ test('controlled Gradle bootstrap uses Windows roots without overriding explicit
   }
 });
 
-test('controlled build timeout and cleanup outlive a valid fresh Gradle download', () => {
+test('controlled build timeout terminates Windows trees and cleanup preserves primary errors', () => {
   const capture = fs.readFileSync(path.join(ROOT, 'scripts/audit/capture-build.mjs'), 'utf8');
   const probes = fs.readFileSync(path.join(ROOT, 'scripts/audit/controlled-probes.mjs'), 'utf8');
   assert.match(capture, /const GRADLE_IDENTITY_TIMEOUT_MS = 10 \* 60 \* 1000;/);
   assert.match(capture, /gradleInvocation\.cwd, GRADLE_IDENTITY_TIMEOUT_MS, gradleUserHome/);
-  assert.match(probes, /attempt\(\(\) => stopControlledGradle\(worktree, gradleHome\)\);/);
-  assert.match(probes, /attempt\(\(\) => removeWorktree\(identity\.root, tempRoot, worktree, registered\)\);/);
-  assert.ok(probes.indexOf('attempt(() => removeWorktree') < probes.indexOf('attempt(() => removeGradleHome'));
+  assert.match(capture, /spawnSync\('taskkill\.exe', \['\/PID', String\(result\.pid\), '\/T', '\/F'\]/);
+  assert.match(probes, /if \(gradleReady\) stopControlledGradle\(worktree, gradleHome\)/);
+  assert.ok(probes.indexOf('() => removeWorktree') < probes.indexOf('() => removeGradleHome'));
+
+  const primary = Object.assign(new Error('PRIMARY_BUILD_FAILURE'), { code: 'PRIMARY_BUILD_FAILURE' });
+  const cleanupOrder = [];
+  assert.throws(() => withControlledCleanup(() => { throw primary; }, [
+    () => { cleanupOrder.push('first'); throw new Error('LOCKED_HOME'); },
+    () => { cleanupOrder.push('second'); }
+  ]), error => error === primary);
+  assert.deepEqual(cleanupOrder, ['first', 'second']);
+  assert.throws(() => withControlledCleanup(() => 'built', [
+    () => { throw new Error('CLEANUP_FAILED'); }
+  ]), /CLEANUP_FAILED/);
+});
+
+test('large dependency closures are hash-bound outside the evidence array limit', () => {
+  const capture = fs.readFileSync(path.join(ROOT, 'scripts/audit/capture-build.mjs'), 'utf8');
+  assert.match(capture, /const digest = createHash\('sha256'\);/);
+  assert.match(capture, /for \(const row of rows\)/);
+  assert.doesNotMatch(capture, /sha256: canonicalSha256\(rows\)/);
 });
 
 test('external audit outputs are outside every canonical Git worktree and resist prefix and symlink traps', () => {

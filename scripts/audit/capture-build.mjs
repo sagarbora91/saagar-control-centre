@@ -1,15 +1,16 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { buildContext, compareText, sha256 } from './lib.mjs';
 import { normalizedApkFingerprint } from './compare-apks.mjs';
 import { assertExternalPath, gradleVersionLauncher, verifyIsolatedWorktree } from './runner-support.mjs';
+import { canonicalSha256, safeJson, safeError } from './schema.mjs';
 
 const GRADLE_IDENTITY_TIMEOUT_MS = 10 * 60 * 1000;
-import { canonicalSha256, safeJson, safeError } from './schema.mjs';
 
 const GENERATED_ANDROID_FILES = Object.freeze([
   'android/app/build.gradle', 'android/app/src/main/AndroidManifest.xml',
@@ -78,7 +79,22 @@ function closureIdentity(root, code) {
   if (!fs.statSync(base, { throwIfNoEntry: false })?.isDirectory()) throw new Error(code);
   walk(base);
   rows.sort((a, b) => compareText(a.path, b.path));
-  return Object.freeze({ fileCount: rows.length, totalBytes, sha256: canonicalSha256(rows) });
+  rows.sort((left, right) => compareText(left.path, right.path));
+  /* A Gradle distribution legitimately exceeds the central evidence schema's
+     6,000-row array bound. The paths never leave this function, so hash the
+     bounded closure incrementally instead of serializing its internal census
+     as evidence. Length-delimited fields avoid concatenation ambiguity. */
+  const digest = createHash('sha256');
+  for (const row of rows) {
+    for (const value of [row.path, String(row.bytes), row.sha256]) {
+      const bytes = Buffer.from(value, 'utf8');
+      digest.update(String(bytes.length));
+      digest.update(':');
+      digest.update(bytes);
+    }
+    digest.update('\n');
+  }
+  return Object.freeze({ fileCount: rows.length, totalBytes, sha256: digest.digest('hex') });
 }
 
 function sameClosure(left, right) {
@@ -460,6 +476,16 @@ function command(command, args, cwd, timeout = 30000, gradleUserHome = '') {
   const env = controlledGradleEnvironment(process.env, gradleUserHome);
   const result = spawnSync(command, args, { cwd, encoding: 'utf8', windowsHide: true, timeout,
     maxBuffer: 256 * 1024 * 1024, env });
+  if (process.platform === 'win32' && result.error && result.error.code === 'ETIMEDOUT' &&
+      Number.isSafeInteger(result.pid) && result.pid > 0) {
+    /* spawnSync terminates only its direct cmd.exe child on Windows. Terminate
+       the exact spawned process tree so a wrapper/downloader JVM cannot retain
+       the disposable worktree or Gradle home after the bounded timeout. */
+    spawnSync('taskkill.exe', ['/PID', String(result.pid), '/T', '/F'], {
+      cwd, encoding: 'utf8', windowsHide: true, timeout: 30_000,
+      maxBuffer: 1024 * 1024, env
+    });
+  }
   return { result, output: `${result.stdout || ''}\n${result.stderr || ''}` };
 }
 
@@ -779,6 +805,7 @@ export function captureBuild(options) {
   }
 
   const identity = buildToolchainIdentity(root, gradleUserHome);
+  if (typeof options.onGradleReady === 'function') options.onGradleReady();
 
   /* Re-measured immediately before Gradle: generation runs between these two
      points and must not touch the installed closure. */
