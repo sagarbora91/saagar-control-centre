@@ -26,6 +26,7 @@ const RELEASE_SIGNING_ENV = Object.freeze(['SAAGAR_KEYSTORE_FILE', 'SAAGAR_KEYST
 
 const MAX_SIGNING_SOURCE_BYTES = 256 * 1024;
 const MAX_SIGNING_NESTING = 128;
+const WINDOWS_ROOTS_GRADLE_OPTION = '-Djavax.net.ssl.trustStoreType=Windows-ROOT';
 
 /* ── Receipt v2 bounded closure identity (closure addendum §4) ───────────────
    A9 cannot pass from two equal APK hashes alone; both builds must prove they
@@ -440,9 +441,21 @@ function parseArgs(argv) {
 /* `gradleUserHome` is threaded through every Gradle-touching invocation so the
    isolated home is the one actually used, not merely the one measured. Without
    it the distribution identity would bind a directory the build never read. */
+export function controlledGradleEnvironment(environment, gradleUserHome, platform = process.platform) {
+  const env = { ...environment, TZ: 'UTC' };
+  if (!gradleUserHome) return env;
+  env.GRADLE_USER_HOME = gradleUserHome;
+  const javaOptions = [env.GRADLE_OPTS, env.JAVA_TOOL_OPTIONS, env._JAVA_OPTIONS]
+    .map(value => String(value || '')).join(' ');
+  if (platform === 'win32' &&
+      !/(?:^|\s)-Djavax\.net\.ssl\.trustStore(?:Type)?=\S+/.test(javaOptions)) {
+    env.GRADLE_OPTS = `${String(env.GRADLE_OPTS || '').trim()} ${WINDOWS_ROOTS_GRADLE_OPTION}`.trim();
+  }
+  return env;
+}
+
 function command(command, args, cwd, timeout = 30000, gradleUserHome = '') {
-  const env = { ...process.env, TZ: 'UTC' };
-  if (gradleUserHome) env.GRADLE_USER_HOME = gradleUserHome;
+  const env = controlledGradleEnvironment(process.env, gradleUserHome);
   const result = spawnSync(command, args, { cwd, encoding: 'utf8', windowsHide: true, timeout,
     maxBuffer: 256 * 1024 * 1024, env });
   return { result, output: `${result.stdout || ''}\n${result.stderr || ''}` };
