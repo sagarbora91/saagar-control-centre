@@ -9,7 +9,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
-  controlledGradleEnvironment, gradleDistributionClosureIdentity, parseGradleJvmIdentity,
+  controlledGradleEnvironment, dependencyClosureIdentity, gradleDistributionClosureIdentity,
+  parseGradleJvmIdentity,
   spawnSyncCommandTree } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
   prepareControlledGradleWrapper, runControlledProbes,
@@ -2086,6 +2087,27 @@ test('Gradle distribution identity excludes cache bookkeeping but detects execut
     fs.writeFileSync(path.join(cache, 'unexpected.bin'), 'not approved');
     assert.throws(() => gradleDistributionClosureIdentity(temporary),
       /AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE/);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('dependency identity excludes only exact Capacitor build outputs and detects source drift', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-dependency-closure-'));
+  try {
+    const plugin = path.join(temporary, '@capacitor', 'app', 'android');
+    fs.mkdirSync(path.join(plugin, 'src'), { recursive: true });
+    fs.writeFileSync(path.join(temporary, '@capacitor', 'app', 'package.json'), '{"name":"@capacitor/app"}\n');
+    fs.writeFileSync(path.join(plugin, 'src', 'Plugin.java'), 'immutable source\n');
+    const before = dependencyClosureIdentity(temporary);
+    fs.mkdirSync(path.join(plugin, 'build', 'generated'), { recursive: true });
+    fs.writeFileSync(path.join(plugin, 'build', 'generated', 'output.bin'), 'compiler output\n');
+    assert.deepEqual(dependencyClosureIdentity(temporary), before);
+    fs.writeFileSync(path.join(plugin, 'src', 'Plugin.java'), 'mutated source\n');
+    assert.notEqual(dependencyClosureIdentity(temporary).sha256, before.sha256);
+    fs.mkdirSync(path.join(temporary, 'unapproved', 'build'), { recursive: true });
+    fs.writeFileSync(path.join(temporary, 'unapproved', 'build', 'payload.bin'), 'must remain bound\n');
+    assert.notEqual(dependencyClosureIdentity(temporary).sha256, before.sha256);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
