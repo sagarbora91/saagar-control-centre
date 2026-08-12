@@ -38,7 +38,7 @@ const UI_CELL_KEYS = Object.freeze(['contrasts', 'documentSha256', 'language', '
   'screenshotSha256', 'surfaceId', 'surfaceSourceSha256', 'targets', 'viewportId']);
 const UI_TARGET_KEYS = Object.freeze(['heightCssPx', 'nodeSha256', 'visible', 'widthCssPx']);
 const UI_CONTRAST_KEYS = Object.freeze(['nodeSha256', 'ratio', 'requiredRatio']);
-const TECHNICAL_WORD = /^(?:api|apk|bcc|csv|cro|db|dsr|etp|fy|gst|he?mw|html|id|json|pdf|pin|qms|r\d{3}|rso|sha|sms|sql|tds|ui|upi|url|utc|v\d+(?:\.\d+)*|wlmhw|xml|zip)$/i;
+const TECHNICAL_WORD = /^(?:api|apk|bcc|csv|cro|db|dsr|etp|fy|grn|gst|he?mw|html|id|ifsc|json|nps|pdf|pin|qms|qrmp|r\d{3}|rso|sha|sms|sql|tds|ui|upi|url|utc|v\d+(?:\.\d+)*|wlmhw|xml|zip)$/i;
 const PROPER_OR_BUSINESS = /\b(?:Saagar|Titan|Helios|Tanishq|WhatsApp|Google|Android|Marathi|Hindi|English|Latur)\b/i;
 const LOCALIZATION_JAVASCRIPT_EXCLUSIONS = new Set([
   'www/app-i18n.js', 'www/build-identity.js', 'www/demo-seed.js',
@@ -73,6 +73,8 @@ function tokenDefinitions(context) {
 function unescapeLiteral(value) {
   return String(value || '')
     .replace(/\\n|\\r|\\t/g, ' ')
+    .replace(/\\u\{([0-9a-f]{1,6})\}|\\u([0-9a-f]{4})/gi, (_, wide, fixed) =>
+      String.fromCodePoint(Number.parseInt(wide || fixed, 16)))
     .replace(/\\(['"\\])/g, '$1')
     .replace(/&nbsp;|&#160;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -80,6 +82,11 @@ function unescapeLiteral(value) {
     .replace(/&apos;|&#39;/gi, "'")
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
+    .replace(/&(?:mdash|ndash);/gi, '—')
+    .replace(/&(?:hellip);/gi, '…')
+    .replace(/&(?:rsaquo);/gi, '›')
+    .replace(/&#x([0-9a-f]{1,6});|&#([0-9]{1,7});/gi, (_, hex, decimal) =>
+      String.fromCodePoint(Number.parseInt(hex || decimal, hex ? 16 : 10)))
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -108,13 +115,148 @@ function candidateAllowed(text, dictionary) {
   return words.every(word => dictionary.words.has(word.toLowerCase()) || TECHNICAL_WORD.test(word) || PROPER_OR_BUSINESS.test(word));
 }
 
+function interpolationOnly(raw) {
+  const match = /^(['"])\s*\+([\s\S]*)\+\s*\1$/.exec(String(raw || '').trim());
+  if (!match) return false;
+  /* A generated element whose complete text is one JavaScript expression has
+     no static English string for A6-03 to classify. Retain it when any quoted
+     branch contains words (for example a ternary choosing "Post now"), because
+     those literals are genuine UI even though the surrounding value is dynamic. */
+  for (const literal of match[2].matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)) {
+    if (/[A-Za-z]{2}/.test(unescapeLiteral(literal[2]))) return false;
+  }
+  return true;
+}
+
 function addCandidate(rows, dictionary, file, source, offset, kind, raw, blocked = false) {
+  if (interpolationOnly(raw)) return;
   const value = unescapeLiteral(String(raw || '').replace(/<[^>]*>/g, ' '));
   if (!value || value.length > 500 || /(?:\$\{|<%|\{\{|\}\}|\bfunction\b|=>)/.test(value)) return;
   if (!/[A-Za-z]{2}/.test(value) || candidateAllowed(value, dictionary)) return;
   rows.push({ path: file, line: lineNumber(source, offset), kind,
     code: blocked ? 'STATIC_LOCALIZATION_EXPLICIT_BYPASS' : 'STATIC_LOCALIZATION_BYPASS',
     textFingerprint: sha256(value).slice(0, 20) });
+}
+
+function visibleControlTextSegments(value) {
+  const source = String(value || '');
+  const rows = [];
+  const stack = [{ name: '', hidden: false, blocked: false }];
+  const tags = /<[^>]*>/g;
+  let cursor = 0;
+  const addText = end => {
+    if (end <= cursor) return;
+    const state = stack[stack.length - 1];
+    if (!state.hidden) rows.push({ offset: cursor, value: source.slice(cursor, end), blocked: state.blocked });
+  };
+  for (const match of source.matchAll(tags)) {
+    addText(match.index);
+    const tag = match[0];
+    const closing = /^<\s*\//.test(tag);
+    const name = (/^<\s*\/?\s*([A-Za-z][A-Za-z0-9:-]*)/.exec(tag) || [])[1];
+    if (name && closing) {
+      for (let index = stack.length - 1; index > 0; index -= 1) {
+        const removed = stack.pop();
+        if (removed.name === name.toLowerCase()) break;
+      }
+    } else if (name && !/\/\s*>$/.test(tag) && !/^(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i.test(name)) {
+      const parent = stack[stack.length - 1];
+      stack.push({ name: name.toLowerCase(),
+        hidden: parent.hidden || /\baria-hidden\s*=\s*(['"]?)true\1/i.test(tag),
+        blocked: parent.blocked || /\bdata-no-i18n\b|\bcontenteditable\s*=\s*(['"]?)true\1/i.test(tag) });
+    }
+    cursor = match.index + tag.length;
+  }
+  addText(source.length);
+  return rows;
+}
+
+function javascriptLiteralView(value) {
+  const input = String(value || '');
+  const output = input.split('').map(character => /[\r\n]/.test(character) ? character : ' ');
+  const stack = [{ mode: 'code', templateExpression: false, braceDepth: 0 }];
+  let escaped = false;
+  const preserve = index => { output[index] = input[index]; };
+  const regexCanStart = index => {
+    let cursor = index - 1;
+    while (cursor >= 0 && /\s/.test(input[cursor])) cursor -= 1;
+    if (cursor < 0 || /[=(:,!\[{;&|?+*%^~<>-]/.test(input[cursor])) return true;
+    if (!/[A-Za-z0-9_$]/.test(input[cursor])) return false;
+    const end = cursor + 1;
+    while (cursor >= 0 && /[A-Za-z0-9_$]/.test(input[cursor])) cursor -= 1;
+    return /^(?:await|case|delete|in|instanceof|new|of|return|throw|typeof|void|yield)$/.test(input.slice(cursor + 1, end));
+  };
+  for (let index = 0; index < input.length; index += 1) {
+    const frame = stack[stack.length - 1];
+    const char = input[index], next = input[index + 1] || '';
+    if (frame.mode === 'line-comment') {
+      if (/\r|\n/.test(char)) stack.pop();
+      continue;
+    }
+    if (frame.mode === 'block-comment') {
+      if (char === '*' && next === '/') { index += 1; stack.pop(); }
+      continue;
+    }
+    if (frame.mode === 'string') {
+      if (escaped) { preserve(index); escaped = false; continue; }
+      if (char === '\\') { preserve(index); escaped = true; continue; }
+      if (char === frame.quote) { stack.pop(); continue; }
+      preserve(index);
+      continue;
+    }
+    if (frame.mode === 'template') {
+      if (escaped) { preserve(index); escaped = false; continue; }
+      if (char === '\\') { preserve(index); escaped = true; continue; }
+      if (char === '`') { stack.pop(); continue; }
+      if (char === '$' && next === '{') {
+        index += 1;
+        stack.push({ mode: 'code', templateExpression: true, braceDepth: 1 });
+        continue;
+      }
+      preserve(index);
+      continue;
+    }
+    if (char === '/' && next === '/') {
+      index += 1; stack.push({ mode: 'line-comment' }); continue;
+    }
+    if (char === '/' && next === '*') {
+      index += 1; stack.push({ mode: 'block-comment' }); continue;
+    }
+    if (char === '/' && regexCanStart(index)) {
+      let inClass = false, regexEscaped = false;
+      for (index += 1; index < input.length; index += 1) {
+        const regexChar = input[index];
+        if (regexEscaped) { regexEscaped = false; continue; }
+        if (regexChar === '\\') { regexEscaped = true; continue; }
+        if (regexChar === '[') { inClass = true; continue; }
+        if (regexChar === ']' && inClass) { inClass = false; continue; }
+        if (regexChar === '/' && !inClass) {
+          while (/[A-Za-z]/.test(input[index + 1] || '')) index += 1;
+          break;
+        }
+        if (/\r|\n/.test(regexChar)) break;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      stack.push({ mode: 'string', quote: char }); escaped = false; continue;
+    }
+    if (char === '`') { stack.push({ mode: 'template' }); escaped = false; continue; }
+    if (frame.templateExpression && char === '{') frame.braceDepth += 1;
+    else if (frame.templateExpression && char === '}' && --frame.braceDepth === 0) stack.pop();
+  }
+  return output.join('');
+}
+
+function localizationMarkupView(source) {
+  const output = String(source || '').split('');
+  for (const match of String(source || '').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)) {
+    const body = match[1];
+    const start = match.index + match[0].indexOf(body);
+    const view = javascriptLiteralView(body);
+    for (let index = 0; index < view.length; index += 1) output[start + index] = view[index];
+  }
+  return output.join('');
 }
 
 function firstPartyLocalizationJavaScript(context) {
@@ -129,15 +271,20 @@ function localizationBypasses(context, dictionary, javascriptFiles) {
   const htmlFiles = ['www/index.html', ...context.modules.map(module => module.file)].sort();
   for (const file of htmlFiles) {
     const source = context.read(file);
+    const markup = localizationMarkupView(source);
     const control = /<(button|label|h[1-6]|th|summary|legend|option|a)\b([^>]*)>([\s\S]*?)<\/\1\s*>/gi;
-    for (const match of source.matchAll(control)) {
+    for (const match of markup.matchAll(control)) {
       const blocked = /\bdata-no-i18n\b|\bcontenteditable\s*=\s*['"]?true/i.test(match[2]);
-      addCandidate(rows, dictionary, file, source, match.index, `element:${match[1].toLowerCase()}`, match[3], blocked);
+      const innerOffset = match.index + match[0].indexOf(match[3]);
+      for (const segment of visibleControlTextSegments(match[3])) {
+        addCandidate(rows, dictionary, file, source, innerOffset + segment.offset,
+          `element:${match[1].toLowerCase()}`, segment.value, blocked || segment.blocked);
+      }
     }
-    for (const match of source.matchAll(/<[^>]+\b(placeholder|aria-label|title)\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
+    for (const match of markup.matchAll(/<[^>]+\b(placeholder|aria-label|title)\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
       addCandidate(rows, dictionary, file, source, match.index, `attribute:${match[1].toLowerCase()}`, match[3], /\bdata-no-i18n\b/i.test(match[0]));
     }
-    for (const match of source.matchAll(/<input\b(?=[^>]*\btype\s*=\s*(['"])(?:button|submit|reset)\1)[^>]*\bvalue\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
+    for (const match of markup.matchAll(/<input\b(?=[^>]*\btype\s*=\s*(['"])(?:button|submit|reset)\1)[^>]*\bvalue\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
       addCandidate(rows, dictionary, file, source, match.index, 'attribute:value', match[3], /\bdata-no-i18n\b/i.test(match[0]));
     }
     for (const match of source.matchAll(/\b(?:alert|confirm|toast|notify|showToast)\s*\(\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
@@ -482,5 +629,3 @@ export async function run(context) {
     renderedContrastViolations: rendered.contrastViolations
   });
 }
-
-
