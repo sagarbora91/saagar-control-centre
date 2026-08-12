@@ -39,6 +39,23 @@ test('responsive source has a desktop overview and mobile stacked controls with 
   assert.doesNotMatch(source,/₹|salesTotal|revenueTotal/);
 });
 
+test('R013 and R003 exception presentation is exact, bounded and explicitly non-revenue',()=>{
+  const reconciliation={enrichments:{
+    R013:{status:'FAIL',differenceCount:33},
+    R003:{status:'PASS',differenceCount:0},
+    paymentType25:{status:'QUARANTINED',rowCount:7,persisted:false}
+  }};
+  assert.deepEqual(api.exceptionPresentation({reconciliation}),[
+    {reportId:'R013',label:'CRO attribution',help:'Compare CRO-attributed lines with sales-detail lines.',status:'FAIL',differenceCount:33},
+    {reportId:'R003',label:'Discount lines',help:'Compare discount lines with sales-detail lines.',status:'PASS',differenceCount:0}
+  ]);
+  assert.deepEqual(api.exceptionPresentation({receipt:{enrichments:reconciliation.enrichments}}),api.exceptionPresentation({reconciliation}));
+  assert.deepEqual(api.exceptionPresentation({reconciliation:{enrichments:{R013:{status:'FAIL',differenceCount:250001},R003:{status:'UNKNOWN',differenceCount:1}}}}),[]);
+  assert.match(source,/R003\/R013 report exceptions/);
+  assert.match(source,/These checks do not change revenue or sales totals/);
+  assert.match(source,/Review open differences before using CRO attribution or discount analysis/);
+});
+
 test('shell exposes the dedicated ETP route and loads its external module',()=>{
   assert.match(shell,/<script src="etp-import-ui\.js"><\/script>/);
   assert.match(shell,/Open ETP import/);
@@ -46,5 +63,6 @@ test('shell exposes the dedicated ETP route and loads its external module',()=>{
   const reports=shell.slice(shell.indexOf('id="reportsView"'),shell.indexOf('id="configView"'));
   const settings=shell.slice(shell.indexOf('id="configView"'),shell.indexOf('</main>'));
   assert.match(reports,/id="reportsEtpImportCard"[\s\S]*Open ETP import/);
+  assert.match(reports,/exact R003, R013, R022 and R025 exports/);
   assert.doesNotMatch(settings,/Retail ETP reports|Open ETP import/);
 });
