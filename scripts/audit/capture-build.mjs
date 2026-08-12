@@ -799,10 +799,31 @@ function validatedInstallReceipt(value) {
    bounded closure under the isolated GRADLE_USER_HOME. Captured before and after
    the build so a distribution swapped mid-build is caught rather than averaged
    away. */
-function gradleDistributionIdentity(gradleUserHome, code) {
+export function gradleDistributionClosureIdentity(gradleUserHome, code =
+  'AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE') {
   const distributions = path.join(path.resolve(gradleUserHome), 'wrapper', 'dists');
   if (!fs.statSync(distributions, { throwIfNoEntry: false })?.isDirectory()) throw new Error(code);
-  return closureIdentity(distributions, code);
+  /* Gradle writes CACHEDIR.TAG and transient lock/marker files around the
+     immutable extracted distribution. Those files are cache bookkeeping, not
+     executable distribution bytes, and can legitimately appear between the
+     wrapper identity probe and the build. Bind exactly one fail-closed
+     distribution family, cache key, and extracted Gradle directory instead. */
+  const top = fs.readdirSync(distributions, { withFileTypes: true });
+  if (top.some(entry => entry.name !== 'CACHEDIR.TAG' && !entry.isDirectory())) throw new Error(code);
+  const families = top.filter(entry => entry.isDirectory());
+  if (families.length !== 1 || !/^gradle-[A-Za-z0-9._+-]+$/.test(families[0].name)) throw new Error(code);
+  const family = path.join(distributions, families[0].name);
+  const keys = fs.readdirSync(family, { withFileTypes: true });
+  if (keys.length !== 1 || !keys[0].isDirectory() || !/^[a-z0-9]{8,80}$/i.test(keys[0].name)) {
+    throw new Error(code);
+  }
+  const cache = path.join(family, keys[0].name);
+  const cacheEntries = fs.readdirSync(cache, { withFileTypes: true });
+  const extracted = cacheEntries.filter(entry => entry.isDirectory());
+  if (extracted.length !== 1 || !/^gradle-[A-Za-z0-9._+-]+$/.test(extracted[0].name) ||
+      cacheEntries.some(entry => !entry.isDirectory() &&
+        !/\.zip\.(?:lck|ok)$/.test(entry.name))) throw new Error(code);
+  return closureIdentity(path.join(cache, extracted[0].name), code);
 }
 
 function npmVersion(root) {
@@ -963,7 +984,7 @@ export function captureBuild(options) {
     throw new Error('AUDIT_BUILD_DEPENDENCY_CLOSURE_MUTATED');
   }
 
-  const gradleDistributionBefore = gradleDistributionIdentity(gradleUserHome,
+  const gradleDistributionBefore = gradleDistributionClosureIdentity(gradleUserHome,
     'AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE');
 
   const invocation = buildInvocation();
@@ -972,7 +993,7 @@ export function captureBuild(options) {
   const endedAt = new Date();
   if (built.result.status !== 0) throw new Error('AUDIT_BUILD_COMMAND_FAILED');
 
-  const gradleDistributionAfter = gradleDistributionIdentity(gradleUserHome,
+  const gradleDistributionAfter = gradleDistributionClosureIdentity(gradleUserHome,
     'AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE');
   if (!sameClosure(gradleDistributionAfter, gradleDistributionBefore)) {
     throw new Error('AUDIT_BUILD_GRADLE_DISTRIBUTION_MUTATED');
