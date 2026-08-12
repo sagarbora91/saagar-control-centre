@@ -379,11 +379,12 @@ function manifestBinding(context) {
 
 function undeclaredContracts(context, files) {
   const allowedParent = new Set(['postMessage']);
-  const allowedGlobals = new Set(['SaagarModuleRuntime', 'SaagarMah4']);
+  const allowedGlobals = new Set(['SaagarModuleRuntime', 'SaagarMah4', 'SaagarStockVariancePolicy']);
   const rows = [];
   for (const file of files.filter(value => value.startsWith('www/modules/'))) {
     const source = context.read(file);
-    const locallyDefined = new Set([...source.matchAll(/\bwindow\.(Saagar[A-Za-z0-9_$]+)\s*=/g)].map(match => match[1]));
+    const locallyDefined = new Set([...source.matchAll(/\b(?:window|root|globalThis)\s*\.\s*(Saagar[A-Za-z0-9_$]+)\s*=/g)]
+      .map(match => match[1]));
     for (const match of source.matchAll(/\b(?:window\s*\.\s*)?parent\s*\.\s*([A-Za-z_$][\w$]*)/g)) {
       if (!allowedParent.has(match[1])) rows.push({ path: file, line: lineNumber(source, match.index), contract: `parent.${match[1]}`, code: 'UNDECLARED_PARENT_CONTRACT' });
     }

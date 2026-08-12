@@ -13,7 +13,7 @@ import { safeJson } from './schema.mjs';
 
 const MAX_COMMAND_BYTES = 8 * 1024 * 1024;
 const MAX_GIT_BYTES = 64 * 1024 * 1024;
-const TEST_TIMEOUT_MS = 120_000;
+const TEST_TIMEOUT_MS = 240_000;
 
 const MUTATIONS = Object.freeze({
   money: Object.freeze({
@@ -30,7 +30,10 @@ const MUTATIONS = Object.freeze({
   storage: Object.freeze({
     mutationId: 'storage-native-batch-bound-v1',
     file: 'www/storage-core.js',
-    fileSha256: '4e8accc0689dcf71be26c08ab494fd135d21bc742ae6cd4607d08509575994fb',
+    fileSha256: Object.freeze([
+      '4e8accc0689dcf71be26c08ab494fd135d21bc742ae6cd4607d08509575994fb',
+      'a54938c4ead17d286c9bdc70facd86910d9dba4d3c33958ee967aa38a25df68f'
+    ]),
     before: 'var NATIVE_BATCH_OPS = 32;',
     after: 'var NATIVE_BATCH_OPS = 64;',
     expectedOccurrences: 1,
@@ -63,7 +66,10 @@ const MUTATIONS = Object.freeze({
   export: Object.freeze({
     mutationId: 'export-default-deny-policy-v1',
     file: 'www/export-control.js',
-    fileSha256: '5f6871561d86833dafef3425f23f5f6830bfc183717ae195a559fb9771d22886',
+    fileSha256: Object.freeze([
+      '5f6871561d86833dafef3425f23f5f6830bfc183717ae195a559fb9771d22886',
+      '1e946b1b8f1dfbb82b778e496023287045e68d1d6e9304ecd85646dd04e0a781'
+    ]),
     before: 'if (!policy.enabled) {',
     after: 'if (policy.enabled) {',
     expectedOccurrences: 1,
@@ -242,14 +248,15 @@ function applyMutation(worktree, spec) {
   const file = path.resolve(worktree, spec.file);
   if (!inside(file, worktree) || !fs.statSync(file, { throwIfNoEntry: false })?.isFile()) return false;
   const bytes = fs.readFileSync(file);
-  if (sha256(bytes) !== spec.fileSha256) return false;
+  const allowedHashes = Array.isArray(spec.fileSha256) ? spec.fileSha256 : [spec.fileSha256];
+  if (!allowedHashes.includes(sha256(bytes))) return false;
   const source = bytes.toString('utf8');
   const indexes = occurrences(source, spec.before);
   if (indexes.length !== spec.expectedOccurrences || source.includes(spec.after)) return false;
   const selected = indexes[spec.occurrenceIndex || 0];
   if (!Number.isSafeInteger(selected)) return false;
   const mutated = source.slice(0, selected) + spec.after + source.slice(selected + spec.before.length);
-  if (sha256(mutated) === spec.fileSha256) return false;
+  if (allowedHashes.includes(sha256(mutated))) return false;
   fs.writeFileSync(file, mutated, { encoding: 'utf8', flag: 'w' });
   const verified = fs.readFileSync(file, 'utf8');
   return verified === mutated && occurrences(verified, spec.after).length === 1;

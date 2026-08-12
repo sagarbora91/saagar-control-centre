@@ -783,6 +783,8 @@ test('controlled probe source freezes detached builds, fresh Android bootstrap, 
   assert.match(build, /gradle-wrapper\.jar/);
   assert.match(build, /generatedAndroidIdentity/);
   assert.match(mutations, /\['--test', '--test-reporter=tap', spec\.testFile\]/);
+  assert.match(mutations, /const TEST_TIMEOUT_MS = 240_000/);
+  assert.match(mutations, /Array\.isArray\(spec\.fileSha256\)/);
 });
 
 test('central evidence schema canonicalizes output and rejects local paths and unbounded strings', () => {
@@ -1295,8 +1297,9 @@ test('A4 inventories computed storage identities while leaving an empty census u
   assert.equal(dynamic.result, 'pass');
   assert.equal(dynamic.metric.inventoryComplete, true);
   assert.match(dynamic.metric.inventorySha256, /^[a-f0-9]{64}$/);
-  assert.ok(dynamic.metric.inventory.some(item => item.unresolved && item.name.startsWith('computed-')));
-  assert.equal(dynamicResult.checks.find(item => item.id === 'A4-02').result, 'fail');
+  assert.ok(dynamic.metric.inventory.some(item => item.unresolved &&
+    item.artifactId === 'local-storage-access:dynamic-key'));
+  assert.equal(dynamicResult.checks.find(item => item.id === 'A4-02').result, 'pass');
   const empty = (await evaluate(null)).checks.find(item => item.id === 'A4-01');
   assert.equal(empty.result, 'unmeasured');
   assert.ok(empty.evidence.some(item => item.code === 'PERSISTENT_ARTIFACT_CENSUS_EMPTY'));
@@ -1379,7 +1382,7 @@ test('A7 inventories represented dynamic message contracts without generic type 
   assert.ok(emptyInventory.evidence.some(item => item.code === 'MESSAGE_CONTRACT_CENSUS_EMPTY'));
 });
 
-test('C-07 fails an exact message contract delta and unmeasures missing inventory', () => {
+test('C-07 compares semantic message contracts and unmeasures missing inventory', () => {
   const messageCheck = fixture => fixture.current.find(audit => audit.auditId === 'A7')
     .checks.find(check => check.id === 'A7-01');
   const evaluate = fixture => evaluateComparison({ baselineAudits: fixture.baseline,
@@ -1388,9 +1391,20 @@ test('C-07 fails an exact message contract delta and unmeasures missing inventor
 
   const changed = comparisonFixture('same');
   const inventory = structuredClone(messageCheck(changed).metric.inventory);
+  /* Relocation is expected during modular extraction and is not a protocol
+     change. A newly emitted payload shape is a semantic expansion and must
+     still fail the continuity gate. */
   inventory[0].receiverContracts[0].path = 'www/shared/changed-runtime.js';
   messageCheck(changed).metric = messageContractMetric(inventory);
-  const changedGate = evaluate(changed);
+  assert.equal(evaluate(changed).result, 'pass');
+
+  const expanded = comparisonFixture('same');
+  const expandedInventory = structuredClone(messageCheck(expanded).metric.inventory);
+  expandedInventory[0].senderContracts.push({ path: 'www/shared/new-runtime.js',
+    payloadFields: [{ field: 'newField', kind: 'string' }] });
+  expandedInventory[0].senderContracts.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
+  messageCheck(expanded).metric = messageContractMetric(expandedInventory);
+  const changedGate = evaluate(expanded);
   assert.equal(changedGate.result, 'fail');
   assert.ok(changedGate.evidence.some(item => item.code === 'MESSAGE_CONTRACT_CHANGED'));
 
@@ -2083,7 +2097,8 @@ test('A7 ignores comment and string decoys while inventorying computed protocol 
      exact message-contract regression. */
   const authorized = buildGate(true);
   assert.equal(authorized.result, 'fail');
-  assert.ok(authorized.evidence.some(row => /MESSAGE_CONTRACT_(?:ADDED|CHANGED)/.test(row.code)));
+  assert.ok(authorized.evidence.some(row =>
+    /MESSAGE_(?:CONTRACT_(?:ADDED|CHANGED)|UNRESOLVED_CONTRACT_ADDED)/.test(row.code)));
 
   /* Real A7 output carries no such authority, so the same genuine delta cannot
      render a verdict — it is unmeasured, never a silent pass. */

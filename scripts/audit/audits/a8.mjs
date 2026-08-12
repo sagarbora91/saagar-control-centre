@@ -3,7 +3,8 @@ import path from 'node:path';
 
 import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
 import { ALLOWED_REMOTE_LITERAL_CONTEXTS } from '../config.mjs';
-import { conservativeStaticResult, staticDiscoveryAuthority, staticDiscoveryEvidence } from '../runner-support.mjs';
+import { conservativeStaticResult, staticDiscoveryAuthority, staticDiscoveryEvidence,
+  trackedSecretScanAuthority } from '../runner-support.mjs';
 
 const VENDOR_PATH = /(?:^|\/)(?:vendor|vendors|third[-_]?party|libs?|node_modules)(?:\/|$)|(?:\.min\.(?:js|css)$|bundle\.min\.js$|html2pdf|jspdf|fflate|read-excel-file)/i;
 const PII_IDENTIFIER = /\b(?:customer(?:Name|Mobile|Phone|Email|Address)?|cust(?:Name|Mobile|Phone)?|employee(?:Name|Mobile|Phone|Email|Address)?|staff(?:Name|Mobile|Phone)?|mobile(?:Number)?|phone(?:Number)?|email(?:Address)?|postalAddress|homeAddress|salary|payslip|bankAccount|accountNumber|aadhaar|panNumber|ownerPin|adminPin|staffPin|photoData|imageData)\b/i;
@@ -746,12 +747,14 @@ export async function run(context) {
      unless an explicit complete discovery authority is supplied. Definite
      violations continue to fail. */
   const authority = staticDiscoveryAuthority(context);
+  const secretAuthority = trackedSecretScanAuthority(context);
   const conservative = (findings, unresolved) => conservativeStaticResult({
     definiteViolations: findings.length, unresolved: unresolved.length, authority
   });
   const exportResult = conservative(exportPaths.findings, exportPaths.unresolved);
   const authResult = conservative(auth.findings, auth.unresolved);
-  const secretResult = conservative(secrets.findings, secrets.unresolved);
+  const secretResult = conservativeStaticResult({ definiteViolations: secrets.findings.length,
+    unresolved: secrets.unresolved.length, authority: secretAuthority });
   /* Remote targets are a fail-closed policy boundary. A syntactically present
      target that the scanner cannot validate is measurable non-compliance, not
      an absence-of-evidence gap: it may not ship as an approved remote path until
@@ -804,9 +807,9 @@ export async function run(context) {
       metric: { trackedFiles: context.files.length, scannedTextFiles: secrets.scannedTextFiles,
         scannedBytes: secrets.scannedBytes, binaryFilesSkipped: secrets.binaryFilesSkipped,
         verifiedSecretPatterns: secrets.findings.length, unresolvedFiles: secrets.unresolved.length,
-        staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
+        staticDiscoveryComplete: secretAuthority.complete, staticAbsenceIsProof: false },
       rule: 'Every tracked nonbinary text file must be bounded-scanned for private keys, secret-bearing files and high-confidence credential formats.',
-      evidence: staticDiscoveryEvidence(authority, secrets.findings.length ? secrets.findings : secrets.unresolved),
+      evidence: staticDiscoveryEvidence(secretAuthority, secrets.findings.length ? secrets.findings : secrets.unresolved),
       notes: 'The report emits only rule identifier, file, line and one-way fingerprint; suspected values are never emitted.'
     }),
     makeCheck({

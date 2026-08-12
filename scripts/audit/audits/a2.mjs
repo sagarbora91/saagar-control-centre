@@ -91,7 +91,8 @@ function functionName(masked, match, sequence) {
 }
 
 function extractFunctions(context) {
-  const files = context.productFiles.filter(file => /^www\/.+\.(?:html?|js|mjs)$/i.test(file)).sort();
+  const files = context.productFiles.filter(file => /^www\/.+\.(?:html?|js|mjs)$/i.test(file))
+    .filter(file => !/(?:^|\/)(?:vendor\/|[^/]+\.(?:min|bundle)\.js$)/i.test(file)).sort();
   const functions = [];
   const head = /\bfunction(?:\s+([A-Za-z_$][\w$]*))?\s*\([^{};]*\)\s*\{|(?:\([^{};]*\)|[A-Za-z_$][\w$]*)\s*=>\s*\{/g;
   for (const file of files) {

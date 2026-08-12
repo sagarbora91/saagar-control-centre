@@ -249,7 +249,12 @@ The external-evidence trust policy is currently closed (`trustedSignerCount: 0`)
 - **A9-04:** module manifest byte/hash mismatch is P0.
 - **A9-05:** release signing that does not fail closed without secrets is P0.
 
-A9-01/02/05 consume only the runner-controlled two-build comparison and its post-bootstrap/post-override receipts. Ignored ambient `android/**` files and external comparison JSON are never authoritative.
+A9-01/02/05 consume only the runner-controlled two-build comparison and its post-bootstrap/post-override receipts. Ignored ambient Android build-tree files and external comparison JSON are never authoritative.
+
+The audit program's machine-readable implementation sentinel is
+`capabilityId: "cro_audit:route:entry"`. It is a stable route capability shared
+by the frozen baseline and the modular candidate; A3-05 verifies it against the
+measured semantic inventory rather than inferring implementation from prose.
 
 ### A10 — Performance and resources
 
