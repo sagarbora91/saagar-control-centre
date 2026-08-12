@@ -46,7 +46,8 @@ The source workbooks remain outside the app and repository. This is structural a
 - Modular architecture: **72/72 passed** after deterministic fingerprint refresh.
 - Main offline/storage/security suite: **262/262 passed**.
 - Normal non-seeded APK build: passed for version 2.9 / versionCode 209 / minSdk 23.
-- APK: `android/app/build/outputs/apk/debug/app-debug.apk`, 7,326,431 bytes, SHA-256 `A5502378EB5877BCD3CAA36172DBC7D6777ABE19FAF340A81053F6D5BCDBCDDB`.
+- Generated debug APK (external build output, not a tracked repository path):
+  7,326,431 bytes, SHA-256 `A5502378EB5877BCD3CAA36172DBC7D6777ABE19FAF340A81053F6D5BCDBCDDB`.
 - API-23 native ETP instrumentation: **2/2 passed** (Keystore round-trip, unique IVs, non-first-chunk tamper refusal, plaintext-canary absence, reset/key deletion and incomplete-stage recreation safety).
 - Rebuilt-APK update harness: two attempts hit the ten-minute baseline synthetic-seed deadline before candidate installation; no pass is claimed for this APK hash. The earlier storage-hotfix emulator pass remains bound to its earlier APK hash.
 

@@ -14,7 +14,7 @@
 | Prepared | 2026-07-29 |
 | Scope | Saagar Control Centre Android application |
 | Current baseline | v2.9 / versionCode 209 |
-| Baseline source | `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798` |
+| Baseline source | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Automated baseline | 54 of 54 permanent offline tests passing |
 | Device catalogue | 69 module-wise cases plus four recovery/device drills |
 | Core improvement scope | D1-D12 and E1-E6; C1 non-ETP engineering complete 2026-08-04 |
@@ -103,8 +103,8 @@ controlled handoff’s requirement to prove the current baseline first.
 
 ## 3. Current controlled position
 
-- `main` and `origin/main` are recorded at
-  `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798`.
+- The governed pre-migration product baseline is recorded at
+  `8f96480ec6ddfc99016af43a7369f57a06cb9fd6`.
 - The current application is v2.9/versionCode 209, minSdk 23, target API 34.
 - API 22 is unsupported; it is not a partial-support or fail-open exception.
 - The permanent offline suite is green at 54 of 54 tests.

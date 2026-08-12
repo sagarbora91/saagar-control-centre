@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7366,
-    "mah3ProfileSha256": "94dfe470c3c7a133581855cc884aa6772b4e49b88e2708a9ee31e1921249bc07",
-    "mah3TreeSha256": "dac7dd14d92518881105419082e8e6780478ad3fa39158cc2a6735d38421a6b6",
-    "currentWwwTreeSha256": "dac7dd14d92518881105419082e8e6780478ad3fa39158cc2a6735d38421a6b6",
+    "mah3ProfileSha256": "9f4457e086842a79228d0a6945409fe6b278e4b64ed5daf17011cb5e6441816e",
+    "mah3TreeSha256": "4fe2b988ff6bf4711041ae79e098b4c8fb1a3f9c51b56fdd511b8e552e43c104",
+    "currentWwwTreeSha256": "4fe2b988ff6bf4711041ae79e098b4c8fb1a3f9c51b56fdd511b8e552e43c104",
     "currentWwwFileCount": 100,
-    "currentWwwTotalBytes": 7727711,
+    "currentWwwTotalBytes": 7727519,
     "shell": {
       "path": "www/index.html",
-      "bytes": 575915,
-      "sha256": "6c0aefea69fa34dc72eccda8b60068dddd3fa8f04a6d7b40f8ca68ee7ffe95fc"
+      "bytes": 575799,
+      "sha256": "8cd20cbc02abff2977bd8717abae4fa4221001142652a2cf7732f9772f4cb8f5"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -120,7 +120,6 @@
       "ST_PRINT": [
         "www/modules/cro_audit/index.html",
         "www/modules/leave/index.html",
-        "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/shared/module-runtime.js"
       ],
@@ -199,7 +198,6 @@
       "ST_PRINT": [
         "www/modules/cro_audit/index.html",
         "www/modules/leave/index.html",
-        "www/modules/service/index.html",
         "www/modules/stock/index.html",
         "www/shared/module-runtime.js"
       ],
@@ -587,19 +585,19 @@
         "www/modules/service/index.html"
       ]
     },
-    "directEntrySyntacticPostMessageCalls": 47,
-    "directEntryClassifiedProducerCalls": 47,
-    "directEntryConfiguredPostMessageCalls": 47,
+    "directEntrySyntacticPostMessageCalls": 46,
+    "directEntryClassifiedProducerCalls": 46,
+    "directEntryConfiguredPostMessageCalls": 46,
     "directEntrySyntacticWildcardPostMessageCalls": 0,
     "directEntryConfiguredWildcardPostMessageCalls": 0,
     "dynamicSyntacticPostMessageCalls": 1,
     "dynamicClassifiedProducerCalls": 1,
     "dynamicConfiguredPostMessageCalls": 1,
     "dynamicWildcardPostMessageCalls": 1,
-    "aggregateSyntacticPostMessageCalls": 48,
-    "aggregateConfiguredPostMessageCalls": 48,
+    "aggregateSyntacticPostMessageCalls": 47,
+    "aggregateConfiguredPostMessageCalls": 47,
     "aggregateWildcardPostMessageCalls": 1,
-    "aggregateAcceptedConfiguredPostMessageCalls": 47,
+    "aggregateAcceptedConfiguredPostMessageCalls": 46,
     "knownRejectedConfiguredRoutes": [
       {
         "type": "ST_OPEN_MODULE",
@@ -972,7 +970,7 @@
   "lifecycle": {
     "countingUnit": "static-call-sites-not-runtime-resource-instances",
     "rawInlineShellCallSites": {
-      "timeouts": 19,
+      "timeouts": 18,
       "clearTimeouts": 3,
       "intervals": 3,
       "clearIntervals": 2,
@@ -983,7 +981,7 @@
       "resizeListeners": 1
     },
     "activeInlineShellCallSites": {
-      "timeouts": 19,
+      "timeouts": 18,
       "clearTimeouts": 3,
       "intervals": 3,
       "clearIntervals": 2,
@@ -1005,7 +1003,7 @@
       "resizeListeners": 0
     },
     "rawInlineModuleTotals": {
-      "timeouts": 33,
+      "timeouts": 31,
       "clearTimeouts": 16,
       "intervals": 3,
       "clearIntervals": 1,
@@ -1188,7 +1186,7 @@
       }
     ],
     "rawShellPlusDirectAssetCallSites": {
-      "timeouts": 48,
+      "timeouts": 47,
       "clearTimeouts": 25,
       "intervals": 5,
       "clearIntervals": 4,
@@ -1199,7 +1197,7 @@
       "resizeListeners": 2
     },
     "activeShellPlusDirectAssetCallSites": {
-      "timeouts": 48,
+      "timeouts": 47,
       "clearTimeouts": 25,
       "intervals": 5,
       "clearIntervals": 4,
@@ -1210,7 +1208,7 @@
       "resizeListeners": 2
     },
     "directEffectiveModuleTotals": {
-      "timeouts": 143,
+      "timeouts": 141,
       "clearTimeouts": 104,
       "intervals": 3,
       "clearIntervals": 12,

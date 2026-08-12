@@ -23,7 +23,7 @@
       "visible-action": 469
     },
     "conflicts": 0,
-    "inventorySha256": "54e18911e323f2d81aab9157405a12c0a01ce79f15542781f172dd4a653e583a"
+    "inventorySha256": "71e4783b4ea527d40052efcd6ce04f50d09d04246ad3128a40185c35b78c10ad"
   },
   "deltas": [
     {
@@ -5953,15 +5953,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 30,
+          "catchBlocks": 28,
           "explicitFallbackSites": 19,
-          "swallowedCatchBlocks": 19,
+          "swallowedCatchBlocks": 17,
           "throwSites": 1,
           "userVisibleErrorSites": 70
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "67aacb1fb28c98ce2d586e75c70ca7042396d36c0a86e641c5742258b43f04fc",
+      "currentOutcomeSha256": "1d376d05dbf11baed1873c40a38751ee9579b640b2dc8e8e1f3eb84d681a2890",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -7453,15 +7453,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 555,
+          "catchBlocks": 553,
           "explicitFallbackSites": 100,
-          "swallowedCatchBlocks": 392,
+          "swallowedCatchBlocks": 391,
           "throwSites": 50,
           "userVisibleErrorSites": 214
         },
         "surface": "shell"
       },
-      "currentOutcomeSha256": "cc679a6f9c013437ad1ec5e7fc202298c78dfeb5a6f3faafb62323dc1146fa5c",
+      "currentOutcomeSha256": "7b9b52ab1c4306ac00e78bebaea94d8237293e006998ebf5b8cc45a3e323df31",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"

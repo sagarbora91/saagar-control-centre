@@ -269,7 +269,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
   --green:#166534; --green-pale:#f0fdf4; --blue:#1d4ed8; --blue-pale:#eff6ff;
   --gray-50:#fafafa; --gray-100:#f4f4f5; --gray-200:#e4e4e7; --gray-300:#d4d4d8;
   --gray-400:#a1a1aa; --gray-500:#71717a; --gray-600:#52525b; --gray-700:#3f3f46; --gray-800:#27272a;
-  --radius:12px; --radius-lg:16px;
+  --radius:10px; --radius-lg:16px;
   --font-sans:'DM Sans',system-ui,'Segoe UI',Roboto,Arial,sans-serif;
   --font-serif:'DM Serif Display',Georgia,'Times New Roman',serif;
 
@@ -278,7 +278,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
   --gold-l: var(--gold-light);
   --gold-p: var(--gold-pale);
   --gold-t: rgba(184,146,42,0.12);
-  --white: var(--paper);
+  --white: #fff;
   --green-p: var(--green-pale);
   --red-p: var(--red-pale);
   --amber-p: var(--amber-pale);
@@ -4259,17 +4259,19 @@ function psecBlock(title, hasData, inner) {
 // Route a built print document to the shell's top-level print host (Android-safe);
 // fall back to the in-iframe #view-print path on desktop standalone.
 function sendPrint(title, bodyHtml, backView) {
-  const wrapped = '<div id="sp-doc">' + bodyHtml + '</div>';
-  try {
-    if (window.parent && window.parent !== window) {
-      window.parent.postMessage({ type: 'ST_PRINT', title: title || 'Print', css: SERVICE_PRINT_CSS, html: wrapped },SaagarModuleRuntime.targetOrigin);
-      return;
-    }
-  } catch (e) {}
-  // Fallback (desktop, no shell): the module's own @media print rules style #view-print.
-  document.getElementById('view-print').innerHTML = '<style>' + SERVICE_PRINT_CSS + '\n</style>' + wrapped;
+  if (window.SaagarModuleRuntime && typeof window.SaagarModuleRuntime.printDocument === 'function') {
+    return window.SaagarModuleRuntime.printDocument({
+      title: title || 'Print',
+      body: bodyHtml,
+      css: SERVICE_PRINT_CSS
+    }, function () {
+      document.getElementById('view-print').innerHTML = '<style>' + SERVICE_PRINT_CSS + '\n</style><div id="sp-doc">' + bodyHtml + '</div>';
+      showView('print');
+    });
+  }
+  document.getElementById('view-print').innerHTML = '<style>' + SERVICE_PRINT_CSS + '\n</style><div id="sp-doc">' + bodyHtml + '</div>';
   showView('print');
-  setTimeout(() => { try { window.print(); } catch (e) {} setTimeout(() => showView(backView || 'dash'), 400); }, 220);
+  return false;
 }
 
 // ─── INTAKE JOB CARD (sections 1–10) ───────────────────────────

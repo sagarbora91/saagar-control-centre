@@ -31,7 +31,10 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // rename closes A2-04 while preserving the public version value.
   // +16 bytes on 2026-08-12: Retail ETP import moves from Settings to Reports
   // and gains a stable Reports-owned card identifier.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7727711);
+  // -192 bytes on 2026-08-12: Phase 4 removes the shell evidence popup fallback
+  // and the Service direct-print fallback; both routes now fail closed through
+  // their controlled delivery gateways.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7727519);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
@@ -56,9 +59,9 @@ test('MAH-4 Stage B runtime exposes all five controls beside 15 business message
 });
 
 test('MAH-4 separates direct syntactic, configured, dynamic and accepted send sites', () => {
-  assert.equal(inventory.protocol.directEntrySyntacticPostMessageCalls, 47);
-  assert.equal(inventory.protocol.directEntryClassifiedProducerCalls, 47);
-  assert.equal(inventory.protocol.directEntryConfiguredPostMessageCalls, 47);
+  assert.equal(inventory.protocol.directEntrySyntacticPostMessageCalls, 46);
+  assert.equal(inventory.protocol.directEntryClassifiedProducerCalls, 46);
+  assert.equal(inventory.protocol.directEntryConfiguredPostMessageCalls, 46);
   assert.equal(inventory.protocol.directEntrySyntacticWildcardPostMessageCalls, 0);
   assert.equal(inventory.protocol.directEntryConfiguredWildcardPostMessageCalls, 0);
   assert.deepEqual(inventory.protocol.configuredProducerSites.ST_OPEN_MODULE.map(site => site.path), [
@@ -71,10 +74,10 @@ test('MAH-4 separates direct syntactic, configured, dynamic and accepted send si
   assert.deepEqual(inventory.protocol.dynamicProducerSites.ST_OPEN_MODULE.map(site => site.path), [
     'www/integration-bridge.js'
   ]);
-  assert.equal(inventory.protocol.aggregateSyntacticPostMessageCalls, 48);
-  assert.equal(inventory.protocol.aggregateConfiguredPostMessageCalls, 48);
+  assert.equal(inventory.protocol.aggregateSyntacticPostMessageCalls, 47);
+  assert.equal(inventory.protocol.aggregateConfiguredPostMessageCalls, 47);
   assert.equal(inventory.protocol.aggregateWildcardPostMessageCalls, 1);
-  assert.equal(inventory.protocol.aggregateAcceptedConfiguredPostMessageCalls, 47);
+  assert.equal(inventory.protocol.aggregateAcceptedConfiguredPostMessageCalls, 46);
   assert.deepEqual(inventory.protocol.knownRejectedConfiguredRoutes, [{
     type: 'ST_OPEN_MODULE',
     path: 'www/integration-bridge.js',
@@ -169,10 +172,10 @@ test('MAH-4 freezes qualified lifecycle call-site buckets without claiming clean
     resizeListeners: value.resizeListeners
   });
   assert.deepEqual(pick(inventory.lifecycle.shell), {
-    timeouts: 19, intervals: 3, mutationObservers: 0, eventListeners: 15, resizeListeners: 1
+    timeouts: 18, intervals: 3, mutationObservers: 0, eventListeners: 15, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.activeShell), {
-    timeouts: 19, intervals: 3, mutationObservers: 0, eventListeners: 15, resizeListeners: 1
+    timeouts: 18, intervals: 3, mutationObservers: 0, eventListeners: 15, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.dormantShell), {
     timeouts: 0, intervals: 0, mutationObservers: 0, eventListeners: 0, resizeListeners: 0
@@ -181,13 +184,13 @@ test('MAH-4 freezes qualified lifecycle call-site buckets without claiming clean
     timeouts: 29, intervals: 2, mutationObservers: 4, eventListeners: 41, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.configuredEffectiveShell), {
-    timeouts: 48, intervals: 5, mutationObservers: 4, eventListeners: 55, resizeListeners: 2
+    timeouts: 47, intervals: 5, mutationObservers: 4, eventListeners: 55, resizeListeners: 2
   });
   assert.deepEqual(pick(inventory.lifecycle.moduleTotals), {
-    timeouts: 33, intervals: 3, mutationObservers: 0, eventListeners: 47, resizeListeners: 0
+    timeouts: 31, intervals: 3, mutationObservers: 0, eventListeners: 47, resizeListeners: 0
   });
   assert.deepEqual(pick(inventory.lifecycle.effectiveModuleTotals), {
-    timeouts: 143, intervals: 3, mutationObservers: 33, eventListeners: 274, resizeListeners: 11
+    timeouts: 141, intervals: 3, mutationObservers: 33, eventListeners: 274, resizeListeners: 11
   });
   assert.deepEqual(pick(inventory.lifecycle.applicationDynamicTotals), {
     timeouts: 3, intervals: 2, mutationObservers: 0, eventListeners: 5, resizeListeners: 0

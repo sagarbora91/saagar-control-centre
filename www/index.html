@@ -5270,10 +5270,10 @@ window.SaagarEvidence = (function(){
                 scopeId:'evidence-file',scopeLabel:'one evidence file',module:'tax',rowCount:1,
                 fileName:v.name,purposeId:'compliance-evidence'
               });
-              if(token&&window.SaagarShare&&v.blob){ window.SaagarShare.share({ exportToken:token, file:v.blob, fileName:v.name, title:'Evidence file' }); res(true); return; }
               if(!token){ rej('owner approval required'); return; }
-            }catch(e){ rej('owner approval required'); return; }   /* SEC-08 fail-closed: a throwing authorize() must NOT fall through to window.open below */
-            try{ var url=URL.createObjectURL(v.blob); window.open(url,'_blank'); setTimeout(function(){ try{URL.revokeObjectURL(url);}catch(e){} }, 60000); res(true); }catch(e){ rej(e); }
+              if(!window.SaagarShare||!v.blob){ rej('controlled share unavailable'); return; }
+              window.SaagarShare.share({ exportToken:token, file:v.blob, fileName:v.name, title:'Evidence file' }); res(true); return;
+            }catch(e){ rej('owner approval required'); return; }   /* SEC-08 fail-closed: authorization or controlled-share failure never falls through to an alternate sink. */
           };
           rq.onerror=function(){ rej(rq.error); };
         }catch(e){ rej(e); }
