@@ -120,6 +120,17 @@ function classification(change, before, after) {
     };
   }
   if (change === 'changed' && capability.category === 'failure-posture') {
+    if (capability.capabilityId === 'script-etp-import-ui:failure:posture' &&
+      before?.outcome?.explicitFallbackSites === 0 && after?.outcome?.explicitFallbackSites === 1 &&
+      before?.outcome?.catchBlocks === after?.outcome?.catchBlocks &&
+      before?.outcome?.swallowedCatchBlocks === after?.outcome?.swallowedCatchBlocks &&
+      before?.outcome?.throwSites === after?.outcome?.throwSites &&
+      before?.outcome?.userVisibleErrorSites === after?.outcome?.userVisibleErrorSites) {
+      return {
+        reviewClass: 'report-presentation-enrichment-fallback-added',
+        reason: 'R003/R013 exception presentation now reads validated enrichments from the receipt or reconciliation result, adding one explicit data-source fallback without changing catch, throw or user-visible-error sites.'
+      };
+    }
     return {
       reviewClass: 'failure-posture-source-boundary-change',
       reason: 'Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.'
@@ -182,9 +193,10 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   assert.deepEqual(categoryCounts(current), { route: 12, 'visible-action': 469, permission: 24, 'persisted-outcome': 86, 'failure-posture': 69 });
   assert.equal(count('added'), 12);
   assert.equal(count('removed'), 7);
-  assert.equal(count('changed'), 87);
+  assert.equal(count('changed'), 88);
   assert.equal(classCount('handler-body-hash-only'), 52);
   assert.equal(classCount('failure-posture-source-boundary-change'), 14);
+  assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 
@@ -219,7 +231,8 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
       changedVisibleActions: 73,
       handlerBodyHashOnly: classCount('handler-body-hash-only'),
       bindingStructureChanged: structuralIds.length,
-      changedFailurePostures: classCount('failure-posture-source-boundary-change'),
+      changedFailurePostures: deltas.filter(item => item.change === 'changed' && item.category === 'failure-posture').length,
+      reportPresentationFallbacks: classCount('report-presentation-enrichment-fallback-added'),
       comparisonDeltaSha256: stableSha256(comparisonDeltas)
     },
     deltas

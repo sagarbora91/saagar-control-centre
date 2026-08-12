@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "evidenceId": "mah3-dsr-runtime-canary-2026-08-07",
   "reviewer": "Codex / engineering review",
-  "profileSha256": "9f4457e086842a79228d0a6945409fe6b278e4b64ed5daf17011cb5e6441816e",
-  "wwwTreeSha256": "4fe2b988ff6bf4711041ae79e098b4c8fb1a3f9c51b56fdd511b8e552e43c104",
+  "profileSha256": "8be512cdd998249cba9e7fa99aff8093e518d7eba24e11d2e9744d4199d248dd",
+  "wwwTreeSha256": "3f52db3fc1e199158d7a1909f77f15826c87f0c586978e9734e66a2ee504dd5a",
   "dsrSha256": "f317e96f7c1dd2fb0be674b8f05a950888d9c7b0b95860dd98553a1b344875c6",
   "runtimeSha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
   "matrix": {

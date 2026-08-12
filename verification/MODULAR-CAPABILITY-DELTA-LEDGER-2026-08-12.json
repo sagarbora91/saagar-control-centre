@@ -23,7 +23,7 @@
       "visible-action": 469
     },
     "conflicts": 0,
-    "inventorySha256": "71e4783b4ea527d40052efcd6ce04f50d09d04246ad3128a40185c35b78c10ad"
+    "inventorySha256": "2d7407762888cea8d7d03d6bda1a5388f932044a79f9f457c8f5536f27377bd2"
   },
   "deltas": [
     {
@@ -5163,6 +5163,38 @@
       "reviewClass": "failure-posture-source-boundary-change"
     },
     {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 0,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-import-ui"
+      },
+      "baselineOutcomeSha256": "394a3fa2582cfeeade6b988e8420fc154c63060a1e28b82fe56072c3438dbdb4",
+      "capabilityId": "script-etp-import-ui:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-import-ui"
+      },
+      "currentOutcomeSha256": "b80242926b275b5aec2b8dc8b5f451e994204c55cfcc9b58f4aee0270134baa6",
+      "ownerApproval": "pending",
+      "reason": "R003/R013 exception presentation now reads validated enrichments from the receipt or reconciliation result, adding one explicit data-source fallback without changing catch, throw or user-visible-error sites.",
+      "reviewClass": "report-presentation-enrichment-fallback-added"
+    },
+    {
       "baseline": null,
       "baselineOutcomeSha256": null,
       "capabilityId": "script-shared-module-bridge:failure:posture",
@@ -9548,13 +9580,14 @@
   "summary": {
     "added": 12,
     "bindingStructureChanged": 21,
-    "capabilityApprovalsRequired": 106,
-    "changed": 87,
-    "changedFailurePostures": 14,
+    "capabilityApprovalsRequired": 107,
+    "changed": 88,
+    "changedFailurePostures": 15,
     "changedVisibleActions": 73,
-    "comparisonDeltaSha256": "0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a",
+    "comparisonDeltaSha256": "6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420",
     "handlerBodyHashOnly": 52,
     "netCapabilities": 5,
-    "removed": 7
+    "removed": 7,
+    "reportPresentationFallbacks": 1
   }
 }

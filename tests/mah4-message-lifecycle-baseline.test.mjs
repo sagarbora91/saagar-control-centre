@@ -34,7 +34,11 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // -192 bytes on 2026-08-12: Phase 4 removes the shell evidence popup fallback
   // and the Service direct-print fallback; both routes now fail closed through
   // their controlled delivery gateways.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7727519);
+  // +5671 bytes on 2026-08-12: R003/R013 exception presentation adds bounded,
+  // non-revenue report status UI and shared report/shell Marathi and Hindi text.
+  // +16807 bytes on 2026-08-12: the second translation batch localizes the
+  // remaining shared report and system messages without changing file count.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7749997);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
