@@ -13,7 +13,7 @@ import { parseGeneratedSigningConfiguration,
   parseGradleJvmIdentity,
   spawnSyncCommandTree } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
-  prepareControlledGradleWrapper, runControlledProbes,
+  prepareControlledGradleWrapper, runControlledProbes, seedControlledGradleHome,
   withControlledCleanup } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
@@ -2097,6 +2097,31 @@ test('Gradle distribution identity excludes cache bookkeeping but detects execut
     fs.writeFileSync(path.join(cache, 'unexpected.bin'), 'not approved');
     assert.throws(() => gradleDistributionClosureIdentity(temporary),
       /AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE/);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('controlled Gradle seed copies only a fully identity-bound external distribution', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-gradle-seed-'));
+  try {
+    const seed = path.join(temporary, 'seed');
+    const target = path.join(temporary, 'target');
+    const cache = path.join(seed, 'wrapper', 'dists', 'gradle-8.2.1-all', 'boundedcache');
+    const extracted = path.join(cache, 'gradle-8.2.1');
+    fs.mkdirSync(path.join(extracted, 'bin'), { recursive: true });
+    fs.mkdirSync(target);
+    fs.writeFileSync(path.join(extracted, 'bin', 'gradle.bat'), 'verified distribution\n');
+    fs.writeFileSync(path.join(cache, 'gradle-8.2.1-all.zip.ok'), '');
+    const expected = gradleDistributionClosureIdentity(seed);
+    assert.deepEqual(seedControlledGradleHome(ROOT, seed, target, expected), expected);
+    assert.deepEqual(gradleDistributionClosureIdentity(target), expected);
+
+    const rejectedTarget = path.join(temporary, 'rejected');
+    fs.mkdirSync(rejectedTarget);
+    fs.writeFileSync(path.join(extracted, 'bin', 'gradle.bat'), 'tampered distribution\n');
+    assert.throws(() => seedControlledGradleHome(ROOT, seed, rejectedTarget, expected),
+      /AUDIT_CONTROLLED_GRADLE_SEED_IDENTITY_INVALID/);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
