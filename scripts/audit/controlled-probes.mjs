@@ -242,6 +242,22 @@ function stopControlledGradle(worktree, gradleHome) {
   if (result.error || result.signal || result.status !== 0) fail('AUDIT_CONTROLLED_GRADLE_STOP_FAILED');
 }
 
+export function withControlledCleanup(operation, cleanups) {
+  let value;
+  let primaryFailure = null;
+  try { value = operation(); } catch (error) { primaryFailure = error; }
+  let cleanupFailure = null;
+  for (const cleanup of cleanups) {
+    try { cleanup(); } catch (error) { if (!cleanupFailure) cleanupFailure = error; }
+  }
+  /* The probe failure is the audit fact. Cleanup must still be attempted in
+     full, but it must never replace that fact with a secondary lock/removal
+     error. When the operation succeeded, cleanup failure remains fail-closed. */
+  if (primaryFailure) throw primaryFailure;
+  if (cleanupFailure) throw cleanupFailure;
+  return value;
+}
+
 function bootstrapAndroid(worktree, targetSha) {
   if (fs.lstatSync(path.join(worktree, 'android'), { throwIfNoEntry: false })) {
     fail('AUDIT_CONTROLLED_ANDROID_NOT_FRESH');
@@ -288,7 +304,8 @@ function captureOneBuild(identity, tempRoot, index) {
   const output = path.join(tempRoot, `capture-${index}`);
   let registered = false;
   let gradleHome = null;
-  try {
+  let gradleReady = false;
+  return withControlledCleanup(() => {
     const added = command('git', ['-C', identity.root, 'worktree', 'add', '--detach', worktree, identity.targetSha], {
       cwd: identity.root, timeout: 120_000
     });
@@ -302,7 +319,8 @@ function captureOneBuild(identity, tempRoot, index) {
     const bootstrap = bootstrapAndroid(worktree, identity.targetSha);
     prepareControlledGradleWrapper(worktree);
     captureBuild({ root: worktree, output, bootstrapReceipt: bootstrap,
-      installReceipt: install, gradleUserHome: gradleHome });
+      installReceipt: install, gradleUserHome: gradleHome,
+      onGradleReady: () => { gradleReady = true; } });
     const apk = path.join(output, 'app-debug.apk');
     const buildJson = path.join(output, 'BUILD.json');
     if (!fs.statSync(apk, { throwIfNoEntry: false })?.isFile() ||
@@ -310,19 +328,14 @@ function captureOneBuild(identity, tempRoot, index) {
       fail('AUDIT_CONTROLLED_BUILD_OUTPUT_MISSING');
     }
     return Object.freeze({ apk, build: readJson(buildJson) });
-  } finally {
-    let cleanupFailure = null;
-    const attempt = action => {
-      try { action(); } catch (error) { if (!cleanupFailure) cleanupFailure = error; }
-    };
-    attempt(() => stopControlledGradle(worktree, gradleHome));
+  }, [
+    () => { if (gradleReady) stopControlledGradle(worktree, gradleHome); },
     /* Always unregister the worktree even if Gradle-home cleanup encounters a
        Windows file lock. Leaving a registered disposable worktree would mask
        the original probe result and poison every later controlled run. */
-    attempt(() => removeWorktree(identity.root, tempRoot, worktree, registered));
-    attempt(() => removeGradleHome(tempRoot, gradleHome));
-    if (cleanupFailure) throw cleanupFailure;
-  }
+    () => removeWorktree(identity.root, tempRoot, worktree, registered),
+    () => removeGradleHome(tempRoot, gradleHome)
+  ]);
 }
 
 function disposableRoot(prefix) {
@@ -376,13 +389,11 @@ function defaultMutationProbe(identity) {
 
 function defaultBuildProbe(identity) {
   const location = disposableRoot('saagar-audit-controlled-build-');
-  try {
+  return withControlledCleanup(() => {
     const first = captureOneBuild(identity, location.root, 1);
     const second = captureOneBuild(identity, location.root, 2);
     return compareApks(first.apk, second.apk, first.build, second.build);
-  } finally {
-    removeDisposableRoot(location);
-  }
+  }, [() => removeDisposableRoot(location)]);
 }
 
 export function runControlledProbes(options, hooks = {}) {
