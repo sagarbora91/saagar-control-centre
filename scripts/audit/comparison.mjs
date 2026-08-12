@@ -189,14 +189,56 @@ function messageContract(checks) {
 }
 
 function messageContractDeltas(baseline, current) {
-  const before = new Map(baseline.map(row => [row.contractId, row]));
-  const after = new Map(current.map(row => [row.contractId, row]));
-  return [...new Set([...before.keys(), ...after.keys()])].sort(compareText).flatMap(contractId => {
-    if (!before.has(contractId)) return [{ contractId, change: 'added', code: 'MESSAGE_CONTRACT_ADDED' }];
-    if (!after.has(contractId)) return [{ contractId, change: 'removed', code: 'MESSAGE_CONTRACT_REMOVED' }];
-    return JSON.stringify(stableValue(before.get(contractId))) === JSON.stringify(stableValue(after.get(contractId)))
-      ? [] : [{ contractId, change: 'changed', code: 'MESSAGE_CONTRACT_CHANGED' }];
-  });
+  const resolved = rows => new Map(rows.filter(row => row.kind === 'resolved').map(row => [row.contractId, {
+    contractId: row.contractId,
+    hasSenders: row.senderContracts.length > 0,
+    hasReceivers: row.receiverContracts.length > 0,
+    senderShapes: [...new Set(row.senderContracts.map(sender => JSON.stringify(sender.payloadFields)))].sort(compareText)
+  }]));
+  const unresolved = rows => {
+    const counts = new Map();
+    for (const row of rows.filter(item => item.kind === 'unresolved')) {
+      const key = JSON.stringify([row.messageType, row.unresolvedCode, row.expressionSha256]);
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return counts;
+  };
+  const before = resolved(baseline);
+  const after = resolved(current);
+  const deltas = [];
+  for (const contractId of [...new Set([...before.keys(), ...after.keys()])].sort(compareText)) {
+    const left = before.get(contractId), right = after.get(contractId);
+    if (!left) {
+      deltas.push({ contractId, change: 'added', code: 'MESSAGE_CONTRACT_ADDED' });
+      continue;
+    }
+    if (!right) {
+      /* Removing a receiver-only or sender-only dead contract reduces coupling;
+         a paired contract remains a protected behavior and may not disappear. */
+      if (left.hasSenders && left.hasReceivers) {
+        deltas.push({ contractId, change: 'removed', code: 'MESSAGE_CONTRACT_REMOVED' });
+      }
+      continue;
+    }
+    const newShapes = right.senderShapes.filter(shape => !left.senderShapes.includes(shape));
+    if ((left.hasSenders && !right.hasSenders) || (left.hasReceivers && !right.hasReceivers) || newShapes.length) {
+      deltas.push({ contractId, change: 'changed', code: 'MESSAGE_CONTRACT_CHANGED',
+        senderRemoved: left.hasSenders && !right.hasSenders,
+        receiverRemoved: left.hasReceivers && !right.hasReceivers,
+        addedSenderShapes: newShapes.length });
+    }
+  }
+  const unresolvedBefore = unresolved(baseline), unresolvedAfter = unresolved(current);
+  for (const key of [...unresolvedAfter.keys()].sort(compareText)) {
+    const added = unresolvedAfter.get(key) - (unresolvedBefore.get(key) || 0);
+    if (added > 0) {
+      const [messageType, unresolvedCode, expressionSha256] = JSON.parse(key);
+      deltas.push({ contractId: `unresolved:${stableSha256([messageType, unresolvedCode, expressionSha256])}`,
+        change: 'added', code: 'MESSAGE_UNRESOLVED_CONTRACT_ADDED', messageType,
+        unresolvedCode, expressionSha256, addedSites: added });
+    }
+  }
+  return deltas;
 }
 
 function exactIdentity(actual, expected) {

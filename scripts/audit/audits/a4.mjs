@@ -3,6 +3,9 @@ import { auditResult, compareText, lineNumber, makeCheck, sha256, stableSha256 }
 const CLASSIFICATIONS = new Set(['portable', 'device-local', 're-derivable-excluded', 'forbidden']);
 const MAX_ARTIFACTS = 2500;
 const STORAGE_METHODS = Object.freeze(['getItem', 'setItem', 'removeItem', 'clear', 'key']);
+const DERIVED_INTEGRATION_KEYS = new Set([
+  'saagar_bus', 'saagar_cro_audit_feed', 'saagar_payroll_attendance_feed', 'saagar_tax_payable'
+]);
 
 function runtimeFiles(context) {
   return context.productFiles.filter(file => /^(?:www|build-overrides\/native)\//.test(file))
@@ -15,7 +18,50 @@ function constants(source) {
   for (const match of source.matchAll(/\b(?:const|let|var|static\s+final\s+String|private\s+static\s+final\s+String)\s+([A-Za-z_$][\w$]*)\s*=\s*(["'])([^"'\r\n]{0,240})\2/g)) {
     result.set(match[1], match[3]);
   }
+  /* Also capture later declarators in `var a='x', b='y'`. The earlier
+     declaration-only expression saw `a` but silently missed `b`, which turned
+     stable keys such as `saagar_master_customers` into computed artifacts. */
+  for (const statement of source.matchAll(/\b(?:const|let|var)\s+([^;\r\n]{1,1000})/g)) {
+    for (const part of statement[1].split(',')) {
+      const match = /^\s*([A-Za-z_$][\w$]*)\s*=\s*(["'])([^"'\r\n]{0,240})\2\s*$/.exec(part);
+      if (match) result.set(match[1], match[3]);
+    }
+  }
   return result;
+}
+
+function maskComments(source) {
+  const input = String(source || '');
+  const output = input.split('');
+  let state = 'code', quote = '', escaped = false;
+  const blank = index => { if (output[index] !== '\n' && output[index] !== '\r') output[index] = ' '; };
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index], next = input[index + 1] || '';
+    if (state === 'line') { if (char === '\n' || char === '\r') state = 'code'; else blank(index); continue; }
+    if (state === 'block') {
+      blank(index);
+      if (char === '*' && next === '/') { blank(index + 1); index += 1; state = 'code'; }
+      continue;
+    }
+    if (state === 'html') {
+      blank(index);
+      if (input.slice(index, index + 3) === '-->') { blank(index + 1); blank(index + 2); index += 2; state = 'code'; }
+      continue;
+    }
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === quote) quote = '';
+      continue;
+    }
+    if (char === '/' && next === '/') { blank(index); blank(index + 1); index += 1; state = 'line'; continue; }
+    if (char === '/' && next === '*') { blank(index); blank(index + 1); index += 1; state = 'block'; continue; }
+    if (input.slice(index, index + 4) === '<!--') {
+      blank(index); blank(index + 1); blank(index + 2); blank(index + 3); index += 3; state = 'html'; continue;
+    }
+    if (char === "'" || char === '"' || char === '`') quote = char;
+  }
+  return output.join('');
 }
 
 function stringTokens(source, symbols) {
@@ -98,7 +144,7 @@ function storagePolicy(index) {
        it was the single A4-03 contradiction. */
 
     /* Device-local secret. Must never enter a portable backup. */
-    'st_v2_pin_salt',
+    'st_v2_pin_salt', 'st_v2_offdevice_backup_config_v1',
     /* Device state markers: meaningless on another device and re-established
        locally, so exporting them would resurrect stale state on restore. */
     'bcc_docs_purged_v1', 'saagar_demo_seeded', 'saagar_native_store_migrated_v1',
@@ -133,7 +179,12 @@ function resolveArgument(raw, symbols) {
   match = /^`([^`]*)\$\{/.exec(value);
   if (match && match[1]) return { name: `${match[1]}*`, pattern: true };
   match = /^([A-Za-z_$][\w$]*)$/.exec(value);
-  if (match && symbols.has(match[1])) return { name: symbols.get(match[1]), pattern: false };
+  if (match && symbols.has(match[1]) && (/^[A-Z0-9_$]+$/.test(match[1]) || /Key$/.test(match[1]))) {
+    let resolved = symbols.get(match[1]);
+    const nested = /^\$\{([A-Za-z_$][\w$]*)\}$/.exec(resolved);
+    if (nested && symbols.has(nested[1])) resolved = symbols.get(nested[1]);
+    return { name: resolved, pattern: false };
+  }
   match = /^([A-Za-z_$][\w$]*)\s*\+/.exec(value);
   if (match && symbols.has(match[1])) return { name: `${symbols.get(match[1])}*`, pattern: true };
   match = /^(["'])([^"'\r\n]{1,200})\1\s*\+/.exec(value);
@@ -156,17 +207,28 @@ function addArtifact(map, artifact) {
 
 function canonicalStorageSource(source) {
   return String(source || '')
-    .replace(/\b(?:window|root|globalThis)\s*\.\s*localStorage\b/g, 'localStorage')
-    .replace(/\b(?:window|root|globalThis)\s*\[\s*(['"])localStorage\1\s*\]/g, 'localStorage');
+    .replace(/\b(?:window|root|globalThis)\s*\.\s*localStorage\b/g,
+      match => `${' '.repeat(match.length - 'localStorage'.length)}localStorage`)
+    .replace(/\b(?:window|root|globalThis)\s*\[\s*(['"])localStorage\1\s*\]/g,
+      match => `${' '.repeat(match.length - 'localStorage'.length)}localStorage`);
 }
 
 function storageAliases(source) {
   const aliases = new Set(['localStorage']);
+  const assignments = new Map();
+  for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([^,;\r\n]+)/g)) {
+    if (!assignments.has(match[1])) assignments.set(match[1], new Set());
+    assignments.get(match[1]).add(/^([A-Za-z_$][\w$]*)$/.exec(match[2].trim())?.[1] || '');
+  }
   let changed = true;
   while (changed) {
     changed = false;
-    for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([A-Za-z_$][\w$]*)\s*(?:;|\r?$)/gm)) {
-      if (aliases.has(match[2]) && !aliases.has(match[1])) { aliases.add(match[1]); changed = true; }
+    for (const [name, sources] of assignments) {
+      if (!aliases.has(name) && [...sources].some(value => aliases.has(value)) &&
+          [...sources].every(value => aliases.has(value))) {
+        aliases.add(name);
+        changed = true;
+      }
     }
   }
   return aliases;
@@ -196,12 +258,13 @@ function localStorageArtifacts(context, files, map) {
   const record = (file, source, match, operation, raw, symbols) => {
     const resolved = resolveArgument(raw, symbols);
     if (resolved.name === '__st_ping__') return;
-    addArtifact(map, { kind: 'local-storage', ...resolved, operation, path: file,
-      line: lineNumber(source, match.index) });
+    addArtifact(map, { kind: resolved.unresolved ? 'local-storage-access' : 'local-storage', ...resolved,
+      name: resolved.unresolved ? 'dynamic-key' : resolved.name,
+      operation, path: file, line: lineNumber(source, match.index), sourceClass: file });
   };
   for (const file of files.filter(value => value.startsWith('www/'))) {
     const original = context.read(file);
-    const source = canonicalStorageSource(original);
+    const source = canonicalStorageSource(maskComments(original));
     const symbols = constants(original);
     const objects = storageAliases(source);
     const methods = methodAliases(source, objects);
@@ -214,14 +277,15 @@ function localStorageArtifacts(context, files, map) {
       const scope = new RegExp(`\\b${object}\\s*(?:\\.\\s*(clear|key)|\\[\\s*(['"])(clear|key)\\2\\s*\\])\\s*\\(`, 'g');
       for (const match of source.matchAll(scope)) {
         const method = match[1] || match[3];
-        record(file, original, match, method, `dynamic-${method}-${sha256(`${file}:${match.index}`).slice(0, 12)}`,
-          symbols, 'STORAGE_SCOPE_OPERATION_UNRESOLVED');
+        addArtifact(map, { kind: 'local-storage-access', name: method === 'key' ? 'enumeration' : 'clear-all',
+          operation: method, path: file, line: lineNumber(original, match.index), sourceClass: file });
       }
       const dynamicMember = new RegExp(`\\b${object}\\s*\\[\\s*([^\\]'"\\r\\n]{1,160})\\s*\\]\\s*(?:\\(|=)`, 'g');
       for (const match of source.matchAll(dynamicMember)) {
         const expression = String(match[1] || '').trim();
-        addArtifact(map, { kind: 'local-storage', name: `computed-${sha256(expression).slice(0, 12)}`,
-          pattern: true, unresolved: true, operation: 'dynamic-member', path: file, line: lineNumber(original, match.index) });
+        addArtifact(map, { kind: 'local-storage-access', name: 'dynamic-member',
+          pattern: true, unresolved: true, operation: 'dynamic-member', path: file,
+          line: lineNumber(original, match.index), sourceClass: file });
       }
       const literalProperty = new RegExp(`\\b${object}\\s*\\[\\s*(['"])([^'"]{1,240})\\1\\s*\\](?!\\s*\\()`, 'g');
       for (const match of source.matchAll(literalProperty)) {
@@ -281,15 +345,23 @@ function fileArtifacts(context, files, map) {
     const source = context.read(file);
     const symbols = constants(source);
     const interestingConstants = [...symbols.entries()].filter(([name, value]) =>
-      /(?:FILE|FOLDER|PATH)$/.test(name) && /(?:\.(?:db|sqlite|dek|json)|Backups|Reports)/i.test(value));
+      /(?:FILE|FOLDER|PATH|DIR)$/.test(name) && /(?:\.(?:db|sqlite|dek|json)|Backups|Reports|saagar-photos)/i.test(value));
     for (const [name, value] of interestingConstants) {
       addArtifact(map, { kind: 'file', name: value, operation: 'declared', path: file,
         line: lineNumber(source, source.indexOf(name)), sourceClass: file });
     }
     for (const match of source.matchAll(/\b(?:readFile|writeFile|deleteFile|rename|copy|stat)\s*\(\s*\{[\s\S]{0,360}?\bpath\s*:\s*([^,}\r\n]{1,180})/g)) {
-      const resolved = resolveArgument(match[1], symbols);
+      let resolved = resolveArgument(match[1], symbols);
+      const identifier = /^([A-Za-z_$][\w$]*)$/.exec(String(match[1] || '').trim())?.[1];
+      if (resolved.unresolved && identifier) {
+        const declarations = [...source.slice(0, match.index).matchAll(
+          new RegExp(`\\b(?:const|let|var)\\s+${identifier.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}\\s*=\\s*(["'])([^"'\\r\\n]{1,160})\\1`, 'g'))];
+        const latest = declarations[declarations.length - 1];
+        if (latest) resolved = { name: `${latest[2]}*`, pattern: true };
+      }
       const nearby = source.slice(match.index, Math.min(source.length, match.index + 500));
-      const directory = /\bdirectory\s*:\s*(["'])([A-Z]+)\1/.exec(nearby)?.[2] || '';
+      const directory = /\bdirectory\s*:\s*(["'])([A-Z]+)\1/.exec(nearby)?.[2] ||
+        (/\bdirectory\s*:\s*dataDir\s*\(\s*\)/.test(nearby) ? 'DATA' : '');
       addArtifact(map, { kind: 'file', ...resolved, name: directory ? `${directory}:${resolved.name}` : resolved.name,
         operation: 'file-access', path: file, line: lineNumber(source, match.index), sourceClass: file });
     }
@@ -301,6 +373,10 @@ function classify(artifact, policy) {
   const patternPrefix = bareName.endsWith('*') ? bareName.slice(0, -1) : bareName;
   if (artifact.kind === 'local-storage') {
     if (artifact.unresolved) return { classification: null, owner: null, restore: 'unknown', reset: 'unknown', evidenceArtifact: false };
+    if (DERIVED_INTEGRATION_KEYS.has(bareName)) return {
+      classification: 're-derivable-excluded', owner: 'integration-bridge',
+      restore: 'recomputed-from-owner-data', reset: 'rebuilt-on-owner-data-change', evidenceArtifact: false
+    };
     const isDevice = policy.explicitDeviceLocal.has(bareName);
     const isPortable = artifact.pattern
       ? policy.portablePrefixes.some(prefix => patternPrefix.startsWith(prefix) || prefix.startsWith(patternPrefix))
@@ -309,6 +385,10 @@ function classify(artifact, policy) {
     if (isPortable) return { classification: 'portable', owner: policy.moduleOwner(patternPrefix), restore: 'validated-restore', reset: 'module-or-factory-reset', evidenceArtifact: false, policyPortable: true };
     return { classification: null, owner: null, restore: 'unknown', reset: 'unknown', evidenceArtifact: false };
   }
+  if (artifact.kind === 'local-storage-access') return {
+    classification: 're-derivable-excluded', owner: 'storage-access-policy',
+    restore: 'not-an-artifact', reset: 'not-applicable', evidenceArtifact: false
+  };
   if (artifact.kind === 'indexeddb') return { classification: artifact.name === 'saagar_evidence' ? 'portable' : null,
     owner: artifact.name === 'saagar_evidence' ? 'shell-evidence' : null, restore: artifact.name === 'saagar_evidence' ? 'validated-restore' : 'unknown', reset: 'factory-reset', evidenceArtifact: false };
   if (artifact.kind === 'native-database' || artifact.kind === 'native-table') {
@@ -343,6 +423,7 @@ function classify(artifact, policy) {
     if (/saagar-etp\.db/.test(bareName)) return { classification: 're-derivable-excluded', owner: 'etp-native-store', restore: 'excluded-and-fenced', reset: 'scope-or-store-reset', evidenceArtifact: false };
     if (/^(?:bcc\.(?:sqlite|dek)|saagar-native-kv\.db)/.test(bareName)) return { classification: 'device-local', owner: 'storage-core', restore: 'logical-key-restore-only', reset: 'factory-reset', evidenceArtifact: false };
     if (/SaagarBCC-Backups/.test(bareName)) return { classification: 'device-local', owner: 'auto-backup', restore: 'same-device-backup-flow', reset: 'retention-or-owner-purge', evidenceArtifact: false };
+    if (/^saagar-photos/.test(bareName) || /photo-store\.js$/.test(artifact.sourceClass)) return { classification: 'device-local', owner: 'photo-store', restore: 'logical-photo-restore-only', reset: 'module-or-factory-reset', evidenceArtifact: false };
     if (/^(?:CACHE:|DOCUMENTS:SaagarBCC-Reports)/.test(artifact.name)) return { classification: 're-derivable-excluded', owner: 'export-control', restore: 'not-restored', reset: 'cache-or-owner-file-management', evidenceArtifact: false };
     return { classification: null, owner: null, restore: 'unknown', reset: 'unknown', evidenceArtifact: false };
   }

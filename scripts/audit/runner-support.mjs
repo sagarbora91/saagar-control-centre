@@ -68,6 +68,10 @@ export function messageInventoryAuthority(context = {}) {
   return declaredAuthority(context, 'messageInventoryAuthority');
 }
 
+export function trackedSecretScanAuthority(context = {}) {
+  return declaredAuthority(context, 'trackedSecretScanAuthority');
+}
+
 export function conservativeStaticResult({ definiteViolations = 0, unresolved = 0, authority } = {}) {
   if (definiteViolations > 0) return 'fail';
   if (unresolved > 0) return 'unmeasured';
