@@ -51,7 +51,10 @@ closure is still open.
   release acceptance remain outside autonomous emulator authority.
 - A new identity-bound owner capability approval is required after the final
   target, governed tooling SHA, baseline-manifest SHA-256, and comparison-delta
-  SHA-256 are known. The earlier approval is immutable and stale for this target.
+  SHA-256 are known. The current fail-closed ledger has 107 rows and comparison
+  delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+  The earlier 106-row approval is immutable and stale for this target.
 
 ## Closure sequence
 

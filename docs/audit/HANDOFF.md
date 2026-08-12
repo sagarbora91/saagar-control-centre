@@ -48,11 +48,13 @@ is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
   Treat it as pending until the runner exits successfully and all manifest
   hashes are validated; no evidence directory existed at launch.
 - Product authority profiles for the R003/R013 UI and both localization batches
-  are being regenerated fail-closed. The previous capability approval must not
-  be reused if the resulting exact delta ledger changes.
+  are regenerated at product commit `3958dbc`; their modular suite passes. The
+  exact ledger is now 107 rows with comparison delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+  The previous 106-row capability approval must not be reused.
 - On resume: first inspect the baseline process/output without modifying its
-  worktree, then validate and commit its exact evidence; integrate and test the
-  regenerated product profiles; freeze the final target; run the unapproved
+  worktree, then validate and commit its exact evidence; freeze the final target;
+  run the unapproved
   comparison; build and retest the final seeded APK; then request exact
   identity-bound owner approval and external acceptance.
 
