@@ -1391,8 +1391,9 @@ test('A7 inventories represented dynamic message contracts without generic type 
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
   const evaluate = async source => {
     const sources = new Map([
-      ['www/index.html', source],
-      ['www/shared/mah4-runtime.js', 'const VERSION = 1;']
+      ['www/index.html', '<!doctype html><title>Dynamic message probe</title>'],
+      ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+      ['www/shared/message-dynamic-probe.js', source]
     ]);
     const files = [...sources.keys()].sort();
     const result = await module.run({
@@ -1419,7 +1420,7 @@ test('A7 inventories represented dynamic message contracts without generic type 
   assert.equal(dynamic.find(item => item.id === 'A7-02').result, 'unmeasured');
   assert.equal(dynamic.find(item => item.id === 'A7-03').result, 'unmeasured');
 
-  const empty = await evaluate('<!doctype html><title>No messages</title>');
+  const empty = await evaluate('');
   const emptyInventory = empty.find(item => item.id === 'A7-01');
   assert.equal(emptyInventory.result, 'unmeasured');
   assert.equal(emptyInventory.metric.inventorySha256, null);
@@ -1701,6 +1702,88 @@ test('A7 resolves only one exact top-level literal sender type', async () => {
   assert.ok(inventory.metric.inventory.filter(row => row.kind === 'unresolved')
     .every(row => row.unresolvedCode === 'MESSAGE_SENDER_TYPE_UNRESOLVED'));
   assert.equal(result.checks.find(item => item.id === 'A7-02').result, 'unmeasured');
+});
+
+test('A7 excludes non-shell worker protocols and measures HTML shell handlers and delegated host receivers', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
+  const shell = [
+    '<!doctype html><div data-label="Owner\'s protocol"></div>',
+    '<script>',
+    'window.addEventListener("message", event => {',
+    '  if (event.data.type === "ST_SHELL_EVENT") consume(event.data);',
+    '});',
+    '</script>'
+  ].join('\n');
+  const protocol = [
+    'parent.postMessage({ type: "ST_SHELL_EVENT", value: "ok" }, "*");',
+    'frame.contentWindow.postMessage({ type: "ST_HOST_EVENT", value: "ok" }, "*");',
+    'function message(event) {',
+    '  const packet = event.data;',
+    '  if (packet.type === "ST_HOST_EVENT") consume(packet);',
+    '}'
+  ].join('\n');
+  const workerClient = [
+    'const worker = new Worker("etp-import-worker.js");',
+    'worker.onmessage = function(event) { consume(event.data); };',
+    'worker.postMessage({ type: "PARSE_FOUR_REPORTS", items: [] });'
+  ].join('\n');
+  const worker = [
+    'self.onmessage = function(event) {',
+    '  if (event.data.type !== "PARSE_FOUR_REPORTS") return;',
+    '  self.postMessage({ ok: false, code: "INVALID" });',
+    '};'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', shell],
+    ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+    ['www/shared/protocol-abstraction.js', protocol],
+    ['www/etp-worker-client.js', workerClient],
+    ['www/etp-import-worker.js', worker]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], sharedAssets: [],
+    staticDiscoveryAuthority: { complete: true, source: 'test:a7-static-census' },
+    messageInventoryAuthority: { complete: true, source: 'test:a7-message-census' },
+    exists: file => sources.has(file), read: file => sources.get(file) || ''
+  });
+  const inventory = result.checks.find(item => item.id === 'A7-01');
+  assert.deepEqual(inventory.metric.inventory.filter(row => row.kind === 'resolved')
+    .map(row => row.messageType), ['ST_HOST_EVENT', 'ST_SHELL_EVENT']);
+  assert.equal(inventory.metric.senderSites, 2);
+  assert.equal(inventory.metric.receiverSites, 2);
+  assert.equal(inventory.metric.unresolvedContracts, 0);
+  assert.equal(result.checks.find(item => item.id === 'A7-02').result, 'pass');
+  assert.equal(JSON.stringify(inventory).includes('PARSE_FOUR_REPORTS'), false);
+  assert.equal(JSON.stringify(inventory).includes('ETP_WORKER'), false);
+});
+
+test('A7 field-shape uncertainty does not hide a closed message lifecycle', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
+  const source = [
+    'parent.postMessage({ type: "ST_DYNAMIC_FIELD", value: makeValue() }, "*");',
+    'window.addEventListener("message", event => {',
+    '  if (event.data.type === "ST_DYNAMIC_FIELD") consume(event.data);',
+    '});'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', '<!doctype html><title>Shape uncertainty</title>'],
+    ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+    ['www/shared/protocol-shape.js', source]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], sharedAssets: [],
+    staticDiscoveryAuthority: { complete: true, source: 'test:a7-static-census' },
+    messageInventoryAuthority: { complete: true, source: 'test:a7-message-census' },
+    exists: file => sources.has(file), read: file => sources.get(file) || ''
+  });
+  const lifecycle = result.checks.find(item => item.id === 'A7-02');
+  const shape = result.checks.find(item => item.id === 'A7-03');
+  assert.equal(lifecycle.result, 'pass');
+  assert.equal(lifecycle.metric.unresolvedContracts, 0);
+  assert.equal(shape.result, 'unmeasured');
+  assert.ok(shape.evidence.some(item => item.code === 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED'));
 });
 
 test('A8 rejects computed sinks, fail-open methods, uncontrolled helpers and nested fake guards', async () => {
