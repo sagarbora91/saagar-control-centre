@@ -2032,11 +2032,13 @@ test('controlled Gradle JVM identity requires the reported runtime to equal JAVA
 test('controlled Gradle bootstrap uses Windows roots without overriding explicit trust and allows first download', () => {
   const automatic = controlledGradleEnvironment({ GRADLE_OPTS: '-Dsample=true' }, 'isolated-home', 'win32');
   assert.equal(automatic.GRADLE_USER_HOME, 'isolated-home');
-  assert.match(automatic.GRADLE_OPTS, /-Djavax\.net\.ssl\.trustStoreType=Windows-ROOT/);
+  assert.equal(automatic.GRADLE_OPTS, '-Dsample=true');
+  assert.match(automatic.JAVA_TOOL_OPTIONS,
+    /-Djavax\.net\.ssl\.trustStore=NUL -Djavax\.net\.ssl\.trustStoreType=Windows-ROOT/);
   const explicit = controlledGradleEnvironment({
     GRADLE_OPTS: '-Djavax.net.ssl.trustStore=C:\\audit\\trust.jks'
   }, 'isolated-home', 'win32');
-  assert.doesNotMatch(explicit.GRADLE_OPTS, /Windows-ROOT/);
+  assert.equal(explicit.JAVA_TOOL_OPTIONS, undefined);
   const javaToolOptions = controlledGradleEnvironment({
     JAVA_TOOL_OPTIONS: '-Djavax.net.ssl.trustStoreType=JKS'
   }, 'isolated-home', 'win32');
