@@ -24,7 +24,7 @@ const MUTATIONS = Object.freeze({
     after: 'var deltaUnits = rightUnits - leftUnits;',
     expectedOccurrences: 1,
     testFile: 'tests/etp-reconciliation-policy.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
     expectedTest: 'INV/SR/BC signs are applied and a mismatch remains visible'
   }),
   storage: Object.freeze({
@@ -38,7 +38,7 @@ const MUTATIONS = Object.freeze({
     after: 'var NATIVE_BATCH_OPS = 64;',
     expectedOccurrences: 1,
     testFile: 'tests/native-incremental-storage-runtime.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/native-incremental-storage-runtime.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/native-incremental-storage-runtime.test.mjs',
     expectedTest: 'runtime flush writes only changed records in bounded native batches'
   }),
   auth: Object.freeze({
@@ -49,7 +49,7 @@ const MUTATIONS = Object.freeze({
     after: 'var MAX_ATTEMPTS = 3;',
     expectedOccurrences: 1,
     testFile: 'tests/d1-reauth.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/d1-reauth.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/d1-reauth.test.mjs',
     expectedTest: 'D1 reauthentication limits a single action to one retry'
   }),
   backupRestore: Object.freeze({
@@ -60,7 +60,7 @@ const MUTATIONS = Object.freeze({
     after: "if (name === 'localStorage') {",
     expectedOccurrences: 1,
     testFile: 'tests/portable-backup.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/portable-backup.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/portable-backup.test.mjs',
     expectedTest: 'portable backup round-trips without leaking payload text'
   }),
   export: Object.freeze({
@@ -74,7 +74,7 @@ const MUTATIONS = Object.freeze({
     after: 'if (policy.enabled) {',
     expectedOccurrences: 1,
     testFile: 'tests/eng04-security.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/eng04-security.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/eng04-security.test.mjs',
     expectedTest: 'SEC-08 defaults to disabled and records the denied attempt without prompting'
   }),
   etpPublication: Object.freeze({
@@ -85,7 +85,7 @@ const MUTATIONS = Object.freeze({
     after: "(recon.severity === 'CRITICAL' && recon.status === 'PASS')",
     expectedOccurrences: 1,
     testFile: 'tests/etp-reconciliation-policy.test.mjs',
-    testCommand: 'node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
     expectedTest: 'publication refuses missing facts, restored state, incomplete scope and critical failures'
   })
 });
@@ -343,7 +343,7 @@ function captureOne(root, head, tempRoot, invariantId, spec, baselineProductSha2
     if (git(worktree, ['rev-parse', 'HEAD']) !== head || git(worktree, ['branch', '--show-current']) !== '') return null;
     link = linkNodeModules(root, worktree);
     if (!link || !applyMutation(worktree, spec)) return null;
-    const result = command(process.execPath, ['--test', '--test-reporter=tap', spec.testFile], {
+    const result = command(process.execPath, ['--test', '--test-force-exit', '--test-reporter=tap', spec.testFile], {
       cwd: worktree,
       timeout: TEST_TIMEOUT_MS,
       env: { ...process.env, TZ: 'UTC', FORCE_COLOR: '0', NO_COLOR: '1', NODE_OPTIONS: '' }
@@ -401,7 +401,7 @@ function main() {
     mutationIds.size === invariantIds.length &&
     invariantIds.every(id => {
       const spec = MUTATIONS[id];
-      return spec && spec.testCommand === `node --test --test-reporter=tap ${spec.testFile}` &&
+      return spec && spec.testCommand === `node --test --test-force-exit --test-reporter=tap ${spec.testFile}` &&
         typeof spec.file === 'string' && typeof spec.expectedTest === 'string';
     });
   if (!registryValid) fail('MUTATION_REGISTRY_INCOMPLETE');
