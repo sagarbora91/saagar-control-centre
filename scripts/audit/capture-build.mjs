@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { buildContext, compareText, sha256 } from './lib.mjs';
 import { normalizedApkFingerprint } from './compare-apks.mjs';
 import { assertExternalPath, gradleVersionLauncher, verifyIsolatedWorktree } from './runner-support.mjs';
+
+const GRADLE_IDENTITY_TIMEOUT_MS = 10 * 60 * 1000;
 import { canonicalSha256, safeJson, safeError } from './schema.mjs';
 
 const GENERATED_ANDROID_FILES = Object.freeze([
@@ -708,7 +710,12 @@ export function buildToolchainIdentity(root, gradleUserHome = '') {
   const javaVersion = firstMatchingLines(java.output, [/^(?:openjdk|java) version/i])[0];
   if (javaVersion === 'unavailable') throw new Error('AUDIT_BUILD_JAVA_UNAVAILABLE');
   const gradleInvocation = gradleVersionLauncher(root);
-  const gradle = command(gradleInvocation.command, gradleInvocation.args, gradleInvocation.cwd, 120000, gradleUserHome);
+  /* A fresh controlled home must download the frozen distribution before it
+     can print its identity. The wrapper's per-read timeout is 120 seconds, so
+     the enclosing process timeout must be strictly larger than a valid slow
+     download instead of killing its Java child at the same boundary. */
+  const gradle = command(gradleInvocation.command, gradleInvocation.args,
+    gradleInvocation.cwd, GRADLE_IDENTITY_TIMEOUT_MS, gradleUserHome);
   if (gradle.result.status !== 0) throw new Error('AUDIT_BUILD_GRADLE_UNAVAILABLE');
   const launcherFile = path.relative(root, gradleInvocation.file).replaceAll('\\', '/');
   if (!GRADLE_LAUNCHER_FILES.includes(launcherFile)) throw new Error('AUDIT_BUILD_GRADLE_LAUNCHER_INVALID');

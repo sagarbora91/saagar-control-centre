@@ -2063,6 +2063,16 @@ test('controlled Gradle bootstrap uses Windows roots without overriding explicit
   }
 });
 
+test('controlled build timeout and cleanup outlive a valid fresh Gradle download', () => {
+  const capture = fs.readFileSync(path.join(ROOT, 'scripts/audit/capture-build.mjs'), 'utf8');
+  const probes = fs.readFileSync(path.join(ROOT, 'scripts/audit/controlled-probes.mjs'), 'utf8');
+  assert.match(capture, /const GRADLE_IDENTITY_TIMEOUT_MS = 10 \* 60 \* 1000;/);
+  assert.match(capture, /gradleInvocation\.cwd, GRADLE_IDENTITY_TIMEOUT_MS, gradleUserHome/);
+  assert.match(probes, /attempt\(\(\) => stopControlledGradle\(worktree, gradleHome\)\);/);
+  assert.match(probes, /attempt\(\(\) => removeWorktree\(identity\.root, tempRoot, worktree, registered\)\);/);
+  assert.ok(probes.indexOf('attempt(() => removeWorktree') < probes.indexOf('attempt(() => removeGradleHome'));
+});
+
 test('external audit outputs are outside every canonical Git worktree and resist prefix and symlink traps', () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-worktrees-'));
   const primary = path.join(temporary, 'primary');
