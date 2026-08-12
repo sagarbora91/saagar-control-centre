@@ -18,7 +18,7 @@ import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized } from '../scripts/audit/evidence-trust-root.mjs';
 import { COMPARISON_APPROVAL_FORMAT, comparisonFindingSha256, evaluateComparison } from '../scripts/audit/comparison.mjs';
-import { AUDIT_VERSION, buildContext, isProductPath, PRODUCT_BASELINE_SHA, revisionFingerprint, sha256 } from '../scripts/audit/lib.mjs';
+import { AUDIT_VERSION, buildContext, isProductPath, PRODUCT_BASELINE_SHA, revisionFingerprint, sha256, stableSha256 } from '../scripts/audit/lib.mjs';
 import { assertToolingProductFingerprintAnchor, npmLauncher, parseArgs, parseOfflineTestEvidence, probeNpmLauncher,
   summaryMarkdown, validateBuildEvidence } from '../scripts/audit/run.mjs';
 import { assertExternalPath, BASELINE_ARTIFACT_FILES, buildEvidenceManifest, canonicalGitWorktreeRoots, gradleVersionLauncher,
@@ -193,7 +193,7 @@ function storageContractMetric(inventory = storageContractFixture()) {
     artifactLimit: 2500,
     inventoryComplete: true,
     inventory,
-    inventorySha256: sha256(JSON.stringify(inventory))
+    inventorySha256: stableSha256(inventory)
   };
 }
 
@@ -223,7 +223,7 @@ function messageContractMetric(inventory = messageContractFixture()) {
        that withdrawing it forces C-07 to unmeasured. */
     staticDiscoveryComplete: true,
     inventory,
-    inventorySha256: sha256(JSON.stringify(inventory))
+    inventorySha256: stableSha256(inventory)
   };
 }
 
@@ -1547,13 +1547,14 @@ test('A8 uses conservative PII, export, auth, remote and all-tracked secret deci
 
   const dynamicRemote = await evaluate([['www/shared/network-probe.js',
     'function request(endpoint){ return fetch(endpoint); }']]);
-  assert.equal(check(dynamicRemote, 'A8-05').result, 'unmeasured');
+  assert.equal(check(dynamicRemote, 'A8-05').result, 'fail');
   assert.ok(check(dynamicRemote, 'A8-05').evidence.some(item =>
-    item.code === 'DYNAMIC_REMOTE_TARGET_UNRESOLVED' && item.kind === 'FETCH'));
+    item.code === 'REMOTE_TARGET_POLICY_NOT_CLOSED' && item.unresolvedDynamicTargets === 1));
   const literalRemote = await evaluate([['www/shared/network-literal.js',
     'fetch("https://unapproved.example.test/private");']]);
   assert.equal(check(literalRemote, 'A8-05').result, 'fail');
-  assert.ok(check(literalRemote, 'A8-05').evidence.some(item => item.code === 'UNAPPROVED_REMOTE_RUNTIME'));
+  assert.ok(check(literalRemote, 'A8-05').evidence.some(item =>
+    item.code === 'REMOTE_TARGET_POLICY_NOT_CLOSED' && item.definiteRemoteCalls === 1));
 
   const workflowSecret = 'correct-horse-battery-staple';
   const workflow = await evaluate([['.github/workflows/release.yml', [
@@ -1669,9 +1670,9 @@ test('A8 rejects computed sinks, fail-open methods, uncontrolled helpers and nes
 
   const computedFetch = await evaluate('globalThis["fetch"](makeUrl());');
   const computedFetchCheck = check(computedFetch, 'A8-05');
-  assert.equal(computedFetchCheck.result, 'unmeasured');
+  assert.equal(computedFetchCheck.result, 'fail');
   assert.ok(computedFetchCheck.evidence.some(row =>
-    row.code === 'DYNAMIC_REMOTE_TARGET_UNRESOLVED' && row.kind === 'FETCH'));
+    row.code === 'REMOTE_TARGET_POLICY_NOT_CLOSED' && row.unresolvedDynamicTargets === 1));
   assert.equal(JSON.stringify(computedFetchCheck).includes('makeUrl'), false);
 
   const methodAuth = await evaluate([
@@ -2200,7 +2201,7 @@ test('A8 auth, remote and JSON-secret analysis is conservative and redacted', as
     'globalThis[remoteApi]?.(thirdUrl());'
   ].join('\n')]]);
   const aliasRemoteCheck = check(aliasRemote, 'A8-05');
-  assert.equal(aliasRemoteCheck.result, 'unmeasured');
+  assert.equal(aliasRemoteCheck.result, 'fail');
   assert.ok(aliasRemoteCheck.metric.unresolvedDynamicTargets >= 3);
   assert.equal(JSON.stringify(aliasRemoteCheck).includes('makeUrl'), false);
   assert.equal(JSON.stringify(aliasRemoteCheck).includes('remoteApi'), false);
@@ -2209,7 +2210,7 @@ test('A8 auth, remote and JSON-secret analysis is conservative and redacted', as
     '<a href="https://unapproved.example.test/report">Report</a>']]);
   assert.equal(check(declarative, 'A8-05').result, 'fail');
   assert.ok(check(declarative, 'A8-05').evidence.some(row =>
-    row.kind === 'DECLARATIVE_NAVIGATION' && row.scheme === 'https'));
+    row.code === 'REMOTE_TARGET_POLICY_NOT_CLOSED' && row.definiteRemoteCalls === 1));
 
   const compoundNavigation = await evaluate([['www/shared/remote-compound.js', [
     'anchor.href += makeUrl();',

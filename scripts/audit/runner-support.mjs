@@ -42,8 +42,8 @@ const HEX_64 = /^[a-f0-9]{64}$/;
 
 export const STATIC_DISCOVERY_INCOMPLETE = 'STATIC_DISCOVERY_COVERAGE_INCOMPLETE';
 
-export function staticDiscoveryAuthority(context = {}) {
-  const declared = context && context.staticDiscoveryAuthority;
+function declaredAuthority(context, field) {
+  const declared = context && context[field];
   if (!declared || typeof declared !== 'object') {
     return Object.freeze({ complete: false, code: STATIC_DISCOVERY_INCOMPLETE, source: 'none' });
   }
@@ -53,6 +53,19 @@ export function staticDiscoveryAuthority(context = {}) {
     code: complete ? '' : STATIC_DISCOVERY_INCOMPLETE,
     source: complete ? declared.source : 'none'
   });
+}
+
+export function staticDiscoveryAuthority(context = {}) {
+  return declaredAuthority(context, 'staticDiscoveryAuthority');
+}
+
+/* A7-01 has a narrower authority than the heuristic safety checks: the runner
+   binds a complete, bounded census of every supported message-contract syntax
+   to the frozen tooling identity. Unresolved sites stay represented as contract
+   rows; this authority does not make lifecycle, payload or security absence a
+   proof. */
+export function messageInventoryAuthority(context = {}) {
+  return declaredAuthority(context, 'messageInventoryAuthority');
 }
 
 export function conservativeStaticResult({ definiteViolations = 0, unresolved = 0, authority } = {}) {
@@ -405,4 +418,3 @@ export function canonicalGitWorktreeRoots(root) {
       seen.add(key); return true;
     }).sort(compareText);
 }
-

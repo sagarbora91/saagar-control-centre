@@ -54,6 +54,8 @@ A7 and A8 are heuristic static discovery, not complete JavaScript proofs. Theref
 
 This rule closes the false-pass class without continuing syntax-by-syntax regex expansion. Previously discovered alias, computed-call, comment/regex-decoy, control-flow, auth-expression, navigation and secret-key variants remain regression examples, not invitations to reopen the architecture.
 
+The governed tooling refresh adds two narrow fail-closed refinements without weakening this rule. First, A7-01 may receive the runner-bound `a7-message-contract-census-v2` authority: all supported message syntax is enumerated and unresolved sites remain first-class hash-bound inventory rows, while A7 lifecycle/shape/global checks remain heuristic. Second, A8-05 treats an already discovered remote-capable call with an unresolved target as policy non-compliance (`fail`); that is not an inference from absence.
+
 ## 4. Controlled-build receipt v2 boundary
 
 A9 cannot pass from two equal APK hashes alone. Both builds must prove they used independently prepared and exactly identified inputs.

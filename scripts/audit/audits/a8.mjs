@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { auditResult, lineNumber, makeCheck, sha256 } from '../lib.mjs';
+import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
 import { ALLOWED_REMOTE_LITERAL_CONTEXTS } from '../config.mjs';
 import { conservativeStaticResult, staticDiscoveryAuthority, staticDiscoveryEvidence } from '../runner-support.mjs';
 
@@ -752,7 +752,20 @@ export async function run(context) {
   const exportResult = conservative(exportPaths.findings, exportPaths.unresolved);
   const authResult = conservative(auth.findings, auth.unresolved);
   const secretResult = conservative(secrets.findings, secrets.unresolved);
-  const remoteResult = conservative(remotes.findings, remotes.unresolved);
+  /* Remote targets are a fail-closed policy boundary. A syntactically present
+     target that the scanner cannot validate is measurable non-compliance, not
+     an absence-of-evidence gap: it may not ship as an approved remote path until
+     it becomes a literal approved context or a structurally verified local
+     target. Keep the detailed site set hash-bound while emitting one stable
+     evidence row so comparison severity is not distorted by evidence-array size. */
+  const remotePolicyRows = [...remotes.findings, ...remotes.unresolved];
+  const remoteResult = remotePolicyRows.length ? 'fail' : conservative(remotes.findings, remotes.unresolved);
+  const remoteEvidence = remotePolicyRows.length ? [{
+    code: 'REMOTE_TARGET_POLICY_NOT_CLOSED',
+    definiteRemoteCalls: remotes.findings.length,
+    unresolvedDynamicTargets: remotes.unresolved.length,
+    siteInventorySha256: stableSha256(remotePolicyRows)
+  }] : staticDiscoveryEvidence(authority);
 
   const checks = [
     makeCheck({
@@ -804,8 +817,9 @@ export async function run(context) {
         affectedFiles: new Set([...remotes.findings, ...remotes.unresolved].map(row => row.path)).size,
         staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
       rule: 'Shipped runtime must not contain a reachable literal external request, remote asset, navigation or message target outside approved contexts; dynamic targets must be resolved before pass.',
-      evidence: staticDiscoveryEvidence(authority, remotes.findings.length ? remotes.findings : remotes.unresolved),
-      notes: remoteResult === 'unmeasured' ? 'At least one dynamic network, navigation or message target could not be resolved statically.' :
+      evidence: remoteEvidence,
+      notes: remotePolicyRows.length ? 'Every unresolved dynamic target is a fail-closed policy violation until it is structurally resolved.' :
+        remoteResult === 'unmeasured' ? 'Complete static-discovery authority was not supplied.' :
         'Block comments, licence-only URLs, SVG namespaces, data/blob URLs, localhost and approved literals are excluded.'
     })
   ];
