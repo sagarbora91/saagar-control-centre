@@ -9,6 +9,11 @@
 **Status:** Modular HTML implementation is complete. Phase 4 audit and release
 closure is still open.
 
+For intermittent connectivity, execute this plan only through the independently
+recoverable units in
+`docs/audit/PHASE-4-MICRO-CHECKPOINTS-2026-08-12.md`. Every unit ends in a
+validated commit and GitHub push before the next unit begins.
+
 ## Completed internal remediation
 
 - A2 duplication/coupling, A7 message contracts, and A8 security-policy checks
@@ -33,9 +38,9 @@ closure is still open.
 - A6-03 still fails with 1,226 high-confidence localization bypass occurrences
   after two genuine Marathi/Hindi translation batches. This is product
   localization debt, not an analyzer-exclusion exercise.
-- Complete the running controlled two-build baseline at tooling `94f9999`,
-  validate and commit its immutable evidence, then rerun the comparison against
-  the final documented target.
+- Rerun the interrupted controlled two-build baseline at tooling `94f9999` when
+  connectivity is stable, validate and commit its immutable evidence, then stop
+  at that pushed checkpoint before freezing the final target.
 
 ## Trusted and external acceptance still required
 

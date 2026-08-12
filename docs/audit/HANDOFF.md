@@ -6,7 +6,9 @@
 ## Phase 4 live checkpoint - 2026-08-12
 
 This checkpoint is the current authority. The detailed execution and exit plan
-is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
+is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`. The connectivity-safe,
+commit-by-commit execution order is
+`docs/audit/PHASE-4-MICRO-CHECKPOINTS-2026-08-12.md`.
 
 | Authority | Identity |
 |---|---|
@@ -43,13 +45,13 @@ is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
   passes all 69 self-tests. It proves Windows process-tree cleanup, Gradle daemon
   trust propagation, immutable distribution bytes, and installed dependency
   sources while excluding only five exact Capacitor compiler-output directories.
-- A fresh controlled baseline is running from the clean detached tooling
-  worktree. Its reserved external output is
+- The latest controlled-baseline attempt from the clean detached tooling
+  worktree reserved external output
   `V:\Co work\Projects\Retail\audit-out\2026-08-12-115621-94f9999348c0`.
-  Treat it as pending until the runner exits successfully and all manifest
-  hashes are validated. Earlier replacement attempts are not final evidence:
-  they exposed normal Gradle cache-marker and exact Capacitor build-output writes
-  that are now classified without weakening source-byte checks.
+  Its process ended without emitting that evidence directory, so it is not
+  evidence and P4.1 must be rerun when connectivity is stable. Earlier attempts
+  exposed normal Gradle cache-marker and exact Capacitor build-output writes that
+  are now classified without weakening source-byte checks.
 - Product authority profiles for the R003/R013 UI and both localization batches
   are regenerated at product commit `3958dbc`; their modular suite passes. The
   exact ledger is now 107 rows with comparison delta SHA-256
@@ -62,10 +64,9 @@ is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
   API-23 install-replace, data preservation, relaunch, foreground activity and
   zero-fatal-log checks pass. Exact evidence is recorded at
   `verification/audit/PHASE-4-API23-APK-ENGINEERING-2026-08-12.md`.
-- On resume: first inspect the baseline process/output without modifying its
-  worktree, then validate and commit its exact evidence; freeze the final target
-  including the APK record; run the unapproved comparison; then request exact
-  identity-bound owner approval and external acceptance.
+- On resume: execute only P4.1 from the micro-checkpoint plan. Validate, commit,
+  and push its evidence before starting P4.2. Never combine a later mini-phase
+  into an unpushed checkpoint.
 
 ## Open acceptance gates
 
