@@ -22,8 +22,8 @@ validated first.
 
 ## P4.1 - Controlled baseline evidence
 
-**Entry:** pushed checkpoint `0909639`; governed tooling
-`84b2ecf72030c2c13cb404f1cd100913395707b0`; clean detached tooling worktree.
+**Entry:** pushed checkpoint `4a30923`; governed tooling
+`bdce23f3e631941a8ad9a288572b604d3fddf74e`; clean detached tooling worktree.
 
 **Work:** run one controlled baseline containing the full product suite, six
 mutations, and two independently prepared Android builds. A failed/interrupted
@@ -107,26 +107,25 @@ decision, and the production release identity is preserved and pushed.
 
 ## Current resume point
 
-- Completed/pushed engineering checkpoint:
-  `0909639d6f561ead6b8e5176a415498fcc0b1605`.
-- Current mini-phase: P4.1.
-- Governed tooling `84b2ecf72030c2c13cb404f1cd100913395707b0`
-  passes all 69 audit-tooling tests. It applies the exact five-directory
-  generated Capacitor output policy to every live dependency-closure
-  measurement and accepts only the canonical fail-closed Capacitor release
-  statements. Its bytes and ancestry are recorded in the pushed branch.
-- Diagnostic baseline `2026-08-12-161337-851d4145ac86` emitted a valid 18-file
-  bundle but left A9 unmeasured because its older parser rejected canonical
-  Capacitor release statements. It is diagnostic only and must not be committed
-  as the P4.1 baseline.
-- Active controlled baseline run:
-  `V:\Co work\Projects\Retail\audit-out\2026-08-12-162821-84b2ecf72030`.
-  It is running from the clean detached worktree at the governed tooling SHA.
-  At this checkpoint, controlled build 1 was compiling and no error or evidence
-  bundle had been emitted.
-- Crash resume rule: first determine whether that exact process/output finished.
-  If it completed, validate exactly 18 files, manifest identity, every declared
-  byte count and SHA-256, and require a real A9 two-build comparison before
-  committing it under `verification/audit`. If it stopped or A9 is unmeasured,
-  discard that output and rerun P4.1 at the same governed tooling SHA. Do not
-  start P4.2 until the validated baseline commit is pushed.
+- P4.1 is complete. The exact 18-file baseline is preserved at
+  `verification/audit/2026-08-12-220812-bdce23f3e631` by evidence commit
+  `359d46718aab65d85b8466b6424c6a9a31381727`.
+- Baseline manifest SHA-256:
+  `98da4fb01548784878f29b9c423f8c935d63b042c011868796b017e331b1b5c5`.
+  Target/tooling identity is
+  `bdce23f3e631941a8ad9a288572b604d3fddf74e`; all 18 files, declared byte
+  counts, and artifact SHA-256 values validated before preservation.
+- Governed tooling passes all 72 audit-tooling tests. Both controlled builds
+  used independent detached worktrees, dependency installs, writable Gradle
+  homes and daemons. They used a full-closure-verified Gradle distribution and
+  hash-bound read-only dependency cache in offline mode.
+- A9 is measured: A9-01, A9-03, A9-04 and A9-05 pass. Both APKs are exactly
+  identical at 6,999,062 bytes with SHA-256
+  `af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387`.
+  A9-02 is a measured fail because API-23 preparation Babel-transforms the
+  packaged `build-identity.js`, so its packaged hash differs from the canonical
+  source hash even though all parsed identity fields agree.
+- Current mini-phase: P4.2. Safe next action: resolve the A9-02 generated
+  identity-hash contract without weakening identity-field checks, rerun focused
+  and complete suites, and only then freeze the final target. Do not begin P4.3
+  before the P4.2 target commit is pushed.

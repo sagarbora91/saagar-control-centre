@@ -15,7 +15,7 @@ commit-by-commit execution order is
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `84b2ecf72030c2c13cb404f1cd100913395707b0` |
+| Governed tooling | `bdce23f3e631941a8ad9a288572b604d3fddf74e` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
@@ -38,25 +38,22 @@ commit-by-commit execution order is
 
 ### Crash-resume checkpoint
 
-- Latest pushed engineering checkpoint before this documentation update is
-  `0909639d6f561ead6b8e5176a415498fcc0b1605`. Product authority profiles
+- The validated controlled baseline is preserved by evidence commit
+  `359d46718aab65d85b8466b6424c6a9a31381727`. Product authority profiles
   are frozen at `3958dbc`; A6-03 is reduced to 1,226 occurrences but remains
   open.
-- Governed tooling `84b2ecf72030c2c13cb404f1cd100913395707b0`
-  passes all 69 self-tests. It proves Windows process-tree cleanup, Gradle daemon
-  trust propagation, immutable distribution bytes, and installed dependency
-  sources, the exact generated-output policy at every live measurement, and
-  canonical fail-closed Capacitor release-signing structure.
-- Baseline `2026-08-12-161337-851d4145ac86` is diagnostic only: its 18 files and
-  manifest validated, but A9 remained unmeasured because the former signing
-  parser rejected canonical `minifyEnabled false` and ProGuard statements. That
-  defect is fixed and regression-tested at the governed tooling SHA above.
-- The replacement controlled baseline is active at
-  `V:\Co work\Projects\Retail\audit-out\2026-08-12-162821-84b2ecf72030`.
-  At this checkpoint, controlled build 1 was compiling; no final evidence bundle
-  or error had been emitted. On crash resume, inspect this exact run first. Accept
-  it only after validating all 18 files and requiring a real A9 two-build
-  comparison; otherwise discard it and rerun at the same tooling SHA.
+- Governed tooling `bdce23f3e631941a8ad9a288572b604d3fddf74e`
+  passes all 72 self-tests and supports identity-bound offline Gradle builds.
+- P4.1 is complete at
+  `verification/audit/2026-08-12-220812-bdce23f3e631`, manifest SHA-256
+  `98da4fb01548784878f29b9c423f8c935d63b042c011868796b017e331b1b5c5`.
+  Exactly 18 files and every declared byte/hash identity validated.
+- A9 is measured. A9-01/03/04/05 pass; both controlled APKs are byte-identical
+  at 6,999,062 bytes, SHA-256
+  `af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387`.
+  A9-02 is a measured fail only on generated build-identity source hash: the
+  API-23 preparation step Babel-transforms the packaged JavaScript while its
+  package/version/minSdk values remain equal to canonical authority.
 - Product authority profiles for the R003/R013 UI and both localization batches
   are regenerated at product commit `3958dbc`; their modular suite passes. The
   exact ledger is now 107 rows with comparison delta SHA-256
@@ -69,9 +66,9 @@ commit-by-commit execution order is
   API-23 install-replace, data preservation, relaunch, foreground activity and
   zero-fatal-log checks pass. Exact evidence is recorded at
   `verification/audit/PHASE-4-API23-APK-ENGINEERING-2026-08-12.md`.
-- On resume: execute only P4.1 from the micro-checkpoint plan. Validate, commit,
-  and push its evidence before starting P4.2. Never combine a later mini-phase
-  into an unpushed checkpoint.
+- On resume: execute only P4.2 from the micro-checkpoint plan. Resolve A9-02's
+  canonical-versus-transformed identity hash contract, rerun the focused and
+  complete suites, freeze and push the exact target, then stop before P4.3.
 
 ## Open acceptance gates
 
