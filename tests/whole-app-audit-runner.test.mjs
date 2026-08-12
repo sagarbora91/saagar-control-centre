@@ -2298,6 +2298,69 @@ test('A7 ignores comment and string decoys while inventorying computed protocol 
   assert.ok(unauthorized.evidence.some(row => row.code === 'MESSAGE_CONTRACT_INVENTORY_UNAVAILABLE'));
 });
 
+test('A7 never silently passes sender and receiver aliases outside its supported grammar', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
+  const source = [
+    'parent.postMessage({ type: "ST_VISIBLE", value: 1 }, "*");',
+    'const bus = { send: parent.postMessage.bind(parent) };',
+    'bus.send({ type: "ST_HIDDEN", value: 1 }, "*");',
+    'window.addEventListener("message", event => {',
+    '  if (event.data.type === "ST_VISIBLE") consume(event.data);',
+    '  const kind = event.data.type;',
+    '  if (kind === "ST_HIDDEN") consume(event.data);',
+    '});'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', `<script>${source}</script>`],
+    ['www/shared/mah4-runtime.js', 'const VERSION = 1;']
+  ]);
+  const files = [...sources.keys()];
+  const authority = { complete: true, source: 'test:a7-static-census' };
+  const result = await module.run({ files, productFiles: files, modules: [], sharedAssets: [],
+    staticDiscoveryAuthority: authority, messageInventoryAuthority: authority,
+    exists: file => sources.has(file), read: file => sources.get(file) || '' });
+  const inventory = result.checks.find(check => check.id === 'A7-01');
+  assert.equal(inventory.result, 'pass');
+  assert.ok(inventory.metric.inventory.some(row =>
+    row.unresolvedCode === 'MESSAGE_SENDER_ALIAS_UNRESOLVED'));
+  assert.ok(inventory.metric.inventory.some(row =>
+    row.unresolvedCode === 'MESSAGE_RECEIVER_ALIAS_UNRESOLVED'));
+  assert.equal(result.checks.find(check => check.id === 'A7-02').result, 'unmeasured');
+  assert.equal(result.checks.find(check => check.id === 'A7-03').result, 'unmeasured');
+});
+
+test('A8 approves only the validated local module-manifest src assignment', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a8.mjs')).href);
+  const authority = { complete: true, source: 'test:a8-static-census' };
+  const evaluate = async source => {
+    const sources = new Map([['www/module-manifest.js', source]]);
+    return module.run({ files: [...sources.keys()], productFiles: [...sources.keys()],
+      modules: [], sharedAssets: [], staticDiscoveryAuthority: authority,
+      trackedSecretScanAuthority: authority,
+      exists: file => sources.has(file), read: file => sources.get(file) || '' });
+  };
+  const unsafe = await evaluate('function loadRemote(src) { image.src = src; }');
+  const unsafeRemote = unsafe.checks.find(check => check.id === 'A8-05');
+  assert.equal(unsafeRemote.result, 'fail');
+  assert.equal(unsafeRemote.metric.unresolvedDynamicTargets, 1);
+
+  const local = await evaluate([
+    'var MODULE_ID = /^[a-z][a-z0-9_]{1,31}$/;',
+    'function freezeModule(value, index) {',
+    '  var id = cleanString(value.id, "id");',
+    '  if (!MODULE_ID.test(id)) fail("bad id");',
+    '  var expectedPath = "modules/" + id + "/index.html";',
+    '  var file = cleanString(value.file, "file");',
+    '  var src = cleanString(value.src, "src");',
+    '  if (file !== expectedPath || src !== expectedPath || file !== src) fail("bad path");',
+    '  var module = {};',
+    '  module.src = src;',
+    '  return module;',
+    '}'
+  ].join('\n'));
+  assert.equal(local.checks.find(check => check.id === 'A8-05').result, 'pass');
+});
+
 test('A8 export control resolves aliases and rejects conditional or shell-fallback authorization', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a8.mjs')).href);
   const evaluate = async (source, file = 'www/shared/export-adversary.js') => {
