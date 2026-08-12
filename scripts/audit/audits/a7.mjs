@@ -273,7 +273,7 @@ function sendersIn(file, source) {
       code: 'MESSAGE_SENDER_COMPUTED_CALL_UNRESOLVED', expressionSha256: sha256(body) });
   }
   const aliasPatterns = [
-    /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*(?:window\s*\.\s*)?parent\s*\.\s*postMessage\s*\.\s*bind\s*\(/g,
+    /\b(?:window\s*\.\s*)?parent\s*\.\s*postMessage\s*\.\s*bind\s*\(/g,
     /\b(?:const|let|var)\s*\{\s*postMessage(?:\s*:\s*[A-Za-z_$][\w$]*)?\s*\}\s*=\s*(?:window\s*\.\s*)?parent\b/g
   ];
   for (const pattern of aliasPatterns) for (const match of safe.matchAll(pattern)) {
@@ -370,6 +370,11 @@ function receiversIn(file, source) {
   const inMessageHandler = offset => handlerRanges.some(range => offset >= range.start && offset <= range.end);
   const isEventDataType = expression => !workerRuntime(file, source) &&
     /\b(?:event|e|evt|messageEvent)\s*\.\s*data\s*\.\s*type\b/.test(expression);
+  for (const match of safe.matchAll(/\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*(?:event|e|evt|messageEvent)\s*\.\s*data\s*\.\s*type\b/g)) {
+    if (!codeSite(code, match.index) || !inMessageHandler(match.index)) continue;
+    recordUnresolved({ path: file, line: lineNumber(source, match.index),
+      code: 'MESSAGE_RECEIVER_ALIAS_UNRESOLVED', expressionSha256: sha256(match[0]) });
+  }
   const patterns = [
     { pattern: /\b((?:[A-Za-z_$][\w$]*\s*\.\s*)*type)\s*(?:===|!==|==|!=)\s*(["'])(ST_[A-Z0-9_]+)\2/g,
       lhsGroup: 1, typeGroup: 3 },
