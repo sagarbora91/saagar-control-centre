@@ -4,9 +4,10 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { captureBuild, dependencyClosureIdentity } from './capture-build.mjs';
+import { captureBuild, dependencyClosureIdentity, gradleDistributionClosureIdentity } from './capture-build.mjs';
 import { compareApks } from './compare-apks.mjs';
 import { buildContext, sha256 } from './lib.mjs';
+import { assertExternalPath } from './runner-support.mjs';
 
 const MAX_JSON_BYTES = 8 * 1024 * 1024;
 const COMMAND_BYTES = 256 * 1024 * 1024;
@@ -14,6 +15,11 @@ const MUTATION_TIMEOUT_MS = 20 * 60 * 1000;
 const BOOTSTRAP_TIMEOUT_MS = 10 * 60 * 1000;
 const INSTALL_TIMEOUT_MS = 20 * 60 * 1000;
 const GRADLE_WRAPPER_NETWORK_TIMEOUT_MS = 120_000;
+const CONTROLLED_GRADLE_DISTRIBUTION = Object.freeze({
+  fileCount: 20_190,
+  totalBytes: 409_846_960,
+  sha256: '40573f3e323bc968a5a3275a4e21aa9400aea0485a68a3aac05736b8d153a6be'
+});
 const PROBE_KINDS = new Set(['build', 'mutation']);
 const provenanceRegistry = new WeakMap();
 const evidenceRegistry = new WeakMap();
@@ -207,6 +213,44 @@ function createGradleHome(tempRoot, index) {
   return home;
 }
 
+function sameClosure(left, right) {
+  return !!(left && right && left.fileCount === right.fileCount &&
+    left.totalBytes === right.totalBytes && left.sha256 === right.sha256);
+}
+
+/* Poor connectivity must not make a previously verified immutable Gradle
+   distribution unavailable. The optional seed is outside every Git worktree,
+   is accepted only when its full extracted closure matches the frozen identity,
+   and is copied into each otherwise-fresh Gradle home. Each controlled build
+   still receives its own cache and capture-build re-measures the distribution
+   immediately before and after compilation. */
+export function seedControlledGradleHome(root, seedHome, targetHome,
+  expectedClosure = CONTROLLED_GRADLE_DISTRIBUTION) {
+  if (!seedHome) return null;
+  const source = assertExternalPath(root, path.resolve(seedHome),
+    'AUDIT_CONTROLLED_GRADLE_SEED_MUST_BE_EXTERNAL');
+  const sourceStat = fs.lstatSync(source, { throwIfNoEntry: false });
+  const targetStat = fs.lstatSync(targetHome, { throwIfNoEntry: false });
+  if (!sourceStat?.isDirectory() || sourceStat.isSymbolicLink() ||
+      !targetStat?.isDirectory() || targetStat.isSymbolicLink() ||
+      samePath(source, targetHome) || inside(source, targetHome) || inside(targetHome, source)) {
+    fail('AUDIT_CONTROLLED_GRADLE_SEED_INVALID');
+  }
+  let sourceClosure;
+  try { sourceClosure = gradleDistributionClosureIdentity(source); }
+  catch (_) { fail('AUDIT_CONTROLLED_GRADLE_SEED_INVALID'); }
+  if (!sameClosure(sourceClosure, expectedClosure)) fail('AUDIT_CONTROLLED_GRADLE_SEED_IDENTITY_INVALID');
+  const sourceWrapper = path.join(source, 'wrapper');
+  const targetWrapper = path.join(targetHome, 'wrapper');
+  if (fs.lstatSync(targetWrapper, { throwIfNoEntry: false })) fail('AUDIT_CONTROLLED_GRADLE_HOME_NOT_FRESH');
+  fs.cpSync(sourceWrapper, targetWrapper, { recursive: true, force: false, errorOnExist: true });
+  let copiedClosure;
+  try { copiedClosure = gradleDistributionClosureIdentity(targetHome); }
+  catch (_) { fail('AUDIT_CONTROLLED_GRADLE_SEED_COPY_INVALID'); }
+  if (!sameClosure(copiedClosure, expectedClosure)) fail('AUDIT_CONTROLLED_GRADLE_SEED_COPY_INVALID');
+  return copiedClosure;
+}
+
 function removeGradleHome(tempRoot, home) {
   if (!home) return;
   if (!inside(home, tempRoot) || samePath(home, tempRoot) || !samePath(path.dirname(home), tempRoot)) {
@@ -316,6 +360,7 @@ function captureOneBuild(identity, tempRoot, index) {
     }
     const install = installDependencies(worktree);
     gradleHome = createGradleHome(tempRoot, index);
+    seedControlledGradleHome(identity.root, process.env.SAAGAR_AUDIT_GRADLE_SEED_HOME, gradleHome);
     const bootstrap = bootstrapAndroid(worktree, identity.targetSha);
     prepareControlledGradleWrapper(worktree);
     captureBuild({ root: worktree, output, bootstrapReceipt: bootstrap,
