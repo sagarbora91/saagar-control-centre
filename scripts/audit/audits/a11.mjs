@@ -16,7 +16,7 @@ const CURRENT_TEST_CLAIM_DOCUMENTS = new Set([
   'docs/audit/HANDOFF.md',
   'docs/audit/AUDIT-PROGRAM-v1.md'
 ]);
-const EXTERNAL_TEST_CLAIM_DOMAINS = new Set(['api23External', 'largeRecordFocused', 'storageRecoveryFocused']);
+const EXTERNAL_TEST_CLAIM_DOMAINS = new Set(['api23External', 'auxiliaryFocused', 'largeRecordFocused', 'storageRecoveryFocused']);
 
 function authoritySources(context) {
   return CURRENT_AUTHORITY_DOCUMENTS.map(file => ({ file, available: context.exists(file),
@@ -106,6 +106,7 @@ function citedShas(context, sources) {
 
 function testDomain(line) {
   const value = String(line || '').toLowerCase();
+  if (/node\s+--test\s+tests\//.test(value) || /whole-app-audit-runner/.test(value)) return 'auxiliaryFocused';
   if (/api[- ]?23|instrumentation/.test(value)) return 'api23External';
   if (/complete offline|full offline|offline regression|permanent offline|automated baseline/.test(value)) return 'completeOffline';
   if (/main offline|offline\/storage\/security/.test(value)) return 'mainOffline';

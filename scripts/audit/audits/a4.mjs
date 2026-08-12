@@ -1,4 +1,4 @@
-import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
+import { auditResult, compareText, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
 
 const CLASSIFICATIONS = new Set(['portable', 'device-local', 're-derivable-excluded', 'forbidden']);
 const MAX_ARTIFACTS = 2500;
@@ -393,10 +393,10 @@ export async function run(context) {
   fileArtifacts(context, files, artifactMap);
 
   const artifacts = [...artifactMap.values()].map(artifact => {
-    artifact.locations.sort((a, b) => a.path.localeCompare(b.path) || a.line - b.line);
+    artifact.locations.sort((a, b) => compareText(a.path, b.path) || a.line - b.line);
     const decision = classify(artifact, policy);
     return { ...artifact, operations: [...artifact.operations].sort(), ...decision };
-  }).sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name));
+  }).sort((a, b) => compareText(a.kind, b.kind) || compareText(a.name, b.name));
   const blindSpots = [...discoveredBlindSpots];
   const overflow = artifacts.length > MAX_ARTIFACTS;
   const contractInventory = artifacts.map(artifact => ({

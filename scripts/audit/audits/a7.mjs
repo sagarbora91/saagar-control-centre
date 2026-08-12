@@ -1,4 +1,4 @@
-import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
+import { auditResult, compareText, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
 import { conservativeStaticResult, messageInventoryAuthority, staticDiscoveryAuthority, staticDiscoveryEvidence } from '../runner-support.mjs';
 
 const MAX_MESSAGE_CONTRACTS = 1000;
@@ -409,20 +409,20 @@ export async function run(context) {
     receivers.push(...receiverDiscovery.rows);
     unresolved.push(...senderDiscovery.unresolved, ...receiverDiscovery.unresolved);
   }
-  senders.sort((a, b) => a.type.localeCompare(b.type) || a.file.localeCompare(b.file) || a.line - b.line);
-  receivers.sort((a, b) => a.type.localeCompare(b.type) || a.file.localeCompare(b.file) || a.line - b.line);
-  unresolved.sort((a, b) => a.path.localeCompare(b.path) || a.line - b.line || a.code.localeCompare(b.code));
+  senders.sort((a, b) => compareText(a.type, b.type) || compareText(a.file, b.file) || a.line - b.line);
+  receivers.sort((a, b) => compareText(a.type, b.type) || compareText(a.file, b.file) || a.line - b.line);
+  unresolved.sort((a, b) => compareText(a.path, b.path) || a.line - b.line || compareText(a.code, b.code));
 
   const sentTypes = new Set(senders.map(row => row.type));
   const receivedTypes = new Set(receivers.map(row => row.type));
-  const allTypes = [...new Set([...sentTypes, ...receivedTypes])].sort();
+  const allTypes = [...new Set([...sentTypes, ...receivedTypes])].sort(compareText);
   const unmatched = allTypes.filter(type => !sentTypes.has(type) || !receivedTypes.has(type)).map(type => ({
     type,
     code: sentTypes.has(type) ? 'MESSAGE_SENT_NEVER_HANDLED' : 'MESSAGE_HANDLED_NEVER_SENT'
   }));
 
   const conflicts = [];
-  for (const type of [...sentTypes].sort()) {
+  for (const type of [...sentTypes].sort(compareText)) {
     const byField = new Map();
     for (const sender of senders.filter(row => row.type === type)) {
       for (const field of sender.fields) {
@@ -430,9 +430,9 @@ export async function run(context) {
         byField.get(field.name).add(field.kind);
       }
     }
-    for (const [field, kinds] of [...byField.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    for (const [field, kinds] of [...byField.entries()].sort(([a], [b]) => compareText(a, b))) {
       const definite = [...kinds].filter(kind => kind !== 'expression' && kind !== 'null');
-      if (new Set(definite).size > 1) conflicts.push({ type, field, kinds: [...kinds].sort(), code: 'PAYLOAD_FIELD_TYPE_CONFLICT' });
+      if (new Set(definite).size > 1) conflicts.push({ type, field, kinds: [...kinds].sort(compareText), code: 'PAYLOAD_FIELD_TYPE_CONFLICT' });
     }
   }
 
@@ -443,10 +443,10 @@ export async function run(context) {
     const typeReceivers = receivers.filter(row => row.type === messageType);
     const senderContracts = typeSenders.map(row => ({ path: row.file,
       payloadFields: row.fields.map(field => ({ field: field.name, kind: field.kind }))
-        .sort((a, b) => a.field.localeCompare(b.field) || a.kind.localeCompare(b.kind)) }))
-      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+        .sort((a, b) => compareText(a.field, b.field) || compareText(a.kind, b.kind)) }))
+      .sort((a, b) => compareText(JSON.stringify(a), JSON.stringify(b)));
     const receiverContracts = typeReceivers.map(row => ({ path: row.file }))
-      .sort((a, b) => a.path.localeCompare(b.path));
+      .sort((a, b) => compareText(a.path, b.path));
     return { contractId: `message:${messageType}`, kind: 'resolved', messageType, path: '',
       unresolvedCode: '', expressionSha256: '', senderContracts, receiverContracts };
   });
@@ -461,7 +461,7 @@ export async function run(context) {
       senderContracts: [], receiverContracts: [] };
   });
   const contractInventory = [...resolvedContracts, ...representedUnresolved]
-    .sort((a, b) => a.contractId.localeCompare(b.contractId));
+    .sort((a, b) => compareText(a.contractId, b.contractId));
   const discoveredArtifacts = contractInventory.length;
   const overflow = discoveredArtifacts > MAX_MESSAGE_CONTRACTS;
   const zeroCensus = discoveredArtifacts === 0;
