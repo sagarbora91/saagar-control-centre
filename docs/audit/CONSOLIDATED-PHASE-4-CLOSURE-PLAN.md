@@ -21,19 +21,21 @@ closure is still open.
   change revenue or sales totals.
 - API-23 emulator engineering checks pass for fresh install, install-replace,
   preserved seeded state, process restart, activity recreation, and rotation.
+- The complete current product suite passes 507/507. Governed audit tooling
+  `94f9999348c0e5b695c0043a2557ef28e6d21c86` passes all 69 self-tests.
+- Seeded APK SHA-256
+  `B65AA97563BDD6217753FD95AB456624AD71FFACBDA2F120088C00E3F91CAD20`
+  passes exact-hash API-23 install-replace, preserved-state, launch and fatal-log
+  engineering checks.
 
 ## Remaining internal work
 
 - A6-03 still fails with 1,226 high-confidence localization bypass occurrences
   after two genuine Marathi/Hindi translation batches. This is product
   localization debt, not an analyzer-exclusion exercise.
-- Freeze the independently reviewed Windows process-tree cleanup fix, rerun the
-  controlled two-build baseline, commit its immutable evidence, and rerun the
-  comparison against the final documented target.
-- Rerun the complete product suite and audit-tooling self-test from clean frozen
-  identities.
-- Build and hash a new seeded APK after the remaining product changes are frozen,
-  then repeat API-23 install-replace and smoke checks against that exact hash.
+- Complete the running controlled two-build baseline at tooling `94f9999`,
+  validate and commit its immutable evidence, then rerun the comparison against
+  the final documented target.
 
 ## Trusted and external acceptance still required
 

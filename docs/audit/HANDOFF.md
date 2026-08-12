@@ -13,7 +13,7 @@ is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `e38e44e90996efb5f0b7a57e370baf165408cc83` |
+| Governed tooling | `94f9999348c0e5b695c0043a2557ef28e6d21c86` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
@@ -36,26 +36,35 @@ is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
 
 ### Crash-resume checkpoint
 
-- Main product checkpoint before this documentation commit is `9dcedb4`. It
-  contains both genuine localization batches; A6-03 is reduced to 1,226
-  occurrences but remains open.
-- Governed tooling `e38e44e90996efb5f0b7a57e370baf165408cc83`
-  passed its complete self-test. Its Windows watchdog behaviorally proves that
-  a timed-out descendant process is terminated before cleanup.
+- Main before this documentation update is `da3674c`. Product authority profiles
+  are frozen at `3958dbc`; A6-03 is reduced to 1,226 occurrences but remains
+  open.
+- Governed tooling `94f9999348c0e5b695c0043a2557ef28e6d21c86`
+  passes all 69 self-tests. It proves Windows process-tree cleanup, Gradle daemon
+  trust propagation, immutable distribution bytes, and installed dependency
+  sources while excluding only five exact Capacitor compiler-output directories.
 - A fresh controlled baseline is running from the clean detached tooling
   worktree. Its reserved external output is
-  `V:\Co work\Projects\Retail\audit-out\2026-08-12-103501-e38e44e90996`.
+  `V:\Co work\Projects\Retail\audit-out\2026-08-12-115621-94f9999348c0`.
   Treat it as pending until the runner exits successfully and all manifest
-  hashes are validated; no evidence directory existed at launch.
+  hashes are validated. Earlier replacement attempts are not final evidence:
+  they exposed normal Gradle cache-marker and exact Capacitor build-output writes
+  that are now classified without weakening source-byte checks.
 - Product authority profiles for the R003/R013 UI and both localization batches
   are regenerated at product commit `3958dbc`; their modular suite passes. The
   exact ledger is now 107 rows with comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
   The previous 106-row capability approval must not be reused.
+- The complete current product suite passes 507/507 with 129 ETP and 86 modular
+  tests.
+- Final seeded engineering APK: 7,269,978 bytes, SHA-256
+  `B65AA97563BDD6217753FD95AB456624AD71FFACBDA2F120088C00E3F91CAD20`.
+  API-23 install-replace, data preservation, relaunch, foreground activity and
+  zero-fatal-log checks pass. Exact evidence is recorded at
+  `verification/audit/PHASE-4-API23-APK-ENGINEERING-2026-08-12.md`.
 - On resume: first inspect the baseline process/output without modifying its
-  worktree, then validate and commit its exact evidence; freeze the final target;
-  run the unapproved
-  comparison; build and retest the final seeded APK; then request exact
+  worktree, then validate and commit its exact evidence; freeze the final target
+  including the APK record; run the unapproved comparison; then request exact
   identity-bound owner approval and external acceptance.
 
 ## Open acceptance gates
