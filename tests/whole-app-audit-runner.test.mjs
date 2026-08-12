@@ -174,6 +174,7 @@ function buildRecord(apkFile, toolchainTag = 'same', closureTag = 'same') {
   };
   const gradle = { version: '8.11.1', javaHomeVersion: javaVersion, reportedJvmForm: 'Launcher JVM',
     javaHomeJvmVersion: '21.0.7', actualJvmVersion: '21.0.7',
+    jvmProof: 'gradle-jvm-is-build-jvm',
     plainJvm: '', launcherJvm: '21.0.7 (test)', daemonJvmMatchesJavaHome: true,
     daemonJvmDescriptorSha256: sha256('JAVA_HOME'), kotlin: '2.0', groovy: '3.0', ant: '1.10',
     os: 'test', outputSha256: sha256('gradle-output') };
@@ -1553,6 +1554,24 @@ test('receipt v2 requires both builds to agree on dependency and Gradle closures
     const legacy = record();
     delete legacy.dependencyClosure;
     assert.equal(compareApks(apk, apk, legacy, record()).identityBound, false);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('receipt v2 requires the captured Gradle JVM proof marker', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-jvm-proof-'));
+  try {
+    const apk = path.join(temporary, 'app-debug.apk');
+    fs.writeFileSync(apk, testZip([{ name: 'classes.dex', body: 'stable-product' }]));
+    const record = () => JSON.parse(safeJson(buildRecord(apk)));
+    assert.equal(compareApks(apk, apk, record(), record()).identityBound, true);
+    const missing = record();
+    delete missing.toolchain.gradle.jvmProof;
+    assert.equal(compareApks(apk, apk, record(), missing).identityBound, false);
+    const forged = record();
+    forged.toolchain.gradle.jvmProof = 'unverified';
+    assert.equal(compareApks(apk, apk, record(), forged).identityBound, false);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }

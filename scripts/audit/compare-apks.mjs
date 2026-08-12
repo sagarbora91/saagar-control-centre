@@ -190,13 +190,14 @@ function validatedGeneratedAndroid(value) {
 function validatedGradle(value) {
   const expectedKeys = ['actualJvmVersion', 'ant', 'daemonJvmDescriptorSha256',
     'daemonJvmMatchesJavaHome', 'groovy', 'javaHomeJvmVersion', 'javaHomeVersion', 'kotlin',
-    'launcherJvm', 'os', 'outputSha256', 'plainJvm', 'reportedJvmForm', 'version'].sort(compareText);
+    'jvmProof', 'launcherJvm', 'os', 'outputSha256', 'plainJvm', 'reportedJvmForm', 'version'].sort(compareText);
   if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.version !== 'string' ||
       JSON.stringify(Object.keys(value).sort(compareText)) !== JSON.stringify(expectedKeys) ||
       !value.version || typeof value.javaHomeVersion !== 'string' || !value.javaHomeVersion ||
       typeof value.javaHomeJvmVersion !== 'string' || !value.javaHomeJvmVersion ||
       typeof value.actualJvmVersion !== 'string' || value.actualJvmVersion !== value.javaHomeJvmVersion ||
       !['JVM', 'Launcher JVM'].includes(value.reportedJvmForm) ||
+      value.jvmProof !== 'gradle-jvm-is-build-jvm' ||
       typeof value.plainJvm !== 'string' || typeof value.launcherJvm !== 'string' ||
       (value.reportedJvmForm === 'JVM' ? !value.plainJvm : !value.launcherJvm) ||
       ['kotlin', 'groovy', 'ant', 'os'].some(field => typeof value[field] !== 'string') ||
