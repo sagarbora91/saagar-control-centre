@@ -62,8 +62,9 @@ export function staticDiscoveryAuthority(context = {}) {
 /* A7-01 has a narrower authority than the heuristic safety checks: the runner
    binds a complete, bounded census of every supported message-contract syntax
    to the frozen tooling identity. Unresolved sites stay represented as contract
-   rows; this authority does not make lifecycle, payload or security absence a
-   proof. */
+   rows. Expression-valued fields may be measured as hash-bound dynamic shapes
+   only when the separate complete static syntax authority is present; unknown
+   message identity/payload syntax remains unmeasured. */
 export function messageInventoryAuthority(context = {}) {
   return declaredAuthority(context, 'messageInventoryAuthority');
 }

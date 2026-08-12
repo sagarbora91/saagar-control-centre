@@ -5,6 +5,7 @@ const KEYWORDS = new Set((
   'await break case catch class const continue debugger default delete do else export extends false finally for function if import in instanceof let new null return static super switch this throw true try typeof undefined var void while with yield async of'
 ).split(' '));
 const MAX_FUNCTION_CANDIDATES = 5000;
+const NEAR_COPY_SHINGLE_SIZE = 5;
 
 function lineAt(text, offset) {
   return text.slice(0, Math.max(0, offset)).split(/\r?\n/).length;
@@ -170,13 +171,33 @@ function frequency(tokens) {
   return counts;
 }
 
+function shingles(tokens, width = NEAR_COPY_SHINGLE_SIZE) {
+  if (tokens.length < width) return tokens.length ? [tokens.join('\0')] : [];
+  const values = [];
+  for (let index = 0; index <= tokens.length - width; index += 1) {
+    values.push(tokens.slice(index, index + width).join('\0'));
+  }
+  return values;
+}
+
 function tokenSimilarity(left, right) {
-  const maximum = (2 * Math.min(left.tokens.length, right.tokens.length)) / (left.tokens.length + right.tokens.length);
+  const maximum = (2 * Math.min(left.shingles.length, right.shingles.length)) /
+    (left.shingles.length + right.shingles.length);
   if (maximum < 0.9) return 0;
-  const [small, large] = left.counts.size <= right.counts.size ? [left.counts, right.counts] : [right.counts, left.counts];
+  const [small, large] = left.shingleCounts.size <= right.shingleCounts.size
+    ? [left.shingleCounts, right.shingleCounts] : [right.shingleCounts, left.shingleCounts];
   let common = 0;
   for (const [token, count] of small) common += Math.min(count, large.get(token) || 0);
-  return (2 * common) / (left.tokens.length + right.tokens.length);
+  return (2 * common) / (left.shingles.length + right.shingles.length);
+}
+
+export function orderedTokenSimilarity(leftSource, rightSource) {
+  const leftTokens = normalizedTokens(leftSource);
+  const rightTokens = normalizedTokens(rightSource);
+  const leftShingles = shingles(leftTokens);
+  const rightShingles = shingles(rightTokens);
+  return tokenSimilarity({ shingles: leftShingles, shingleCounts: frequency(leftShingles) },
+    { shingles: rightShingles, shingleCounts: frequency(rightShingles) });
 }
 
 function groupsBy(items, keyOf, minimumFiles) {
@@ -199,8 +220,10 @@ function exactFunctionGroups(functions) {
 function nearFunctionGroups(functions) {
   const expanded = functions.map(item => {
     const tokens = normalizedTokens(item.body);
+    const tokenShingles = shingles(tokens);
     const normalized = tokens.join(' ');
-    return { ...item, tokens, counts: frequency(tokens), normalizedChars: normalized.length,
+    return { ...item, tokens, shingles: tokenShingles, shingleCounts: frequency(tokenShingles),
+      normalizedChars: normalized.length,
       normalizedSha256: sha256(normalized) };
   }).filter(item => item.normalizedChars >= 240);
 
@@ -347,12 +370,13 @@ export async function run(context) {
       id: 'A2-02', title: 'Near-copy function bodies',
       result: near.overflow ? 'unmeasured' : near.groups.length ? 'fail' : 'pass', severity: 'P2', mandatory: true,
       metric: { candidateFunctions: near.candidates.length, candidateLimit: MAX_FUNCTION_CANDIDATES,
-        similarityThreshold: 0.9, similarityEdges: near.edges, nearCopyGroups: near.groups.length },
-      rule: 'After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% token similarity must not span three or more product files.',
+        similarityThreshold: 0.9, shingleSize: NEAR_COPY_SHINGLE_SIZE,
+        similarityEdges: near.edges, nearCopyGroups: near.groups.length },
+      rule: 'After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% ordered five-token-shingle similarity must not span three or more product files.',
       evidence: near.overflow
         ? [{ code: 'NEAR_COPY_CANDIDATE_LIMIT_EXCEEDED', candidates: near.candidates.length, limit: MAX_FUNCTION_CANDIDATES }]
         : near.groups.flatMap(group => functionEvidence(group, 'NEAR_COPY_FUNCTION')),
-      notes: near.overflow ? 'The deterministic bound was exceeded; the check is not reported as passed.' : 'Similarity is multiset Dice similarity over normalized lexical tokens; SHA-256 identities are emitted for each cluster.'
+      notes: near.overflow ? 'The deterministic bound was exceeded; the check is not reported as passed.' : 'Similarity is multiset Dice similarity over ordered five-token shingles, preserving local control-flow order while normalizing identifiers and literals; SHA-256 identities are emitted for each cluster.'
     }),
     makeCheck({
       id: 'A2-03', title: 'Repeated CSS declaration blocks',

@@ -9,7 +9,15 @@ function lexicalMask(source, maskStrings = false) {
   let state = 'code';
   let quote = '';
   let escaped = false;
+  let regexClass = false;
+  let regexStart = -1;
   const blank = index => { if (output[index] !== '\n' && output[index] !== '\r') output[index] = ' '; };
+  const regexCanStart = index => {
+    const prefix = input.slice(Math.max(0, index - 80), index).replace(/\s+$/, '');
+    if (!prefix) return true;
+    if (/[({[=,:;!?&|+\-*%^~<>]$/.test(prefix)) return true;
+    return /\b(?:return|case|throw|else|do|typeof|instanceof|in|of|yield|await|void|delete|new)$/.test(prefix);
+  };
   for (let index = 0; index < input.length; index += 1) {
     const char = input[index];
     const next = input[index + 1] || '';
@@ -36,8 +44,27 @@ function lexicalMask(source, maskStrings = false) {
       else if (char === quote) { state = 'code'; quote = ''; }
       continue;
     }
+    if (state === 'regex') {
+      if (char === '\n' || char === '\r') {
+        for (let restore = regexStart; restore < index; restore += 1) output[restore] = input[restore];
+        state = 'code'; regexClass = false; regexStart = -1;
+        continue;
+      }
+      blank(index);
+      if (escaped) { escaped = false; continue; }
+      if (char === '\\') { escaped = true; continue; }
+      if (char === '[') { regexClass = true; continue; }
+      if (char === ']' && regexClass) { regexClass = false; continue; }
+      if (char === '/' && !regexClass) {
+        state = 'code';
+        regexStart = -1;
+        while (/[A-Za-z]/.test(input[index + 1] || '')) { index += 1; blank(index); }
+      }
+      continue;
+    }
     if (char === '/' && next === '/') { blank(index); blank(index + 1); index += 1; state = 'line'; continue; }
     if (char === '/' && next === '*') { blank(index); blank(index + 1); index += 1; state = 'block'; continue; }
+    if (char === '/' && regexCanStart(index)) { blank(index); state = 'regex'; regexClass = false; regexStart = index; continue; }
     if (input.slice(index, index + 4) === '<!--') {
       blank(index); blank(index + 1); blank(index + 2); blank(index + 3);
       index += 3; state = 'html'; continue;
@@ -55,6 +82,43 @@ function runtimeFiles(context) {
   return context.productFiles.filter(file => /^(?:www|build-overrides)\//.test(file))
     .filter(file => /\.(?:html?|js|mjs|java)$/i.test(file))
     .filter(file => !/\.(?:min|bundle)\.js$/i.test(file));
+}
+
+function executableJavascript(file, source) {
+  if (!/\.html?$/i.test(file)) return source;
+  const output = String(source).split('').map(char => char === '\n' || char === '\r' ? char : ' ');
+  for (const match of String(source).matchAll(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi)) {
+    const body = match[1] || '';
+    const start = match.index + match[0].indexOf(body);
+    for (let index = 0; index < body.length; index += 1) output[start + index] = body[index];
+  }
+  return output.join('');
+}
+
+function workerRuntime(file, source) {
+  return /(?:^|\/)[^/]*worker(?:[-_.][^/]*)?\.m?js$/i.test(file) &&
+    /\b(?:self\s*\.\s*(?:onmessage|postMessage)|importScripts\s*\()/.test(source);
+}
+
+function postMessageTransport(file, source, offset) {
+  const before = source.slice(Math.max(0, offset - 180), offset);
+  if (/(?:\b(?:window\s*\.\s*)?parent|\bparentWindow|\b[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*\s*\.\s*contentWindow)\s*\.\s*$/.test(before)) {
+    return 'shell';
+  }
+  if (/\bworker\s*\.\s*$/.test(before) || (workerRuntime(file, source) && /\bself\s*\.\s*$/.test(before))) {
+    return 'worker';
+  }
+  if (/\.\s*$/.test(before)) return 'other-member';
+  return workerRuntime(file, source) ? 'worker' : 'ambiguous-global';
+}
+
+function messageRegistrationIsShell(file, source, offset) {
+  const before = source.slice(Math.max(0, offset - 100), offset);
+  const member = /\b([A-Za-z_$][\w$]*)\s*\.\s*$/.exec(before);
+  if (!member) return !workerRuntime(file, source);
+  if (member[1] === 'window' || member[1] === 'root') return true;
+  if (member[1] === 'self') return !workerRuntime(file, source);
+  return false;
 }
 
 function matchingBrace(source, open) {
@@ -146,10 +210,12 @@ function sendersIn(file, source) {
     if (!unresolvedKeys.has(key)) { unresolvedKeys.add(key); unresolved.push(row); }
   };
   for (const match of code.matchAll(/\bpostMessage\s*(?:\?\.\s*)?\(/g)) {
+    const transport = postMessageTransport(file, safe, match.index);
     let open = code.indexOf('(', match.index);
     let cursor = open + 1;
     while (/\s/.test(code[cursor] || '')) cursor += 1;
     if (safe[cursor] !== '{') {
+      if (transport === 'worker') continue;
       const expression = safe.slice(cursor, Math.min(safe.length, cursor + 240)).split(/[,\r\n)]/, 1)[0].trim();
       recordUnresolved({ path: file, line: lineNumber(source, match.index), code: 'MESSAGE_SENDER_PAYLOAD_UNRESOLVED',
         expressionSha256: sha256(expression) });
@@ -167,7 +233,11 @@ function sendersIn(file, source) {
     const typeProperties = properties.filter(item => item.name === 'type');
     const type = typeProperties.length === 1 ? /^(["'])(ST_[A-Z0-9_]+)\1$/.exec(typeProperties[0].value) : null;
     if (!type) {
+      const literalType = typeProperties.length === 1 ? /^(["'])([^"']+)\1$/.exec(typeProperties[0].value) : null;
+      if (literalType && !/^ST_[A-Z0-9_]+$/.test(literalType[2])) continue;
       const hasTypeSyntax = typeProperties.length > 0 || /\btype\s*:|\[\s*(["'])type\1\s*\]\s*:/.test(body);
+      if (!hasTypeSyntax && transport !== 'shell') continue;
+      if ((transport === 'worker' || transport === 'other-member') && !/\bST_[A-Z0-9_]+\b/.test(body)) continue;
       recordUnresolved({ path: file, line: lineNumber(source, match.index),
         code: hasTypeSyntax ? 'MESSAGE_SENDER_TYPE_UNRESOLVED' : 'MESSAGE_SENDER_PAYLOAD_UNRESOLVED',
         expressionSha256: sha256(body) });
@@ -235,7 +305,7 @@ function messageHandlerRanges(source) {
   }
   return ranges;
 }
-function scopedMessageHandlerRanges(source) {
+function scopedMessageHandlerRanges(file, source) {
   const safe = lexicalMask(source);
   const code = lexicalMask(source, true);
   const ranges = [];
@@ -264,6 +334,7 @@ function scopedMessageHandlerRanges(source) {
   ];
   for (const pattern of registrations) for (const match of safe.matchAll(pattern)) {
     if (!codeSite(code, match.index)) continue;
+    if (!messageRegistrationIsShell(file, safe, match.index)) continue;
     const start = match.index + match[0].length;
     const tail = code.slice(start, Math.min(code.length, start + 1000));
     const inline = /^\s*(?:(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\([^)]*\)|(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>)\s*\{/.exec(tail);
@@ -272,6 +343,15 @@ function scopedMessageHandlerRanges(source) {
       const named = /^\s*([A-Za-z_$][\w$]*)\b/.exec(tail);
       if (named) addNamedRange(named[1]);
     }
+  }
+  for (const match of code.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(\s*(event|e|evt|messageEvent)\s*\)\s*\{/g)) {
+    if (!/message/i.test(match[1])) continue;
+    const open = match.index + match[0].lastIndexOf('{');
+    const end = matchingBrace(safe, open);
+    if (end <= open) continue;
+    const body = safe.slice(open, end + 1);
+    const eventName = match[2];
+    if (new RegExp('\\b' + eventName + '\\s*\\.\\s*data\\b').test(body) && /\bST_[A-Z0-9_]+\b/.test(body)) addRange(open);
   }
   return ranges.sort((a, b) => a.start - b.start);
 }
@@ -286,9 +366,10 @@ function receiversIn(file, source) {
     const key = [row.path, row.line, row.code, row.expressionSha256 || ''].join('\0');
     if (!unresolvedKeys.has(key)) { unresolvedKeys.add(key); unresolved.push(row); }
   };
-  const handlerRanges = scopedMessageHandlerRanges(source);
+  const handlerRanges = scopedMessageHandlerRanges(file, source);
   const inMessageHandler = offset => handlerRanges.some(range => offset >= range.start && offset <= range.end);
-  const isEventDataType = expression => /\b(?:event|e|evt|messageEvent)\s*\.\s*data\s*\.\s*type\b/.test(expression);
+  const isEventDataType = expression => !workerRuntime(file, source) &&
+    /\b(?:event|e|evt|messageEvent)\s*\.\s*data\s*\.\s*type\b/.test(expression);
   const patterns = [
     { pattern: /\b((?:[A-Za-z_$][\w$]*\s*\.\s*)*type)\s*(?:===|!==|==|!=)\s*(["'])(ST_[A-Z0-9_]+)\2/g,
       lhsGroup: 1, typeGroup: 3 },
@@ -304,7 +385,8 @@ function receiversIn(file, source) {
   for (const match of safe.matchAll(/\b((?:[A-Za-z_$][\w$]*\s*\.\s*)+type)\s*(?:===|!==|==|!=)\s*([^;\r\n)]+)/g)) {
     if (!codeSite(code, match.index)) continue;
     const expression = match[2].trim();
-    if (!/^(["'])ST_[A-Z0-9_]+\1(?:\s|&&|\|\||\)|$)/.test(expression) &&
+    const literal = /^(["'])[^"']+\1$/.test(expression);
+    if (!literal && !/^(["'])ST_[A-Z0-9_]+\1(?:\s|&&|\|\||\)|$)/.test(expression) &&
         (isEventDataType(match[1]) || inMessageHandler(match.index))) recordUnresolved({ path: file,
       line: lineNumber(source, match.index), code: 'MESSAGE_RECEIVER_TYPE_UNRESOLVED',
       expressionSha256: sha256(expression) });
@@ -319,7 +401,7 @@ function receiversIn(file, source) {
       const expression = caseMatch[1].trim();
       const literal = /^(["'])(ST_[A-Z0-9_]+)\1$/.exec(expression);
       if (literal) rows.push({ file, line: lineNumber(source, open + caseMatch.index), type: literal[2] });
-      else recordUnresolved({ path: file,
+      else if (!/^(["'])[^"']+\1$/.test(expression)) recordUnresolved({ path: file,
         line: lineNumber(source, open + caseMatch.index), code: 'MESSAGE_RECEIVER_TYPE_UNRESOLVED',
         expressionSha256: sha256(expression) });
     }
@@ -330,6 +412,7 @@ function receiversIn(file, source) {
   ];
   for (const pattern of computedReceivers) for (const match of safe.matchAll(pattern)) {
     if (!codeSite(code, match.index)) continue;
+    if (!inMessageHandler(match.index)) continue;
     recordUnresolved({ path: file, line: lineNumber(source, match.index),
       code: 'MESSAGE_RECEIVER_COMPUTED_TYPE_UNRESOLVED', expressionSha256: sha256(match[0]) });
   }
@@ -403,7 +486,7 @@ export async function run(context) {
   const receivers = [];
   const unresolved = [];
   for (const file of files) {
-    const source = context.read(file);
+    const source = executableJavascript(file, context.read(file));
     const senderDiscovery = sendersIn(file, source);
     const receiverDiscovery = receiversIn(file, source);
     senders.push(...senderDiscovery.rows);
@@ -467,7 +550,15 @@ export async function run(context) {
   const overflow = discoveredArtifacts > MAX_MESSAGE_CONTRACTS;
   const zeroCensus = discoveredArtifacts === 0;
   const inventoryComplete = !zeroCensus && !overflow;
-  const lifecycleComplete = inventoryComplete && unresolved.length === 0;
+  const identityUnresolved = unresolved.filter(row => row.code !== 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED');
+  const representedDynamicFields = unresolved.filter(row => row.code === 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED');
+  const lifecycleComplete = inventoryComplete && identityUnresolved.length === 0;
+  /* Expression-valued fields are not discarded: each site is represented by a
+     hash-bound inventory row and every sender contract retains the field name
+     plus the `expression` kind. Under complete syntax-census authority that is
+     a measurable dynamic shape, while unresolved message identity, payload,
+     spread or computed-call syntax still prevents a shape conclusion. */
+  const shapeComplete = inventoryComplete && identityUnresolved.length === 0;
   const inventory = overflow ? contractInventory.slice(0, MAX_MESSAGE_CONTRACTS) : contractInventory;
   const inventorySha256 = inventoryComplete ? stableSha256(inventory) : null;
   const censusGaps = [
@@ -475,7 +566,8 @@ export async function run(context) {
     ...(overflow ? [{ code: 'MESSAGE_CONTRACT_INVENTORY_OVERFLOW', discoveredArtifacts,
       artifactLimit: MAX_MESSAGE_CONTRACTS }] : [])
   ];
-  const lifecycleGaps = unresolved.length ? unresolved : censusGaps;
+  const lifecycleGaps = identityUnresolved.length ? identityUnresolved : censusGaps;
+  const shapeGaps = identityUnresolved.length ? identityUnresolved : censusGaps;
   /* Closure addendum §3. A bounded, non-empty, non-overflowing census proves the
      inventory is representable — not that the scanner observed every protocol
      site. Heuristic absence therefore settles at 'unmeasured', never 'pass',
@@ -494,7 +586,7 @@ export async function run(context) {
   });
   const shapeResult = conservativeStaticResult({
     definiteViolations: conflicts.length,
-    unresolved: lifecycleComplete ? 0 : 1,
+    unresolved: shapeComplete ? 0 : 1,
     authority
   });
   const globalResult = conservativeStaticResult({
@@ -524,7 +616,7 @@ export async function run(context) {
       severity: unmatched.length ? 'P1' : lifecycleResult === 'pass' ? 'INFO' : 'P2', mandatory: true,
       metric: { sentNeverHandled: unmatched.filter(row => row.code === 'MESSAGE_SENT_NEVER_HANDLED').length,
         handledNeverSent: unmatched.filter(row => row.code === 'MESSAGE_HANDLED_NEVER_SENT').length,
-        unresolvedContracts: unresolved.length,
+        unresolvedContracts: identityUnresolved.length,
         staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
       rule: 'A definite unpaired shipped ST_* message is P1; heuristic absence of unpaired messages is unmeasured, never pass',
       evidence: unmatched.length ? unmatched
@@ -533,11 +625,12 @@ export async function run(context) {
     makeCheck({
       id: 'A7-03', title: 'Message payload shape compatibility', result: shapeResult,
       severity: conflicts.length ? 'P1' : shapeResult === 'pass' ? 'INFO' : 'P2', mandatory: true,
-      metric: { definiteFieldTypeConflicts: conflicts.length, unresolvedContracts: unresolved.length,
+      metric: { definiteFieldTypeConflicts: conflicts.length, unresolvedContracts: identityUnresolved.length,
+        representedDynamicContracts: representedDynamicFields.length,
         staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
-      rule: 'A field used with conflicting definite payload types for one message type is P1; heuristic absence of conflicts is unmeasured, never pass',
+      rule: 'A field used with conflicting definite payload types for one message type is P1; expression-valued fields must remain hash-bound represented dynamic contracts, while unresolved identity/payload syntax prevents a pass',
       evidence: conflicts.length ? conflicts
-        : lifecycleComplete ? staticDiscoveryEvidence(authority) : lifecycleGaps
+        : shapeComplete ? staticDiscoveryEvidence(authority) : shapeGaps
     }),
     makeCheck({
       id: 'A7-04', title: 'Packaged protocol and manifest binding', result: binding.mismatches.length ? 'fail' : 'pass',
@@ -556,5 +649,6 @@ export async function run(context) {
       evidence: undeclared.length ? undeclared : staticDiscoveryEvidence(authority)
     })
   ], { messageTypes: allTypes.length, senderSites: senders.length, receiverSites: receivers.length,
-    unresolvedContracts: unresolved.length, inventoryComplete, lifecycleComplete });
+    unresolvedContracts: unresolved.length, identityUnresolvedContracts: identityUnresolved.length,
+    inventoryComplete, lifecycleComplete, shapeComplete });
 }

@@ -9,12 +9,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
-  parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
+  controlledGradleEnvironment, parseGradleJvmIdentity } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
-  runControlledProbes } from '../scripts/audit/controlled-probes.mjs';
+  prepareControlledGradleWrapper, runControlledProbes } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
 import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
+import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized } from '../scripts/audit/evidence-trust-root.mjs';
 import { COMPARISON_APPROVAL_FORMAT, comparisonFindingSha256, evaluateComparison } from '../scripts/audit/comparison.mjs';
@@ -32,6 +33,41 @@ const AUDITS = Object.freeze([
   ['A5', 'a5', 5], ['A6', 'a6', 5], ['A7', 'a7', 5], ['A8', 'a8', 5],
   ['A9', 'a9', 5], ['A10', 'a10', 5], ['A11', 'a11', 5]
 ]);
+
+test('A2 near-copy similarity preserves control-flow order after identifier normalization', () => {
+  const left = `
+    if (record.active) {
+      save(record.id);
+      audit(record.id);
+      publish(record.id);
+      return true;
+    }
+    deny(record.id);
+    return false;
+  `;
+  const renamedCopy = `
+    if (candidate.active) {
+      persist(candidate.key);
+      log(candidate.key);
+      release(candidate.key);
+      return true;
+    }
+    reject(candidate.key);
+    return false;
+  `;
+  const reordered = `
+    return false;
+    deny(record.id);
+    if (record.active) {
+      return true;
+      publish(record.id);
+      audit(record.id);
+      save(record.id);
+    }
+  `;
+  assert.equal(orderedTokenSimilarity(left, renamedCopy), 1);
+  assert.ok(orderedTokenSimilarity(left, reordered) < 0.9);
+});
 
 function git(args, encoding = 'utf8') {
   return execFileSync('git', ['-C', ROOT, ...args], {
@@ -523,6 +559,32 @@ test('A6-03 scans high-confidence first-party shared JavaScript UI sinks', async
   assert.deepEqual(check.evidence.map(item => item.path), ['www/shared/privacy-localization-probe.js']);
   assert.equal(check.evidence.length, 1);
   assert.equal(JSON.stringify(check).includes('Untranslated shared runtime warning'), false);
+});
+
+test('A6-03 classifies visible nested controls and ignores markup decoys in JavaScript code', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a6.mjs')).href);
+  const sources = new Map([
+    ['www/index.html', [
+      '<button><span aria-hidden="true">XX</span><span>Known label</span></button>',
+      '<script>',
+      'const comparison = left < button && button > right;',
+      'const expression = "<button>" + escapeHtml(name) + "</button>";',
+      'const generated = `<button><span aria-hidden="true">YY</span>Actual untranslated action</button>`;',
+      '</script>'
+    ].join('\n')],
+    ['www/app-i18n.js', 'const entries = [["Known label", "ज्", "ज्"]];']
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], options: {}, productFingerprint: { entries: [] },
+    read: file => sources.get(file), exists: file => sources.has(file)
+  });
+  const check = result.checks.find(item => item.id === 'A6-03');
+  assert.equal(check.result, 'fail');
+  assert.equal(check.metric.highConfidenceBypasses, 1);
+  assert.equal(check.evidence[0].kind, 'element:button');
+  assert.equal(check.evidence[0].textFingerprint, sha256('Actual untranslated action').slice(0, 20));
+  assert.equal(JSON.stringify(check).includes('escapeHtml'), false);
 });
 
 test('A11-03 rejects per-suite skips and cannot pass aggregate-only evidence', async () => {
@@ -1355,8 +1417,9 @@ test('A7 inventories represented dynamic message contracts without generic type 
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
   const evaluate = async source => {
     const sources = new Map([
-      ['www/index.html', source],
-      ['www/shared/mah4-runtime.js', 'const VERSION = 1;']
+      ['www/index.html', '<!doctype html><title>Dynamic message probe</title>'],
+      ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+      ['www/shared/message-dynamic-probe.js', source]
     ]);
     const files = [...sources.keys()].sort();
     const result = await module.run({
@@ -1383,7 +1446,7 @@ test('A7 inventories represented dynamic message contracts without generic type 
   assert.equal(dynamic.find(item => item.id === 'A7-02').result, 'unmeasured');
   assert.equal(dynamic.find(item => item.id === 'A7-03').result, 'unmeasured');
 
-  const empty = await evaluate('<!doctype html><title>No messages</title>');
+  const empty = await evaluate('');
   const emptyInventory = empty.find(item => item.id === 'A7-01');
   assert.equal(emptyInventory.result, 'unmeasured');
   assert.equal(emptyInventory.metric.inventorySha256, null);
@@ -1667,6 +1730,90 @@ test('A7 resolves only one exact top-level literal sender type', async () => {
   assert.equal(result.checks.find(item => item.id === 'A7-02').result, 'unmeasured');
 });
 
+test('A7 excludes non-shell worker protocols and measures HTML shell handlers and delegated host receivers', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
+  const shell = [
+    '<!doctype html><div data-label="Owner\'s protocol"></div>',
+    '<script>',
+    'window.addEventListener("message", event => {',
+    '  if (event.data.type === "ST_SHELL_EVENT") consume(event.data);',
+    '});',
+    '</script>'
+  ].join('\n');
+  const protocol = [
+    'parent.postMessage({ type: "ST_SHELL_EVENT", value: "ok" }, "*");',
+    'frame.contentWindow.postMessage({ type: "ST_HOST_EVENT", value: "ok" }, "*");',
+    'function message(event) {',
+    '  const packet = event.data;',
+    '  if (packet.type === "ST_HOST_EVENT") consume(packet);',
+    '}'
+  ].join('\n');
+  const workerClient = [
+    'const worker = new Worker("etp-import-worker.js");',
+    'worker.onmessage = function(event) { consume(event.data); };',
+    'worker.postMessage({ type: "PARSE_FOUR_REPORTS", items: [] });'
+  ].join('\n');
+  const worker = [
+    'self.onmessage = function(event) {',
+    '  if (event.data.type !== "PARSE_FOUR_REPORTS") return;',
+    '  self.postMessage({ ok: false, code: "INVALID" });',
+    '};'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', shell],
+    ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+    ['www/shared/protocol-abstraction.js', protocol],
+    ['www/etp-worker-client.js', workerClient],
+    ['www/etp-import-worker.js', worker]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], sharedAssets: [],
+    staticDiscoveryAuthority: { complete: true, source: 'test:a7-static-census' },
+    messageInventoryAuthority: { complete: true, source: 'test:a7-message-census' },
+    exists: file => sources.has(file), read: file => sources.get(file) || ''
+  });
+  const inventory = result.checks.find(item => item.id === 'A7-01');
+  assert.deepEqual(inventory.metric.inventory.filter(row => row.kind === 'resolved')
+    .map(row => row.messageType), ['ST_HOST_EVENT', 'ST_SHELL_EVENT']);
+  assert.equal(inventory.metric.senderSites, 2);
+  assert.equal(inventory.metric.receiverSites, 2);
+  assert.equal(inventory.metric.unresolvedContracts, 0);
+  assert.equal(result.checks.find(item => item.id === 'A7-02').result, 'pass');
+  assert.equal(JSON.stringify(inventory).includes('PARSE_FOUR_REPORTS'), false);
+  assert.equal(JSON.stringify(inventory).includes('ETP_WORKER'), false);
+});
+
+test('A7 hash-binds expression fields as represented dynamic shapes under complete authority', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
+  const source = [
+    'parent.postMessage({ type: "ST_DYNAMIC_FIELD", value: makeValue() }, "*");',
+    'window.addEventListener("message", event => {',
+    '  if (event.data.type === "ST_DYNAMIC_FIELD") consume(event.data);',
+    '});'
+  ].join('\n');
+  const sources = new Map([
+    ['www/index.html', '<!doctype html><title>Shape uncertainty</title>'],
+    ['www/shared/mah4-runtime.js', 'const VERSION = 1;'],
+    ['www/shared/protocol-shape.js', source]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], sharedAssets: [],
+    staticDiscoveryAuthority: { complete: true, source: 'test:a7-static-census' },
+    messageInventoryAuthority: { complete: true, source: 'test:a7-message-census' },
+    exists: file => sources.has(file), read: file => sources.get(file) || ''
+  });
+  const lifecycle = result.checks.find(item => item.id === 'A7-02');
+  const shape = result.checks.find(item => item.id === 'A7-03');
+  assert.equal(lifecycle.result, 'pass');
+  assert.equal(lifecycle.metric.unresolvedContracts, 0);
+  assert.equal(shape.result, 'pass');
+  assert.equal(shape.metric.unresolvedContracts, 0);
+  assert.equal(shape.metric.representedDynamicContracts, 1);
+  assert.ok(shape.evidence.some(item => item.code === 'STATIC_DISCOVERY_COVERAGE_COMPLETE'));
+});
+
 test('A8 rejects computed sinks, fail-open methods, uncontrolled helpers and nested fake guards', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a8.mjs')).href);
   const evaluate = async source => {
@@ -1878,6 +2025,42 @@ test('controlled Gradle JVM identity requires the reported runtime to equal JAVA
   assert.throws(() => parseGradleJvmIdentity(
     'Gradle 8.11.1\nDaemon JVM: 17.0.19', path.resolve(os.tmpdir()), java),
   error => error && error.message === 'AUDIT_BUILD_GRADLE_IDENTITY_UNAVAILABLE');
+});
+
+test('controlled Gradle bootstrap uses Windows roots without overriding explicit trust and allows first download', () => {
+  const automatic = controlledGradleEnvironment({ GRADLE_OPTS: '-Dsample=true' }, 'isolated-home', 'win32');
+  assert.equal(automatic.GRADLE_USER_HOME, 'isolated-home');
+  assert.match(automatic.GRADLE_OPTS, /-Djavax\.net\.ssl\.trustStoreType=Windows-ROOT/);
+  const explicit = controlledGradleEnvironment({
+    GRADLE_OPTS: '-Djavax.net.ssl.trustStore=C:\\audit\\trust.jks'
+  }, 'isolated-home', 'win32');
+  assert.doesNotMatch(explicit.GRADLE_OPTS, /Windows-ROOT/);
+  const javaToolOptions = controlledGradleEnvironment({
+    JAVA_TOOL_OPTIONS: '-Djavax.net.ssl.trustStoreType=JKS'
+  }, 'isolated-home', 'win32');
+  assert.equal(javaToolOptions.GRADLE_OPTS, undefined);
+  const linux = controlledGradleEnvironment({}, 'isolated-home', 'linux');
+  assert.equal(linux.GRADLE_OPTS, undefined);
+
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-gradle-timeout-'));
+  const wrapper = path.join(temporary, 'android', 'gradle', 'wrapper');
+  try {
+    fs.mkdirSync(wrapper, { recursive: true });
+    const properties = path.join(wrapper, 'gradle-wrapper.properties');
+    fs.writeFileSync(properties,
+      'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.2.1-all.zip\n' +
+      'networkTimeout=10000\nvalidateDistributionUrl=true\n');
+    prepareControlledGradleWrapper(temporary);
+    const normalized = fs.readFileSync(properties, 'utf8');
+    assert.match(normalized, /^networkTimeout=120000$/m);
+    assert.match(normalized, /^distributionUrl=https\\:\/\/services\.gradle\.org\//m);
+    assert.match(normalized, /^validateDistributionUrl=true$/m);
+    fs.writeFileSync(properties, 'networkTimeout=10000\nnetworkTimeout=20000\n');
+    assert.throws(() => prepareControlledGradleWrapper(temporary),
+      error => error && error.message === 'AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
 });
 
 test('external audit outputs are outside every canonical Git worktree and resist prefix and symlink traps', () => {
