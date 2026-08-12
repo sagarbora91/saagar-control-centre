@@ -15,11 +15,17 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   assert.equal(recorded.current.capabilities, 660);
   assert.equal(recorded.summary.added, 12);
   assert.equal(recorded.summary.removed, 7);
-  assert.equal(recorded.summary.changed, 87);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 106);
+  assert.equal(recorded.summary.changed, 88);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 107);
   assert.equal(recorded.summary.handlerBodyHashOnly, 52);
   assert.equal(recorded.summary.bindingStructureChanged, 21);
-  assert.equal(recorded.summary.changedFailurePostures, 14);
+  assert.equal(recorded.summary.changedFailurePostures, 15);
+  assert.equal(recorded.summary.reportPresentationFallbacks, 1);
+  const presentationFallback = recorded.deltas.find(item => item.capabilityId === 'script-etp-import-ui:failure:posture');
+  assert.equal(presentationFallback.change, 'changed');
+  assert.equal(presentationFallback.reviewClass, 'report-presentation-enrichment-fallback-added');
+  assert.equal(presentationFallback.baseline.outcome.explicitFallbackSites, 0);
+  assert.equal(presentationFallback.current.outcome.explicitFallbackSites, 1);
 });
 
 test('capability review remains fail-closed until the owner explicitly approves it', async () => {

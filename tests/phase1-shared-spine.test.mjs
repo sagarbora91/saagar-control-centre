@@ -98,7 +98,7 @@ test('Phase 1 audit exit closes owned authority gates and records exact capabili
   assert.equal(capability.metric.capabilities, 660);
   assert.equal(capability.metric.conflictingIds, 0);
   assert.equal(ledger.baseline.capabilities, 655);
-  assert.equal(ledger.summary.capabilityApprovalsRequired, 106);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 107);
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);
