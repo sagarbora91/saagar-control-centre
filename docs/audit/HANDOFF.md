@@ -48,7 +48,23 @@ Resume in this order:
 4. Keep PR #5 in draft until the comparison closes. Physical-device acceptance
    of the corrective seeded APK is complete; separate external release gates in
    this handoff remain open.
-**Status:** Modular HTML Phases 1–3 are implemented and published as a draft candidate. API 23 emulator engineering acceptance passed. A2-04 and aggregate migration-test coverage are resolved. The exact 106-row capability ledger is complete and test-enforced. **Post-migration comparison gate C-02 remains blocked only on identity-bound owner approval and the committed-target comparison run; do not merge PR #5 yet.**
+
+## Capability approval checkpoint - 2026-08-12
+
+Owner approval is now recorded and comparison gate **C-02 passes** for target
+`11bb84abc74c5dd3073df6074b45f67b3fbb9597`: 106 exact deltas, 106 approved,
+0 unapproved, 0 invalid, 0 stale and 0 envelope errors. The identity-bound
+approval and immutable comparison run are preserved under
+`verification/audit/approvals/2026-08-12-11bb84abc74c.json` and
+`verification/audit/2026-08-12-053558-11bb84abc74c`.
+
+This closes the capability approval gate only. The overall comparison remains
+`comparison-failed-or-unmeasured`: C-01 and C-03 fail; C-04 and C-07 are
+unmeasured. See
+`verification/MODULAR-CAPABILITY-APPROVAL-CLOSURE-2026-08-12.md` for exact
+identity, metrics and remaining evidence. This checkpoint supersedes older
+statements below that describe C-02 as pending.
+**Status:** Modular HTML Phases 1–3 are implemented and published as a draft candidate. Corrective physical-device acceptance passed. A2-04, aggregate migration-test coverage and the exact 106-row capability approval gate C-02 are resolved. **The overall post-migration comparison is not closed: C-01 and C-03 fail, while C-04 and C-07 remain unmeasured; do not merge PR #5 yet.**
 
 > ## ⚑ RESUME HERE — reconcile the post-migration audit candidate
 >
@@ -67,7 +83,7 @@ Resume in this order:
 > | Current direct A3-02 measurement | **660 capabilities / 0 conflicts**, `pass` uniqueness but **+5 versus Gate 0** using the restored frozen analyser semantics |
 > | Current direct A2 measurement | A2-01 pass; A2-03 pass; **A2-04 pass (0 duplicated constants)**; A2-05 pass |
 > | Product regression | `npm run test:offline` passes; canonical modular aggregate is **86/86**, including all migration contracts and the exact capability ledger |
-> | Capability review ledger | `verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json`: **106 exact pending approvals**, deterministic delta SHA-256 `0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a` |
+> | Capability review ledger | `verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json`: **106 exact deltas**, deterministic delta SHA-256 `0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a`; exact external approval passes C-02 for target `11bb84a` |
 > | Aggregate coverage | resolved: Phase 1 shared spine, shell frame controller and capability-ledger tests are declared by `test:modular` and therefore `test:offline` |
 > | Audit self-test on candidate | **55/58**: tracked-test registry passes. The three remaining failures are the frozen tooling-commit/product-anchor isolation assertions; the migration candidate correctly has a different product fingerprint from Gate 0. |
 > | API 23 emulator | clean install, dashboard, 11-module grid, Stock Register, restart persistence and logcat smoke passed |
@@ -82,18 +98,18 @@ Resume in this order:
 ### Exact resume order
 
 1. Keep PR #5 in draft; do not merge or relabel emulator evidence as physical-device acceptance.
-2. Review `verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json` and explicitly approve or reject its exact 106 rows. Do not infer approval from implementation or test success.
-3. Bind an approval envelope to the frozen tooling SHA, baseline manifest, baseline target, product anchor and final committed candidate target SHA.
-4. Run the isolated committed-target comparison audit with the external approval envelope and verify C-02 reports 106 approved / 0 unapproved / 0 stale / 0 invalid.
-5. Keep the Gate 0 product anchor frozen; do not re-anchor the migration candidate in place of performing the before/after comparison.
-6. Update the draft PR with the comparison evidence. Physical-device owner acceptance and production signing remain separate release gates.
+2. Preserve C-02 as closed for target `11bb84abc74c5dd3073df6074b45f67b3fbb9597`; do not reuse its approval for a changed product target.
+3. Resolve C-01 (`A8-05` measurement continuity) and C-03 (new `A7-04` P1 plus `A11-03` regressions).
+4. Restore measurable storage and messaging inventories for C-04 and C-07 without changing the frozen Gate 0 evidence in place.
+5. If remediation changes the product target, regenerate the exact delta ledger and obtain a newly identity-bound approval before rerunning comparison.
+6. Update the draft PR with the preserved comparison evidence. Production signing and the remaining external release gates stay separate.
 
 ### Handoff-update validation
 
 - `git diff --check`: pass (Windows LF/CRLF conversion warning only).
 - `npm run test:offline`: pass after the A2-04 fix, identity refresh, and aggregate coverage update.
 - `npm run test:modular`: 86/86 pass.
-- `node --test tests/phase1-shared-spine.test.mjs`: 6/6 pass; it now enforces current 660/0 plus the exact pending 106-row comparison ledger instead of asserting false equivalence with 655.
+- `node --test tests/phase1-shared-spine.test.mjs`: 6/6 pass; it enforces current 660/0 plus the exact 106-row comparison ledger. Owner approval remains external and identity-bound rather than mutating the ledger snapshot.
 - Direct current audit measurement: A3-02 660 capabilities / 0 conflicts with frozen analyser semantics; A2-04 pass with 0 duplicates; A8-05 0 unapproved calls / 42 unresolved dynamic targets.
 - `node --test tests/whole-app-audit-runner.test.mjs`: 55/58 pass. The registry issue is closed; three frozen tooling/product-anchor isolation assertions reject using the changed migration product as the pre-migration tooling anchor. No result is represented as a complete comparison pass.
 
@@ -139,7 +155,7 @@ release acceptance, and 19 fails plus 15 unmeasured remain open gates.
 | Audit tooling SHA | `b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb` |
 | Comparison baseline | `verification/audit/2026-08-11-113428-b9f04b5` |
 | Superseded baselines | `2026-08-10-115208-7871e57` (anchor `88ba118`), `2026-08-10-130643-57507ef` (anchor `f4da822`) — valid history, not comparison inputs |
-| Post-migration comparison | **not yet validly closed**; all 106 deltas are exact and test-enforced, but owner approval and the identity-bound committed-target comparison are still pending |
+| Post-migration comparison | C-02 **pass** for target `11bb84a`: 106 approved / 0 unapproved / 0 stale / 0 invalid. Whole comparison remains open on C-01, C-03, C-04 and C-07. |
 | PHP/platform work | excluded until fresh owner authorization |
 | Modular HTML | Phases 1–3 implemented; engineering candidate committed/pushed; audit/merge/physical acceptance still open |
 | API 23 | emulator engineering acceptance recorded in `verification/API23-EMULATOR-ACCEPTANCE-2026-08-11.md`; not physical-device acceptance |
@@ -209,10 +225,11 @@ approved product specifications and stay inside the product fingerprint.
 
 ## Open acceptance gates
 
-Engineering/audit gates now open before merge: obtain explicit owner approval
-for the exact 106-row capability ledger and run the identity-bound
-committed-target comparison audit. Aggregate migration-test coverage and the
-A2-04 duplicate-authority finding are closed.
+Engineering/audit gates now open before merge: resolve C-01 and C-03, restore
+measurable C-04 and C-07 comparison inventories, and rerun the identity-bound
+comparison. The exact 106-row capability approval (C-02), aggregate
+migration-test coverage and the A2-04 duplicate-authority finding are closed for
+target `11bb84a`.
 
 External release gates remain human- or device-owned and are never inferred from
 source tests or emulator evidence: owner physical update-in-place smoke; physical
