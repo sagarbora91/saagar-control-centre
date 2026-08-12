@@ -8,8 +8,6 @@ import { fileURLToPath } from 'node:url';
 import { buildContext, compareText, sha256 } from './lib.mjs';
 import { normalizedApkFingerprint } from './compare-apks.mjs';
 import { assertExternalPath, gradleVersionLauncher, verifyIsolatedWorktree } from './runner-support.mjs';
-
-const GRADLE_IDENTITY_TIMEOUT_MS = 10 * 60 * 1000;
 import { canonicalSha256, safeJson, safeError } from './schema.mjs';
 
 const GRADLE_IDENTITY_TIMEOUT_MS = 10 * 60 * 1000;
