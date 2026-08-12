@@ -228,6 +228,20 @@ function removeWorktree(root, tempRoot, worktree, registered) {
   }
 }
 
+function stopControlledGradle(worktree, gradleHome) {
+  if (!gradleHome || !fs.existsSync(worktree)) return;
+  const launcher = path.join(worktree, 'android', process.platform === 'win32' ? 'gradlew.bat' : 'gradlew');
+  if (!fs.statSync(launcher, { throwIfNoEntry: false })?.isFile()) return;
+  const invocation = process.platform === 'win32'
+    ? { command: process.env.ComSpec || 'cmd.exe', args: ['/d', '/s', '/c', '.\\gradlew.bat --stop'] }
+    : { command: launcher, args: ['--stop'] };
+  const result = command(invocation.command, invocation.args, {
+    cwd: path.dirname(launcher), timeout: 120_000,
+    env: { ...process.env, GRADLE_USER_HOME: gradleHome }
+  });
+  if (result.error || result.signal || result.status !== 0) fail('AUDIT_CONTROLLED_GRADLE_STOP_FAILED');
+}
+
 function bootstrapAndroid(worktree, targetSha) {
   if (fs.lstatSync(path.join(worktree, 'android'), { throwIfNoEntry: false })) {
     fail('AUDIT_CONTROLLED_ANDROID_NOT_FRESH');
@@ -297,8 +311,17 @@ function captureOneBuild(identity, tempRoot, index) {
     }
     return Object.freeze({ apk, build: readJson(buildJson) });
   } finally {
-    removeGradleHome(tempRoot, gradleHome);
-    removeWorktree(identity.root, tempRoot, worktree, registered);
+    let cleanupFailure = null;
+    const attempt = action => {
+      try { action(); } catch (error) { if (!cleanupFailure) cleanupFailure = error; }
+    };
+    attempt(() => stopControlledGradle(worktree, gradleHome));
+    /* Always unregister the worktree even if Gradle-home cleanup encounters a
+       Windows file lock. Leaving a registered disposable worktree would mask
+       the original probe result and poison every later controlled run. */
+    attempt(() => removeWorktree(identity.root, tempRoot, worktree, registered));
+    attempt(() => removeGradleHome(tempRoot, gradleHome));
+    if (cleanupFailure) throw cleanupFailure;
   }
 }
 
