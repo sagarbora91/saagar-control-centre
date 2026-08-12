@@ -1,0 +1,692 @@
+{
+  "auditId": "A2",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A2-01",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "duplicateGroups": 0,
+        "eligibleFunctions": 4976,
+        "functions": 12602
+      },
+      "notes": "Bodies are line-ending-normalized and trimmed; names and parameter lists are intentionally outside the body comparison.",
+      "result": "pass",
+      "rule": "A function body of at least 160 LF-normalized characters must not be byte-identical across three or more product files.",
+      "severity": "P2",
+      "title": "Byte-identical repeated function bodies"
+    },
+    {
+      "evidence": [
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "boot",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 27,
+          "normalizedChars": 383,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "create",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 4,
+          "normalizedChars": 1428,
+          "path": "www/etp-control-registry.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 2,
+          "normalizedChars": 10536,
+          "path": "www/etp-import-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 8,
+          "normalizedChars": 11359,
+          "path": "www/etp-native-store.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 7,
+          "normalizedChars": 11280,
+          "path": "www/etp-reconciliation-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "load",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 25,
+          "normalizedChars": 1344,
+          "path": "www/etp-retail-xlsx-loader.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 7,
+          "normalizedChars": 9553,
+          "path": "www/etp-store-lifecycle-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "create",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 6,
+          "normalizedChars": 1310,
+          "path": "www/etp-verified-reader.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1680",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 2,
+          "normalizedChars": 374,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "tt",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 2,
+          "normalizedChars": 727,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "n",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 2,
+          "normalizedChars": 242,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1744",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 2,
+          "normalizedChars": 403,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "w",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 2,
+          "normalizedChars": 829,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1699",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 2,
+          "normalizedChars": 360,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1688",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 2,
+          "normalizedChars": 3879,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1701",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 2,
+          "normalizedChars": 3207,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "st",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 2,
+          "normalizedChars": 310,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1707",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 2,
+          "normalizedChars": 577,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1708",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 2,
+          "normalizedChars": 331,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1847",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 2,
+          "normalizedChars": 536,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1700",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 2,
+          "normalizedChars": 2526,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "_t",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 2,
+          "normalizedChars": 1834,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1692",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 2,
+          "normalizedChars": 1928,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1696",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 2,
+          "normalizedChars": 836,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1712",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 2,
+          "normalizedChars": 710,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1714",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 2,
+          "normalizedChars": 390,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-812",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 118,
+          "normalizedChars": 374,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-839",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 118,
+          "normalizedChars": 403,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "ne",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 118,
+          "normalizedChars": 829,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-829",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 118,
+          "normalizedChars": 360,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "Ce",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 118,
+          "normalizedChars": 4446,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-841",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 118,
+          "normalizedChars": 3881,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-834",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 118,
+          "normalizedChars": 3703,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-835",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 118,
+          "normalizedChars": 3207,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-831",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 118,
+          "normalizedChars": 577,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-832",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 118,
+          "normalizedChars": 331,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-830",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 118,
+          "normalizedChars": 2526,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-822",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 118,
+          "normalizedChars": 1928,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-826",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 118,
+          "normalizedChars": 836,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "e",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 52,
+          "normalizedChars": 242,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-97",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 2345,
+          "normalizedChars": 324,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "renderFnfPreview",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 3212,
+          "normalizedChars": 901,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "calcDeno",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 2631,
+          "normalizedChars": 864,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "renderActionCenter",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 3045,
+          "normalizedChars": 920,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 5,
+          "normalizedChars": 9601,
+          "path": "www/qms-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 5,
+          "normalizedChars": 10089,
+          "path": "www/service-workboard-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 1,
+          "normalizedChars": 9085,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-46",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 30,
+          "normalizedChars": 344,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-15",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 1,
+          "normalizedChars": 374,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "$t",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 1,
+          "normalizedChars": 713,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-77",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 1,
+          "normalizedChars": 403,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "y",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 1,
+          "normalizedChars": 829,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 1,
+          "normalizedChars": 360,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 1,
+          "normalizedChars": 3877,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 1,
+          "normalizedChars": 3207,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "rn",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 1,
+          "normalizedChars": 310,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-42",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 1,
+          "normalizedChars": 577,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-43",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 1,
+          "normalizedChars": 331,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-180",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 1,
+          "normalizedChars": 520,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-35",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 1,
+          "normalizedChars": 2522,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "zn",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 1,
+          "normalizedChars": 1820,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 1,
+          "normalizedChars": 1920,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-31",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 1,
+          "normalizedChars": 836,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-47",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 1,
+          "normalizedChars": 700,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "default",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 1,
+          "normalizedChars": 386,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-111",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 1,
+          "normalizedChars": 374,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "pt",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 1,
+          "normalizedChars": 727,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "_r",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 1,
+          "normalizedChars": 244,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "$",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 1,
+          "normalizedChars": 829,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-119",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 1,
+          "normalizedChars": 3881,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bt",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 1,
+          "normalizedChars": 310,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-140",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 1,
+          "normalizedChars": 520,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "ht",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 1,
+          "normalizedChars": 2102,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-121",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 1,
+          "normalizedChars": 710,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-124",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 1,
+          "normalizedChars": 390,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        }
+      ],
+      "id": "A2-02",
+      "mandatory": true,
+      "metric": {
+        "candidateFunctions": 4214,
+        "candidateLimit": 5000,
+        "nearCopyGroups": 23,
+        "similarityEdges": 1075,
+        "similarityThreshold": 0.9
+      },
+      "notes": "Similarity is multiset Dice similarity over normalized lexical tokens; SHA-256 identities are emitted for each cluster.",
+      "result": "fail",
+      "rule": "After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% token similarity must not span three or more product files.",
+      "severity": "P2",
+      "title": "Near-copy function bodies"
+    },
+    {
+      "evidence": [],
+      "id": "A2-03",
+      "mandatory": true,
+      "metric": {
+        "affectedModules": 0,
+        "duplicateGroups": 0,
+        "eligibleBlocks": 622
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "An identical CSS declaration block containing at least six declarations must not appear in three or more module files.",
+      "severity": "P2",
+      "title": "Repeated CSS declaration blocks"
+    },
+    {
+      "evidence": [],
+      "id": "A2-04",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "authorityCandidates": 98,
+        "duplicatedConstants": 0
+      },
+      "notes": "Literal values are fingerprinted rather than emitted. Ordinary use sites are excluded; only uppercase domain-definition sites are counted.",
+      "result": "pass",
+      "rule": "The same named domain constant and literal value must not be defined as an authority in two or more product files.",
+      "severity": "P1",
+      "title": "Duplicated approved domain constants"
+    },
+    {
+      "evidence": [],
+      "id": "A2-05",
+      "mandatory": true,
+      "metric": {
+        "authorityGaps": 0,
+        "conceptRegistrySha256": "01e3e98ff310b57424bb2e0ed04dd6af79693ccac470a2196aacb0087b70772e",
+        "multipleAuthorities": 0,
+        "sharedConcepts": 21,
+        "zeroAuthorities": 0
+      },
+      "notes": "Persistent key names are represented by one-way concept IDs; manifest shared assets use the module manifest as their declared authority.",
+      "result": "pass",
+      "rule": "Each application-owned asset or persistent-key concept shared by at least two modules must have exactly one declared product authority.",
+      "severity": "P1",
+      "title": "Single authority for shared concepts"
+    }
+  ],
+  "metrics": {
+    "constantAuthorityCandidateCount": 98,
+    "cssBlockCount": 622,
+    "functionCount": 12602
+  },
+  "title": "Duplication and ownership"
+}

@@ -3,6 +3,34 @@
 **Updated:** 2026-08-12 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
+## Approval-aware comparison and consolidated closure checkpoint - 2026-08-12
+
+This checkpoint supersedes the older comparison and approval resume statements
+below.
+
+- Sagar (`sagarbora91`) approved the exact 106 capability deltas, delta SHA-256
+  `0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a`,
+  for A3-02 target `9b54d5bd003672434a7dac8be81efadd6b67f947`, tooling
+  `937542f8b81099eed48ba8c4d21d1cd6382f5ad3` and baseline manifest SHA-256
+  `8837522e88d04ff060205886cc3ec131b0bf7248e6b0af6e3151224612782bc1`.
+- The approval-aware comparison is committed under
+  `verification/audit/2026-08-12-160000-9b54d5b`; all **506/506** registered
+  product tests pass.
+- C-01, C-02 and C-03 now pass. C-02 records 106 approved, zero unapproved,
+  invalid, stale or envelope errors. C-03 records zero new P0/P1 findings and
+  zero regressions.
+- C-04 and C-07 are the only failed comparison gates. C-04 has 61 storage
+  contract deltas and 59 current unclassified artifacts. C-07 has 15 message
+  contract deltas and zero coupling regressions. No comparison gate is
+  unmeasured.
+- The sole remaining phase is documented in
+  `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`. It combines
+  comparison remediation, broader A1-A11 audit closure, reproducible build and
+  performance evidence, final APK/device checks, and the ten external owner and
+  release gates.
+- Keep PR #5 in draft. The correct status is: Modular HTML implementation is
+  complete; audit and release closure are not complete.
+
 ## Comparison measurement restoration checkpoint - 2026-08-12
 
 This checkpoint supersedes the older comparison resume/status statements below.

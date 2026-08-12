@@ -1,0 +1,658 @@
+{
+  "format": "SAAGAR_AUDIT_COMPARISON_APPROVALS",
+  "schemaVersion": 1,
+  "identity": {
+    "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+    "auditToolingSha": "937542f8b81099eed48ba8c4d21d1cd6382f5ad3",
+    "baselineManifestSha256": "8837522e88d04ff060205886cc3ec131b0bf7248e6b0af6e3151224612782bc1",
+    "baselineTargetSha": "937542f8b81099eed48ba8c4d21d1cd6382f5ad3",
+    "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+    "targetSha": "9b54d5bd003672434a7dac8be81efadd6b67f947"
+  },
+  "migrationScope": {
+    "checkIds": [
+      "A3-02"
+    ],
+    "reason": "Owner-approved exact Modular HTML migration capability delta 0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a",
+    "approvedBy": "Sagar (sagarbora91)"
+  },
+  "capabilityApprovals": [
+    {
+      "capabilityId": "cro_audit:action:save-amp-submit-audit:cc7a55444e",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "cro_audit:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "cro_audit:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "cro_audit:permission:access-context",
+      "change": "added",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:action:login-as-manager:58b9a6cf76",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:action:rtab-sm:9b655523a1",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:action:rtab-staff:30e722d15a",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:permission:owner-session",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "dsr:permission:reauthentication",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:audittabbtn:0944957676",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:budgets:1999c2cf05",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:cash-statement:adcac5c7b9",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:cross-module-0:35343ca7ae",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:dashboard:37660361a6",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:ledger:3ffef46fff",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:month-amp-tax:14efede75a",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:petty-cash:7422d00bcb",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:udhaar-0:e484668ce2",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:action:vendors:37fabef920",
+      "change": "changed",
+      "reason": "Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "expense:permission:reauthentication",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "grooming:action:export-csv:b3b31b811f",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "grooming:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "grooming:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "grooming:permission:access-context",
+      "change": "added",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:action:backup-first:42eadb7ddf",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:action:csv:334b62c20b",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:action:export:90f95f71bd",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "leave:permission:access-context",
+      "change": "added",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:apbtnclose:3a5e264d26",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:apbtnlock:daa67f2012",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:apbtnunlock:1011245dc8",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:export-pdf:001a3ad86b",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:generate-f-amp-f-pdf:72df924b80",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:permission:access-context",
+      "change": "added",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "payroll:permission:reauthentication",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "planning:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "qms:action:backup-data:3eb8676c6e",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "qms:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "qms:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-etp-import-runtime:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-bridge:failure:posture",
+      "change": "added",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-bridge:permission:owner-session",
+      "change": "added",
+      "reason": "Existing owner-session or reauthentication authority moved from module-local code to a shared runtime boundary.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-bridge:permission:reauthentication",
+      "change": "added",
+      "reason": "Existing owner-session or reauthentication authority moved from module-local code to a shared runtime boundary.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-runtime:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-runtime:permission:owner-session",
+      "change": "added",
+      "reason": "Existing owner-session or reauthentication authority moved from module-local code to a shared runtime boundary.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-module-runtime:permission:reauthentication",
+      "change": "added",
+      "reason": "Existing owner-session or reauthentication authority moved from module-local code to a shared runtime boundary.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shared-shell-module-frame-controller:failure:posture",
+      "change": "added",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-shell-asset-manifest:failure:posture",
+      "change": "added",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "script-storage-core:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:action:btn-export-csv:7ea75193ce",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:action:confirm-change:32bd63729d",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:action:send-whatsapp:d4a0bb3c61",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "service:permission:reauthentication",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:0:32420c655b",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:1:b44b1d1d8a",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:2:f3af45ec8a",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:3:5f5bcd3b70",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:4:717e32b998",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:5:bca43742de",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:6:786bb0a20f",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:7:dd24d9a486",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:8:d1dcc2222b",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:9:f9842bc9f3",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:archive-amp-free-space:b181adbd70",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:back-up-share-to-drive:515d26fae1",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:export-sanitised-support-bundle:59a916de30",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:exportpolicychk:c4cd4c60eb",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:h-8b1885116845a193:0160e344e4",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:llunlockbtn:7f4958e3b6",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:print:69feaa1af1",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:productiondevicechk:59d28b5300",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:action:share-this-module-s-report-pdf-on-whatsapp:fee62a1eec",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "shell:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:btn-lock-close:a32e4a7c79",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:btn-lock-open:fd1fe4d070",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:clk-confirm-btn:6e90b41d64",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:csv:dcf0820c4d",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:export-csv:2711f454fa",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:json:b7925d08a4",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:mbtn-cro:e6a4248618",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:mbtn-sm:ba608f8d00",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:rop-confirm-btn:1fb1dbbdd7",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-closing:116f4cb7ac",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-monthly:88b1f186b3",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-movements:834ef8c007",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-opening:1471fe4b9f",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-settings:379993c927",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:action:tbtn-summary:4dd930a4f5",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:permission:owner-session",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "stock:permission:reauthentication",
+      "change": "removed",
+      "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "tax:action:csv:7004f0760a",
+      "change": "changed",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "tax:action:st-v5-home-fab:c05eb3ddb3",
+      "change": "changed",
+      "reason": "Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "tax:failure:posture",
+      "change": "changed",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "approvedBy": "Sagar (sagarbora91)"
+    },
+    {
+      "capabilityId": "tax:permission:access-context",
+      "change": "added",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "approvedBy": "Sagar (sagarbora91)"
+    }
+  ],
+  "findingWaivers": []
+}
