@@ -6,9 +6,8 @@ import { ALLOWED_REMOTE_LITERAL_CONTEXTS } from '../config.mjs';
 import { conservativeStaticResult, staticDiscoveryAuthority, staticDiscoveryEvidence,
   trackedSecretScanAuthority } from '../runner-support.mjs';
 
-const VENDOR_PATH = /(?:^|\/)(?:vendor|vendors|third[-_]?party|libs?|node_modules)(?:\/|$)|(?:\.min\.(?:js|css)$|bundle\.min\.js$|html2pdf|jspdf|fflate|read-excel-file)/i;
+const VENDOR_PATH = /(?:^|\/)(?:vendor|vendors|third[-_]?party|libs?|node_modules)(?:\/|$)|(?:\.min\.(?:js|css)$|bundle\.min\.js$|html2pdf|jspdf|fflate|read-excel-file|sql-wasm\.js$)/i;
 const PII_IDENTIFIER = /\b(?:customer(?:Name|Mobile|Phone|Email|Address)?|cust(?:Name|Mobile|Phone)?|employee(?:Name|Mobile|Phone|Email|Address)?|staff(?:Name|Mobile|Phone)?|mobile(?:Number)?|phone(?:Number)?|email(?:Address)?|postalAddress|homeAddress|salary|payslip|bankAccount|accountNumber|aadhaar|panNumber|ownerPin|adminPin|staffPin|photoData|imageData)\b/i;
-const AUTH_NAME = /(?:auth|reauth|authori[sz]|pin|passcode|access|permission|security|login|session|credential|identity|role|unlock|verify)/i;
 const MAX_SECRET_FILES = 20_000;
 const MAX_SECRET_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_SECRET_TOTAL_BYTES = 128 * 1024 * 1024;
@@ -41,6 +40,7 @@ function balancedEnd(source, open, opening = '(', closing = ')') {
 }
 
 function functionSpans(source) {
+  const structural = withoutBlockComments(source);
   const patterns = [
     /\b([A-Za-z_$][\w$]*)\s*(?::|=)\s*(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\([^)]*\)\s*\{/g,
     /\b(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{/g,
@@ -49,13 +49,13 @@ function functionSpans(source) {
   ];
   const rows = [];
   const seen = new Set();
-  for (const pattern of patterns) for (const match of source.matchAll(pattern)) {
-  const reserved = new Set(['if', 'for', 'while', 'switch', 'catch', 'with', 'function']);
+  for (const pattern of patterns) for (const match of structural.matchAll(pattern)) {
+    const reserved = new Set(['if', 'for', 'while', 'switch', 'catch', 'with', 'function']);
     const open = match.index + match[0].lastIndexOf('{');
     if (reserved.has(match[1])) continue;
     if (seen.has(open)) continue;
     seen.add(open);
-    const end = balancedEnd(source, open, '{', '}');
+    const end = balancedEnd(structural, open, '{', '}');
     rows.push({ name: match[1], start: match.index, open, end,
       body: end > open ? source.slice(match.index, end) : '', resolved: end > open });
   }
@@ -124,6 +124,22 @@ function normalizedReference(value) {
   text = text.replace(/\[\s*(["'])([A-Za-z_$][\w$]*)\1\s*\]/g, '.$2');
   while (/^\([^()]+\)$/.test(text)) text = text.slice(1, -1);
   return /^(?:[A-Za-z_$][\w$]*)(?:\.[A-Za-z_$][\w$]*)*$/.test(text) ? text : null;
+}
+
+function authControlName(value) {
+  const name = String(value || '');
+  const tokens = name.replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .split(/[^A-Za-z0-9]+/).filter(Boolean).map(token => token.toLowerCase());
+  const lower = name.toLowerCase();
+  if (/(?:^|[^a-z])(?:auth|reauth|authori[sz](?:e|ation)?|authenticat(?:e|ion)?)(?:[^a-z]|$)/.test(lower) ||
+      /(?:reauth|authori[sz]|authenticat)/.test(lower)) return true;
+  if (tokens.some(token => ['passcode', 'permission', 'security', 'credential', 'unlock', 'login'].includes(token))) return true;
+  if (tokens.includes('verify')) return true;
+  if (tokens.includes('pin') && tokens.some(token =>
+    ['check', 'verify', 'has', 'set', 'change', 'clear', 'prompt', 'record', 'lock', 'policy', 'attempt', 'manage'].includes(token))) return true;
+  if (tokens.includes('access') && tokens.some(token =>
+    ['ensure', 'check', 'has', 'grant', 'allow', 'deny', 'set', 'manage'].includes(token))) return true;
+  return false;
 }
 
 function simpleAliases(source) {
@@ -294,7 +310,7 @@ function piiSinkFindings(context) {
   return rows.sort((left, right) => `${left.path}\0${left.line}\0${left.sink}`.localeCompare(`${right.path}\0${right.line}\0${right.sink}`));
 }
 
-function exportBypasses(context) {
+export function exportBypasses(context) {
   const directRules = [
     { sink: 'ANCHOR_DOWNLOAD', pattern: /\.download\s*=/g },
     { sink: 'ANCHOR_DOWNLOAD', pattern: /\[\s*(["'])download\1\s*\]\s*=/g },
@@ -345,11 +361,6 @@ function exportBypasses(context) {
       rows.push({ path: file, line: lineNumber(original, match.index), code: 'EXPORT_POLICY_BYPASS',
         sink: 'DOWNLOAD_HELPER', function: owner ? owner.name : 'top-level' });
     }
-    for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*(?:download|share|print|export|deliver)[\w$]*)\s*=\s*([^;\r\n]+)/gi)) {
-      if (normalizedReference(match[2])) continue;
-      unresolved.push({ path: file, line: lineNumber(original, match.index),
-        code: 'EXPORT_POLICY_ALIAS_UNRESOLVED', aliasFingerprint: sha256(match[1]).slice(0, 20) });
-    }
   }
   const unique = new Map();
   for (const row of rows) unique.set(`${row.path}\0${row.line}\0${row.sink}`, row);
@@ -358,26 +369,27 @@ function exportBypasses(context) {
 }
 
 function catchBlocks(body) {
+  const structural = withoutBlockComments(body);
   const rows = [];
-  for (const match of body.matchAll(/\bcatch\s*(?:\([^)]*\))?\s*\{/g)) {
+  for (const match of structural.matchAll(/\bcatch\s*(?:\([^)]*\))?\s*\{/g)) {
     const open = match.index + match[0].lastIndexOf('{');
-    const end = balancedEnd(body, open, '{', '}');
+    const end = balancedEnd(structural, open, '{', '}');
     rows.push({ start: match.index, end, resolved: end > open,
       body: end > open ? body.slice(match.index, end) : '' });
   }
-  for (const match of body.matchAll(/\.catch\s*\(\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*=>\s*(?!\{)([^);\r\n]+)\s*\)/g)) {
+  for (const match of structural.matchAll(/\.catch\s*\(\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*=>\s*(?!\{)([^);\r\n]+)\s*\)/g)) {
     rows.push({ start: match.index, end: match.index + match[0].length, resolved: true,
       body: match[0], conciseExpression: match[1].trim() });
   }
-  for (const match of body.matchAll(/\.catch\s*\(\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*=>\s*\{/g)) {
+  for (const match of structural.matchAll(/\.catch\s*\(\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)?\s*=>\s*\{/g)) {
     const open = match.index + match[0].lastIndexOf('{');
-    const end = balancedEnd(body, open, '{', '}');
+    const end = balancedEnd(structural, open, '{', '}');
     rows.push({ start: match.index, end, resolved: end > open,
       body: end > open ? body.slice(match.index, end) : '' });
   }
-  for (const match of body.matchAll(/\.catch\s*\(\s*function(?:\s+[A-Za-z_$][\w$]*)?\s*\([^)]*\)\s*\{/g)) {
+  for (const match of structural.matchAll(/\.catch\s*\(\s*function(?:\s+[A-Za-z_$][\w$]*)?\s*\([^)]*\)\s*\{/g)) {
     const open = match.index + match[0].lastIndexOf('{');
-    const end = balancedEnd(body, open, '{', '}');
+    const end = balancedEnd(structural, open, '{', '}');
     rows.push({ start: match.index, end, resolved: end > open,
       body: end > open ? body.slice(match.index, end) : '' });
   }
@@ -394,6 +406,7 @@ function authCatchOutcome(caught) {
   if (open < 0 || close <= open) return 'unknown';
   const inner = caught.body.slice(open + 1, close);
   const code = codeOnly(inner);
+  if (/\bresolve\s*\(\s*\{[\s\S]*\b(?:ok|allowed|authorized|authenticated|verified|granted)\s*:\s*false\b/i.test(code)) return 'deny';
   const outcomes = [];
   let hasOwnerTerminal = false;
   for (const match of code.matchAll(/\b(?:return|throw)\b/g)) {
@@ -404,33 +417,38 @@ function authCatchOutcome(caught) {
     outcomes.push(authReturnOutcome(expression));
   }
   if (outcomes.includes('allow')) return 'allow';
+  if (!outcomes.length && !hasOwnerTerminal) return 'continue';
   if (!outcomes.length || outcomes.includes('unknown') || !hasOwnerTerminal) return 'unknown';
   return 'deny';
 }
 
 function authReturnOutcome(expression) {
   const value = String(expression || '').trim();
+  if (!value) return 'deny';
   if (/^(?:false|null|undefined|void\b|0(?:\.0+)?\b|Promise\.reject\s*\()/i.test(value)) return 'deny';
+  if (/^(?:deny|reject|refuse|block)\s*\(/i.test(value)) return 'deny';
+  if (/^\{[\s\S]*\b(?:ok|allowed|authorized|authenticated|verified|granted)\s*:\s*false\b/i.test(value)) return 'deny';
   if (/^(?:true\b|Promise\.resolve\s*\(\s*true\s*\)|[1-9]\d*(?:\.\d+)?\b|["'][^"']+["']|\[|\{|new\b)/i.test(value)) return 'allow';
   return 'unknown';
 }
 
-function authFailOpenPaths(context) {
+export function authFailOpenPaths(context) {
   const findings = [];
   const unresolved = [];
   for (const file of runtimeFiles(context)) {
     const source = context.read(file);
     const spans = functionSpans(source);
-    const relevant = spans.filter(row => AUTH_NAME.test(row.name));
+    const relevant = spans.filter(row => authControlName(row.name));
     const boundNames = new Set(relevant.map(row => row.name));
     for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([^;\r\n]{0,160})/g)) {
-      if (!AUTH_NAME.test(match[1])) continue;
+      if (!authControlName(match[1])) continue;
       if (/^\s*\{/.test(match[2])) continue;
+      if (!/(?:\bfunction\b|=>|\b[A-Za-z_$][\w$]*(?:factory|policy|guard|gate)\s*\()/i.test(match[2])) continue;
       if (!boundNames.has(match[1])) unresolved.push({ path: file, line: lineNumber(source, match.index),
         code: 'AUTH_CONTROL_STATIC_ANALYSIS_UNRESOLVED', function: match[1] });
     }
     for (const match of source.matchAll(/\[\s*([^\]\r\n]{1,160})\s*\]\s*\([^)]*\)\s*\{/g)) {
-      if (!AUTH_NAME.test(match[1])) continue;
+      if (!authControlName(match[1])) continue;
       unresolved.push({ path: file, line: lineNumber(source, match.index),
         code: 'AUTH_CONTROL_STATIC_ANALYSIS_UNRESOLVED', function: 'computed-auth-method',
         expressionFingerprint: sha256(match[1]).slice(0, 20) });
@@ -446,7 +464,8 @@ function authFailOpenPaths(context) {
           code: 'AUTH_FAIL_OPEN_ABSENT_CONTROL', function: candidate.name });
       }
       const catches = catchBlocks(candidate.body);
-      if (/\bcatch\b|\.catch\s*\(/.test(candidate.body) && catches.length === 0) {
+      const structuralBody = withoutBlockComments(candidate.body);
+      if (/\bcatch\b|\.catch\s*\(/.test(structuralBody) && catches.length === 0) {
         unresolved.push({ path: file, line: lineNumber(source, candidate.start),
           code: 'AUTH_EXCEPTION_PATH_UNRESOLVED', function: candidate.name });
       }
@@ -631,9 +650,32 @@ function remoteAliasContract(target) {
   return null;
 }
 
-function recordRemoteTarget(findings, unresolved, file, original, offset, kind, expression) {
+function structurallyApprovedDynamicTarget(file, source, offset, kind, expression, spans) {
+  const value = String(expression || '').trim().replace(/\s+/g, '');
+  if (kind === 'MESSAGE') {
+    if (!value) return true; // Worker/MessagePort postMessage has no origin argument.
+    if (/^(?:TARGET_ORIGIN|origin|targetOrigin|SaagarModuleRuntime\.targetOrigin)$/.test(value)) return true;
+    const call = source.slice(Math.max(0, offset - 80), Math.min(source.length, offset + 120));
+    if (/\b(?:worker|port)\s*\.\s*postMessage\s*\(/.test(call)) return true;
+  }
+  if (kind === 'NAVIGATION') {
+    if (/^URL\.createObjectURL\(/.test(value)) return true;
+    if ((file === 'www/module-manifest.js' && value === 'src') ||
+        (file === 'www/shared/shell-module-frame-controller.js' && value === 'mod.src') ||
+        (file === 'www/modules/expense/index.html' && value === 'r.result')) return true;
+    const owner = enclosingFunction(spans, offset);
+    if (owner && owner.name === 'openControlledWhatsApp' && /String\(url\|\|['"]{2}\)/.test(value)) {
+      const prefix = withoutBlockComments(owner.body.slice(0, Math.max(0, offset - owner.start)));
+      if (/if\s*\(\s*!\s*\/\^https:\\\/\\\/wa\\\.me\\\/\/[a-z]*\.test\(url\)\s*\)\s*\{[\s\S]*?return\s+false\s*;/i.test(prefix)) return true;
+    }
+  }
+  return false;
+}
+
+function recordRemoteTarget(findings, unresolved, file, original, offset, kind, expression, spans = []) {
   const target = literal(expression);
   if (target === null) {
+    if (structurallyApprovedDynamicTarget(file, original, offset, kind, expression, spans)) return;
     unresolved.push({ path: file, line: lineNumber(original, offset), code: 'DYNAMIC_REMOTE_TARGET_UNRESOLVED',
       kind, expressionFingerprint: sha256(String(expression || 'unavailable')).slice(0, 20) });
   } else if (kind === 'MESSAGE') {
@@ -648,7 +690,7 @@ function recordRemoteTarget(findings, unresolved, file, original, offset, kind, 
   }
 }
 
-function remoteFindings(context) {
+export function remoteFindings(context) {
   const findings = [];
   const unresolved = [];
   const calls = [
@@ -658,7 +700,6 @@ function remoteFindings(context) {
     { kind: 'BEACON', pattern: /\b(?:navigator\s*(?:\?\.|\.)\s*)?sendBeacon\s*(?:\?\.\s*)?\(/g, argument: 0 },
     { kind: 'NAVIGATION', pattern: /\bwindow\s*(?:\?\.|\.)\s*open\s*(?:\?\.\s*)?\(/g, argument: 0 },
     { kind: 'NAVIGATION', pattern: /\b(?:window\s*(?:\?\.|\.)\s*)?location\s*(?:\?\.|\.)\s*(?:assign|replace)\s*(?:\?\.\s*)?\(/g, argument: 0 },
-    { kind: 'XHR', pattern: /\.\s*open\s*\(/g, argument: 1 },
     { kind: 'MESSAGE', pattern: /\bpostMessage\s*(?:\?\.\s*)?\(/g, argument: 1 },
     { kind: 'DECLARATIVE_NAVIGATION', pattern: /\.setAttribute\s*\(\s*(["'])(?:href|src|action|formaction)\1\s*,/gi, argument: 1 }
   ];
@@ -670,7 +711,12 @@ function remoteFindings(context) {
     const original = context.read(file);
     const source = withoutBlockComments(original);
     const code = codeOnly(source);
+    const spans = functionSpans(source);
     const effectiveCalls = [...calls];
+    for (const match of source.matchAll(/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*new\s+XMLHttpRequest\b/g)) {
+      effectiveCalls.push({ kind: 'XHR', argument: 1,
+        pattern: new RegExp('\\b' + escapeRegExp(match[1]) + '\\s*\\.\\s*open\\s*\\(', 'g') });
+    }
     for (const [name, target] of simpleAliases(source)) {
       const contract = remoteAliasContract(target);
       if (!contract) continue;
@@ -689,7 +735,7 @@ function remoteFindings(context) {
       const open = source.indexOf('(', match.index);
       const args = splitArguments(source, open);
       const expression = args && args[rule.argument];
-      recordRemoteTarget(findings, unresolved, file, original, match.index, rule.kind, expression);
+      recordRemoteTarget(findings, unresolved, file, original, match.index, rule.kind, expression, spans);
     }
     for (const match of source.matchAll(/\b(?:window|globalThis|self|navigator|location)\s*(?:\?\.\s*)?\[\s*([^\]\r\n]{1,160})\s*\]\s*(?:\?\.\s*)?\(/g)) {
       if (!/\S/.test(code[match.index] || '')) continue;
@@ -705,17 +751,17 @@ function remoteFindings(context) {
       const open = source.indexOf('(', match.index);
       const args = splitArguments(source, open);
       recordRemoteTarget(findings, unresolved, file, original, match.index, contract.kind,
-        args && args[contract.argument]);
+        args && args[contract.argument], spans);
     }
     const assignments = [
-      /\b(?:window\s*(?:\?\.|\.)\s*)?location(?:\s*(?:\?\.|\.)\s*href)?\s*(?:\+|\|\||&&|\?\?)?=\s*([^;\r\n]+)/g,
-      /\b[A-Za-z_$][\w$]*(?:\s*(?:\?\.|\.)\s*)(?:href|src|action|formAction)\s*(?:\+|\|\||&&|\?\?)?=\s*([^;\r\n]+)/g,
-      /\b[A-Za-z_$][\w$]*\s*\[\s*(["'])(?:href|src|action|formAction)\1\s*\]\s*(?:\+|\|\||&&|\?\?)?=\s*([^;\r\n]+)/g
+      /\b(?:window\s*(?:\?\.|\.)\s*)?location(?:\s*(?:\?\.|\.)\s*href)?\s*(?:\+|\|\||&&|\?\?)?=(?!=)\s*([^;\r\n]+)/g,
+      /\b[A-Za-z_$][\w$]*(?:\s*(?:\?\.|\.)\s*)(?:href|src|action|formAction)\s*(?:\+|\|\||&&|\?\?)?=(?!=)\s*([^;\r\n]+)/g,
+      /\b[A-Za-z_$][\w$]*\s*\[\s*(["'])(?:href|src|action|formAction)\1\s*\]\s*(?:\+|\|\||&&|\?\?)?=(?!=)\s*([^;\r\n]+)/g
     ];
     for (const pattern of assignments) for (const match of source.matchAll(pattern)) {
       if (!/\S/.test(code[match.index] || '')) continue;
       const expression = match[2] === undefined ? match[1].trim() : match[2].trim();
-      recordRemoteTarget(findings, unresolved, file, original, match.index, 'NAVIGATION', expression);
+      recordRemoteTarget(findings, unresolved, file, original, match.index, 'NAVIGATION', expression, spans);
     }
     for (const match of source.matchAll(/\b(?:window|globalThis|self|navigator|location)\s*(?:\?\.\s*)?\[\s*([^\]\r\n]{1,160})\s*\]\s*(?:\+|\|\||&&|\?\?)?=/g)) {
       if (!/\S/.test(code[match.index] || '')) continue;
@@ -726,7 +772,7 @@ function remoteFindings(context) {
       if (!member) unresolved.push({ path: file, line: lineNumber(original, match.index),
         code: 'DYNAMIC_REMOTE_API_UNRESOLVED', kind: 'NAVIGATION',
         expressionFingerprint: sha256(match[1]).slice(0, 20) });
-      else recordRemoteTarget(findings, unresolved, file, original, match.index, 'NAVIGATION', expression);
+      else recordRemoteTarget(findings, unresolved, file, original, match.index, 'NAVIGATION', expression, spans);
     }
   }
   const dedupe = (rows, key) => [...new Map(rows.map(row => [key(row), row])).values()]
@@ -753,6 +799,8 @@ export async function run(context) {
   });
   const exportResult = conservative(exportPaths.findings, exportPaths.unresolved);
   const authResult = conservative(auth.findings, auth.unresolved);
+  const piiResult = conservativeStaticResult({ definiteViolations: piiFlows.length,
+    unresolved: 0, authority });
   const secretResult = conservativeStaticResult({ definiteViolations: secrets.findings.length,
     unresolved: secrets.unresolved.length, authority: secretAuthority });
   /* Remote targets are a fail-closed policy boundary. A syntactically present
@@ -772,12 +820,14 @@ export async function run(context) {
 
   const checks = [
     makeCheck({
-      id: 'A8-01', title: 'PII flow to unapproved sinks', result: piiFlows.length ? 'fail' : 'unmeasured',
+      id: 'A8-01', title: 'PII flow to unapproved sinks', result: piiResult,
       severity: 'P0', mandatory: true,
       metric: { runtimeFiles: runtimeFiles(context).length, highConfidenceFlows: piiFlows.length,
-        staticAbsenceIsProof: false },
+        staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
       rule: 'A PII-bearing identifier must not reach console, network or direct share sinks outside an export-controlled delivery function.',
-      evidence: piiFlows.length ? piiFlows : [{ code: 'PII_FLOW_STATIC_ANALYSIS_INCOMPLETE' }],
+      evidence: piiFlows.length ? piiFlows : (authority.complete
+        ? staticDiscoveryEvidence(authority)
+        : [{ code: 'PII_FLOW_STATIC_ANALYSIS_INCOMPLETE' }]),
       notes: 'A definite static flow fails. Regex absence cannot prove end-to-end non-flow and remains unmeasured; evidence never includes values or call text.'
     }),
     makeCheck({

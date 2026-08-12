@@ -264,34 +264,34 @@ function comparisonFixture(capabilityOutcome = 'same') {
 const A5_MUTATION_CONTRACT = Object.freeze([
   Object.freeze({
     invariantId: 'auth', mutationId: 'auth-one-retry-limit-v1', productionFile: 'www/reauth-policy.js',
-    testCommand: 'node --test --test-reporter=tap tests/d1-reauth.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/d1-reauth.test.mjs',
     expectedAssertion: 'D1 reauthentication limits a single action to one retry'
   }),
   Object.freeze({
     invariantId: 'backupRestore', mutationId: 'backup-photo-manifest-count-v1', productionFile: 'www/portable-backup.js',
-    testCommand: 'node --test --test-reporter=tap tests/portable-backup.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/portable-backup.test.mjs',
     expectedAssertion: 'portable backup round-trips without leaking payload text'
   }),
   Object.freeze({
     invariantId: 'etpPublication', mutationId: 'etp-critical-reconciliation-publication-gate-v1',
     productionFile: 'www/etp-reconciliation-policy.js',
-    testCommand: 'node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
     expectedAssertion: 'publication refuses missing facts, restored state, incomplete scope and critical failures'
   }),
   Object.freeze({
     invariantId: 'export', mutationId: 'export-default-deny-policy-v1', productionFile: 'www/export-control.js',
-    testCommand: 'node --test --test-reporter=tap tests/eng04-security.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/eng04-security.test.mjs',
     expectedAssertion: 'SEC-08 defaults to disabled and records the denied attempt without prompting'
   }),
   Object.freeze({
     invariantId: 'money', mutationId: 'money-reconciliation-delta-direction-v1',
     productionFile: 'www/etp-reconciliation-policy.js',
-    testCommand: 'node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs',
     expectedAssertion: 'INV/SR/BC signs are applied and a mismatch remains visible'
   }),
   Object.freeze({
     invariantId: 'storage', mutationId: 'storage-native-batch-bound-v1', productionFile: 'www/storage-core.js',
-    testCommand: 'node --test --test-reporter=tap tests/native-incremental-storage-runtime.test.mjs',
+    testCommand: 'node --test --test-force-exit --test-reporter=tap tests/native-incremental-storage-runtime.test.mjs',
     expectedAssertion: 'runtime flush writes only changed records in bounded native batches'
   })
 ]);
@@ -398,7 +398,7 @@ test('A5 mutation evidence is structurally exact and cannot self-assert runner p
     })],
     ['wrong production file', variant(value => { value.mutations[0].productionFile = 'www/index.html'; })],
     ['wrong test command', variant(value => {
-      value.mutations[0].testCommand = 'node --test --test-reporter=tap tests/portable-backup.test.mjs';
+      value.mutations[0].testCommand = 'node --test --test-force-exit --test-reporter=tap tests/portable-backup.test.mjs';
     })],
     ['wrong expected assertion', variant(value => { value.mutations[0].expectedAssertion = 'invented'; })],
     ['missing frozen row field', variant(value => { delete value.mutations[0].productionFile; })],
@@ -782,7 +782,7 @@ test('controlled probe source freezes detached builds, fresh Android bootstrap, 
   assert.match(build, /process\.env\.JAVA_HOME/);
   assert.match(build, /gradle-wrapper\.jar/);
   assert.match(build, /generatedAndroidIdentity/);
-  assert.match(mutations, /\['--test', '--test-reporter=tap', spec\.testFile\]/);
+  assert.match(mutations, /\['--test', '--test-force-exit', '--test-reporter=tap', spec\.testFile\]/);
   assert.match(mutations, /const TEST_TIMEOUT_MS = 240_000/);
   assert.match(mutations, /Array\.isArray\(spec\.fileSha256\)/);
 });
@@ -1306,10 +1306,10 @@ test('A4 inventories computed storage identities while leaving an empty census u
 });
 
 test('C-04 fails added, removed and changed storage contracts and unmeasures missing inventory', () => {
-  const storageCheck = fixture => fixture.current.find(audit => audit.auditId === 'A4')
+  const storageCheck = (fixture, side = 'current') => fixture[side].find(audit => audit.auditId === 'A4')
     .checks.find(check => check.id === 'A4-01');
-  const writeInventory = (fixture, inventory) => {
-    const check = storageCheck(fixture);
+  const writeInventory = (fixture, inventory, side = 'current') => {
+    const check = storageCheck(fixture, side);
     check.metric = storageContractMetric(inventory);
   };
   const evaluate = fixture => evaluateComparison({ baselineAudits: fixture.baseline,
@@ -1337,6 +1337,14 @@ test('C-04 fails added, removed and changed storage contracts and unmeasures mis
     assert.equal(gate.result, 'fail', label);
     assert.ok(gate.evidence.some(item => item.code === code), label);
   }
+  const producerOrder = comparisonFixture('same');
+  const inventory = structuredClone(storageCheck(producerOrder).metric.inventory);
+  inventory.push({ ...inventory[1], artifactId: 'local-storage-access:clear-all',
+    kind: 'local-storage-access', name: 'clear-all', operations: ['clear'] });
+  writeInventory(producerOrder, structuredClone(inventory), 'baseline');
+  writeInventory(producerOrder, inventory);
+  assert.equal(evaluate(producerOrder).result, 'pass',
+    'producer kind/name ordering remains a valid storage contract');
   const missing = comparisonFixture('same');
   delete storageCheck(missing).metric.inventory;
   const gate = evaluate(missing);

@@ -70,20 +70,22 @@ function storageContract(checks) {
       metric.inventorySha256 !== stableSha256(inventory)) {
     return { valid: false, inventory: null, reason: 'STORAGE_CONTRACT_INVENTORY_TRUNCATED' };
   }
-  let previous = '';
+  let previous = null;
   for (const row of inventory) {
     const keys = row && typeof row === 'object' && !Array.isArray(row) ? Object.keys(row).sort(compareText) : [];
     const validOperations = Array.isArray(row && row.operations) && row.operations.length > 0 &&
       row.operations.every(value => nonEmpty(value, 120)) &&
       row.operations.every((value, index) => index === 0 || compareText(value, row.operations[index - 1]) > 0);
+    const ordered = !previous || compareText(row.kind, previous.kind) > 0 ||
+      (compareText(row.kind, previous.kind) === 0 && compareText(row.name, previous.name) > 0);
     if (JSON.stringify(keys) !== JSON.stringify(STORAGE_CONTRACT_KEYS) || !nonEmpty(row.artifactId, 500) ||
-        compareText(row.artifactId, previous) <= 0 || !nonEmpty(row.kind, 120) || !nonEmpty(row.name, 500) ||
+        !ordered || !nonEmpty(row.kind, 120) || !nonEmpty(row.name, 500) ||
         !nonEmpty(row.classification, 120) || !nonEmpty(row.owner, 240) || !nonEmpty(row.restore, 240) ||
         !nonEmpty(row.reset, 240) || typeof row.pattern !== 'boolean' || typeof row.unresolved !== 'boolean' ||
         typeof row.evidenceArtifact !== 'boolean' || !validOperations) {
       return { valid: false, inventory: null, reason: 'STORAGE_CONTRACT_INVENTORY_SCHEMA_INVALID' };
     }
-    previous = row.artifactId;
+    previous = row;
   }
   return { valid: true, inventory, reason: '' };
 }

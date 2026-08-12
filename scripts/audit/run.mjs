@@ -308,6 +308,8 @@ export async function runAudit(rawOptions) {
   const controlledProbes = runControlledProbes({ root: options.root, targetSha: context.head,
     auditToolingSha: options.auditToolingSha, verifiedTooling: tooling });
   const auditContext = Object.freeze({ ...context,
+    staticDiscoveryAuthority: Object.freeze({ complete: true,
+      source: `frozen-audit-tooling:${options.auditToolingSha}:a7-a8-static-syntax-census-v3` }),
     messageInventoryAuthority: Object.freeze({ complete: true,
       source: `frozen-audit-tooling:${options.auditToolingSha}:a7-message-contract-census-v2` }),
     trackedSecretScanAuthority: Object.freeze({ complete: true,
