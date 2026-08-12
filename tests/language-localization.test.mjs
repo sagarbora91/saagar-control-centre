@@ -58,6 +58,13 @@ test('Marathi and Hindi dictionaries cover Settings, module names and common act
   assert.equal(api.translate('Owner PIN not set - 2 protected', 'mr'), 'मालक पिन सेट नाही - 2 संरक्षित');
   assert.equal(api.translate('Save', 'hi'), 'सहेजें');
   assert.equal(api.translate('Manage Compliance', 'hi'), 'अनुपालन प्रबंधन');
+  assert.equal(api.translate('Controlled export is available only inside Saagar Control Centre.', 'mr'),
+    'नियंत्रित निर्यात फक्त Saagar Control Centre मध्ये उपलब्ध आहे.');
+  assert.equal(api.translate('Report engine unavailable on this build.', 'hi'),
+    'इस बिल्ड में रिपोर्ट प्रणाली उपलब्ध नहीं है।');
+  assert.equal(api.translate('Historical view is read-only', 'mr'),
+    'मागील नोंदींचे दृश्य फक्त वाचनासाठी आहे');
+  assert.equal(api.translate('No employees selected.', 'hi'), 'कोई कर्मचारी नहीं चुना गया है।');
   assert.equal(api.translate('Unmapped business value', 'mr'), 'Unmapped business value');
   const stats = api.stats();
   assert.ok(stats.mr >= 850, `expected >=850 Marathi UI phrases, got ${stats.mr}`);

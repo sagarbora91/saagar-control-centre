@@ -863,6 +863,25 @@
     ['Theft / Loss — Remark Required','चोरी / नुकसान — टिप्पणी आवश्यक','चोरी / नुकसान — टिप्पणी आवश्यक'],
     ['Submit with Remarks','टिप्पणीसह सादर करा','टिप्पणी के साथ जमा करें'],
 
+    /* Shared shell/report controls and fail-closed messages. These phrases are
+       reused across modules, so keep their translations in the common runtime
+       instead of allowing module-specific English fallbacks. */
+    ['Historical view is read-only','मागील नोंदींचे दृश्य फक्त वाचनासाठी आहे','पुराने रिकॉर्ड का दृश्य केवल पढ़ने के लिए है'],
+    ['Controlled export is available only inside Saagar Control Centre.','नियंत्रित निर्यात फक्त Saagar Control Centre मध्ये उपलब्ध आहे.','नियंत्रित निर्यात केवल Saagar Control Centre के अंदर उपलब्ध है।'],
+    ['Controlled print is available only inside Saagar Control Centre.','नियंत्रित मुद्रण फक्त Saagar Control Centre मध्ये उपलब्ध आहे.','नियंत्रित प्रिंट केवल Saagar Control Centre के अंदर उपलब्ध है।'],
+    ['Controlled sharing is available only inside Saagar Control Centre.','नियंत्रित शेअरिंग फक्त Saagar Control Centre मध्ये उपलब्ध आहे.','नियंत्रित साझा करना केवल Saagar Control Centre के अंदर उपलब्ध है।'],
+    ['Controlled WhatsApp is available only inside Saagar Control Centre.','नियंत्रित WhatsApp फक्त Saagar Control Centre मध्ये उपलब्ध आहे.','नियंत्रित WhatsApp केवल Saagar Control Centre के अंदर उपलब्ध है।'],
+    ['Report engine unavailable on this build.','या बिल्डमध्ये अहवाल प्रणाली उपलब्ध नाही.','इस बिल्ड में रिपोर्ट प्रणाली उपलब्ध नहीं है।'],
+    ['Share failed:','शेअर करणे अयशस्वी:','साझा करना विफल:'],
+    ['Save failed:','जतन करणे अयशस्वी:','सहेजना विफल:'],
+    ['Preparing report…','अहवाल तयार करत आहे…','रिपोर्ट तैयार हो रही है…'],
+    ['Report downloaded','अहवाल डाउनलोड झाला','रिपोर्ट डाउनलोड हो गई'],
+    ['Pick WhatsApp in the share menu','शेअर मेनूमध्ये WhatsApp निवडा','शेयर मेनू में WhatsApp चुनें'],
+    ['No employees selected.','कोणताही कर्मचारी निवडलेला नाही.','कोई कर्मचारी नहीं चुना गया है।'],
+    ['Copied','कॉपी केले','कॉपी किया गया'],
+    ['Reload','पुन्हा लोड करा','फिर से लोड करें'],
+    ['Saved','जतन केले','सहेजा गया'],
+
     ['Action Center','कृती केंद्र','कार्रवाई केंद्र'],
     ['Manage Compliance','अनुपालन व्यवस्थापन','अनुपालन प्रबंधन'],
     ['Proprietorship','एकल मालकी','एकल स्वामित्व'],
