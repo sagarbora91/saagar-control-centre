@@ -1,4 +1,4 @@
-import { compareText, sha256 } from './lib.mjs';
+import { compareText, stableSha256, stableValue } from './lib.mjs';
 
 export const COMPARISON_APPROVAL_FORMAT = 'SAAGAR_AUDIT_COMPARISON_APPROVALS';
 
@@ -16,16 +16,6 @@ function checkMap(audits) {
 
 function gate(id, title, result, metric, evidence = [], mandatory = true) {
   return { id, title, result, mandatory, metric, evidence: evidence.slice(0, 200) };
-}
-
-function stableValue(value) {
-  if (Array.isArray(value)) return value.map(stableValue);
-  if (!value || typeof value !== 'object') return value;
-  return Object.fromEntries(Object.keys(value).sort(compareText).map(key => [key, stableValue(value[key])]));
-}
-
-function stableSha256(value) {
-  return sha256(JSON.stringify(stableValue(value)));
 }
 
 export function comparisonFindingSha256(check) {
@@ -77,7 +67,7 @@ function storageContract(checks) {
   if (!Number.isSafeInteger(metric.artifacts) || metric.artifacts <= 0 || metric.artifacts !== inventory.length ||
       !Number.isSafeInteger(metric.artifactLimit) || metric.artifactLimit < inventory.length ||
       !HEX_64.test(String(metric.inventorySha256 || '')) ||
-      metric.inventorySha256 !== sha256(JSON.stringify(inventory))) {
+      metric.inventorySha256 !== stableSha256(inventory)) {
     return { valid: false, inventory: null, reason: 'STORAGE_CONTRACT_INVENTORY_TRUNCATED' };
   }
   let previous = '';
@@ -85,9 +75,9 @@ function storageContract(checks) {
     const keys = row && typeof row === 'object' && !Array.isArray(row) ? Object.keys(row).sort(compareText) : [];
     const validOperations = Array.isArray(row && row.operations) && row.operations.length > 0 &&
       row.operations.every(value => nonEmpty(value, 120)) &&
-      row.operations.every((value, index) => index === 0 || value > row.operations[index - 1]);
+      row.operations.every((value, index) => index === 0 || compareText(value, row.operations[index - 1]) > 0);
     if (JSON.stringify(keys) !== JSON.stringify(STORAGE_CONTRACT_KEYS) || !nonEmpty(row.artifactId, 500) ||
-        row.artifactId <= previous || !nonEmpty(row.kind, 120) || !nonEmpty(row.name, 500) ||
+        compareText(row.artifactId, previous) <= 0 || !nonEmpty(row.kind, 120) || !nonEmpty(row.name, 500) ||
         !nonEmpty(row.classification, 120) || !nonEmpty(row.owner, 240) || !nonEmpty(row.restore, 240) ||
         !nonEmpty(row.reset, 240) || typeof row.pattern !== 'boolean' || typeof row.unresolved !== 'boolean' ||
         typeof row.evidenceArtifact !== 'boolean' || !validOperations) {
@@ -145,7 +135,7 @@ function messageContract(checks) {
       !Number.isSafeInteger(metric.discoveredArtifacts) || metric.discoveredArtifacts !== inventory.length ||
       !Number.isSafeInteger(metric.artifactLimit) || metric.artifactLimit < metric.discoveredArtifacts ||
       !HEX_64.test(String(metric.inventorySha256 || '')) ||
-      metric.inventorySha256 !== sha256(JSON.stringify(inventory))) {
+      metric.inventorySha256 !== stableSha256(inventory)) {
     return { valid: false, inventory: null, reason: 'MESSAGE_CONTRACT_INVENTORY_TRUNCATED' };
   }
   let previousId = '';
@@ -161,7 +151,7 @@ function messageContract(checks) {
       Array.isArray(row.senderContracts) && row.senderContracts.length === 0 &&
       Array.isArray(row.receiverContracts) && row.receiverContracts.length === 0;
     if (JSON.stringify(keys) !== JSON.stringify(MESSAGE_CONTRACT_KEYS) || !nonEmpty(row.contractId, 500) ||
-        row.contractId <= previousId || (!validResolved && !validUnresolved) ||
+        compareText(row.contractId, previousId) <= 0 || (!validResolved && !validUnresolved) ||
         !Array.isArray(row.senderContracts) || !Array.isArray(row.receiverContracts)) {
       return { valid: false, inventory: null, reason: 'MESSAGE_CONTRACT_INVENTORY_SCHEMA_INVALID' };
     }
@@ -170,7 +160,7 @@ function messageContract(checks) {
       const senderKeys = sender && typeof sender === 'object' && !Array.isArray(sender) ? Object.keys(sender).sort(compareText) : [];
       const serialized = JSON.stringify(sender);
       if (JSON.stringify(senderKeys) !== JSON.stringify(MESSAGE_SENDER_KEYS) || !nonEmpty(sender.path, 500) ||
-          serialized < previousSender || !Array.isArray(sender.payloadFields)) {
+          compareText(serialized, previousSender) < 0 || !Array.isArray(sender.payloadFields)) {
         return { valid: false, inventory: null, reason: 'MESSAGE_CONTRACT_INVENTORY_SCHEMA_INVALID' };
       }
       let previousField = '';
@@ -178,7 +168,7 @@ function messageContract(checks) {
         const fieldKeys = field && typeof field === 'object' && !Array.isArray(field) ? Object.keys(field).sort(compareText) : [];
         const fieldKey = `${field && field.field}\0${field && field.kind}`;
         if (JSON.stringify(fieldKeys) !== JSON.stringify(MESSAGE_FIELD_KEYS) || !nonEmpty(field.field, 240) ||
-            !nonEmpty(field.kind, 120) || fieldKey <= previousField) {
+            !nonEmpty(field.kind, 120) || compareText(fieldKey, previousField) <= 0) {
           return { valid: false, inventory: null, reason: 'MESSAGE_CONTRACT_INVENTORY_SCHEMA_INVALID' };
         }
         previousField = fieldKey;
@@ -188,7 +178,7 @@ function messageContract(checks) {
     let previousReceiver = '';
     for (const receiver of row.receiverContracts) {
       const receiverKeys = receiver && typeof receiver === 'object' && !Array.isArray(receiver) ? Object.keys(receiver).sort(compareText) : [];
-      if (JSON.stringify(receiverKeys) !== JSON.stringify(['path']) || !nonEmpty(receiver.path, 500) || receiver.path < previousReceiver) {
+      if (JSON.stringify(receiverKeys) !== JSON.stringify(['path']) || !nonEmpty(receiver.path, 500) || compareText(receiver.path, previousReceiver) < 0) {
         return { valid: false, inventory: null, reason: 'MESSAGE_CONTRACT_INVENTORY_SCHEMA_INVALID' };
       }
       previousReceiver = receiver.path;

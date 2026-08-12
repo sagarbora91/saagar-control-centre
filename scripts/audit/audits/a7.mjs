@@ -1,5 +1,5 @@
-import { auditResult, lineNumber, makeCheck, sha256 } from '../lib.mjs';
-import { conservativeStaticResult, staticDiscoveryAuthority, staticDiscoveryEvidence } from '../runner-support.mjs';
+import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
+import { conservativeStaticResult, messageInventoryAuthority, staticDiscoveryAuthority, staticDiscoveryEvidence } from '../runner-support.mjs';
 
 const MAX_MESSAGE_CONTRACTS = 1000;
 
@@ -361,7 +361,13 @@ function manifestBinding(context) {
   const manifestTag = shell.indexOf('<script src="module-manifest.js"></script>');
   const manifestUse = shell.indexOf('const MODULE_MANIFEST');
   const manifestFirst = manifestTag >= 0 && manifestUse > manifestTag;
-  const manifestRoutes = /__f\.src\s*=\s*mod\.src/.test(shell) && /moduleById\(id\)/.test(shell);
+  const directManifestRoutes = /__f\.src\s*=\s*mod\.src/.test(shell) && /moduleById\(id\)/.test(shell);
+  const controllerAvailable = sourceExists('www/shared/shell-module-frame-controller.js');
+  const controller = controllerAvailable ? context.read('www/shared/shell-module-frame-controller.js') : '';
+  const delegatesToController = /SaagarShellModuleFrameController\.open\s*\(\s*id\s*,\s*\{[\s\S]{0,800}?moduleById\s*:\s*moduleById/.test(shell);
+  const controllerManifestRoutes = controllerAvailable && /shell\.moduleById\s*\(\s*id\s*\)/.test(controller) &&
+    /(?:frame|shell\.frame)\.src\s*=\s*mod\.src/.test(controller) && /if\s*\(\s*!mod\.src\s*\)/.test(controller);
+  const manifestRoutes = directManifestRoutes || (delegatesToController && controllerManifestRoutes);
   const versionReject = /event\.data\.version\s*!==\s*VERSION/.test(runtime) && /m\.type\s*===\s*["']ST_INIT["']/.test(runtime);
   if (!shellAvailable) mismatches.push({ path: 'www/index.html', code: 'SHELL_PROTOCOL_SOURCE_MISSING' });
   if (!runtimeAvailable) mismatches.push({ path: 'www/shared/mah4-runtime.js', code: 'SHARED_PROTOCOL_SOURCE_MISSING' });
@@ -462,7 +468,7 @@ export async function run(context) {
   const inventoryComplete = !zeroCensus && !overflow;
   const lifecycleComplete = inventoryComplete && unresolved.length === 0;
   const inventory = overflow ? contractInventory.slice(0, MAX_MESSAGE_CONTRACTS) : contractInventory;
-  const inventorySha256 = inventoryComplete ? sha256(JSON.stringify(inventory)) : null;
+  const inventorySha256 = inventoryComplete ? stableSha256(inventory) : null;
   const censusGaps = [
     ...(zeroCensus ? [{ code: 'MESSAGE_CONTRACT_CENSUS_EMPTY' }] : []),
     ...(overflow ? [{ code: 'MESSAGE_CONTRACT_INVENTORY_OVERFLOW', discoveredArtifacts,
@@ -474,10 +480,11 @@ export async function run(context) {
      site. Heuristic absence therefore settles at 'unmeasured', never 'pass',
      unless an explicit complete authority is supplied. */
   const authority = staticDiscoveryAuthority(context);
+  const inventoryAuthority = messageInventoryAuthority(context);
   const inventoryResult = conservativeStaticResult({
     definiteViolations: 0,
     unresolved: inventoryComplete ? 0 : 1,
-    authority
+    authority: inventoryAuthority
   });
   const lifecycleResult = conservativeStaticResult({
     definiteViolations: unmatched.length,
@@ -502,10 +509,10 @@ export async function run(context) {
       metric: { messageTypes: allTypes.length, senderSites: senders.length, receiverSites: receivers.length,
         unresolvedContracts: unresolved.length, discoveredArtifacts, artifactLimit: MAX_MESSAGE_CONTRACTS,
         inventoryComplete, inventorySha256, inventory,
-        staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
+        staticDiscoveryComplete: inventoryAuthority.complete, staticAbsenceIsProof: false },
       rule: 'Maintain a bounded, exact and hash-bound ST message contract inventory; a bounded census is evidence but never proof of complete scanner coverage, so heuristic absence is unmeasured',
       evidence: inventoryComplete
-        ? staticDiscoveryEvidence(authority, authority.complete
+        ? staticDiscoveryEvidence(inventoryAuthority, inventoryAuthority.complete
           ? [{ code: 'MESSAGE_CONTRACT_INVENTORY_BOUND', inventorySha256, representedUnresolved: unresolved.length }]
           : [])
         : censusGaps,

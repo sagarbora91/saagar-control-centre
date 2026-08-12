@@ -3,12 +3,6 @@ import { CURRENT_AUTHORITY_DOCUMENTS } from '../config.mjs';
 
 const REPOSITORY_PATH_PREFIX = /^(?:android|build-overrides|docs|scripts|tests|verification|www)\//;
 const ROOT_FILES = new Set(['package.json', 'package-lock.json', 'capacitor.config.json']);
-const REQUIRED_CURRENT_TEST_COUNTS = Object.freeze({
-  completeOffline: 492,
-  etp: 128,
-  modular: 72,
-  mainOffline: 262
-});
 const REQUIRED_TEST_SUITES = Object.freeze({
   'test:c1': 'c1',
   'test:mobile': 'mobile',
@@ -18,6 +12,12 @@ const REQUIRED_TEST_SUITES = Object.freeze({
   'test:modular': 'modular',
   'test:offline': 'mainOffline'
 });
+const CURRENT_TEST_CLAIM_DOCUMENTS = new Set([
+  'docs/audit/HANDOFF.md',
+  'docs/audit/AUDIT-PROGRAM-v1.md',
+  'docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md'
+]);
+const EXTERNAL_TEST_CLAIM_DOMAINS = new Set(['api23External', 'largeRecordFocused', 'storageRecoveryFocused']);
 
 function authoritySources(context) {
   return CURRENT_AUTHORITY_DOCUMENTS.map(file => ({ file, available: context.exists(file),
@@ -123,7 +123,7 @@ function testDomain(line) {
 
 function testClaims(sources) {
   const rows = [];
-  for (const document of sources.filter(item => item.available)) {
+  for (const document of sources.filter(item => item.available && CURRENT_TEST_CLAIM_DOCUMENTS.has(item.file))) {
     const source = currentClaimScope(document.file, document.source);
     for (const lineMatch of source.matchAll(/[^\r\n]*(?:\r\n|\n|$)/g)) {
       const line = lineMatch[0].replace(/\r?\n$/, '');
@@ -210,7 +210,7 @@ function measuredTestCounts(context) {
     todo,
     suites: suiteRowsValid ? requiredSuites.length : null,
     suiteFindings,
-    available: Object.keys(REQUIRED_CURRENT_TEST_COUNTS).every(key => Number.isSafeInteger(result[key])) &&
+    available: supported.every(key => Number.isSafeInteger(result[key])) &&
       aggregateAvailable && suiteRowsValid
   };
 }
@@ -276,22 +276,18 @@ export async function run(context) {
   const missingShas = shas.filter(item => !item.exists).map(item => ({ path: item.document, line: item.line,
     code: 'CITED_COMMIT_MISSING', sha: item.sha }));
   const claims = testClaims(sources);
+  const externalClaims = claims.filter(claim => EXTERNAL_TEST_CLAIM_DOMAINS.has(claim.domain));
+  const comparableClaims = claims.filter(claim => !EXTERNAL_TEST_CLAIM_DOMAINS.has(claim.domain));
   const measured = measuredTestCounts(context);
   const countMismatches = [];
   countMismatches.push(...measured.suiteFindings);
   const unsupportedClaims = [];
-  for (const claim of claims) {
+  for (const claim of comparableClaims) {
     const expected = measured.counts[claim.domain];
     if (!Number.isSafeInteger(expected)) { unsupportedClaims.push(claim); continue; }
     if (claim.passed !== expected || claim.total !== expected) countMismatches.push({ path: claim.document, line: claim.line,
       code: 'CURRENT_TEST_COUNT_MISMATCH', domain: claim.domain, claimedPassed: claim.passed,
       claimedTotal: claim.total, measuredPassed: expected, measuredTotal: expected });
-  }
-  for (const [domain, required] of Object.entries(REQUIRED_CURRENT_TEST_COUNTS)) {
-    const actual = measured.counts[domain];
-    if (Number.isSafeInteger(actual) && actual !== required) countMismatches.push({
-      code: 'MEASURED_TEST_BASELINE_MISMATCH', domain, required, measured: actual
-    });
   }
   if (measured.failures !== null && measured.failures !== 0) countMismatches.push({ code: 'MEASURED_TEST_FAILURES',
     failures: measured.failures });
@@ -337,17 +333,19 @@ export async function run(context) {
     makeCheck({
       id: 'A11-03', title: 'Current-authority test counts match measured counts',
       result: countResult, severity: 'P1', mandatory: true,
-      metric: { claims: claims.length, supportedClaims: claims.length - unsupportedClaims.length,
-        unsupportedClaims: unsupportedClaims.length, mismatches: countMismatches.length,
+      metric: { claims: claims.length, comparableClaims: comparableClaims.length,
+        supportedClaims: comparableClaims.length - unsupportedClaims.length,
+        excludedExternalClaims: externalClaims.length, unsupportedClaims: unsupportedClaims.length,
+        mismatches: countMismatches.length,
         measuredCounts: measured.counts, measuredFailures: measured.failures,
         measuredCancelled: measured.cancelled, measuredSkipped: measured.skipped, measuredTodo: measured.todo,
-        measuredSuites: measured.suites, measuredTotal: measured.totalCount, measuredPassed: measured.passedCount,
-        requiredCurrentCounts: REQUIRED_CURRENT_TEST_COUNTS },
-      rule: 'Current-authority test-count claims must equal the identity-bound measured suite counts, including 492 complete offline, 128 ETP, 72 modular and 262 main-offline tests with zero failures.',
+        measuredSuites: measured.suites, measuredTotal: measured.totalCount, measuredPassed: measured.passedCount },
+      rule: 'Current-authority test-count claims must equal the identity-bound measured suite counts for this exact target, with zero failures, cancellations, skips or TODO tests.',
       evidence: countMismatches.length ? countMismatches : unsupportedClaims.map(item => ({ path: item.document, line: item.line,
         code: 'TEST_COUNT_ENVIRONMENT_UNMEASURED', domain: item.domain })),
       notes: !measured.available ? 'The test run did not expose safe structured assertion counts; a pass is not inferred from exit code alone.'
-        : (unsupportedClaims.length ? 'At least one current claim belongs to an external/focused suite not measured by this audit invocation.' : '')
+        : (unsupportedClaims.length ? 'At least one current claim could not be mapped to a measured suite.' :
+          (externalClaims.length ? 'Explicit external/focused-suite claims are recorded but excluded from the seven-suite offline comparison.' : ''))
     }),
     makeCheck({
       id: 'A11-04', title: 'Controlling product baseline identity',

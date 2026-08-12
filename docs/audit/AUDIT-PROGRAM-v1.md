@@ -109,7 +109,7 @@ A7 and A8 decide over static discovery that cannot prove it saw everything. For 
 
 A heuristically clean run never reports `pass` on its own. `pass` requires the check to declare explicit complete discovery authority (`metric.staticDiscoveryComplete === true`); anything less is `unmeasured` and remains an open gate. Comparison follows the same rule: C-07 treats a message contract as matching only when both sides are `pass` **and** both declare complete discovery authority.
 
-A7-04 is exempt because it decides over a closed, hash-bound set rather than heuristic discovery.
+A7-01 may use the runner-bound `a7-message-contract-census-v2` authority for its narrower inventory claim. Every supported sender/receiver site is included, and dynamic sites are retained as hash-bound unresolved contract rows; that authority does not upgrade A7-02, A7-03, A7-05 or any A8 absence claim. A7-04 is exempt because it decides over a closed, hash-bound set rather than heuristic discovery. A8-05 is also fail-closed: a discovered remote-capable call whose target cannot be validated is measured policy non-compliance (`fail`), not heuristic absence.
 
 ## 5. Output contract
 
@@ -225,7 +225,7 @@ The external-evidence trust policy is currently closed (`trustedSignerCount: 0`)
 
 ### A7 — Protocol stability
 
-- **A7-01:** complete message sender/receiver inventory; informational.
+- **A7-01:** bounded, hash-bound message sender/receiver inventory, including represented unresolved sites; the frozen runner binds the complete supported-syntax census used by C-07.
 - **A7-02:** sent-never-handled or handled-never-sent business/control message is P1 unless explicitly classified historical/test-only.
 - **A7-03:** conflicting payload shapes for one type are P1.
 - **A7-04:** packaged shell/modules must be manifest/hash bound and reject an unsupported protocol version; absence is P1. Network-style negotiation is not required because all files ship in one APK.
@@ -237,7 +237,7 @@ The external-evidence trust policy is currently closed (`trustedSignerCount: 0`)
 - **A8-02:** export path bypassing export policy is P0.
 - **A8-03:** auth/PIN control that fails open is P0.
 - **A8-04:** secret scan reports only rule, file, line and one-way fingerprint; any verified credential/signing secret in tracked files is P0.
-- **A8-05:** reachable unapproved remote request/navigation in shipped runtime is P0. Controlled share intents, SVG namespaces, data/blob URLs and comment or licence URLs are not network behavior.
+- **A8-05:** reachable unapproved remote request/navigation in shipped runtime is P0. A discovered remote-capable call with an unresolved target also fails closed until the target is structurally validated. Controlled share intents, SVG namespaces, data/blob URLs and comment or licence URLs are not network behavior.
 
 ### A9 — Build and release reproducibility
 

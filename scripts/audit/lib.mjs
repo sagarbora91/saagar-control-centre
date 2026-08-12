@@ -24,6 +24,16 @@ export function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+export function stableValue(value) {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.keys(value).sort(compareText).map(key => [key, stableValue(value[key])]));
+}
+
+export function stableSha256(value) {
+  return sha256(JSON.stringify(stableValue(value)));
+}
+
 export function runGit(root, args) {
   return execFileSync('git', ['-C', root, ...args], {
     encoding: 'utf8',
@@ -192,4 +202,3 @@ export function buildContext(root) {
 export function auditResult(id, title, checks, metrics = {}) {
   return Object.freeze({ auditId: id, title, checks: [...checks].sort((a, b) => a.id.localeCompare(b.id)), metrics });
 }
-

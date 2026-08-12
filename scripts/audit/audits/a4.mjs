@@ -1,4 +1,4 @@
-import { auditResult, lineNumber, makeCheck, sha256 } from '../lib.mjs';
+import { auditResult, lineNumber, makeCheck, sha256, stableSha256 } from '../lib.mjs';
 
 const CLASSIFICATIONS = new Set(['portable', 'device-local', 're-derivable-excluded', 'forbidden']);
 const MAX_ARTIFACTS = 2500;
@@ -433,7 +433,7 @@ export async function run(context) {
         files: artifacts.filter(item => item.kind === 'file').length,
         runtimeFiles: files.length, blindSpots: blindSpots.length, artifactLimit: MAX_ARTIFACTS,
         inventoryComplete, inventory: inventoryComplete ? contractInventory : [],
-        inventorySha256: inventoryComplete ? sha256(JSON.stringify(contractInventory)) : null },
+        inventorySha256: inventoryComplete ? stableSha256(contractInventory) : null },
       rule: 'Produce one bounded, exact and location-independent contract row for every persistent artifact; zero census, dynamic blind spots and overflow are unmeasured.',
       evidence: [
         ...(files.length ? [] : [{ code: 'PERSISTENT_RUNTIME_FILES_EMPTY' }]),
