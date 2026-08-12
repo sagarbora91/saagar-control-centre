@@ -3,6 +3,69 @@
 **Updated:** 2026-08-12 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
+## Phase 4 live checkpoint - 2026-08-12
+
+This checkpoint is the current authority. The detailed execution and exit plan
+is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`.
+
+| Authority | Identity |
+|---|---|
+| Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
+| Working branch | `agent/modular-phase1-shared-spine-v2` |
+| Final target | determined by the final documentation/evidence commit |
+| Governed tooling | `e38e44e90996efb5f0b7a57e370baf165408cc83` |
+
+- Modular HTML implementation is complete. Phase 4 audit and release closure is
+  not complete.
+- Current internal diagnostics pass A2, A7, and A8. The A5 mutation cleanup and
+  C-04 storage inventory/comparator defects are corrected.
+- A6-03 remains open with 1,226 genuine localization bypass occurrences after
+  two Marathi/Hindi remediation batches. A6-04/A6-05 remain trusted-renderer
+  gates.
+- Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
+  are presented as reconciliation information that does not alter revenue or
+  sales totals.
+- API-23 emulator install-replace, preserved seeded state, restart, recreation,
+  and rotation checks are engineering evidence only; they do not close physical
+  OEM, owner-device, production-signing, or release acceptance.
+- The earlier capability approval and Samsung SM-T875 acceptance are bound to
+  older identities. They cannot be reused for the final target or final APK.
+- Keep PR #5 in draft until the final controlled comparison, exact identity-bound
+  approval, trusted measurements, physical acceptance, and release authority
+  are complete.
+
+### Crash-resume checkpoint
+
+- Main product checkpoint before this documentation commit is `9dcedb4`. It
+  contains both genuine localization batches; A6-03 is reduced to 1,226
+  occurrences but remains open.
+- Governed tooling `e38e44e90996efb5f0b7a57e370baf165408cc83`
+  passed its complete self-test. Its Windows watchdog behaviorally proves that
+  a timed-out descendant process is terminated before cleanup.
+- A fresh controlled baseline is running from the clean detached tooling
+  worktree. Its reserved external output is
+  `V:\Co work\Projects\Retail\audit-out\2026-08-12-103501-e38e44e90996`.
+  Treat it as pending until the runner exits successfully and all manifest
+  hashes are validated; no evidence directory existed at launch.
+- Product authority profiles for the R003/R013 UI and both localization batches
+  are being regenerated fail-closed. The previous capability approval must not
+  be reused if the resulting exact delta ledger changes.
+- On resume: first inspect the baseline process/output without modifying its
+  worktree, then validate and commit its exact evidence; integrate and test the
+  regenerated product profiles; freeze the final target; run the unapproved
+  comparison; build and retest the final seeded APK; then request exact
+  identity-bound owner approval and external acceptance.
+
+## Open acceptance gates
+
+- Final controlled baseline and target comparison.
+- Exact identity-bound owner capability approval for the final comparison.
+- Trusted rendered accessibility/responsive and A10 timing measurements.
+- Final exact-hash physical-device and OEM/document-provider evidence.
+- Production ETP, mapping, language, UAT, legal, signing, and release decisions.
+
+## Historical record
+
 ## Approval-aware comparison and consolidated closure checkpoint - 2026-08-12
 
 This checkpoint supersedes the older comparison and approval resume statements
