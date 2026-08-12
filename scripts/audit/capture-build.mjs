@@ -455,9 +455,29 @@ export function parseGeneratedSigningConfiguration(input) {
     signingRelease.bodyStart, signingRelease.bodyEnd, releaseSpans)) {
     add('RELEASE_SIGNING_STATEMENT_INVALID');
   }
-  const releaseBody = views.commentless.slice(buildRelease.bodyStart, buildRelease.bodyEnd)
-    .replace(/[\s;]/g, '');
-  if (releaseBody !== 'debuggablefalsesigningConfigsigningConfigs.release') {
+  const buildReleaseSpans = [];
+  const requiredReleaseStatements = [
+    /\bdebuggable\s+false\b/g,
+    /\bsigningConfig\s+signingConfigs\s*\.\s*release\b/g
+  ];
+  for (const pattern of requiredReleaseStatements) {
+    const matches = directCodeMatches(source, views.masked,
+      buildRelease.bodyStart, buildRelease.bodyEnd, pattern);
+    if (matches.length === 1) buildReleaseSpans.push(matches[0]);
+  }
+  const optionalCapacitorReleaseStatements = [
+    /\bminifyEnabled\s+false\b/g,
+    /\bproguardFiles\s+getDefaultProguardFile\s*\(\s*(?:'proguard-android\.txt'|"proguard-android\.txt")\s*\)\s*,\s*(?:'proguard-rules\.pro'|"proguard-rules\.pro")/g
+  ];
+  for (const pattern of optionalCapacitorReleaseStatements) {
+    const matches = directCodeMatches(source, views.masked,
+      buildRelease.bodyStart, buildRelease.bodyEnd, pattern);
+    if (matches.length > 1) add('RELEASE_BUILD_TYPE_STATEMENT_INVALID');
+    else if (matches.length === 1) buildReleaseSpans.push(matches[0]);
+  }
+  if (buildReleaseSpans.length < requiredReleaseStatements.length ||
+      !onlyWhitespaceAndSemicolonsOutsideSpans(views.commentless,
+        buildRelease.bodyStart, buildRelease.bodyEnd, buildReleaseSpans)) {
     add('RELEASE_BUILD_TYPE_STATEMENT_INVALID');
   }
   return { valid: findings.length === 0, signing, findings };

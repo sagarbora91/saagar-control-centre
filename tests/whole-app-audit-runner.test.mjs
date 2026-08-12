@@ -1927,6 +1927,16 @@ test('controlled signing parser rejects decoys, reversed guards, wrong scopes an
   ].join('\n');
   const parsed = parseGeneratedSigningConfiguration(valid);
   assert.equal(parsed.valid, true, JSON.stringify(parsed.findings));
+  const generatedCapacitorRelease = valid.replace(
+    'release { debuggable false; signingConfig signingConfigs.release }',
+    "release { debuggable false; signingConfig signingConfigs.release; minifyEnabled false; proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro' }");
+  assert.equal(parseGeneratedSigningConfiguration(generatedCapacitorRelease).valid, true);
+  assert.equal(parseGeneratedSigningConfiguration(generatedCapacitorRelease.replace(
+    'minifyEnabled false', 'minifyEnabled true')).valid, false);
+  assert.equal(parseGeneratedSigningConfiguration(generatedCapacitorRelease.replace(
+    "'proguard-rules.pro'", "'unreviewed-rules.pro'")).valid, false);
+  assert.equal(parseGeneratedSigningConfiguration(generatedCapacitorRelease.replace(
+    'minifyEnabled false;', 'minifyEnabled false; shrinkResources true;')).valid, false);
   assert.deepEqual(parsed.signing.releaseEnvironmentVariables,
     ['SAAGAR_KEYSTORE_FILE', 'SAAGAR_KEYSTORE_PASSWORD', 'SAAGAR_KEY_ALIAS', 'SAAGAR_KEY_PASSWORD']);
   assert.equal(parseGeneratedSigningConfiguration(valid.replace(
