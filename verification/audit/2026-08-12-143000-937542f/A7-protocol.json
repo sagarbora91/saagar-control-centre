@@ -1,0 +1,2204 @@
+{
+  "auditId": "A7",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "MESSAGE_CONTRACT_INVENTORY_BOUND",
+          "inventorySha256": "c6cf81aafdecfba95a7d3e51907c8468e5e0984b0bab37e34fc860e9297cdf28",
+          "representedUnresolved": 34
+        }
+      ],
+      "id": "A7-01",
+      "mandatory": true,
+      "metric": {
+        "artifactLimit": 1000,
+        "discoveredArtifacts": 54,
+        "inventory": [
+          {
+            "contractId": "message:ST_ACCESS_CONTEXT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_ACCESS_CONTEXT",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/modules/dsr/index.html"
+              }
+            ],
+            "senderContracts": [],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_AUDIT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_AUDIT",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_BACK_HOME",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_BACK_HOME",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/expense/index.html",
+                "payloadFields": []
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": []
+              },
+              {
+                "path": "www/modules/service/index.html",
+                "payloadFields": []
+              },
+              {
+                "path": "www/modules/stock/index.html",
+                "payloadFields": []
+              },
+              {
+                "path": "www/modules/tax/index.html",
+                "payloadFields": []
+              },
+              {
+                "path": "www/shared/module-runtime.js",
+                "payloadFields": []
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_DISPOSE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_DISPOSE",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js"
+              }
+            ],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_DISPOSED",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_DISPOSED",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "replyTo",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_ERROR",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_ERROR",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_INIT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_INIT",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js"
+              }
+            ],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_LANG",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_LANG",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/app-i18n.js"
+              }
+            ],
+            "senderContracts": [],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_OPEN_FEATURE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_OPEN_FEATURE",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/modules/cro_audit/index.html"
+              },
+              {
+                "path": "www/modules/expense/index.html"
+              },
+              {
+                "path": "www/modules/grooming/index.html"
+              },
+              {
+                "path": "www/modules/leave/index.html"
+              },
+              {
+                "path": "www/modules/payroll/index.html"
+              },
+              {
+                "path": "www/modules/service/index.html"
+              },
+              {
+                "path": "www/modules/stock/index.html"
+              },
+              {
+                "path": "www/modules/tax/index.html"
+              },
+              {
+                "path": "www/shared/module-runtime.js"
+              }
+            ],
+            "senderContracts": [
+              {
+                "path": "www/index.html",
+                "payloadFields": [
+                  {
+                    "field": "target",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_OPEN_MODULE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/integration-bridge.js",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/expense/index.html",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/service/index.html",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/stock/index.html",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/tax/index.html",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/shared/module-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "id",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_PRINT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_PRINT",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/expense/index.html",
+                "payloadFields": [
+                  {
+                    "field": "css",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileBase",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "html",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "orientation",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/qms/index.html",
+                "payloadFields": [
+                  {
+                    "field": "css",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileBase",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "html",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "orientation",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/service/index.html",
+                "payloadFields": [
+                  {
+                    "field": "css",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "html",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_READY",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_READY",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/shared/mah4-runtime.js",
+                "payloadFields": [
+                  {
+                    "field": "channel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "instanceId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "messageId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "moduleId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "payload",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "replyTo",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "version",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_REPORT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_REPORT",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "opts",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "reportType",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "opts",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "reportType",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "opts",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "reportType",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "opts",
+                    "kind": "object"
+                  },
+                  {
+                    "field": "reportType",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/qms/index.html",
+                "payloadFields": [
+                  {
+                    "field": "opts",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "reportType",
+                    "kind": "string"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_REPORT_BATCH",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_REPORT_BATCH",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "fileBase",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "mode",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "slips",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_SET_DATE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_SET_DATE",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/modules/cro_audit/index.html"
+              },
+              {
+                "path": "www/modules/expense/index.html"
+              },
+              {
+                "path": "www/modules/grooming/index.html"
+              },
+              {
+                "path": "www/modules/leave/index.html"
+              },
+              {
+                "path": "www/modules/payroll/index.html"
+              },
+              {
+                "path": "www/modules/service/index.html"
+              },
+              {
+                "path": "www/modules/stock/index.html"
+              },
+              {
+                "path": "www/modules/tax/index.html"
+              },
+              {
+                "path": "www/shared/module-runtime.js"
+              }
+            ],
+            "senderContracts": [],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_SHARE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_SHARE",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "exportId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "file",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileName",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "purposeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "rowCount",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeLabel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/qms/index.html",
+                "payloadFields": [
+                  {
+                    "field": "exportId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "file",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileName",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "purposeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "rowCount",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "scopeLabel",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/qms/index.html",
+                "payloadFields": [
+                  {
+                    "field": "exportId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "file",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileName",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "purposeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "rowCount",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "scopeLabel",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/service/index.html",
+                "payloadFields": [
+                  {
+                    "field": "exportId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "file",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "purposeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "rowCount",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "scopeLabel",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "text",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/stock/index.html",
+                "payloadFields": [
+                  {
+                    "field": "exportId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "file",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "fileName",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "purposeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "rowCount",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeLabel",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "title",
+                    "kind": "string"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_UI_MODE",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_UI_MODE",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/modules/cro_audit/index.html"
+              },
+              {
+                "path": "www/modules/expense/index.html"
+              },
+              {
+                "path": "www/modules/grooming/index.html"
+              },
+              {
+                "path": "www/modules/leave/index.html"
+              },
+              {
+                "path": "www/modules/payroll/index.html"
+              },
+              {
+                "path": "www/modules/service/index.html"
+              },
+              {
+                "path": "www/modules/stock/index.html"
+              },
+              {
+                "path": "www/modules/tax/index.html"
+              },
+              {
+                "path": "www/shared/module-runtime.js"
+              }
+            ],
+            "senderContracts": [],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_WA",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_WA",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/service/index.html",
+                "payloadFields": [
+                  {
+                    "field": "module",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "recordId",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_WA_LINK",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_WA_LINK",
+            "path": "",
+            "receiverContracts": [],
+            "senderContracts": [
+              {
+                "path": "www/modules/cro_audit/index.html",
+                "payloadFields": [
+                  {
+                    "field": "purposeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "string"
+                  },
+                  {
+                    "field": "url",
+                    "kind": "string"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/dsr/index.html",
+                "payloadFields": [
+                  {
+                    "field": "purposeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "url",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/payroll/index.html",
+                "payloadFields": [
+                  {
+                    "field": "purposeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "url",
+                    "kind": "expression"
+                  }
+                ]
+              },
+              {
+                "path": "www/modules/qms/index.html",
+                "payloadFields": [
+                  {
+                    "field": "purposeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "scopeId",
+                    "kind": "expression"
+                  },
+                  {
+                    "field": "url",
+                    "kind": "expression"
+                  }
+                ]
+              }
+            ],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "message:ST_WA_SENT",
+            "expressionSha256": "",
+            "kind": "resolved",
+            "messageType": "ST_WA_SENT",
+            "path": "",
+            "receiverContracts": [
+              {
+                "path": "www/modules/service/index.html"
+              }
+            ],
+            "senderContracts": [],
+            "unresolvedCode": ""
+          },
+          {
+            "contractId": "unresolved:084d45c8b1504a6d205d1989526f0e0af8be2ecb0afe7586f4119a28d651ffd0:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/modules/expense/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:14248cb7ffe9d4ba5ae7dc4f1f51431f183d02ec64baa7418fb9887c0cf0aa04:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/modules/tax/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:26ead1781edc1185d57d64857d28d97a8bbf82189752ad0d0f2260631f13f727:1",
+            "expressionSha256": "82b3f4e8aa633db0ed222164c9b405e30f4ae1b009060eec937df3e6e12e4d0e",
+            "kind": "unresolved",
+            "messageType": "ST_AUDIT",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:2e4c628f892911119abdc944c1fb3de82ebd674707f232f65f6119f5920e789a:1",
+            "expressionSha256": "c8b6d16becd49aa177f1b9f9b11c3361a0f4674d13095b5881db3102271a6e90",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-import-worker.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:2e4c628f892911119abdc944c1fb3de82ebd674707f232f65f6119f5920e789a:2",
+            "expressionSha256": "d5d61275c4b039b29290f072203cca5ba3d4b14ec7cf24704037c9312900e56a",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-import-worker.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:2e4c628f892911119abdc944c1fb3de82ebd674707f232f65f6119f5920e789a:3",
+            "expressionSha256": "bf490b6535b4848efc8979289f12e78155ccb1aa1f1a405603b0fee33112ef05",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-import-worker.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:2e4c628f892911119abdc944c1fb3de82ebd674707f232f65f6119f5920e789a:4",
+            "expressionSha256": "b350060ebc8fae875dd8fc47ddd0914c8fd88f359e4c493bcd76aa0a39d9d24d",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-import-worker.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:30b4dba51431ee6b218d0e602a0bd3637af0b12d3bca1ddcf4ffacf7828d77e2:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/modules/stock/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:34e2d0ee49c5436ed895bd63ec3205ce7a9b2ea7b139a44aa464c4c915aac592:1",
+            "expressionSha256": "ff0f26c26453714f50cea198ce4056fda6ea281ef9a88aec592c9267b1224ddf",
+            "kind": "unresolved",
+            "messageType": "ST_READY",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:40e93bf83e2f8f348a228f655ef179b7be380df984376b0be6a2061d1a25dce6:1",
+            "expressionSha256": "ad779e790e909c86c96bcf2616e23d594422b1207baa1930c98bb31dfbb57c6f",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_FEATURE",
+            "path": "www/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:471606c5003723b0b0a64e44b72df2daecb23b9c8b2155fec176797d4d0b2882:1",
+            "expressionSha256": "7e9c62cbd8ddd913df5fd343f0c5fbeba2b8e4185d5a9277f165c6a238a43bfd",
+            "kind": "unresolved",
+            "messageType": "ST_SHARE",
+            "path": "www/modules/stock/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:4efc08075d2b3d75deec5281d942e113e19dbf679b208642311d72d5d38610ea:1",
+            "expressionSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe",
+            "kind": "unresolved",
+            "messageType": "ST_WA_LINK",
+            "path": "www/modules/dsr/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:56e990a8516f6a6220a5fb4f7cba46f0ae39e388d74ab801d0f29c34351400bd:1",
+            "expressionSha256": "584da15ae4f1e686df22a509f47b506129b2e9dde32ca16889bf75c02f54fee4",
+            "kind": "unresolved",
+            "messageType": "ST_ERROR",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:626a6758d828fe860d9c336be32af6dc388ecc565183b3ff162e6a0f76a90412:1",
+            "expressionSha256": "832d72c57429e675d6a7bdac667da98b663b3f742dafcad7a27888adde89cc5f",
+            "kind": "unresolved",
+            "messageType": "ST_PRINT",
+            "path": "www/modules/expense/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:64c75fcbb7686f8d99755ff72398f835d57ada605baeae9c87f994237d6416de:1",
+            "expressionSha256": "88b1ce9f4d38803bdff3eb4d31c75b59f18b1d870fbd31c4edf02514a1f4ae5f",
+            "kind": "unresolved",
+            "messageType": "ST_SHARE",
+            "path": "www/modules/payroll/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:670e35319a8b444929c963873e2f9564cc33a8d0f6fd280cab1890c2f03a0054:1",
+            "expressionSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe",
+            "kind": "unresolved",
+            "messageType": "ST_WA_LINK",
+            "path": "www/modules/qms/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:6d66c9a23e95c0c8ea9fca648935a76f8156dda06d55c8e8a4450fdf107e882f:1",
+            "expressionSha256": "140a410f9f0d71e5a4fa249783e80eed6777174927c3e9aca5961e568489095e",
+            "kind": "unresolved",
+            "messageType": "ST_PRINT",
+            "path": "www/modules/service/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:7f1d5038c42668eb4c2743692469cdfde41ce701f972edf189606998e5462c9b:1",
+            "expressionSha256": "832d72c57429e675d6a7bdac667da98b663b3f742dafcad7a27888adde89cc5f",
+            "kind": "unresolved",
+            "messageType": "ST_PRINT",
+            "path": "www/modules/qms/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:8a11f2320fdb7dd643562677b01eb02e55132956b9032e2cef7f56dc9326e519:1",
+            "expressionSha256": "9916edc192e65c3541ad4cfc5c5592126655dc61d08d3a51afccb474694dac51",
+            "kind": "unresolved",
+            "messageType": "ST_WA",
+            "path": "www/modules/service/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:95f1c8813445c5a8f6f6d97b71af66628e4d73fe4e6fdc90b088f97436e7edf0:1",
+            "expressionSha256": "cb3f97aad0cee60f08cb1c1f0b5eced49b7675d1ea327a024454de636aebcd2f",
+            "kind": "unresolved",
+            "messageType": "ST_SHARE",
+            "path": "www/modules/service/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:ab4fa3794795c976d173123709dc408a9a615c49b1e4ef6a33dce4d7065bbe9a:1",
+            "expressionSha256": "38928b82e6f645e45c291bcebc515c042931902ac0e30c353705d73758a59389",
+            "kind": "unresolved",
+            "messageType": "ST_DISPOSED",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:b354c008006b6edc0fd69d3334c1b1bca566076f473ec4e2a217c0b7bbe02ea4:1",
+            "expressionSha256": "07871147d1f463ab3fdff293ab9238e1ca34b3265f281e98b8311214a62aecf6",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/modules/service/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:b781f93706994d2f91a171ddc8b6e1da5c145ff61d10495b52ce609a3e6c6b9f:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/modules/service/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:b7a334e5966b03d8676fcebf8d158f2f288612728a2cd1855202f9f173849897:1",
+            "expressionSha256": "13431a28d9cb1272a50935105f7cf4ad72a2e5ae3a7b6e5919faca5cc7df82b1",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-import-worker.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_RECEIVER_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:bfec69b94be90c6c0812b96d7f53bb170c8077ca0505b974722921a135b93348:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/shared/module-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:c7cf5a27813f3648e1eaafd018ae33cefb01fc04224223e6eacc0c5e3dfca53b:1",
+            "expressionSha256": "411a9f0d03aad3e1469a7def3c3ea993fa7a813ed0685b514d0aea07bf4f0403",
+            "kind": "unresolved",
+            "messageType": "",
+            "path": "www/etp-worker-client.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:c9cff5736dcbdebd8427df33cb9c0a63b6e5df74b4d7ad6d97ae7c65af6a78a1:1",
+            "expressionSha256": "fdbb4e11d52eb48a2edad289551b2fc5cc0495d3c6b414b223949b974c562c2b",
+            "kind": "unresolved",
+            "messageType": "ST_REPORT_BATCH",
+            "path": "www/modules/payroll/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:cecf3dc5708f37c58358893516dc3db0810e483a39f8d51f1078f53116a77cb9:1",
+            "expressionSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297",
+            "kind": "unresolved",
+            "messageType": "ST_OPEN_MODULE",
+            "path": "www/modules/payroll/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:d235e44f90424d064672b62add970a1410fb117953fc64e57b7b572869c88ebf:1",
+            "expressionSha256": "2d65a43bf4686ea7153518195d68c3f252b2d977ec7696c61b966135f3315c2a",
+            "kind": "unresolved",
+            "messageType": "ST_SHARE",
+            "path": "www/modules/qms/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:d235e44f90424d064672b62add970a1410fb117953fc64e57b7b572869c88ebf:2",
+            "expressionSha256": "b7cc19129c4a7078d5833113e08ec118576c5b91ab7e46334d48993b60294714",
+            "kind": "unresolved",
+            "messageType": "ST_SHARE",
+            "path": "www/modules/qms/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:d6939b4aa682abc4fe9af1e3ed2d6bed2e4be80804167bc3a7c35be7adb862ef:1",
+            "expressionSha256": "519770fc061d246cf24340e834125da3527bddec72eb9c2948d127f52b283786",
+            "kind": "unresolved",
+            "messageType": "ST_DISPOSE",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:db7eaa44a47e09c1e361b5db7a1e755a355f3762b10302a0a886d239a28ec856:1",
+            "expressionSha256": "711e6bbf4e5c9b3bb18215cf9050511abe255d2f3f53d5264dc4d2c8e34cfe03",
+            "kind": "unresolved",
+            "messageType": "ST_REPORT",
+            "path": "www/modules/qms/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:e98cd07780ced614299f01bf7bc387bacc730b35afd75dfa48dda71c55558e3b:1",
+            "expressionSha256": "a744eda0390aabd41488d0b2f80a601b1800c1d400d7cd331b96c91e4a21f5e0",
+            "kind": "unresolved",
+            "messageType": "ST_INIT",
+            "path": "www/shared/mah4-runtime.js",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          },
+          {
+            "contractId": "unresolved:f73f27cd3b152f07ec267d813c06a0ee4219688ec12fd2f8ecdf767d70ce7213:1",
+            "expressionSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe",
+            "kind": "unresolved",
+            "messageType": "ST_WA_LINK",
+            "path": "www/modules/payroll/index.html",
+            "receiverContracts": [],
+            "senderContracts": [],
+            "unresolvedCode": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED"
+          }
+        ],
+        "inventoryComplete": true,
+        "inventorySha256": "c6cf81aafdecfba95a7d3e51907c8468e5e0984b0bab37e34fc860e9297cdf28",
+        "messageTypes": 20,
+        "receiverSites": 32,
+        "senderSites": 39,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unresolvedContracts": 34
+      },
+      "notes": "The inventory remains useful evidence at unmeasured; it is not upgraded to pass without explicit complete discovery authority.",
+      "result": "pass",
+      "rule": "Maintain a bounded, exact and hash-bound ST message contract inventory; a bounded census is evidence but never proof of complete scanner coverage, so heuristic absence is unmeasured",
+      "severity": "INFO",
+      "title": "ST message sender and receiver inventory"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_ACCESS_CONTEXT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_AUDIT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_BACK_HOME"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_DISPOSED"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_ERROR"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_LANG"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_OPEN_MODULE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_PRINT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_READY"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_REPORT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_REPORT_BATCH"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_SET_DATE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_SHARE"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_UI_MODE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_WA"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_WA_LINK"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_WA_SENT"
+        }
+      ],
+      "id": "A7-02",
+      "mandatory": true,
+      "metric": {
+        "handledNeverSent": 5,
+        "sentNeverHandled": 12,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedContracts": 34
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "A definite unpaired shipped ST_* message is P1; heuristic absence of unpaired messages is unmeasured, never pass",
+      "severity": "P1",
+      "title": "Message lifecycle pairing"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MESSAGE_RECEIVER_TYPE_UNRESOLVED",
+          "expressionSha256": "13431a28d9cb1272a50935105f7cf4ad72a2e5ae3a7b6e5919faca5cc7df82b1",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED",
+          "expressionSha256": "b350060ebc8fae875dd8fc47ddd0914c8fd88f359e4c493bcd76aa0a39d9d24d",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED",
+          "expressionSha256": "bf490b6535b4848efc8979289f12e78155ccb1aa1f1a405603b0fee33112ef05",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED",
+          "expressionSha256": "c8b6d16becd49aa177f1b9f9b11c3361a0f4674d13095b5881db3102271a6e90",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_PAYLOAD_UNRESOLVED",
+          "expressionSha256": "d5d61275c4b039b29290f072203cca5ba3d4b14ec7cf24704037c9312900e56a",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_TYPE_UNRESOLVED",
+          "expressionSha256": "411a9f0d03aad3e1469a7def3c3ea993fa7a813ed0685b514d0aea07bf4f0403",
+          "line": 6,
+          "path": "www/etp-worker-client.js"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4837,
+          "messageType": "ST_OPEN_FEATURE",
+          "path": "www/index.html",
+          "payloadSha256": "ad779e790e909c86c96bcf2616e23d594422b1207baa1930c98bb31dfbb57c6f"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 3591,
+          "messageType": "ST_WA_LINK",
+          "path": "www/modules/dsr/index.html",
+          "payloadSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 2459,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/modules/expense/index.html",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 799,
+          "messageType": "ST_PRINT",
+          "path": "www/modules/expense/index.html",
+          "payloadSha256": "832d72c57429e675d6a7bdac667da98b663b3f742dafcad7a27888adde89cc5f"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 2606,
+          "messageType": "ST_WA_LINK",
+          "path": "www/modules/payroll/index.html",
+          "payloadSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 2682,
+          "messageType": "ST_SHARE",
+          "path": "www/modules/payroll/index.html",
+          "payloadSha256": "88b1ce9f4d38803bdff3eb4d31c75b59f18b1d870fbd31c4edf02514a1f4ae5f"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 2991,
+          "messageType": "ST_REPORT_BATCH",
+          "path": "www/modules/payroll/index.html",
+          "payloadSha256": "fdbb4e11d52eb48a2edad289551b2fc5cc0495d3c6b414b223949b974c562c2b"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4053,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/modules/payroll/index.html",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 1847,
+          "messageType": "ST_WA_LINK",
+          "path": "www/modules/qms/index.html",
+          "payloadSha256": "7ea60e3b2f0ca5d7f0cb65fc8c880f212a3f505e2e7f87864af11bdd5562abbe"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 1936,
+          "messageType": "ST_SHARE",
+          "path": "www/modules/qms/index.html",
+          "payloadSha256": "2d65a43bf4686ea7153518195d68c3f252b2d977ec7696c61b966135f3315c2a"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 1949,
+          "messageType": "ST_REPORT",
+          "path": "www/modules/qms/index.html",
+          "payloadSha256": "711e6bbf4e5c9b3bb18215cf9050511abe255d2f3f53d5264dc4d2c8e34cfe03"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 1952,
+          "messageType": "ST_SHARE",
+          "path": "www/modules/qms/index.html",
+          "payloadSha256": "b7cc19129c4a7078d5833113e08ec118576c5b91ab7e46334d48993b60294714"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 751,
+          "messageType": "ST_PRINT",
+          "path": "www/modules/qms/index.html",
+          "payloadSha256": "832d72c57429e675d6a7bdac667da98b663b3f742dafcad7a27888adde89cc5f"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4012,
+          "messageType": "ST_SHARE",
+          "path": "www/modules/service/index.html",
+          "payloadSha256": "cb3f97aad0cee60f08cb1c1f0b5eced49b7675d1ea327a024454de636aebcd2f"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4376,
+          "messageType": "ST_PRINT",
+          "path": "www/modules/service/index.html",
+          "payloadSha256": "140a410f9f0d71e5a4fa249783e80eed6777174927c3e9aca5961e568489095e"
+        },
+        {
+          "code": "MESSAGE_SENDER_TYPE_UNRESOLVED",
+          "expressionSha256": "07871147d1f463ab3fdff293ab9238e1ca34b3265f281e98b8311214a62aecf6",
+          "line": 4638,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4793,
+          "messageType": "ST_WA",
+          "path": "www/modules/service/index.html",
+          "payloadSha256": "9916edc192e65c3541ad4cfc5c5592126655dc61d08d3a51afccb474694dac51"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 4929,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/modules/service/index.html",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 3728,
+          "messageType": "ST_SHARE",
+          "path": "www/modules/stock/index.html",
+          "payloadSha256": "7e9c62cbd8ddd913df5fd343f0c5fbeba2b8e4185d5a9277f165c6a238a43bfd"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 3873,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/modules/stock/index.html",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 3775,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/modules/tax/index.html",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 21,
+          "messageType": "ST_ERROR",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "584da15ae4f1e686df22a509f47b506129b2e9dde32ca16889bf75c02f54fee4"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 22,
+          "messageType": "ST_AUDIT",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "82b3f4e8aa633db0ed222164c9b405e30f4ae1b009060eec937df3e6e12e4d0e"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 24,
+          "messageType": "ST_DISPOSED",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "38928b82e6f645e45c291bcebc515c042931902ac0e30c353705d73758a59389"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 24,
+          "messageType": "ST_READY",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "ff0f26c26453714f50cea198ce4056fda6ea281ef9a88aec592c9267b1224ddf"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 30,
+          "messageType": "ST_INIT",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "a744eda0390aabd41488d0b2f80a601b1800c1d400d7cd331b96c91e4a21f5e0"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 33,
+          "messageType": "ST_DISPOSE",
+          "path": "www/shared/mah4-runtime.js",
+          "payloadSha256": "519770fc061d246cf24340e834125da3527bddec72eb9c2948d127f52b283786"
+        },
+        {
+          "code": "MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED",
+          "line": 18,
+          "messageType": "ST_OPEN_MODULE",
+          "path": "www/shared/module-runtime.js",
+          "payloadSha256": "76d33011e5483be2519b7b4fe6564d4d0e5de1a5fcc77a28fca0b4a22e221297"
+        }
+      ],
+      "id": "A7-03",
+      "mandatory": true,
+      "metric": {
+        "definiteFieldTypeConflicts": 0,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedContracts": 34
+      },
+      "notes": "",
+      "result": "unmeasured",
+      "rule": "A field used with conflicting definite payload types for one message type is P1; heuristic absence of conflicts is unmeasured, never pass",
+      "severity": "P2",
+      "title": "Message payload shape compatibility"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MANIFEST_AND_PROTOCOL_VERSION_BOUND"
+        }
+      ],
+      "id": "A7-04",
+      "mandatory": true,
+      "metric": {
+        "bindingMismatches": 0,
+        "modules": 11,
+        "rejectsUnsupportedVersion": true,
+        "sharedAssets": 2
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Packaged shell, modules and shared runtimes must be byte/hash bound and reject unsupported protocol versions",
+      "severity": "INFO",
+      "title": "Packaged protocol and manifest binding"
+    },
+    {
+      "evidence": [
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.WA_CFG",
+          "line": 1392,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.WA_CFG",
+          "line": 1395,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarAdminPinCheck",
+          "line": 1715,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReauth",
+          "line": 1731,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarDsrCompletionPolicy",
+          "line": 2380,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarDsrCompletionPolicy",
+          "line": 2381,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 3807,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.shareText",
+          "line": 2363,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 2469,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReauth",
+          "line": 768,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarShare",
+          "line": 816,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.shareText",
+          "line": 816,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.shareText",
+          "line": 831,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 839,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReauth",
+          "line": 1837,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 1880,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 1906,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 2582,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 285,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 2992,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 3119,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 3263,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 3378,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.qmsArchiveLookup",
+          "line": 1095,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarLegal",
+          "line": 1099,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarLegal",
+          "line": 1099,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.WA_CFG",
+          "line": 1846,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 1949,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.localStorage",
+          "line": 745,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarQmsPolicy",
+          "line": 776,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarQmsPolicy",
+          "line": 777,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarQmsPersistence",
+          "line": 784,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarQmsPersistence",
+          "line": 785,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarEvidence",
+          "line": 2597,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarEvidence",
+          "line": 2597,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 281,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarServiceWorkboardPolicy",
+          "line": 2903,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarServiceWorkboardPolicy",
+          "line": 2904,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarServicePersistence",
+          "line": 2912,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarServicePersistence",
+          "line": 2913,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReauth",
+          "line": 2938,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReauth",
+          "line": 2939,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 3914,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.localStorage",
+          "line": 4159,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarLegal",
+          "line": 4167,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarLegal",
+          "line": 4167,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReport",
+          "line": 4587,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarReport",
+          "line": 4587,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 4939,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarAdminPinCheck",
+          "line": 1348,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarReauth",
+          "line": 1446,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarStockVariancePolicy",
+          "line": 1638,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarOwnerSession",
+          "line": 3883,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.__stTargetPending",
+          "line": 280,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.ensureJSZip",
+          "line": 3234,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.JSZip",
+          "line": 3235,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.ensureJSZip",
+          "line": 3238,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.JSZip",
+          "line": 3240,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarEvidence",
+          "line": 3513,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarEvidence",
+          "line": 3513,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "UNDECLARED_PARENT_CONTRACT",
+          "contract": "parent.SaagarStore",
+          "line": 6,
+          "path": "www/modules/tax/index.html"
+        }
+      ],
+      "id": "A7-05",
+      "mandatory": true,
+      "metric": {
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "undeclaredContractSites": 111
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "A definite undeclared parent/global contract use is P1; heuristic absence is unmeasured, never pass, because alias and computed access can evade the scan",
+      "severity": "P1",
+      "title": "Declared parent and global contracts"
+    }
+  ],
+  "metrics": {
+    "inventoryComplete": true,
+    "lifecycleComplete": false,
+    "messageTypes": 20,
+    "receiverSites": 32,
+    "senderSites": 39,
+    "unresolvedContracts": 34
+  },
+  "title": "Protocol stability"
+}
