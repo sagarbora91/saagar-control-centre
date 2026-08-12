@@ -70,6 +70,27 @@ commit-by-commit execution order is
   canonical-versus-transformed identity hash contract, rerun the focused and
   complete suites, freeze and push the exact target, then stop before P4.3.
 
+### Phase 4 progress and remaining-time estimate
+
+- P4.1, controlled baseline evidence, is complete and pushed. This means the
+  measurement foundation is closed; it does not convert the measured A9-02
+  failure into a pass.
+- Six micro-phases remain: P4.2 target freeze, P4.3 unapproved comparison,
+  P4.4 exact 107-capability approval closure, P4.5 localization/trusted UI,
+  P4.6 exact-APK device/performance acceptance, and P4.7 production/release
+  authority.
+- Practical remaining effort is approximately 65 to 75 percent of full Phase 4.
+  P4.2 through P4.4 should require about three to five engineering hours if the
+  controlled runs remain offline and stable.
+- Local agent-executable work is estimated at one to two working days. Full
+  Phase 4 closure is estimated at three to six working days because P4.5 still
+  has 1,226 genuine localization occurrences and P4.6/P4.7 require physical
+  device, fluent-language, UAT, legal, production ETP, signing and owner-release
+  decisions.
+- Immediate next action is P4.2 only: resolve the API-23 transformed
+  `build-identity.js` hash contract, rerun tests, freeze the target, commit and
+  push. Preserve a new crash checkpoint before beginning P4.3.
+
 ## Open acceptance gates
 
 - Final controlled baseline and target comparison.
