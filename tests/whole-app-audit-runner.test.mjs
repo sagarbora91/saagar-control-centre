@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { compareApks, normalizedApkFingerprint } from '../scripts/audit/compare-apks.mjs';
 import { parseGeneratedSigningConfiguration,
-  controlledGradleEnvironment, parseGradleJvmIdentity,
+  controlledGradleEnvironment, gradleDistributionClosureIdentity, parseGradleJvmIdentity,
   spawnSyncCommandTree } from '../scripts/audit/capture-build.mjs';
 import { hasRunnerControlledProvenance,
   prepareControlledGradleWrapper, runControlledProbes,
@@ -2062,6 +2062,30 @@ test('controlled Gradle bootstrap uses Windows roots without overriding explicit
     fs.writeFileSync(properties, 'networkTimeout=10000\nnetworkTimeout=20000\n');
     assert.throws(() => prepareControlledGradleWrapper(temporary),
       error => error && error.message === 'AUDIT_CONTROLLED_GRADLE_TIMEOUT_INVALID');
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+test('Gradle distribution identity excludes cache bookkeeping but detects executable drift', () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-audit-gradle-closure-'));
+  try {
+    const cache = path.join(temporary, 'wrapper', 'dists', 'gradle-8.2.1-all',
+      'd8pvvlun5bx6sdtwqhf8y9z4b');
+    const extracted = path.join(cache, 'gradle-8.2.1');
+    fs.mkdirSync(path.join(extracted, 'bin'), { recursive: true });
+    fs.writeFileSync(path.join(extracted, 'bin', 'gradle.bat'), 'immutable distribution\n');
+    fs.writeFileSync(path.join(cache, 'gradle-8.2.1-all.zip.lck'), '');
+    fs.writeFileSync(path.join(cache, 'gradle-8.2.1-all.zip.ok'), '');
+    const before = gradleDistributionClosureIdentity(temporary);
+    fs.writeFileSync(path.join(temporary, 'wrapper', 'dists', 'CACHEDIR.TAG'), 'normal cache metadata\n');
+    const afterBookkeeping = gradleDistributionClosureIdentity(temporary);
+    assert.deepEqual(afterBookkeeping, before);
+    fs.writeFileSync(path.join(extracted, 'bin', 'gradle.bat'), 'mutated distribution\n');
+    assert.notEqual(gradleDistributionClosureIdentity(temporary).sha256, before.sha256);
+    fs.writeFileSync(path.join(cache, 'unexpected.bin'), 'not approved');
+    assert.throws(() => gradleDistributionClosureIdentity(temporary),
+      /AUDIT_BUILD_GRADLE_DISTRIBUTION_UNAVAILABLE/);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
