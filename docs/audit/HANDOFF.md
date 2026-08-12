@@ -15,7 +15,7 @@ commit-by-commit execution order is
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `94f9999348c0e5b695c0043a2557ef28e6d21c86` |
+| Governed tooling | `84b2ecf72030c2c13cb404f1cd100913395707b0` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
@@ -38,20 +38,25 @@ commit-by-commit execution order is
 
 ### Crash-resume checkpoint
 
-- Main before this documentation update is `da3674c`. Product authority profiles
+- Latest pushed engineering checkpoint before this documentation update is
+  `0909639d6f561ead6b8e5176a415498fcc0b1605`. Product authority profiles
   are frozen at `3958dbc`; A6-03 is reduced to 1,226 occurrences but remains
   open.
-- Governed tooling `94f9999348c0e5b695c0043a2557ef28e6d21c86`
+- Governed tooling `84b2ecf72030c2c13cb404f1cd100913395707b0`
   passes all 69 self-tests. It proves Windows process-tree cleanup, Gradle daemon
   trust propagation, immutable distribution bytes, and installed dependency
-  sources while excluding only five exact Capacitor compiler-output directories.
-- The latest controlled-baseline attempt from the clean detached tooling
-  worktree reserved external output
-  `V:\Co work\Projects\Retail\audit-out\2026-08-12-115621-94f9999348c0`.
-  Its process ended without emitting that evidence directory, so it is not
-  evidence and P4.1 must be rerun when connectivity is stable. Earlier attempts
-  exposed normal Gradle cache-marker and exact Capacitor build-output writes that
-  are now classified without weakening source-byte checks.
+  sources, the exact generated-output policy at every live measurement, and
+  canonical fail-closed Capacitor release-signing structure.
+- Baseline `2026-08-12-161337-851d4145ac86` is diagnostic only: its 18 files and
+  manifest validated, but A9 remained unmeasured because the former signing
+  parser rejected canonical `minifyEnabled false` and ProGuard statements. That
+  defect is fixed and regression-tested at the governed tooling SHA above.
+- The replacement controlled baseline is active at
+  `V:\Co work\Projects\Retail\audit-out\2026-08-12-162821-84b2ecf72030`.
+  At this checkpoint, controlled build 1 was compiling; no final evidence bundle
+  or error had been emitted. On crash resume, inspect this exact run first. Accept
+  it only after validating all 18 files and requiring a real A9 two-build
+  comparison; otherwise discard it and rerun at the same tooling SHA.
 - Product authority profiles for the R003/R013 UI and both localization batches
   are regenerated at product commit `3958dbc`; their modular suite passes. The
   exact ledger is now 107 rows with comparison delta SHA-256

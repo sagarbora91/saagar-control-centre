@@ -22,8 +22,8 @@ validated first.
 
 ## P4.1 - Controlled baseline evidence
 
-**Entry:** pushed checkpoint `84ab869`; governed tooling
-`94f9999348c0e5b695c0043a2557ef28e6d21c86`; clean detached tooling worktree.
+**Entry:** pushed checkpoint `0909639`; governed tooling
+`84b2ecf72030c2c13cb404f1cd100913395707b0`; clean detached tooling worktree.
 
 **Work:** run one controlled baseline containing the full product suite, six
 mutations, and two independently prepared Android builds. A failed/interrupted
@@ -107,11 +107,26 @@ decision, and the production release identity is preserved and pushed.
 
 ## Current resume point
 
-- Completed/pushed checkpoint: `84ab869a3f8335839f188c7159d6f604b2b4650b`.
+- Completed/pushed engineering checkpoint:
+  `0909639d6f561ead6b8e5176a415498fcc0b1605`.
 - Current mini-phase: P4.1.
-- The attempted output
-  `V:\Co work\Projects\Retail\audit-out\2026-08-12-115621-94f9999348c0`
-  was not emitted and its process is no longer running. It is not evidence.
-- Safe next action: rerun P4.1 from the clean detached tooling worktree at
-  `94f9999348c0e5b695c0043a2557ef28e6d21c86` when connectivity is stable.
-
+- Governed tooling `84b2ecf72030c2c13cb404f1cd100913395707b0`
+  passes all 69 audit-tooling tests. It applies the exact five-directory
+  generated Capacitor output policy to every live dependency-closure
+  measurement and accepts only the canonical fail-closed Capacitor release
+  statements. Its bytes and ancestry are recorded in the pushed branch.
+- Diagnostic baseline `2026-08-12-161337-851d4145ac86` emitted a valid 18-file
+  bundle but left A9 unmeasured because its older parser rejected canonical
+  Capacitor release statements. It is diagnostic only and must not be committed
+  as the P4.1 baseline.
+- Active controlled baseline run:
+  `V:\Co work\Projects\Retail\audit-out\2026-08-12-162821-84b2ecf72030`.
+  It is running from the clean detached worktree at the governed tooling SHA.
+  At this checkpoint, controlled build 1 was compiling and no error or evidence
+  bundle had been emitted.
+- Crash resume rule: first determine whether that exact process/output finished.
+  If it completed, validate exactly 18 files, manifest identity, every declared
+  byte count and SHA-256, and require a real A9 two-build comparison before
+  committing it under `verification/audit`. If it stopped or A9 is unmeasured,
+  discard that output and rerun P4.1 at the same governed tooling SHA. Do not
+  start P4.2 until the validated baseline commit is pushed.
