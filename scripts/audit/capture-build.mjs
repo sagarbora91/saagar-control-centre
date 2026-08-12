@@ -32,7 +32,8 @@ const RELEASE_SIGNING_ENV = Object.freeze(['SAAGAR_KEYSTORE_FILE', 'SAAGAR_KEYST
 
 const MAX_SIGNING_SOURCE_BYTES = 256 * 1024;
 const MAX_SIGNING_NESTING = 128;
-const WINDOWS_ROOTS_GRADLE_OPTION = '-Djavax.net.ssl.trustStoreType=Windows-ROOT';
+const WINDOWS_ROOTS_JAVA_OPTIONS =
+  '-Djavax.net.ssl.trustStore=NUL -Djavax.net.ssl.trustStoreType=Windows-ROOT';
 
 /* ── Receipt v2 bounded closure identity (closure addendum §4) ───────────────
    A9 cannot pass from two equal APK hashes alone; both builds must prove they
@@ -469,7 +470,13 @@ export function controlledGradleEnvironment(environment, gradleUserHome, platfor
     .map(value => String(value || '')).join(' ');
   if (platform === 'win32' &&
       !/(?:^|\s)-Djavax\.net\.ssl\.trustStore(?:Type)?=\S+/.test(javaOptions)) {
-    env.GRADLE_OPTS = `${String(env.GRADLE_OPTS || '').trim()} ${WINDOWS_ROOTS_GRADLE_OPTION}`.trim();
+    /* GRADLE_OPTS configures the wrapper client but is not reliably inherited
+       by the Gradle daemon that resolves Android/Maven dependencies. Windows'
+       SunMSCAPI store also requires an explicit NUL store path. Apply both
+       properties to JAVA_TOOL_OPTIONS so the wrapper and daemon share the same
+       caller-independent trust root. */
+    env.JAVA_TOOL_OPTIONS =
+      `${String(env.JAVA_TOOL_OPTIONS || '').trim()} ${WINDOWS_ROOTS_JAVA_OPTIONS}`.trim();
   }
   return env;
 }
