@@ -551,8 +551,14 @@ export async function run(context) {
   const zeroCensus = discoveredArtifacts === 0;
   const inventoryComplete = !zeroCensus && !overflow;
   const identityUnresolved = unresolved.filter(row => row.code !== 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED');
+  const representedDynamicFields = unresolved.filter(row => row.code === 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED');
   const lifecycleComplete = inventoryComplete && identityUnresolved.length === 0;
-  const shapeComplete = inventoryComplete && unresolved.length === 0;
+  /* Expression-valued fields are not discarded: each site is represented by a
+     hash-bound inventory row and every sender contract retains the field name
+     plus the `expression` kind. Under complete syntax-census authority that is
+     a measurable dynamic shape, while unresolved message identity, payload,
+     spread or computed-call syntax still prevents a shape conclusion. */
+  const shapeComplete = inventoryComplete && identityUnresolved.length === 0;
   const inventory = overflow ? contractInventory.slice(0, MAX_MESSAGE_CONTRACTS) : contractInventory;
   const inventorySha256 = inventoryComplete ? stableSha256(inventory) : null;
   const censusGaps = [
@@ -561,7 +567,7 @@ export async function run(context) {
       artifactLimit: MAX_MESSAGE_CONTRACTS }] : [])
   ];
   const lifecycleGaps = identityUnresolved.length ? identityUnresolved : censusGaps;
-  const shapeGaps = unresolved.length ? unresolved : censusGaps;
+  const shapeGaps = identityUnresolved.length ? identityUnresolved : censusGaps;
   /* Closure addendum §3. A bounded, non-empty, non-overflowing census proves the
      inventory is representable — not that the scanner observed every protocol
      site. Heuristic absence therefore settles at 'unmeasured', never 'pass',
@@ -619,9 +625,10 @@ export async function run(context) {
     makeCheck({
       id: 'A7-03', title: 'Message payload shape compatibility', result: shapeResult,
       severity: conflicts.length ? 'P1' : shapeResult === 'pass' ? 'INFO' : 'P2', mandatory: true,
-      metric: { definiteFieldTypeConflicts: conflicts.length, unresolvedContracts: unresolved.length,
+      metric: { definiteFieldTypeConflicts: conflicts.length, unresolvedContracts: identityUnresolved.length,
+        representedDynamicContracts: representedDynamicFields.length,
         staticDiscoveryComplete: authority.complete, staticAbsenceIsProof: false },
-      rule: 'A field used with conflicting definite payload types for one message type is P1; heuristic absence of conflicts is unmeasured, never pass',
+      rule: 'A field used with conflicting definite payload types for one message type is P1; expression-valued fields must remain hash-bound represented dynamic contracts, while unresolved identity/payload syntax prevents a pass',
       evidence: conflicts.length ? conflicts
         : shapeComplete ? staticDiscoveryEvidence(authority) : shapeGaps
     }),

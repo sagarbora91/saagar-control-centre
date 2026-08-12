@@ -1758,7 +1758,7 @@ test('A7 excludes non-shell worker protocols and measures HTML shell handlers an
   assert.equal(JSON.stringify(inventory).includes('ETP_WORKER'), false);
 });
 
-test('A7 field-shape uncertainty does not hide a closed message lifecycle', async () => {
+test('A7 hash-binds expression fields as represented dynamic shapes under complete authority', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a7.mjs')).href);
   const source = [
     'parent.postMessage({ type: "ST_DYNAMIC_FIELD", value: makeValue() }, "*");',
@@ -1782,8 +1782,10 @@ test('A7 field-shape uncertainty does not hide a closed message lifecycle', asyn
   const shape = result.checks.find(item => item.id === 'A7-03');
   assert.equal(lifecycle.result, 'pass');
   assert.equal(lifecycle.metric.unresolvedContracts, 0);
-  assert.equal(shape.result, 'unmeasured');
-  assert.ok(shape.evidence.some(item => item.code === 'MESSAGE_SENDER_FIELD_TYPE_UNRESOLVED'));
+  assert.equal(shape.result, 'pass');
+  assert.equal(shape.metric.unresolvedContracts, 0);
+  assert.equal(shape.metric.representedDynamicContracts, 1);
+  assert.ok(shape.evidence.some(item => item.code === 'STATIC_DISCOVERY_COVERAGE_COMPLETE'));
 });
 
 test('A8 rejects computed sinks, fail-open methods, uncontrolled helpers and nested fake guards', async () => {
