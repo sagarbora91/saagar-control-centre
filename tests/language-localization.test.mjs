@@ -65,6 +65,17 @@ test('Marathi and Hindi dictionaries cover Settings, module names and common act
   assert.equal(api.translate('Historical view is read-only', 'mr'),
     'मागील नोंदींचे दृश्य फक्त वाचनासाठी आहे');
   assert.equal(api.translate('No employees selected.', 'hi'), 'कोई कर्मचारी नहीं चुना गया है।');
+  assert.equal(api.translate('Export blocked: device security status could not be verified.', 'mr'),
+    'निर्यात अवरोधित: उपकरणाची सुरक्षा स्थिती पडताळता आली नाही.');
+  assert.equal(api.translate('Report delivery blocked — approval token is no longer valid.', 'hi'),
+    'रिपोर्ट वितरण अवरुद्ध — मंज़ूरी टोकन अब मान्य नहीं है।');
+  assert.equal(api.translate('Recovery code:', 'mr'), 'पुनर्प्राप्ती कोड:');
+  assert.equal(api.translate('Planning closed because its secure runtime did not complete.', 'hi'),
+    'सुरक्षित रनटाइम पूरा न होने के कारण योजना मॉड्यूल बंद कर दिया गया।');
+  assert.equal(api.translate('Open Manager workspace', 'mr'), 'व्यवस्थापक कार्यक्षेत्र उघडा');
+  assert.equal(api.translate('Could not create PDF:', 'hi'), 'PDF नहीं बनाई जा सकी:');
+  assert.equal(api.translate('Privacy contact saved', 'mr'), 'गोपनीयता संपर्क जतन केला');
+  assert.equal(api.translate('Incident clock started:', 'hi'), 'घटना की समय-गणना शुरू की गई:');
   assert.equal(api.translate('Unmapped business value', 'mr'), 'Unmapped business value');
   const stats = api.stats();
   assert.ok(stats.mr >= 850, `expected >=850 Marathi UI phrases, got ${stats.mr}`);
