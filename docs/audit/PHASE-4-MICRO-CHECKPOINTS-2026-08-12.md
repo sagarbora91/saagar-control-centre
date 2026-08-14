@@ -107,25 +107,21 @@ decision, and the production release identity is preserved and pushed.
 
 ## Current resume point
 
-- P4.1 is complete. The exact 18-file baseline is preserved at
-  `verification/audit/2026-08-12-220812-bdce23f3e631` by evidence commit
-  `359d46718aab65d85b8466b6424c6a9a31381727`.
-- Baseline manifest SHA-256:
-  `98da4fb01548784878f29b9c423f8c935d63b042c011868796b017e331b1b5c5`.
-  Target/tooling identity is
-  `bdce23f3e631941a8ad9a288572b604d3fddf74e`; all 18 files, declared byte
-  counts, and artifact SHA-256 values validated before preservation.
-- Governed tooling passes all 72 audit-tooling tests. Both controlled builds
-  used independent detached worktrees, dependency installs, writable Gradle
-  homes and daemons. They used a full-closure-verified Gradle distribution and
-  hash-bound read-only dependency cache in offline mode.
-- A9 is measured: A9-01, A9-03, A9-04 and A9-05 pass. Both APKs are exactly
-  identical at 6,999,062 bytes with SHA-256
-  `af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387`.
-  A9-02 is a measured fail because API-23 preparation Babel-transforms the
-  packaged `build-identity.js`, so its packaged hash differs from the canonical
-  source hash even though all parsed identity fields agree.
-- Current mini-phase: P4.2. Safe next action: resolve the A9-02 generated
-  identity-hash contract without weakening identity-field checks, rerun focused
-  and complete suites, and only then freeze the final target. Do not begin P4.3
-  before the P4.2 target commit is pushed.
+- The current-tooling 18-file baseline is preserved at
+  `verification/audit/2026-08-14-182855-5a20fe5ebf53` by evidence commit
+  `b0657241496591f89256e87572fa2b23954aa3d1`. Manifest SHA-256 is
+  `08b9f55085f9d04c025610b5c969611b618838d8376ac204bbf7a45a492fcf82`.
+- Governed tooling is `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c` and passes
+  73/73 in its frozen tooling worktree. Its bytes are identical in the product
+  branch and it is an ancestor of the current product commit.
+- A9-02 code remediation is committed and pushed at
+  `fa1120c1a026d1525c2eb555a6aa8e29ce7e5b38`. A real seeded build proves the
+  canonical, generated and APK-contained `build-identity.js` SHA-256 values are
+  identical. The complete product suite passes 507/507.
+- The prefreeze diagnostic APK is 7,269,978 bytes with SHA-256
+  `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
+  API-23 install-replace/launch passes with zero fatal-log matches.
+- Current consolidated phase: 4A. It remains blocked on mandatory A6-03
+  (1,226 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
+  freeze the target or begin the comparison until these product/language gates
+  are genuinely closed.

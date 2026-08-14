@@ -1,6 +1,6 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-12 (Asia/Kolkata)
+**Updated:** 2026-08-14 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
 ## Phase 4 live checkpoint - 2026-08-12
@@ -15,7 +15,7 @@ commit-by-commit execution order is
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `bdce23f3e631941a8ad9a288572b604d3fddf74e` |
+| Governed tooling | `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
@@ -38,58 +38,47 @@ commit-by-commit execution order is
 
 ### Crash-resume checkpoint
 
-- The validated controlled baseline is preserved by evidence commit
-  `359d46718aab65d85b8466b6424c6a9a31381727`. Product authority profiles
-  are frozen at `3958dbc`; A6-03 is reduced to 1,226 occurrences but remains
-  open.
-- Governed tooling `bdce23f3e631941a8ad9a288572b604d3fddf74e`
-  passes all 72 self-tests and supports identity-bound offline Gradle builds.
-- P4.1 is complete at
-  `verification/audit/2026-08-12-220812-bdce23f3e631`, manifest SHA-256
-  `98da4fb01548784878f29b9c423f8c935d63b042c011868796b017e331b1b5c5`.
-  Exactly 18 files and every declared byte/hash identity validated.
-- A9 is measured. A9-01/03/04/05 pass; both controlled APKs are byte-identical
-  at 6,999,062 bytes, SHA-256
-  `af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387`.
-  A9-02 is a measured fail only on generated build-identity source hash: the
-  API-23 preparation step Babel-transforms the packaged JavaScript while its
-  package/version/minSdk values remain equal to canonical authority.
-- Product authority profiles for the R003/R013 UI and both localization batches
-  are regenerated at product commit `3958dbc`; their modular suite passes. The
-  exact ledger is now 107 rows with comparison delta SHA-256
+- The current-tooling controlled baseline is preserved at
+  `verification/audit/2026-08-14-182855-5a20fe5ebf53` by evidence commit
+  `b0657241496591f89256e87572fa2b23954aa3d1`. Its manifest SHA-256 is
+  `08b9f55085f9d04c025610b5c969611b618838d8376ac204bbf7a45a492fcf82`;
+  exactly 18 files and every declared byte/hash identity validated.
+- Governed tooling `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c`
+  passes all 73 self-tests from its frozen tooling lineage. It is an ancestor of
+  the product branch and every governed tooling byte is identical.
+- A9-02 engineering remediation is committed and pushed at
+  `fa1120c1a026d1525c2eb555a6aa8e29ce7e5b38`. API-23 preparation preserves the
+  already-compatible root `build-identity.js` byte-for-byte while continuing to
+  transform other JavaScript. Canonical, generated and APK-contained identity
+  SHA-256 values all equal
+  `7e3165b486c7ce0ee6e8f1c16acd00745acb5047aa7988e7df059abafc84b557`.
+  Formal A9-02 comparison evidence still requires the frozen target run.
+- The complete product suite passes 507/507, including 129 ETP and 86 modular
+  tests. The modular suite confirms the ledger remains exactly 107 rows with
+  comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
-  The previous 106-row capability approval must not be reused.
-- The complete current product suite passes 507/507 with 129 ETP and 86 modular
-  tests.
-- Final seeded engineering APK: 7,269,978 bytes, SHA-256
-  `B65AA97563BDD6217753FD95AB456624AD71FFACBDA2F120088C00E3F91CAD20`.
-  API-23 install-replace, data preservation, relaunch, foreground activity and
-  zero-fatal-log checks pass. Exact evidence is recorded at
-  `verification/audit/PHASE-4-API23-APK-ENGINEERING-2026-08-12.md`.
-- On resume: execute only P4.2 from the micro-checkpoint plan. Resolve A9-02's
-  canonical-versus-transformed identity hash contract, rerun the focused and
-  complete suites, freeze and push the exact target, then stop before P4.3.
+- Prefreeze seeded diagnostic APK: 7,269,978 bytes, SHA-256
+  `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
+  API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
+  and zero fatal-log matches. This is engineering evidence, not the final APK.
+- Consolidated Phase 4A is not complete. A6-03 still fails with 1,226 genuine
+  localization bypasses; A6-04/A6-05 remain unmeasured trusted-renderer gates.
+  These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
+  the final target or begin the comparison until the language/UI path is closed.
 
 ### Phase 4 progress and remaining-time estimate
 
-- P4.1, controlled baseline evidence, is complete and pushed. This means the
-  measurement foundation is closed; it does not convert the measured A9-02
-  failure into a pass.
-- Six micro-phases remain: P4.2 target freeze, P4.3 unapproved comparison,
-  P4.4 exact 107-capability approval closure, P4.5 localization/trusted UI,
-  P4.6 exact-APK device/performance acceptance, and P4.7 production/release
-  authority.
-- Practical remaining effort is approximately 65 to 75 percent of full Phase 4.
-  P4.2 through P4.4 should require about three to five engineering hours if the
-  controlled runs remain offline and stable.
-- Local agent-executable work is estimated at one to two working days. Full
-  Phase 4 closure is estimated at three to six working days because P4.5 still
-  has 1,226 genuine localization occurrences and P4.6/P4.7 require physical
-  device, fluent-language, UAT, legal, production ETP, signing and owner-release
-  decisions.
-- Immediate next action is P4.2 only: resolve the API-23 transformed
-  `build-identity.js` hash contract, rerun tests, freeze the target, commit and
-  push. Preserve a new crash checkpoint before beginning P4.3.
+- Consolidated Phase 4A has completed tooling/baseline integration, A9-02 code
+  remediation, complete product verification, diagnostic APK build and API-23
+  smoke. The remaining 4A work is A6-03 localization plus the trusted A6-04/05
+  capture and fluent review.
+- Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
+  capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
+  physical/performance, production ETP, UAT, legal, signing and release authority.
+- Immediate next action: obtain genuine Marathi/Hindi translations and fluent
+  review capacity, localize in small tested commits, then capture the 72-cell
+  rendered matrix. No English placeholder mappings or analyser exclusions are
+  acceptable.
 
 ## Open acceptance gates
 
