@@ -1,4 +1,16 @@
-# P4.2 — Close C-04 storage equivalence — CLOSURE RECORD
+# Engineering measurement — C-04 storage equivalence
+
+> **NUMBERING CORRECTION (2026-08-12).** This record was originally filed under
+> the P4.x numbering in `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`.
+> That numbering is **superseded**. The authority is
+> `docs/audit/PHASE-4-MICRO-CHECKPOINTS-2026-08-12.md`, where P4.2 is *Final
+> target freeze*, P4.3 *Unapproved controlled comparison*, P4.4 *Capability
+> approval closure* and P4.5 *Localization and trusted UI closure*.
+>
+> This document is **engineering measurement only**. It closes no micro-checkpoint
+> and must not be read as one. The current mini-phase is **P4.2 — final target
+> freeze**, blocked on the A9-02 generated identity-hash contract.
+
 
 **Date:** 2026-08-12 (Asia/Kolkata)
 **Branch:** `agent/modular-phase1-shared-spine-v2`
