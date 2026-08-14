@@ -65,6 +65,17 @@ commit-by-commit execution order is
   localization bypasses; A6-04/A6-05 remain unmeasured trusted-renderer gates.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
+- On 2026-08-14 Sagar (`sagarbora91`) accepted the fluent Marathi/Hindi reviewer
+  role for Phase 4A and authorized creation of a dedicated local audit-evidence
+  signing key. Only the public verification key may be committed; the private
+  key must remain outside the repository. No key has been generated and no
+  translation row has yet been reviewed or imported at this checkpoint.
+- Trust-contract inspection confirms the governed policy is still deliberately
+  closed at `trustedSignerCount: 0`; `externalEvidenceAuthorized()` always
+  returns false, and the audit self-test requires self-authored rendered evidence
+  to remain unmeasured. The next tooling checkpoint must provision real signature
+  verification, add adversarial behavioral tests, freeze new governed tooling,
+  and rebuild its controlled baseline before A6-04/A6-05 capture.
 
 ### Phase 4 progress and remaining-time estimate
 
@@ -76,8 +87,11 @@ commit-by-commit execution order is
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
 - Immediate next action: obtain genuine Marathi/Hindi translations and fluent
-  review capacity, localize in small tested commits, then capture the 72-cell
-  rendered matrix. No English placeholder mappings or analyser exclusions are
+  review in small, explicitly approved batches. In parallel, provision the
+  owner-authorized signing identity outside Git, commit only its public trust
+  root plus verification tests, and rebuild the governed baseline. Then capture
+  the signed 72-cell rendered matrix. No unreviewed wording may be attributed to
+  Sagar, and no English placeholder mappings or analyser exclusions are
   acceptable.
 
 ## Open acceptance gates

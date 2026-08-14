@@ -125,3 +125,18 @@ decision, and the production release identity is preserved and pushed.
   (1,226 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
+- Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
+  the fluent Marathi/Hindi reviewer and authorizes a dedicated local
+  audit-evidence signing key, with only its public key committed and its private
+  key kept outside the repository.
+- Stop identity for this checkpoint: no signing key has been generated, no
+  worklist row has been reviewed/imported, and the governed trust policy remains
+  closed with `trustedSignerCount: 0`. Internet/GitHub fetch is operational and
+  the shared branch was unchanged at `93da410` before this documentation-only
+  checkpoint.
+- Exact resume order: (1) generate the signing key outside the repository;
+  (2) implement public-key signature verification and adversarial trust tests;
+  (3) commit/push the tooling-only checkpoint; (4) rebuild and preserve a new
+  controlled baseline; (5) prepare small translation batches without claiming
+  reviewer approval; (6) import only batches Sagar explicitly reviews; and
+  (7) capture and validate the signed 72-cell A6-04/A6-05 matrix.
