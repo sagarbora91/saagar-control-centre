@@ -1349,6 +1349,72 @@ test('A4 discovers bracket, object, bound-method and destructured localStorage a
   assert.equal(check.metric.inventory.some(row => Object.hasOwn(row, 'line') || Object.hasOwn(row, 'path')), false);
 });
 
+test('A4 key normalization survives multi-declarators, comments and derived integration feeds', async () => {
+  /* P4.2 regression fixtures. The three normalizations below are what took A4-02
+     from 59 unclassified artifacts to zero and C-04 from 61 deltas to zero. None
+     of them had a test, so any of them could have been reverted silently and the
+     storage contract would have started drifting again on the next refactor. */
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a4.mjs')).href);
+  const evaluate = async runtime => {
+    const sources = new Map([
+      ['www/index.html', 'function appControlKeys(){ return ["saagar_master_customers"]; }'],
+      ['www/shared/storage-probe.js', runtime]
+    ]);
+    const files = [...sources.keys()].sort();
+    const result = await module.run({ files, productFiles: files, modules: [],
+      exists: file => sources.has(file), read: file => sources.get(file) || '' });
+    const census = result.checks.find(item => item.id === 'A4-01');
+    const classification = result.checks.find(item => item.id === 'A4-02');
+    return { census, classification,
+      ids: census.metric.inventory.map(row => row.artifactId),
+      unclassified: classification.metric.unclassifiedArtifacts };
+  };
+
+  // 1. A key declared as a LATER declarator in one statement must still resolve.
+  //    Reading only the first declarator turned saagar_master_customers into a
+  //    computed artifact, which is what made it look "removed" after the migration.
+  const multi = await evaluate(
+    "var MK_BRANDS='saagar_master_brands', MK_CUSTOMERS='saagar_master_customers';\n" +
+    'localStorage.getItem(MK_CUSTOMERS);');
+  assert.ok(multi.ids.includes('local-storage:saagar_master_customers'),
+    'a later declarator in a multi-declarator statement must resolve to its literal key');
+  assert.ok(!multi.ids.some(id => /computed-/.test(id)),
+    'a resolvable key must never be recorded as a computed identity');
+  assert.equal(multi.unclassified, 0);
+
+  // 2. Commented-out storage access must not enter the census at all.
+  const commented = await evaluate([
+    "var MK_CUSTOMERS='saagar_master_customers';",
+    '// localStorage.getItem("saagar_ghost_line_comment");',
+    '/* localStorage.getItem("saagar_ghost_block_comment"); */',
+    '<!-- localStorage.getItem("saagar_ghost_html_comment"); -->',
+    'localStorage.getItem(MK_CUSTOMERS);'
+  ].join('\n'));
+  for (const ghost of ['saagar_ghost_line_comment', 'saagar_ghost_block_comment', 'saagar_ghost_html_comment']) {
+    assert.ok(!commented.ids.includes(`local-storage:${ghost}`), `${ghost} is commented out and must not be inventoried`);
+  }
+  assert.equal(commented.unclassified, 0);
+
+  // 3. Derived integration feeds are re-derivable, not device-local or portable:
+  //    they are rebuilt from their owning module's data, so restoring them would
+  //    resurrect stale cross-module state.
+  const feeds = await evaluate([
+    "var MK_CUSTOMERS='saagar_master_customers';",
+    "localStorage.setItem('saagar_bus', '[]');",
+    "localStorage.setItem('saagar_cro_audit_feed', '[]');",
+    "localStorage.setItem('saagar_payroll_attendance_feed', '[]');",
+    "localStorage.setItem('saagar_tax_payable', '[]');",
+    'localStorage.getItem(MK_CUSTOMERS);'
+  ].join('\n'));
+  assert.equal(feeds.unclassified, 0);
+  for (const feed of ['saagar_bus', 'saagar_cro_audit_feed', 'saagar_payroll_attendance_feed', 'saagar_tax_payable']) {
+    const row = feeds.census.metric.inventory.find(item => item.artifactId === `local-storage:${feed}`);
+    assert.ok(row, `${feed} must be inventoried`);
+    assert.equal(row.classification, 're-derivable-excluded', `${feed} must be re-derivable-excluded`);
+    assert.equal(row.owner, 'integration-bridge');
+  }
+});
+
 test('A4 inventories computed storage identities while leaving an empty census unmeasured', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a4.mjs')).href);
   const index = 'function appControlKeys(){ return ["alpha"]; }';
