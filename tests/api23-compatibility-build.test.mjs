@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
+import { transformJavaScriptAsset } from '../scripts/prepare-api23-assets.mjs';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const pipeline = fs.readFileSync(new URL('../scripts/prepare-api23-assets.mjs', import.meta.url), 'utf8');
@@ -33,6 +34,30 @@ test('pipeline covers scripts, legacy CSS, bridge, runtime shims and generated p
   for (const marker of ['@babel/preset-env', "chrome: '44'", 'transformHtml', 'resolveCssVariables', 'collectCssVariables', "ext === '.css'", 'native-bridge.js', 'Object.assign', 'NodeList.prototype.forEach', 'manifest.modules', 'manifest.sharedAssets', "createHash('sha256')"]) {
     assert.ok(pipeline.includes(marker), `missing ${marker}`);
   }
+});
+
+test('API-23 preparation preserves only the exact canonical build identity bytes', () => {
+  const identity = fs.readFileSync(new URL('../www/build-identity.js', import.meta.url), 'utf8');
+  const modern = 'const build = () => ({ value: 1 });';
+
+  assert.equal(
+    transformJavaScriptAsset(identity, 'build-identity.js', 'build-identity.js'),
+    identity,
+    'canonical identity bytes must not be rewritten'
+  );
+  assert.equal(
+    transformJavaScriptAsset(identity, 'build-identity.js', 'build-identity.js'),
+    transformJavaScriptAsset(identity, 'build-identity.js', 'build-identity.js'),
+    'identity preservation must be deterministic'
+  );
+
+  const transformed = transformJavaScriptAsset(modern, 'feature.js', 'feature.js');
+  assert.notEqual(transformed, modern);
+  assert.doesNotMatch(transformed, /=>/);
+  assert.doesNotMatch(transformed, /\bconst\b/);
+
+  const nested = transformJavaScriptAsset(modern, 'nested/build-identity.js', 'nested/build-identity.js');
+  assert.notEqual(nested, modern, 'the authority exception must not match a nested filename');
 });
 
 test('API-23 storage uses native-first migration and never invokes wasm when unsupported', () => {

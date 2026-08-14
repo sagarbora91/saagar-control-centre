@@ -77,6 +77,16 @@ function babel(source, filename) {
   }).code;
 }
 
+export function transformJavaScriptAsset(source, filename, relativePath) {
+  // This file is the canonical package/version authority consumed by the audit
+  // and release tooling. It already uses Chrome-44-compatible syntax, so changing
+  // its bytes adds no compatibility value and breaks the generated identity hash
+  // contract. Scope the exception to the exact root asset; similarly named nested
+  // files remain ordinary application JavaScript and are still down-levelled.
+  if (relativePath === 'build-identity.js') return source;
+  return babel(source, filename);
+}
+
 export function transformHtml(source, filename, cssVariables) {
   let count = 0;
   const transformed = source.replace(/<!--[\s\S]*?-->|<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi, (whole, attrs, body) => {
@@ -121,9 +131,20 @@ export function prepareApi23Assets() {
   for (const file of generatedFiles) {
     if (deferred.has(file)) continue;
     const ext = path.extname(file).toLowerCase();
-    if (ext === '.js') fs.writeFileSync(file, babel(fs.readFileSync(file, 'utf8'), file), 'utf8');
+    const relativePath = path.relative(publicDir, file).split(path.sep).join('/');
+    if (ext === '.js') fs.writeFileSync(
+      file,
+      transformJavaScriptAsset(fs.readFileSync(file, 'utf8'), file, relativePath),
+      'utf8'
+    );
     if (ext === '.css') fs.writeFileSync(file, resolveCssVariables(fs.readFileSync(file, 'utf8'), cssVariables), 'utf8');
     if (ext === '.html') fs.writeFileSync(file, transformHtml(fs.readFileSync(file, 'utf8'), file, cssVariables), 'utf8');
+  }
+
+  const canonicalIdentity = fs.readFileSync(path.join(sourceDir, 'build-identity.js'));
+  const generatedIdentity = fs.readFileSync(path.join(publicDir, 'build-identity.js'));
+  if (!generatedIdentity.equals(canonicalIdentity)) {
+    throw new Error('Generated Android build identity must remain byte-identical to canonical authority');
   }
 
   let generatedManifest = fs.readFileSync(manifestPath, 'utf8');
