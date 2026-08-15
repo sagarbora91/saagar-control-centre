@@ -72,6 +72,7 @@ function tokenDefinitions(context) {
 
 function unescapeLiteral(value) {
   return String(value || '')
+    .replace(/\0/g, '>')
     .replace(/\\n|\\r|\\t/g, ' ')
     .replace(/\\u\{([0-9a-f]{1,6})\}|\\u([0-9a-f]{4})/gi, (_, wide, fixed) =>
       String.fromCodePoint(Number.parseInt(wide || fixed, 16)))
@@ -136,6 +137,25 @@ function addCandidate(rows, dictionary, file, source, offset, kind, raw, blocked
   rows.push({ path: file, line: lineNumber(source, offset), kind,
     code: blocked ? 'STATIC_LOCALIZATION_EXPLICIT_BYPASS' : 'STATIC_LOCALIZATION_BYPASS',
     textFingerprint: sha256(value).slice(0, 20) });
+}
+
+function browserRenderedLineSegments(value) {
+  const source = String(value || '');
+  const rows = [];
+  const separator = /\\r\\n|\\[nr]|\r\n|[\r\n]|&#(?:0*10|0*13);|&#x(?:0*a|0*d);/gi;
+  let cursor = 0;
+  for (const match of source.matchAll(separator)) {
+    rows.push({ offset: cursor, value: source.slice(cursor, match.index) });
+    cursor = match.index + match[0].length;
+  }
+  rows.push({ offset: cursor, value: source.slice(cursor) });
+  return rows;
+}
+
+function addAttributeCandidates(rows, dictionary, file, source, offset, kind, raw, blocked = false) {
+  for (const segment of browserRenderedLineSegments(raw)) {
+    addCandidate(rows, dictionary, file, source, offset + segment.offset, kind, segment.value, blocked);
+  }
 }
 
 function visibleControlTextSegments(value) {
@@ -256,6 +276,25 @@ function localizationMarkupView(source) {
     const view = javascriptLiteralView(body);
     for (let index = 0; index < view.length; index += 1) output[start + index] = view[index];
   }
+  /* Keep regex-based control discovery position-preserving, but prevent a
+     greater-than sign inside a quoted attribute (notably an inline arrow
+     handler) from masquerading as the end of the start tag. NUL cannot occur
+     in conforming HTML source and is restored before candidate normalization. */
+  let inTag = false, quote = '';
+  for (let index = 0; index < output.length; index += 1) {
+    const character = output[index];
+    if (!inTag) {
+      if (character === '<' && /[!/?A-Za-z]/.test(output[index + 1] || '')) inTag = true;
+      continue;
+    }
+    if (quote) {
+      if (character === quote) quote = '';
+      else if (character === '>') output[index] = '\0';
+      continue;
+    }
+    if (character === '"' || character === "'") quote = character;
+    else if (character === '>') inTag = false;
+  }
   return output.join('');
 }
 
@@ -282,7 +321,8 @@ function localizationBypasses(context, dictionary, javascriptFiles) {
       }
     }
     for (const match of markup.matchAll(/<[^>]+\b(placeholder|aria-label|title)\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
-      addCandidate(rows, dictionary, file, source, match.index, `attribute:${match[1].toLowerCase()}`, match[3], /\bdata-no-i18n\b/i.test(match[0]));
+      addAttributeCandidates(rows, dictionary, file, source, match.index, `attribute:${match[1].toLowerCase()}`,
+        match[3], /\bdata-no-i18n\b/i.test(match[0]));
     }
     for (const match of markup.matchAll(/<input\b(?=[^>]*\btype\s*=\s*(['"])(?:button|submit|reset)\1)[^>]*\bvalue\s*=\s*(['"])([^'"]+)\2[^>]*>/gi)) {
       addCandidate(rows, dictionary, file, source, match.index, 'attribute:value', match[3], /\bdata-no-i18n\b/i.test(match[0]));

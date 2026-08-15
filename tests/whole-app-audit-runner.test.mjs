@@ -595,6 +595,54 @@ test('A6-03 classifies visible nested controls and ignores markup decoys in Java
   assert.equal(JSON.stringify(check).includes('escapeHtml'), false);
 });
 
+test('A6-03 evaluates browser-rendered newline-separated attribute phrases independently', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a6.mjs')).href);
+  const unknown = 'Still untranslated third line';
+  const sources = new Map([
+    ['www/index.html', [
+      '<textarea placeholder="Known first line&#10;Known second line&#xA;Still untranslated third line"></textarea>',
+      '<textarea title="Known first line\\nKnown second line"></textarea>'
+    ].join('\n')],
+    ['www/app-i18n.js', [
+      'const entries = [',
+      '["Known first line", "ज्ञात", "ज्ञात"],',
+      '["Known second line", "ज्ञात", "ज्ञात"],',
+      '["Known first line Known second line Still untranslated third line", "ज्ञात", "ज्ञात"]',
+      '];'
+    ].join('\n')]
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], options: {}, productFingerprint: { entries: [] },
+    read: file => sources.get(file), exists: file => sources.has(file)
+  });
+  const check = result.checks.find(item => item.id === 'A6-03');
+  assert.equal(check.result, 'fail');
+  assert.equal(check.metric.highConfidenceBypasses, 1);
+  assert.equal(check.evidence[0].kind, 'attribute:placeholder');
+  assert.equal(check.evidence[0].textFingerprint, sha256(unknown).slice(0, 20));
+});
+
+test('A6-03 keeps quoted arrow handlers inside the start tag boundary', async () => {
+  const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a6.mjs')).href);
+  const visible = 'Actual untranslated arrow-handler action';
+  const sources = new Map([
+    ['www/index.html', `<button onclick="records.filter(row=>row.ready).forEach(row=>select(row))"><span>${visible}</span></button>`],
+    ['www/app-i18n.js', 'const entries = [["Known label", "ज्ञात", "ज्ञात"]];']
+  ]);
+  const files = [...sources.keys()].sort();
+  const result = await module.run({
+    files, productFiles: files, modules: [], options: {}, productFingerprint: { entries: [] },
+    read: file => sources.get(file), exists: file => sources.has(file)
+  });
+  const check = result.checks.find(item => item.id === 'A6-03');
+  assert.equal(check.result, 'fail');
+  assert.equal(check.metric.highConfidenceBypasses, 1);
+  assert.equal(check.evidence[0].kind, 'element:button');
+  assert.equal(check.evidence[0].textFingerprint, sha256(visible).slice(0, 20));
+  assert.equal(JSON.stringify(check).includes('records.filter'), false);
+});
+
 test('A11-03 rejects per-suite skips and cannot pass aggregate-only evidence', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a11.mjs')).href);
   const output = [tapBlock('test:c1', 12), tapBlock('test:mobile', 6), tapBlock('test:settings', 8),
