@@ -1,0 +1,173 @@
+{
+  "auditId": "A11",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 94,
+          "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md",
+          "line": 49,
+          "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 21,
+          "path": "scripts/audit/**/*.mjs"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 24,
+          "path": "scripts/audit/final-*.patch"
+        }
+      ],
+      "id": "A11-01",
+      "mandatory": true,
+      "metric": {
+        "authorityDocuments": 7,
+        "citedRepositoryPaths": 50,
+        "missingAuthorityDocuments": 0,
+        "unresolvedPaths": 4
+      },
+      "notes": "External absolute paths and template placeholders are not treated as repository-path claims; explicitly historical sections are excluded.",
+      "result": "fail",
+      "rule": "Every repository path cited by a current-authority scope must resolve in the audited snapshot.",
+      "severity": "P1",
+      "title": "Current-authority cited paths resolve"
+    },
+    {
+      "evidence": [],
+      "id": "A11-02",
+      "mandatory": true,
+      "metric": {
+        "citedCommitOccurrences": 25,
+        "missingCommits": 0,
+        "uniqueCommits": 9
+      },
+      "notes": "SHA-256 evidence hashes and explicitly historical tail sections are not interpreted as Git commit claims.",
+      "result": "pass",
+      "rule": "Every Git commit SHA cited by current-authority scope must resolve as a commit in the repository.",
+      "severity": "P1",
+      "title": "Current-authority cited commits exist"
+    },
+    {
+      "evidence": [],
+      "id": "A11-03",
+      "mandatory": true,
+      "metric": {
+        "claims": 5,
+        "comparableClaims": 4,
+        "excludedExternalClaims": 1,
+        "measuredCancelled": 0,
+        "measuredCounts": {
+          "c1": 12,
+          "completeOffline": 492,
+          "etp": 128,
+          "language": 4,
+          "mainOffline": 262,
+          "mobile": 6,
+          "modular": 72,
+          "settings": 8
+        },
+        "measuredFailures": 0,
+        "measuredPassed": 492,
+        "measuredSkipped": 0,
+        "measuredSuites": 7,
+        "measuredTodo": 0,
+        "measuredTotal": 492,
+        "mismatches": 0,
+        "supportedClaims": 4,
+        "unsupportedClaims": 0
+      },
+      "notes": "Explicit external/focused-suite claims are recorded but excluded from the seven-suite offline comparison.",
+      "result": "pass",
+      "rule": "Current-authority test-count claims must equal the identity-bound measured suite counts for this exact target, with zero failures, cancellations, skips or TODO tests.",
+      "severity": "P1",
+      "title": "Current-authority test counts match measured counts"
+    },
+    {
+      "evidence": [],
+      "id": "A11-04",
+      "mandatory": true,
+      "metric": {
+        "declarations": 3,
+        "mismatches": 0,
+        "requestedProductBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+        "runnerProductBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "The audit program, current handoff, runner constant and requested baseline must declare the exact same 40-character product anchor.",
+      "severity": "P1",
+      "title": "Controlling product baseline identity"
+    },
+    {
+      "evidence": [
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 106,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 17,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 11,
+          "path": "docs/audit/AUDIT-PROGRAM-v1.md",
+          "value": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 19,
+          "path": "docs/audit/HANDOFF.md",
+          "value": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 74,
+          "path": "docs/audit/HANDOFF.md",
+          "value": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+        }
+      ],
+      "id": "A11-05",
+      "mandatory": true,
+      "metric": {
+        "claimFamilies": 5,
+        "claimSetSha256": "872886fc80f559fb4a624542297e040f0f551596a3b0382557813d96ec555371",
+        "conflictingClaims": 5,
+        "conflictingFamilies": 1,
+        "typedClaims": 11
+      },
+      "notes": "Starting SHAs, superseded decision-register sections, prior APK evidence and explicitly historical sections are excluded from present-state comparison.",
+      "result": "fail",
+      "rule": "Typed present-state claims among current-authority scopes must not assign different values to the same fact.",
+      "severity": "P1",
+      "title": "Current-authority contradictions"
+    }
+  ],
+  "metrics": {
+    "authorityDocuments": 7,
+    "contradictionFamilies": 1,
+    "missingCommits": 0,
+    "testCountMismatches": 0,
+    "unresolvedPaths": 4
+  },
+  "title": "Documentation currency"
+}
