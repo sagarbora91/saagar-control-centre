@@ -4,11 +4,11 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7367,
-    "mah3ProfileSha256": "0e49eadf1ac926a1300d1ceabfb38aa2f5a4fb4d3bc24cc8bbf2b73a6853a800",
-    "mah3TreeSha256": "fb02bdcd5215f0c71d338d3d89e7b1ebdc292f44b3080a30de74a53a6be1399c",
-    "currentWwwTreeSha256": "fb02bdcd5215f0c71d338d3d89e7b1ebdc292f44b3080a30de74a53a6be1399c",
+    "mah3ProfileSha256": "f15f35a1a10d21753dcb5d7c80c2fd5085e47aced639a5979f1780f0ede872b0",
+    "mah3TreeSha256": "1700b7829fe1072c118d3b68067b43e47ba71889361924c282b25e3572408919",
+    "currentWwwTreeSha256": "1700b7829fe1072c118d3b68067b43e47ba71889361924c282b25e3572408919",
     "currentWwwFileCount": 100,
-    "currentWwwTotalBytes": 7792189,
+    "currentWwwTotalBytes": 7970226,
     "shell": {
       "path": "www/index.html",
       "bytes": 576043,
@@ -854,8 +854,8 @@
   "directEntryMessageAssets": [
     {
       "path": "www/app-i18n.js",
-      "bytes": 155006,
-      "sha256": "14db7eea2c4459ecc33a7d90407bdf7ae14b05d3812486250b9358792c96c2ac",
+      "bytes": 333043,
+      "sha256": "352e522468996797917747656430f290d6f64133962ab15de9d1e3997ea8aa4a",
       "loadedBy": [
         "cro_audit",
         "dsr",
@@ -1027,8 +1027,8 @@
     "directLifecycleAssets": [
       {
         "path": "www/app-i18n.js",
-        "bytes": 155006,
-        "sha256": "14db7eea2c4459ecc33a7d90407bdf7ae14b05d3812486250b9358792c96c2ac",
+        "bytes": 333043,
+        "sha256": "352e522468996797917747656430f290d6f64133962ab15de9d1e3997ea8aa4a",
         "loadedBy": [
           "cro_audit",
           "dsr",

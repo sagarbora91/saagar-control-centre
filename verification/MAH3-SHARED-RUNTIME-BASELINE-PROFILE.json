@@ -16,8 +16,8 @@
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
     "fileCount": 100,
-    "totalBytes": 7792189,
-    "treeSha256": "fb02bdcd5215f0c71d338d3d89e7b1ebdc292f44b3080a30de74a53a6be1399c",
+    "totalBytes": 7970226,
+    "treeSha256": "1700b7829fe1072c118d3b68067b43e47ba71889361924c282b25e3572408919",
     "criticalFiles": [
       {
         "path": "www/index.html",
@@ -31,8 +31,8 @@
       },
       {
         "path": "www/app-i18n.js",
-        "bytes": 155006,
-        "sha256": "14db7eea2c4459ecc33a7d90407bdf7ae14b05d3812486250b9358792c96c2ac"
+        "bytes": 333043,
+        "sha256": "352e522468996797917747656430f290d6f64133962ab15de9d1e3997ea8aa4a"
       },
       {
         "path": "www/mobile-layout.css",
