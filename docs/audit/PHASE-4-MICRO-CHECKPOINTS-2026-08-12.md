@@ -121,8 +121,9 @@ decision, and the production release identity is preserved and pushed.
 - The prefreeze diagnostic APK is 7,269,978 bytes with SHA-256
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
-- Current consolidated phase: 4A. It remains blocked on mandatory A6-03
-  (854 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
+- Current consolidated phase: 4A. A6-03 passes with zero bypasses after the
+  approved 854-row import. It remains blocked on trusted A6-04/A6-05 rendered
+  evidence and fluent visual review. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
@@ -142,18 +143,22 @@ decision, and the production release identity is preserved and pushed.
   A6-03 from 969 to 862 and increased the dictionary from 1,050 to 1,150. Its
   approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`.
-- Batch 04 is superseded by one consolidated final review package. The primary
-  CSV has 854 rows, SHA-256
+- Batch 04 is superseded by one consolidated final review package. Sagar
+  approved its 854-row primary CSV, pre-review SHA-256
   `06215985a5001b71c06358cda1d1ef02c10e51df9534433fd5171f024bdfdcf7`;
-  all decisions remain pending and all reviewers blank. Its derived 100-row
+  it was imported at `2f69a9a0d32d989b0c9be88168bd2d38eda20851`, and
+  its post-import SHA-256 is
+  `7bf300588c9f084739d481bfb65d2d60c32823f6e6121fe65b64401e7116a277`.
+  Its derived 100-row
   attention CSV has SHA-256
   `afe375f8dd30f0540feeca9edcdc5506fab025b6c80dc16c371a5ef952d24011`.
   The exact pre-import product checkpoint is `832c9b612af4739908ad04c4521e9999bd86e5e6`.
-- A corrected-tooling baseline run is in progress. Accept it only after an exit
-  code of zero and exact validation of all 18 manifest-bound files; the older
-  `18dcb9e5...` baseline cannot govern the final comparison.
-- Exact resume order: (1) obtain Sagar's explicit exact-CSV approval for all
-  854 rows; (2) import, rerun A6-03, regenerate governed profiles and pass the
-  product suites; (3) capture, sign, commit and validate the 72-cell
-  A6-04/A6-05 rendered matrix; and (4) obtain Sagar's separate identity-bound
-  fluent visual approval.
+- The corrected-tooling baseline is preserved by evidence commit
+  `bed4c629d8f0835f93c64328c4ab2f3bfbf4dc40` at
+  `verification/audit/2026-08-15-203000-29a094757fbc`. Manifest SHA-256 is
+  `b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468`;
+  all 18 manifest-bound files validated.
+- Exact resume order: (1) capture the signed 72-cell A6-04/A6-05 rendered
+  matrix against clean product commit `2f69a9a0d32d989b0c9be88168bd2d38eda20851`;
+  (2) remediate measured UI violations and recapture until the audit gates pass;
+  and (3) obtain Sagar's separate identity-bound fluent visual approval.

@@ -1,13 +1,15 @@
 # Phase 4A final localization review
 
-**Status:** PENDING FLUENT REVIEW. No row in this package has been imported,
-no reviewer decision has been recorded, and no A6 or external acceptance gate
-is closed by preparing this package.
+**Status:** APPROVED AND IMPORTED. Sagar's exact approval was received on
+2026-08-15 (Asia/Kolkata), all 854 rows were imported at product commit
+`2f69a9a0d32d989b0c9be88168bd2d38eda20851`, and governed A6-03 passes.
+A6-04/A6-05 and `GATE-NATIVE-LANGUAGE` remain open pending the separate
+identity-bound rendered measurement and fluent visual review.
 
-This is the single final wording-review package for the currently measured
-A6-03 localization universe. Sagar (`sagarbora91`) must review every Marathi
-and Hindi value in the 854-row primary CSV. The attention CSV is a derived aid
-for higher-risk rows; it does not replace the all-row review.
+This was the single final wording-review package for the measured A6-03
+localization universe. Sagar (`sagarbora91`) reviewed and approved every
+Marathi and Hindi value in the 854-row primary CSV. The attention CSV was a
+derived aid for higher-risk rows; it did not replace the all-row review.
 
 ## Identity
 
@@ -54,9 +56,9 @@ and the approval sentence below must be regenerated for the new exact bytes.
   in `.sccbak` even though the exact `.sccbak` literal is preserved, and two
   arise because Marathi correctly renders `3 / 5` and `31` as Devanagari
   numerals. They are retained in the attention CSV rather than hidden.
-- All 854 rows have nonblank Marathi and Hindi drafts, decision
-  `pending-fluent-review`, and a blank reviewer. The validation scan reported
-  zero blank and zero malformed-encoding/length findings.
+- At the pre-review checkpoint, all 854 rows had nonblank Marathi and Hindi
+  drafts, decision `pending-fluent-review`, and a blank reviewer. The validation
+  scan reported zero blank and zero malformed-encoding/length findings.
 
 Machine preparation, exact-literal presence and automated validation are not
 evidence of fluency or semantic correctness. They only make the review bounded
@@ -72,25 +74,59 @@ English, Marathi, Hindi, source and hash bindings:
    naturally remain unchanged, but the flag is not an approved exception.
 2. **Formerly missing technical literal:** 66 language-cell flags across 56
    rows. These were heuristic warnings, not confirmed mistranslations. Exact
-   acronym preservation is now present, but the reviewer must still decide
-   whether the resulting Marathi/Hindi sentence is natural and retains the
-   intended meaning.
+   acronym preservation was present for review; Sagar's exact approval confirms
+   the resulting Marathi/Hindi wording was accepted.
 3. **Safe literal preservation:** eight rows containing ten mechanical
-   substitutions. Mechanical correctness does not approve the surrounding
-   translation.
+   substitutions. Sagar's review covered the surrounding translations.
 4. **Semantic wording correction:** 29 rows changed for accounting, backup,
-   restore, payroll, stock, tax or operational meaning. These corrections are
-   proposed wording and still require fluent review.
+   restore, payroll, stock, tax or operational meaning. Sagar reviewed and
+   approved these exact proposed values.
 5. **Current heuristic false positive:** six language-cell observations across
    four rows covering the two `.sccbak` sentence-fragment matches and the two
    Marathi Devanagari-number matches described above.
 
 The five categories overlap. Their union is 100 rows: four safe-literal rows
 also carry same-as-English flags, and five semantic-correction rows also belong
-to the formerly-missing-technical set. Review of those 100 rows alone is not
-sufficient; every one of the 854 primary rows remains in scope.
+to the formerly-missing-technical set. Sagar's approval covered all 854 primary
+rows, not only this 100-row subset.
 
-## Reviewer action
+## Recorded approval
+
+Sagar supplied the following approval verbatim on 2026-08-15 (Asia/Kolkata):
+
+> I, Sagar (sagarbora91), reviewed all 854 rows in
+> PHASE-4A-A6-LOCALIZATION-FINAL-REVIEW-DRAFT-2026-08-15.csv, pre-review
+> SHA-256 06215985a5001b71c06358cda1d1ef02c10e51df9534433fd5171f024bdfdcf7.
+> My review included the 19 same-as-English language-cell flags across 14 rows,
+> the 56 formerly flagged technical-literal rows, the 8 safe-literal-preservation
+> rows, and the 29 semantic-correction rows summarized in
+> PHASE-4A-A6-LOCALIZATION-FINAL-REVIEW-ATTENTION-2026-08-15.csv, SHA-256
+> afe375f8dd30f0540feeca9edcdc5506fab025b6c80dc16c371a5ef952d24011.
+> I approve the exact Marathi and Hindi wording in the 854-row primary CSV for
+> import with decision translate and reviewer sagarbora91. This approval covers
+> localization wording only; it does not approve A6-04/A6-05 rendered
+> measurements or close GATE-NATIVE-LANGUAGE before the separate identity-bound
+> rendered review.
+
+## Import result
+
+- Import commit: `2f69a9a0d32d989b0c9be88168bd2d38eda20851`.
+- Post-import approved CSV SHA-256:
+  `7bf300588c9f084739d481bfb65d2d60c32823f6e6121fe65b64401e7116a277`.
+- Every one of the 854 rows is `translate` with reviewer `sagarbora91`; English,
+  Marathi, Hindi, source coordinates, occurrence counts and full text hashes
+  remain identical to the approved pre-review package.
+- Runtime dictionary entries increased from 1,155 to 2,009 per language with no
+  duplicate English keys and no changed pre-existing value. The governed A6
+  normalized dictionary contains 2,004 measured phrases.
+- A6-03 passes with zero high-confidence bypasses across 12 surfaces and 53
+  first-party JavaScript files.
+- Complete product pipeline: 507/507 pass. Additional profile checks: MAH-3
+  19/19, MAH-4 46/46 and modular 86/86 pass.
+- The capability ledger remains exactly 107 rows with comparison delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+
+## Historical reviewer instructions
 
 1. Review all 854 English/Marathi/Hindi rows in the primary CSV against their
    source context.
@@ -101,8 +137,7 @@ sufficient; every one of the 854 primary rows remains in scope.
    wording bound to that new hash. Do not approve the hash below if the bytes
    changed.
 
-If the exact primary CSV identified above is accepted unchanged, send this
-exact approval:
+The exact approval template used for this review was:
 
 > I, Sagar (sagarbora91), reviewed all 854 rows in
 > PHASE-4A-A6-LOCALIZATION-FINAL-REVIEW-DRAFT-2026-08-15.csv, pre-review
@@ -118,15 +153,10 @@ exact approval:
 > measurements or close GATE-NATIVE-LANGUAGE before the separate
 > identity-bound rendered review.
 
-## Post-approval work and non-claims
+## Remaining work and non-claims
 
-After valid approval, automation may mark the primary rows `translate` with
-reviewer `sagarbora91`, import the exact approved wording, run focused and full
-tests, rerun A6-03, record the approved CSV SHA-256 and import commit, and update
-the crash checkpoint.
-
-That later import can close the static A6-03 wording work only if the governed
-measurement passes. A signed 72-cell rendered capture remains required for
+The approved import closes the static A6-03 wording work. A signed 72-cell
+rendered capture remains required for
 A6-04/A6-05, followed by a separate fluent visual approval bound to the
 post-import product and rendered-evidence identities before
 `GATE-NATIVE-LANGUAGE` can close. This package does not establish

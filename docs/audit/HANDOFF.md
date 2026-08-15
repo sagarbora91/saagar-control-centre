@@ -21,10 +21,8 @@ commit-by-commit execution order is
   not complete.
 - Current internal diagnostics pass A2, A7, and A8. The A5 mutation cleanup and
   C-04 storage inventory/comparator defects are corrected.
-- A6-03 remains open with 854 genuine localization bypass occurrences after
-  reviewed localization batch 03 and the bounded source/analyzer corrections.
-  A6-04/A6-05 remain trusted-renderer
-  gates.
+- A6-03 passes with zero localization bypasses after Sagar's exact 854-row
+  approval and import. A6-04/A6-05 remain trusted-renderer gates.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
   sales totals.
@@ -39,30 +37,40 @@ commit-by-commit execution order is
 
 ### Crash-resume checkpoint
 
-- The exact pre-import product checkpoint is
+- The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
   tooling ancestry are committed and pushed. Governed tooling
   `29a094757fbc5386d379ee73e71a30228b348308` passes all 75 self-tests from its
   frozen tooling lineage. Quote-aware tag scanning and line-level textarea
   placeholder measurement are now fail-closed rather than suppressing real UI
   strings.
-- The live A6-03 universe is exactly 854 occurrences / 854 unique phrases at a
-  1,150-phrase dictionary. Its extraction SHA-256 is
+- The pre-import A6-03 universe was exactly 854 occurrences / 854 unique phrases
+  at a 1,150-phrase governed dictionary. Its extraction SHA-256 is
   `bb642bbb20f283e0c56fe761484b94b675ea76a71958e5629b76165d5cd736f8`.
   The consolidated 854-row review CSV is
   `verification/audit/PHASE-4A-A6-LOCALIZATION-FINAL-REVIEW-DRAFT-2026-08-15.csv`,
   SHA-256
   `06215985a5001b71c06358cda1d1ef02c10e51df9534433fd5171f024bdfdcf7`.
-  Every row is still `pending-fluent-review` with a blank reviewer; nothing from
-  this package has been imported. Its 100-row attention aid has SHA-256
+  Sagar approved this exact package and it was imported at
+  `2f69a9a0d32d989b0c9be88168bd2d38eda20851`. The post-import CSV SHA-256 is
+  `7bf300588c9f084739d481bfb65d2d60c32823f6e6121fe65b64401e7116a277`;
+  all rows are `translate` with reviewer `sagarbora91`. Its 100-row attention
+  aid has SHA-256
   `afe375f8dd30f0540feeca9edcdc5506fab025b6c80dc16c371a5ef952d24011`.
+- The runtime dictionaries now contain 2,009 exact keys per language; the
+  governed A6 normalized dictionary measures 2,004 phrases. A6-03 passes with
+  zero bypasses across 12 surfaces and 53 first-party JavaScript files. The
+  complete product pipeline passes 507/507; MAH-3 passes 19/19, MAH-4 46/46,
+  and modular 86/86.
 - The source/analyzer cleanup and governed profiles remain at exactly 107
   capability deltas with comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
-  A new controlled baseline for tooling `29a094757...` is in progress; do not
-  accept or cite it until the runner exits successfully and its exact 18-file
-  manifest is validated. The older `18dcb9e5...` baseline below remains valid
-  historical evidence but is superseded for the final comparison.
+  The corrected-tooling baseline is preserved at
+  `verification/audit/2026-08-15-203000-29a094757fbc` by evidence commit
+  `bed4c629d8f0835f93c64328c4ab2f3bfbf4dc40`. Its manifest SHA-256 is
+  `b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468`;
+  exactly 18 files and every declared byte/hash identity validated. The older
+  `18dcb9e5...` baseline below is historical and superseded.
 - The current-tooling controlled baseline is preserved at
   `verification/audit/2026-08-15-102206-18dcb9e5db5d` by evidence commit
   `976547823520601538b943ae38fb1c89ee94eba4`. Its manifest SHA-256 is
@@ -86,8 +94,8 @@ commit-by-commit execution order is
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
   API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
   and zero fatal-log matches. This is engineering evidence, not the final APK.
-- Consolidated Phase 4A is not complete. A6-03 still fails with 854 genuine
-  localization bypasses; A6-04/A6-05 remain unmeasured trusted-renderer gates.
+- Consolidated Phase 4A is not complete. A6-03 passes; A6-04/A6-05 remain
+  unmeasured trusted-renderer gates.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
 - On 2026-08-14 Sagar (`sagarbora91`) accepted the fluent Marathi/Hindi reviewer
@@ -114,25 +122,22 @@ commit-by-commit execution order is
   phrases. The approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`;
   language tests pass 4/4 and source-integrity tests pass 8/8.
-- The earlier batch 04 draft is superseded by the consolidated 854-row final
-  review package above. Objective literal preservation, 29 semantic-risk rows,
-  and the technical-acronym policy have already been applied as proposed
-  wording, but all 854 rows still require Sagar's exact-CSV fluent approval.
+- The earlier batch 04 draft is superseded by the approved and imported
+  consolidated 854-row final review package above.
 
 ### Phase 4 progress and remaining-time estimate
 
 - Consolidated Phase 4A has completed tooling/baseline integration, A9-02 code
-  remediation, complete product verification, diagnostic APK build and API-23
-  smoke. The remaining 4A work is A6-03 localization plus the trusted A6-04/05
-  capture and fluent review.
+  remediation, A6-03 localization, complete product verification, diagnostic
+  APK build and API-23 smoke. The remaining 4A work is the trusted A6-04/05
+  capture, any measured UI remediation, and fluent visual review.
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: obtain Sagar's identity-bound approval for the exact
-  consolidated 854-row CSV. Import only after that approval, rerun A6-03 and
-  product/profile tests, then capture the signed 72-cell rendered matrix. No
-  unreviewed wording may be attributed to Sagar, and no English placeholder
-  mappings or analyser exclusions are acceptable.
+- Immediate next action: capture the signed 72-cell rendered matrix against the
+  clean post-import product, remediate measured target-size/contrast failures,
+  recapture until A6-04/A6-05 pass, then obtain Sagar's separate identity-bound
+  fluent visual approval.
 
 ## Open acceptance gates
 
