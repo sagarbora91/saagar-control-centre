@@ -375,8 +375,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 289131,
-      "sha256": "862350bfce8323b9877d31c6bc367868f8e545b59f40da3d1033ee8f700876b8",
+      "bytes": 289040,
+      "sha256": "d0a3e6dcd6333c912feb7ebbf63d7d7047bff7fd19e4d81069a39e3e5073c5ca",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },
