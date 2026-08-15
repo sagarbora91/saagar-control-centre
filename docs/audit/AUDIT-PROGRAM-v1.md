@@ -223,7 +223,7 @@ For each registered mutation, the frozen helper runs exactly `node --test --test
 
 Browser evidence does not establish physical-device or native-language acceptance.
 
-The external-evidence trust policy is currently closed (`trustedSignerCount: 0`). Therefore A6 rendered evidence and A10 browser/device attestations remain `unmeasured` even if structurally valid external JSON is supplied; no such file can authorize a pass until a controlled signer/trust root is separately provisioned and frozen.
+The external-evidence trust policy accepts only an Ed25519 signature from the owner-provisioned Phase 4A signer whose public verification key is frozen in the governed tooling. The private key remains outside the repository. Structurally valid but unsigned, incorrectly signed, unknown-key or replayed evidence remains `unmeasured`; authorization requires the signature to bind the evidence format and canonical evidence SHA-256.
 
 ### A7 — Protocol stability
 
@@ -372,11 +372,11 @@ node scripts/audit/run.mjs `
   --run-tests
 ```
 
-The baseline command deliberately has no build- or mutation-evidence flags. The runner performs both captures internally. Omitting browser/device evidence is permitted and produces explicit `unmeasured` gates under the closed trust policy.
+The baseline command deliberately has no build- or mutation-evidence flags. The runner performs both captures internally. Omitting browser/device evidence is permitted and produces explicit `unmeasured` gates. Supplying rendered, browser-timing or device evidence authorizes nothing unless the committed record carries a valid signature from the frozen trusted signer.
 
 ### 9.2 Comparison command
 
-The comparison run uses the migration target's exact `HEAD` for `--target-sha`, reuses the frozen audit tooling commit for `--audit-tooling-sha`, points `--baseline-evidence` at the committed 18-file baseline directory, uses a fresh output name ending in the comparison target prefix, and sets `--mode comparison --run-tests`. The runner proves the frozen tooling commit is an ancestor and that all tooling bytes still match it. Optional `--comparison-approval` is accepted only when it matches the Section 7 schema and exact baseline/current identity. Optional UI/performance inputs remain subject to the closed external-evidence trust policy.
+The comparison run uses the migration target's exact `HEAD` for `--target-sha`, reuses the frozen audit tooling commit for `--audit-tooling-sha`, points `--baseline-evidence` at the committed 18-file baseline directory, uses a fresh output name ending in the comparison target prefix, and sets `--mode comparison --run-tests`. The runner proves the frozen tooling commit is an ancestor and that all tooling bytes still match it. Optional `--comparison-approval` is accepted only when it matches the Section 7 schema and exact baseline/current identity. Optional UI/performance inputs remain subject to exact public-key signature verification and the committed-record identity rules.
 
 In outline, after setting `$targetSha`, `$auditToolingSha`, `$baselineEvidence` and a fresh external `$auditOutput`:
 

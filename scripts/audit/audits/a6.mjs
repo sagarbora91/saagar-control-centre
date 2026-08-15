@@ -30,7 +30,7 @@ const EXPECTED_RENDERED_CELLS = 72;
 const SAFE_BROWSER_IDENTITY = /^[A-Za-z0-9][A-Za-z0-9 ._+:/();-]{0,159}$/;
 const MAX_CELL_TARGETS = 512;
 const MAX_CELL_CONTRASTS = 512;
-const UI_EVIDENCE_KEYS = Object.freeze(['auditToolingSha', 'browser', 'captureTool', 'capturedAt', 'cells',
+const UI_EVIDENCE_KEYS = Object.freeze(['attestationSignature', 'auditToolingSha', 'browser', 'captureTool', 'capturedAt', 'cells',
   'environmentIdentitySha256', 'evidenceSha256', 'format', 'matrixSha256', 'productFingerprintSha256',
   'recordPath', 'schemaVersion']);
 const UI_BROWSER_KEYS = Object.freeze(['identity', 'identitySha256']);
