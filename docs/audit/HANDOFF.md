@@ -79,7 +79,7 @@ commit-by-commit execution order is
   to 950 phrases; language tests pass 4/4 and source-integrity tests pass 8/8.
 - Batch 02 is a machine draft awaiting Sagar's explicit review: 100 phrases
   covering 165 source occurrences, SHA-256
-  `1ea3009c065fa8d8227b1d73810b4f0dbc703568b66f79ee142367d0442a74c5`.
+  `243a457904e35b769ef3796d462a6c9fba06e0ebbc76446e8085e8dbdb743f17`.
   All decisions remain `pending-fluent-review`; none has been imported.
 
 ### Phase 4 progress and remaining-time estimate

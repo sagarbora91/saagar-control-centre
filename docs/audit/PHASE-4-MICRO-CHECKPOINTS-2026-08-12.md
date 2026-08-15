@@ -136,7 +136,7 @@ decision, and the production release identity is preserved and pushed.
 - Translation batch 01 was reviewed/imported at `fca6924`: 24 phrases reduced
   A6-03 from 1,226 to 1,145. Batch 02 is drafted but not reviewed/imported: 100
   phrases, 165 source occurrences, SHA-256
-  `1ea3009c065fa8d8227b1d73810b4f0dbc703568b66f79ee142367d0442a74c5`.
+  `243a457904e35b769ef3796d462a6c9fba06e0ebbc76446e8085e8dbdb743f17`.
   Its decisions remain `pending-fluent-review` and reviewer values are blank.
 - Exact resume order: (1) obtain Sagar's explicit review/corrections for batch
   02; (2) import it and record the exact A6-03 reduction; (3) repeat small review

@@ -16,7 +16,7 @@ row has entered `www/app-i18n.js`.
 - Approved batch 01 CSV SHA-256:
   `6ed3534f0ee88f0909bb0004e8c761e54c4d084b7b954ad49c13c9b15fdf958f`
 - Batch 02 draft CSV SHA-256:
-  `1ea3009c065fa8d8227b1d73810b4f0dbc703568b66f79ee142367d0442a74c5`
+  `243a457904e35b769ef3796d462a6c9fba06e0ebbc76446e8085e8dbdb743f17`
 - Governed tooling:
   `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7`
 - Controlled baseline manifest SHA-256:
