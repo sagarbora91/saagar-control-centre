@@ -106,7 +106,7 @@ export function loadCommittedRecord(context, recordPath, prefix) {
 
 export function evidenceSealValid(value) {
   if (!value || !isHex64(value.evidenceSha256)) return false;
-  const { evidenceSha256, ...unsigned } = value;
+  const { evidenceSha256, attestationSignature, ...unsigned } = value;
   return canonicalFingerprint(unsigned) === evidenceSha256;
 }
 
@@ -131,11 +131,11 @@ export function baseEvidenceTrust(context, value, { format, schemaVersion, recor
   }
   const integrityValid = findings.length === 0;
   const integrityFindings = [...findings];
-  const authorized = externalEvidenceAuthorized(format, value && value.evidenceSha256);
+  const authorized = externalEvidenceAuthorized(format, value && value.evidenceSha256,
+    value && value.attestationSignature);
   if (!authorized) findings.push({ code: 'ATTESTED_EVIDENCE_TRUST_ROOT_UNAVAILABLE',
     reason: EXTERNAL_EVIDENCE_TRUST_POLICY.reason });
   return Object.freeze({ trusted: integrityValid && authorized, integrityValid, integrityFindings,
     authorized, findings, trustPolicy: EXTERNAL_EVIDENCE_TRUST_POLICY.state,
     captureTool: expectedCaptureTool(context) });
 }
-

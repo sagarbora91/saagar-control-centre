@@ -78,7 +78,7 @@ function validOwnerAcceptance(value, envelope) {
 export function validateRuntimeEvidence(context, perf = performanceEvidence(context)) {
   const value = perf.deviceRuntime;
   const invalid = reason => ({ valid: false, reason, dat02: null, memory: null });
-  const keys = ['apkSha256', 'auditToolingSha', 'captureTool', 'capturedAt', 'dat02', 'device',
+  const keys = ['apkSha256', 'attestationSignature', 'auditToolingSha', 'captureTool', 'capturedAt', 'dat02', 'device',
     'environment', 'evidenceSha256', 'format', 'instrumentation', 'memory', 'ownerAcceptance',
     'productFingerprintSha256', 'recordPath', 'schemaVersion'];
   if (!exactObject(value, keys) || value.format !== 'SAAGAR_A10_DEVICE_RUNTIME_ACCEPTANCE' ||
@@ -145,7 +145,7 @@ function productSourceSha256(context, file) {
 
 function timingShape(context, value, requireCurrentProduct) {
   const invalid = reason => ({ valid: false, reason });
-  const keys = ['auditToolingSha', 'baselineRecordPath', 'browser', 'captureTool', 'capturedAt',
+  const keys = ['attestationSignature', 'auditToolingSha', 'baselineRecordPath', 'browser', 'captureTool', 'capturedAt',
     'environmentIdentitySha256', 'evidenceSha256', 'format', 'moduleOpen', 'productFingerprintSha256',
     'recordPath', 'schemaVersion', 'shell'];
   if (!exactObject(value, keys) || value.format !== 'SAAGAR_A10_BROWSER_TIMING_ATTESTATION' ||
@@ -399,4 +399,3 @@ export async function run(context) {
     physicalDeviceChecksMeasured: Number(dat02Measured) + Number(memoryMeasured)
   });
 }
-

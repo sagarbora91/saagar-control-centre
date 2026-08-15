@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { generateKeyPairSync, sign } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -21,7 +22,8 @@ import { assessGeneratedIdentityReceipts,
 import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
 import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
-  externalEvidenceAuthorized } from '../scripts/audit/evidence-trust-root.mjs';
+  externalEvidenceAuthorized, externalEvidenceSignaturePayload,
+  verifyExternalEvidenceSignature } from '../scripts/audit/evidence-trust-root.mjs';
 import { COMPARISON_APPROVAL_FORMAT, comparisonFindingSha256, evaluateComparison } from '../scripts/audit/comparison.mjs';
 import { AUDIT_VERSION, buildContext, isProductPath, PRODUCT_BASELINE_SHA, revisionFingerprint, sha256, stableSha256 } from '../scripts/audit/lib.mjs';
 import { assertToolingProductFingerprintAnchor, npmLauncher, parseArgs, parseOfflineTestEvidence, probeNpmLauncher,
@@ -1073,13 +1075,31 @@ test('A10 device claims remain unmeasured while the external trust root is close
   assert.equal(check(extraRejected, 'A10-05').result, 'unmeasured');
 });
 
-test('external rendered, timing and device evidence cannot self-authorize in audit v1', () => {
+test('external evidence requires an exact trusted Ed25519 signature', () => {
   assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.format, 'SAAGAR_AUDIT_EXTERNAL_EVIDENCE_TRUST_POLICY');
-  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.schemaVersion, 1);
-  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.state, 'closed');
-  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.trustedSignerCount, 0);
-  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.reason, 'CONTROLLED_CAPTURE_SIGNER_NOT_PROVISIONED');
-  assert.equal(externalEvidenceAuthorized('invented', sha256('invented')), false);
+  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.schemaVersion, 2);
+  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.state, 'open');
+  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.trustedSignerCount, 1);
+  assert.equal(EXTERNAL_EVIDENCE_TRUST_POLICY.reason, 'OWNER_PROVISIONED_CONTROLLED_CAPTURE_SIGNER');
+
+  const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+  const format = 'SAAGAR_RENDERED_UI_ATTESTATION';
+  const evidenceSha256 = sha256('ephemeral-test-evidence');
+  const keyId = 'ephemeral-ed25519-test-key';
+  const signature = {
+    format: 'SAAGAR_AUDIT_EXTERNAL_EVIDENCE_SIGNATURE', schemaVersion: 1,
+    algorithm: 'Ed25519', keyId,
+    signatureBase64: sign(null, externalEvidenceSignaturePayload(format, evidenceSha256), privateKey)
+      .toString('base64')
+  };
+  const signers = [{ keyId, algorithm: 'Ed25519',
+    publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' }) }];
+  assert.equal(verifyExternalEvidenceSignature(format, evidenceSha256, signature, signers), true);
+  assert.equal(verifyExternalEvidenceSignature(format, sha256('changed'), signature, signers), false);
+  assert.equal(verifyExternalEvidenceSignature('invented', evidenceSha256, signature, signers), false);
+  assert.equal(verifyExternalEvidenceSignature(format, evidenceSha256,
+    { ...signature, keyId: 'unknown-ed25519-test-key' }, signers), false);
+  assert.equal(externalEvidenceAuthorized(format, evidenceSha256, signature), false);
 });
 
 test('browser timing samples enforce the exact bounded 5 to 30 observation window', () => {
