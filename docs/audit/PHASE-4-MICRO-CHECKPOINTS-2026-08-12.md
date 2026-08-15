@@ -122,8 +122,8 @@ decision, and the production release identity is preserved and pushed.
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
 - Current consolidated phase: 4A. A6-03 passes with zero bypasses after the
-  approved 854-row import. It remains blocked on trusted A6-04/A6-05 rendered
-  evidence and fluent visual review. Do not
+  approved 854-row import, and A6-04/A6-05 pass with committed signed rendered
+  evidence. It remains blocked only on fluent visual review. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
@@ -181,3 +181,23 @@ decision, and the production release identity is preserved and pushed.
   `29a094757fbc5386d379ee73e71a30228b348308`. If any violations remain, fix and
   repeat; if zero, commit the attestation, validate A6-04/A6-05, then request the
   separate exact-identity fluent visual approval.
+
+### Passing rendered-evidence checkpoint — 2026-08-16
+
+- Final rendered product commit: `833941efec4daebc47fc6a75007578168ac6b6aa`;
+  product fingerprint SHA-256
+  `68eef06d732509c29f278feb626f7feaf67b5030a70eb5994780bf7e681b6936`.
+- The complete signed Edge matrix contains 72/72 cells, 2,394 measured targets,
+  6,105 contrast samples, zero target violations, zero contrast violations and
+  zero browser errors. Matrix SHA-256 is
+  `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`;
+  rendered evidence SHA-256 is
+  `66fde8537b9ff15e78d77d35ee92403df795c67ee7f4f26c5d43b8cc809ff6a0`.
+- Attestation file SHA-256
+  `e4b3cdffe345966a0686a2c031359aa03eeb544b7f9a1421b57172dc48297d83`
+  is committed and pushed at `68f5bc94e944f70fef3d41f9140af33bdfc86fab`.
+  Independent validation reports a clean tracked record, valid Ed25519
+  signature, A6-04 pass and A6-05 pass.
+- Resume only with Sagar's review of all 72 rendered cells, including all 48
+  Marathi/Hindi cells. Record an exact-identity fluent visual approval; do not
+  treat the automated rendered pass as language acceptance by itself.

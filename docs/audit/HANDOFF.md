@@ -22,7 +22,9 @@ commit-by-commit execution order is
 - Current internal diagnostics pass A2, A7, and A8. The A5 mutation cleanup and
   C-04 storage inventory/comparator defects are corrected.
 - A6-03 passes with zero localization bypasses after Sagar's exact 854-row
-  approval and import. A6-04/A6-05 remain trusted-renderer gates.
+  approval and import. A6-04/A6-05 now pass with committed, signature-valid
+  72-cell rendered evidence. `GATE-NATIVE-LANGUAGE` remains open only for
+  Sagar's separate identity-bound fluent visual review.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
   sales totals.
@@ -87,6 +89,21 @@ commit-by-commit execution order is
   `6845082ea55c90c884d11f06a4d5a48849b6df415a88ae6776d039a08d8f9b01`;
   validator SHA-256 is
   `a07f3ffbb78dafed1c113684a368471295b3bd7fc1df63212d221c87d93f3937`.
+- The final rendered product is `833941efec4daebc47fc6a75007578168ac6b6aa`,
+  product fingerprint SHA-256
+  `68eef06d732509c29f278feb626f7feaf67b5030a70eb5994780bf7e681b6936`.
+  Its signed Edge capture measures all 72 cells, 2,394 interactive targets and
+  6,105 contrast samples with zero violations and zero browser errors. Matrix
+  SHA-256 is
+  `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`;
+  rendered evidence SHA-256 is
+  `66fde8537b9ff15e78d77d35ee92403df795c67ee7f4f26c5d43b8cc809ff6a0`.
+  The exact attestation file SHA-256 is
+  `e4b3cdffe345966a0686a2c031359aa03eeb544b7f9a1421b57172dc48297d83`
+  and it is preserved by evidence commit
+  `68f5bc94e944f70fef3d41f9140af33bdfc86fab`. Signature verification passes;
+  governed A6-04 and A6-05 both pass. This does not itself establish fluent
+  Marathi/Hindi acceptance.
 - The source/analyzer cleanup and governed profiles remain at exactly 107
   capability deltas with comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
@@ -119,8 +136,9 @@ commit-by-commit execution order is
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
   API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
   and zero fatal-log matches. This is engineering evidence, not the final APK.
-- Consolidated Phase 4A is not complete. A6-03 passes; A6-04/A6-05 remain
-  unmeasured trusted-renderer gates.
+- Consolidated Phase 4A engineering measurement is complete: A6-03, A6-04 and
+  A6-05 pass. Phase 4A remains open only for Sagar's exact-identity fluent visual
+  review of the 72 rendered cells.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
 - On 2026-08-14 Sagar (`sagarbora91`) accepted the fluent Marathi/Hindi reviewer
@@ -154,15 +172,15 @@ commit-by-commit execution order is
 
 - Consolidated Phase 4A has completed tooling/baseline integration, A9-02 code
   remediation, A6-03 localization, complete product verification, diagnostic
-  APK build and API-23 smoke. The remaining 4A work is the trusted A6-04/05
-  capture, any measured UI remediation, and fluent visual review.
+  APK build and API-23 smoke. The trusted A6-04/05 capture and measured UI
+  remediation are complete; the remaining 4A work is fluent visual review.
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: capture the signed 72-cell rendered matrix against the
-  clean post-import product, remediate measured target-size/contrast failures,
-  recapture until A6-04/A6-05 pass, then obtain Sagar's separate identity-bound
-  fluent visual approval.
+- Immediate next action: Sagar reviews the generated 72-cell HTML/screenshots
+  and supplies the separate approval bound to product `833941ef...`, product
+  fingerprint, rendered-evidence SHA-256 and matrix SHA-256. Then record the
+  approval and close `GATE-NATIVE-LANGUAGE` for that exact identity.
 
 ## Open acceptance gates
 
