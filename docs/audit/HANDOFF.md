@@ -23,8 +23,9 @@ commit-by-commit execution order is
   C-04 storage inventory/comparator defects are corrected.
 - A6-03 passes with zero localization bypasses after Sagar's exact 854-row
   approval and import. A6-04/A6-05 now pass with committed, signature-valid
-  72-cell rendered evidence. `GATE-NATIVE-LANGUAGE` remains open only for
-  Sagar's separate identity-bound fluent visual review.
+  72-cell rendered evidence. Sagar's separate identity-bound fluent visual
+  approval is recorded and `GATE-NATIVE-LANGUAGE` is closed for the exact
+  rendered product identity.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
   sales totals.
@@ -104,6 +105,17 @@ commit-by-commit execution order is
   `68f5bc94e944f70fef3d41f9140af33bdfc86fab`. Signature verification passes;
   governed A6-04 and A6-05 both pass. This does not itself establish fluent
   Marathi/Hindi acceptance.
+- Sagar (`sagarbora91`) reviewed all 72 rendered cells, including all 48
+  Marathi/Hindi cells, and approved the exact wording/rendering identity above.
+  The verbatim approval is preserved at
+  `verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`.
+  It closes `GATE-NATIVE-LANGUAGE` only; physical-device acceptance, staff UAT,
+  legal approval, production signing and release approval remain open.
+- The frozen audit-v1 `OPEN_GATES` registry remains unchanged because it is part
+  of governed tooling identity `29a094757fbc5386d379ee73e71a30228b348308`.
+  The approval record above is the authoritative Phase 4 external closure
+  evidence for this gate; changing the registry would require new tooling,
+  baseline and identity-bound rendered evidence.
 - The source/analyzer cleanup and governed profiles remain at exactly 107
   capability deltas with comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
@@ -136,9 +148,8 @@ commit-by-commit execution order is
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
   API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
   and zero fatal-log matches. This is engineering evidence, not the final APK.
-- Consolidated Phase 4A engineering measurement is complete: A6-03, A6-04 and
-  A6-05 pass. Phase 4A remains open only for Sagar's exact-identity fluent visual
-  review of the 72 rendered cells.
+- Consolidated Phase 4A is complete: A6-03, A6-04 and A6-05 pass, and Sagar's
+  exact-identity fluent visual approval closes `GATE-NATIVE-LANGUAGE`.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
 - On 2026-08-14 Sagar (`sagarbora91`) accepted the fluent Marathi/Hindi reviewer
@@ -173,22 +184,21 @@ commit-by-commit execution order is
 - Consolidated Phase 4A has completed tooling/baseline integration, A9-02 code
   remediation, A6-03 localization, complete product verification, diagnostic
   APK build and API-23 smoke. The trusted A6-04/05 capture and measured UI
-  remediation are complete; the remaining 4A work is fluent visual review.
+  remediation and fluent visual review are complete.
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: Sagar reviews the generated 72-cell HTML/screenshots
-  and supplies the separate approval bound to product `833941ef...`, product
-  fingerprint, rendered-evidence SHA-256 and matrix SHA-256. Then record the
-  approval and close `GATE-NATIVE-LANGUAGE` for that exact identity.
+- Immediate next action: begin Phase 4B target freeze and the unapproved
+  controlled comparison. Do not reuse the older capability approval; extract
+  the final comparison identity before requesting exact approval.
 
 ## Open acceptance gates
 
 - Final controlled baseline and target comparison.
 - Exact identity-bound owner capability approval for the final comparison.
-- Trusted rendered accessibility/responsive and A10 timing measurements.
+- A10 timing measurements.
 - Final exact-hash physical-device and OEM/document-provider evidence.
-- Production ETP, mapping, language, UAT, legal, signing, and release decisions.
+- Production ETP, mapping, UAT, legal, signing, and release decisions.
 
 ## Historical record
 

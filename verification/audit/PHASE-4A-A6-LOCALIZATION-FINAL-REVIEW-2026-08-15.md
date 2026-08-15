@@ -1,10 +1,11 @@
 # Phase 4A final localization review
 
-**Status:** APPROVED AND IMPORTED. Sagar's exact approval was received on
+**Status:** COMPLETE. Sagar's exact wording approval was received on
 2026-08-15 (Asia/Kolkata), all 854 rows were imported at product commit
 `2f69a9a0d32d989b0c9be88168bd2d38eda20851`, and governed A6-03 passes.
-A6-04/A6-05 and `GATE-NATIVE-LANGUAGE` remain open pending the separate
-identity-bound rendered measurement and fluent visual review.
+A6-04/A6-05 pass with committed signed rendered evidence, and Sagar's separate
+identity-bound fluent visual approval closes `GATE-NATIVE-LANGUAGE` for product
+commit `833941efec4daebc47fc6a75007578168ac6b6aa`.
 
 This was the single final wording-review package for the measured A6-03
 localization universe. Sagar (`sagarbora91`) reviewed and approved every
@@ -155,10 +156,13 @@ The exact approval template used for this review was:
 
 ## Remaining work and non-claims
 
-The approved import closes the static A6-03 wording work. A signed 72-cell
-rendered capture remains required for
-A6-04/A6-05, followed by a separate fluent visual approval bound to the
-post-import product and rendered-evidence identities before
-`GATE-NATIVE-LANGUAGE` can close. This package does not establish
+The approved import closes A6-03. The signature-valid 72-cell evidence closes
+A6-04/A6-05, and Sagar's exact-identity fluent review is preserved at
+`verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`.
+Phase 4A is complete. This package does not establish
 physical-device acceptance, staff UAT, legal approval, production signing or
 release acceptance.
+
+The frozen audit-v1 `OPEN_GATES` registry is intentionally unchanged because it
+is governed tooling. The exact approval record is the authoritative Phase 4
+external closure evidence for `GATE-NATIVE-LANGUAGE` at this product identity.

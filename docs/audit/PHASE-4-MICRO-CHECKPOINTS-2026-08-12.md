@@ -123,9 +123,8 @@ decision, and the production release identity is preserved and pushed.
   API-23 install-replace/launch passes with zero fatal-log matches.
 - Current consolidated phase: 4A. A6-03 passes with zero bypasses after the
   approved 854-row import, and A6-04/A6-05 pass with committed signed rendered
-  evidence. It remains blocked only on fluent visual review. Do not
-  freeze the target or begin the comparison until these product/language gates
-  are genuinely closed.
+  evidence. Sagar's exact-identity fluent visual approval is recorded and
+  `GATE-NATIVE-LANGUAGE` is closed. Phase 4A is complete.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
   the fluent Marathi/Hindi reviewer and authorizes a dedicated local
   audit-evidence signing key, with only its public key committed and its private
@@ -201,3 +200,17 @@ decision, and the production release identity is preserved and pushed.
 - Resume only with Sagar's review of all 72 rendered cells, including all 48
   Marathi/Hindi cells. Record an exact-identity fluent visual approval; do not
   treat the automated rendered pass as language acceptance by itself.
+
+### Phase 4A closure checkpoint — 2026-08-16
+
+- Sagar (`sagarbora91`) approved all 72 rendered cells, including all 48
+  Marathi/Hindi cells, bound to product `833941efec4daebc47fc6a75007578168ac6b6aa`,
+  product fingerprint, rendered-evidence SHA-256 and matrix SHA-256.
+- The verbatim exact-identity approval is preserved at
+  `verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`.
+  `GATE-NATIVE-LANGUAGE` is closed for that identity. This does not close any
+  physical-device, UAT, legal, signing or release gate.
+- Phase 4A is complete. Resume with Phase 4B: freeze the final comparison target,
+  run the unapproved controlled comparison against the corrected-tooling
+  baseline, validate its 18-file evidence set, and obtain a new exact capability
+  approval for the resulting target/tooling/baseline/delta identity.
