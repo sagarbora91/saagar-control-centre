@@ -58,6 +58,20 @@ commit-by-commit execution order is
   remain valid. Because `package.json` contributes to product identity, repeat
   the signed 72-cell capture and exact-identity fluent approval before refreezing
   and rerunning the comparison.
+- The repair is committed and pushed at
+  `5fc59e1cf09898e4e5fc030a8097f74736387ec6`; A5-03 passes and the complete
+  product pipeline passes 510/510. Its product fingerprint SHA-256 is
+  `47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06`.
+  Replacement signed evidence is tracked at
+  `verification/audit/attested/rendered-ui/phase4b-a6-rendered-5fc59e1cf098-20260816.json`
+  by commit `997c71a03122071a900b164be737680afa11384d`. It measures 72 cells,
+  2,394 targets and 6,105 contrast samples with zero violations; A6-04/A6-05
+  pass. Rendered evidence SHA-256 is
+  `aaabdcaf21f0448f10ac2fa0eb2309664ee3fed5546d27f08e09ddfda0941715`,
+  matrix SHA-256 remains
+  `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`,
+  and all 72 measured cell identities exactly match the prior approved capture.
+  Await only Sagar's renewed approval for this new product/evidence identity.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -207,9 +221,11 @@ commit-by-commit execution order is
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: begin Phase 4B target freeze and the unapproved
-  controlled comparison. Do not reuse the older capability approval; extract
-  the final comparison identity before requesting exact approval.
+- Immediate next action: record Sagar's renewed exact-identity fluent approval
+  for product `5fc59e1c...` and rendered evidence `aaabdcaf...`, then refreeze the
+  Phase 4B target and rerun the unapproved controlled comparison. Do not reuse
+  the older capability approval; extract the final comparison identity before
+  requesting exact capability approval.
 
 ## Open acceptance gates
 

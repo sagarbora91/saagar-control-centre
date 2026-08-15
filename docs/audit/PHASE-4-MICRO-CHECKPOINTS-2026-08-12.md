@@ -232,3 +232,15 @@ decision, and the production release identity is preserved and pushed.
 - Since `package.json` changes product fingerprint, recapture/sign all 72 UI
   cells and obtain a renewed exact-identity fluent approval. Only then freeze a
   new target and rerun the unapproved comparison.
+- Repair commit `5fc59e1cf09898e4e5fc030a8097f74736387ec6` is pushed; A5-03
+  passes and the full product pipeline passes 510/510. Replacement signed
+  evidence is committed at `997c71a03122071a900b164be737680afa11384d` and
+  binds product fingerprint SHA-256
+  `47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06`,
+  rendered-evidence SHA-256
+  `aaabdcaf21f0448f10ac2fa0eb2309664ee3fed5546d27f08e09ddfda0941715`
+  and the unchanged matrix SHA-256
+  `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`.
+  A6-04/A6-05 pass with zero violations, and all 72 measured cell identities
+  match the earlier approved capture. Resume with Sagar's renewed fluent
+  approval for this identity, then refreeze and rerun the comparison.
