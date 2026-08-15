@@ -162,3 +162,22 @@ decision, and the production release identity is preserved and pushed.
   matrix against clean product commit `2f69a9a0d32d989b0c9be88168bd2d38eda20851`;
   (2) remediate measured UI violations and recapture until the audit gates pass;
   and (3) obtain Sagar's separate identity-bound fluent visual approval.
+
+### Rendered-remediation crash checkpoint — 2026-08-15
+
+- The first complete post-import diagnostic at target `e9795999bcbdd1e8ccc3c56716755f133f1e5984`
+  measured all 72 cells and found 163 target-size plus 1,695 contrast violations.
+  It is not passing closure evidence.
+- Remediation commit `06b9d74380e2cc1c939ed70f8286b616f76ab86f` is committed,
+  pushed and clean. It updates the shell and affected modules, regenerates all
+  governed product/profile identities, keeps A6-03 at zero bypasses and retains
+  the 107-row capability delta set.
+- Same-algorithm bounded checks are zero/zero for the six shell cells and 48
+  assigned module cells. CRO/payroll/tax fixes are present and focused tests
+  pass, but only the next full signed 72-cell run can establish the combined
+  result.
+- Resume exactly by running the complete signed Edge capture against
+  `06b9d74380e2cc1c939ed70f8286b616f76ab86f` with governed tooling
+  `29a094757fbc5386d379ee73e71a30228b348308`. If any violations remain, fix and
+  repeat; if zero, commit the attestation, validate A6-04/A6-05, then request the
+  separate exact-identity fluent visual approval.

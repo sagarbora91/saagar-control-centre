@@ -62,6 +62,31 @@ commit-by-commit execution order is
   zero bypasses across 12 surfaces and 53 first-party JavaScript files. The
   complete product pipeline passes 507/507; MAH-3 passes 19/19, MAH-4 46/46,
   and modular 86/86.
+- The first post-import signed Edge diagnostic bound all 72 matrix cells to
+  target `e9795999bcbdd1e8ccc3c56716755f133f1e5984`, product fingerprint
+  SHA-256 `1cc6a91dbfa2c632436db3c475abd64a5354bc0e733942cf3cfc5e526c577126`
+  and matrix SHA-256
+  `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`.
+  It measured 163 target-size and 1,695 contrast violations, so it is diagnostic
+  evidence only and does not close A6-04/A6-05.
+- The bounded rendered remediation is committed and pushed at
+  `06b9d74380e2cc1c939ed70f8286b616f76ab86f`. It applies 44px target floors,
+  deterministic solid text-bearing backgrounds, darker muted/gold text and
+  readable dark-surface text across the shell and affected modules. Profile,
+  manifest and shell-asset identities were regenerated. Modular tests pass
+  86/86, MAH-3 passes 19/19, and focused mobile/settings/source suites pass.
+  Independent same-algorithm checks report zero violations in all six shell
+  cells and all 48 assigned non-CRO/payroll/tax module cells; CRO/payroll/tax
+  fixes passed their focused source/report/mobile suites but still require the
+  next complete 72-cell recapture.
+- Crash resume target is the clean pushed commit
+  `06b9d74380e2cc1c939ed70f8286b616f76ab86f`. The next action is one complete
+  signed recapture using corrected tooling `29a094757...`; do not claim rendered
+  closure from the partial lane checks. The external capture runner now binds
+  tooling `29a094757...` and has SHA-256
+  `6845082ea55c90c884d11f06a4d5a48849b6df415a88ae6776d039a08d8f9b01`;
+  validator SHA-256 is
+  `a07f3ffbb78dafed1c113684a368471295b3bd7fc1df63212d221c87d93f3937`.
 - The source/analyzer cleanup and governed profiles remain at exactly 107
   capability deltas with comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
