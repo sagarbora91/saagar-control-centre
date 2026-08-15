@@ -40,7 +40,9 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // remaining shared report and system messages without changing file count.
   // +178037 bytes on 2026-08-15: the owner-approved final Phase 4A review
   // imports 854 exact Marathi/Hindi phrase pairs without changing file count.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7970226);
+  // +2084 bytes on 2026-08-15: Phase 4A rendered remediation establishes
+  // deterministic contrast and 44px target floors without changing file count.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7972310);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',

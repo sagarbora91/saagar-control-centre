@@ -270,7 +270,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
   --green-mid:#bbf7d0;
   --teal:#0f766e; --teal-pale:#f0fdfa;
   --g50:var(--gray-50); --g100:var(--gray-100); --g200:var(--gray-200); --g300:var(--gray-300);
-  --g400:var(--gray-400); --g500:var(--gray-500); --g600:var(--gray-600); --g700:var(--gray-700); --g800:var(--gray-800);
+  --g400:var(--gray-600); --g500:var(--gray-500); --g600:var(--gray-600); --g700:var(--gray-700); --g800:var(--gray-800);
   --sh:0 2px 12px rgba(13,35,64,.08); --sh-lg:0 8px 28px rgba(13,35,64,.13);
   --r:var(--radius);
 }
@@ -718,6 +718,14 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
 .trr-i,.trr-d,.footer{font-size:11px;}
 /* inline-styled micro text in the markup (raise to floor without editing attrs) */
 #hdate,#sb-pct{font-size:11px !important;}
+
+/* Rendered contrast: keep secondary copy visibly subordinate without relying on
+   low-alpha white that falls below 4.5:1 on the navy surfaces. */
+.brand-sub,#hdate{color:rgba(255,255,255,.72) !important;}
+.tab{color:rgba(255,255,255,.72);}
+.sb-denom,.sb-lbl,.sb-tasks,#sb-pct{color:rgba(255,255,255,.72) !important;}
+.submit-dk .card-sub,.sub-meta,.cmpl-lbl{color:rgba(255,255,255,.72);}
+.footer{color:rgba(255,255,255,.72);}
 
 /* --- NUMERIC COLUMNS: tabular figures --- */
 .minp,.mpct,.sb-num,.sb-denom,.wm-val,.kpi-val,.st-val,.cpc-score,.cpc-kv,

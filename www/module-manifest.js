@@ -223,8 +223,8 @@
       "id": "module-uniform-css",
       "version": 1,
       "file": "shared/module-uniform.css",
-      "bytes": 5651,
-      "sha256": "55f3520beb1d38f31a53ead823515474d5e34a0f8fd4becc6ac348322ec85b64"
+      "bytes": 6715,
+      "sha256": "b90c167b7e61f6cf6f5abd010345052b52130221feecaa17e8065405d1c67fc8"
     },
     {
       "id": "module-back-css",
@@ -273,8 +273,8 @@
       "file": "modules/stock/index.html",
       "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
       "summary": "Inventory movement and variance control for store operations.",
-      "bytes": 220437,
-      "sha256": "e7cdaa3ae1827a7aa8431b1c1afebfe1e1fc04465543fae77945e7bc6633101f",
+      "bytes": 220441,
+      "sha256": "b6563b3aa095b7da518979ec22dcb466e473180253cd073955794eb166af796e",
       "source_title": "Saagar Traders — Daily Stock Register v3",
       "src": "modules/stock/index.html"
     },
@@ -288,8 +288,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 258643,
-      "sha256": "4ccda76420e120d3affbe2c73acc03b85f6a8ea1c827fd01fc2ff22d92d0d2a0",
+      "bytes": 258649,
+      "sha256": "0dae5120fe2db5e1a0db0b37eccb44d2c4f5e68ea3b4a430302ffb56fa47c5ed",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },
@@ -303,8 +303,8 @@
       "file": "modules/qms/index.html",
       "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
       "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
-      "bytes": 192962,
-      "sha256": "298b134f19d4d7ed3ee8077d3378276d83f6d1d021e2910da44865e81c75846a",
+      "bytes": 192998,
+      "sha256": "2b9f99c75c2323ccf88da03e520cd5327142457ad5740742a090e74eecd41dfb",
       "src": "modules/qms/index.html"
     },
     {
@@ -317,8 +317,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 203937,
-      "sha256": "f317e96f7c1dd2fb0be674b8f05a950888d9c7b0b95860dd98553a1b344875c6",
+      "bytes": 204046,
+      "sha256": "abf88c7794f0d4b8130c9b8182baceab8cae911e4942371c44b390fb21829ee6",
       "src": "modules/dsr/index.html"
     },
     {
@@ -331,8 +331,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 184033,
-      "sha256": "8141fbd3d0fc3f65756f955c3d36dff6624a431c961e97e7352d5a6672b3f0cc",
+      "bytes": 184103,
+      "sha256": "c5cf70a6292f454507e4d5d611c317573a88a903ca11b304358053e4332b7762",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -346,8 +346,8 @@
       "file": "modules/grooming/index.html",
       "subtitle": "Daily staff presentation checklist, scoring and monthly records.",
       "summary": "Readiness and staff grooming compliance tracker.",
-      "bytes": 109216,
-      "sha256": "e096a4e963b16ef317e9f4464626dec986c7d41be7147063dcda59ebeb486ce7",
+      "bytes": 109235,
+      "sha256": "140b0a4f5f5c5b7a3f1a9c6ce582073463ecd7e628baf354b0d2dabb0ca074f3",
       "source_title": "Saagar Traders — Grooming Checklist",
       "src": "modules/grooming/index.html"
     },
@@ -361,8 +361,8 @@
       "file": "modules/cro_audit/index.html",
       "subtitle": "10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.",
       "summary": "Daily 10-point CRO scoring; pulls grooming score; trend dashboard.",
-      "bytes": 160820,
-      "sha256": "04a7659452dbdd36c315d3eb98a222f8aadefc8ff4bfbff091e1343b00912c6a",
+      "bytes": 161249,
+      "sha256": "32bc3d5b1cd6843d57e5a3c3d918034c7f2ee93224eb4916a41779f6ed5849aa",
       "src": "modules/cro_audit/index.html"
     },
     {
@@ -375,8 +375,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 289022,
-      "sha256": "696a63024f182008aca18f07a9fc8552a62c706f8be240b41699e69f0c8f4f81",
+      "bytes": 289131,
+      "sha256": "862350bfce8323b9877d31c6bc367868f8e545b59f40da3d1033ee8f700876b8",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },
@@ -390,8 +390,8 @@
       "file": "modules/leave/index.html",
       "subtitle": "Leave planning, holiday visibility and staff availability calendar.",
       "summary": "Team leave management and availability control.",
-      "bytes": 187307,
-      "sha256": "acfa2dd051d29419e5c28f814ec665b155da7d513128390337cd986f7a99adc3",
+      "bytes": 187327,
+      "sha256": "b1c11fbee54f66eacbe72734850e3cdb338ec48af7ba987142fcd06d450c4143",
       "source_title": "Staff Leave Manager",
       "src": "modules/leave/index.html"
     },
@@ -405,8 +405,8 @@
       "file": "modules/tax/index.html",
       "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
       "summary": "Indian statutory deadline tracker with compliance status controls.",
-      "bytes": 251823,
-      "sha256": "2495154965a7dc0b307c6bf31eb32d2424bf75155ca5abf502105e088e008d18",
+      "bytes": 252017,
+      "sha256": "cdeded3d0d5189128d630b03bcdbe9038645c44adadd1f039d01dced59adcb47",
       "source_title": "Compliance Operating System — Indian Firms v2",
       "src": "modules/tax/index.html"
     },

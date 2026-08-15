@@ -16,9 +16,9 @@
 .home-store-context{display:flex;align-items:center;gap:10px;min-width:0;flex:1;flex-wrap:wrap}
 .home-store{font-family:var(--font-serif);font-size:21px;font-weight:400;color:var(--navy);line-height:1.1;letter-spacing:.2px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .home-store-picker{display:inline-flex;align-items:center;gap:5px;color:var(--gray-600);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-.home-store-picker select{min-height:36px;max-width:180px;padding:6px 28px 6px 9px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--navy);font:600 12px var(--font-sans)}
+.home-store-picker select{min-height:44px;max-width:180px;padding:6px 28px 6px 9px;border:1px solid var(--gray-300);border-radius:9px;background:#fff;color:var(--navy);font:600 12px var(--font-sans)}
 .store-context-pill{display:inline-flex;align-items:center;margin-left:6px;padding:2px 7px;border:1px solid rgba(184,146,42,.45);border-radius:999px;background:var(--gold-pale);color:var(--navy);font-size:10px;font-weight:700;white-space:nowrap}
-.home-bell{position:relative;width:40px;height:40px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
+.home-bell{position:relative;width:44px;height:44px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
 .home-bell:active{transform:scale(.95)}
 .home-bell svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
 .home-bell-dot{position:absolute;top:8px;right:9px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid #fff;display:none}
@@ -27,7 +27,7 @@
 
 /* ── HERO CARD (navy) ────────────────────────────────────────────────────── */
 .hero{
-  background:linear-gradient(135deg,var(--navy),var(--navy-mid));
+  background:var(--navy);
   color:#fff;border-radius:var(--radius-lg);padding:14px;
   box-shadow:var(--shadow-md);position:relative;overflow:hidden;margin-bottom:14px;
 }
@@ -47,7 +47,7 @@
 .hero-net-label{font-size:10px;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.08em}
 .hero-net-value{font-family:var(--font-serif);font-weight:400;font-size:40px;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px}
 .hero-net-value.neg{color:#fca5a5}
-.hero-eye{position:absolute;right:0;top:0;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:0;cursor:pointer}
+.hero-eye{position:absolute;right:0;top:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);border-radius:10px;padding:0;cursor:pointer}
 .hero-eye:active{transform:scale(.94);border-color:rgba(255,255,255,.3)}
 .hero-eye svg{width:17px;height:17px;stroke:var(--gold-light);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .hero-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(64px,1fr));gap:8px;margin-top:12px;position:relative;z-index:1}
@@ -60,20 +60,20 @@
 .hero-stat.tappable:active{transform:scale(.96);border-color:rgba(255,255,255,.3)}
 .hero-stat b{display:block;font-family:var(--font-serif);font-weight:400;font-size:19px;line-height:1.1;color:#fff;font-variant-numeric:tabular-nums}
 .hero-stat span{display:block;font-size:9.5px;color:rgba(255,255,255,.65);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;margin-top:13px;position:relative;z-index:1;
+.hero-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;margin-top:13px;position:relative;z-index:1;
   background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:10px 12px;color:#fde9b8;font-size:12.5px;font-weight:700}
 .hero-foot:active{background:rgba(255,255,255,.16)}
 .hero-foot svg{width:16px;height:16px;flex:none;stroke:var(--gold-light);fill:none;stroke-width:2.4}
 
 /* ── TODAY DETAIL VIEW ───────────────────────────────────────────────────── */
 .today-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.today-back{width:38px;height:38px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
+.today-back{width:44px;height:44px;flex:none;border-radius:11px;background:#fff;border:1px solid var(--gray-200);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:var(--navy)}
 .today-back:active{transform:scale(.95)}
 .today-back svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4}
 .today-title{flex:1;min-width:0}
 .today-title h2{font-family:var(--font-serif);font-size:24px;font-weight:400;color:var(--navy);line-height:1.05}
 .today-title .sub{color:var(--gray-600);font-size:12.5px;margin-top:2px}
-.today-pdf{width:38px;height:38px;flex:none;border-radius:11px;background:var(--navy);border:1px solid var(--navy);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:#fff}
+.today-pdf{width:44px;height:44px;flex:none;border-radius:11px;background:var(--navy);border:1px solid var(--navy);box-shadow:var(--shadow-sm);display:grid;place-items:center;color:#fff}
 .today-pdf:active{transform:scale(.95)}
 .today-pdf svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2.2}
 /* Today's own date stepper re-uses the .rpt-period look via JS-set inline styles. */
