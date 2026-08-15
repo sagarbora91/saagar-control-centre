@@ -15,7 +15,7 @@ commit-by-commit execution order is
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c` |
+| Governed tooling | `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
@@ -39,11 +39,11 @@ commit-by-commit execution order is
 ### Crash-resume checkpoint
 
 - The current-tooling controlled baseline is preserved at
-  `verification/audit/2026-08-14-182855-5a20fe5ebf53` by evidence commit
-  `b0657241496591f89256e87572fa2b23954aa3d1`. Its manifest SHA-256 is
-  `08b9f55085f9d04c025610b5c969611b618838d8376ac204bbf7a45a492fcf82`;
+  `verification/audit/2026-08-15-102206-18dcb9e5db5d` by evidence commit
+  `976547823520601538b943ae38fb1c89ee94eba4`. Its manifest SHA-256 is
+  `5153d6dee330cf2fb16b6fc4d6a0d11df77aa4544b47a10d5909ad7453c7771f`;
   exactly 18 files and every declared byte/hash identity validated.
-- Governed tooling `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c`
+- Governed tooling `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7`
   passes all 73 self-tests from its frozen tooling lineage. It is an ancestor of
   the product branch and every governed tooling byte is identical.
 - A9-02 engineering remediation is committed and pushed at
@@ -68,14 +68,15 @@ commit-by-commit execution order is
 - On 2026-08-14 Sagar (`sagarbora91`) accepted the fluent Marathi/Hindi reviewer
   role for Phase 4A and authorized creation of a dedicated local audit-evidence
   signing key. Only the public verification key may be committed; the private
-  key must remain outside the repository. No key has been generated and no
-  translation row has yet been reviewed or imported at this checkpoint.
-- Trust-contract inspection confirms the governed policy is still deliberately
-  closed at `trustedSignerCount: 0`; `externalEvidenceAuthorized()` always
-  returns false, and the audit self-test requires self-authored rendered evidence
-  to remain unmeasured. The next tooling checkpoint must provision real signature
-  verification, add adversarial behavioral tests, freeze new governed tooling,
-  and rebuild its controlled baseline before A6-04/A6-05 capture.
+  key remains outside the repository with a user-only Windows ACL. The frozen
+  public signer is `phase4a-renderer-ed25519-9ec3b61bbbdb245f`, public PEM
+  SHA-256 `9ec3b61bbbdb245ff1582941bc699a30c116645ee82814f1d0f5d46e2162faa0`.
+  Exact Ed25519 verification passes; unknown-key, changed-hash and changed-format
+  evidence fails closed.
+- Localization batch 01 is a machine draft awaiting Sagar's explicit review: 24
+  phrases covering 80 source occurrences, draft SHA-256
+  `6c0a0006d57edaa5e9964f6e018ebff569a64c33862e4e3051a0c4725962190a`.
+  Every row remains `pending-fluent-review`; no translation has been imported.
 
 ### Phase 4 progress and remaining-time estimate
 
@@ -87,12 +88,11 @@ commit-by-commit execution order is
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
 - Immediate next action: obtain genuine Marathi/Hindi translations and fluent
-  review in small, explicitly approved batches. In parallel, provision the
-  owner-authorized signing identity outside Git, commit only its public trust
-  root plus verification tests, and rebuild the governed baseline. Then capture
-  the signed 72-cell rendered matrix. No unreviewed wording may be attributed to
-  Sagar, and no English placeholder mappings or analyser exclusions are
-  acceptable.
+  review in small, explicitly approved batches, beginning with batch 01. Import
+  only approved rows, record the exact A6-03 reduction, then repeat. After A6-03
+  closes, capture the signed 72-cell rendered matrix. No unreviewed wording may
+  be attributed to Sagar, and no English placeholder mappings or analyser
+  exclusions are acceptable.
 
 ## Open acceptance gates
 

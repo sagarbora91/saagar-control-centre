@@ -108,10 +108,10 @@ decision, and the production release identity is preserved and pushed.
 ## Current resume point
 
 - The current-tooling 18-file baseline is preserved at
-  `verification/audit/2026-08-14-182855-5a20fe5ebf53` by evidence commit
-  `b0657241496591f89256e87572fa2b23954aa3d1`. Manifest SHA-256 is
-  `08b9f55085f9d04c025610b5c969611b618838d8376ac204bbf7a45a492fcf82`.
-- Governed tooling is `5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c` and passes
+  `verification/audit/2026-08-15-102206-18dcb9e5db5d` by evidence commit
+  `976547823520601538b943ae38fb1c89ee94eba4`. Manifest SHA-256 is
+  `5153d6dee330cf2fb16b6fc4d6a0d11df77aa4544b47a10d5909ad7453c7771f`.
+- Governed tooling is `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7` and passes
   73/73 in its frozen tooling worktree. Its bytes are identical in the product
   branch and it is an ancestor of the current product commit.
 - A9-02 code remediation is committed and pushed at
@@ -129,14 +129,15 @@ decision, and the production release identity is preserved and pushed.
   the fluent Marathi/Hindi reviewer and authorizes a dedicated local
   audit-evidence signing key, with only its public key committed and its private
   key kept outside the repository.
-- Stop identity for this checkpoint: no signing key has been generated, no
-  worklist row has been reviewed/imported, and the governed trust policy remains
-  closed with `trustedSignerCount: 0`. Internet/GitHub fetch is operational and
-  the shared branch was unchanged at `93da410` before this documentation-only
-  checkpoint.
-- Exact resume order: (1) generate the signing key outside the repository;
-  (2) implement public-key signature verification and adversarial trust tests;
-  (3) commit/push the tooling-only checkpoint; (4) rebuild and preserve a new
-  controlled baseline; (5) prepare small translation batches without claiming
-  reviewer approval; (6) import only batches Sagar explicitly reviews; and
-  (7) capture and validate the signed 72-cell A6-04/A6-05 matrix.
+- Signer provisioning is complete. The private Ed25519 key is outside Git with a
+  user-only Windows ACL; the governed public key ID is
+  `phase4a-renderer-ed25519-9ec3b61bbbdb245f`, public PEM SHA-256
+  `9ec3b61bbbdb245ff1582941bc699a30c116645ee82814f1d0f5d46e2162faa0`.
+- Translation batch 01 is drafted but not reviewed/imported: 24 phrases, 80
+  source occurrences, SHA-256
+  `6c0a0006d57edaa5e9964f6e018ebff569a64c33862e4e3051a0c4725962190a`.
+  All decisions remain `pending-fluent-review` and reviewer values are blank.
+- Exact resume order: (1) obtain Sagar's explicit review/corrections for batch
+  01; (2) import it and record the exact A6-03 reduction; (3) repeat small review
+  batches until A6-03 passes; and (4) capture, sign, commit and validate the
+  72-cell A6-04/A6-05 rendered matrix.
