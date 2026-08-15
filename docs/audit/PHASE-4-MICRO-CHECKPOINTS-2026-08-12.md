@@ -138,6 +138,9 @@ decision, and the production release identity is preserved and pushed.
   phrases covering 165 direct source occurrences reduced A6-03 from 1,145 to
   969 and increased the dictionary from 950 to 1,050 phrases. Its approved CSV
   SHA-256 is `1714079428cafa681d1ab51a2f947c8f473a84b790e59a3cd23349a8e0ae788a`.
+- Batch 03 is a pending-review checkpoint with 100 phrases/occurrences and draft
+  CSV SHA-256 `f4bb5d9eacfcd03656a5ff5e36007a28b2a20c3b5ad6917216623aaed0f3fed8`.
+  It has not been imported or attributed to the reviewer.
 - Exact resume order: (1) prepare the next bounded localization batch from the
   969 measured bypasses; (2) obtain Sagar's explicit review and import it; (3)
   repeat small review batches until A6-03 passes; and (4) capture, sign, commit and validate the

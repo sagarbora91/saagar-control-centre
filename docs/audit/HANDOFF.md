@@ -83,6 +83,10 @@ commit-by-commit execution order is
   shared dictionary from 950 to 1,050 phrases. The approved CSV SHA-256 is
   `1714079428cafa681d1ab51a2f947c8f473a84b790e59a3cd23349a8e0ae788a`;
   language tests pass 4/4 and source-integrity tests pass 8/8.
+- Batch 03 is prepared for fluent review: 100 phrases covering 100 current
+  A6-03 occurrences, draft CSV SHA-256
+  `f4bb5d9eacfcd03656a5ff5e36007a28b2a20c3b5ad6917216623aaed0f3fed8`.
+  All decisions remain `pending-fluent-review`; none has been imported.
 
 ### Phase 4 progress and remaining-time estimate
 
