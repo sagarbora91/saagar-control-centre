@@ -76,9 +76,14 @@ test('Marathi and Hindi dictionaries cover Settings, module names and common act
   assert.equal(api.translate('Could not create PDF:', 'hi'), 'PDF नहीं बनाई जा सकी:');
   assert.equal(api.translate('Privacy contact saved', 'mr'), 'गोपनीयता संपर्क जतन केला');
   assert.equal(api.translate('Incident clock started:', 'hi'), 'घटना की समय-गणना शुरू की गई:');
+  assert.equal(api.translate('Accounts / Owner only', 'mr'), 'खाती / फक्त मालकासाठी');
+  assert.equal(api.translate('Select an employee (add one in Employee Master first).', 'hi'),
+    'कर्मचारी चुनें (पहले कर्मचारी मास्टर में कर्मचारी जोड़ें)।');
+  assert.equal(api.translate('Only SM can lock/unlock.', 'mr'),
+    'फक्त स्टोअर मॅनेजर लॉक/अनलॉक करू शकतो.');
   assert.equal(api.translate('Unmapped business value', 'mr'), 'Unmapped business value');
   const stats = api.stats();
-  assert.ok(stats.mr >= 850, `expected >=850 Marathi UI phrases, got ${stats.mr}`);
+  assert.ok(stats.mr >= 950, `expected >=950 Marathi UI phrases, got ${stats.mr}`);
   assert.equal(stats.mr, stats.hi, 'Marathi and Hindi must have equal phrase coverage');
 });
 
