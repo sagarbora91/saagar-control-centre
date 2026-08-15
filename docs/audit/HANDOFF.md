@@ -15,14 +15,15 @@ commit-by-commit execution order is
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
 | Final target | determined by the final documentation/evidence commit |
-| Governed tooling | `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7` |
+| Governed tooling | `29a094757fbc5386d379ee73e71a30228b348308` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
   not complete.
 - Current internal diagnostics pass A2, A7, and A8. The A5 mutation cleanup and
   C-04 storage inventory/comparator defects are corrected.
-- A6-03 remains open with 862 genuine localization bypass occurrences after
-  reviewed localization batch 03. A6-04/A6-05 remain trusted-renderer
+- A6-03 remains open with 854 genuine localization bypass occurrences after
+  reviewed localization batch 03 and the bounded source/analyzer corrections.
+  A6-04/A6-05 remain trusted-renderer
   gates.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
@@ -38,6 +39,30 @@ commit-by-commit execution order is
 
 ### Crash-resume checkpoint
 
+- The exact pre-import product checkpoint is
+  `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
+  tooling ancestry are committed and pushed. Governed tooling
+  `29a094757fbc5386d379ee73e71a30228b348308` passes all 75 self-tests from its
+  frozen tooling lineage. Quote-aware tag scanning and line-level textarea
+  placeholder measurement are now fail-closed rather than suppressing real UI
+  strings.
+- The live A6-03 universe is exactly 854 occurrences / 854 unique phrases at a
+  1,150-phrase dictionary. Its extraction SHA-256 is
+  `bb642bbb20f283e0c56fe761484b94b675ea76a71958e5629b76165d5cd736f8`.
+  The consolidated 854-row review CSV is
+  `verification/audit/PHASE-4A-A6-LOCALIZATION-FINAL-REVIEW-DRAFT-2026-08-15.csv`,
+  SHA-256
+  `06215985a5001b71c06358cda1d1ef02c10e51df9534433fd5171f024bdfdcf7`.
+  Every row is still `pending-fluent-review` with a blank reviewer; nothing from
+  this package has been imported. Its 100-row attention aid has SHA-256
+  `afe375f8dd30f0540feeca9edcdc5506fab025b6c80dc16c371a5ef952d24011`.
+- The source/analyzer cleanup and governed profiles remain at exactly 107
+  capability deltas with comparison delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+  A new controlled baseline for tooling `29a094757...` is in progress; do not
+  accept or cite it until the runner exits successfully and its exact 18-file
+  manifest is validated. The older `18dcb9e5...` baseline below remains valid
+  historical evidence but is superseded for the final comparison.
 - The current-tooling controlled baseline is preserved at
   `verification/audit/2026-08-15-102206-18dcb9e5db5d` by evidence commit
   `976547823520601538b943ae38fb1c89ee94eba4`. Its manifest SHA-256 is
@@ -61,7 +86,7 @@ commit-by-commit execution order is
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
   API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
   and zero fatal-log matches. This is engineering evidence, not the final APK.
-- Consolidated Phase 4A is not complete. A6-03 still fails with 862 genuine
+- Consolidated Phase 4A is not complete. A6-03 still fails with 854 genuine
   localization bypasses; A6-04/A6-05 remain unmeasured trusted-renderer gates.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
@@ -89,12 +114,10 @@ commit-by-commit execution order is
   phrases. The approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`;
   language tests pass 4/4 and source-integrity tests pass 8/8.
-- Batch 04 is prepared for fluent review: 100 phrases covering 100 current
-  A6-03 occurrences, draft CSV SHA-256
-  `c1ea35c49a5bd7223d6f318887816f22880545ea371fcdc18f218ca309bea7de`.
-  All decisions remain `pending-fluent-review`; none has been imported. Its
-  review record calls out technical-literal, accounting-terminology, grammar,
-  and analyzer-fragment risks that must be resolved before approval.
+- The earlier batch 04 draft is superseded by the consolidated 854-row final
+  review package above. Objective literal preservation, 29 semantic-risk rows,
+  and the technical-acronym policy have already been applied as proposed
+  wording, but all 854 rows still require Sagar's exact-CSV fluent approval.
 
 ### Phase 4 progress and remaining-time estimate
 
@@ -105,12 +128,11 @@ commit-by-commit execution order is
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: obtain genuine Marathi/Hindi translations and fluent
-  review in small, explicitly approved batches, continuing with batch 04. Import
-  only approved rows, record the exact A6-03 reduction, then repeat. After A6-03
-  closes, capture the signed 72-cell rendered matrix. No unreviewed wording may
-  be attributed to Sagar, and no English placeholder mappings or analyser
-  exclusions are acceptable.
+- Immediate next action: obtain Sagar's identity-bound approval for the exact
+  consolidated 854-row CSV. Import only after that approval, rerun A6-03 and
+  product/profile tests, then capture the signed 72-cell rendered matrix. No
+  unreviewed wording may be attributed to Sagar, and no English placeholder
+  mappings or analyser exclusions are acceptable.
 
 ## Open acceptance gates
 

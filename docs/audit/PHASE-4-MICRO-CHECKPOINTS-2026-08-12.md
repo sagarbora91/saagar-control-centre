@@ -111,8 +111,8 @@ decision, and the production release identity is preserved and pushed.
   `verification/audit/2026-08-15-102206-18dcb9e5db5d` by evidence commit
   `976547823520601538b943ae38fb1c89ee94eba4`. Manifest SHA-256 is
   `5153d6dee330cf2fb16b6fc4d6a0d11df77aa4544b47a10d5909ad7453c7771f`.
-- Governed tooling is `18dcb9e5db5d33ac23433c54e36e10b9b2d571c7` and passes
-  73/73 in its frozen tooling worktree. Its bytes are identical in the product
+- Governed tooling is `29a094757fbc5386d379ee73e71a30228b348308` and passes
+  75/75 in its frozen tooling worktree. Its bytes are identical in the product
   branch and it is an ancestor of the current product commit.
 - A9-02 code remediation is committed and pushed at
   `fa1120c1a026d1525c2eb555a6aa8e29ce7e5b38`. A real seeded build proves the
@@ -122,7 +122,7 @@ decision, and the production release identity is preserved and pushed.
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
 - Current consolidated phase: 4A. It remains blocked on mandatory A6-03
-  (862 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
+  (854 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
@@ -142,11 +142,18 @@ decision, and the production release identity is preserved and pushed.
   A6-03 from 969 to 862 and increased the dictionary from 1,050 to 1,150. Its
   approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`.
-- Batch 04 is prepared but not imported: 100 phrases/occurrences, draft CSV
-  SHA-256 `c1ea35c49a5bd7223d6f318887816f22880545ea371fcdc18f218ca309bea7de`.
-  All decisions remain pending and its independent review warnings must be
-  resolved during fluent review.
-- Exact resume order: (1) prepare the next bounded localization batch from the
-  862 measured bypasses; (2) obtain Sagar's explicit review and import it; (3)
-  repeat small review batches until A6-03 passes; and (4) capture, sign, commit and validate the
-  72-cell A6-04/A6-05 rendered matrix.
+- Batch 04 is superseded by one consolidated final review package. The primary
+  CSV has 854 rows, SHA-256
+  `06215985a5001b71c06358cda1d1ef02c10e51df9534433fd5171f024bdfdcf7`;
+  all decisions remain pending and all reviewers blank. Its derived 100-row
+  attention CSV has SHA-256
+  `afe375f8dd30f0540feeca9edcdc5506fab025b6c80dc16c371a5ef952d24011`.
+  The exact pre-import product checkpoint is `832c9b612af4739908ad04c4521e9999bd86e5e6`.
+- A corrected-tooling baseline run is in progress. Accept it only after an exit
+  code of zero and exact validation of all 18 manifest-bound files; the older
+  `18dcb9e5...` baseline cannot govern the final comparison.
+- Exact resume order: (1) obtain Sagar's explicit exact-CSV approval for all
+  854 rows; (2) import, rerun A6-03, regenerate governed profiles and pass the
+  product suites; (3) capture, sign, commit and validate the 72-cell
+  A6-04/A6-05 rendered matrix; and (4) obtain Sagar's separate identity-bound
+  fluent visual approval.
