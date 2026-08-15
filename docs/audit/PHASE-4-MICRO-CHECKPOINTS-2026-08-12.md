@@ -142,6 +142,10 @@ decision, and the production release identity is preserved and pushed.
   A6-03 from 969 to 862 and increased the dictionary from 1,050 to 1,150. Its
   approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`.
+- Batch 04 is prepared but not imported: 100 phrases/occurrences, draft CSV
+  SHA-256 `c1ea35c49a5bd7223d6f318887816f22880545ea371fcdc18f218ca309bea7de`.
+  All decisions remain pending and its independent review warnings must be
+  resolved during fluent review.
 - Exact resume order: (1) prepare the next bounded localization batch from the
   862 measured bypasses; (2) obtain Sagar's explicit review and import it; (3)
   repeat small review batches until A6-03 passes; and (4) capture, sign, commit and validate the

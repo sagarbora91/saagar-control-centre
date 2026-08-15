@@ -89,6 +89,12 @@ commit-by-commit execution order is
   phrases. The approved CSV SHA-256 is
   `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`;
   language tests pass 4/4 and source-integrity tests pass 8/8.
+- Batch 04 is prepared for fluent review: 100 phrases covering 100 current
+  A6-03 occurrences, draft CSV SHA-256
+  `c1ea35c49a5bd7223d6f318887816f22880545ea371fcdc18f218ca309bea7de`.
+  All decisions remain `pending-fluent-review`; none has been imported. Its
+  review record calls out technical-literal, accounting-terminology, grammar,
+  and analyzer-fragment risks that must be resolved before approval.
 
 ### Phase 4 progress and remaining-time estimate
 
