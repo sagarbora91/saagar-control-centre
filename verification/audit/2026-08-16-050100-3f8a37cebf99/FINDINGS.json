@@ -1,0 +1,15 @@
+{
+  "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308",
+  "comparison": {
+    "failed": [
+      "C-02"
+    ],
+    "mandatoryUnmeasured": [],
+    "status": "comparison-failed-or-unmeasured"
+  },
+  "findings": [],
+  "format": "SAAGAR_WHOLE_APP_AUDIT_FINDINGS",
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "schemaVersion": 1,
+  "targetSha": "3f8a37cebf998cf6dd006e3a33de95600d3808f3"
+}

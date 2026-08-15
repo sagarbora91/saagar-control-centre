@@ -14,7 +14,7 @@ commit-by-commit execution order is
 |---|---|
 | Product anchor | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Working branch | `agent/modular-phase1-shared-spine-v2` |
-| Final target | determined by the final documentation/evidence commit |
+| Frozen Phase 4B comparison target | `3f8a37cebf998cf6dd006e3a33de95600d3808f3` |
 | Governed tooling | `29a094757fbc5386d379ee73e71a30228b348308` |
 
 - Modular HTML implementation is complete. Phase 4 audit and release closure is
@@ -72,6 +72,15 @@ commit-by-commit execution order is
   Sagar's renewed exact-identity approval is preserved at
   `verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`;
   `GATE-NATIVE-LANGUAGE` is closed for the repaired identity.
+- The final unapproved Phase 4B comparison is preserved at
+  `verification/audit/2026-08-16-050100-3f8a37cebf99`. Its evidence manifest
+  SHA-256 is
+  `1a1a827bbeb27444a1ccb0b95b2f1f66fd8448e02e4e3b5ac4190c5cab8bbe5a`.
+  All 18 files and declared hashes validate; the product suite passes 510/510,
+  there are zero audit findings, A5-03 and A6-04/A6-05 pass, and C-01 plus C-03
+  through C-09 pass. C-02 alone fails because all exact 107 capability deltas
+  remain unapproved. A10-04/A10-05 remain mandatory physical measurements and
+  are not comparison measurement losses.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -221,11 +230,23 @@ commit-by-commit execution order is
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: freeze this approval/documentation commit as the new
-  Phase 4B target and rerun the unapproved controlled comparison with replacement
-  rendered evidence `aaabdcaf...`. Do not reuse the older capability approval;
-  extract the final comparison identity before requesting exact capability
-  approval.
+- Immediate next action: obtain Sagar's exact 107-row capability approval bound
+  to target `3f8a37ce...`, tooling `29a09475...`, corrected baseline manifest
+  `b878f01c...`, baseline target, product baseline and audit-program version.
+  Then preserve the approval envelope and rerun from the same frozen target.
+
+Exact approval sentence:
+
+> I, Sagar (sagarbora91), approve the exact 107 capability deltas in
+> MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json, comparison delta SHA-256
+> 6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420,
+> for migration scope A3-02, bound to target commit
+> 3f8a37cebf998cf6dd006e3a33de95600d3808f3, audit tooling
+> 29a094757fbc5386d379ee73e71a30228b348308, baseline manifest SHA-256
+> b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468,
+> baseline target 29a094757fbc5386d379ee73e71a30228b348308, product baseline
+> 8f96480ec6ddfc99016af43a7369f57a06cb9fd6, and audit program
+> saagar-whole-app-audit-v1.0.0.
 
 ## Open acceptance gates
 

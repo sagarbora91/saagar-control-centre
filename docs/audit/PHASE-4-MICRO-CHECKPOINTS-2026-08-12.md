@@ -247,3 +247,20 @@ decision, and the production release identity is preserved and pushed.
   `verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`.
   `GATE-NATIVE-LANGUAGE` is closed for the repaired identity. Resume by freezing
   this approval/documentation commit and rerunning the unapproved comparison.
+
+### Phase 4B final unapproved comparison checkpoint — 2026-08-16
+
+- Frozen target: `3f8a37cebf998cf6dd006e3a33de95600d3808f3`; product
+  fingerprint SHA-256
+  `47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06`.
+- Evidence: `verification/audit/2026-08-16-050100-3f8a37cebf99`; manifest
+  SHA-256
+  `1a1a827bbeb27444a1ccb0b95b2f1f66fd8448e02e4e3b5ac4190c5cab8bbe5a`.
+  Exactly 18 files and all declared hashes validate.
+- Result: 510/510 product tests pass; zero audit findings; A5-03 and
+  A6-04/A6-05 pass. C-01 and C-03 through C-09 pass. C-02 alone fails with 107
+  unapproved deltas and delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+- Resume with the exact capability approval sentence in `docs/audit/HANDOFF.md`,
+  create the identity-bound approval envelope, and rerun the comparison from the
+  same frozen target. Do not retarget to this administrative evidence commit.
