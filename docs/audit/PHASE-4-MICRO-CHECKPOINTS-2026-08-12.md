@@ -122,7 +122,7 @@ decision, and the production release identity is preserved and pushed.
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
 - Current consolidated phase: 4A. It remains blocked on mandatory A6-03
-  (969 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
+  (862 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
@@ -138,10 +138,11 @@ decision, and the production release identity is preserved and pushed.
   phrases covering 165 direct source occurrences reduced A6-03 from 1,145 to
   969 and increased the dictionary from 950 to 1,050 phrases. Its approved CSV
   SHA-256 is `1714079428cafa681d1ab51a2f947c8f473a84b790e59a3cd23349a8e0ae788a`.
-- Batch 03 is a pending-review checkpoint with 100 phrases/occurrences and draft
-  CSV SHA-256 `f4bb5d9eacfcd03656a5ff5e36007a28b2a20c3b5ad6917216623aaed0f3fed8`.
-  It has not been imported or attributed to the reviewer.
+- Batch 03 was reviewed/imported at `12292ef`: 100 phrases/occurrences reduced
+  A6-03 from 969 to 862 and increased the dictionary from 1,050 to 1,150. Its
+  approved CSV SHA-256 is
+  `9732d776cff4f38c5c17767552097d09c425dc272bed3f6dfa7c08ea8fc5ed2d`.
 - Exact resume order: (1) prepare the next bounded localization batch from the
-  969 measured bypasses; (2) obtain Sagar's explicit review and import it; (3)
+  862 measured bypasses; (2) obtain Sagar's explicit review and import it; (3)
   repeat small review batches until A6-03 passes; and (4) capture, sign, commit and validate the
   72-cell A6-04/A6-05 rendered matrix.
