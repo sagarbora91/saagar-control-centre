@@ -1,6 +1,6 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-15 (Asia/Kolkata)
+**Updated:** 2026-08-16 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
 ## Phase 4 live checkpoint - 2026-08-12
@@ -24,8 +24,11 @@ commit-by-commit execution order is
 - A6-03 passes with zero localization bypasses after Sagar's exact 854-row
   approval and import. A6-04/A6-05 now pass with committed, signature-valid
   72-cell rendered evidence. Sagar's separate identity-bound fluent visual
-  approval is recorded and `GATE-NATIVE-LANGUAGE` is closed for the exact
-  rendered product identity.
+  approval is recorded and `GATE-NATIVE-LANGUAGE` is closed for product
+  `833941efec4daebc47fc6a75007578168ac6b6aa`. The Phase 4B test-registration
+  repair changes product identity without changing UI bytes, so a fresh signed
+  capture and exact-identity fluent reapproval are required before the new
+  target can be frozen.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
   sales totals.
@@ -39,6 +42,22 @@ commit-by-commit execution order is
   are complete.
 
 ### Crash-resume checkpoint
+
+- The first Phase 4B unapproved comparison was a diagnostic run against
+  `065e2e55ad3658ffaef52ce5b0ef9a1f72cdee42`. Its 18 files and hashes validate;
+  C-01 and C-04 through C-09 pass, while C-02/C-03 are deliberately unapproved.
+  It also exposed one new P1 A5-03 finding: the three-case
+  `tests/a6-analyzer-noise-source-regression.test.mjs` was committed but absent
+  from every package test command. That diagnostic output is not final evidence
+  and must not be approved or committed as the Phase 4B comparison.
+- The minimum honest repair registers that file in `test:language`, increasing
+  the complete product pipeline from 507 to 510 tests. A registry exclusion or
+  finding waiver is invalid for this ordinary executable test. Frozen tooling
+  `29a094757fbc5386d379ee73e71a30228b348308` and baseline manifest SHA-256
+  `b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468`
+  remain valid. Because `package.json` contributes to product identity, repeat
+  the signed 72-cell capture and exact-identity fluent approval before refreezing
+  and rerunning the comparison.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -63,7 +82,7 @@ commit-by-commit execution order is
 - The runtime dictionaries now contain 2,009 exact keys per language; the
   governed A6 normalized dictionary measures 2,004 phrases. A6-03 passes with
   zero bypasses across 12 surfaces and 53 first-party JavaScript files. The
-  complete product pipeline passes 507/507; MAH-3 passes 19/19, MAH-4 46/46,
+  complete product pipeline passes 510/510; MAH-3 passes 19/19, MAH-4 46/46,
   and modular 86/86.
 - The first post-import signed Edge diagnostic bound all 72 matrix cells to
   target `e9795999bcbdd1e8ccc3c56716755f133f1e5984`, product fingerprint
@@ -140,7 +159,7 @@ commit-by-commit execution order is
   SHA-256 values all equal
   `7e3165b486c7ce0ee6e8f1c16acd00745acb5047aa7988e7df059abafc84b557`.
   Formal A9-02 comparison evidence still requires the frozen target run.
-- The complete product suite passes 507/507, including 129 ETP and 86 modular
+- The complete product suite passes 510/510, including 129 ETP and 86 modular
   tests. The modular suite confirms the ledger remains exactly 107 rows with
   comparison delta SHA-256
   `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.

@@ -40,7 +40,7 @@ run with no 18-file evidence directory is discarded without changing Git.
 record, and product-bound profiles. Rerun the complete product and audit-tooling
 suites. Make no further product changes afterward.
 
-**Exit:** clean target commit with product suite 507/507 and tooling suite 69/69
+**Exit:** clean target commit with product suite 510/510 and tooling suite 69/69
 or later exact passing totals; record the target SHA; push immediately.
 
 ## P4.3 - Unapproved controlled comparison
@@ -117,7 +117,7 @@ decision, and the production release identity is preserved and pushed.
 - A9-02 code remediation is committed and pushed at
   `fa1120c1a026d1525c2eb555a6aa8e29ce7e5b38`. A real seeded build proves the
   canonical, generated and APK-contained `build-identity.js` SHA-256 values are
-  identical. The complete product suite passes 507/507.
+  identical. The complete product suite passes 510/510.
 - The prefreeze diagnostic APK is 7,269,978 bytes with SHA-256
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
@@ -214,3 +214,21 @@ decision, and the production release identity is preserved and pushed.
   run the unapproved controlled comparison against the corrected-tooling
   baseline, validate its 18-file evidence set, and obtain a new exact capability
   approval for the resulting target/tooling/baseline/delta identity.
+
+### Phase 4B diagnostic and repair checkpoint — 2026-08-16
+
+- Diagnostic comparison target
+  `065e2e55ad3658ffaef52ce5b0ef9a1f72cdee42` produced and validated 18 external
+  evidence files. C-01 and C-04 through C-09 pass; C-02/C-03 remain deliberately
+  unapproved.
+- The comparison found new P1 `A5-03`: tracked
+  `tests/a6-analyzer-noise-source-regression.test.mjs` was not registered by a
+  package test command. New P0/P1 findings cannot be waived by C-03, so this
+  diagnostic comparison must not proceed to approval.
+- Register all three cases in `test:language`, run the resulting 510-test product
+  pipeline, commit and push. This product-only repair preserves tooling
+  `29a094757fbc5386d379ee73e71a30228b348308` and corrected baseline manifest
+  SHA-256 `b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468`.
+- Since `package.json` changes product fingerprint, recapture/sign all 72 UI
+  cells and obtain a renewed exact-identity fluent approval. Only then freeze a
+  new target and rerun the unapproved comparison.
