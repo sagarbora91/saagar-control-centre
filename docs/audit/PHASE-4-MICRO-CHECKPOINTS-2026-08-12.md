@@ -242,5 +242,8 @@ decision, and the production release identity is preserved and pushed.
   and the unchanged matrix SHA-256
   `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`.
   A6-04/A6-05 pass with zero violations, and all 72 measured cell identities
-  match the earlier approved capture. Resume with Sagar's renewed fluent
-  approval for this identity, then refreeze and rerun the comparison.
+  match the earlier approved capture. Sagar's renewed exact-identity approval is
+  preserved at
+  `verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`.
+  `GATE-NATIVE-LANGUAGE` is closed for the repaired identity. Resume by freezing
+  this approval/documentation commit and rerunning the unapproved comparison.

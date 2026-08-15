@@ -1,0 +1,46 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "GATE-NATIVE-LANGUAGE",
+  "decision": "approve",
+  "state": "closed",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "fluent-marathi-hindi-reviewer"
+  },
+  "receivedAt": "2026-08-16T04:59:11.4756881+05:30",
+  "productCommit": "5fc59e1cf09898e4e5fc030a8097f74736387ec6",
+  "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+  "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308",
+  "renderedEvidenceCommit": "997c71a03122071a900b164be737680afa11384d",
+  "renderedEvidenceRecord": "verification/audit/attested/rendered-ui/phase4b-a6-rendered-5fc59e1cf098-20260816.json",
+  "renderedEvidenceFileSha256": "947ed7f68ac0f7d9e7e262b9c5a45765fcc90d8d26b233b98d09a05c92e0fdd1",
+  "renderedEvidenceSha256": "aaabdcaf21f0448f10ac2fa0eb2309664ee3fed5546d27f08e09ddfda0941715",
+  "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+  "matrix": {
+    "cells": 72,
+    "marathiHindiCells": 48,
+    "measuredTargets": 2394,
+    "measuredContrastSamples": 6105,
+    "targetViolations": 0,
+    "contrastViolations": 0,
+    "browserErrors": 0,
+    "a6_04": "pass",
+    "a6_05": "pass"
+  },
+  "approvalText": "I, Sagar (sagarbora91), reviewed all 72 rendered UI matrix cells, including all 48 Marathi/Hindi cells, for product commit 5fc59e1cf09898e4e5fc030a8097f74736387ec6, product fingerprint SHA-256 47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06, rendered-evidence SHA-256 aaabdcaf21f0448f10ac2fa0eb2309664ee3fed5546d27f08e09ddfda0941715, and matrix SHA-256 db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff. I confirm the Marathi and Hindi wording renders legibly and retains the intended meaning, with no unresolved mistranslation, clipping, overlap, or truncation, and I approve closure of GATE-NATIVE-LANGUAGE for this exact product identity. This approval does not substitute for physical-device acceptance, UAT, or release approval.",
+  "scope": {
+    "closes": [
+      "GATE-NATIVE-LANGUAGE"
+    ],
+    "doesNotClose": [
+      "physical-device-acceptance",
+      "staff-uat",
+      "legal-approval",
+      "production-signing",
+      "release-approval"
+    ]
+  },
+  "registryNote": "The frozen audit-v1 OPEN_GATES registry remains unchanged because it is part of governed tooling identity 29a094757fbc5386d379ee73e71a30228b348308. This identity-bound approval record is the Phase 4 external closure evidence for GATE-NATIVE-LANGUAGE at the repaired product identity."
+}

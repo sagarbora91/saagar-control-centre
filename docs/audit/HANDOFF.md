@@ -24,11 +24,9 @@ commit-by-commit execution order is
 - A6-03 passes with zero localization bypasses after Sagar's exact 854-row
   approval and import. A6-04/A6-05 now pass with committed, signature-valid
   72-cell rendered evidence. Sagar's separate identity-bound fluent visual
-  approval is recorded and `GATE-NATIVE-LANGUAGE` is closed for product
-  `833941efec4daebc47fc6a75007578168ac6b6aa`. The Phase 4B test-registration
-  repair changes product identity without changing UI bytes, so a fresh signed
-  capture and exact-identity fluent reapproval are required before the new
-  target can be frozen.
+  approval is recorded and `GATE-NATIVE-LANGUAGE` is closed for repaired product
+  `5fc59e1cf09898e4e5fc030a8097f74736387ec6` using the replacement signed
+  evidence. The earlier approval remains historical and is not reused.
 - Retail ETP import is owned only by Reports. Bounded R003/R013 exception counts
   are presented as reconciliation information that does not alter revenue or
   sales totals.
@@ -71,7 +69,9 @@ commit-by-commit execution order is
   matrix SHA-256 remains
   `db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff`,
   and all 72 measured cell identities exactly match the prior approved capture.
-  Await only Sagar's renewed approval for this new product/evidence identity.
+  Sagar's renewed exact-identity approval is preserved at
+  `verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json`;
+  `GATE-NATIVE-LANGUAGE` is closed for the repaired identity.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -221,11 +221,11 @@ commit-by-commit execution order is
 - Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: record Sagar's renewed exact-identity fluent approval
-  for product `5fc59e1c...` and rendered evidence `aaabdcaf...`, then refreeze the
-  Phase 4B target and rerun the unapproved controlled comparison. Do not reuse
-  the older capability approval; extract the final comparison identity before
-  requesting exact capability approval.
+- Immediate next action: freeze this approval/documentation commit as the new
+  Phase 4B target and rerun the unapproved controlled comparison with replacement
+  rendered evidence `aaabdcaf...`. Do not reuse the older capability approval;
+  extract the final comparison identity before requesting exact capability
+  approval.
 
 ## Open acceptance gates
 
