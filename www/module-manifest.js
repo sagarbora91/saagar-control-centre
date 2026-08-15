@@ -288,8 +288,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 258648,
-      "sha256": "0fbeac3998b69ecfa560614f8f0c96793212f9261b3bfc576b05d71706beebe8",
+      "bytes": 258643,
+      "sha256": "4ccda76420e120d3affbe2c73acc03b85f6a8ea1c827fd01fc2ff22d92d0d2a0",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },
@@ -303,8 +303,8 @@
       "file": "modules/qms/index.html",
       "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
       "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
-      "bytes": 192894,
-      "sha256": "03a517313a2439790383c45c2db1725df2c27c9b426dd78661db63bffc4beca4",
+      "bytes": 192962,
+      "sha256": "298b134f19d4d7ed3ee8077d3378276d83f6d1d021e2910da44865e81c75846a",
       "src": "modules/qms/index.html"
     },
     {
@@ -331,8 +331,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 184024,
-      "sha256": "68a835aeb9bcc3cee3508b1d2faba4d83c26155153ac3cc01ccb1cee7c3f82e9",
+      "bytes": 184033,
+      "sha256": "8141fbd3d0fc3f65756f955c3d36dff6624a431c961e97e7352d5a6672b3f0cc",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -375,8 +375,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 288922,
-      "sha256": "c9f12ed76515c5b37406dcafe098831c700238324d9a5d9bd5f9d3803140122e",
+      "bytes": 289022,
+      "sha256": "696a63024f182008aca18f07a9fc8552a62c706f8be240b41699e69f0c8f4f81",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },
@@ -405,8 +405,8 @@
       "file": "modules/tax/index.html",
       "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
       "summary": "Indian statutory deadline tracker with compliance status controls.",
-      "bytes": 251381,
-      "sha256": "99f67a55ac22d791d4c84b18554731cb85bfd08e8d23e5d454c9f72c41880bda",
+      "bytes": 251823,
+      "sha256": "2495154965a7dc0b307c6bf31eb32d2424bf75155ca5abf502105e088e008d18",
       "source_title": "Compliance Operating System — Indian Firms v2",
       "src": "modules/tax/index.html"
     },
@@ -420,8 +420,8 @@
       "file": "modules/planning/index.html",
       "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
       "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
-      "bytes": 39564,
-      "sha256": "5788a6a12ff0e2073ab3d828061c80e2c2e50e80975d759403dc59fc92f9833f",
+      "bytes": 39616,
+      "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d",
       "src": "modules/planning/index.html"
     }
   ]

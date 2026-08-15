@@ -400,6 +400,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
       var chk=(f.checklist||[]);
       var done=chk.filter(function(x){return x.done;}).length;
       var chkHtml=chk.map(function(x,i){ return '<div class="chk"><input type="checkbox" '+(x.done?'checked':'')+' onclick="toggleChk(\''+f.id+'\','+i+')"><span style="flex:1'+(x.done?';text-decoration:line-through;color:#9ca3af':'')+'">'+esc(x.text)+'</span><button class="btn xs red" onclick="delChk(\''+f.id+'\','+i+')">✕</button></div>'; }).join('');
+      var checklistLabel='Pre-festival checklist ('+done+'/'+chk.length+')';
       return '<div class="card fest'+(past?' past':'')+'">'+
         '<div class="row" style="justify-content:space-between"><div><b style="font-size:15px;color:var(--navy)">'+esc(f.name)+'</b> '+statusBadge(f)+(f.blackout?' <span class="badge free">Leave freeze</span>':'')+'<div class="muted">'+esc(f.start)+' → '+esc(f.end)+'</div></div>'+
           '<div class="row"><button class="btn xs" onclick="editFestival(\''+f.id+'\')">Edit</button><button class="btn xs red" onclick="delFestival(\''+f.id+'\')">Delete</button></div></div>'+
@@ -408,7 +409,7 @@ html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !importa
           '<div><b>'+inr(act)+'</b><span>Actual (QMS sales)</span></div>'+
           '<div><b>'+pct+'%</b><span>of target</span></div></div>'+
         (tgt>0?'<div class="bar"><span style="width:'+pct+'%"></span></div>':'')+
-        '<div style="margin-top:12px"><label>Pre-festival checklist ('+done+'/'+chk.length+')</label>'+chkHtml+
+        '<div style="margin-top:12px"><label>'+esc(checklistLabel)+'</label>'+chkHtml+
           '<div class="row" style="margin-top:8px"><input id="ck_'+f.id+'" placeholder="Add a prep item — e.g. top up Raga stock" style="flex:1"><button class="btn xs g" onclick="addChkItem(\''+f.id+'\')">Add</button></div></div>'+
       '</div>';
     }).join('');

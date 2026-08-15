@@ -6839,7 +6839,12 @@ function renderConfigSecurity(){
   host.innerHTML=ACCESS_MODULES.map(id=>{
     const mod=moduleById(id), enabled=policy.modules[id]===true;
     const label=(mod&&(mod.short||mod.title))||id;
-    return `<label class="module-pin-option ${editable?'':'is-disabled'}"><input type="checkbox" data-module-pin="${escapeHtml(id)}" ${enabled?'checked':''} ${editable?'':'disabled'} onchange="setModulePinProtection('${escapeHtml(id)}',this.checked)"><span class="module-pin-copy"><strong>${escapeHtml(label)}</strong><span>${enabled?'Owner PIN required to open':'No module-entry PIN'}</span></span></label>`;
+    const optionClass=`module-pin-option ${editable?'':'is-disabled'}`;
+    const inputMarkup=`<input type="checkbox" data-module-pin="${escapeHtml(id)}" ${enabled?'checked':''} ${editable?'':'disabled'} onchange="setModulePinProtection('${escapeHtml(id)}',this.checked)">`;
+    const moduleName=`<strong>${escapeHtml(label)}</strong>`;
+    return enabled
+      ? `<label class="${optionClass}">${inputMarkup}<span class="module-pin-copy">${moduleName}<span>Owner PIN required to open</span></span></label>`
+      : `<label class="${optionClass}">${inputMarkup}<span class="module-pin-copy">${moduleName}<span>No module-entry PIN</span></span></label>`;
   }).join('');
 }
 

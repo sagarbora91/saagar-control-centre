@@ -2406,6 +2406,7 @@ function renderMaster(){
   const tin=(rw,gi,f,w)=>`<input type="text" value="${escA(rw[f]||"")}" data-row="${gi}" data-field="${f}" style="width:${w}px;text-align:left;font-size:11px">`;
   body.innerHTML=rows.map((row,li)=>{
     const gi=gmGlobalIdx(li);
+    const advanceTitle=`Auto from Advance Vouchers mapped to ${state.meta.month} ${state.meta.year}. Create/manage in the Advances tab.`;
     return`<tr${row.active===false?' style="opacity:.55"':''}>
       <td class="no-print gm-del-cell"><button class="row-del" onclick="delRow(${gi})">✕</button></td>
       <td data-label="Sr">${li+1}</td>
@@ -2429,7 +2430,7 @@ function renderMaster(){
       <td data-label="Paid Date"><input type="date" value="${escA(row.paidDate)}" data-row="${gi}" data-field="paidDate" style="width:118px;font-size:11px"></td>
       <td data-label="ID Proof Ref">${tin(row,gi,"idProof",110)}</td>
       <td style="text-align:center" data-label="Active"><input type="checkbox" data-row="${gi}" data-field="active" ${row.active?"checked":""} style="width:18px;height:18px;cursor:pointer">${row.active===false?'<div style="font-size:9px;color:var(--orange);font-weight:700;margin-top:2px;line-height:1.1">excluded<br>from pay</div>':''}</td>
-      <td style="color:var(--orange);font-weight:700;text-align:right" data-label="Advance" title="Auto from Advance Vouchers mapped to ${escA(state.meta.month)} ${escA(String(state.meta.year))}. Create/manage in the Advances tab.">${advanceForRow(row)>0?fmtMoney(advanceForRow(row),0):"—"}</td>
+      <td style="color:var(--orange);font-weight:700;text-align:right" data-label="Advance" title="${escA(advanceTitle)}">${advanceForRow(row)>0?fmtMoney(advanceForRow(row),0):"—"}</td>
       <td data-label="Remark"><input type="text" value="${escA(row.salaryRemark)}" data-row="${gi}" data-field="salaryRemark" style="width:110px;text-align:left;font-size:11px"></td>
       <td class="no-print" data-label="Send Slip" style="white-space:nowrap">
         <button class="btn" style="padding:5px 8px;font-size:11px" onclick="shareEmpSlip(${gi})" title="Build this employee's PDF slip and open the share sheet (WhatsApp appears there)">📄 Slip</button>
@@ -3018,7 +3019,7 @@ function renderHr(){
   const fe=document.getElementById("fnfEmp");
   if(fe){
     const prev=fe.value;
-    fe.innerHTML=rows.length?rows.map((r,li)=>{const gi=gmGlobalIdx(li);return `<option value="${gi}">${slipEsc(r.name||"(no name)")}${r.empId?" — "+slipEsc(r.empId):""}${r.active===false?" — retired":""}</option>`;}).join(""):`<option value="">No employees — add in Employee Master</option>`;
+    fe.innerHTML=rows.length?rows.map((r,li)=>{const gi=gmGlobalIdx(li);const optionLabel=(r.name||"(no name)")+(r.empId?" — "+r.empId:"")+(r.active===false?" — retired":"");return `<option value="${gi}">${slipEsc(optionLabel)}</option>`;}).join(""):`<option value="">No employees — add in Employee Master</option>`;
     if(prev!==""&&Array.prototype.some.call(fe.options,o=>o.value===prev))fe.value=prev;
   }
   const fp=document.getElementById("fnfPeriod");
@@ -3320,7 +3321,8 @@ function archiveLabel(k){const i=k.lastIndexOf("-");return k.slice(0,i)+" "+k.sl
 function fillArchiveSelector(){
   const sel=document.getElementById("ap-archive-sel"); if(!sel) return;
   const cur=curKey(), keys=archiveKeys().filter(k=>k!==cur);
-  const opts=['<option value="">Current month ('+escT(state.meta.month+" "+state.meta.year)+') — live</option>']
+  const currentMonthLabel=`Current month (${state.meta.month} ${state.meta.year}) — live`;
+  const opts=['<option value="">'+escT(currentMonthLabel)+'</option>']
     .concat(keys.map(k=>'<option value="'+escA(k)+'">'+escT(archiveLabel(k))+' (locked)</option>'));
   sel.innerHTML=opts.join("");
   sel.value=apArchiveKey||"";

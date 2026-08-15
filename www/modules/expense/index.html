@@ -1006,7 +1006,7 @@ function renderLedger(){
        fld('Category','<select id="f_cat">'+(entryType==='income'?INC_CATS:EXP_CATS).map(function(x){return '<option>'+x+'</option>';}).join('')+'</select>')+
        fld('Firm','<select id="f_firm">'+orgFirms().map(function(x){return '<option>'+esc(x)+'</option>';}).join('')+'</select>')+
        fld('Store (cash drawer)','<select id="f_store">'+storeOpts('')+'</select>')+
-       fld('Vendor / payee','<input list="vlist" id="f_vendor" placeholder="optional" oninput="updVendGst()"><datalist id="vlist">'+vend.map(function(v){return '<option value="'+esc(v.name)+'">';}).join('')+'</datalist><div id="f_vgst" class="small muted" style="margin-top:3px"></div>')+
+       fld('Vendor / payee','<input list="vlist" id="f_vendor" placeholder="optional" oninput="updVendGst()"><datalist id="vlist">'+vend.map(function(v){return '<option value="'+esc(v.name)+'"></option>';}).join('')+'</datalist><div id="f_vgst" class="small muted" style="margin-top:3px"></div>')+
        fld('Bill photo','<input type="file" id="f_photo" accept="image/*" capture="environment">')+
        (entryType==='expense'?
          fld('GST rate (%)','<input type="number" id="f_gstr" min="0" step="0.01" placeholder="optional" onchange="prefillGst()">')+

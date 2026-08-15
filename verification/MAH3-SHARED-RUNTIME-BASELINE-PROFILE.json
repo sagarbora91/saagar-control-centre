@@ -16,23 +16,23 @@
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
     "fileCount": 100,
-    "totalBytes": 7749997,
-    "treeSha256": "3f52db3fc1e199158d7a1909f77f15826c87f0c586978e9734e66a2ee504dd5a",
+    "totalBytes": 7792189,
+    "treeSha256": "fb02bdcd5215f0c71d338d3d89e7b1ebdc292f44b3080a30de74a53a6be1399c",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 575799,
-        "sha256": "8cd20cbc02abff2977bd8717abae4fa4221001142652a2cf7732f9772f4cb8f5"
+        "bytes": 576043,
+        "sha256": "4de33fac69cb633b67dac189875cb43230b78e9aee169fdd8007ed14e585ddb2"
       },
       {
         "path": "www/module-manifest.js",
         "bytes": 17535,
-        "sha256": "40408e48ef9023e36fbfb2119a3fb495a6afe12b7a3278bbdd369db807b2e1da"
+        "sha256": "d0b4a653580658aa56498856cb53aea4ae872277544b069e92a2be49541fa334"
       },
       {
         "path": "www/app-i18n.js",
-        "bytes": 113724,
-        "sha256": "4ed016c94ebbe51b718b3fb0722e66774cf0c152c5d50178372b84356ec5fb51"
+        "bytes": 155006,
+        "sha256": "14db7eea2c4459ecc33a7d90407bdf7ae14b05d3812486250b9358792c96c2ac"
       },
       {
         "path": "www/mobile-layout.css",
@@ -66,8 +66,8 @@
       },
       {
         "path": "www/modules/planning/index.html",
-        "bytes": 39564,
-        "sha256": "5788a6a12ff0e2073ab3d828061c80e2c2e50e80975d759403dc59fc92f9833f"
+        "bytes": 39616,
+        "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d"
       },
       {
         "path": "www/modules/dsr/index.html",
@@ -76,8 +76,8 @@
       },
       {
         "path": "www/modules/qms/index.html",
-        "bytes": 192894,
-        "sha256": "03a517313a2439790383c45c2db1725df2c27c9b426dd78661db63bffc4beca4"
+        "bytes": 192962,
+        "sha256": "298b134f19d4d7ed3ee8077d3378276d83f6d1d021e2910da44865e81c75846a"
       },
       {
         "path": "www/shared/module-runtime.js",
@@ -143,8 +143,8 @@
   },
   "sharedRuntimeCandidates": {
     "planning": {
-      "moduleBytes": 39564,
-      "moduleSha256": "5788a6a12ff0e2073ab3d828061c80e2c2e50e80975d759403dc59fc92f9833f",
+      "moduleBytes": 39616,
+      "moduleSha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d",
       "inlineTimeouts": 0,
       "mutationObservers": 0,
       "intervals": 0,
