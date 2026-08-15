@@ -1010,7 +1010,7 @@ test('APK normalization validates STORE, DEFLATE/data-descriptor, CRC, ZIP64 and
   }
 });
 
-test('A10 device claims remain unmeasured while the external trust root is closed', async () => {
+test('legacy and unsigned A10 device claims cannot self-authorize', async () => {
   const module = await import(pathToFileURL(path.join(ROOT, 'scripts/audit/audits/a10.mjs')).href);
   const context = buildContext(ROOT);
   const auditToolingSha = 'a'.repeat(40);
