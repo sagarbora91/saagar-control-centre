@@ -122,7 +122,7 @@ decision, and the production release identity is preserved and pushed.
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`;
   API-23 install-replace/launch passes with zero fatal-log matches.
 - Current consolidated phase: 4A. It remains blocked on mandatory A6-03
-  (1,226 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
+  (1,145 genuine bypasses) and trusted A6-04/A6-05 rendered evidence. Do not
   freeze the target or begin the comparison until these product/language gates
   are genuinely closed.
 - Resume authorization recorded 2026-08-14: Sagar (`sagarbora91`) will act as
@@ -133,11 +133,12 @@ decision, and the production release identity is preserved and pushed.
   user-only Windows ACL; the governed public key ID is
   `phase4a-renderer-ed25519-9ec3b61bbbdb245f`, public PEM SHA-256
   `9ec3b61bbbdb245ff1582941bc699a30c116645ee82814f1d0f5d46e2162faa0`.
-- Translation batch 01 is drafted but not reviewed/imported: 24 phrases, 80
-  source occurrences, SHA-256
-  `6c0a0006d57edaa5e9964f6e018ebff569a64c33862e4e3051a0c4725962190a`.
-  All decisions remain `pending-fluent-review` and reviewer values are blank.
+- Translation batch 01 was reviewed/imported at `fca6924`: 24 phrases reduced
+  A6-03 from 1,226 to 1,145. Batch 02 is drafted but not reviewed/imported: 100
+  phrases, 165 source occurrences, SHA-256
+  `1ea3009c065fa8d8227b1d73810b4f0dbc703568b66f79ee142367d0442a74c5`.
+  Its decisions remain `pending-fluent-review` and reviewer values are blank.
 - Exact resume order: (1) obtain Sagar's explicit review/corrections for batch
-  01; (2) import it and record the exact A6-03 reduction; (3) repeat small review
+  02; (2) import it and record the exact A6-03 reduction; (3) repeat small review
   batches until A6-03 passes; and (4) capture, sign, commit and validate the
   72-cell A6-04/A6-05 rendered matrix.

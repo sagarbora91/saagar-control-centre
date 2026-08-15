@@ -61,7 +61,7 @@ commit-by-commit execution order is
   `D4C76C5D567899E1D29FD7AFA9007D0A255CCDEEF161CA1AA1B62E6937AEDEDF`.
   API-23 install-replace and launch pass in 1.532 seconds with MainActivity live
   and zero fatal-log matches. This is engineering evidence, not the final APK.
-- Consolidated Phase 4A is not complete. A6-03 still fails with 1,226 genuine
+- Consolidated Phase 4A is not complete. A6-03 still fails with 1,145 genuine
   localization bypasses; A6-04/A6-05 remain unmeasured trusted-renderer gates.
   These mandatory P1 items cannot be waived as retained P2 debt. Do not freeze
   the final target or begin the comparison until the language/UI path is closed.
@@ -73,10 +73,14 @@ commit-by-commit execution order is
   SHA-256 `9ec3b61bbbdb245ff1582941bc699a30c116645ee82814f1d0f5d46e2162faa0`.
   Exact Ed25519 verification passes; unknown-key, changed-hash and changed-format
   evidence fails closed.
-- Localization batch 01 is a machine draft awaiting Sagar's explicit review: 24
-  phrases covering 80 source occurrences, draft SHA-256
-  `6c0a0006d57edaa5e9964f6e018ebff569a64c33862e4e3051a0c4725962190a`.
-  Every row remains `pending-fluent-review`; no translation has been imported.
+- Localization batch 01 was explicitly reviewed by Sagar and imported at
+  `fca6924963d75563a6fe82585f876869a13ccc4c`. Its 24 phrases reduced A6-03
+  from 1,226 to 1,145 occurrences and increased the shared dictionary from 926
+  to 950 phrases; language tests pass 4/4 and source-integrity tests pass 8/8.
+- Batch 02 is a machine draft awaiting Sagar's explicit review: 100 phrases
+  covering 165 source occurrences, SHA-256
+  `1ea3009c065fa8d8227b1d73810b4f0dbc703568b66f79ee142367d0442a74c5`.
+  All decisions remain `pending-fluent-review`; none has been imported.
 
 ### Phase 4 progress and remaining-time estimate
 
@@ -88,7 +92,7 @@ commit-by-commit execution order is
   capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
   physical/performance, production ETP, UAT, legal, signing and release authority.
 - Immediate next action: obtain genuine Marathi/Hindi translations and fluent
-  review in small, explicitly approved batches, beginning with batch 01. Import
+  review in small, explicitly approved batches, continuing with batch 02. Import
   only approved rows, record the exact A6-03 reduction, then repeat. After A6-03
   closes, capture the signed 72-cell rendered matrix. No unreviewed wording may
   be attributed to Sagar, and no English placeholder mappings or analyser
