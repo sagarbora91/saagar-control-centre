@@ -127,6 +127,36 @@ export function validTimingSamples(value) {
     value.every(sample => finiteNonNegative(sample, MAX_TIMING_MS));
 }
 
+export function evaluateShellPerformance({ mode, shellBytes, baselineShellBytes,
+  shellParseMs, baselineShellParseMs }) {
+  const currentMeasured = finiteNonNegative(shellBytes) && finiteNonNegative(shellParseMs, MAX_TIMING_MS);
+  if (mode === 'baseline') return {
+    comparable: currentMeasured, regression: false, byteRegression: false, parseRegression: false
+  };
+  const comparable = mode === 'comparison' && currentMeasured &&
+    finiteNonNegative(baselineShellBytes) && finiteNonNegative(baselineShellParseMs, MAX_TIMING_MS);
+  if (!comparable) return {
+    comparable: false, regression: false, byteRegression: false, parseRegression: false
+  };
+  const byteRegression = shellBytes >= baselineShellBytes;
+  const parseRegression = shellParseMs > baselineShellParseMs * 1.05;
+  return { comparable: true, regression: byteRegression || parseRegression,
+    byteRegression, parseRegression };
+}
+
+export function baselineTimingMetricsMatch(value, signedBaseline) {
+  return Boolean(value && signedBaseline && signedBaseline.envelope &&
+    finiteNonNegative(value.shellParseMs, MAX_TIMING_MS) &&
+    finiteNonNegative(value.moduleOpenP95Ms, MAX_TIMING_MS) &&
+    isHex64(value.captureIdentitySha256) && isHex64(value.evidenceSha256) &&
+    typeof value.recordPath === 'string' &&
+    value.shellParseMs === signedBaseline.shellP95Ms &&
+    value.moduleOpenP95Ms === signedBaseline.moduleOpenP95Ms &&
+    value.captureIdentitySha256 === signedBaseline.captureIdentitySha256 &&
+    value.evidenceSha256 === signedBaseline.envelope.evidenceSha256 &&
+    value.recordPath === signedBaseline.envelope.recordPath);
+}
+
 function timingBinding(value) {
   return {
     auditToolingSha: value.auditToolingSha,
@@ -225,8 +255,7 @@ export function validateBrowserTimingEvidence(context, perf = performanceEvidenc
   const baseline = timingShape(context, baselineRaw, false);
   if (!baseline.valid || baseline.envelope.baselineRecordPath !== null ||
       baseline.captureIdentitySha256 !== current.captureIdentitySha256 ||
-      !perf.baseline || !finiteNonNegative(perf.baseline.moduleOpenP95Ms, MAX_TIMING_MS) ||
-      baseline.moduleOpenP95Ms !== perf.baseline.moduleOpenP95Ms) {
+      !baselineTimingMetricsMatch(perf.baseline, baseline)) {
     return { valid: false, reason: 'BROWSER_TIMING_COMPARISON_BINDING_INVALID' };
   }
   return { ...current, comparable: true, baseline };
@@ -265,9 +294,13 @@ export async function run(context) {
   const shellParseMs = timing.valid ? timing.shellP95Ms : null;
   const baselineShell = perf.baseline && finiteNonNegative(perf.baseline.shellBytes)
     ? perf.baseline.shellBytes : null;
-  const shellComparable = timing.valid && (mode === 'baseline' || baselineShell !== null);
-  const shellRegression = mode === 'comparison' && shellComparable &&
-    !(shellBytes < baselineShell && shellBytes <= baselineShell * 1.05);
+  const baselineShellParseMs = perf.baseline &&
+    finiteNonNegative(perf.baseline.shellParseMs, MAX_TIMING_MS)
+    ? perf.baseline.shellParseMs : null;
+  const shellDecision = evaluateShellPerformance({ mode, shellBytes,
+    baselineShellBytes: baselineShell, shellParseMs, baselineShellParseMs });
+  const shellComparable = timing.valid && shellDecision.comparable;
+  const shellRegression = shellComparable && shellDecision.regression;
 
   const sizes = moduleSizes(context);
   const timings = timing.valid ? timing.moduleRows : null;
@@ -309,15 +342,28 @@ export async function run(context) {
       severity: shellRegression ? 'P2' : 'INFO', mandatory: false,
       metric: { mode, shellBytes, shellLines, shellParseMs, shellTimingSamples: timing.valid ? timing.shellSamples : 0,
         timingIdentityStatus: timing.reason, baselineShellBytes: baselineShell,
+        baselineShellParseMs,
         captureIdentitySha256: timing.valid ? timing.captureIdentitySha256 : null,
+        timingEvidenceSha256: timing.valid ? timing.envelope.evidenceSha256 : null,
+        timingRecordPath: timing.valid ? timing.envelope.recordPath : null,
         byteDeltaPercent: baselineShell === null ? null : Number((((shellBytes - baselineShell) /
-          Math.max(1, baselineShell)) * 100).toFixed(3)) },
-      rule: 'Record shell bytes and identity-bound parse samples; comparison size may not exceed the frozen threshold.',
+          Math.max(1, baselineShell)) * 100).toFixed(3)),
+        parseDeltaPercent: baselineShellParseMs === null ? null : Number((((shellParseMs - baselineShellParseMs) /
+          Math.max(1, baselineShellParseMs)) * 100).toFixed(3)),
+        thresholds: { shellBytesMustDecrease: true, shellParseMaxIncreasePercent: 5 } },
+      rule: 'Record shell bytes and identity-bound parse samples; comparison bytes must decrease and parse p95 may not increase by more than five percent.',
       evidence: shellComparable ? [{ path: 'www/index.html',
-        code: shellRegression ? 'SHELL_SIZE_REGRESSION' : 'ATTESTED_SHELL_TIMING_MEASURED',
+        code: shellDecision.byteRegression && shellDecision.parseRegression
+          ? 'SHELL_SIZE_AND_PARSE_REGRESSION'
+          : shellDecision.byteRegression ? 'SHELL_SIZE_REGRESSION'
+            : shellDecision.parseRegression ? 'SHELL_PARSE_REGRESSION'
+              : 'ATTESTED_SHELL_TIMING_MEASURED',
         samples: timing.shellSamples, p95Ms: shellParseMs }]
-        : [{ path: 'www/index.html', code: 'ATTESTED_SHELL_TIMING_REQUIRED' }],
-      notes: shellComparable ? '' : 'Timing remains unmeasured without a Git-committed, source-bound browser capture containing 5-30 samples.'
+        : [{ path: 'www/index.html', code: mode === 'comparison' && timing.valid
+          ? 'ATTESTED_BASELINE_SHELL_TIMING_REQUIRED' : 'ATTESTED_SHELL_TIMING_REQUIRED' }],
+      notes: shellComparable ? '' : mode === 'comparison' && timing.valid
+        ? 'Comparison remains unmeasured without the authoritative baseline shell parse p95.'
+        : 'Timing remains unmeasured without a Git-committed, source-bound browser capture containing 5-30 samples.'
     }),
     makeCheck({
       id: 'A10-02', title: 'Per-module size and open performance',
@@ -327,6 +373,8 @@ export async function run(context) {
         openP95Ms: currentModuleP95, baselineOpenP95Ms: baselineModuleP95,
         timingIdentityStatus: timing.reason,
         captureIdentitySha256: timing.valid ? timing.captureIdentitySha256 : null,
+        timingEvidenceSha256: timing.valid ? timing.envelope.evidenceSha256 : null,
+        timingRecordPath: timing.valid ? timing.envelope.recordPath : null,
         sizesSha256: sha256(JSON.stringify(sizes)) },
       rule: 'Record every module byte count and 5-30 source-bound open-time samples; identical-environment comparison p95 may not regress by more than ten percent.',
       evidence: moduleComparable ? timings.map(row => ({
