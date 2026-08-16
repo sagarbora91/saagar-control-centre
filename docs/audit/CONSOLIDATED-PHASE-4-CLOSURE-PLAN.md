@@ -39,11 +39,15 @@ validated commit and GitHub push before the next unit begins.
 
 ## Remaining internal work
 
-- Freeze and build the final seeded APK without changing the already-audited
-  product target, then record package/version/signature/hash and rerun the local
-  API-23 install-replace/emulator smoke against that exact artifact.
-- Capture authorized A10-01 shell-parse and A10-02 module-open timings. These are
-  nonmandatory in audit v1 but remain explicit Phase 4 exit criteria.
+- The exact debug-UAT seeded candidate is built and its API-23 install-replace,
+  preserved-state, recreation, rotation and bounded ETP interruption checks
+  pass. Preserve its SHA-256
+  `F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED`
+  for all remaining acceptance.
+- Fix the fail-open A10-01 audit implementation and the measured shell p95
+  regression. Strict diagnostics show shell p95 +10.842% (FAIL against +5%)
+  while module-open p95 improves 11.789% (A10-02 diagnostic PASS). Recapture
+  both only after the final governed tooling/product identities are frozen.
 
 ## Trusted and external acceptance still required
 
@@ -59,9 +63,9 @@ validated commit and GitHub push before the next unit begins.
 ## Closure sequence
 
 1. Preserve the approved Phase 4B evidence and keep its frozen target immutable.
-2. Build the final seeded APK and record its package, version, signature schemes,
-   SHA-256, API-23 install-replace, and emulator smoke evidence.
-3. Capture A10-01/A10-02 timings and the physical A10-04/A10-05 measurements.
+2. Complete A10-01 tooling/product remediation and the final governed timing
+   evidence cycle.
+3. Capture the physical A10-04/A10-05 measurements against the exact candidate.
 4. Close physical-device, production, UAT, legal, signing, and release gates
    against that exact candidate.
 

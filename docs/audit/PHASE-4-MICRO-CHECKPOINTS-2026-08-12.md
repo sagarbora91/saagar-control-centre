@@ -285,3 +285,22 @@ decision, and the production release identity is preserved and pushed.
   audit checks are physical A10-04/A10-05; final exact-APK/OEM acceptance,
   production ETP, UAT, legal, signing and release authority remain external.
   Do not retarget the completed comparison away from `3f8a37ce...`.
+
+### Phase 4C local engineering checkpoint — 2026-08-17
+
+- Exact audited-product debug-UAT APK:
+  `SaagarCC-Phase4C-Seeded-2Y-v2.9-3f8a37ce-F4DDBC1D.apk`, 7,010,282 bytes,
+  SHA-256
+  `F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED`.
+  API-23 install-replace, installed-byte identity, preserved state, relaunch and
+  recreation pass with zero fatal-log matches.
+- API-23 rotation, force-stop, background kill, incomplete ETP staging recovery,
+  authenticated chunk-corruption refusal and secure cleanup also pass. These
+  are emulator engineering results, not physical/OEM acceptance.
+- The final closure-register draft records 10 gates: API-23 install-replace and
+  native-language acceptance are closed; eight external gates remain open.
+- Strict diagnostic timings show A10-02 module-open p95 improves 11.789%, but
+  A10-01 shell p95 regresses 10.842% and exceeds its +5% limit. A frozen-tooling
+  fail-open defect also omits that parse-time comparison. Resume with governed
+  tooling enforcement plus real shell-tail remediation; do not preserve the
+  diagnostic timing pair as closure evidence.

@@ -94,6 +94,33 @@ commit-by-commit execution order is
   C-09 pass, C-02 records 107 approved and zero unapproved/invalid/stale rows,
   and C-03 is identity-bound. A10-04/A10-05 remain the only mandatory
   unmeasured audit checks; they are Phase 4C physical-device measurements.
+- Phase 4C now has an exact debug-UAT seeded candidate built directly from the
+  audited product target: `SaagarCC-Phase4C-Seeded-2Y-v2.9-3f8a37ce-F4DDBC1D.apk`,
+  7,010,282 bytes, SHA-256
+  `F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED`.
+  Package `com.saagartraders.bcc` is version 2.9/code 209, minSdk 23/targetSdk
+  34, signed with the Android debug certificate using v1+v2 schemes. Exact
+  metadata and API-23 install-replace evidence are in
+  `verification/audit/PHASE-4C-FINAL-SEEDED-APK-2026-08-17.json`.
+- The exact candidate also passes API-23 rotation, force-stop/relaunch,
+  background process death, incomplete ETP-stage recreation, authenticated
+  chunk-corruption refusal and secure cleanup, with zero fatal-log matches.
+  Supporting evidence is
+  `verification/audit/PHASE-4C-API23-RUNTIME-INTERRUPTION-2026-08-17.json`.
+  These emulator results close the final-hash install-replace engineering row,
+  but not physical/OEM, production or owner acceptance.
+- The identity-bound Phase 4C closure-register draft is
+  `verification/audit/PHASE-4C-FINAL-CLOSURE-REGISTER-DRAFT-2026-08-17.json`:
+  two gates are currently closed (`GATE-UPDATE-API23` and
+  `GATE-NATIVE-LANGUAGE`) and eight remain open. The companion external
+  worksheet and exact approval templates are in
+  `verification/audit/PHASE-4C-EXTERNAL-CLOSURE-PACK-DRAFT-2026-08-17.md`.
+- Strict comparable browser diagnostics measure A10-02 module-open p95 as an
+  11.789% improvement, but A10-01 shell p95 as a 10.842% regression, exceeding
+  the written +5% limit. Do not call A10-01 closed. The frozen audit code also
+  fails to enforce that parse-time limit; both the tooling defect and the real
+  shell-tail regression require governed remediation before a new evidence
+  cycle.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -244,9 +271,10 @@ commit-by-commit execution order is
   capability approval and approved rerun are preserved and all C-01 through
   C-09 pass. Consolidated Phase 4C remains exact-APK physical/performance,
   production ETP, UAT, legal, signing and release authority.
-- Immediate next action: begin Phase 4C without changing the audited target.
-  Build/freeze the final exact APK, then collect the A10-04/A10-05 physical
-  measurements and the remaining production/owner acceptance evidence.
+- Immediate next action: finish the governed A10-01 enforcement and shell-tail
+  remediation, then rebuild the affected baseline/current evidence identities.
+  In parallel, use the exact APK hash above for the SM-T875 A10-04/A10-05 and
+  remaining physical/production/owner acceptance evidence.
 
 Received exact approval sentence:
 
@@ -263,7 +291,9 @@ Received exact approval sentence:
 
 ## Open acceptance gates
 
-- A10-01/A10-02 attested shell-parse and module-open timing samples.
+- A10-01 governed shell-parse remediation and comparable attestation. A10-02
+  currently passes only in the diagnostic comparable capture and must be
+  recaptured under the final governed tooling identity.
 - A10-04 five-save physical-device latency measurement and A10-05 two-cycle
   physical-device memory measurement against the final exact APK.
 - Final exact-hash physical-device and OEM/document-provider evidence.
