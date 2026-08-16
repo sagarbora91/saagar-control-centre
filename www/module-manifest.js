@@ -273,8 +273,8 @@
       "file": "modules/stock/index.html",
       "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
       "summary": "Inventory movement and variance control for store operations.",
-      "bytes": 220441,
-      "sha256": "b6563b3aa095b7da518979ec22dcb466e473180253cd073955794eb166af796e",
+      "bytes": 220640,
+      "sha256": "49e41d287e04027a6ec45a380e95badc8196f037d0999ea825e1c37a92677218",
       "source_title": "Saagar Traders — Daily Stock Register v3",
       "src": "modules/stock/index.html"
     },
@@ -288,8 +288,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 258649,
-      "sha256": "0dae5120fe2db5e1a0db0b37eccb44d2c4f5e68ea3b4a430302ffb56fa47c5ed",
+      "bytes": 258848,
+      "sha256": "45e614003f5a250105b07131c436e85bacf9cbeed79ef30afeef72931fc72176",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },
@@ -303,8 +303,8 @@
       "file": "modules/qms/index.html",
       "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
       "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
-      "bytes": 192998,
-      "sha256": "2b9f99c75c2323ccf88da03e520cd5327142457ad5740742a090e74eecd41dfb",
+      "bytes": 193197,
+      "sha256": "76a41fae9c272027607322ae15185a7bb2f1c6ab9c9eba98985c71eea0b50cdb",
       "src": "modules/qms/index.html"
     },
     {
@@ -317,8 +317,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 204046,
-      "sha256": "abf88c7794f0d4b8130c9b8182baceab8cae911e4942371c44b390fb21829ee6",
+      "bytes": 204245,
+      "sha256": "67687eebe1f20248cf1f37861e588fca6012a1f7db3d5ad5317f9c9a7a904ce4",
       "src": "modules/dsr/index.html"
     },
     {
@@ -331,8 +331,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 184103,
-      "sha256": "c5cf70a6292f454507e4d5d611c317573a88a903ca11b304358053e4332b7762",
+      "bytes": 184302,
+      "sha256": "95db40f8094d4581bd534a2e824e3eab8affe5ee3d570fe9d836dd057dc2b99f",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -346,8 +346,8 @@
       "file": "modules/grooming/index.html",
       "subtitle": "Daily staff presentation checklist, scoring and monthly records.",
       "summary": "Readiness and staff grooming compliance tracker.",
-      "bytes": 109235,
-      "sha256": "140b0a4f5f5c5b7a3f1a9c6ce582073463ecd7e628baf354b0d2dabb0ca074f3",
+      "bytes": 109434,
+      "sha256": "22e2af79a8fbb0948a049792c188036aec583d8b685f4e214db8fb7730f73ca9",
       "source_title": "Saagar Traders — Grooming Checklist",
       "src": "modules/grooming/index.html"
     },
@@ -361,8 +361,8 @@
       "file": "modules/cro_audit/index.html",
       "subtitle": "10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.",
       "summary": "Daily 10-point CRO scoring; pulls grooming score; trend dashboard.",
-      "bytes": 161249,
-      "sha256": "32bc3d5b1cd6843d57e5a3c3d918034c7f2ee93224eb4916a41779f6ed5849aa",
+      "bytes": 161448,
+      "sha256": "cecdc0dcc30bf2dcb76b37076ed29b565a996a38abe86cde6a5e573b549fbf71",
       "src": "modules/cro_audit/index.html"
     },
     {
@@ -375,8 +375,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 289040,
-      "sha256": "d0a3e6dcd6333c912feb7ebbf63d7d7047bff7fd19e4d81069a39e3e5073c5ca",
+      "bytes": 289239,
+      "sha256": "3c9f61dcb2770f94da2a870b5b6a2de1e513194e42013f808f4d76c34fcf670d",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },
@@ -390,8 +390,8 @@
       "file": "modules/leave/index.html",
       "subtitle": "Leave planning, holiday visibility and staff availability calendar.",
       "summary": "Team leave management and availability control.",
-      "bytes": 187327,
-      "sha256": "b1c11fbee54f66eacbe72734850e3cdb338ec48af7ba987142fcd06d450c4143",
+      "bytes": 187526,
+      "sha256": "47dc7ff6e69b8a033b34eb4f452f81f34ea40a7cce27d34d9af2ad675aac528f",
       "source_title": "Staff Leave Manager",
       "src": "modules/leave/index.html"
     },
@@ -405,8 +405,8 @@
       "file": "modules/tax/index.html",
       "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
       "summary": "Indian statutory deadline tracker with compliance status controls.",
-      "bytes": 252017,
-      "sha256": "cdeded3d0d5189128d630b03bcdbe9038645c44adadd1f039d01dced59adcb47",
+      "bytes": 252216,
+      "sha256": "6aa1ed6d89a5069ecd2d53fbe4cf0ce91fe7aa197c957ac2d3780a3f3aad33a0",
       "source_title": "Compliance Operating System — Indian Firms v2",
       "src": "modules/tax/index.html"
     },
@@ -420,8 +420,8 @@
       "file": "modules/planning/index.html",
       "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
       "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
-      "bytes": 39616,
-      "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d",
+      "bytes": 39815,
+      "sha256": "5480774c94c6a971421ce1eb28085d18906ad1ceed367f88bd64d70428802040",
       "src": "modules/planning/index.html"
     }
   ]

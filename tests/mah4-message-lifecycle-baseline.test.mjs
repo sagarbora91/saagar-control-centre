@@ -44,7 +44,9 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // deterministic contrast and 44px target floors without changing file count.
   // -91 bytes on 2026-08-16: Payroll's final emblem and print-button gradients
   // become solid high-contrast surfaces for deterministic rendered evidence.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7972219);
+  // +2189 bytes on 2026-08-17: all eleven module documents preload the three
+  // already-synchronous shared startup assets without changing execution order.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7974408);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
