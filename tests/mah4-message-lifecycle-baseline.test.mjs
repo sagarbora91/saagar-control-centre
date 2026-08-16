@@ -44,7 +44,9 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // deterministic contrast and 44px target floors without changing file count.
   // -91 bytes on 2026-08-16: Payroll's final emblem and print-button gradients
   // become solid high-contrast surfaces for deterministic rendered evidence.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7972219);
+  // +275 bytes on 2026-08-17: app-i18n defers Marathi/Hindi lookup construction
+  // until a non-English language is selected; translations remain unchanged.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 7972494);
   assert.equal(inventory.upstream.manifest.moduleCount, 11);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
