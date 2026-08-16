@@ -19,7 +19,8 @@ import { hasRunnerControlledProvenance,
   withControlledCleanup } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
-import { evaluateShellPerformance, validTimingSamples } from '../scripts/audit/audits/a10.mjs';
+import { baselineTimingMetricsMatch, evaluateShellPerformance,
+  validTimingSamples } from '../scripts/audit/audits/a10.mjs';
 import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized, externalEvidenceSignaturePayload,
@@ -1182,6 +1183,17 @@ test('comparison performance accepts only the measured baseline shell parse p95'
     moduleOpenP95Ms: 1, totalShippedAssetBytes: 1 } }, baseline);
   assert.deepEqual(result.baseline, { shellBytes: 1000, shellParseMs: 100,
     moduleOpenP95Ms: 80, totalShippedAssetBytes: 5000 });
+});
+
+test('browser timing comparison rejects a mismatched or missing baseline shell p95', () => {
+  const signedBaseline = { shellP95Ms: 100, moduleOpenP95Ms: 80 };
+  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100,
+    moduleOpenP95Ms: 80 }, signedBaseline), true);
+  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100.001,
+    moduleOpenP95Ms: 80 }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ moduleOpenP95Ms: 80 }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100,
+    moduleOpenP95Ms: 80.001 }, signedBaseline), false);
 });
 
 test('legacy counter-only rendered evidence remains unmeasured', async () => {

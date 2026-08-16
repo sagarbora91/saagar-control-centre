@@ -144,6 +144,14 @@ export function evaluateShellPerformance({ mode, shellBytes, baselineShellBytes,
     byteRegression, parseRegression };
 }
 
+export function baselineTimingMetricsMatch(value, signedBaseline) {
+  return Boolean(value && signedBaseline &&
+    finiteNonNegative(value.shellParseMs, MAX_TIMING_MS) &&
+    finiteNonNegative(value.moduleOpenP95Ms, MAX_TIMING_MS) &&
+    value.shellParseMs === signedBaseline.shellP95Ms &&
+    value.moduleOpenP95Ms === signedBaseline.moduleOpenP95Ms);
+}
+
 function timingBinding(value) {
   return {
     auditToolingSha: value.auditToolingSha,
@@ -242,8 +250,7 @@ export function validateBrowserTimingEvidence(context, perf = performanceEvidenc
   const baseline = timingShape(context, baselineRaw, false);
   if (!baseline.valid || baseline.envelope.baselineRecordPath !== null ||
       baseline.captureIdentitySha256 !== current.captureIdentitySha256 ||
-      !perf.baseline || !finiteNonNegative(perf.baseline.moduleOpenP95Ms, MAX_TIMING_MS) ||
-      baseline.moduleOpenP95Ms !== perf.baseline.moduleOpenP95Ms) {
+      !baselineTimingMetricsMatch(perf.baseline, baseline)) {
     return { valid: false, reason: 'BROWSER_TIMING_COMPARISON_BINDING_INVALID' };
   }
   return { ...current, comparable: true, baseline };
