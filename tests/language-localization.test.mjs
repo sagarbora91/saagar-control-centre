@@ -41,6 +41,7 @@ test('one offline localization runtime is loaded by the shell and every module',
   assert.equal(moduleNames.length, 11);
   for (const moduleName of moduleNames) {
     const html = await readFile(new URL(`modules/${moduleName}/index.html`, root), 'utf8');
+    assert.match(html, /<link rel="preload" href="\.\.\/\.\.\/app-i18n\.js" as="script">/, `${moduleName} must preload the shared language runtime`);
     assert.match(html, /<script src="\.\.\/\.\.\/app-i18n\.js"><\/script>/, `${moduleName} must load shared language runtime`);
   }
 });
