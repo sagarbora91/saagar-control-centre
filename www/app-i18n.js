@@ -2042,15 +2042,22 @@
     ["💬 Send CA pack (WhatsApp)","💬 CA पॅक पाठवा (WhatsApp)","💬 सीए पैक भेजें (व्हाट्सएप)"]
   ];
 
-  var dictionaries={mr:Object.create(null),hi:Object.create(null)};
-  var wordMaps={mr:Object.create(null),hi:Object.create(null)};
-  for(var i=0;i<PHRASES.length;i++){
-    dictionaries.mr[PHRASES[i][0]]=PHRASES[i][1];
-    dictionaries.hi[PHRASES[i][0]]=PHRASES[i][2];
-    if(/^[A-Za-z][A-Za-z'’.-]*$/.test(PHRASES[i][0])){
-      wordMaps.mr[PHRASES[i][0].toLowerCase()]=PHRASES[i][1];
-      wordMaps.hi[PHRASES[i][0].toLowerCase()]=PHRASES[i][2];
+  var dictionaries=null;
+  var wordMaps=null;
+  function ensureDerivedDictionaries(){
+    if(dictionaries&&wordMaps) return;
+    var nextDictionaries={mr:Object.create(null),hi:Object.create(null)};
+    var nextWordMaps={mr:Object.create(null),hi:Object.create(null)};
+    for(var i=0;i<PHRASES.length;i++){
+      nextDictionaries.mr[PHRASES[i][0]]=PHRASES[i][1];
+      nextDictionaries.hi[PHRASES[i][0]]=PHRASES[i][2];
+      if(/^[A-Za-z][A-Za-z'’.-]*$/.test(PHRASES[i][0])){
+        nextWordMaps.mr[PHRASES[i][0].toLowerCase()]=PHRASES[i][1];
+        nextWordMaps.hi[PHRASES[i][0].toLowerCase()]=PHRASES[i][2];
+      }
     }
+    dictionaries=nextDictionaries;
+    wordMaps=nextWordMaps;
   }
 
   var UI_SELECTOR=[
@@ -2072,6 +2079,7 @@
     text=String(text==null?'':text);
     lang=validLanguage(lang)?lang:'en';
     if(lang==='en') return text;
+    ensureDerivedDictionaries();
     var match=text.match(/^(\s*[^A-Za-z0-9]*)(.*?)(\s*)$/);
     var prefix=match?match[1]:'';
     var core=match?match[2]:text;
@@ -2146,6 +2154,7 @@
   }
   function apply(lang){
     lang=validLanguage(lang)?lang:readLanguage();
+    if(lang!=='en') ensureDerivedDictionaries();
     try{ document.documentElement.lang=lang; }catch(e){}
     var elements=[];
     try{ elements=document.querySelectorAll(UI_SELECTOR); }catch(e){}
@@ -2179,7 +2188,7 @@
     setLanguage:setLanguage,
     getLanguage:readLanguage,
     translate:translate,
-    stats:function(){ return {mr:Object.keys(dictionaries.mr).length,hi:Object.keys(dictionaries.hi).length}; }
+    stats:function(){ return {mr:PHRASES.length,hi:PHRASES.length}; }
   });
   try{ root.addEventListener('message',function(event){ var data=event&&event.data; if(data&&data.type==='ST_LANG'&&validLanguage(data.lang)) apply(data.lang); }); }catch(e){}
   try{ root.addEventListener('storage',function(event){ if(!event||event.key===LANGUAGE_KEY) apply(readLanguage()); }); }catch(e){}
