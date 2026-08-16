@@ -145,11 +145,16 @@ export function evaluateShellPerformance({ mode, shellBytes, baselineShellBytes,
 }
 
 export function baselineTimingMetricsMatch(value, signedBaseline) {
-  return Boolean(value && signedBaseline &&
+  return Boolean(value && signedBaseline && signedBaseline.envelope &&
     finiteNonNegative(value.shellParseMs, MAX_TIMING_MS) &&
     finiteNonNegative(value.moduleOpenP95Ms, MAX_TIMING_MS) &&
+    isHex64(value.captureIdentitySha256) && isHex64(value.evidenceSha256) &&
+    typeof value.recordPath === 'string' &&
     value.shellParseMs === signedBaseline.shellP95Ms &&
-    value.moduleOpenP95Ms === signedBaseline.moduleOpenP95Ms);
+    value.moduleOpenP95Ms === signedBaseline.moduleOpenP95Ms &&
+    value.captureIdentitySha256 === signedBaseline.captureIdentitySha256 &&
+    value.evidenceSha256 === signedBaseline.envelope.evidenceSha256 &&
+    value.recordPath === signedBaseline.envelope.recordPath);
 }
 
 function timingBinding(value) {
@@ -339,6 +344,8 @@ export async function run(context) {
         timingIdentityStatus: timing.reason, baselineShellBytes: baselineShell,
         baselineShellParseMs,
         captureIdentitySha256: timing.valid ? timing.captureIdentitySha256 : null,
+        timingEvidenceSha256: timing.valid ? timing.envelope.evidenceSha256 : null,
+        timingRecordPath: timing.valid ? timing.envelope.recordPath : null,
         byteDeltaPercent: baselineShell === null ? null : Number((((shellBytes - baselineShell) /
           Math.max(1, baselineShell)) * 100).toFixed(3)),
         parseDeltaPercent: baselineShellParseMs === null ? null : Number((((shellParseMs - baselineShellParseMs) /
@@ -366,6 +373,8 @@ export async function run(context) {
         openP95Ms: currentModuleP95, baselineOpenP95Ms: baselineModuleP95,
         timingIdentityStatus: timing.reason,
         captureIdentitySha256: timing.valid ? timing.captureIdentitySha256 : null,
+        timingEvidenceSha256: timing.valid ? timing.envelope.evidenceSha256 : null,
+        timingRecordPath: timing.valid ? timing.envelope.recordPath : null,
         sizesSha256: sha256(JSON.stringify(sizes)) },
       rule: 'Record every module byte count and 5-30 source-bound open-time samples; identical-environment comparison p95 may not regress by more than ten percent.',
       evidence: moduleComparable ? timings.map(row => ({

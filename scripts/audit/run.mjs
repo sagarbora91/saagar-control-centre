@@ -234,6 +234,9 @@ export function comparisonPerformance(external, baseline) {
   const authoritative = {
     shellBytes: shell && shell.metric.shellBytes,
     shellParseMs: shell && shell.metric.shellParseMs,
+    captureIdentitySha256: shell && shell.metric.captureIdentitySha256,
+    evidenceSha256: shell && shell.metric.timingEvidenceSha256,
+    recordPath: shell && shell.metric.timingRecordPath,
     moduleOpenP95Ms: modules && modules.metric.openP95Ms,
     totalShippedAssetBytes: assets && assets.metric.totalBytes
   };

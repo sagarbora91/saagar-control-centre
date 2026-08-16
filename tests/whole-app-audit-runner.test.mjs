@@ -1174,26 +1174,43 @@ test('A10-01 fails closed when shell parse p95 regresses despite smaller shell b
 });
 
 test('comparison performance accepts only the measured baseline shell parse p95', () => {
+  const captureIdentitySha256 = 'a'.repeat(64);
+  const evidenceSha256 = 'b'.repeat(64);
+  const recordPath = 'verification/audit/attested/browser-timing/baseline-timing-record.json';
   const baseline = { audits: [{ checks: [
-    { id: 'A10-01', metric: { shellBytes: 1000, shellParseMs: 100 } },
+    { id: 'A10-01', metric: { shellBytes: 1000, shellParseMs: 100,
+      captureIdentitySha256, timingEvidenceSha256: evidenceSha256, timingRecordPath: recordPath } },
     { id: 'A10-02', metric: { openP95Ms: 80 } },
     { id: 'A10-03', metric: { totalBytes: 5000 } }
   ] }] };
   const result = comparisonPerformance({ baseline: { shellBytes: 1, shellParseMs: 1,
     moduleOpenP95Ms: 1, totalShippedAssetBytes: 1 } }, baseline);
   assert.deepEqual(result.baseline, { shellBytes: 1000, shellParseMs: 100,
+    captureIdentitySha256, evidenceSha256, recordPath,
     moduleOpenP95Ms: 80, totalShippedAssetBytes: 5000 });
 });
 
 test('browser timing comparison rejects a mismatched or missing baseline shell p95', () => {
-  const signedBaseline = { shellP95Ms: 100, moduleOpenP95Ms: 80 };
-  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100,
-    moduleOpenP95Ms: 80 }, signedBaseline), true);
-  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100.001,
-    moduleOpenP95Ms: 80 }, signedBaseline), false);
-  assert.equal(baselineTimingMetricsMatch({ moduleOpenP95Ms: 80 }, signedBaseline), false);
-  assert.equal(baselineTimingMetricsMatch({ shellParseMs: 100,
+  const captureIdentitySha256 = 'a'.repeat(64);
+  const evidenceSha256 = 'b'.repeat(64);
+  const recordPath = 'verification/audit/attested/browser-timing/baseline-timing-record.json';
+  const signedBaseline = { shellP95Ms: 100, moduleOpenP95Ms: 80, captureIdentitySha256,
+    envelope: { evidenceSha256, recordPath } };
+  const authoritative = { shellParseMs: 100, moduleOpenP95Ms: 80,
+    captureIdentitySha256, evidenceSha256, recordPath };
+  assert.equal(baselineTimingMetricsMatch(authoritative, signedBaseline), true);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
+    shellParseMs: 100.001 }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
+    shellParseMs: undefined }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
     moduleOpenP95Ms: 80.001 }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
+    captureIdentitySha256: 'c'.repeat(64) }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
+    evidenceSha256: 'd'.repeat(64) }, signedBaseline), false);
+  assert.equal(baselineTimingMetricsMatch({ ...authoritative,
+    recordPath: 'verification/audit/attested/browser-timing/swapped-timing-record.json' }, signedBaseline), false);
 });
 
 test('legacy counter-only rendered evidence remains unmeasured', async () => {
