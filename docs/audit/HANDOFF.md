@@ -35,9 +35,9 @@ commit-by-commit execution order is
   OEM, owner-device, production-signing, or release acceptance.
 - The earlier capability approval and Samsung SM-T875 acceptance are bound to
   older identities. They cannot be reused for the final target or final APK.
-- Keep PR #5 in draft until the final controlled comparison, exact identity-bound
-  approval, trusted measurements, physical acceptance, and release authority
-  are complete.
+- The final controlled comparison and exact identity-bound capability approval
+  are complete. Keep PR #5 in draft until the remaining physical/performance,
+  production, UAT, legal, signing, and release authorities are complete.
 
 ### Crash-resume checkpoint
 
@@ -81,6 +81,19 @@ commit-by-commit execution order is
   through C-09 pass. C-02 alone fails because all exact 107 capability deltas
   remain unapproved. A10-04/A10-05 remain mandatory physical measurements and
   are not comparison measurement losses.
+- Sagar approved the exact 107-row capability delta set for the same frozen
+  target. The machine-readable envelope is preserved at
+  `verification/audit/approvals/2026-08-16-3f8a37cebf99.json`; its raw SHA-256
+  is `4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858`
+  and its canonical envelope SHA-256 is
+  `719ea606107443a8d9c7375b6231b6f090ecc0ca3431a419ac08839edc391884`.
+  The approved controlled comparison is preserved at
+  `verification/audit/2026-08-16-051618-3f8a37cebf99`, manifest SHA-256
+  `428667ceb47551ea2190a2a69e4fa04203fab285af4363b2fac34489f16beb6c`.
+  Its exact 18-file evidence set validates, findings are zero, all C-01 through
+  C-09 pass, C-02 records 107 approved and zero unapproved/invalid/stale rows,
+  and C-03 is identity-bound. A10-04/A10-05 remain the only mandatory
+  unmeasured audit checks; they are Phase 4C physical-device measurements.
 
 - The exact pre-import product checkpoint was
   `832c9b612af4739908ad04c4521e9999bd86e5e6`; it and its corrected governed
@@ -227,15 +240,15 @@ commit-by-commit execution order is
   remediation, A6-03 localization, complete product verification, diagnostic
   APK build and API-23 smoke. The trusted A6-04/05 capture and measured UI
   remediation and fluent visual review are complete.
-- Consolidated Phase 4B remains the frozen-target unapproved comparison, exact
-  capability approval and approved rerun. Consolidated Phase 4C remains exact-APK
-  physical/performance, production ETP, UAT, legal, signing and release authority.
-- Immediate next action: obtain Sagar's exact 107-row capability approval bound
-  to target `3f8a37ce...`, tooling `29a09475...`, corrected baseline manifest
-  `b878f01c...`, baseline target, product baseline and audit-program version.
-  Then preserve the approval envelope and rerun from the same frozen target.
+- Consolidated Phase 4B is complete: the frozen-target comparison, exact
+  capability approval and approved rerun are preserved and all C-01 through
+  C-09 pass. Consolidated Phase 4C remains exact-APK physical/performance,
+  production ETP, UAT, legal, signing and release authority.
+- Immediate next action: begin Phase 4C without changing the audited target.
+  Build/freeze the final exact APK, then collect the A10-04/A10-05 physical
+  measurements and the remaining production/owner acceptance evidence.
 
-Exact approval sentence:
+Received exact approval sentence:
 
 > I, Sagar (sagarbora91), approve the exact 107 capability deltas in
 > MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json, comparison delta SHA-256
@@ -250,9 +263,9 @@ Exact approval sentence:
 
 ## Open acceptance gates
 
-- Final controlled baseline and target comparison.
-- Exact identity-bound owner capability approval for the final comparison.
-- A10 timing measurements.
+- A10-01/A10-02 attested shell-parse and module-open timing samples.
+- A10-04 five-save physical-device latency measurement and A10-05 two-cycle
+  physical-device memory measurement against the final exact APK.
 - Final exact-hash physical-device and OEM/document-provider evidence.
 - Production ETP, mapping, UAT, legal, signing, and release decisions.
 

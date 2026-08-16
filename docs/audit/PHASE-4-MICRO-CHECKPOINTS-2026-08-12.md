@@ -264,3 +264,24 @@ decision, and the production release identity is preserved and pushed.
 - Resume with the exact capability approval sentence in `docs/audit/HANDOFF.md`,
   create the identity-bound approval envelope, and rerun the comparison from the
   same frozen target. Do not retarget to this administrative evidence commit.
+
+### Phase 4B approved comparison closure checkpoint — 2026-08-16
+
+- Sagar (`sagarbora91`) approved the exact 107 capability deltas, delta SHA-256
+  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`,
+  for A3-02 and the exact frozen target/tooling/baseline identity.
+- The machine envelope is
+  `verification/audit/approvals/2026-08-16-3f8a37cebf99.json`, raw SHA-256
+  `4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858`,
+  canonical envelope SHA-256
+  `719ea606107443a8d9c7375b6231b6f090ecc0ca3431a419ac08839edc391884`.
+- The approved comparison evidence is
+  `verification/audit/2026-08-16-051618-3f8a37cebf99`, manifest SHA-256
+  `428667ceb47551ea2190a2a69e4fa04203fab285af4363b2fac34489f16beb6c`.
+  All 18 files and declared hashes validate. The audit has zero findings;
+  C-01 through C-09 all pass; C-02 records 107/107 approved; C-03 is
+  identity-bound; A5-03 and A6-04/A6-05 pass.
+- Phase 4B is complete. Resume with Phase 4C. The only mandatory unmeasured
+  audit checks are physical A10-04/A10-05; final exact-APK/OEM acceptance,
+  production ETP, UAT, legal, signing and release authority remain external.
+  Do not retarget the completed comparison away from `3f8a37ce...`.

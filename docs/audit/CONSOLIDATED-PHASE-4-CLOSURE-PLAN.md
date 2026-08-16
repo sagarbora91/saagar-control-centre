@@ -6,8 +6,8 @@
 
 **Draft review:** PR #5
 
-**Status:** Modular HTML implementation is complete. Phase 4 audit and release
-closure is still open.
+**Status:** Modular HTML implementation and consolidated Phases 4A/4B are
+complete. Phase 4C physical, production and release acceptance remains open.
 
 For intermittent connectivity, execute this plan only through the independently
 recoverable units in
@@ -26,55 +26,44 @@ validated commit and GitHub push before the next unit begins.
   change revenue or sales totals.
 - API-23 emulator engineering checks pass for fresh install, install-replace,
   preserved seeded state, process restart, activity recreation, and rotation.
-- The complete current product suite passes 507/507. Governed audit tooling
-  `94f9999348c0e5b695c0043a2557ef28e6d21c86` passes all 69 self-tests.
-- Seeded APK SHA-256
-  `B65AA97563BDD6217753FD95AB456624AD71FFACBDA2F120088C00E3F91CAD20`
-  passes exact-hash API-23 install-replace, preserved-state, launch and fatal-log
-  engineering checks.
+- A6-03 passes with zero localization bypasses. Signed 72-cell evidence makes
+  A6-04/A6-05 pass, and Sagar's exact-identity rendered-language approval closes
+  `GATE-NATIVE-LANGUAGE` for product fingerprint SHA-256
+  `47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06`.
+- The complete current product suite passes 510/510. Governed audit tooling
+  `29a094757fbc5386d379ee73e71a30228b348308` passes all 75 self-tests.
+- The approved comparison for frozen target
+  `3f8a37cebf998cf6dd006e3a33de95600d3808f3` has zero findings and all C-01
+  through C-09 pass. Its exact 18-file evidence set is preserved at
+  `verification/audit/2026-08-16-051618-3f8a37cebf99`.
 
 ## Remaining internal work
 
-- A6-03 still fails with 1,226 high-confidence localization bypass occurrences
-  after two genuine Marathi/Hindi translation batches. This is product
-  localization debt, not an analyzer-exclusion exercise.
-- Rerun the interrupted controlled two-build baseline at tooling `94f9999` when
-  connectivity is stable, validate and commit its immutable evidence, then stop
-  at that pushed checkpoint before freezing the final target.
+- Freeze and build the final seeded APK without changing the already-audited
+  product target, then record package/version/signature/hash and rerun the local
+  API-23 install-replace/emulator smoke against that exact artifact.
+- Capture authorized A10-01 shell-parse and A10-02 module-open timings. These are
+  nonmandatory in audit v1 but remain explicit Phase 4 exit criteria.
 
 ## Trusted and external acceptance still required
 
-- A6-04/A6-05 rendered accessibility and responsive evidence require a frozen,
-  identity-bound trusted renderer; the current audit trust store deliberately
-  has no trusted signer.
-- A10-01/A10-02 have static size evidence but no authorized parse/open timing
-  samples. A10-04/A10-05 require exact-APK physical-device save-latency and
-  memory-cycle evidence.
+- A10-04/A10-05 require exact-APK physical-device five-save latency and
+  two-cycle memory evidence.
 - Owner acceptance must be repeated on Samsung SM-T875 / Android 13 for the
   final APK hash. Earlier physical acceptance belongs to an older APK.
 - Physical API-23/OEM document-provider behavior, remaining low-storage and
-  corruption cases, production ETP publication, PAYMENTTYPE25 approval, fluent
-  Marathi/Hindi review, staff/owner UAT, legal review, production signing, and
-  release acceptance remain outside autonomous emulator authority.
-- A new identity-bound owner capability approval is required after the final
-  target, governed tooling SHA, baseline-manifest SHA-256, and comparison-delta
-  SHA-256 are known. The current fail-closed ledger has 107 rows and comparison
-  delta SHA-256
-  `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
-  The earlier 106-row approval is immutable and stale for this target.
+  corruption cases, production ETP publication, PAYMENTTYPE25 approval,
+  staff/owner UAT, legal review, production signing, and release acceptance
+  remain outside autonomous emulator authority.
 
 ## Closure sequence
 
-1. Finish safe internal localization batches and freeze the product.
-2. Freeze reviewed audit tooling and produce a valid controlled baseline.
-3. Commit the baseline and this current handoff, then freeze the target commit.
-4. Run the controlled comparison without reusing a stale approval.
-5. Obtain the owner's exact identity-bound capability approval and rerun the
-   approval-aware comparison.
-6. Build the final seeded APK and record its package, version, signature schemes,
+1. Preserve the approved Phase 4B evidence and keep its frozen target immutable.
+2. Build the final seeded APK and record its package, version, signature schemes,
    SHA-256, API-23 install-replace, and emulator smoke evidence.
-7. Close trusted-renderer, physical-device, production, language, UAT, legal,
-   signing, and release gates against that exact candidate.
+3. Capture A10-01/A10-02 timings and the physical A10-04/A10-05 measurements.
+4. Close physical-device, production, UAT, legal, signing, and release gates
+   against that exact candidate.
 
 ## Exit criteria
 
