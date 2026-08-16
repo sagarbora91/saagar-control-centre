@@ -19,14 +19,14 @@ import { hasRunnerControlledProvenance,
   withControlledCleanup } from '../scripts/audit/controlled-probes.mjs';
 import { assessGeneratedIdentityReceipts,
   assessSigningOverrideSource, assessSigningReceipts } from '../scripts/audit/audits/a9.mjs';
-import { validTimingSamples } from '../scripts/audit/audits/a10.mjs';
+import { evaluateShellPerformance, validTimingSamples } from '../scripts/audit/audits/a10.mjs';
 import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized, externalEvidenceSignaturePayload,
   verifyExternalEvidenceSignature } from '../scripts/audit/evidence-trust-root.mjs';
 import { COMPARISON_APPROVAL_FORMAT, comparisonFindingSha256, evaluateComparison } from '../scripts/audit/comparison.mjs';
 import { AUDIT_VERSION, buildContext, isProductPath, PRODUCT_BASELINE_SHA, revisionFingerprint, sha256, stableSha256 } from '../scripts/audit/lib.mjs';
-import { assertToolingProductFingerprintAnchor, npmLauncher, parseArgs, parseOfflineTestEvidence, probeNpmLauncher,
+import { assertToolingProductFingerprintAnchor, comparisonPerformance, npmLauncher, parseArgs, parseOfflineTestEvidence, probeNpmLauncher,
   summaryMarkdown, validateBuildEvidence } from '../scripts/audit/run.mjs';
 import { assertExternalPath, BASELINE_ARTIFACT_FILES, buildEvidenceManifest, canonicalGitWorktreeRoots, gradleVersionLauncher,
   isAuditToolingPath, pathInside, verifyToolingIdentity,
@@ -1157,6 +1157,31 @@ test('browser timing samples enforce the exact bounded 5 to 30 observation windo
   assert.equal(validTimingSamples(Array.from({ length: 31 }, (_, index) => index)), false);
   assert.equal(validTimingSamples([1, 2, 3, 4, -1]), false);
   assert.equal(validTimingSamples([1, 2, 3, 4, 120001]), false);
+});
+
+test('A10-01 fails closed when shell parse p95 regresses despite smaller shell bytes', () => {
+  const regressed = evaluateShellPerformance({ mode: 'comparison', shellBytes: 900,
+    baselineShellBytes: 1000, shellParseMs: 105.001, baselineShellParseMs: 100 });
+  assert.deepEqual(regressed, { comparable: true, regression: true,
+    byteRegression: false, parseRegression: true });
+  assert.equal(evaluateShellPerformance({ mode: 'comparison', shellBytes: 900,
+    baselineShellBytes: 1000, shellParseMs: 105, baselineShellParseMs: 100 }).regression, false);
+  assert.equal(evaluateShellPerformance({ mode: 'comparison', shellBytes: 1000,
+    baselineShellBytes: 1000, shellParseMs: 90, baselineShellParseMs: 100 }).byteRegression, true);
+  assert.equal(evaluateShellPerformance({ mode: 'comparison', shellBytes: 900,
+    baselineShellBytes: 1000, shellParseMs: 90, baselineShellParseMs: null }).comparable, false);
+});
+
+test('comparison performance accepts only the measured baseline shell parse p95', () => {
+  const baseline = { audits: [{ checks: [
+    { id: 'A10-01', metric: { shellBytes: 1000, shellParseMs: 100 } },
+    { id: 'A10-02', metric: { openP95Ms: 80 } },
+    { id: 'A10-03', metric: { totalBytes: 5000 } }
+  ] }] };
+  const result = comparisonPerformance({ baseline: { shellBytes: 1, shellParseMs: 1,
+    moduleOpenP95Ms: 1, totalShippedAssetBytes: 1 } }, baseline);
+  assert.deepEqual(result.baseline, { shellBytes: 1000, shellParseMs: 100,
+    moduleOpenP95Ms: 80, totalShippedAssetBytes: 5000 });
 });
 
 test('legacy counter-only rendered evidence remains unmeasured', async () => {

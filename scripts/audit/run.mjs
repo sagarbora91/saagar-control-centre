@@ -226,13 +226,14 @@ function checkById(audits, id) {
   return null;
 }
 
-function comparisonPerformance(external, baseline) {
+export function comparisonPerformance(external, baseline) {
   if (!baseline) return external || {};
   const shell = checkById(baseline.audits, 'A10-01');
   const modules = checkById(baseline.audits, 'A10-02');
   const assets = checkById(baseline.audits, 'A10-03');
   const authoritative = {
     shellBytes: shell && shell.metric.shellBytes,
+    shellParseMs: shell && shell.metric.shellParseMs,
     moduleOpenP95Ms: modules && modules.metric.openP95Ms,
     totalShippedAssetBytes: assets && assets.metric.totalBytes
   };

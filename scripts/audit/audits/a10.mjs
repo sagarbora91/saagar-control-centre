@@ -127,6 +127,23 @@ export function validTimingSamples(value) {
     value.every(sample => finiteNonNegative(sample, MAX_TIMING_MS));
 }
 
+export function evaluateShellPerformance({ mode, shellBytes, baselineShellBytes,
+  shellParseMs, baselineShellParseMs }) {
+  const currentMeasured = finiteNonNegative(shellBytes) && finiteNonNegative(shellParseMs, MAX_TIMING_MS);
+  if (mode === 'baseline') return {
+    comparable: currentMeasured, regression: false, byteRegression: false, parseRegression: false
+  };
+  const comparable = mode === 'comparison' && currentMeasured &&
+    finiteNonNegative(baselineShellBytes) && finiteNonNegative(baselineShellParseMs, MAX_TIMING_MS);
+  if (!comparable) return {
+    comparable: false, regression: false, byteRegression: false, parseRegression: false
+  };
+  const byteRegression = shellBytes >= baselineShellBytes;
+  const parseRegression = shellParseMs > baselineShellParseMs * 1.05;
+  return { comparable: true, regression: byteRegression || parseRegression,
+    byteRegression, parseRegression };
+}
+
 function timingBinding(value) {
   return {
     auditToolingSha: value.auditToolingSha,
@@ -265,9 +282,13 @@ export async function run(context) {
   const shellParseMs = timing.valid ? timing.shellP95Ms : null;
   const baselineShell = perf.baseline && finiteNonNegative(perf.baseline.shellBytes)
     ? perf.baseline.shellBytes : null;
-  const shellComparable = timing.valid && (mode === 'baseline' || baselineShell !== null);
-  const shellRegression = mode === 'comparison' && shellComparable &&
-    !(shellBytes < baselineShell && shellBytes <= baselineShell * 1.05);
+  const baselineShellParseMs = perf.baseline &&
+    finiteNonNegative(perf.baseline.shellParseMs, MAX_TIMING_MS)
+    ? perf.baseline.shellParseMs : null;
+  const shellDecision = evaluateShellPerformance({ mode, shellBytes,
+    baselineShellBytes: baselineShell, shellParseMs, baselineShellParseMs });
+  const shellComparable = timing.valid && shellDecision.comparable;
+  const shellRegression = shellComparable && shellDecision.regression;
 
   const sizes = moduleSizes(context);
   const timings = timing.valid ? timing.moduleRows : null;
@@ -309,15 +330,26 @@ export async function run(context) {
       severity: shellRegression ? 'P2' : 'INFO', mandatory: false,
       metric: { mode, shellBytes, shellLines, shellParseMs, shellTimingSamples: timing.valid ? timing.shellSamples : 0,
         timingIdentityStatus: timing.reason, baselineShellBytes: baselineShell,
+        baselineShellParseMs,
         captureIdentitySha256: timing.valid ? timing.captureIdentitySha256 : null,
         byteDeltaPercent: baselineShell === null ? null : Number((((shellBytes - baselineShell) /
-          Math.max(1, baselineShell)) * 100).toFixed(3)) },
-      rule: 'Record shell bytes and identity-bound parse samples; comparison size may not exceed the frozen threshold.',
+          Math.max(1, baselineShell)) * 100).toFixed(3)),
+        parseDeltaPercent: baselineShellParseMs === null ? null : Number((((shellParseMs - baselineShellParseMs) /
+          Math.max(1, baselineShellParseMs)) * 100).toFixed(3)),
+        thresholds: { shellBytesMustDecrease: true, shellParseMaxIncreasePercent: 5 } },
+      rule: 'Record shell bytes and identity-bound parse samples; comparison bytes must decrease and parse p95 may not increase by more than five percent.',
       evidence: shellComparable ? [{ path: 'www/index.html',
-        code: shellRegression ? 'SHELL_SIZE_REGRESSION' : 'ATTESTED_SHELL_TIMING_MEASURED',
+        code: shellDecision.byteRegression && shellDecision.parseRegression
+          ? 'SHELL_SIZE_AND_PARSE_REGRESSION'
+          : shellDecision.byteRegression ? 'SHELL_SIZE_REGRESSION'
+            : shellDecision.parseRegression ? 'SHELL_PARSE_REGRESSION'
+              : 'ATTESTED_SHELL_TIMING_MEASURED',
         samples: timing.shellSamples, p95Ms: shellParseMs }]
-        : [{ path: 'www/index.html', code: 'ATTESTED_SHELL_TIMING_REQUIRED' }],
-      notes: shellComparable ? '' : 'Timing remains unmeasured without a Git-committed, source-bound browser capture containing 5-30 samples.'
+        : [{ path: 'www/index.html', code: mode === 'comparison' && timing.valid
+          ? 'ATTESTED_BASELINE_SHELL_TIMING_REQUIRED' : 'ATTESTED_SHELL_TIMING_REQUIRED' }],
+      notes: shellComparable ? '' : mode === 'comparison' && timing.valid
+        ? 'Comparison remains unmeasured without the authoritative baseline shell parse p95.'
+        : 'Timing remains unmeasured without a Git-committed, source-bound browser capture containing 5-30 samples.'
     }),
     makeCheck({
       id: 'A10-02', title: 'Per-module size and open performance',
