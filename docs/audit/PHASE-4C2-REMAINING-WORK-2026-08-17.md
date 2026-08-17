@@ -1,6 +1,6 @@
 # Phase 4C.2 remaining work
 
-**Updated:** 2026-08-17 (Asia/Kolkata)  
+**Updated:** 2026-08-17 (Asia/Kolkata)
 **Status:** Phase 4C.1 is complete with A10-01 explicitly open. Phase 4C.2 contains only physical-device and external release acceptance.
 
 ## Frozen authority
