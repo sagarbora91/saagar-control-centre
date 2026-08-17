@@ -69,6 +69,15 @@ Per the owner-mandated policy, run 2's A10-01 failure ends automatic execution.
 Do not run a third measurement, create another performance candidate, or start
 rendered UI/APK/baseline/comparison work without Sagar's explicit disposition.
 
+### Owner disposition
+
+Sagar explicitly directed: `proceed with A10-01 remaining open`.
+
+This authorizes the one-time remaining evidence sequence using the preserved run
+2 timing pair. It does not convert A10-01 to pass, waive its threshold, authorize
+another timing run, or authorize another performance candidate. A10-01 must stay
+visible as an open performance exception in the final evidence and handoff.
+
 ## Historical diagnostics — do not reuse as closure evidence
 
 - Dynamic-loader candidate `8d62d42` had one full timing pass and one full timing fail and also failed governance/API review.
@@ -78,10 +87,11 @@ rendered UI/APK/baseline/comparison work without Sagar's explicit disposition.
 
 ## Exact remaining Phase 4C.1 sequence
 
-1. Obtain Sagar's explicit disposition for the preserved A10-01 timing failure.
-2. If Sagar accepts a recorded open A10-01 exception, do not rerun timing; proceed once with the remaining evidence sequence while keeping A10-01 open.
-3. If Sagar instead authorizes remediation, define one bounded change and its invalidation cost before editing; no speculative candidate is authorized by this checkpoint.
-4. Rendered UI, APK, baseline and comparison work remains intentionally not started after the failed timing stop.
+1. Preserve run 2 as the governed timing pair: A10-01 remains fail/open and A10-02 remains pass.
+2. Capture the signed rendered UI matrix once for the frozen product.
+3. Build and validate the exact seeded APK once on API-23.
+4. Create the baseline/current evidence carriers and run the baseline and comparison once each.
+5. Preserve all open-gate truth; do not claim A10-01, physical-device, UAT/legal, production ETP, signing or release closure.
 
 ## Deferred Phase 4C.2 boundary
 
