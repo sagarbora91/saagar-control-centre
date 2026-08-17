@@ -11,8 +11,13 @@ const moduleNames = (await readdir(new URL('modules/', root), { withFileTypes: t
   .map(entry => entry.name)
   .sort();
 
-function loadApi() {
+function loadRuntime(initialLanguage) {
   const listeners = {};
+  let derivedObjectCreates = 0;
+  const instrumentedObject = {
+    create(prototype) { derivedObjectCreates += 1; return Object.create(prototype); },
+    freeze: Object.freeze
+  };
   const document = {
     readyState: 'loading',
     documentElement: { lang: 'en' },
@@ -24,6 +29,7 @@ function loadApi() {
     getItem(key) { return storage.has(key) ? storage.get(key) : null; },
     setItem(key, value) { storage.set(key, String(value)); }
   };
+  if (initialLanguage) storage.set('saagar_lang', initialLanguage);
   const window = {
     document,
     localStorage,
@@ -32,9 +38,13 @@ function loadApi() {
     clearTimeout() {}
   };
   window.window = window;
-  vm.runInNewContext(source, { window, document, localStorage, console, MutationObserver: class { observe() {} } });
-  return window.SaagarI18n;
+  vm.runInNewContext(source, { window, document, localStorage, console, Object: instrumentedObject,
+    MutationObserver: class { observe() {} } });
+  return { api: window.SaagarI18n, document, listeners, storage,
+    derivedObjectCreates: () => derivedObjectCreates };
 }
+
+function loadApi() { return loadRuntime().api; }
 
 test('one offline localization runtime is loaded by the shell and every module', async () => {
   assert.match(shell, /<script src="app-i18n\.js"><\/script>/);
@@ -95,6 +105,51 @@ test('Marathi and Hindi dictionaries cover Settings, module names and common act
   const stats = api.stats();
   assert.ok(stats.mr >= 1150, `expected >=1150 Marathi UI phrases, got ${stats.mr}`);
   assert.equal(stats.mr, stats.hi, 'Marathi and Hindi must have equal phrase coverage');
+});
+
+test('English startup defers only derived lookup construction and preserves the synchronous API', () => {
+  assert.match(source, /var dictionaries=null;\s*var wordMaps=null;/);
+  assert.match(source, /function ensureDerivedDictionaries\(\)[\s\S]*for\(var i=0;i<PHRASES\.length;i\+\+\)/);
+  const translateSource = source.slice(source.indexOf('function translate('), source.indexOf('function blocked('));
+  assert.ok(translateSource.indexOf("if(lang==='en') return text;") < translateSource.indexOf('ensureDerivedDictionaries();'));
+  const runtime = loadRuntime('en');
+  assert.equal(runtime.derivedObjectCreates(), 0, 'English startup must not construct derived lookup objects');
+  assert.deepEqual(Object.keys(runtime.api).sort(), ['apply', 'getLanguage', 'setLanguage', 'stats', 'translate']);
+  assert.equal(Object.isFrozen(runtime.api), true);
+  assert.equal(runtime.api.apply('en'), 'en');
+  assert.equal(runtime.api.translate('Settings', 'en'), 'Settings');
+  assert.equal(runtime.api.stats().mr, 2009);
+  assert.equal(runtime.api.stats().hi, 2009);
+  assert.equal(runtime.derivedObjectCreates(), 0, 'English API and coverage stats must leave lookups deferred');
+  for (const result of [runtime.api.apply('en'), runtime.api.translate('Save', 'en'), runtime.api.stats()]) {
+    assert.equal(result instanceof Promise, false, 'public localization methods must stay synchronous');
+  }
+});
+
+test('first Marathi or Hindi use builds lookups synchronously and early ST_LANG remains effective', () => {
+  const runtime = loadRuntime('en');
+  assert.equal(runtime.api.translate('Settings', 'mr'), 'सेटिंग्ज');
+  assert.equal(runtime.derivedObjectCreates(), 4, 'first native translation constructs two dictionaries and two word maps');
+  assert.equal(runtime.api.translate('Save', 'hi'), 'सहेजें');
+  assert.equal(runtime.derivedObjectCreates(), 4, 'derived lookups are constructed only once');
+  assert.equal(runtime.listeners['window:message']({ data: { type: 'ST_LANG', lang: 'mr' } }), undefined);
+  assert.equal(runtime.document.documentElement.lang, 'mr');
+
+  const earlyNative = loadRuntime('hi');
+  assert.equal(earlyNative.document.documentElement.lang, 'en', 'boot waits for DOMContentLoaded');
+  earlyNative.listeners.DOMContentLoaded();
+  assert.equal(earlyNative.document.documentElement.lang, 'hi');
+  assert.equal(earlyNative.api.getLanguage(), 'hi');
+});
+
+test('offline API-23 localization remains one static local asset with no dynamic or remote loader', async () => {
+  assert.doesNotMatch(source, /document\.createElement\(['"]script['"]\)|https?:\/\//);
+  assert.doesNotMatch(source, /\b(?:Promise|fetch|import)\s*\(/);
+  for (const html of [shell, ...await Promise.all(moduleNames.map(name => readFile(new URL(`modules/${name}/index.html`, root), 'utf8')))]) {
+    const match = html.match(/<script src="([^"]*app-i18n\.js)"><\/script>/);
+    assert.ok(match, 'each surface must load app-i18n.js');
+    assert.doesNotMatch(match[1], /^(?:https?:)?\/\//, 'localization runtime must stay local/offline');
+  }
 });
 
 test('runtime localizes dynamic UI but excludes editable and business-data surfaces', () => {
