@@ -42,7 +42,31 @@ and avoidable usage consumption.
 Current resume authority is
 `verification/audit/PHASE-4C1-CRASH-CHECKPOINT-2026-08-17.md`.
 
-## Phase 4 live checkpoint - 2026-08-12
+## Phase 4C.1 final controlled checkpoint - 2026-08-17
+
+Phase 4C.1 controlled execution is complete with one explicitly accepted open
+performance exception. This does not mean release acceptance is complete.
+
+| Authority | Identity |
+|---|---|
+| Product implementation commit | `ad2d643dfa371c05779aafc52e0c2ecf618c1a42` |
+| Product fingerprint SHA-256 | `08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e` |
+| Audited comparison target | `cc9a117c5245f352922da5c9f699daa16226bbf3` |
+| Governed tooling | `667ab0d2bc83f8f6347976548f30f5a1ccf6b12a` |
+| Baseline target | `537539f76aa333f760431acb9cb21cf3bedeab7d` |
+| Baseline manifest SHA-256 | `3a863511a04d5a7a9f16c4042d6ec7e42b1d92356ad52c8efbaec1ea6c57f23f` |
+| Approved comparison | `verification/audit/2026-08-17-220000-cc9a117c5245` |
+| Approved manifest SHA-256 | `f2741ee762fe39caa0ba8d99b6842611ca6cd98d573ebf70fa874399337bfd5a` |
+
+- The complete product suite passes 510/510.
+- C-01 through C-07 and C-09 pass. The exact 107 capability deltas are owner-approved and identity-bound with zero invalid, stale or unapproved rows.
+- C-08 remains failed solely because A10-01 is a measured P2 performance exception: shell parse p95 increased `1070.2 -> 1151.1 ms` (`+7.559%`) against the `+5%` limit. Sagar directed the project to proceed with A10-01 remaining open. Do not rerun or silently convert it to pass.
+- A10-02 passes at `+3.146%` against the `+10%` limit. A10-04/A10-05 remain unmeasured physical-device gates.
+- Signed 72-cell rendered evidence passes A6-04/A6-05 with zero target, contrast or browser-error findings. Sagar's new exact approval closes `GATE-NATIVE-LANGUAGE` for this identity only.
+- Final seeded debug-UAT APK: `V:\Co work\Projects\Retail\SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk`, 7,010,364 bytes, SHA-256 `F7F18EA3E3A0BD1B42B7B390E567993AD46160E0AA844A126509C28A33754287`. API-23 install-replace, installed-hash equality, launch/focus and zero-fatal engineering checks pass.
+- Phase 4C.2 remains external: SM-T875 A10-04/A10-05 and physical update checks, physical/OEM and production ETP acceptance, staff UAT/legal, production signing and release approval. These items must not reopen the completed Modular HTML implementation or Phase 4C.1 execution.
+
+## Historical Phase 4B checkpoint - 2026-08-12
 
 This checkpoint is the current authority. The detailed execution and exit plan
 is `docs/audit/CONSOLIDATED-PHASE-4-CLOSURE-PLAN.md`. The connectivity-safe,

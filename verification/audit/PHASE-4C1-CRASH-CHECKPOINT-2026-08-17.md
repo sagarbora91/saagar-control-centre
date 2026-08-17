@@ -1,6 +1,6 @@
 # Phase 4C.1 crash checkpoint — 2026-08-17
 
-Status: engineering candidate merged and pushed; the two-run timing stop condition was reached. Phase 4C.1 is paused for owner disposition and no further automatic run is authorized.
+Status: Phase 4C.1 controlled execution is complete with the owner-directed A10-01 performance exception remaining open. Physical and release authorities remain Phase 4C.2 work.
 
 ## Owner-mandated no-repeat policy
 
@@ -78,6 +78,22 @@ This authorizes the one-time remaining evidence sequence using the preserved run
 another timing run, or authorize another performance candidate. A10-01 must stay
 visible as an open performance exception in the final evidence and handoff.
 
+## Final Phase 4C.1 evidence
+
+- Audited comparison target: `cc9a117c5245f352922da5c9f699daa16226bbf3`.
+- Controlled baseline target: `537539f76aa333f760431acb9cb21cf3bedeab7d`.
+- Baseline manifest SHA-256: `3a863511a04d5a7a9f16c4042d6ec7e42b1d92356ad52c8efbaec1ea6c57f23f`.
+- Approved comparison: `verification/audit/2026-08-17-220000-cc9a117c5245`.
+- Approved comparison manifest SHA-256: `f2741ee762fe39caa0ba8d99b6842611ca6cd98d573ebf70fa874399337bfd5a`.
+- Capability approval envelope raw SHA-256: `fbce51a37b3026fc6ea2210d45cba054e5568f5fb2cfa289ffb13236ab7a0d3d`.
+- Capability approval canonical SHA-256: `0da360ff9d41acc8f023b73d66c67b205a261ceee722842cd78af0cec8baa61e`.
+- C-01 through C-07 and C-09 pass. C-02 contains 107 approved deltas, zero unapproved, invalid or stale approvals. C-03 confirms exact identity binding.
+- C-08 alone fails because A10-01 is intentionally retained as the measured P2 open exception (`1070.2 -> 1151.1 ms`, `+7.559%`, threshold `+5%`).
+- A10-02 passes (`515.0 -> 531.2 ms`, `+3.146%`, threshold `+10%`).
+- A10-04/A10-05 remain mandatory physical-device measurements and are unmeasured.
+- Signed rendered evidence SHA-256 `60fd8194776a932badf8b6f565c041f49646f18101acac329d578c7a15275b1e` passes A6-04/A6-05 across all 72 cells. Sagar's exact approval closes `GATE-NATIVE-LANGUAGE` only.
+- Final seeded debug-UAT APK: `SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk`, 7,010,364 bytes, SHA-256 `f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287`. API-23 install-replace, installed-hash equality, launch/focus and zero-fatal checks pass.
+
 ## Historical diagnostics — do not reuse as closure evidence
 
 - Dynamic-loader candidate `8d62d42` had one full timing pass and one full timing fail and also failed governance/API review.
@@ -87,11 +103,9 @@ visible as an open performance exception in the final evidence and handoff.
 
 ## Exact remaining Phase 4C.1 sequence
 
-1. Preserve run 2 as the governed timing pair: A10-01 remains fail/open and A10-02 remains pass.
-2. Capture the signed rendered UI matrix once for the frozen product.
-3. Build and validate the exact seeded APK once on API-23.
-4. Create the baseline/current evidence carriers and run the baseline and comparison once each.
-5. Preserve all open-gate truth; do not claim A10-01, physical-device, UAT/legal, production ETP, signing or release closure.
+1. Do not rerun or remediate A10-01 unless Sagar explicitly opens a new bounded task.
+2. Execute the deferred physical-device pack when the SM-T875 becomes available; this is Phase 4C.2 and does not reopen Phase 4C.1.
+3. Complete production ETP, staff UAT/legal, production signing and release approval under their named external authorities.
 
 ## Deferred Phase 4C.2 boundary
 
