@@ -1,0 +1,92 @@
+{
+  "auditId": "A2",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A2-01",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "duplicateGroups": 0,
+        "eligibleFunctions": 1937,
+        "functions": 4055
+      },
+      "notes": "Bodies are line-ending-normalized and trimmed; names and parameter lists are intentionally outside the body comparison.",
+      "result": "pass",
+      "rule": "A function body of at least 160 LF-normalized characters must not be byte-identical across three or more product files.",
+      "severity": "P2",
+      "title": "Byte-identical repeated function bodies"
+    },
+    {
+      "evidence": [],
+      "id": "A2-02",
+      "mandatory": true,
+      "metric": {
+        "candidateFunctions": 1435,
+        "candidateLimit": 5000,
+        "nearCopyGroups": 0,
+        "shingleSize": 5,
+        "similarityEdges": 3,
+        "similarityThreshold": 0.9
+      },
+      "notes": "Similarity is multiset Dice similarity over ordered five-token shingles, preserving local control-flow order while normalizing identifiers and literals; SHA-256 identities are emitted for each cluster.",
+      "result": "pass",
+      "rule": "After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% ordered five-token-shingle similarity must not span three or more product files.",
+      "severity": "P2",
+      "title": "Near-copy function bodies"
+    },
+    {
+      "evidence": [],
+      "id": "A2-03",
+      "mandatory": true,
+      "metric": {
+        "affectedModules": 0,
+        "duplicateGroups": 0,
+        "eligibleBlocks": 623
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "An identical CSS declaration block containing at least six declarations must not appear in three or more module files.",
+      "severity": "P2",
+      "title": "Repeated CSS declaration blocks"
+    },
+    {
+      "evidence": [],
+      "id": "A2-04",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "authorityCandidates": 98,
+        "duplicatedConstants": 0
+      },
+      "notes": "Literal values are fingerprinted rather than emitted. Ordinary use sites are excluded; only uppercase domain-definition sites are counted.",
+      "result": "pass",
+      "rule": "The same named domain constant and literal value must not be defined as an authority in two or more product files.",
+      "severity": "P1",
+      "title": "Duplicated approved domain constants"
+    },
+    {
+      "evidence": [],
+      "id": "A2-05",
+      "mandatory": true,
+      "metric": {
+        "authorityGaps": 0,
+        "conceptRegistrySha256": "57c37f8bcfa6a2d1b70a2e272e7b629f613c349342e01198fc2aeb0376e7051c",
+        "multipleAuthorities": 0,
+        "sharedConcepts": 21,
+        "zeroAuthorities": 0
+      },
+      "notes": "Persistent key names are represented by one-way concept IDs; manifest shared assets use the module manifest as their declared authority.",
+      "result": "pass",
+      "rule": "Each application-owned asset or persistent-key concept shared by at least two modules must have exactly one declared product authority.",
+      "severity": "P1",
+      "title": "Single authority for shared concepts"
+    }
+  ],
+  "metrics": {
+    "constantAuthorityCandidateCount": 98,
+    "cssBlockCount": 623,
+    "functionCount": 4055
+  },
+  "title": "Duplication and ownership"
+}
