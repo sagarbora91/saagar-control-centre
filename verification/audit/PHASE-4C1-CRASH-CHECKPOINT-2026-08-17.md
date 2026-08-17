@@ -1,6 +1,6 @@
 # Phase 4C.1 crash checkpoint — 2026-08-17
 
-Status: engineering candidate preserved and pushed; formal timing/evidence freeze is still pending.
+Status: engineering candidate merged and pushed; the two-run timing stop condition was reached. Phase 4C.1 is paused for owner disposition and no further automatic run is authorized.
 
 ## Owner-mandated no-repeat policy
 
@@ -28,6 +28,7 @@ Status: engineering candidate preserved and pushed; formal timing/evidence freez
 - Candidate branch: `agent/p4c-a10-derived-i18n-lazy`
 - Candidate source commit: `a07c8bc58619079d85c2daaf0efd65d58d7b514c`
 - Candidate identity commit / resume commit: `202c48fe1cd5c76540dba4dfca4504732b8f884e`
+- Frozen merged product target: `ad2d643dfa371c05779aafc52e0c2ecf618c1a42`
 - Remote candidate ref was verified at the resume commit above.
 
 ## Completed and preserved
@@ -43,6 +44,30 @@ Status: engineering candidate preserved and pushed; formal timing/evidence freez
 - MAH-3 www tree: `f2f081cd1e620901ab00fd36da42594fdc3ff58d5edd355082c36da74e609a59`.
 - Capability inventory: 660 capabilities, inventory SHA-256 `64978e85086a9f194742f2a579099802203bd475271b3af756dcc703a412eaa6`.
 - Capability comparison remains exactly 107 deltas with SHA-256 `6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420`.
+- The complete frozen-candidate product suite passed 510/510 once. It was not repeated.
+
+## Formal timing stop result
+
+Both authorized runs used the same 30-sample alternating shell-first protocol,
+baseline `29a094757fbc5386d379ee73e71a30228b348308`, current
+`ad2d643dfa371c05779aafc52e0c2ecf618c1a42`, and tooling
+`667ab0d2bc83f8f6347976548f30f5a1ccf6b12a`.
+
+| Run | A10-01 shell p95 | Delta | Verdict | A10-02 module p95 | Delta | Verdict |
+|---|---:|---:|---|---:|---:|---|
+| 1 | 1318.1 -> 1246.9 ms | -5.402% | PASS | 508.4 -> 468.5 ms | -7.848% | PASS |
+| 2 | 1070.2 -> 1151.1 ms | +7.559% | FAIL | 515.0 -> 531.2 ms | +3.146% | PASS |
+
+Preserved external evidence:
+
+- `V:\Co work\Projects\Retail\.audit-drafts\phase4c1-browser-timing-ad2d643-run1-667ab0d-20260817`
+- `V:\Co work\Projects\Retail\.audit-drafts\phase4c1-browser-timing-ad2d643-run2-667ab0d-20260817`
+- Run 1 baseline/current file SHA-256: `237ce5ecc1c6116eb18e85b61090b4455cc4f258e445ee2db5acf4ef2b8f7b01` / `7bd5ce867b4de5eebb3bfb963e314ca8f60c375e3c38945fb9eacc88abde4939`.
+- Run 2 baseline/current file SHA-256: `27622975770cd1ca240d45805c975d02696b7bc433f08fc09d0026119e6a7321` / `2652656f78906609ebfee1149e969f0a94191a3662a25eb5bed22628494ad86b`.
+
+Per the owner-mandated policy, run 2's A10-01 failure ends automatic execution.
+Do not run a third measurement, create another performance candidate, or start
+rendered UI/APK/baseline/comparison work without Sagar's explicit disposition.
 
 ## Historical diagnostics — do not reuse as closure evidence
 
@@ -53,13 +78,10 @@ Status: engineering candidate preserved and pushed; formal timing/evidence freez
 
 ## Exact remaining Phase 4C.1 sequence
 
-1. Merge resume commit `202c48fe1cd5c76540dba4dfca4504732b8f884e` into main and run the complete 510-test product suite once.
-2. Run two consecutive full shell-first paired timing captures against the frozen anchor and the exact candidate under tooling `667ab0d`; require A10-01 <= +5% and A10-02 <= +10% in both runs.
-3. If either timing run fails, preserve the result and stop. Do not retry-select a favorable sample.
-4. After two passes only, capture the signed 72-cell rendered UI matrix once and rebuild/test the exact seeded APK once on API-23.
-5. Create timing baseline/current evidence carriers, run the governed baseline, then run the unapproved comparison.
-6. Obtain renewed identity-bound fluent-language and capability approvals, then rerun the same comparison target with the approval envelope.
-7. Preserve the approved 18-file evidence set, update HANDOFF, commit and push.
+1. Obtain Sagar's explicit disposition for the preserved A10-01 timing failure.
+2. If Sagar accepts a recorded open A10-01 exception, do not rerun timing; proceed once with the remaining evidence sequence while keeping A10-01 open.
+3. If Sagar instead authorizes remediation, define one bounded change and its invalidation cost before editing; no speculative candidate is authorized by this checkpoint.
+4. Rendered UI, APK, baseline and comparison work remains intentionally not started after the failed timing stop.
 
 ## Deferred Phase 4C.2 boundary
 
