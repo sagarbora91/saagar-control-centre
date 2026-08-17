@@ -2,6 +2,24 @@
 
 Status: engineering candidate preserved and pushed; formal timing/evidence freeze is still pending.
 
+## Owner-mandated no-repeat policy
+
+- Do not redo a valid expensive run unless tracked inputs changed or the prior run
+  is documented as technically invalid.
+- Use one producer per artifact. Additional agents may review or work on disjoint
+  tasks, but may not repeat the same test, capture, build or audit.
+- Run cheap static, schema and identity checks before browser timing, rendered UI,
+  APK or full-audit work.
+- Freeze the product before evidence. State the invalidation impact before making
+  any post-freeze change.
+- Phase 4C.1 permits at most two consecutive formal timing runs. If either fails,
+  preserve it and stop for Sagar's decision; do not rerun or create another
+  candidate automatically.
+- Run the full 510-test suite once for the frozen candidate unless its inputs
+  change or the run is technically invalid.
+- Phase 4C.2 external gates must not reopen the completed Modular HTML
+  implementation or block work on the functioning ETP Reports module.
+
 ## Resume authority
 
 - Main branch: `agent/modular-phase1-shared-spine-v2`

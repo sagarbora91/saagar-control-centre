@@ -1,7 +1,46 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-16 (Asia/Kolkata)
+**Updated:** 2026-08-17 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+
+## Mandatory execution guardrails - owner direction 2026-08-17
+
+These rules override any earlier preference to "finish in one go" or deploy many
+agents. They exist to prevent repeated work, uncontrolled evidence invalidation,
+and avoidable usage consumption.
+
+1. Treat the Modular HTML implementation as complete. Phase 4C is audit,
+   performance and release acceptance; do not reopen migration implementation
+   unless a reproducible product defect requires it.
+2. Preserve every valid output by exact commit, file SHA and run identity. Never
+   repeat an expensive test, browser capture, APK build or audit merely to seek a
+   more favorable result.
+3. Before any expensive operation, perform the cheapest static/schema/identity
+   preflight. Do not capture timing or rendered evidence for an unreviewed or
+   uncommitted candidate.
+4. Only one agent may own a given artifact or measurement. Parallel agents may
+   review, prepare independent inputs or work on disjoint tasks, but must not run
+   overlapping suites or captures.
+5. Freeze product and tooling identities before generating evidence. Any proposed
+   change after freeze must first list exactly which APKs, attestations, baselines,
+   comparisons and approvals it invalidates.
+6. For Phase 4C.1 timing, run at most two consecutive formal measurements. If
+   either fails, preserve the failure and stop for an owner decision. Do not start
+   a third candidate or select a favorable rerun automatically.
+7. Run the complete product suite once per frozen candidate. Rerun it only when
+   tracked product/test inputs changed or the prior run was technically invalid,
+   with the reason recorded first.
+8. Keep physical-device, OEM, production ETP, UAT/legal, signing and release
+   acceptance in Phase 4C.2. Never block or reopen completed migration work merely
+   because those external authorities are unavailable.
+9. Prioritize a functioning ETP Reports module and user-visible product behavior
+   over additional audit refinement. Do not expand scope without explicit owner
+   authorization.
+10. Report the expected expensive commands, reuse boundary and stop condition
+    before execution. If the stop condition is reached, stop rather than iterate.
+
+Current resume authority is
+`verification/audit/PHASE-4C1-CRASH-CHECKPOINT-2026-08-17.md`.
 
 ## Phase 4 live checkpoint - 2026-08-12
 
