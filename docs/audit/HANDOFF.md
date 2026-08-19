@@ -1,6 +1,6 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-17 (Asia/Kolkata)
+**Updated:** 2026-08-19 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
 ## Mandatory execution guardrails - owner direction 2026-08-17
@@ -40,7 +40,155 @@ and avoidable usage consumption.
     before execution. If the stop condition is reached, stop rather than iterate.
 
 Current resume authority is
-`verification/audit/PHASE-4C1-CRASH-CHECKPOINT-2026-08-17.md`.
+`verification/audit/PHASE-4C2-FINAL-CLOSURE-REGISTER-2026-08-19.json`, with
+`verification/audit/PHASE-4C2-EXTERNAL-CLOSURE-PACK-2026-08-19.md` as its
+operational companion. The 2026-08-17 crash checkpoint remains valid history for
+Phase 4C.1 execution.
+
+## Phase 4C.2 external acceptance checkpoint - 2026-08-19
+
+Phase 4A and 4B are complete. Phase 4C.1 is complete. **4C.2 is the only pending
+phase.** Nothing in this session changed product code; the frozen identity below
+is unchanged and was re-verified byte-for-byte.
+
+### Live records - use these, not the 08-17 drafts
+
+| Record | Path |
+|---|---|
+| Closure register | `verification/audit/PHASE-4C2-FINAL-CLOSURE-REGISTER-2026-08-19.json` |
+| External closure pack | `verification/audit/PHASE-4C2-EXTERNAL-CLOSURE-PACK-2026-08-19.md` |
+
+Commits `192c43c`, `2a96a67`, `881c252` on `agent/modular-phase1-shared-spine-v2`,
+pushed to both `github` and the local `origin` mirror.
+
+**Both 2026-08-17 drafts are bound to the superseded identity** (product
+`3f8a37ce`, fingerprint `47c1e9c0`, APK `F4DDBC1D`, tooling `29a09475`) and close
+nothing. They were written before that evening's 4C.1 refreeze. They are retained
+unmodified as history and named by hash in the replacements. The old register also
+had no row for A10-05 at all, and cited the superseded Phase 4B language approval
+rather than the current 4C1 one.
+
+### Verified at re-entry
+
+- Frozen identity intact: product `ad2d643`, fingerprint `08734dfb`, target
+  `cc9a117c`, tooling `667ab0d`.
+- Comparison manifest recomputed: `f2741ee7...` exact match.
+- APK recomputed from disk: `f7f18ea3...`, 7,010,364 bytes, exact match.
+- A10-01 untouched: `fail`, P2, `+7.559%`, C-08 failing solely for it.
+
+### Gate standing: 2 closed, 4 pending, 4 carried
+
+| State | Gates |
+|---|---|
+| **Closed** | `GATE-UPDATE-API23`, `GATE-NATIVE-LANGUAGE` - both now cite current-identity evidence |
+| **Carried as owner-accepted exception** | `GATE-ETP-PHYSICAL`, `GATE-ETP-INTERRUPTION`, `GATE-ETP-PRODUCTION`, `GATE-ETP-EXCEPTIONS` |
+| **Pending external authority** | `GATE-UPDATE-PHYSICAL`, `GATE-PAYMENTTYPE25`, `GATE-UAT`, `GATE-RELEASE` |
+
+Plus three carried audit checks: `A10-01`, `A10-04`, `A10-05`.
+
+Gate rows resolve to exactly one of three decisions and never to a blank. A
+carried exception is never a pass: the register enforces
+`carriedExceptionCountsAsClosedAllowed: false`.
+
+### A10-04 / A10-05 - carried, and structurally unclosable
+
+Owner direction 2026-08-19: carry them open rather than build a device harness.
+Accepted risk, stated in the register: **backup save latency and Expense memory
+growth are unverified on physical hardware at ship time.**
+
+Two structural blockers were found by reading the validator. Neither is in any
+earlier planning document, and no device fixes either:
+
+1. **APK binding.** `validBuildBinding` in `scripts/audit/audits/a10.mjs` accepts
+   only an `apkSha256` matching a reproducible-build capture in
+   `A9-BUILD-COMPARISON.json`. Both captures are **`d79eb925...`**. The frozen
+   seeded APK `f7f18ea3...` is not among them, because it comes from
+   `scripts/build-seeded-apk.mjs` rather than the audited `npm run build:apk`.
+   Any device record naming the seeded APK returns
+   `DEVICE_RUNTIME_APK_BINDING_INVALID` **on any hardware**.
+2. **No producer.** Nothing emits `SAAGAR_A10_DEVICE_RUNTIME_ACCEPTANCE`; the
+   record prefix `verification/audit/accepted/device-runtime/` does not exist. A
+   valid record also needs an Ed25519 signature from trusted signer
+   `phase4a-renderer-ed25519-9ec3b61b...` and a `SAAGAR_A10_DEVICE_HARNESS`
+   artifact.
+
+**Consequence: "4C.2 has no engineering left" is not accurate.** It holds for the
+achievable gates, not for A10-04/A10-05.
+
+**Two artifacts, different jobs.** `f7f18ea3` is for human-judgment gates
+(install, smoke, UI review, UAT). `d79eb925` is the only artifact the A10 device
+validator will accept. Do not conflate them.
+
+### Retail ETP - four gates carried, but the feature ships
+
+Owner direction 2026-08-19: the ETP module completes after its own modular
+migration, so its four gates are carried rather than closed.
+
+**ETP was never migrated** - the eleven migrated modules are under `www/modules/`;
+ETP is eighteen files at `www/` root. **But it ships reachable:** seventeen
+`etp-*.js` script tags, `etp-import-worker.js` as a Web Worker, a live
+`Open ETP import` button at `www/index.html` line 329, and **no feature flag**.
+
+So the release puts a reachable financial-import feature in users' hands without
+physical/OEM acceptance, without any real production publication, and without
+owner review of its exception screens. The release-approver template now requires
+written acknowledgement of exactly that.
+
+The option not taken: flagging ETP off would remove the gates from release scope
+honestly, but a flag is a product change that supersedes the fingerprint, APK,
+comparison, capability approval and language approval - restarting 4C.1.
+
+Real mitigation, not to be overstated:
+`verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json` shows both stores parsing
+clean with zero PII canaries and REC-002 reconciling `PASS`, `differenceCount: 0`,
+across 4,658 WLMHW and 708 HEMW groups. That is conformance, not publication.
+
+### Device routing - "no tablet" is not "emulator"
+
+`a10.mjs` requires `device.type === 'physical-android'` and API at least 23. There
+is **no model check**; SM-T875 is project naming, not an audit requirement. The
+adjacent identity fields are unverifiable hashes, so an emulator entry *would*
+pass the validator - which is precisely why it must never be written.
+
+**Cloud device farms are genuine physical hardware** operated remotely (Samsung
+Remote Test Lab, BrowserStack App Live, AWS Device Farm) and satisfy
+`physical-android` honestly with no purchase. With A10-04 carried, the
+representative-volume rule no longer gates any session, so remaining physical work
+runs on seeded data only - never put real shop data on borrowed or cloud hardware.
+
+Acceptance-device re-designation away from SM-T875 is **still unrecorded** and is
+required before a substitute device closes `GATE-UPDATE-PHYSICAL`.
+
+### Prepared but undecided
+
+- **`GATE-PAYMENTTYPE25`.** Facts gathered: WLMHW 2,802 of 4,658 R022 rows
+  (**60.2%**), HEMW 18 of 708 (2.5%). Quarantine excludes the **tender
+  attribution, not the row and not the money** - REC-002 reconciles `netValue`
+  against `netAmount` and passed with zero differences. The deciding fact is what
+  PAYMENTTYPE25 maps to in Helios, which is owner knowledge. Not carried as an ETP
+  exception: it needs only a decision.
+- **`GATE-ETP-EXCEPTIONS`.** A review surface was rendered on 2026-08-19 by
+  extracting `exceptionPresentation()` and `exceptionHtml()` verbatim from
+  `www/etp-import-ui.js` and evaluating them, in four states. Not signed, so the
+  gate stays carried. It is the cheapest of the four to reverse: an owner review
+  with the surface named closes it, no device and no production data.
+
+### What actually remains
+
+`GATE-PAYMENTTYPE25` needs one owner decision. `GATE-UPDATE-PHYSICAL` needs one
+cloud real-device session plus the re-designation record. `GATE-UAT` and
+`GATE-RELEASE` are blocked on **naming people**: a privacy/legal reviewer, a
+signing custodian, and an independent release approver who is not the custodian.
+
+**The critical path is naming those three people, not hardware.**
+
+### Honest status sentence
+
+> Modular HTML migration and Phase 4C.1 engineering and evidence execution are
+> complete. Phase 4C.2 external release acceptance is pending, with C-08 failed,
+> A10-01, A10-04 and A10-05 carried open as owner-accepted exceptions, and the
+> four Retail ETP gates carried open pending that module's separate modular
+> migration while the feature nonetheless ships reachable.
 
 ## Phase 4C.1 final controlled checkpoint - 2026-08-17
 
@@ -353,6 +501,13 @@ Received exact approval sentence:
 > saagar-whole-app-audit-v1.0.0.
 
 ## Open acceptance gates
+
+**Superseded 2026-08-19.** This list predates the 4C.2 checkpoint above and no
+longer describes current state: A10-01, A10-04, A10-05 and the four Retail ETP
+gates are now carried owner-accepted exceptions, and A10-02 passes in the approved
+comparison. Read the Phase 4C.2 section and
+`verification/audit/PHASE-4C2-FINAL-CLOSURE-REGISTER-2026-08-19.json` instead. The
+list is retained as history.
 
 - A10-01 governed shell-parse remediation and comparable attestation. A10-02
   currently passes only in the diagnostic comparable capture and must be
