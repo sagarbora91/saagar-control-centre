@@ -65,7 +65,18 @@
     "blankStringsAllowed": false,
     "closedWithoutEvidenceAllowed": false,
     "historicalOpenGatesMutationAllowed": false,
-    "carriedExceptionCountsAsClosedAllowed": false
+    "carriedExceptionCountsAsClosedAllowed": false,
+    "gateCarriedExceptionRowsRequire": [
+      "decision=open-owner-accepted-exception",
+      "ownerDirection",
+      "riskAccepted",
+      "doesNotClaim",
+      "evidence[0].path",
+      "evidence[0].sha256",
+      "reopenCondition",
+      "requiredAuthority",
+      "requiredEvidence"
+    ]
   },
   "summary": {
     "gateTotal": 10,
@@ -101,7 +112,16 @@
     },
     "auditRunResult": "complete-with-findings-or-gaps",
     "findingCount": 1,
-    "mandatoryUnmeasuredCount": 2
+    "mandatoryUnmeasuredCount": 2,
+    "gatesPendingExternalAuthority": 4,
+    "gatesCarriedAsException": 4,
+    "carriedExceptionTotal": 7,
+    "carriedGateIds": [
+      "GATE-ETP-PHYSICAL",
+      "GATE-ETP-INTERRUPTION",
+      "GATE-ETP-PRODUCTION",
+      "GATE-ETP-EXCEPTIONS"
+    ]
   },
   "gates": [
     {
@@ -174,8 +194,16 @@
     {
       "id": "GATE-ETP-PHYSICAL",
       "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "No physical Android API-23-class OEM document-provider import record exists for the frozen APK. Emulator evidence is barred for this gate by written direction.",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "No physical Android API-23-class OEM document-provider import has ever been performed for this build. Real OEM document providers vary in how they expose file selection and persist URI permissions, and none of that behaviour is verified. A provider-specific failure would first appear to a user importing real financial reports, with no prior evidence to diagnose against.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Emulator ETP evidence was not substituted for physical OEM acceptance",
+        "No physical document-provider import of any kind was performed for this identity"
+      ],
       "requiredAuthority": "Named tester operating a real Android API-23-class device with its OEM document provider",
       "requiredEvidence": [
         "Physical device, API level and OEM WebView identity",
@@ -183,29 +211,56 @@
         "Four-file selection and persisted URI permission",
         "Import, relaunch and verified readback result"
       ],
-      "supportingEvidence": []
+      "evidence": [
+        {
+          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
+          "note": "Supporting only. Establishes real-file parser conformance on a workstation; it is not a device or document-provider record and closes nothing."
+        }
+      ],
+      "reopenCondition": "Closing requires a real Android API-23-class device with an OEM document provider completing four-file selection, persisted URI permission, import, relaunch and verified readback against the frozen identity. A cloud real-device farm satisfies this; an emulator does not."
     },
     {
       "id": "GATE-ETP-INTERRUPTION",
       "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "Emulator evidence already banked rotation, force-stop, background process death, incomplete-stage recreation and authenticated chunk-corruption refusal. The physical and OEM residue, including document-provider interruption and a safe low-storage case, remains uncaptured.",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "The physical and OEM residue is unverified: document-provider interruption during import, and a safe low-storage case. The low-storage case has never been run anywhere, having been excluded as unsafe on the emulator. An interruption or a full device during a real import could leave staging state in a condition no evidence covers.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "The banked emulator subset does not extend to physical or OEM behaviour",
+        "The low-storage case remains unexecuted on any platform"
+      ],
       "requiredAuthority": "Named physical API-23-class OEM tester",
       "requiredEvidence": [
         "Document-provider interruption result on physical hardware",
         "Safe low-storage result",
         "No partial generation and no plaintext publication"
       ],
-      "supportingEvidence": [
-        "verification/audit/PHASE-4C-API23-RUNTIME-INTERRUPTION-2026-08-17.json covers the emulator subset only",
-        "npm run test:etp passed 129 of 129 contract tests"
-      ]
+      "evidence": [
+        {
+          "path": "verification/audit/PHASE-4C-API23-RUNTIME-INTERRUPTION-2026-08-17.json",
+          "sha256": "c185afd439f0e1ca120cf5cf4dd314c31d61f54613a1cdc2e19db1e1c48b19f1",
+          "note": "Supporting only. Emulator subset: rotation, force-stop, background process death, incomplete-stage recreation and authenticated chunk-corruption refusal all passed. Document-provider interruption and low storage are not covered."
+        }
+      ],
+      "reopenCondition": "Closing requires the two uncovered cases on a real API-23-class OEM device. Do not repeat the banked emulator subset."
     },
     {
       "id": "GATE-ETP-PRODUCTION",
       "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "No Owner-approved production native generation has been published against the frozen identity using authorized real export files. This gate is data and authority bound, not hardware bound.",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "No real production publication has ever been performed with this build. The first authorized WLMHW or HEMW publication will therefore happen unrehearsed, against live business data. Parser conformance on real exports is genuine mitigation and is recorded below, but conformance is not publication: the complete-period declaration, manager reauthorization, receipt generation, previous-generation retention and no-partial-publication behaviours are unexercised end to end on the frozen build.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Parser conformance is not a publication rehearsal",
+        "No owner-authorized native generation was published for this identity"
+      ],
       "requiredAuthority": "Production-data custodian and business owner Sagar (sagarbora91) acting as Owner and Admin",
       "requiredEvidence": [
         "Untouched WLMHW and HEMW R003, R013, R022 and R025 source hashes with bounded counts",
@@ -215,15 +270,28 @@
         "Active generation with metadata-only receipt",
         "Previous-generation retention and no partial publication"
       ],
-      "supportingEvidence": [
-        "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json establishes real-source conformance only"
-      ]
+      "evidence": [
+        {
+          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
+          "note": "Supporting and materially reassuring. Both stores parsed clean against the exact four-report profile with zero PII canaries, and REC-002 reconciled with status PASS, differenceCount 0, across 4,658 WLMHW and 708 HEMW groups on both quantity and net amount."
+        }
+      ],
+      "reopenCondition": "Closing requires the authorized four-report production export set, the owner complete-period declaration, manager reauthorization, and acceptance of the active generation and metadata-only receipt. This needs no device."
     },
     {
       "id": "GATE-ETP-EXCEPTIONS",
       "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "The bounded R003 and R013 exception presentation contract is tested, but the owner has not reviewed and accepted the exception screens for the frozen identity.",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "The owner has not reviewed and accepted the R003 and R013 exception screens. The residual risk is intelligibility only, and it is the smallest of the four: the presentation is bounded to exactly two rows by contract, counts above 250,000 or statuses outside PASS and FAIL are rejected rather than rendered, and the card cannot alter revenue or sales totals by construction because REC-002 reconciles netValue against netAmount while the R003 and R013 rules emit only a status and a count.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "No owner review of the exception presentation was recorded for this identity",
+        "A rendered review surface was produced on 2026-08-19 but was not signed"
+      ],
       "requiredAuthority": "Business owner Sagar (sagarbora91)",
       "requiredEvidence": [
         "Screen evidence and hashes bound to the frozen identity, with the reviewed surface named",
@@ -231,9 +299,14 @@
         "R003 discount exceptions remain visible and intelligible",
         "Owner confirmation that neither alters revenue or sales totals"
       ],
-      "supportingEvidence": [
-        "npm run test:etp passed the bounded non-revenue presentation contract"
-      ]
+      "evidence": [
+        {
+          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
+          "note": "Supporting only. The bounded non-revenue presentation contract is separately proven by npm run test:etp; the owner acceptance step is what remains."
+        }
+      ],
+      "reopenCondition": "Closing requires only an owner review of the exception card with the reviewed surface named. This needs no device and no production data, and is the cheapest of the four to close."
     },
     {
       "id": "GATE-PAYMENTTYPE25",
@@ -401,11 +474,38 @@
     }
   ],
   "phase4CompletionCondition": [
-    "Every gate row carries a complete identity-bound decision and evidence record.",
+    "Every gate row carries a complete identity-bound decision, either closed with evidence or explicitly carried as an owner-accepted exception with its risk stated.",
     "The production artifact is signed and independently accepted.",
     "A10-01, A10-04 and A10-05 are truthfully retained as open owner-accepted exceptions unless separately authorized remediation later closes them.",
+    "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
     "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
   ],
-  "honestStatusSentence": "Modular HTML migration and Phase 4C.1 engineering and evidence execution are complete. Phase 4C.2 external release acceptance is pending, with C-08 failed and A10-01, A10-04 and A10-05 carried open as owner-accepted exceptions.",
-  "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions."
+  "honestStatusSentence": "Modular HTML migration and Phase 4C.1 engineering and evidence execution are complete. Phase 4C.2 external release acceptance is pending, with C-08 failed, A10-01, A10-04 and A10-05 carried open as owner-accepted exceptions, and the four Retail ETP gates carried open pending that module's separate modular migration while the feature nonetheless ships reachable.",
+  "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
+  "etpHold": {
+    "decidedAt": "2026-08-19",
+    "decidedBy": "Sagar (sagarbora91), business owner",
+    "rationale": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+    "releaseScope": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+    "migrationState": {
+      "migratedModules": [
+        "cro_audit",
+        "dsr",
+        "expense",
+        "grooming",
+        "leave",
+        "payroll",
+        "planning",
+        "qms",
+        "service",
+        "stock",
+        "tax"
+      ],
+      "etpMigrated": false,
+      "etpFileCount": 18,
+      "etpLocation": "www/ root, not www/modules/"
+    },
+    "optionNotTaken": "The alternative was to hide ETP behind a feature flag so the four gates would leave release scope honestly. That was not chosen because adding a flag is a product change that would supersede the frozen fingerprint, APK, comparison, capability approval and language approval, restarting Phase 4C.1.",
+    "notCarried": "GATE-PAYMENTTYPE25 is deliberately NOT carried as an ETP exception. It is a business mapping disposition that needs no device, no production run and no modular migration, and it remains pending owner decision."
+  }
 }

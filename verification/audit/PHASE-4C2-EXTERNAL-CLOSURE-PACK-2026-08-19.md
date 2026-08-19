@@ -25,6 +25,9 @@ Three substantive changes beyond re-identification:
    (Section 5), which is what the audit code actually requires.
 3. **Two structural blockers are documented** (Section 4) so that nobody spends a device session
    attempting a measurement that the frozen tooling cannot accept.
+4. **The four Retail ETP gates are carried as owner-accepted exceptions** (Section 4A), by owner
+   direction of 2026-08-19, pending that module's separate modular migration. The feature
+   nonetheless ships reachable — read Section 4A before approving release.
 
 ## 1. Frozen identity
 
@@ -71,10 +74,10 @@ ETP row or customer data into Git evidence.
 | `GATE-UPDATE-API23` | **CLOSED** 2026-08-17 | Exact final APK passed `adb install -r` on API 23: installed hash equals `f7f18ea3`, UID 10056 and first-install time preserved, activity resumed and focused, zero fatal-log matches | Closed by `verification/audit/PHASE-4C1-FINAL-SEEDED-APK-2026-08-17.json`, SHA-256 `0c5cc386…`. Engineering evidence only; not physical acceptance |
 | `GATE-NATIVE-LANGUAGE` | **CLOSED** 2026-08-17 | 72 rendered cells including 48 Marathi/Hindi, 2,394 targets, 6,105 contrast samples, zero violations; A6-04 and A6-05 pass | Closed by `verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json`, SHA-256 `9e290f13…`, bound to fingerprint `08734dfb`. Do not re-review |
 | `GATE-UPDATE-PHYSICAL` | Open | Emulator install-replace is supporting evidence only | Update-in-place on a genuine physical Android of API level at least 23, no uninstall or data clear, preserved state, module smoke, owner acceptance against `f7f18ea3` |
-| `GATE-ETP-PHYSICAL` | Open | API-23 emulator, parser and instrumentation support but cannot close it | A physical API-23-class device with a real OEM document provider selects all four files, retains URI permission, imports, relaunches and reads verified status. Named tester records the result |
-| `GATE-ETP-INTERRUPTION` | Open (composite) | Emulator banked rotation, force-stop, background process death, incomplete-stage recreation and authenticated chunk-corruption refusal; `npm run test:etp` passed 129/129 | Physical and OEM residue only: document-provider interruption and a safe low-storage case. Do not repeat the banked emulator subset |
-| `GATE-ETP-PRODUCTION` | Open | `verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json` provides bounded aggregates only | Owner/Admin imports the untouched production R003/R013/R022/R025 set for both stores, declares each period complete, reauthorizes, and accepts the active generation and metadata-only receipt. **Not hardware bound** |
-| `GATE-ETP-EXCEPTIONS` | Open | `npm run test:etp` proves the bounded non-revenue UI contract | Owner reviews the R013 attribution and R003 discount exception screens, names the surface reviewed, and confirms neither alters revenue or sales totals |
+| `GATE-ETP-PHYSICAL` | **CARRIED EXCEPTION** | API-23 emulator, parser and instrumentation support but cannot close it | A physical API-23-class device with a real OEM document provider selects all four files, retains URI permission, imports, relaunches and reads verified status. Named tester records the result |
+| `GATE-ETP-INTERRUPTION` | **CARRIED EXCEPTION** | Emulator banked rotation, force-stop, background process death, incomplete-stage recreation and authenticated chunk-corruption refusal; `npm run test:etp` passed 129/129 | Physical and OEM residue only: document-provider interruption and a safe low-storage case. Do not repeat the banked emulator subset |
+| `GATE-ETP-PRODUCTION` | **CARRIED EXCEPTION** | `verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json` provides bounded aggregates only | Owner/Admin imports the untouched production R003/R013/R022/R025 set for both stores, declares each period complete, reauthorizes, and accepts the active generation and metadata-only receipt. **Not hardware bound** |
+| `GATE-ETP-EXCEPTIONS` | **CARRIED EXCEPTION** | `npm run test:etp` proves the bounded non-revenue UI contract | Owner reviews the R013 attribution and R003 discount exception screens, names the surface reviewed, and confirms neither alters revenue or sales totals |
 | `GATE-PAYMENTTYPE25` | Open | Quarantine behaviour is tested and safe | Owner chooses an approved mapping or explicitly approves continued quarantine, covering 2,802 WLMHW and 18 HEMW non-zero R022 rows. No guessed tender mapping |
 | `GATE-UAT` | Open | Automated suites are prerequisites, not UAT or legal approval | Named staff complete role and store workflows; owner accepts; a **named** privacy/legal reviewer approves the checklist. No reviewer has been named yet |
 | `GATE-RELEASE` | Open | Fail-closed release-build controls are testable locally | Named key custodian produces the production-signed artifact outside Git and records provenance without private material; an **independent** release approver accepts the exact signed artifact |
@@ -144,6 +147,50 @@ records these are real residual risks, carried by explicit owner direction.
 adjacent identity fields are unverifiable hashes, so writing `physical-android` for an emulator would
 pass the validator — which is exactly why it must not be done. That would be fabricated acceptance
 evidence for a data-durability gate.
+
+## 4A. Retail ETP — four gates carried as exceptions
+
+**Owner direction, 2026-08-19:** the Retail ETP feature completes after its own modular migration,
+and until then `GATE-ETP-PHYSICAL`, `GATE-ETP-INTERRUPTION`, `GATE-ETP-PRODUCTION` and
+`GATE-ETP-EXCEPTIONS` are carried open as accepted exceptions rather than closed.
+
+**ETP was never migrated.** The eleven migrated modules live under `www/modules/`
+(`cro_audit, dsr, expense, grooming, leave, payroll, planning, qms, service, stock, tax`). ETP is
+eighteen files at `www/` root.
+
+**But ETP ships, and it is reachable.** This is the fact that makes these exceptions consequential
+rather than administrative:
+
+- seventeen `etp-*.js` files load via `<script src>` tags in `www/index.html`;
+- the eighteenth, `etp-import-worker.js`, loads as a Web Worker;
+- `www/index.html` line 329 exposes a live **Open ETP import** button; and
+- **there is no feature flag of any kind.**
+
+So the release puts a reachable financial-report import feature in users' hands while its physical,
+OEM and production-publication acceptance is deliberately incomplete.
+
+| Gate | What is unverified | Weight |
+|---|---|---|
+| `GATE-ETP-PHYSICAL` | No physical API-23/OEM document-provider import has ever been performed. Provider-specific file-selection and persisted-URI behaviour is unknown | High — first failure would appear to a user importing real reports |
+| `GATE-ETP-INTERRUPTION` | Document-provider interruption and the safe low-storage case. Low storage has never been run **anywhere**, having been excluded as unsafe on the emulator | Medium — emulator covered rotation, force-stop, process death and corruption refusal |
+| `GATE-ETP-PRODUCTION` | No real publication has ever been performed. The first authorized WLMHW or HEMW publication happens unrehearsed against live data | High — though parser conformance on real exports is genuine mitigation, see below |
+| `GATE-ETP-EXCEPTIONS` | Owner has not reviewed the exception screens | Low — bounded to two rows by contract and non-revenue by construction |
+
+**Mitigation that is real and should be stated fairly.** `verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json`
+records both stores parsing clean against the exact four-report profile with zero PII canaries, and
+REC-002 reconciling `PASS` with `differenceCount: 0` across 4,658 WLMHW and 708 HEMW groups on both
+quantity and net amount. That is meaningful. It is not publication, and it is not a device.
+
+**The option not taken.** Hiding ETP behind a feature flag would remove these four gates from
+release scope honestly. It was not chosen because adding a flag is a product change that supersedes
+the frozen fingerprint, APK, comparison, capability approval and language approval, restarting
+Phase 4C.1.
+
+**`GATE-PAYMENTTYPE25` is deliberately NOT carried here.** It needs no device, no production run and
+no modular migration — only an owner decision — and it remains pending in Section 6.
+
+**Cheapest to reverse:** `GATE-ETP-EXCEPTIONS` requires only an owner review of the exception card
+with the surface named. If that review happens, flip it to closed and leave the other three carried.
 
 ## 5. Device routing without owning a tablet
 
@@ -405,40 +452,51 @@ I, <RELEASE_AUTHORITY>, approve release of exact APK SHA-256
 closure-register SHA-256 <REGISTER_SHA256>. I confirm every Phase 4C.2 gate
 carries a completed decision, and I acknowledge that C-08 is failed and that
 A10-01, A10-04 and A10-05 are carried open owner-accepted exceptions with their
-risks stated in the register. I am independent of the signing custodian. I
+risks stated in the register. I further acknowledge that the four Retail ETP
+gates are carried open, that the Retail ETP feature nonetheless ships reachable
+with no feature flag, and that it therefore reaches users without physical
+API-23/OEM acceptance, without any real production publication, and without owner
+review of its exception screens. I am independent of the signing custodian. I
 approve PR #5 for merge and this exact artifact for release.
 Decision: APPROVE|REJECT.
 ```
 
 ## 9. Final closure register requirements
 
-The register must contain one row for each of the ten gate IDs, each carrying:
+The register contains one row for each of the ten gate IDs. Every row must resolve to exactly one of
+three states, and never to a blank:
 
-- `state: closed` with `decision` of `pass` or `approve`;
-- the frozen product commit, product fingerprint and exact final APK SHA-256;
-- evidence record path and SHA-256;
-- reviewer identity, role, decision and received timestamp;
-- explicit scope and non-claims; and
-- for composite gates, every required subcase recorded.
+- **closed** — `decision` of `pass` or `approve`, with the frozen product commit, product
+  fingerprint and exact final APK SHA-256; evidence record path and SHA-256; reviewer identity,
+  role, decision and timestamp; explicit scope and non-claims; and for composite gates, every
+  required subcase recorded.
+- **pending-external-authority** — `reason`, `requiredAuthority` and `requiredEvidence`.
+- **open-owner-accepted-exception** — `ownerDirection`, `riskAccepted`, `doesNotClaim`,
+  `reopenCondition`, and the `requiredAuthority`/`requiredEvidence` that would still close it.
 
-Separately, the register must retain `A10-01`, `A10-04` and `A10-05` as carried open exceptions with
-owner direction, accepted risk, non-claims and reopen condition. **A carried exception is never
-counted as a closed gate**, and the register enforces this with
-`carriedExceptionCountsAsClosedAllowed: false`.
+Separately, the register retains `A10-01`, `A10-04` and `A10-05` as carried open audit-check
+exceptions with the same fields. **A carried exception is never counted as a closed gate**, and the
+register enforces this with `carriedExceptionCountsAsClosedAllowed: false`.
+
+Current standing: **2 closed, 4 pending, 4 carried** gate rows, plus **3 carried audit checks**.
 
 Before declaring Phase 4 complete, verify that:
 
 1. the native-language approval is still identity-compatible with the released product;
-2. all ten gate rows are closed against the current identity;
+2. every gate row carries a completed decision — closed, or explicitly carried with its risk stated;
 3. `A10-01`, `A10-04` and `A10-05` are still truthfully recorded as open, unless a separately
    authorized remediation closed them;
-4. the release-approved identity is the **production-signed artifact**, not the debug APK
+4. the four Retail ETP gates are still truthfully recorded as carried, and the release approver has
+   acknowledged **in writing** that ETP ships reachable without physical, OEM or production
+   acceptance;
+5. the release-approved identity is the **production-signed artifact**, not the debug APK
    `f7f18ea3`; and
-5. no physical, UAT, legal, production-data, signing or release authority rests on emulator-only
+6. no physical, UAT, legal, production-data, signing or release authority rests on emulator-only
    evidence.
 
 The honest status sentence until then:
 
 > Modular HTML migration and Phase 4C.1 engineering and evidence execution are complete. Phase 4C.2
-> external release acceptance is pending, with C-08 failed and A10-01, A10-04 and A10-05 carried
-> open as owner-accepted exceptions.
+> external release acceptance is pending, with C-08 failed, A10-01, A10-04 and A10-05 carried open
+> as owner-accepted exceptions, and the four Retail ETP gates carried open pending that module's
+> separate modular migration while the feature nonetheless ships reachable.
