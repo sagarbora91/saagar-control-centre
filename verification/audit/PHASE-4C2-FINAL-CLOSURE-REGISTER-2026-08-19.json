@@ -30,6 +30,8 @@
   },
   "rowValidationPolicy": {
     "placeholderTokensForbidden": [
+      "<",
+      ">",
       "TBD",
       "TODO",
       "FILL_ME",
