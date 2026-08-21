@@ -118,8 +118,8 @@ test('English startup defers only derived lookup construction and preserves the 
   assert.equal(Object.isFrozen(runtime.api), true);
   assert.equal(runtime.api.apply('en'), 'en');
   assert.equal(runtime.api.translate('Settings', 'en'), 'Settings');
-  assert.equal(runtime.api.stats().mr, 2009);
-  assert.equal(runtime.api.stats().hi, 2009);
+  assert.equal(runtime.api.stats().mr, 2111);
+  assert.equal(runtime.api.stats().hi, 2111);
   assert.equal(runtime.derivedObjectCreates(), 0, 'English API and coverage stats must leave lookups deferred');
   for (const result of [runtime.api.apply('en'), runtime.api.translate('Save', 'en'), runtime.api.stats()]) {
     assert.equal(result instanceof Promise, false, 'public localization methods must stay synchronous');
