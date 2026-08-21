@@ -2,6 +2,31 @@
 
 **Status:** ETP-4 steps 1 and 2 are complete. **Step 3 (identity regeneration) is NOT done and the tree is red on 19 identity assertions.** Do not build an APK or run the controlled audit from this state.
 
+> ## Correction — attribution, added 2026-08-21
+>
+> An earlier revision of this document attributed the 19 red identity assertions to the
+> localization import. **That was wrong.** Measured in a clean worktree at `099d6a4`, the commit
+> immediately before the import:
+>
+> | Suite | At `099d6a4` (pre-import) | After import |
+> |---|---|---|
+> | `test:modular` | 74 pass, **12 fail** | 74 pass, 12 fail |
+> | `test:mah3` | 3 pass, **4 fail** | 15 pass, 4 fail |
+> | `test:mah4` | 5 pass, **3 fail** | 43 pass, 3 fail |
+>
+> **The localization import added zero failures.** The identical failures were already present. The
+> drift was introduced by the ETP-1..ETP-3 work, which took `www/` from 100 to 103 files at
+> `b0904bc` without updating the identity profiles and inventory constants.
+>
+> `ETP-MODULE-CRASH-CHECKPOINT-2026-08-21.md` reports "Final focused ETP suite: 155/155 pass. Final
+> focused manifest suite: 17/17 pass." Both are true, but neither suite covers MAH-3, MAH-4, MH1 or
+> the capability ledger, which is why the drift went unrecorded.
+>
+> Work continues on branch `agent/etp-l10n-identity-regen`. See
+> `ETP-IDENTITY-REGEN-FINDINGS-2026-08-21.md` on that branch. Progress there: **MAH-4 is green at
+> 46/46**, and a product defect was found — `www/modules/etp/index.html` contains **zero**
+> `st-v5-module-audit-bridge` while all eleven other modules contain exactly one.
+
 ## What was done
 
 **Owner approval:** Sagar approved all 119 rows on 2026-08-21. Record:
@@ -54,7 +79,9 @@ module-specific wording for a shared word. Scoped overrides would be a design ch
 
 ## Step 3 — NOT done. What is red and why
 
-Adding phrases to a shared asset invalidates identity and inventory pins:
+**These failures pre-date this import** — see the correction at the top. They were introduced when
+ETP-1 added three files to `www/` without updating the identity profiles. The import neither caused
+nor worsened them; it inherits them.
 
 | Suite | Result |
 |---|---|
@@ -102,14 +129,26 @@ by changing product bytes.
 
 ## Resume point
 
-1. Regenerate identities by the §6.3 path, including the deliberate MAH-4 byte-total bump.
-2. Re-run `test:modular`, `test:mah3`, `test:mah4`, `test:manifest` to green.
-3. Obtain a new owner capability approval for the regenerated delta.
-4. Capture one rendered-language matrix; obtain identity-bound visual approval.
-5. Build one seeded APK; run physical ETP fixture acceptance.
-6. Run the final controlled audit or comparison; update the handoff.
+Partly done on branch `agent/etp-l10n-identity-regen` (`cf1b4d7`), not yet merged here.
 
-Steps 1 and 2 above are engineering. Steps 3 and 4 are owner gates. Step 5 needs a device.
+| # | Work | State |
+|---|---|---|
+| 1 | **MAH-4 regeneration** — profile refresh plus six stale inventory constants, including the deliberate byte-total bump | **DONE on the branch, 46/46** |
+| 2 | **Fix `st-v5-module-audit-bridge` missing from `www/modules/etp/index.html`** | **OPEN — product defect, do this first** |
+| 3 | Add the `etp` entry to `MH1-MODULAR-PROTECTION-PROFILE.json` (hand-maintained, no generator) | OPEN |
+| 4 | Capture 12 new `etp` visual cases; raise the MAH-3 contract 168 to 180 **with** the evidence and a fresh owner confirmation | OPEN — owner gate |
+| 5 | Regenerate the capability delta; obtain a new owner capability approval | OPEN — owner gate |
+| 6 | Rendered-language matrix and identity-bound visual approval | OPEN — owner gate |
+| 7 | One seeded APK; physical ETP fixture acceptance | OPEN — needs a device |
+| 8 | Final controlled audit or comparison; update the handoff | OPEN |
+
+Item 2 is a genuine implementation gap, not identity drift: eleven of twelve modules carry that
+bridge and `etp` does not. Settle it before capturing any evidence against the module, or the
+evidence will need recapturing.
+
+**Never raise the MAH-3 case count ahead of the captured evidence.** The profile records that gate
+as satisfied by identity-bound evidence and owner confirmation; moving the number alone manufactures
+a false green on an owner gate.
 
 **Do not** build an APK, run the controlled audit, or claim any gate closure from the current red
 state.
