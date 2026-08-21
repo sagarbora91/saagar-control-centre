@@ -58,7 +58,7 @@ test('MH1 inventory covers exactly the external module registry', () => {
   const expected = modules.map(module => ({ id: module.id, path: module.src }));
   const inventoried = profile.modules.map(module => ({ id: module.id, path: module.path }));
   assert.deepEqual(inventoried, expected);
-  assert.equal(new Set(inventoried.map(module => module.id)).size, 11);
+  assert.equal(new Set(inventoried.map(module => module.id)).size, 12);
   for (const module of modules) {
     assert.equal(module.html_b64, undefined, `${module.id} must remain external`);
     assert.doesNotMatch(module.src, /^(?:[a-z]+:)?\/\//i, `${module.id} path must remain relative`);
@@ -131,6 +131,6 @@ test('MH1 profile requires explicit evidence instead of inferring visual accepta
   assert.ok(profile.surfaces.includes('settings-detail'));
   assert.deepEqual(
     profile.modules.filter(module => module.risk === 'high').map(module => module.id),
-    ['stock', 'service', 'qms', 'dsr', 'expense', 'cro_audit', 'payroll', 'leave', 'tax']
+    ['stock', 'service', 'qms', 'dsr', 'expense', 'cro_audit', 'payroll', 'leave', 'tax', 'etp']
   );
 });

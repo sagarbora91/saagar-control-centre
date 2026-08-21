@@ -111,3 +111,85 @@ is required for the regenerated delta, exactly as the 107-row approval was. Not 
    evidence and a fresh owner confirmation, never ahead of it.
 4. Regenerate the capability delta and obtain a new owner capability approval.
 5. Only then: rendered-language matrix, seeded APK, physical acceptance, controlled audit.
+
+---
+
+# Update — ETP module protection gap fixed
+
+The `st-v5-module-audit-bridge` defect turned out to be one symptom of a wider gap. Measured across
+all twelve modules, ETP was missing **four of six** shared-runtime canaries, plus the home affordance
+and any responsive containment.
+
+## What was wrong
+
+| Requirement | Eleven other modules | ETP before |
+|---|---|---|
+| `st-v5-iframe-shim`, `st-v5-safety-net` (head) | present | present |
+| `st-v5-mobile-boot` (head) | present | **missing** |
+| `st-v5-back-script` (body) | present | **missing** |
+| `st-v5-emp-assist-script` (body) | present | missing |
+| `st-v5-module-audit-bridge` (body) | present | **missing** |
+| `st-v5-home-fab` back-to-home button | present | **missing** |
+| a selector in `www/mobile-layout.css` | present | **none at all** |
+
+Two of these are user- or compliance-visible, not cosmetic:
+
+- **`st-v5-module-audit-bridge`** wraps `localStorage.setItem` and `removeItem` and emits
+  `SaagarMah4.audit(action, key, before, after)`. Without it, ETP's storage writes produced **no
+  audit trail** — in the module that handles financial reconciliation and publication.
+- **`st-v5-home-fab` with `st-v5-back-script`** is the back-to-home control and the Escape / Ctrl+H
+  handler. ETP had no way back to home other than shell chrome.
+
+## What was changed
+
+`www/modules/etp/index.html`
+
+- `st-v5-mobile-boot` added in `<head>` directly after `st-v5-safety-net`, matching all eleven.
+- `st-v5-back-style` link, `st-v5-home-fab` button, `st-v5-next-chips` div and `st-v5-back-script`
+  added in `<body>`, then `st-v5-module-audit-bridge`, in the canonical order.
+- Config copied verbatim from ETP's existing two canaries:
+  `{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false}`.
+
+`www/mobile-layout.css`
+
+- `.etp-tabs` added to the three tab-rail selector groups beside `.q-tabs`, giving ETP the same
+  horizontal scroll rail every other module's tab nav has.
+
+`verification/MH1-MODULAR-PROTECTION-PROFILE.json`
+
+- Twelfth entry: `etp`, `risk: "high"`, `responsiveSelectors: [".etp-tabs"]`,
+  `reviewStates: ["import", "coverage", "reconciliation", "verified"]`.
+
+`www/module-manifest.js`, `verification/module-build-golden-hashes.json`,
+`MAH4-MESSAGE-LIFECYCLE-BASELINE-PROFILE.json` and the MAH-4 / MH1 test constants were re-synced to
+the changed bytes.
+
+## Two deliberate judgement calls
+
+**`st-v5-emp-assist-script` was NOT added.** It is not in `commonModuleMarkers`, nothing requires it,
+and the `employees` stage reads employee-master and customer localStorage keys. That surface has no
+place in a financial reports module. This is the one respect in which ETP still differs from the
+other eleven, and it is intentional. Overrule it if uniformity is preferred.
+
+**ETP is recorded as `risk: "high"`, not `medium`.** The test hard-coded the high-risk list without
+`etp`, so marking it `medium` would have made the suite pass with no edit. That would misstate the
+risk of the module that performs financial reconciliation and publication, so the test constant was
+updated instead.
+
+## Suite state on this branch
+
+| Suite | Before | Now |
+|---|---|---|
+| `test:etp` | 155/155 | **155/155** |
+| `test:language` | 10/10 | **10/10** |
+| `test:manifest` | 8/8 | **8/8** |
+| `test:mah4` | 43 pass, 3 fail | **46/46** |
+| `test:mah3` | 15 pass, 4 fail | 15 pass, 4 fail |
+| `test:modular` | 74 pass, 12 fail | **79 pass, 7 fail** |
+| `test:mobile` / `test:settings` / `test:security` | — | 6/6, 8/8, 100/100 |
+
+**All seven remaining failures are owner gates**, not engineering:
+
+- 4 x MAH-3 — needs 12 new `etp` visual cases captured plus fresh owner confirmation. The count must
+  never be raised ahead of the evidence.
+- 3 x capability ledger — needs a new owner capability approval for the regenerated delta.
