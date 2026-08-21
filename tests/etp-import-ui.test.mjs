@@ -57,6 +57,7 @@ test('R013 and R003 exception presentation is exact, bounded and explicitly non-
 });
 
 test('shell exposes the dedicated Reports-owned ETP module route while retaining the root engine',()=>{
+  assert.match(shell,/<script src="etp-import-runtime\.js"><\/script>\s*<script src="etp-module-gateway\.js"><\/script>\s*<script src="etp-import-ui\.js"><\/script>/);
   assert.match(shell,/<script src="etp-import-ui\.js"><\/script>/);
   const reports=shell.slice(shell.indexOf('id="reportsView"'),shell.indexOf('id="configView"'));
   const settings=shell.slice(shell.indexOf('id="configView"'),shell.indexOf('</main>'));
