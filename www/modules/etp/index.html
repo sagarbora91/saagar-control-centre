@@ -67,7 +67,7 @@
         <div class="notice" id="etpImportNotice" role="status" aria-live="polite">Select an exact scope and all four reports. Nothing is published during validation.</div>
         <div class="actions"><button class="action" id="etpValidate" type="submit">Validate reports</button><button class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
       </form>
-      <p class="privacy">Workbook bytes, raw rows and customer information are not available to this module shell.</p>
+      <p class="privacy">Selected workbook bytes are used only for validation and are released after a terminal success. Raw rows and customer information are never rendered here.</p>
     </section>
 
     <section class="etp-panel" id="panel-verified" role="tabpanel" aria-labelledby="tab-verified" data-panel="verified" hidden>
@@ -124,8 +124,13 @@
         return result;
       }
       function completeScope(value) {
-        return /^(?:WLMHW|HEMW)$/.test(value.storeCode) && /^\d{4}-\d{2}$/.test(value.financialYear) &&
-          /^\d{4}-\d{2}-\d{2}$/.test(value.periodStart) && /^\d{4}-\d{2}-\d{2}$/.test(value.periodEnd) && value.periodStart <= value.periodEnd;
+        var match = /^(\d{4})-(\d{2})$/.exec(value.financialYear), start = new Date(value.periodStart + 'T00:00:00Z'), end = new Date(value.periodEnd + 'T00:00:00Z');
+        if (!/^(?:WLMHW|HEMW)$/.test(value.storeCode) || !match || Number(match[2]) !== (Number(match[1]) + 1) % 100 ||
+            !/^\d{4}-\d{2}-\d{2}$/.test(value.periodStart) || !/^\d{4}-\d{2}-\d{2}$/.test(value.periodEnd) ||
+            !Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || start.toISOString().slice(0, 10) !== value.periodStart ||
+            end.toISOString().slice(0, 10) !== value.periodEnd || start > end) return false;
+        function fy(date) { var year = date.getUTCFullYear(), begins = date.getUTCMonth() >= 3 ? year : year - 1; return String(begins) + '-' + String((begins + 1) % 100).padStart(2, '0'); }
+        return fy(start) === value.financialYear && fy(end) === value.financialYear;
       }
       function filesReady() { return REPORTS.every(function (id) { return !!state.files[id]; }); }
       function setBusy(value) {
@@ -135,10 +140,15 @@
         document.querySelectorAll('[data-etp-file],[data-etp-scope]').forEach(function (field) { field.disabled = state.busy; });
         document.getElementById('etpCoverageConfirmed').disabled = state.busy;
       }
-      function declaration() {
-        var reports = {};
-        REPORTS.forEach(function (id) { reports[id] = { status: 'COMPLETE' }; });
-        return { confirmed: true, confirmedByRole: 'OWNER', reports: reports };
+      function resetImportFiles() {
+        REPORTS.forEach(function (id) {
+          state.files[id] = null;
+          var input = document.querySelector('[data-etp-file="' + id + '"]');
+          if (input) input.value = '';
+          text(document.querySelector('[data-etp-file-name="' + id + '"]'), 'Choose ' + id + ' XLSX export');
+        });
+        document.getElementById('etpCoverageConfirmed').checked = false;
+        state.confirmationToken = '';
       }
       async function validateImport(event) {
         event.preventDefault();
@@ -154,12 +164,13 @@
           var result = await api.run({
             scope: selectedScope,
             files: REPORTS.map(function (id) { return { selectedReportId: id, file: state.files[id] }; }),
-            coverageDeclaration: declaration()
+            coverageConfirmed: true
           });
           if (result && result.ok === true && result.state === 'AWAITING_CONFIRMATION' && /^confirm_[a-f0-9]{32}_\d+$/.test(String(result.confirmationToken || ''))) {
             state.confirmationToken = result.confirmationToken;
             setNotice('Validation and reconciliation passed. Review the scope, then confirm publication with Owner approval.', 'success');
           } else if (result && result.ok === true && result.state === 'DUPLICATE_NOOP' && result.changed === false) {
+            resetImportFiles();
             setNotice('This exact report set is already current. No duplicate publication was created.', 'success');
             await refreshScopes();
           } else setNotice('Validation stopped safely (' + safeCode(result && result.code, 'ETP_IMPORT_FAILED') + '). Nothing was published.', 'error');
@@ -175,6 +186,7 @@
         try {
           var result = await api.confirm({ confirmationToken: token });
           if (result && result.ok === true && result.state === 'ACCEPTED' && result.changed === true) {
+            resetImportFiles();
             setNotice('Verified reports published successfully. The active generation is ready for approved views.', 'success');
             await refreshScopes();
           } else setNotice('Publication stopped safely (' + safeCode(result && result.code, 'ETP_CONFIRMATION_FAILED') + ').', 'error');
@@ -206,14 +218,22 @@
         result.history.forEach(function (receipt) { var item = document.createElement('li'); text(item, (receipt.publishedAt || 'Unknown date') + ' · ' + (receipt.activeGenerationId || 'Unknown generation')); list.appendChild(item); });
         host.appendChild(list);
       }
+      function renderScopeError(code) {
+        var detail = document.getElementById('etpScopeDetail'), host = document.getElementById('etpScopeSummary'), safe = safeCode(code, 'ETP_STATUS_UNAVAILABLE');
+        host.replaceChildren(); detail.hidden = false;
+        text(document.getElementById('etpScopeHeading'), safe === 'ETP_REIMPORT_REQUIRED' ? 'Re-import required' : 'Scope unavailable');
+        var message = document.createElement('p');
+        text(message, safe === 'ETP_REIMPORT_REQUIRED' ? 'Verified reads are fenced after restore. Re-import the exact four reports for this scope.' : 'This scope could not be inspected safely (' + safe + ').');
+        host.appendChild(message);
+      }
       async function inspect(selectedScope) {
         var api = gateway();
         if (!api || typeof api.inspectScope !== 'function') { renderScopeDetail(null); return; }
         try {
           var result = await api.inspectScope(selectedScope, { historyLimit: 10 });
-          if (!result || result.ok !== true) { renderScopeDetail(null); text(document.getElementById('etpScopeList'), 'Scope unavailable (' + safeCode(result && result.code, 'ETP_STATUS_UNAVAILABLE') + ').'); return; }
+          if (!result || result.ok !== true) { renderScopeError(result && result.code); return; }
           renderScopeDetail(result);
-        } catch (_) { renderScopeDetail(null); text(document.getElementById('etpScopeList'), 'Scope unavailable (ETP_STATUS_UNAVAILABLE).'); }
+        } catch (_) { renderScopeError('ETP_STATUS_UNAVAILABLE'); }
       }
       async function refreshScopes() {
         var api = gateway();

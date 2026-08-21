@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import fs from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const gatewayApi = require('../www/etp-module-gateway.js');
 const lifecycle = require('../www/etp-store-lifecycle-policy.js');
 const core = require('../www/etp-core-contract.js');
+const gatewaySource = fs.readFileSync(new URL('../www/etp-module-gateway.js', import.meta.url), 'utf8');
 
 const generationA = 'etp_' + 'a'.repeat(32);
 const generationB = 'etp_' + 'b'.repeat(32);
@@ -56,6 +58,7 @@ function fixture(overrides = {}) {
     core: overrides.core || core,
     storage: overrides.storage || storageWith(),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: { state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } })),
+    authorize: overrides.authorize || (() => true),
     tokenFactory: () => 'c'.repeat(32)
   });
   return { ...made, runtime, confirmedLife: () => confirmedLife };
@@ -78,26 +81,53 @@ test('run validates exact four-file scope and returns only an opaque confirmatio
     async readVerified() { throw new Error('unused'); }
   } });
   const files = core.REPORTS.map(id => ({ selectedReportId: id, file: { name: id + '.xlsx', privateBytes: 'not-returned' } }));
-  const result = await fx.gateway.run({ scope, files, coverageDeclaration: { confirmed: true } });
+  const result = await fx.gateway.run({ scope, files, coverageConfirmed: true });
   assert.equal(result.state, 'AWAITING_CONFIRMATION');
   assert.match(result.confirmationToken, /^confirm_[a-f0-9]{32}_1$/);
   assert.equal('lifecycle' in result, false);
   assert.equal('reports' in result, false);
   assert.equal('files' in result, false);
   assert.deepEqual(received.files, files);
-  assert.equal((await fx.gateway.run({ scope, files: files.slice(0, 3), coverageDeclaration: {} })).code, 'ETP_IMPORT_REQUEST_INVALID');
+  assert.deepEqual(received.coverageDeclaration, { confirmed: true, confirmedByRole: 'OWNER', reports: Object.fromEntries(core.REPORTS.map(id => [id, { status: 'COMPLETE' }])) });
+  assert.equal((await fx.gateway.run({ scope, files: files.slice(0, 3), coverageConfirmed: true })).code, 'ETP_IMPORT_REQUEST_INVALID');
+  assert.equal((await fx.gateway.run({ scope, files, coverageConfirmed: false })).code, 'ETP_IMPORT_REQUEST_INVALID');
+  assert.equal((await fx.gateway.run({ scope, files, coverageDeclaration: { confirmedByRole: 'OWNER' } })).code, 'ETP_IMPORT_REQUEST_INVALID');
 });
 
 test('confirm consumes its opaque token once and never accepts a caller lifecycle', async () => {
   const fx = fixture();
   const files = core.REPORTS.map(id => ({ selectedReportId: id, file: { name: id + '.xlsx' } }));
-  const started = await fx.gateway.run({ scope, files, coverageDeclaration: {} });
+  const started = await fx.gateway.run({ scope, files, coverageConfirmed: true });
   const accepted = await fx.gateway.confirm({ confirmationToken: started.confirmationToken });
   assert.equal(accepted.state, 'ACCEPTED');
   assert.equal(accepted.activeGenerationId, generationB);
   assert.equal(fx.confirmedLife().state, 'AWAITING_CONFIRMATION');
   assert.equal((await fx.gateway.confirm({ confirmationToken: started.confirmationToken })).code, 'ETP_CONFIRMATION_TOKEN_INVALID');
   assert.equal((await fx.gateway.confirm({ confirmationToken: 'x', lifecycle: fx.confirmedLife() })).code, 'ETP_CONFIRMATION_TOKEN_INVALID');
+});
+
+test('trusted authorization fails closed per call and a denied confirm does not consume its token', async () => {
+  let mode = 'IMPORT';
+  const fx = fixture({ authorize(action) { return action === mode; } });
+  const files = core.REPORTS.map(id => ({ selectedReportId: id, file: { name: id + '.xlsx' } }));
+  assert.equal(fx.gateway.listScopes({ limit: 1 }).code, 'ETP_ACCESS_DENIED');
+  assert.equal((await fx.gateway.inspectScope(scope, { historyLimit: 1 })).code, 'ETP_ACCESS_DENIED');
+  assert.equal((await fx.gateway.readVerified(scope, { reportId: 'R025', fields: ['net_amount'], cursor: null, limit: 1 })).code, 'ETP_ACCESS_DENIED');
+  const started = await fx.gateway.run({ scope, files, coverageConfirmed: true });
+  assert.equal(started.state, 'AWAITING_CONFIRMATION');
+  mode = 'READ';
+  assert.equal((await fx.gateway.confirm({ confirmationToken: started.confirmationToken })).code, 'ETP_ACCESS_DENIED');
+  mode = 'CONFIRM';
+  assert.equal((await fx.gateway.confirm({ confirmationToken: started.confirmationToken })).state, 'ACCEPTED');
+  const denied = fixture({ authorize() { throw new Error('authority unavailable'); } });
+  assert.equal(denied.gateway.listScopes({ limit: 1 }).code, 'ETP_ACCESS_DENIED');
+});
+
+test('browser authority admits only Owner or matrix-enabled Store Manager reads', () => {
+  assert.match(gatewaySource, /snapshot\.isOwner === true/);
+  assert.match(gatewaySource, /snapshot\.role === 'Store Manager'/);
+  assert.match(gatewaySource, /rootValue\.roleCanOpen\('etp'\) === true/);
+  assert.match(gatewaySource, /action === 'IMPORT' \|\| action === 'CONFIRM'/);
 });
 
 test('verified reads require an accepted unfenced generation matching the valid current receipt', async () => {
