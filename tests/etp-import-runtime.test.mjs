@@ -51,11 +51,12 @@ test('non-zero unresolved PAYMENTTYPE25 is excluded and recorded as quarantine m
   assert.equal(checked.ok,true);const result=await h.runtime.confirm(checked.lifecycle);assert.equal(result.receipt.enrichments.paymentType25.rowCount,1);assert.equal(result.receipt.enrichments.paymentType25.persisted,false);
 });
 
-test('shell loads pinned local bundles and runtime dependencies before the UI',()=>{
+test('shell loads pinned local bundles and runtime dependencies before the governed gateway',()=>{
   const shell=fs.readFileSync(new URL('../www/index.html',import.meta.url),'utf8');
-  const order=['vendor/fflate-0.8.3.min.js','vendor/read-excel-file-9.3.7.min.js','etp-import-foundation.js','etp-xlsx-preflight.js','etp-retail-xlsx-loader.js','etp-core-contract.js','etp-native-store.js','etp-control-registry.js','etp-verified-reader.js','etp-worker-client.js','etp-import-coordinator.js','etp-import-runtime.js','etp-import-ui.js'].map(src=>shell.indexOf(`<script src="${src}"></script>`));
+  const order=['vendor/fflate-0.8.3.min.js','vendor/read-excel-file-9.3.7.min.js','etp-import-foundation.js','etp-xlsx-preflight.js','etp-retail-xlsx-loader.js','etp-core-contract.js','etp-native-store.js','etp-control-registry.js','etp-verified-reader.js','etp-worker-client.js','etp-import-coordinator.js','etp-import-runtime.js','etp-module-gateway.js'].map(src=>shell.indexOf(`<script src="${src}"></script>`));
   assert.ok(order.every(at=>at>=0));assert.deepEqual(order,order.slice().sort((a,b)=>a-b));
   assert.doesNotMatch(shell.slice(order[0],order.at(-1)),/https?:\/\//);
+  assert.doesNotMatch(shell,/<script src="etp-import-ui\.js"><\/script>/);
 });
 
 test('staged browser assets exactly match pinned installed dependency bytes',()=>{

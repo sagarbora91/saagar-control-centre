@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 9) fail('sharedAssets must contain exactly nine entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 10) fail('sharedAssets must contain exactly ten entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -185,6 +185,7 @@
       ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }
       ,{ id: 'module-brand-tokens-css', file: 'shared/module-brand-tokens.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
+      ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
     var frozenShared = input.sharedAssets.map(function(shared, index){
       var label='sharedAssets['+index+']', expected=expectedShared[index];
@@ -261,6 +262,13 @@
       "file": "shared/module-delete-cell.css",
       "bytes": 311,
       "sha256": "240ace998628aa92a455791534ed300d8bde3af557405468a4916f980e0ade5b"
+    },
+    {
+      "id": "etp-verified-presentation",
+      "version": 1,
+      "file": "etp-verified-presentation.js",
+      "bytes": 11034,
+      "sha256": "528f0f3be6c7e1d4d061cf933f8efcb56dbcb3642683dcd3c2283620dd6ace9a"
     }
   ],
   "modules": [
