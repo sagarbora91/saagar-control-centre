@@ -98,6 +98,7 @@
       </div>
     </section>
   </main>
+  <script src="../../etp-verified-presentation.js"></script>
   <script>
     (function () {
       'use strict';
@@ -290,6 +291,8 @@
       document.getElementById('etpImportForm').addEventListener('submit', validateImport);
       document.getElementById('etpConfirm').addEventListener('click', confirmImport);
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
+      var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
+      if(verifiedPresentation&&typeof verifiedPresentation.mount==='function')verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),gateway());
       select('import', false);
       refreshScopes();
     })();
