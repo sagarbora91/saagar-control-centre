@@ -49,6 +49,7 @@ function make(overrides = {}) {
   };
   const result = gatewayApi.create({ runtime, lifecyclePolicy: lifecycle, core,
     storage: overrides.storage || storageWith(),
+    authorize: overrides.authorize || (() => true),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: {
       state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } })) });
   return { ...result, reads: () => reads };
