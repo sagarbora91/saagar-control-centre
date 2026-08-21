@@ -18,7 +18,8 @@ const CANONICAL_MODULE_IDS = [
   'payroll',
   'leave',
   'tax',
-  'planning'
+  'planning',
+  'etp'
 ];
 
 test('module PIN policy defaults every canonical module to off', () => {
@@ -108,7 +109,8 @@ test('module toggles are immutable and serialization is canonical', () => {
       payroll: false,
       leave: false,
       tax: true,
-      planning: false
+      planning: false,
+      etp: false
     }
   });
 });

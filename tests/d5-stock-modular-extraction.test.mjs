@@ -15,13 +15,13 @@ const modules = loadModuleBundle();
 const metadata = modules.find(module => module.id === 'stock');
 
 test('C1 externalizes every module with byte-verified metadata', () => {
-  assert.equal(modules.length, 11);
+  assert.equal(modules.length, 12);
   assert.ok(metadata);
   assert.equal(metadata.src, 'modules/stock/index.html');
   assert.equal(metadata.html_b64, undefined);
   assert.equal(metadata.bytes, stock.length);
   assert.equal(metadata.sha256, crypto.createHash('sha256').update(stock).digest('hex'));
-  assert.equal(modules.filter(module => module.src && !module.html_b64).length, 11);
+  assert.equal(modules.filter(module => module.src && !module.html_b64).length, 12);
   for (const module of modules) {
     const bytes = fs.readFileSync(path.join(repoDir, 'www', module.src));
     assert.equal(module.bytes, bytes.length, module.id);

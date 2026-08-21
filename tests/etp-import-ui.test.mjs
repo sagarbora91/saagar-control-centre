@@ -56,13 +56,12 @@ test('R013 and R003 exception presentation is exact, bounded and explicitly non-
   assert.match(source,/Review open differences before using CRO attribution or discount analysis/);
 });
 
-test('shell exposes the dedicated ETP route and loads its external module',()=>{
+test('shell exposes the dedicated Reports-owned ETP module route while retaining the root engine',()=>{
   assert.match(shell,/<script src="etp-import-ui\.js"><\/script>/);
-  assert.match(shell,/Open ETP import/);
-  assert.match(shell,/SaagarEtpImportUi\.open/);
   const reports=shell.slice(shell.indexOf('id="reportsView"'),shell.indexOf('id="configView"'));
   const settings=shell.slice(shell.indexOf('id="configView"'),shell.indexOf('</main>'));
-  assert.match(reports,/id="reportsEtpImportCard"[\s\S]*Open ETP import/);
+  assert.match(reports,/id="reportsEtpImportCard"[\s\S]*navigateToModule\('etp'\)[\s\S]*Open Retail ETP/);
+  assert.doesNotMatch(reports,/SaagarEtpImportUi\.open/);
   assert.match(reports,/exact R003, R013, R022 and R025 exports/);
-  assert.doesNotMatch(settings,/Retail ETP reports|Open ETP import/);
+  assert.doesNotMatch(settings,/Retail ETP reports|Open Retail ETP|navigateToModule\('etp'\)/);
 });

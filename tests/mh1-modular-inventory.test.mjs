@@ -9,8 +9,8 @@ const inventory = createInventory(root);
 
 test('MH1 architecture inventory is complete, reproducible, and payload-free', () => {
   assert.equal(inventory.schemaVersion, 1);
-  assert.equal(inventory.modules.length, 11);
-  assert.equal(new Set(inventory.modules.map(module => module.id)).size, 11);
+  assert.equal(inventory.modules.length, 12);
+  assert.equal(new Set(inventory.modules.map(module => module.id)).size, 12);
   assert.match(inventory.shell.sha256, /^[a-f0-9]{64}$/);
   for (const module of inventory.modules) {
     assert.equal(module.bytes, module.registryBytes, `${module.id} bytes`);

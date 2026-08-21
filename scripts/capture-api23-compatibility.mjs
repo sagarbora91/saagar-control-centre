@@ -39,7 +39,7 @@ for (const id of ids) {
   result.open = JSON.parse(opened);
   modules.push(result);
 }
-const evidence = { capturedAt: new Date().toISOString(), endpoint, base, modules, passed: base.api23 && base.capacitor && base.nativeStore && modules.length === 11 && modules.every((item) => item.open.ok && item.ok && !item.loadError) };
+const evidence = { capturedAt: new Date().toISOString(), endpoint, base, modules, passed: base.api23 && base.capacitor && base.nativeStore && modules.length === 12 && modules.every((item) => item.open.ok && item.ok && !item.loadError) };
 fs.writeFileSync(output, `${JSON.stringify(evidence, null, 2)}\n`);
 socket.close();
 console.log(JSON.stringify(evidence, null, 2));

@@ -326,7 +326,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
       <div class="card card-pad" id="reportsEtpImportCard">
         <h4><span class="em">📥</span> Retail ETP reports</h4>
         <p>Import the exact R003, R013, R022 and R025 exports for WLMHW or HEMW. Reports are validated and reconciled before anything is published.</p>
-        <button class="btn gold" onclick="window.SaagarEtpImportUi&&window.SaagarEtpImportUi.open()">Open ETP import</button>
+        <button class="btn gold" onclick="navigateToModule('etp')">Open Retail ETP</button>
       </div>
       <div id="reportsList"></div>
     </section>
@@ -1308,7 +1308,7 @@ const FIRM_NAME_TO_CODE = {
 const ROLE_ACCESS_KEY  = "saagar_role_access_v1";
 const CURRENT_ROLE_KEY = "saagar_current_role_v1";
 const ACCESS_ROLES = ["Store Manager","Cashier","CRO","Greeter","Technician","Assistant Technician","Trainee","Others"];
-const ACCESS_MODULES = ["stock","service","qms","dsr","expense","grooming","cro_audit","payroll","leave","tax","planning"];
+const ACCESS_MODULES = ["stock","service","qms","dsr","expense","grooming","cro_audit","payroll","leave","tax","planning","etp"];
 const OWNER_ROLE_VALUE = "__owner__";
 function defaultRoleAccess(){
   const ALL=()=>ACCESS_MODULES.reduce((o,m)=>(o[m]=true,o),{});
@@ -3767,7 +3767,8 @@ function forwardFeatureTarget(target){
 const MODULE_GROUPS = [
   ['Daily ops',             ['stock','dsr','qms']],
   ['Customer & staff',      ['service','grooming','cro_audit']],
-  ['Records & compliance',  ['expense','leave','payroll','tax']]
+  ['Records & compliance',  ['expense','leave','payroll','tax']],
+  ['Reports & planning',     ['etp','planning']]
 ];
 function moduleTileHTML(m){
   const ins = getModuleInsight(m.id);

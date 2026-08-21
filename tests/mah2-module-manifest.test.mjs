@@ -17,7 +17,7 @@ const shell = fs.readFileSync(shellPath, 'utf8');
 const api = require(manifestPath);
 const expectedIds = [
   'stock', 'service', 'qms', 'dsr', 'expense', 'grooming',
-  'cro_audit', 'payroll', 'leave', 'tax', 'planning'
+  'cro_audit', 'payroll', 'leave', 'tax', 'planning', 'etp'
 ];
 
 function rawClone() {
@@ -49,6 +49,7 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
   assert.equal(api.get('stock'), api.modules[0]);
   assert.equal(api.get('unknown'), null);
   assert.equal(api.has('planning'), true);
+  assert.equal(api.has('etp'), true);
   assert.equal(api.has('unknown'), false);
 });
 

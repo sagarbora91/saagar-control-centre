@@ -25,7 +25,8 @@ const MODULE_IDS = [
   'payroll',
   'leave',
   'tax',
-  'planning'
+  'planning',
+  'etp'
 ];
 
 function escapeRegExp(value) {

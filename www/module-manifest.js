@@ -37,7 +37,8 @@
     'payroll',
     'leave',
     'tax',
-    'planning'
+    'planning',
+    'etp'
   ]);
   var REQUIRED_FIELDS = Object.freeze([
     'id', 'title', 'short', 'category', 'icon', 'priority', 'file',
@@ -202,8 +203,8 @@
       "id": "module-bridge",
       "version": 1,
       "file": "shared/module-bridge.js",
-      "bytes": 2380,
-      "sha256": "584dd7ea16488d1ee791d95a39c43101063d43b4843a40b66bba9400de61d396"
+      "bytes": 2467,
+      "sha256": "e3851db4edf6fa735ab34c1ba0e6ab89ed185231e8faeabaadb4622e2e6a7515"
     },
     {
       "id": "module-runtime",
@@ -216,8 +217,8 @@
       "id": "mah4-runtime",
       "version": 1,
       "file": "shared/mah4-runtime.js",
-      "bytes": 10062,
-      "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec"
+      "bytes": 10068,
+      "sha256": "458410440a3748c4b8a59726e25f8eb59d61588f79fdc1f0ae3fc235aa2d48e5"
     },
     {
       "id": "module-uniform-css",
@@ -423,6 +424,20 @@
       "bytes": 39616,
       "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d",
       "src": "modules/planning/index.html"
+    },
+    {
+      "id": "etp",
+      "title": "Retail ETP Reports",
+      "short": "Retail ETP",
+      "category": "Reports",
+      "icon": "📊",
+      "priority": "Verified reporting",
+      "file": "modules/etp/index.html",
+      "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
+      "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
+      "bytes": 10091,
+      "sha256": "0a211ee48a9b82979f019fc2a9c13d310d244c7d2d528813d3f5e7384a9a8525",
+      "src": "modules/etp/index.html"
     }
   ]
 }/*__SAAGAR_MODULE_MANIFEST_END__*/;

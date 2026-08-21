@@ -43,6 +43,10 @@
     "bytes": 39616,
     "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d"
   },
+  "etp": {
+    "bytes": 10091,
+    "sha256": "0a211ee48a9b82979f019fc2a9c13d310d244c7d2d528813d3f5e7384a9a8525"
+  },
   "_profile": {
     "uiMode": "mobile",
     "offlineAssetsOnly": true,

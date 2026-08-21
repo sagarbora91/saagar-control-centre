@@ -48,7 +48,7 @@ function loadApi() { return loadRuntime().api; }
 
 test('one offline localization runtime is loaded by the shell and every module', async () => {
   assert.match(shell, /<script src="app-i18n\.js"><\/script>/);
-  assert.equal(moduleNames.length, 11);
+  assert.equal(moduleNames.length, 12);
   for (const moduleName of moduleNames) {
     const html = await readFile(new URL(`modules/${moduleName}/index.html`, root), 'utf8');
     assert.match(html, /<script src="\.\.\/\.\.\/app-i18n\.js"><\/script>/, `${moduleName} must load shared language runtime`);

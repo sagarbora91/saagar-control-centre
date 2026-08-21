@@ -37,7 +37,8 @@
     qmsArchiveLookup: getter(function () { return parentValue('qmsArchiveLookup'); }),
     photo: getter(function () { return localOrParent('SaagarPhoto'); }),
     jsZip: getter(function () { return parentValue('JSZip'); }),
-    ensureJsZip: getter(function () { return parentValue('ensureJSZip'); })
+    ensureJsZip: getter(function () { return parentValue('ensureJSZip'); }),
+    etpGateway: getter(function () { return parentValue('SaagarEtpModuleGateway'); })
   });
   Object.freeze(api);
   Object.defineProperty(root, 'SaagarModuleBridge', {

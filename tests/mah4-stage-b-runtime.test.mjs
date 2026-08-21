@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'www/shared/mah4-runtime.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
-const moduleIds = ['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning'];
+const moduleIds = ['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning','etp'];
 
 test('Stage B runtime is one synchronous offline immutable browser global', () => {
   assert.doesNotMatch(source, /\b(?:import|export)\b|https?:\/\//);
@@ -17,7 +17,7 @@ test('Stage B runtime is one synchronous offline immutable browser global', () =
   new vm.Script(source);
 });
 
-test('Stage B runtime loads in the shell and all eleven modules', () => {
+test('Stage B runtime loads in the shell and all twelve modules', () => {
   assert.equal((shell.match(/shared\/mah4-runtime\.js/g) || []).length, 1);
   assert.doesNotMatch(shell, /id==='planning'/);
   for (const id of moduleIds) {

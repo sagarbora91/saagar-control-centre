@@ -6,7 +6,7 @@ import { inlineModuleScripts, loadModuleBundle } from './lib/module-bundle.mjs';
 const modules = loadModuleBundle();
 
 test('embedded modules match their byte count and SHA-256 metadata', () => {
-  assert.equal(modules.length, 11);
+  assert.equal(modules.length, 12);
   modules.forEach(module => {
     assert.equal(module.actualBytes, module.bytes, `${module.id} byte count`);
     assert.equal(module.actualSha256, module.sha256, `${module.id} SHA-256`);
