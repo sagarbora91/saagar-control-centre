@@ -267,8 +267,8 @@
       "id": "etp-verified-presentation",
       "version": 1,
       "file": "etp-verified-presentation.js",
-      "bytes": 11034,
-      "sha256": "528f0f3be6c7e1d4d061cf933f8efcb56dbcb3642683dcd3c2283620dd6ace9a"
+      "bytes": 11861,
+      "sha256": "031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6"
     }
   ],
   "modules": [
