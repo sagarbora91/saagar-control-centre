@@ -24,7 +24,8 @@
     .status{display:flex;align-items:flex-start;gap:10px;border-left:5px solid var(--amber)}.status-mark{display:grid;place-items:center;flex:0 0 32px;height:32px;border-radius:50%;background:#fff4dd;color:#8b4605;font-weight:900}
     .placeholder-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.placeholder{min-height:130px}.tag{display:inline-block;margin-top:12px;border-radius:999px;background:#f2f4f7;color:#475467;padding:4px 9px;font-size:12px;font-weight:700}
     .privacy{margin-top:14px;padding:12px 14px;border:1px solid #b8d6ca;border-radius:10px;background:#f0faf5;color:#245b45}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    @media(max-width:680px){.placeholder-grid{grid-template-columns:1fr}.etp-head{padding-top:17px}.etp-tab{padding:0 11px}}
+    .form-grid,.file-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;color:var(--ink);font-weight:700}.field input,.field select{width:100%;min-height:44px;border:1px solid #aeb8c5;border-radius:9px;background:#fff;padding:8px 10px;color:var(--ink);font:inherit}.file-grid{margin-top:14px}.file-field{position:relative;display:grid;gap:3px;min-height:72px;border:1px dashed #8b9bad;border-radius:10px;padding:12px}.file-field input{position:absolute;inset:0;opacity:0;cursor:pointer}.file-field span{color:var(--muted);font-size:12px;overflow-wrap:anywhere}.coverage-check{display:flex;align-items:flex-start;gap:9px;margin-top:14px;color:var(--ink);font-weight:650}.coverage-check input{flex:0 0 auto;width:18px;height:18px;margin-top:2px}.actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:16px}.action{min-height:44px;border:1px solid #aab4c0;border-radius:9px;background:#fff;color:var(--navy);padding:0 15px;font-weight:800;cursor:pointer}.action.primary{border-color:var(--gold);background:var(--gold);color:#fff}.action:disabled{cursor:not-allowed;opacity:.48}.notice{margin-top:12px;border-radius:9px;padding:10px 12px;background:#f5f7fa;color:#475467}.notice.error{background:#fff1f0;color:#9c2a1c}.notice.success{background:#eef9f2;color:#21633f}.scope-list{display:grid;gap:9px;margin-top:12px}.scope-row{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:58px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 12px;text-align:left;color:var(--ink);cursor:pointer}.scope-row small{display:block;color:var(--muted)}.history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.metric{border:1px solid var(--line);border-radius:9px;padding:10px}.metric small{display:block;color:var(--muted)}.coverage-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}.coverage-item{border-radius:8px;background:#f4f6f8;padding:8px;text-align:center}.coverage-item strong,.coverage-item small{display:block}.history-items{margin:10px 0 0;padding-left:20px;color:var(--muted)}
+    @media(max-width:680px){.placeholder-grid,.form-grid,.file-grid,.history-grid{grid-template-columns:1fr}.coverage-list{grid-template-columns:repeat(2,minmax(0,1fr))}.etp-head{padding-top:17px}.etp-tab{padding:0 11px}.actions .action{width:100%}}
   </style>
 </head>
 <body>
@@ -35,11 +36,11 @@
   </header>
   <nav class="etp-tabs" role="tablist" aria-label="Retail ETP sections">
     <button class="etp-tab" id="tab-import" role="tab" aria-controls="panel-import" aria-selected="true" data-view="import">Import</button>
-    <button class="etp-tab" id="tab-verified" role="tab" aria-controls="panel-verified" aria-selected="false" data-view="verified">Verified Reports</button>
+    <button class="etp-tab" id="tab-verified" role="tab" aria-controls="panel-verified" aria-selected="false" data-view="verified" data-etp-view-tab="verified">Verified Reports</button>
     <button class="etp-tab" id="tab-coverage" role="tab" aria-controls="panel-coverage" aria-selected="false" data-view="coverage">Coverage &amp; History</button>
-    <button class="etp-tab" id="tab-reconciliation" role="tab" aria-controls="panel-reconciliation" aria-selected="false" data-view="reconciliation">Reconciliation &amp; Exceptions</button>
+    <button class="etp-tab" id="tab-reconciliation" role="tab" aria-controls="panel-reconciliation" aria-selected="false" data-view="reconciliation" data-etp-view-tab="exceptions">Reconciliation &amp; Exceptions</button>
   </nav>
-  <main>
+  <main data-etp-verified-root>
     <div class="card status" role="status" aria-live="polite">
       <span class="status-mark" aria-hidden="true">i</span>
       <div><h3 id="gatewayTitle">Preparing the verified data gateway</h3><p id="gatewayStatus">This shell never reads the native ETP store directly. Data appears only through the governed parent gateway.</p></div>
@@ -48,14 +49,32 @@
     <section class="etp-panel" id="panel-import" role="tabpanel" aria-labelledby="tab-import" data-panel="import">
       <h2>Import &amp; Validate</h2>
       <p class="lead">Select the exact R003, R013, R022 and R025 reports, validate their common period and publish only after owner approval.</p>
-      <article class="card"><h3>Four-report import</h3><p>The secure import workflow will connect here through the narrow ETP gateway. Uploading never publishes automatically.</p><span class="tag">Gateway connection pending</span></article>
+      <form class="card" id="etpImportForm" novalidate>
+        <h3>Store and complete period</h3>
+        <div class="form-grid">
+          <label class="field">Store<select data-etp-scope="storeCode"><option value="WLMHW">WLMHW</option><option value="HEMW">HEMW</option></select></label>
+          <label class="field">Financial year<input data-etp-scope="financialYear" inputmode="numeric" maxlength="7" placeholder="2026-27" autocomplete="off"></label>
+          <label class="field">From<input data-etp-scope="periodStart" type="date"></label>
+          <label class="field">To<input data-etp-scope="periodEnd" type="date"></label>
+        </div>
+        <div class="file-grid" aria-label="Required Retail ETP reports">
+          <label class="file-field"><strong>R003</strong><span data-etp-file-name="R003">Choose All Discount Type XLSX</span><input data-etp-file="R003" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R013</strong><span data-etp-file-name="R013">Choose CRO Wise Sales XLSX</span><input data-etp-file="R013" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R022</strong><span data-etp-file-name="R022">Choose Revenue Report XLSX</span><input data-etp-file="R022" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R025</strong><span data-etp-file-name="R025">Choose SDB Variantwise Sales XLSX</span><input data-etp-file="R025" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+        </div>
+        <label class="coverage-check"><input id="etpCoverageConfirmed" type="checkbox"> <span>I confirm all four exports cover the complete selected period. Publication requires fresh Owner approval.</span></label>
+        <div class="notice" id="etpImportNotice" role="status" aria-live="polite">Select an exact scope and all four reports. Nothing is published during validation.</div>
+        <div class="actions"><button class="action" id="etpValidate" type="submit">Validate reports</button><button class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
+      </form>
       <p class="privacy">Workbook bytes, raw rows and customer information are not available to this module shell.</p>
     </section>
 
     <section class="etp-panel" id="panel-verified" role="tabpanel" aria-labelledby="tab-verified" data-panel="verified" hidden>
       <h2>Verified Reports</h2>
       <p class="lead">Only an authenticated active generation with passed blocking reconciliation may supply these read-only views.</p>
-      <div class="placeholder-grid">
+      <button class="action" type="button" data-etp-verified-refresh>Refresh verified views</button>
+      <div class="placeholder-grid" data-etp-verified-content>
         <article class="card placeholder"><h3>R022 · Revenue &amp; tender</h3><p>Invoice-level revenue and approved payment classifications.</p><span class="tag">Verified projection pending</span></article>
         <article class="card placeholder"><h3>R025 · Sales detail</h3><p>Item-level quantity, value, tax and safe product dimensions.</p><span class="tag">Verified projection pending</span></article>
         <article class="card placeholder"><h3>R013 · CRO attribution</h3><p>CRO-attributed sales with unassigned and exception visibility.</p><span class="tag">Verified projection pending</span></article>
@@ -66,13 +85,14 @@
     <section class="etp-panel" id="panel-coverage" role="tabpanel" aria-labelledby="tab-coverage" data-panel="coverage" hidden>
       <h2>Coverage &amp; History</h2>
       <p class="lead">Current receipt, verified-through date, four-report completeness, restore fence and bounded supersession history.</p>
-      <article class="card"><h3>No verified scope loaded</h3><p>The future gateway will return metadata-only receipts. A restore-fenced scope will show “Re-import required” and no facts.</p><span class="tag">Metadata gateway pending</span></article>
+      <article class="card"><div class="actions"><button class="action" id="etpHistoryRefresh" type="button">Refresh history</button></div><div id="etpScopeList" class="scope-list"><p>No verified scope loaded.</p></div></article>
+      <article class="card" id="etpScopeDetail" hidden><h3 id="etpScopeHeading">Verified scope</h3><div id="etpScopeSummary"></div></article>
     </section>
 
     <section class="etp-panel" id="panel-reconciliation" role="tabpanel" aria-labelledby="tab-reconciliation" data-panel="reconciliation" hidden>
       <h2>Reconciliation &amp; Exceptions</h2>
       <p class="lead">REC-002, R003 and R013 controls remain visible alongside all unresolved tender classifications.</p>
-      <div class="placeholder-grid">
+      <div class="placeholder-grid" data-etp-exceptions-content>
         <article class="card placeholder"><h3>R022 ↔ R025</h3><p>Blocking quantity and net-value reconciliation.</p><span class="tag">Status pending</span></article>
         <article class="card placeholder"><h3>PAYMENTTYPE25</h3><p>Unresolved rows remain quarantined and excluded from classified tender reporting.</p><span class="tag">Never folded into Others</span></article>
       </div>
@@ -82,18 +102,139 @@
     (function () {
       'use strict';
       var VIEWS = ['import', 'verified', 'coverage', 'reconciliation'];
+      var REPORTS = ['R003', 'R013', 'R022', 'R025'];
+      var state = { busy: false, confirmationToken: '', files: Object.create(null) };
       function gateway() {
         var bridge = window.SaagarModuleBridge;
         return bridge && bridge.etpGateway && typeof bridge.etpGateway.listScopes === 'function' ? bridge.etpGateway : null;
       }
-      function describe(view) {
+      function text(element, value) { if (element) element.textContent = String(value == null ? '' : value); }
+      function safeCode(value, fallback) {
+        var code = String(value || '');
+        return /^(?:ETP|XLSX|RETAIL)_[A-Z0-9_]{1,80}$/.test(code) ? code : fallback;
+      }
+      function setNotice(message, kind) {
+        var notice = document.getElementById('etpImportNotice');
+        notice.className = 'notice' + (kind ? ' ' + kind : '');
+        text(notice, message);
+      }
+      function scope() {
+        var result = {};
+        document.querySelectorAll('[data-etp-scope]').forEach(function (field) { result[field.getAttribute('data-etp-scope')] = String(field.value || '').trim(); });
+        return result;
+      }
+      function completeScope(value) {
+        return /^(?:WLMHW|HEMW)$/.test(value.storeCode) && /^\d{4}-\d{2}$/.test(value.financialYear) &&
+          /^\d{4}-\d{2}-\d{2}$/.test(value.periodStart) && /^\d{4}-\d{2}-\d{2}$/.test(value.periodEnd) && value.periodStart <= value.periodEnd;
+      }
+      function filesReady() { return REPORTS.every(function (id) { return !!state.files[id]; }); }
+      function setBusy(value) {
+        state.busy = value === true;
+        document.getElementById('etpValidate').disabled = state.busy;
+        document.getElementById('etpConfirm').disabled = state.busy || !state.confirmationToken;
+        document.querySelectorAll('[data-etp-file],[data-etp-scope]').forEach(function (field) { field.disabled = state.busy; });
+        document.getElementById('etpCoverageConfirmed').disabled = state.busy;
+      }
+      function declaration() {
+        var reports = {};
+        REPORTS.forEach(function (id) { reports[id] = { status: 'COMPLETE' }; });
+        return { confirmed: true, confirmedByRole: 'OWNER', reports: reports };
+      }
+      async function validateImport(event) {
+        event.preventDefault();
+        if (state.busy) return;
+        var api = gateway(), selectedScope = scope();
+        if (!api || typeof api.run !== 'function' || typeof api.confirm !== 'function') { setNotice('Secure ETP gateway unavailable. Nothing was changed.', 'error'); return; }
+        if (!completeScope(selectedScope)) { setNotice('Enter a valid store, financial year and complete date period.', 'error'); return; }
+        if (!filesReady()) { setNotice('Select one exact XLSX export for each of R003, R013, R022 and R025.', 'error'); return; }
+        if (!document.getElementById('etpCoverageConfirmed').checked) { setNotice('Confirm that all four exports cover the complete selected period.', 'error'); return; }
+        state.confirmationToken = '';
+        setBusy(true); setNotice('Validating four reports securely. Nothing is published yet.', '');
+        try {
+          var result = await api.run({
+            scope: selectedScope,
+            files: REPORTS.map(function (id) { return { selectedReportId: id, file: state.files[id] }; }),
+            coverageDeclaration: declaration()
+          });
+          if (result && result.ok === true && result.state === 'AWAITING_CONFIRMATION' && /^confirm_[a-f0-9]{32}_\d+$/.test(String(result.confirmationToken || ''))) {
+            state.confirmationToken = result.confirmationToken;
+            setNotice('Validation and reconciliation passed. Review the scope, then confirm publication with Owner approval.', 'success');
+          } else if (result && result.ok === true && result.state === 'DUPLICATE_NOOP' && result.changed === false) {
+            setNotice('This exact report set is already current. No duplicate publication was created.', 'success');
+            await refreshScopes();
+          } else setNotice('Validation stopped safely (' + safeCode(result && result.code, 'ETP_IMPORT_FAILED') + '). Nothing was published.', 'error');
+        } catch (_) { setNotice('Validation stopped safely (ETP_IMPORT_FAILED). Nothing was published.', 'error'); }
+        finally { setBusy(false); }
+      }
+      async function confirmImport() {
+        if (state.busy || !state.confirmationToken) return;
+        var api = gateway(), token = state.confirmationToken;
+        state.confirmationToken = '';
+        if (!api || typeof api.confirm !== 'function') { setNotice('Secure ETP gateway unavailable. Nothing was changed.', 'error'); setBusy(false); return; }
+        setBusy(true); setNotice('Requesting fresh Owner approval and atomic publication…', '');
+        try {
+          var result = await api.confirm({ confirmationToken: token });
+          if (result && result.ok === true && result.state === 'ACCEPTED' && result.changed === true) {
+            setNotice('Verified reports published successfully. The active generation is ready for approved views.', 'success');
+            await refreshScopes();
+          } else setNotice('Publication stopped safely (' + safeCode(result && result.code, 'ETP_CONFIRMATION_FAILED') + ').', 'error');
+        } catch (_) { setNotice('Publication stopped safely (ETP_CONFIRMATION_FAILED).', 'error'); }
+        finally { setBusy(false); }
+      }
+      function appendMetric(host, label, value) {
+        var card = document.createElement('div'), small = document.createElement('small'), strong = document.createElement('strong');
+        card.className = 'metric'; text(small, label); text(strong, value); card.appendChild(small); card.appendChild(strong); host.appendChild(card);
+      }
+      function renderScopeDetail(result) {
+        var detail = document.getElementById('etpScopeDetail'), host = document.getElementById('etpScopeSummary');
+        host.replaceChildren();
+        if (!result || result.ok !== true || !result.scope || !result.currentReceipt) { detail.hidden = true; return; }
+        detail.hidden = false;
+        text(document.getElementById('etpScopeHeading'), result.scope.storeCode + ' · ' + result.scope.financialYear + ' · ' + result.scope.periodStart + ' to ' + result.scope.periodEnd);
+        var grid = document.createElement('div'); grid.className = 'history-grid';
+        appendMetric(grid, 'Native state', result.status && result.status.state || 'Unavailable');
+        appendMetric(grid, 'Published', result.currentReceipt.publishedAt || 'Unavailable');
+        appendMetric(grid, 'Reconciliation', result.currentReceipt.reconciliationStatus || 'Unavailable');
+        appendMetric(grid, 'Generation', result.currentReceipt.activeGenerationId || 'Unavailable');
+        host.appendChild(grid);
+        var coverage = document.createElement('div'); coverage.className = 'coverage-list';
+        REPORTS.forEach(function (id) { var item = document.createElement('div'), strong = document.createElement('strong'), small = document.createElement('small'); item.className = 'coverage-item'; text(strong, id); text(small, result.currentReceipt.coverage && result.currentReceipt.coverage[id] && result.currentReceipt.coverage[id].status || 'Unavailable'); item.appendChild(strong); item.appendChild(small); coverage.appendChild(item); });
+        host.appendChild(coverage);
+        var historyTitle = document.createElement('h3'); historyTitle.style.marginTop = '16px'; text(historyTitle, 'Previous accepted generations'); host.appendChild(historyTitle);
+        if (!Array.isArray(result.history) || !result.history.length) { var none = document.createElement('p'); text(none, 'No previous accepted generation.'); host.appendChild(none); return; }
+        var list = document.createElement('ol'); list.className = 'history-items';
+        result.history.forEach(function (receipt) { var item = document.createElement('li'); text(item, (receipt.publishedAt || 'Unknown date') + ' · ' + (receipt.activeGenerationId || 'Unknown generation')); list.appendChild(item); });
+        host.appendChild(list);
+      }
+      async function inspect(selectedScope) {
         var api = gateway();
-        if (!api) return;
-        Promise.resolve(api.listScopes({ limit: 20 })).then(function (result) {
-          if (!result || result.ok !== true || !Array.isArray(result.scopes)) return;
+        if (!api || typeof api.inspectScope !== 'function') { renderScopeDetail(null); return; }
+        try {
+          var result = await api.inspectScope(selectedScope, { historyLimit: 10 });
+          if (!result || result.ok !== true) { renderScopeDetail(null); text(document.getElementById('etpScopeList'), 'Scope unavailable (' + safeCode(result && result.code, 'ETP_STATUS_UNAVAILABLE') + ').'); return; }
+          renderScopeDetail(result);
+        } catch (_) { renderScopeDetail(null); text(document.getElementById('etpScopeList'), 'Scope unavailable (ETP_STATUS_UNAVAILABLE).'); }
+      }
+      async function refreshScopes() {
+        var api = gateway();
+        var host = document.getElementById('etpScopeList');
+        if (!api) { text(document.getElementById('gatewayTitle'), 'Verified data gateway unavailable'); text(document.getElementById('gatewayStatus'), 'No ETP data can be read or changed.'); text(host, 'Secure ETP gateway unavailable.'); return; }
+        try {
+          var result = await Promise.resolve(api.listScopes({ limit: 20 }));
+          if (!result || result.ok !== true || !Array.isArray(result.scopes)) { text(host, 'Verified scope list unavailable (' + safeCode(result && result.code, 'ETP_SCOPE_LIST_UNAVAILABLE') + ').'); return; }
           document.getElementById('gatewayTitle').textContent = 'Verified data gateway ready';
           document.getElementById('gatewayStatus').textContent = result.scopes.length ? result.scopes.length + ' verified scope' + (result.scopes.length === 1 ? '' : 's') + ' available.' : 'No verified scope has been published yet.';
-        }).catch(function () {});
+          host.replaceChildren();
+          if (!result.scopes.length) { var empty = document.createElement('p'); text(empty, 'No verified scope has been published yet.'); host.appendChild(empty); document.getElementById('etpScopeDetail').hidden = true; return; }
+          result.scopes.forEach(function (item) {
+            if (!item || !item.scope) return;
+            var button = document.createElement('button'), title = document.createElement('strong'), meta = document.createElement('small');
+            button.type = 'button'; button.className = 'scope-row';
+            text(title, item.scope.storeCode + ' · ' + item.scope.financialYear); text(meta, item.scope.periodStart + ' to ' + item.scope.periodEnd + ' · published ' + item.publishedAt);
+            var label = document.createElement('span'); label.appendChild(title); label.appendChild(meta); button.appendChild(label); button.appendChild(document.createTextNode('View'));
+            button.addEventListener('click', function () { inspect(item.scope); }); host.appendChild(button);
+          });
+        } catch (_) { text(host, 'Verified scope list unavailable (ETP_SCOPE_LIST_UNAVAILABLE).'); }
       }
       function select(view, focus) {
         if (VIEWS.indexOf(view) < 0) return;
@@ -106,7 +247,7 @@
         document.querySelectorAll('[data-panel]').forEach(function (panel) {
           panel.hidden = panel.getAttribute('data-panel') !== view;
         });
-        describe(view);
+        if (view === 'coverage') refreshScopes();
       }
       document.querySelectorAll('[data-view]').forEach(function (tab) {
         tab.addEventListener('click', function () { select(tab.getAttribute('data-view'), false); });
@@ -117,7 +258,20 @@
           select(VIEWS[(at + (event.key === 'ArrowRight' ? 1 : VIEWS.length - 1)) % VIEWS.length], true);
         });
       });
+      document.querySelectorAll('[data-etp-file]').forEach(function (input) {
+        input.addEventListener('change', function () {
+          var id = input.getAttribute('data-etp-file'), file = input.files && input.files[0]; state.files[id] = file || null;
+          text(document.querySelector('[data-etp-file-name="' + id + '"]'), file ? file.name : 'Choose ' + id + ' XLSX export');
+          state.confirmationToken = ''; setBusy(false);
+        });
+      });
+      document.querySelectorAll('[data-etp-scope]').forEach(function (field) { field.addEventListener('change', function () { state.confirmationToken = ''; setBusy(false); }); });
+      document.getElementById('etpCoverageConfirmed').addEventListener('change', function () { state.confirmationToken = ''; setBusy(false); });
+      document.getElementById('etpImportForm').addEventListener('submit', validateImport);
+      document.getElementById('etpConfirm').addEventListener('click', confirmImport);
+      document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
       select('import', false);
+      refreshScopes();
     })();
   </script>
   <script id="mah4-stage-b-runtime">SaagarMah4Runtime.bootModule({moduleId:'etp'});</script>
