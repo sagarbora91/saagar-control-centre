@@ -8,6 +8,7 @@ android/key.properties
 /_v/
 _dec_*.html
 /.tmp-audit-tests/
+/.tmp-etp-synthetic-fixtures/
 
 # OS / editor noise
 .DS_Store
