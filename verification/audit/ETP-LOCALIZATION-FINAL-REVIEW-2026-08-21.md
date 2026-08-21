@@ -6,12 +6,12 @@ This package inventories every static, dynamic and parameterized user-facing ETP
 
 - Product commit: `4b5c9c5c883f621cc31ea22d18203425ebcdc88d`
 - CSV: `ETP-LOCALIZATION-FINAL-REVIEW-DRAFT-2026-08-21.csv`
-- CSV SHA-256: `35c655fddaf6a9de5de89ae8be64a24d4c30cd5f8492dc9b8230572818e3d3e2`
+- CSV SHA-256: `f073bf322427996c6bbb44828dc46693ade97333b83f52b47fa588a55c1b7bb1`
 - `www/modules/etp/index.html` SHA-256: `4124fbb4c97b03cbc958b23252c8ae8e1d1a4d11443178ad9c0f1f7cdde71851`
 - `www/etp-verified-presentation.js` SHA-256: `031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6`
-- Rows: 115
+- Rows: 119
 - Parameterized rows: 14
-- Rows carrying preserved technical literals/placeholders: 48
+- Rows carrying preserved technical literals/placeholders: 49
 - Exact safe-literal rows: 10
 - Draft provider: connected Google Translate endpoint; drafts are unapproved and require fluent review.
 
@@ -26,7 +26,7 @@ This package inventories every static, dynamic and parameterized user-facing ETP
 
 ## Guardrails
 
-- Current decision for all 115 rows: `pending-fluent-review`.
+- Current decision for all 119 rows: `pending-fluent-review`.
 - Current reviewer for all rows: blank.
 - Report identifiers, store identifiers, error/status codes, placeholders and file-format acronyms are intentionally preserved.
 - Rendered Marathi/Hindi acceptance remains separate from wording approval and must be re-measured after import.
