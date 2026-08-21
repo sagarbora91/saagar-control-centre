@@ -2,7 +2,7 @@
   "format": "SAAGAR_PHASE4C2_FINAL_CLOSURE_REGISTER",
   "schemaVersion": 1,
   "registerState": "draft-open",
-  "preparedAt": "2026-08-19T00:00:00+05:30",
+  "preparedAt": "2026-08-21T00:00:00+05:30",
   "supersedes": {
     "path": "verification/audit/PHASE-4C-FINAL-CLOSURE-REGISTER-DRAFT-2026-08-17.json",
     "sha256": "c1db7723db7e286425ee27ec5959407ef4d686e04a5cf6ac43a73e47de2b6f78",
@@ -195,7 +195,7 @@
       "id": "GATE-ETP-PHYSICAL",
       "state": "open",
       "decision": "open-owner-accepted-exception",
-      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
       "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
       "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
       "riskAccepted": "No physical Android API-23-class OEM document-provider import has ever been performed for this build. Real OEM document providers vary in how they expose file selection and persist URI permissions, and none of that behaviour is verified. A provider-specific failure would first appear to a user importing real financial reports, with no prior evidence to diagnose against.",
@@ -224,7 +224,7 @@
       "id": "GATE-ETP-INTERRUPTION",
       "state": "open",
       "decision": "open-owner-accepted-exception",
-      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
       "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
       "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
       "riskAccepted": "The physical and OEM residue is unverified: document-provider interruption during import, and a safe low-storage case. The low-storage case has never been run anywhere, having been excluded as unsafe on the emulator. An interruption or a full device during a real import could leave staging state in a condition no evidence covers.",
@@ -252,7 +252,7 @@
       "id": "GATE-ETP-PRODUCTION",
       "state": "open",
       "decision": "open-owner-accepted-exception",
-      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
       "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
       "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
       "riskAccepted": "No real production publication has ever been performed with this build. The first authorized WLMHW or HEMW publication will therefore happen unrehearsed, against live business data. Parser conformance on real exports is genuine mitigation and is recorded below, but conformance is not publication: the complete-period declaration, manager reauthorization, receipt generation, previous-generation retention and no-partial-publication behaviours are unexercised end to end on the frozen build.",
@@ -283,14 +283,14 @@
       "id": "GATE-ETP-EXCEPTIONS",
       "state": "open",
       "decision": "open-owner-accepted-exception",
-      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
       "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
       "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
       "riskAccepted": "The owner has not reviewed and accepted the R003 and R013 exception screens. The residual risk is intelligibility only, and it is the smallest of the four: the presentation is bounded to exactly two rows by contract, counts above 250,000 or statuses outside PASS and FAIL are rejected rather than rendered, and the card cannot alter revenue or sales totals by construction because REC-002 reconciles netValue against netAmount while the R003 and R013 rules emit only a status and a count.",
       "doesNotClaim": [
         "This is not a pass",
         "No owner review of the exception presentation was recorded for this identity",
-        "A rendered review surface was produced on 2026-08-19 but was not signed"
+        "A rendered review surface was produced on 2026-08-21 but was not signed"
       ],
       "requiredAuthority": "Business owner Sagar (sagarbora91)",
       "requiredEvidence": [
@@ -393,7 +393,7 @@
       "decision": "open-owner-accepted-exception",
       "mandatory": true,
       "auditResult": "unmeasured",
-      "ownerDirection": "Sagar directed on 2026-08-19 that A10-04 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
+      "ownerDirection": "Sagar directed on 2026-08-21 that A10-04 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
       "reason": "Three independent obstacles. The owner has no physical Android device. The frozen seeded APK cannot carry this evidence at all, per structural blocker BLOCKER-APK-BINDING. No committed producer emits the required record, per structural blocker BLOCKER-NO-PRODUCER.",
       "riskAccepted": "Backup and restore save latency is unverified on physical hardware at ship time. The governed budgets of 150 ms export p95, 250 ms frame-gap p95 and 3000 ms total p95 are unconfirmed for the shipped artifact, on real storage, at representative data volume. For an application holding shop records this is a real and stated residual risk, not a formality.",
       "doesNotClaim": [
@@ -417,7 +417,7 @@
       "decision": "open-owner-accepted-exception",
       "mandatory": true,
       "auditResult": "unmeasured",
-      "ownerDirection": "Sagar directed on 2026-08-19 that A10-05 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
+      "ownerDirection": "Sagar directed on 2026-08-21 that A10-05 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
       "reason": "Same three obstacles as A10-04. This check was additionally absent from the superseded 2026-08-17 register draft and is recorded here for the first time.",
       "riskAccepted": "Retained memory growth across two Expense open, close and reopen cycles is unverified on physical hardware. A leak in that path would surface as progressive slowdown or a low-memory kill during long shop sessions, and would not have been detected before release.",
       "doesNotClaim": [
@@ -438,7 +438,7 @@
   "structuralBlockers": [
     {
       "id": "BLOCKER-APK-BINDING",
-      "discoveredAt": "2026-08-19",
+      "discoveredAt": "2026-08-21",
       "affects": [
         "A10-04",
         "A10-05"
@@ -454,7 +454,7 @@
     },
     {
       "id": "BLOCKER-NO-PRODUCER",
-      "discoveredAt": "2026-08-19",
+      "discoveredAt": "2026-08-21",
       "affects": [
         "A10-04",
         "A10-05"
@@ -483,9 +483,9 @@
   "honestStatusSentence": "Modular HTML migration and Phase 4C.1 engineering and evidence execution are complete. Phase 4C.2 external release acceptance is pending, with C-08 failed, A10-01, A10-04 and A10-05 carried open as owner-accepted exceptions, and the four Retail ETP gates carried open pending that module's separate modular migration while the feature nonetheless ships reachable.",
   "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
   "etpHold": {
-    "decidedAt": "2026-08-19",
+    "decidedAt": "2026-08-21",
     "decidedBy": "Sagar (sagarbora91), business owner",
-    "rationale": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-19 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+    "rationale": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
     "releaseScope": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
     "migrationState": {
       "migratedModules": [

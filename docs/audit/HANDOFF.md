@@ -77,12 +77,12 @@ Current resume authority is
 operational companion. The 2026-08-17 crash checkpoint remains valid history for
 Phase 4C.1 execution.
 
-## Historical Phase 4C.2 external acceptance checkpoint - 2026-08-19
+## Historical Phase 4C.2 external acceptance checkpoint - 2026-08-21
 
 At this historical checkpoint Phase 4A, 4B and 4C.1 were complete and 4C.2 was
 the only pending subphase. The 2026-08-21 owner direction above supersedes that
 program-state statement and marks 4C.2 complete with its open risks carried into
-the external closure register. Nothing in the 2026-08-19 session changed product
+the external closure register. Nothing in the 2026-08-21 session changed product
 code; the frozen identity below was unchanged and re-verified byte-for-byte.
 
 ### Live records - use these, not the 08-17 drafts
@@ -126,7 +126,7 @@ carried exception is never a pass: the register enforces
 
 ### A10-04 / A10-05 - carried, and structurally unclosable
 
-Owner direction 2026-08-19: carry them open rather than build a device harness.
+Owner direction 2026-08-21: carry them open rather than build a device harness.
 Accepted risk, stated in the register: **backup save latency and Expense memory
 growth are unverified on physical hardware at ship time.**
 
@@ -155,7 +155,7 @@ validator will accept. Do not conflate them.
 
 ### Retail ETP - four gates carried, but the feature ships
 
-Owner direction 2026-08-19: the ETP module completes after its own modular
+Owner direction 2026-08-21: the ETP module completes after its own modular
 migration, so its four gates are carried rather than closed.
 
 **ETP was never migrated** - the eleven migrated modules are under `www/modules/`;
@@ -201,7 +201,7 @@ required before a substitute device closes `GATE-UPDATE-PHYSICAL`.
   against `netAmount` and passed with zero differences. The deciding fact is what
   PAYMENTTYPE25 maps to in Helios, which is owner knowledge. Not carried as an ETP
   exception: it needs only a decision.
-- **`GATE-ETP-EXCEPTIONS`.** A review surface was rendered on 2026-08-19 by
+- **`GATE-ETP-EXCEPTIONS`.** A review surface was rendered on 2026-08-21 by
   extracting `exceptionPresentation()` and `exceptionHtml()` verbatim from
   `www/etp-import-ui.js` and evaluating them, in four states. Not signed, so the
   gate stays carried. It is the cheapest of the four to reverse: an owner review
@@ -536,7 +536,7 @@ Received exact approval sentence:
 
 ## Open acceptance gates
 
-**Superseded 2026-08-19.** This list predates the 4C.2 checkpoint above and no
+**Superseded 2026-08-21.** This list predates the 4C.2 checkpoint above and no
 longer describes current state: A10-01, A10-04, A10-05 and the four Retail ETP
 gates are now carried owner-accepted exceptions, and A10-02 passes in the approved
 comparison. Read the Phase 4C.2 section and

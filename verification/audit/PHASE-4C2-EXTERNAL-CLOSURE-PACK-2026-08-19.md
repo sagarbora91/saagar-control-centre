@@ -1,6 +1,6 @@
 # Phase 4C.2 external closure pack
 
-**Prepared:** 2026-08-19 (Asia/Kolkata)
+**Prepared:** 2026-08-21 (Asia/Kolkata)
 **State:** post-Phase-4 external release template. Phase 4 and all of its
 subphases are complete by owner direction dated 2026-08-21. Blank fields are not
 approvals, and no gate may be reported closed until its named authority supplies
@@ -29,7 +29,7 @@ Three substantive changes beyond re-identification:
 3. **Two structural blockers are documented** (Section 4) so that nobody spends a device session
    attempting a measurement that the frozen tooling cannot accept.
 4. **The four Retail ETP gates are carried as owner-accepted exceptions** (Section 4A), by owner
-   direction of 2026-08-19, pending that module's separate modular migration. The feature
+   direction of 2026-08-21, pending that module's separate modular migration. The feature
    nonetheless ships reachable — read Section 4A before approving release.
 
 ## 1. Frozen identity
@@ -117,8 +117,8 @@ them is a pass, and none may be reported as closed.**
 | ID | Result | Owner direction |
 |---|---|---|
 | `A10-01` | fail, P2 | Sagar, 2026-08-17 — proceed with it open. C-08 fails solely for this |
-| `A10-04` | unmeasured, mandatory | Sagar, 2026-08-19 — carry open; do not build a device harness |
-| `A10-05` | unmeasured, mandatory | Sagar, 2026-08-19 — carry open; do not build a device harness |
+| `A10-04` | unmeasured, mandatory | Sagar, 2026-08-21 — carry open; do not build a device harness |
+| `A10-05` | unmeasured, mandatory | Sagar, 2026-08-21 — carry open; do not build a device harness |
 
 **A10-01** measured shell parse p95 rising from 1070.2 ms to 1151.1 ms, a 7.559 percent increase
 against a 5 percent limit, while shell bytes fell from 711,857 to 576,043. Accepted risk: slower
@@ -153,7 +153,7 @@ evidence for a data-durability gate.
 
 ## 4A. Retail ETP — four gates carried as exceptions
 
-**Owner direction, 2026-08-19:** the Retail ETP feature completes after its own modular migration,
+**Owner direction, 2026-08-21:** the Retail ETP feature completes after its own modular migration,
 and until then `GATE-ETP-PHYSICAL`, `GATE-ETP-INTERRUPTION`, `GATE-ETP-PRODUCTION` and
 `GATE-ETP-EXCEPTIONS` are carried open as accepted exceptions rather than closed.
 

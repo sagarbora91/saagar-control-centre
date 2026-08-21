@@ -11,7 +11,9 @@ four-file publication has been completed.
 ## Non-negotiable architecture
 
 - Add a Reports-owned `www/modules/etp/index.html` as the twelfth modular module.
-- Keep all eighteen `www/etp-*.js` engines loaded once in the parent shell.
+- Keep all twenty `www/etp-*.js` engines loaded once in the parent shell. (Eighteen
+  before this workstream; `etp-module-gateway.js` and `etp-verified-presentation.js`
+  were added by ETP-1.)
 - Do not move, duplicate or re-bootstrap the parser, Web Worker, native adapter,
   receipt registry, encryption or publication lifecycle inside the iframe.
 - Expose only a narrow parent gateway: controlled import, confirmation, verified
@@ -115,6 +117,87 @@ The chooser currently reads selected bytes immediately and does not persist URI
 permission. Acceptance therefore tests OEM selection, publication, relaunch and
 verified readback—not retained access to the source document. Adding retained URI
 access would be a separate native requirement.
+
+## Survey baseline — independently measured 2026-08-21 at `b0904bc`
+
+Four measured facts from a read-only survey of the ETP surface. They do not change
+the phase plan; they change what to rely on inside it.
+
+### 1. ETP has no capability-oracle protection, and migration does not give it any
+
+All twenty `etp-*.js` files are named A3 surfaces (of 138 analysed). But measured
+against the approved ledger:
+
+| Row kind | Whole product | ETP |
+|---|---|---|
+| `action` | **469** | **0** |
+| `failure` | 69 | 18 |
+| `permission` | 24 | 1 |
+| `persist` | 86 | 0 |
+| `route` | 12 | 0 |
+
+ETP contributes **nineteen rows, all `failure:posture` except one
+`permission:reauthentication`, and zero action rows.** Its controls are already
+invisible to A3-02, and inside a module `index.html` they remain invisible, because
+`a3.mjs:294` masks `script` element content.
+
+**Consequence for ETP-1 through ETP-3:** the capability ledger will not detect a
+UI regression in this module. The real regression net is the A6 72-cell rendered
+matrix and `npm run test:etp`. Weight those accordingly in each exit check, and do
+not read "ledger unchanged" as evidence that ETP screens are intact.
+
+**Cheap coverage win:** the module's control surface is small enough to tag
+exhaustively (see 3). Adding `data-action` to every control would move ETP from
+zero action rows to full enumeration — worth doing precisely because it is small.
+
+### 2. ETP is the product's only genuinely responsive surface — do not "bring it into line"
+
+`etp-import-ui.js` injects 48 CSS rules with **one** media query
+(`@media(max-width:699px)`) and **zero `bcc-mobile` references**.
+
+Product-wide the ratio is 3,258 `bcc-mobile` references against 86 media queries,
+because SCC responsiveness is a persisted user preference (`saagar_ui_mode` →
+`html.bcc-mobile`) rather than layout.
+
+**Consequence:** ETP already implements the pattern the Stage 2 responsive
+programme wants everywhere. Porting it onto `bcc-mobile` for consistency during
+this workstream would be a regression against that target. Keep the media-query
+approach and treat ETP as the reference implementation.
+
+### 3. The UI surface is ten controls and zero tables — today
+
+From `etp-import-ui.js`, the only markup-emitting file: 4 `<button>`, 5 `<input>`,
+1 `<select>`, and **0 `<table>`**. Identity attributes: `data-action` = 0, `id` = 2,
+`aria-label` = 3, `title` = 0. There are 19 `data-etp*` attributes, which are safe —
+`data-*` outside the identity chain does not affect A3-02 identity.
+
+**Consequence for ETP-3:** the four paged report views are where tables **first
+enter** ETP. That is the moment to adopt the Stage 2 responsive table component
+rather than inventing a local one, and the moment to tag controls as they are
+built rather than retrofitting. Tagging ten existing controls is a small, bounded
+commit; tagging them after ETP-3 adds paged views is not.
+
+### 4. The gateway boundary verifies clean against this document's non-negotiables
+
+Checked at `b0904bc`, not taken on trust:
+
+| Non-negotiable | Result |
+|---|---|
+| Engines loaded once in the parent shell | 17 script tags in shell ✅ |
+| Screens never call the native store | **0** `Capacitor` references in `www/modules/etp/index.html` ✅ |
+| Only a narrow gateway exposed | per-report `PROJECTIONS` allowlist, `FORBIDDEN_FIELD`, `BLOCKED_KEYS`, `safePrimitive`, `MAX_READ_ROWS`/`MAX_SCOPES`/`MAX_HISTORY` ✅ |
+| Twelfth canonical manifest entry | `etp` present in `EXPECTED_IDS`, 12 ids ✅ |
+| Fail-closed role checks | `permitted()` reads `root.SaagarOwnerSession` **shell-side**; malformed snapshot returns false; `IMPORT`/`CONFIRM` require `isOwner === true` ✅ |
+
+The authorization design is the load-bearing part: the trust decision is made in
+the shell from a shell-owned session object, so the iframe cannot assert its own
+permissions. Preserve that property through ETP-2 and ETP-3 — any change that lets
+the module supply role, store or scope claims defeats the boundary.
+
+For comparison, **not one of the eleven pre-existing modules makes a single
+Capacitor call** (the lone reference in Service is a code comment). ETP's direct
+native access was the genuine architectural blocker, and the parent-gateway design
+is what resolves it.
 
 ## Stop rules
 
