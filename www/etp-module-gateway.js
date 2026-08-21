@@ -17,7 +17,16 @@
   var REGISTRY_KEY = 'saagar_etp_control_registry_v1';
   var MAX_SCOPES = 20;
   var MAX_HISTORY = 10;
-  var MAX_READ_ROWS = 500;
+  var MAX_READ_ROWS = 200;
+  var MAX_CHUNK_INDEX = 4095;
+  var MAX_ROW_OFFSET = 499;
+  var MAX_CELL_TEXT = 4096;
+  var PROJECTIONS = Object.freeze({
+    R003: Object.freeze(['transaction_type_raw', 'net_amount', 'scheme_discount', 'user_discount']),
+    R013: Object.freeze(['transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
+    R022: Object.freeze(['transaction_type_raw', 'invoice_quantity', 'net_value', 'cash_amount', 'card_amount', 'bhim_upi_amount', 'phonepe_amount', 'paytm_amount', 'razorpay_amount', 'bharatpe_amount', 'cheque_amount', 'others_amount', 'payment_type24_amount']),
+    R025: Object.freeze(['invoice_number', 'transaction_type_raw', 'quantity', 'net_amount', 'brand', 'cluster', 'gender', 'scheme_discount', 'user_discount', 'tax_amount'])
+  });
   var FORBIDDEN_FIELD = /(?:^|_)(?:workbook|worksheet|filename|file_label|file_path|source_name|source_bytes|blob|base64|customer|consumer|mobile|phone|email|address|name|aadhaar|pan|dob)(?:$|_)/i;
   var BLOCKED_KEYS = Object.freeze(['__proto__', 'prototype', 'constructor']);
 
@@ -94,7 +103,8 @@
   }
 
   function safePrimitive(value) {
-    return value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+    return value === null || (typeof value === 'string' && value.length <= MAX_CELL_TEXT) ||
+      (typeof value === 'number' && Number.isFinite(value)) || typeof value === 'boolean';
   }
 
   function sanitizePage(value, scopeKey, generationId, reportId, fields, limit) {
@@ -107,6 +117,7 @@
       var source = page.rows[i];
       if (!record(source)) return null;
       var row = {}, keys = Object.keys(source);
+      if (keys.length !== fields.length || fields.some(function (field) { return !own(source, field); })) return null;
       for (var n = 0; n < keys.length; n++) {
         var key = keys[n];
         if (!allowed[key] || FORBIDDEN_FIELD.test(key) || BLOCKED_KEYS.indexOf(key) >= 0 || !safePrimitive(source[key])) return null;
@@ -116,7 +127,7 @@
     }
     var cursor = null;
     if (page.hasMore) {
-      if (!exact(page.nextCursor, ['chunkIndex', 'rowOffset']) || !Number.isSafeInteger(page.nextCursor.chunkIndex) || page.nextCursor.chunkIndex < 0 || !Number.isSafeInteger(page.nextCursor.rowOffset) || page.nextCursor.rowOffset < 0) return null;
+      if (!exact(page.nextCursor, ['chunkIndex', 'rowOffset']) || !Number.isSafeInteger(page.nextCursor.chunkIndex) || page.nextCursor.chunkIndex < 0 || page.nextCursor.chunkIndex > MAX_CHUNK_INDEX || !Number.isSafeInteger(page.nextCursor.rowOffset) || page.nextCursor.rowOffset < 0 || page.nextCursor.rowOffset > MAX_ROW_OFFSET) return null;
       cursor = freeze({ chunkIndex: page.nextCursor.chunkIndex, rowOffset: page.nextCursor.rowOffset });
     } else if (page.nextCursor !== null) return null;
     return freeze({ scopeKey: scopeKey, generationId: generationId, reportId: reportId, rows: freeze(rows), hasMore: page.hasMore, nextCursor: cursor });
@@ -241,13 +252,13 @@
       if (!exact(request, ['reportId', 'fields', 'cursor', 'limit'])) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var reportId = String(request.reportId || '').toUpperCase(), fields = request.fields;
       if (REPORTS.indexOf(reportId) < 0 || !Array.isArray(fields) || !fields.length || fields.length > 64 || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > MAX_READ_ROWS) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
-      var seen = Object.create(null), projected = [];
+      var seen = Object.create(null), projected = [], allowed = PROJECTIONS[reportId];
       for (var i = 0; i < fields.length; i++) {
         var field = String(fields[i]);
-        if (!/^[a-z][a-z0-9_]{0,63}$/.test(field) || FORBIDDEN_FIELD.test(field) || seen[field]) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
+        if (!/^[a-z][a-z0-9_]{0,63}$/.test(field) || FORBIDDEN_FIELD.test(field) || allowed.indexOf(field) < 0 || seen[field]) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
         seen[field] = true; projected.push(field);
       }
-      if (request.cursor !== null && (!exact(request.cursor, ['chunkIndex', 'rowOffset']) || !Number.isSafeInteger(request.cursor.chunkIndex) || request.cursor.chunkIndex < 0 || !Number.isSafeInteger(request.cursor.rowOffset) || request.cursor.rowOffset < 0)) return failure('ETP_READ_CURSOR_INVALID', 'READ');
+      if (request.cursor !== null && (!exact(request.cursor, ['chunkIndex', 'rowOffset']) || !Number.isSafeInteger(request.cursor.chunkIndex) || request.cursor.chunkIndex < 0 || request.cursor.chunkIndex > MAX_CHUNK_INDEX || !Number.isSafeInteger(request.cursor.rowOffset) || request.cursor.rowOffset < 0 || request.cursor.rowOffset > MAX_ROW_OFFSET)) return failure('ETP_READ_CURSOR_INVALID', 'READ');
       var context = await verifiedContext(scope);
       if (context.error) return context.error;
       var result;
@@ -281,5 +292,5 @@
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 
-  return freeze({ VERSION: VERSION, REPORTS: REPORTS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: MAX_READ_ROWS, create: create, bootstrap: bootstrap });
+  return freeze({ VERSION: VERSION, REPORTS: REPORTS, PROJECTIONS: PROJECTIONS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: MAX_READ_ROWS, create: create, bootstrap: bootstrap });
 });
