@@ -1,0 +1,39 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "GATE-PAYMENTTYPE25",
+  "decision": "continued-quarantine",
+  "state": "closed-by-business-disposition",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "business-owner"
+  },
+  "receivedAt": "2026-08-21T15:01:34.1101402+05:30",
+  "disposition": {
+    "paymentType": "PAYMENTTYPE25",
+    "mapping": null,
+    "policy": "Keep all non-zero PAYMENTTYPE25 tender values quarantined until an authoritative Helios mapping is available.",
+    "publicationRule": "Do not classify, fold into Others, or silently publish the quarantined tender attribution.",
+    "reopenCondition": "An authoritative Helios mapping identifier and its reviewed evidence are available."
+  },
+  "approvalText": "I, Sagar (sagarbora91), approve continued quarantine of PAYMENTTYPE25 until an authoritative Helios mapping is available.",
+  "sourceMessageNote": "The same message contained literal <name> placeholders for UAT, legal, signing-custodian and release-approver identities. Those placeholders confer no authority and are not recorded as approvals.",
+  "scope": {
+    "closes": [
+      "GATE-PAYMENTTYPE25"
+    ],
+    "doesNotClose": [
+      "GATE-UPDATE-PHYSICAL",
+      "GATE-UAT",
+      "GATE-RELEASE",
+      "production-signing",
+      "release-approval"
+    ]
+  },
+  "nonClaims": [
+    "No Helios tender mapping is asserted.",
+    "No quarantined PAYMENTTYPE25 value is reclassified or published.",
+    "No unnamed person is treated as a UAT, legal, signing or release authority."
+  ]
+}
