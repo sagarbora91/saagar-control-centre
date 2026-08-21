@@ -79,3 +79,19 @@ test('ETP-3 integration hooks coexist with accessible tab and live-status behavi
   assert.match(html, /role="tablist"/);
   assert.match(html, /event\.key !== 'ArrowRight' && event\.key !== 'ArrowLeft'/);
 });
+
+test('published scope selection survives tab changes and drives verified and exceptions refresh', () => {
+  assert.match(html, /activeScope: null/);
+  assert.match(html, /function setActiveScope\(value, refreshVisible\)/);
+  assert.match(html, /setActiveScope\(item\.scope, true\); inspect\(item\.scope\)/);
+  assert.match(html, /setActiveScope\(available\[0\], true\)/);
+  assert.match(html, /getScope:function\(\)\{return state\.activeScope;\}/);
+  assert.match(html, /view === 'verified' \|\| view === 'reconciliation'/);
+  assert.equal((html.match(/data-etp-active-scope=/g) || []).length, 2);
+  assert.equal((html.match(/data-etp-scope-picker/g) || []).length, 3);
+  assert.equal((html.match(/data-etp-verified-refresh/g) || []).length, 2);
+});
+
+test('verified presentation has explicit responsive status and aggregation styles', () => {
+  for (const cls of ['etp-active-scope', 'etp-v-metrics', 'etp-v-metric', 'etp-v-groups', 'etp-v-error', 'etp-v-quarantine']) assert.match(html, new RegExp('\\.' + cls));
+});
