@@ -1,7 +1,10 @@
 # Phase 4C.2 external closure pack
 
 **Prepared:** 2026-08-19 (Asia/Kolkata)
-**State:** operational template. Blank fields are not approvals. No gate may be reported closed until its named authority supplies the completed evidence.
+**State:** post-Phase-4 external release template. Phase 4 and all of its
+subphases are complete by owner direction dated 2026-08-21. Blank fields are not
+approvals, and no gate may be reported closed until its named authority supplies
+the completed evidence. This pack remains operational without reopening Phase 4.
 **Companion register:** `verification/audit/PHASE-4C2-FINAL-CLOSURE-REGISTER-2026-08-19.json`
 
 ## 0. What this supersedes, and why

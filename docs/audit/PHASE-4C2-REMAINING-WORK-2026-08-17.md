@@ -1,7 +1,11 @@
 # Phase 4C.2 remaining work
 
-**Updated:** 2026-08-17 (Asia/Kolkata)
-**Status:** Phase 4C.1 is complete with A10-01 explicitly open. Phase 4C.2 contains only physical-device and external release acceptance.
+**Updated:** 2026-08-21 (Asia/Kolkata)
+**Status:** Superseded as an active phase plan. By owner direction, Phase 4 and
+all Phase 4 subphases, including Phase 4C.2, are complete. The residual items in
+this document remain truthful carried risks or external release decisions; they
+do not reopen Phase 4. Retail ETP completion is tracked separately in
+`docs/audit/POST-PHASE-4-ETP-COMPLETION-2026-08-21.md`.
 
 ## Frozen authority
 

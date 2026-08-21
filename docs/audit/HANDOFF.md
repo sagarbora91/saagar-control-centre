@@ -1,7 +1,38 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-19 (Asia/Kolkata)
+**Updated:** 2026-08-21 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+
+## Phase 4 program completion checkpoint - 2026-08-21
+
+**Owner direction:** Phase 4 and every named Phase 4 subphase are complete:
+Phase 4A, Phase 4B, Phase 4C.1 and Phase 4C.2. Do not reopen or extend the
+Modular HTML migration program to absorb later ETP product work or release
+administration.
+
+This is a program-boundary decision, not a claim that every audit check or
+external release gate passed. The Phase 4C.2 closure register remains the
+authoritative risk register and remains `draft-open`: C-08/A10-01, A10-04 and
+A10-05 are carried open, four ETP gates are carried open, and external
+PAYMENTTYPE25, UAT/legal and production-signing/release decisions remain outside
+the completed Phase 4 implementation program.
+
+The Retail ETP feature is now a separate post-Phase-4 completion workstream.
+Physical inspection on 2026-08-21 used the exact seeded debug-UAT APK SHA-256
+`F7F18EA3E3A0BD1B42B7B390E567993AD46160E0AA844A126509C28A33754287`
+on Samsung SM-T875, Android 13 / API 33. Package `com.saagartraders.bcc`, version
+2.9 / code 209, was installed, running and focused, and its installed APK hash
+matched. The owner reported all non-ETP application checks passed and ETP was
+incomplete. Live ETP inspection proved that Reports routing, the import screen,
+native date picker and Android document-provider launch work without a crash or
+fatal log. No four-report XLSX set was present, so no validation, publication or
+verified read was performed.
+
+The exact remaining ETP boundary is documented in
+`docs/audit/POST-PHASE-4-ETP-COMPLETION-2026-08-21.md`. ETP is not a twelfth
+modular module in the frozen APK, no product screen consumes `readVerified`,
+PAYMENTTYPE25 remains quarantined, and production/physical ETP acceptance remains
+open. These facts do not change the owner-directed Phase 4 completion state.
 
 ## Mandatory execution guardrails - owner direction 2026-08-17
 
@@ -9,9 +40,9 @@ These rules override any earlier preference to "finish in one go" or deploy many
 agents. They exist to prevent repeated work, uncontrolled evidence invalidation,
 and avoidable usage consumption.
 
-1. Treat the Modular HTML implementation as complete. Phase 4C is audit,
-   performance and release acceptance; do not reopen migration implementation
-   unless a reproducible product defect requires it.
+1. Treat the Modular HTML implementation and all Phase 4 subphases as complete.
+   Do not reopen migration implementation unless a reproducible product defect
+   requires it. ETP completion is a separate post-Phase-4 workstream.
 2. Preserve every valid output by exact commit, file SHA and run identity. Never
    repeat an expensive test, browser capture, APK build or audit merely to seek a
    more favorable result.
@@ -31,8 +62,9 @@ and avoidable usage consumption.
    tracked product/test inputs changed or the prior run was technically invalid,
    with the reason recorded first.
 8. Keep physical-device, OEM, production ETP, UAT/legal, signing and release
-   acceptance in Phase 4C.2. Never block or reopen completed migration work merely
-   because those external authorities are unavailable.
+   acceptance in the external closure register outside the completed Phase 4
+   program. Never block or reopen completed migration work merely because those
+   external authorities are unavailable.
 9. Prioritize a functioning ETP Reports module and user-visible product behavior
    over additional audit refinement. Do not expand scope without explicit owner
    authorization.
@@ -45,11 +77,13 @@ Current resume authority is
 operational companion. The 2026-08-17 crash checkpoint remains valid history for
 Phase 4C.1 execution.
 
-## Phase 4C.2 external acceptance checkpoint - 2026-08-19
+## Historical Phase 4C.2 external acceptance checkpoint - 2026-08-19
 
-Phase 4A and 4B are complete. Phase 4C.1 is complete. **4C.2 is the only pending
-phase.** Nothing in this session changed product code; the frozen identity below
-is unchanged and was re-verified byte-for-byte.
+At this historical checkpoint Phase 4A, 4B and 4C.1 were complete and 4C.2 was
+the only pending subphase. The 2026-08-21 owner direction above supersedes that
+program-state statement and marks 4C.2 complete with its open risks carried into
+the external closure register. Nothing in the 2026-08-19 session changed product
+code; the frozen identity below was unchanged and re-verified byte-for-byte.
 
 ### Live records - use these, not the 08-17 drafts
 
