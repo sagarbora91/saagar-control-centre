@@ -6,18 +6,18 @@
     "mah3ProfileBytes": 7367,
     "mah3ProfileSha256": "80bf9e059a1022fdc7e341a61f18363f90e2a9cfd00ebb41a17975eb64c5ef24",
     "mah3TreeSha256": "f2f081cd1e620901ab00fd36da42594fdc3ff58d5edd355082c36da74e609a59",
-    "currentWwwTreeSha256": "f2f081cd1e620901ab00fd36da42594fdc3ff58d5edd355082c36da74e609a59",
-    "currentWwwFileCount": 100,
-    "currentWwwTotalBytes": 7972494,
+    "currentWwwTreeSha256": "32cff67318c5b240bacea8fd37d7cb1dec77b113af12841af6a940845c3af775",
+    "currentWwwFileCount": 103,
+    "currentWwwTotalBytes": 8064569,
     "shell": {
       "path": "www/index.html",
-      "bytes": 576043,
-      "sha256": "4de33fac69cb633b67dac189875cb43230b78e9aee169fdd8007ed14e585ddb2"
+      "bytes": 576070,
+      "sha256": "85244165dadb60cfde4a8e7bdfb181dc2b96b05752f05d4952009a912ac9b950"
     },
     "manifest": {
       "path": "www/module-manifest.js",
       "schemaVersion": 2,
-      "moduleCount": 11
+      "moduleCount": 12
     }
   },
   "protocol": {
@@ -567,6 +567,19 @@
         "ST_READY",
         "ST_SET_DATE",
         "ST_UI_MODE"
+      ],
+      "etp": [
+        "ST_ACCESS_CONTEXT",
+        "ST_AUDIT",
+        "ST_DISPOSE",
+        "ST_DISPOSED",
+        "ST_ERROR",
+        "ST_INIT",
+        "ST_LANG",
+        "ST_OPEN_FEATURE",
+        "ST_READY",
+        "ST_SET_DATE",
+        "ST_UI_MODE"
       ]
     },
     "nonStProducerPaths": {
@@ -623,7 +636,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 57,
+    "directEntryScriptAssetCount": 58,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -854,11 +867,12 @@
   "directEntryMessageAssets": [
     {
       "path": "www/app-i18n.js",
-      "bytes": 333318,
-      "sha256": "b3269b4a7a199458e10ca411a0182911fe470cb1fa20305e2fa91eaf4c0e596b",
+      "bytes": 359879,
+      "sha256": "6f43e69dc8206422686f345e8224818d438ec9a50fc1a3800ca6e4502d459f8a",
       "loadedBy": [
         "cro_audit",
         "dsr",
+        "etp",
         "expense",
         "grooming",
         "leave",
@@ -889,11 +903,12 @@
     },
     {
       "path": "www/shared/mah4-runtime.js",
-      "bytes": 10062,
-      "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
+      "bytes": 10068,
+      "sha256": "458410440a3748c4b8a59726e25f8eb59d61588f79fdc1f0ae3fc235aa2d48e5",
       "loadedBy": [
         "cro_audit",
         "dsr",
+        "etp",
         "expense",
         "grooming",
         "leave",
@@ -929,6 +944,7 @@
       "loadedBy": [
         "cro_audit",
         "dsr",
+        "etp",
         "expense",
         "grooming",
         "leave",
@@ -1009,7 +1025,7 @@
       "clearIntervals": 1,
       "mutationObservers": 0,
       "observerDisconnects": 0,
-      "eventListeners": 47,
+      "eventListeners": 57,
       "removedEventListeners": 0,
       "resizeListeners": 0
     },
@@ -1020,18 +1036,19 @@
       "clearIntervals": 2,
       "mutationObservers": 4,
       "observerDisconnects": 2,
-      "eventListeners": 41,
+      "eventListeners": 42,
       "removedEventListeners": 1,
       "resizeListeners": 1
     },
     "directLifecycleAssets": [
       {
         "path": "www/app-i18n.js",
-        "bytes": 333318,
-        "sha256": "b3269b4a7a199458e10ca411a0182911fe470cb1fa20305e2fa91eaf4c0e596b",
+        "bytes": 359879,
+        "sha256": "6f43e69dc8206422686f345e8224818d438ec9a50fc1a3800ca6e4502d459f8a",
         "loadedBy": [
           "cro_audit",
           "dsr",
+          "etp",
           "expense",
           "grooming",
           "leave",
@@ -1075,6 +1092,14 @@
         ]
       },
       {
+        "path": "www/etp-verified-presentation.js",
+        "bytes": 11861,
+        "sha256": "031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6",
+        "loadedBy": [
+          "etp"
+        ]
+      },
+      {
         "path": "www/etp-worker-client.js",
         "bytes": 1701,
         "sha256": "bc0b7e1f0ffdfef90c0017ea6843f1ebbe9d6393ec410313ae1eab547a105b9a",
@@ -1092,11 +1117,12 @@
       },
       {
         "path": "www/shared/mah4-runtime.js",
-        "bytes": 10062,
-        "sha256": "5561f54e7307676f44d2aa0b607f6c69a49e0d48c44d15d61b7cddbb9af7d9ec",
+        "bytes": 10068,
+        "sha256": "458410440a3748c4b8a59726e25f8eb59d61588f79fdc1f0ae3fc235aa2d48e5",
         "loadedBy": [
           "cro_audit",
           "dsr",
+          "etp",
           "expense",
           "grooming",
           "leave",
@@ -1116,6 +1142,7 @@
         "loadedBy": [
           "cro_audit",
           "dsr",
+          "etp",
           "expense",
           "grooming",
           "leave",
@@ -1208,15 +1235,15 @@
       "resizeListeners": 2
     },
     "directEffectiveModuleTotals": {
-      "timeouts": 141,
-      "clearTimeouts": 104,
+      "timeouts": 151,
+      "clearTimeouts": 112,
       "intervals": 3,
-      "clearIntervals": 12,
-      "mutationObservers": 33,
-      "observerDisconnects": 22,
-      "eventListeners": 274,
-      "removedEventListeners": 11,
-      "resizeListeners": 11
+      "clearIntervals": 13,
+      "mutationObservers": 36,
+      "observerDisconnects": 24,
+      "eventListeners": 305,
+      "removedEventListeners": 12,
+      "resizeListeners": 12
     },
     "conditionalDynamicScriptCallSites": {
       "timeouts": 37,
@@ -1306,7 +1333,8 @@
       "payroll": 0,
       "leave": 0,
       "tax": 0,
-      "planning": 0
+      "planning": 0,
+      "etp": 0
     },
     "directEffectiveMutationObserverCallSitesByModule": {
       "stock": 3,
@@ -1319,7 +1347,8 @@
       "payroll": 3,
       "leave": 3,
       "tax": 3,
-      "planning": 3
+      "planning": 3,
+      "etp": 3
     }
   },
   "mountLifecycle": {
@@ -1374,13 +1403,13 @@
     "files": [
       {
         "path": "scripts/lib/mah4-protocol-contract.mjs",
-        "bytes": 57859,
-        "sha256": "99b56384abffcbbdfb465041989171ff18151820df38b96710b798fe05528610"
+        "bytes": 57877,
+        "sha256": "f0603b8f8c059984998d124fc4c995a6825d76b0f7659555f7bef5d0246857f0"
       },
       {
         "path": "tests/mah4-protocol-contract.test.mjs",
         "bytes": 36725,
-        "sha256": "0e3af0fd5c628f0b2ba78c4f8b18d157ede4c62ca69a0ce55e9a94054365fbeb"
+        "sha256": "5ff69e80821970aae6f6116b503b1056238f407f84e8614329e26c4446861f18"
       }
     ]
   },

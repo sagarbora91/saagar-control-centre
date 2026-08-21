@@ -17,7 +17,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.schemaVersion, 3);
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
-  assert.equal(inventory.upstream.currentWwwFileCount, 100);
+  assert.equal(inventory.upstream.currentWwwFileCount, 103);
   // +1208 bytes on 2026-08-10: 38 inert `data-action` attributes added to
   // disambiguate conflicting A3-02 capability IDs, plus the refreshed module
   // manifest identities. No behaviour change; file count is unchanged.
@@ -46,7 +46,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // become solid high-contrast surfaces for deterministic rendered evidence.
   // +275 bytes on 2026-08-17: app-i18n defers Marathi/Hindi lookup construction
   // until a non-English language is selected; translations remain unchanged.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 7972494);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 8064569);
   assert.equal(inventory.upstream.manifest.moduleCount, 12);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
@@ -120,7 +120,7 @@ test('MAH-4 resolves direct message assets and listener-local trust posture', ()
 test('MAH-4 freezes conditional local loaders and persistent iframe hooks separately', () => {
   const dynamic = inventory.scriptDiscovery.dynamicLocal;
   assert.equal(inventory.scriptDiscovery.mode, 'direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory');
-  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 57);
+  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 58);
   assert.equal(inventory.scriptDiscovery.dynamicLocalAssetsInventoried, true);
   assert.equal(dynamic.loaderGroupCount, 5);
   assert.equal(dynamic.scriptRouteCount, 10);
@@ -193,16 +193,16 @@ test('MAH-4 freezes qualified lifecycle call-site buckets without claiming clean
     timeouts: 0, intervals: 0, mutationObservers: 0, eventListeners: 0, resizeListeners: 0
   });
   assert.deepEqual(pick(inventory.lifecycle.uniqueDirectAssetTotals), {
-    timeouts: 29, intervals: 2, mutationObservers: 4, eventListeners: 41, resizeListeners: 1
+    timeouts: 29, intervals: 2, mutationObservers: 4, eventListeners: 42, resizeListeners: 1
   });
   assert.deepEqual(pick(inventory.lifecycle.configuredEffectiveShell), {
     timeouts: 47, intervals: 5, mutationObservers: 4, eventListeners: 55, resizeListeners: 2
   });
   assert.deepEqual(pick(inventory.lifecycle.moduleTotals), {
-    timeouts: 31, intervals: 3, mutationObservers: 0, eventListeners: 47, resizeListeners: 0
+    timeouts: 31, intervals: 3, mutationObservers: 0, eventListeners: 57, resizeListeners: 0
   });
   assert.deepEqual(pick(inventory.lifecycle.effectiveModuleTotals), {
-    timeouts: 141, intervals: 3, mutationObservers: 33, eventListeners: 274, resizeListeners: 11
+    timeouts: 151, intervals: 3, mutationObservers: 36, eventListeners: 305, resizeListeners: 12
   });
   assert.deepEqual(pick(inventory.lifecycle.applicationDynamicTotals), {
     timeouts: 3, intervals: 2, mutationObservers: 0, eventListeners: 5, resizeListeners: 0
