@@ -49,6 +49,12 @@
   function requireMethod(value, name) { return !!value && typeof value[name] === 'function'; }
   function generation(value) { return /^etp_[a-f0-9]{32}$/.test(String(value || '')); }
 
+  function ownerCoverageDeclaration() {
+    var reports = {};
+    REPORTS.forEach(function (id) { reports[id] = freeze({ status: 'COMPLETE' }); });
+    return freeze({ confirmed: true, confirmedByRole: 'OWNER', reports: freeze(reports) });
+  }
+
   function sanitizeScope(checked) {
     var scope = checked && checked.scope;
     if (!record(scope) || typeof checked.key !== 'string') return null;
@@ -136,13 +142,17 @@
   function create(options) {
     options = options || {};
     var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core;
-    var storage = options.storage, statusReader = options.statusReader, tokenFactory = options.tokenFactory;
+    var storage = options.storage, statusReader = options.statusReader, tokenFactory = options.tokenFactory, authorize = options.authorize;
     if (!requireMethod(runtime, 'run') || !requireMethod(runtime, 'confirm') || !requireMethod(runtime, 'readVerified') ||
         !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') ||
-        !storage || typeof storage.getItem !== 'function' || typeof statusReader !== 'function') {
+        !storage || typeof storage.getItem !== 'function' || typeof statusReader !== 'function' || typeof authorize !== 'function') {
       return failure('ETP_GATEWAY_DEPENDENCY_INVALID', 'CREATE');
     }
     var pending = Object.create(null), sequence = 0;
+
+    function permitted(action) {
+      try { return authorize(action) === true; } catch (_) { return false; }
+    }
 
     function checkedScope(scope) {
       var checked;
@@ -183,7 +193,8 @@
     }
 
     async function run(request) {
-      if (!exact(request, ['scope', 'files', 'coverageDeclaration']) || !Array.isArray(request.files) || request.files.length !== 4) return failure('ETP_IMPORT_REQUEST_INVALID', 'SELECT');
+      if (!permitted('IMPORT')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
+      if (!exact(request, ['scope', 'files', 'coverageConfirmed']) || request.coverageConfirmed !== true || !Array.isArray(request.files) || request.files.length !== 4) return failure('ETP_IMPORT_REQUEST_INVALID', 'SELECT');
       var normalized = checkedScope(request.scope);
       if (!normalized) return failure('ETP_SCOPE_INVALID', 'SELECT');
       var seen = Object.create(null), files = [];
@@ -193,7 +204,7 @@
         seen[id] = true; files.push({ selectedReportId: id, file: item.file });
       }
       var result;
-      try { result = await runtime.run({ scope: normalized.checked.scope, files: files, coverageDeclaration: request.coverageDeclaration }); }
+      try { result = await runtime.run({ scope: normalized.checked.scope, files: files, coverageDeclaration: ownerCoverageDeclaration() }); }
       catch (_) { return failure('ETP_IMPORT_FAILED', 'IMPORT'); }
       if (!result || result.ok !== true) return cleanFailure(result, 'ETP_IMPORT_FAILED', 'IMPORT');
       if (result.awaitingConfirmation === true) {
@@ -208,6 +219,7 @@
     }
 
     async function confirm(request) {
+      if (!permitted('CONFIRM')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (!exact(request, ['confirmationToken']) || typeof request.confirmationToken !== 'string') return failure('ETP_CONFIRMATION_TOKEN_INVALID', 'CONFIRM');
       var life = pending[request.confirmationToken];
       if (!life) return failure('ETP_CONFIRMATION_TOKEN_INVALID', 'CONFIRM');
@@ -221,6 +233,7 @@
     }
 
     async function inspectScope(scope, request) {
+      if (!permitted('READ')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (request !== undefined && (!record(request) || Object.keys(request).some(function (key) { return key !== 'historyLimit'; }))) return failure('ETP_GATEWAY_REQUEST_INVALID', 'INSPECT');
       var limit = request && request.historyLimit !== undefined ? request.historyLimit : 5;
       if (!Number.isSafeInteger(limit) || limit < 0 || limit > MAX_HISTORY) return failure('ETP_HISTORY_LIMIT_INVALID', 'INSPECT');
@@ -235,6 +248,7 @@
     }
 
     function listScopes(request) {
+      if (!permitted('READ')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (request !== undefined && (!exact(request, ['limit']) || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > MAX_SCOPES)) return failure('ETP_SCOPE_LIMIT_INVALID', 'LIST');
       var limit = request ? request.limit : MAX_SCOPES, registry = loadRegistry(storage), scopes = [];
       Object.keys(registry).sort().some(function (key) {
@@ -249,6 +263,7 @@
     }
 
     async function readVerified(scope, request) {
+      if (!permitted('READ')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (!exact(request, ['reportId', 'fields', 'cursor', 'limit'])) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var reportId = String(request.reportId || '').toUpperCase(), fields = request.fields;
       if (REPORTS.indexOf(reportId) < 0 || !Array.isArray(fields) || !fields.length || fields.length > 64 || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > MAX_READ_ROWS) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
@@ -285,10 +300,22 @@
     };
   }
 
+  function browserAuthorization(rootValue) {
+    return function (action) {
+      var authority, snapshot;
+      try { authority = rootValue && rootValue.SaagarOwnerSession; snapshot = authority && typeof authority.read === 'function' ? authority.read() : null; } catch (_) { return false; }
+      if (!record(snapshot) || snapshot.version !== 1 || typeof snapshot.isOwner !== 'boolean' || typeof snapshot.role !== 'string') return false;
+      if (action === 'IMPORT' || action === 'CONFIRM') return snapshot.isOwner === true;
+      if (action !== 'READ') return false;
+      if (snapshot.isOwner === true) return true;
+      try { return snapshot.role === 'Store Manager' && typeof rootValue.roleCanOpen === 'function' && rootValue.roleCanOpen('etp') === true; } catch (_) { return false; }
+    };
+  }
+
   function bootstrap() {
     try {
       var lifecycle = root && root.SaagarEtpStoreLifecyclePolicy;
-      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, crypto: root && root.crypto });
+      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 

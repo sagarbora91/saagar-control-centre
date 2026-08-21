@@ -21,14 +21,29 @@ test('ETP-2 module scripts parse and expose exact scope and four-file controls',
   assert.match(html, /accept="\.xlsx,application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet"/);
 });
 
-test('validation sends only the exact gateway import contract and requires complete coverage', () => {
+test('validation sends only scope and files while trusted gateway owns coverage authority', () => {
   assert.match(html, /api\.run\(\{\s*scope: selectedScope,\s*files: REPORTS\.map/);
   assert.match(html, /return \{ selectedReportId: id, file: state\.files\[id\] \}/);
-  assert.match(html, /coverageDeclaration: declaration\(\)/);
-  assert.match(html, /confirmed: true, confirmedByRole: 'OWNER'/);
-  assert.match(html, /reports\[id\] = \{ status: 'COMPLETE' \}/);
+  assert.match(html, /coverageConfirmed: true/);
+  assert.doesNotMatch(html, /confirmedByRole|coverageDeclaration: declaration/);
   assert.match(html, /if \(!filesReady\(\)\)/);
   assert.match(html, /if \(!document\.getElementById\('etpCoverageConfirmed'\)\.checked\)/);
+});
+
+test('terminal success releases selected workbooks and coverage state', () => {
+  assert.match(html, /function resetImportFiles\(\)/);
+  assert.match(html, /state\.files\[id\] = null/);
+  assert.match(html, /input\.value = ''/);
+  assert.match(html, /etpCoverageConfirmed'\)\.checked = false/);
+  assert.ok((html.match(/resetImportFiles\(\);/g) || []).length >= 2);
+  assert.match(html, /Selected workbook bytes are used only for validation and are released after a terminal success/);
+});
+
+test('scope validation checks a real consecutive financial year and period membership', () => {
+  assert.match(html, /Number\(match\[2\]\) !== \(Number\(match\[1\]\) \+ 1\) % 100/);
+  assert.match(html, /function fy\(date\)/);
+  assert.match(html, /toISOString\(\)\.slice\(0, 10\) !== value\.periodStart/);
+  assert.match(html, /fy\(start\) === value\.financialYear && fy\(end\) === value\.financialYear/);
 });
 
 test('publication consumes only the opaque confirmation token and defaults fail closed', () => {
@@ -45,6 +60,8 @@ test('coverage/history is bounded, metadata-only and rendered without HTML injec
   assert.match(html, /api\.inspectScope\(selectedScope, \{ historyLimit: 10 \}\)/);
   assert.match(html, /currentReceipt\.coverage/);
   assert.match(html, /result\.history/);
+  assert.match(html, /function renderScopeError\(code\)/);
+  assert.doesNotMatch(html, /text\(document\.getElementById\('etpScopeList'\), 'Scope unavailable/);
   assert.doesNotMatch(html, /\.innerHTML\s*=|insertAdjacentHTML|document\.write/);
 });
 
