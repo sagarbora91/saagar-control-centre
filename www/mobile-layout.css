@@ -62,6 +62,7 @@
   html.bcc-mobile .stage-chips,
   html.bcc-mobile .view-tabs,
   html.bcc-mobile .q-tabs,
+  html.bcc-mobile .etp-tabs,
   html.bcc-mobile .mnav,
   html.bcc-mobile .cat-tabs {
     display: flex !important;
@@ -83,6 +84,7 @@
   html.bcc-mobile .stage-chips::-webkit-scrollbar,
   html.bcc-mobile .view-tabs::-webkit-scrollbar,
   html.bcc-mobile .q-tabs::-webkit-scrollbar,
+  html.bcc-mobile .etp-tabs::-webkit-scrollbar,
   html.bcc-mobile .mnav::-webkit-scrollbar,
   html.bcc-mobile .cat-tabs::-webkit-scrollbar { display: none; }
 
@@ -92,6 +94,7 @@
   html.bcc-mobile .stage-chips > *,
   html.bcc-mobile .view-tabs > *,
   html.bcc-mobile .q-tabs > *,
+  html.bcc-mobile .etp-tabs > *,
   html.bcc-mobile .mnav > *,
   html.bcc-mobile .cat-tabs > * {
     flex: 0 0 auto !important;

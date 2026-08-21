@@ -120,6 +120,13 @@
       "risk": "medium",
       "responsiveSelectors": [".tabs"],
       "reviewStates": ["festival-plan", "targets", "prep-checklist"]
+    },
+    {
+      "id": "etp",
+      "path": "modules/etp/index.html",
+      "risk": "high",
+      "responsiveSelectors": [".etp-tabs"],
+      "reviewStates": ["import", "coverage", "reconciliation", "verified"]
     }
   ]
 }

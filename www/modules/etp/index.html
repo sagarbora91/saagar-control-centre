@@ -6,6 +6,7 @@
   <script src="../../shared/mah4-runtime.js"></script>
   <script id="st-v5-iframe-shim">SaagarModuleRuntime.run('storage',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
   <script id="st-v5-safety-net">SaagarModuleRuntime.run('safety',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
+  <script id="st-v5-mobile-boot">SaagarModuleRuntime.run('mobile',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
   <link rel="stylesheet" href="../../shared/module-mobile-common.css">
   <link rel="stylesheet" href="../../mobile-layout.css">
   <script src="../../app-i18n.js"></script>
@@ -318,6 +319,13 @@
       refreshScopes();
     })();
   </script>
+
+  <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
+  <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+  <div id="st-v5-next-chips"></div>
+  <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
+
+  <script id="st-v5-module-audit-bridge">SaagarModuleRuntime.run('audit',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
   <script id="mah4-stage-b-runtime">SaagarMah4Runtime.bootModule({moduleId:'etp'});</script>
 </body>
 </html>
