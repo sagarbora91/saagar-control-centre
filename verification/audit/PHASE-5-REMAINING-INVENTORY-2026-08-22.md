@@ -77,8 +77,8 @@ These are not passes and must survive into the final release decision.
 ## Progress statement
 
 The ETP implementation and repository-controlled capability work are complete.
-Against the 15-item consolidated Phase 5 checklist, 3 items are fully closed
-(`5B-1`, `5B-2`, `5D-1`) and 12 remain. Most remaining items are evidence or
+Against the 16-item consolidated Phase 5 checklist, 3 items are fully closed
+(`5B-1`, `5B-2`, `5D-1`) and 13 remain. Most remaining items are evidence or
 external-authority work, not unfinished ETP feature engineering.
 
 ## No-repeat boundary
@@ -89,4 +89,3 @@ external-authority work, not unfinished ETP feature engineering.
   `08734dfb`; the localization import changed product identity.
 - Do not build the final APK before the visual and language evidence freezes.
 - Do not represent synthetic fixtures as production ETP publication.
-
