@@ -119,8 +119,7 @@
     "carriedGateIds": [
       "GATE-ETP-PHYSICAL",
       "GATE-ETP-INTERRUPTION",
-      "GATE-ETP-PRODUCTION",
-      "GATE-ETP-EXCEPTIONS"
+      "GATE-ETP-PRODUCTION"
     ],
     "gatesClosedButNeedingRebinding": 1
   },
@@ -159,13 +158,18 @@
       "id": "GATE-NATIVE-LANGUAGE",
       "state": "closed",
       "decision": "approve",
-      "closedAt": "2026-08-22T20:06:30+05:30",
+      "closedAt": "2026-08-22T21:43:31+05:30",
       "authority": {
         "kind": "fluent-marathi-hindi-reviewer",
         "identity": "Sagar (sagarbora91)"
       },
-      "identityBinding": "Rebound to the current Phase 5 identity: product commit c809d04, fingerprint 3527503a, audit tooling aae4310. 78 rendered cells including 52 Marathi/Hindi, 2,463 target and 6,303 contrast measurements, zero violations. Ed25519 signature independently verified valid and authorized.",
+      "identityBinding": "Rebound by Sagar's explicit direction to corrected product commit a104f5f, product fingerprint 4e42cf23, WWW tree 03a766bc and seeded APK 90dda701. The prior signed 78-cell evidence remains historical signature-valid evidence; all wording, markup and layout/style inputs are byte-identical, and the only changed WWW file is non-visual DAT-02 clock instrumentation in storage-core.js. This is an explicit bounded rebind, not a claim that a new rendered capture was signed.",
       "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
         {
           "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
           "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
@@ -188,13 +192,28 @@
       "id": "GATE-UPDATE-PHYSICAL",
       "state": "closed",
       "decision": "approve",
-      "closedAt": "2026-08-22T21:00:31+05:30",
+      "closedAt": "2026-08-22T21:43:31+05:30",
       "authority": {
         "kind": "business-owner-and-physical-device-acceptor",
         "identity": "Sagar (sagarbora91)"
       },
-      "identityBinding": "Samsung SM-T875, Android 13 / API 33, serial R52N807PTTE. adb install -r of APK 30922dad. firstInstallTime held at 18:02:33 while lastUpdateTime advanced to 20:18:08, proving update rather than fresh install; userId stayed 10257; bcc.dek and the 7.9 MB QMS archive hashes unchanged before, after and post-relaunch; WebView storage unchanged at 386 KB; MainActivity focused with zero fatals, ANRs or WebView errors; installed base.apk hash equals the built artifact.",
+      "identityBinding": "Rebound to corrected APK 90dda701 on Samsung SM-T875, Android 13 / API 33, serial R52N807PTTE. adb install -r advanced lastUpdateTime to 21:24:22 while firstInstallTime remained 18:02:33 and userId remained 10257; bcc.dek and the 7.9 MB QMS archive hashes remained unchanged; installed base.apk matched the corrected artifact exactly. Two DAT-02 runs and two Expense open/close cycles completed without fatal exception or ANR.",
       "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
+        {
+          "path": "verification/audit/PHASE-5-DAT02-SM-T875-2026-08-22.json",
+          "sha256": "9791c8e11d1fd3f1d3b617c3f8334e4cc1318119c2d7093da71bc05de1bf6b9b",
+          "result": "pass-on-this-device-and-demo-profile"
+        },
+        {
+          "path": "verification/audit/PHASE-5-EXPENSE-MEMORY-DIAGNOSTIC-SM-T875-2026-08-22.json",
+          "sha256": "7e01a033ff3472321dc5617163d5bef03389ef67cfe8f7643c47926a1d081507",
+          "result": "diagnostic-pass"
+        },
         {
           "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
           "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
@@ -307,13 +326,18 @@
       "id": "GATE-ETP-EXCEPTIONS",
       "state": "closed",
       "decision": "approve",
-      "closedAt": "2026-08-22T20:06:30+05:30",
+      "closedAt": "2026-08-22T21:43:31+05:30",
       "authority": {
         "kind": "business-owner",
         "identity": "Sagar (sagarbora91)"
       },
-      "identityBinding": "Bound to etp-verified-presentation.js 031fe0d9, etp-module-gateway.js 50105e28 and modules/etp/index.html c3e0669a. All three recomputed against the current working tree and matching.",
+      "identityBinding": "Rebound by Sagar's explicit direction to product commit a104f5f and fingerprint 4e42cf23. The approved presentation inputs remain byte-identical: etp-verified-presentation.js 031fe0d9, etp-module-gateway.js 50105e28 and modules/etp/index.html c3e0669a.",
       "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
         {
           "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
           "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
@@ -562,15 +586,15 @@
       "apkSha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287"
     },
     "currentPhase5": {
-      "productCommit": "c809d04e4b67c6239218d5707908ac64f25fc94a",
-      "productFingerprintSha256": "3527503aa332c01f5c1c0ecb669f36a2d79a930f1fe0e106054db527067823a2",
-      "wwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
+      "productCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9",
+      "productFingerprintSha256": "4e42cf230b9650a7e0f8ad30633dbf639d2158215d99232dfe14f0ab90716667",
+      "wwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5",
       "seededApkFilename": "SaagarCC-C1-DemoData-2Years-v2.9.apk",
-      "seededApkSha256": "30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd",
+      "seededApkSha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
       "seededApkBytes": 7218076,
       "signingClass": "debug-signed seeded test candidate, not a production release"
     },
-    "consequence": "Gate rows closed against the 4C.1 identity are historically valid but are NOT bound to the artifact that will ship. They require rebinding before release."
+    "consequence": "MAH3-ETP-VISUAL-BASELINE, GATE-NATIVE-LANGUAGE, GATE-ETP-EXCEPTIONS and GATE-UPDATE-PHYSICAL were explicitly rebound to a104f5f on 2026-08-22. GATE-UPDATE-API23 still requires rerunning against the eventual shipping artifact, and production signing will create a later artifact identity."
   },
   "phase5Progress": {
     "recordedAt": "2026-08-22",
@@ -584,7 +608,9 @@
       "MAH-3 contract honestly expanded 168 to 180 cases",
       "12 ETP visual cases captured in a visible browser",
       "78-cell rendered-language matrix captured and Ed25519-signed, signature verified valid",
-      "Physical SM-T875 session: cold launch, background/resume, encrypted store with 6,558 records, all four ETP surfaces opened, zero crash or fatal error"
+      "Physical SM-T875 session: cold launch, background/resume, encrypted store with 6,558 records, all four ETP surfaces opened, zero crash or fatal error",
+      "Corrected a104f5f APK installed update-in-place; DAT-02 accepted twice; Expense memory diagnostic completed twice with -7.61% final retained PSS",
+      "Owner explicitly rebound MAH-3 ETP visuals, native-language, ETP exception presentation and physical update acceptance to a104f5f"
     ],
     "focusedSuiteSweep": "438 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8",
     "awaitingOwnerReview": [],
@@ -605,7 +631,13 @@
     "deviceSession": {
       "at": "2026-08-22",
       "device": "SM-T875 / Android 13 / API 33",
-      "result": "Install-replace verified with full data preservation and clean relaunch; owner accepted. The seeded APK was also rebuilt from a clean tree and proved byte-identical, so the seeded build is reproducible."
+      "result": "Install-replace verified with full data preservation and clean relaunch for the original candidate, then repeated for corrected APK 90dda701 with preserved userId, DEK and archive. Owner explicitly rebound physical acceptance to a104f5f."
+    },
+    "identityRebind": {
+      "at": "2026-08-22T21:43:31+05:30",
+      "approval": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+      "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+      "result": "MAH3-ETP-VISUAL-BASELINE, GATE-NATIVE-LANGUAGE, GATE-ETP-EXCEPTIONS and GATE-UPDATE-PHYSICAL rebound; no visual recapture or device-test repetition required"
     }
   },
   "reconciledAt": "2026-08-22",

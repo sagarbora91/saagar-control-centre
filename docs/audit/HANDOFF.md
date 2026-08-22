@@ -13,8 +13,9 @@ has a new bounded product correction at
 The correction changes DAT-02 timing instrumentation only; it does not change
 storage semantics or UI wording. MAH-3/MAH-4 governed profiles were regenerated
 and the focused, modular and security sweeps are green. The earlier owner
-approvals remain valid historical evidence for `c809d04`, but their exact
-identity binding must be reconciled to this new product identity before release.
+approvals remain valid historical evidence for `c809d04` and were explicitly
+rebound by Sagar to corrected commit `a104f5f` on 2026-08-22; see the rebind
+record below.
 
 ### Completed repository-controlled Phase 5 work
 
@@ -99,7 +100,33 @@ A10-05 remains formally `unmeasured`: `dumpsys meminfo` is not the compatible,
 signed, source-bound producer required by the audit runner. No further external
 ADB memory repetition is pending on this SM-T875.
 
-### Owner approvals and device acceptance — `c809d04` identity
+### Approval rebind to corrected identity — complete
+
+Sagar explicitly directed: `lets Rebind approvals to corrected commit a104f5f`.
+The bounded delta was verified before applying that direction. The only changed
+shipped WWW file is `www/storage-core.js`, whose change is confined to DAT-02
+clock instrumentation. The approved wording, ETP markup, presentation logic and
+layout/style inputs are byte-identical. The corrected APK was also installed and
+tested update-in-place on the same named physical device.
+
+Approval record:
+`verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json`.
+
+| Approval/gate | Corrected result |
+|---|---|
+| MAH-3 ETP visual cases 169-180 | **Rebound approved** to `a104f5f`; regenerated profile SHA-256 `905b6f93...` |
+| `GATE-NATIVE-LANGUAGE` | **Rebound closed**; prior signed capture retained as historical evidence, not relabeled as a new signature |
+| `GATE-ETP-EXCEPTIONS` | **Rebound closed**; all three approved presentation inputs remain byte-identical |
+| `GATE-UPDATE-PHYSICAL` | **Rebound closed** to corrected APK `90dda701...` and the SM-T875 update/diagnostic evidence |
+
+Corrected identity: product fingerprint SHA-256
+`4e42cf230b9650a7e0f8ad30633dbf639d2158215d99232dfe14f0ab90716667`,
+WWW tree SHA-256 `03a766bc...`, APK SHA-256 `90dda701...`.
+`GATE-UPDATE-API23` is not part of this rebind and still needs the eventual
+shipping artifact. A10-04/A10-05 remain carried audit checks despite healthy
+external diagnostics.
+
+### Original owner approvals and device acceptance — `c809d04` identity
 
 All three outstanding owner-review packages were approved, and physical update
 preservation was proved and accepted. Every hash cited by every package was
@@ -162,12 +189,12 @@ because no signing credentials are set. No release artifact was produced and the
 tree stayed clean. Without this fix that script would have failed on a host quirk
 at the exact moment the signing custodian ran it.
 
-#### Register standing before the `a104f5f` DAT-02 correction
+#### Current register standing after the `a104f5f` rebind
 
-The last reconciled register recorded **5 closed / 2 pending / 3 carried gates /
-3 carried checks**. Twelve evidence hashes verified and that register validated
-against its own policy for the pre-correction identity. Do not quote this count as
-a newly rebound `a104f5f` register until remaining item 7 below is complete.
+The reconciled register remains **5 closed / 2 pending / 3 carried gates / 3
+carried checks**. Its four applicable approvals are now explicitly bound to
+`a104f5f`; only `GATE-UPDATE-API23` retains `rebindingRequired` for the eventual
+shipping artifact.
 
 | State | Gates |
 |---|---|
@@ -246,11 +273,10 @@ row. This is now the only unnamed role in the programme.
 6. Record a named staff UAT tester and obtain their identity-bound decision. The
    privacy/legal reviewer is now named (owner self-review, 2026-08-22); the staff
    testers are still **UNFILLED**.
-7. Reconcile the earlier identity-bound visual/language/exception approvals and
-   physical-update acceptance to corrected product commit `a104f5f`. Because the
-   change is non-visual and storage-semantics-neutral this should be a bounded
-   identity rebind, but it must be explicit; do not silently reuse `c809d04`
-   approvals for a changed artifact.
+7. ~~Reconcile the earlier identity-bound visual/language/exception approvals and
+   physical-update acceptance to corrected product commit `a104f5f`.~~ **DONE
+   2026-08-22** through the explicit bounded rebind approval; no recapture or
+   device-test repetition remains for these four approvals.
 8. Build the production-signed artifact using custodian-held credentials, record
    the named signing custodian, and install/launch the exact signed APK. The
    release approval will be made by the custodian himself: the independence
