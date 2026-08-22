@@ -80,8 +80,8 @@
   },
   "summary": {
     "gateTotal": 10,
-    "gatesClosed": 3,
-    "gatesOpen": 7,
+    "gatesClosed": 4,
+    "gatesOpen": 6,
     "allGatesClosed": false,
     "carriedOpenExceptionCount": 3,
     "carriedOpenExceptionIds": [
@@ -114,15 +114,15 @@
     "findingCount": 1,
     "mandatoryUnmeasuredCount": 2,
     "gatesPendingExternalAuthority": 3,
-    "gatesCarriedAsException": 4,
-    "carriedExceptionTotal": 7,
+    "gatesCarriedAsException": 3,
+    "carriedExceptionTotal": 6,
     "carriedGateIds": [
       "GATE-ETP-PHYSICAL",
       "GATE-ETP-INTERRUPTION",
       "GATE-ETP-PRODUCTION",
       "GATE-ETP-EXCEPTIONS"
     ],
-    "gatesClosedButNeedingRebinding": 2
+    "gatesClosedButNeedingRebinding": 1
   },
   "gates": [
     {
@@ -159,18 +159,22 @@
       "id": "GATE-NATIVE-LANGUAGE",
       "state": "closed",
       "decision": "approve",
-      "closedAt": "2026-08-17T21:24:58+05:30",
+      "closedAt": "2026-08-22T20:06:30+05:30",
       "authority": {
         "kind": "fluent-marathi-hindi-reviewer",
         "identity": "Sagar (sagarbora91)"
       },
-      "identityBinding": "The approval names product commit ad2d643 and product fingerprint 08734dfb, which are exactly the frozen Phase 4C.1 identity of this register. All 72 rendered cells, including 48 Marathi and Hindi cells, measured 2,394 targets and 6,105 contrast samples with zero target, contrast or browser-error violations; A6-04 and A6-05 pass.",
+      "identityBinding": "Rebound to the current Phase 5 identity: product commit c809d04, fingerprint 3527503a, audit tooling aae4310. 78 rendered cells including 52 Marathi/Hindi, 2,463 target and 6,303 contrast measurements, zero violations. Ed25519 signature independently verified valid and authorized.",
       "evidence": [
         {
-          "path": "verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json",
-          "sha256": "9e290f1313790f274ba450f1aa8d343858a3ebfd06d4c0586335f5020b82f458",
-          "committedAt": "2026-08-17T21:51:31+05:30",
+          "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+          "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
           "result": "approve"
+        },
+        {
+          "path": "verification/audit/attested/rendered-ui/phase5c-a6-rendered-c809d04-aae4310-20260822.json",
+          "sha256": "6d67109e8e2a20f2b7aa17b1ae81c9c0397b4c8a4b2638524bce6d3fd9ff303d",
+          "result": "signature-valid"
         }
       ],
       "nonClaims": [
@@ -178,12 +182,7 @@
         "Not staff UAT or legal approval",
         "Does not close A10-01, A10-04 or A10-05",
         "Not production signing or release approval"
-      ],
-      "rebindingRequired": {
-        "reason": "Closed against the superseded Phase 4C.1 identity; see identityMigration.",
-        "boundTo": "product fingerprint 08734dfb, superseded by the localization import",
-        "status": "A fresh 78-cell signed rendered matrix exists for the current identity and is AWAITING owner fluent approval."
-      }
+      ]
     },
     {
       "id": "GATE-UPDATE-PHYSICAL",
@@ -292,32 +291,28 @@
     },
     {
       "id": "GATE-ETP-EXCEPTIONS",
-      "state": "open",
-      "decision": "open-owner-accepted-exception",
-      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
-      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
-      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
-      "riskAccepted": "The owner has not reviewed and accepted the R003 and R013 exception screens. The residual risk is intelligibility only, and it is the smallest of the four: the presentation is bounded to exactly two rows by contract, counts above 250,000 or statuses outside PASS and FAIL are rejected rather than rendered, and the card cannot alter revenue or sales totals by construction because REC-002 reconciles netValue against netAmount while the R003 and R013 rules emit only a status and a count.",
-      "doesNotClaim": [
-        "This is not a pass",
-        "No owner review of the exception presentation was recorded for this identity",
-        "A rendered review surface was produced on 2026-08-21 but was not signed"
-      ],
-      "requiredAuthority": "Business owner Sagar (sagarbora91)",
-      "requiredEvidence": [
-        "Screen evidence and hashes bound to the frozen identity, with the reviewed surface named",
-        "R013 attribution exceptions remain visible and intelligible",
-        "R003 discount exceptions remain visible and intelligible",
-        "Owner confirmation that neither alters revenue or sales totals"
-      ],
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-22T20:06:30+05:30",
+      "authority": {
+        "kind": "business-owner",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Bound to etp-verified-presentation.js 031fe0d9, etp-module-gateway.js 50105e28 and modules/etp/index.html c3e0669a. All three recomputed against the current working tree and matching.",
       "evidence": [
         {
-          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
-          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
-          "note": "Supporting only. The bounded non-revenue presentation contract is separately proven by npm run test:etp; the owner acceptance step is what remains."
+          "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+          "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
+          "result": "approve"
         }
       ],
-      "reopenCondition": "Closing requires only an owner review of the exception card with the reviewed surface named. This needs no device and no production data, and is the cheapest of the four to close."
+      "nonClaims": [
+        "Does not approve source workbooks",
+        "Does not approve PAYMENTTYPE25 classification",
+        "Does not close GATE-ETP-PRODUCTION",
+        "Not staff UAT, production signing or release approval"
+      ],
+      "previousState": "Was carried as an owner-accepted exception pending this review; now closed on evidence."
     },
     {
       "id": "GATE-PAYMENTTYPE25",
@@ -500,7 +495,7 @@
     "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
     "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
   ],
-  "honestStatusSentence": "Phase 5 repository-controlled work is complete and the focused suite sweep is green at 438 tests. Three owner-review packages are captured and awaiting judgement. The product identity has moved past the Phase 4C.1 freeze, so the two previously-closed gates need rebinding to the artifact that will ship. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
+  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 438 tests, and all three owner-review packages are approved. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
   "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
   "etpHold": {
     "decidedAt": "2026-08-21",
@@ -563,31 +558,21 @@
       "Physical SM-T875 session: cold launch, background/resume, encrypted store with 6,558 records, all four ETP surfaces opened, zero crash or fatal error"
     ],
     "focusedSuiteSweep": "438 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8",
-    "awaitingOwnerReview": [
-      {
-        "path": "verification/audit/MAH3-ETP-VISUAL-OWNER-REVIEW-2026-08-22.md",
-        "sha256": "ab502fe3e13c8f5bcd324e18d2e91b707f57c984744681af5a37754e42e86dc9",
-        "state": "AWAITING_OWNER_REVIEW",
-        "note": "12 ETP visual cases 169-180. Screenshots captured externally; all 12 file hashes and the manifest hash independently verified. Capture is not a pass."
-      },
-      {
-        "path": "verification/audit/PHASE-5C-RENDERED-LANGUAGE-OWNER-REVIEW-2026-08-22.md",
-        "sha256": "0228fddb8ed2465d73a4bddcf5b104f2162c97bcf6da7e711e7976695a1b897e",
-        "state": "AWAITING_OWNER_REVIEW",
-        "note": "78 cells, 2,463 target and 6,303 contrast measurements, zero violations, signature valid. Needs fluent Marathi and Hindi approval."
-      },
-      {
-        "path": "verification/audit/ETP-R003-R013-EXCEPTION-OWNER-REVIEW-2026-08-22.md",
-        "sha256": "880da292ec91364a0aa0feda2ecaaf123b0aeb00fdbb9efd3351c77aac80da20",
-        "state": "AWAITING_OWNER_REVIEW",
-        "note": "Bounded R003/R013 exception presentation rebound to the corrected ETP identity."
-      }
-    ],
+    "awaitingOwnerReview": [],
     "notProven": [
       "The SM-T875 session was a fresh install (firstInstallTime equals lastUpdateTime), so it does NOT prove install-replace or update preservation. GATE-UPDATE-PHYSICAL stays open.",
       "The real four-report session was skipped by owner direction. GATE-ETP-PRODUCTION is deferred, not passed.",
       "No production signing exists; the current artifact is debug-signed."
-    ]
+    ],
+    "ownerReviewsCompleted": {
+      "at": "2026-08-22",
+      "packages": [
+        "MAH-3 ETP visual cases 169-180",
+        "78-cell rendered-language matrix",
+        "R003/R013 exception presentation"
+      ],
+      "effect": "All three approved. The MAH-3 visual baseline is complete at 180/180, GATE-NATIVE-LANGUAGE is rebound to the current identity, and GATE-ETP-EXCEPTIONS moves from carried exception to closed."
+    }
   },
   "reconciledAt": "2026-08-22"
 }

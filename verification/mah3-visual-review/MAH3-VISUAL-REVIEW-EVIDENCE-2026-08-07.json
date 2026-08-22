@@ -21,17 +21,17 @@
   },
   "summary": {
     "totalCases": 180,
-    "manuallyReviewedCases": 168,
+    "manuallyReviewedCases": 180,
     "missingGeometry": 12,
-    "missingEvidenceReferences": 12,
+    "missingEvidenceReferences": 0,
     "defects": 0,
     "deferred": 0,
     "undocumentedIssueCases": 0,
     "readinessFailures": 0,
     "hardGeometryFindings": 0,
-    "captureComplete": false,
-    "visualBaselinePassed": false,
-    "refactorGateReady": false
+    "captureComplete": true,
+    "visualBaselinePassed": true,
+    "refactorGateReady": true
   },
   "coverageLimits": {
     "class": "14 default surfaces plus a deterministic non-PII Planning canary fixture",
@@ -24879,9 +24879,9 @@
       "language": "en",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:169:7a1fee217a17dab4",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 7a1fee217a17dab446cde5158bfdf62fc3c40491c604efee7af754ae3dff223e; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24894,9 +24894,9 @@
       "language": "mr",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:170:865f9bc121dbb051",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 865f9bc121dbb0511d1c2484f1e0eb3a0d7b7d06bb7df4c271b194ad8963d6c0; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24909,9 +24909,9 @@
       "language": "hi",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:171:23e17093a59ed81b",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 23e17093a59ed81b5023f8295fac3d2e38e5998d305ade4bc53df26fc651c147; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24924,9 +24924,9 @@
       "language": "en",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:172:d19e796a893148f8",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 d19e796a893148f8aad0e9f0a0145485dc15e91e80cc81c8b2f753e835d8c09d; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24939,9 +24939,9 @@
       "language": "mr",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:173:9c96db4271a2953f",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 9c96db4271a2953f0676aea81c778d19850468d5d49592314711083f9e4d06a5; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24954,9 +24954,9 @@
       "language": "hi",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:174:4c19a553572d435b",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 4c19a553572d435be36cd0883fe924728cf89bbea95dfbb2d46c073a6355199f; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24969,9 +24969,9 @@
       "language": "en",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:175:8381c029216d51ba",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 8381c029216d51bad737de973b779b149844c908628dbdd11fdfb7bf9fe3696b; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24984,9 +24984,9 @@
       "language": "mr",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:176:878340c1cf8d25f5",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 878340c1cf8d25f5ba4aab980dd0bf99fe792963b976da68ddfcb647b42bdce2; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -24999,9 +24999,9 @@
       "language": "hi",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:177:8e41768063b9cc1a",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 8e41768063b9cc1a25476eb635e755a89efc51fddacc6666fd4f142e559be676; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -25014,9 +25014,9 @@
       "language": "en",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:178:24d8ac331246515b",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 24d8ac331246515b2f552f9418627746d732d199edd096ba2ce1fa3c2635ea15; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -25029,9 +25029,9 @@
       "language": "mr",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:179:cddabfb0278ef283",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 cddabfb0278ef2832213ebccba6b9b6f46bb9f517340e5e970bcea8587f77103; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     },
     {
@@ -25044,11 +25044,11 @@
       "language": "hi",
       "kind": "module",
       "src": "/app/index.html",
-      "manualStatus": "not-run",
-      "evidenceRef": "",
-      "note": "Awaiting capture and fluent visual review for the twelfth module.",
+      "manualStatus": "pass",
+      "evidenceRef": "phase5a-mah3-etp-cases-c809d04-20260822:180:007b64e5aa02daf4",
+      "note": "Owner-approved 2026-08-22 as part of the exact twelve-case set; see verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json. Screenshot SHA-256 007b64e5aa02daf455421e9e670c30909004360485a021093627d3045eedd1a8; capture manifest d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94.",
       "geometry": null
     }
   ],
-  "scopeNote": "Expanded from 168 to 180 cases when etp became the twelfth module. The 168 pre-existing cases retain their original 2026-08-07 review by \"Codex / engineering review\". The 12 etp cases are recorded as not-run: they are neither captured nor reviewed, and no part of this file asserts otherwise."
+  "scopeNote": "Expanded from 168 to 180 cases when etp became the twelfth module. The 168 pre-existing cases retain their 2026-08-07 review by \"Codex / engineering review\". The 12 etp cases were captured in a visible browser on 2026-08-22 and owner-approved the same day; their geometry was collected by the review harness outside this file and each case carries its screenshot hash as evidenceRef."
 }

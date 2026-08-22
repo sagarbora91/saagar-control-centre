@@ -7,7 +7,7 @@
     "head": "7ae0e0c8421d82c9bd4937a4684c0f8b25ab34c8",
     "workingTree": "intentionally-dirty",
     "runtimeRefactorApplied": true,
-    "visualBaselinesCaptured": false,
+    "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false,
     "stageBIdentityRebound": true,
@@ -218,27 +218,13 @@
   },
   "review": {
     "runnerReady": true,
-    "reviewStatus": "incomplete-pending-etp-capture",
+    "reviewStatus": "complete-passed",
     "geometryIsAdvisory": true,
-    "visualBaselinesCaptured": false,
+    "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false,
-    "runtimeRefactorGate": "NOT satisfied: the matrix expanded to 180 cases when etp became the twelfth module. 168 cases retain their 2026-08-07 review; 12 etp cases are uncaptured and unreviewed. Re-satisfying this gate needs those captures plus a fresh owner confirmation.",
+    "runtimeRefactorGate": "satisfied by identity-bound 180-case evidence and owner confirmation: 168 cases reviewed 2026-08-07 and the 12 etp cases reviewed 2026-08-22",
     "evidencePath": "verification/mah3-visual-review/MAH3-VISUAL-REVIEW-EVIDENCE-2026-08-07.json",
-    "evidenceSha256": "c5d470a85d299729eb82035adc2babf539cd5147e1459f77855d237eadfd13cb",
-    "pendingCaseIds": [
-      "etp__phone-360__en",
-      "etp__phone-360__mr",
-      "etp__phone-360__hi",
-      "etp__phone-412__en",
-      "etp__phone-412__mr",
-      "etp__phone-412__hi",
-      "etp__compact-800__en",
-      "etp__compact-800__mr",
-      "etp__compact-800__hi",
-      "etp__desktop-1365__en",
-      "etp__desktop-1365__mr",
-      "etp__desktop-1365__hi"
-    ]
+    "evidenceSha256": "c34a623190db688f869c8e07462957de5eec35d0d88a668abb928208faa38305"
   }
 }

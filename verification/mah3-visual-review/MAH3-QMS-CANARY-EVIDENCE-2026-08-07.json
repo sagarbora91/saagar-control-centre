@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "evidenceId": "mah3-qms-runtime-canary-2026-08-07",
   "reviewer": "Codex / engineering review",
-  "profileSha256": "f39b6478f37f3eee72a08538c5fe4b22b7f2313a421f7cc2c93be78619fcae5d",
+  "profileSha256": "c5fd72b46a60854e2d6489c371d3f25a295fd8bd7a8a84a27943278feb0d8faf",
   "wwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
   "qmsSha256": "2b9f99c75c2323ccf88da03e520cd5327142457ad5740742a090e74eecd41dfb",
   "runtimeSha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",

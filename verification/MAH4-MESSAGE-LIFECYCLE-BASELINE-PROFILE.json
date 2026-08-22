@@ -3,8 +3,8 @@
   "profileId": "mah4-message-lifecycle-stage-a-2026-08-07",
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
-    "mah3ProfileBytes": 7957,
-    "mah3ProfileSha256": "f39b6478f37f3eee72a08538c5fe4b22b7f2313a421f7cc2c93be78619fcae5d",
+    "mah3ProfileBytes": 7452,
+    "mah3ProfileSha256": "c5fd72b46a60854e2d6489c371d3f25a295fd8bd7a8a84a27943278feb0d8faf",
     "mah3TreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
     "currentWwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
     "currentWwwFileCount": 103,
@@ -1414,9 +1414,9 @@
     ]
   },
   "gates": {
-    "mah3RenderedCasesReviewed": 0,
+    "mah3RenderedCasesReviewed": 180,
     "mah3RenderedCaseTotal": 180,
-    "refactorGateReady": false,
+    "refactorGateReady": true,
     "planningRuntimeWired": true,
     "dsrCanaryPassed": true,
     "qmsCanaryPassed": true,

@@ -41,7 +41,7 @@ test('MAH-3 baseline is bound to the exact dirty www tree and critical files', (
     treeSha256: actual.treeSha256
   });
   assert.equal(profile.baseline.runtimeRefactorApplied, true);
-  assert.equal(profile.baseline.visualBaselinesCaptured, false);
+  assert.equal(profile.baseline.visualBaselinesCaptured, true);
   assert.equal(profile.baseline.physicalDeviceAccepted, false);
   assert.equal(profile.baseline.nativeLanguageAccepted, false);
 });

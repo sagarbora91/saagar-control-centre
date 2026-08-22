@@ -228,8 +228,8 @@ test('MAH-4 records observable mount facts and keeps implementation gates honest
   assert.equal(inventory.mountLifecycle.manifestContainsHtmlB64, false);
   assert.equal(inventory.mountLifecycle.allProposedControlTypesObserved, true);
   assert.deepEqual(inventory.protocol.proposedControlTypesPresent, ['ST_INIT', 'ST_READY', 'ST_ERROR', 'ST_DISPOSE', 'ST_DISPOSED']);
-  assert.equal(inventory.gates.mah3RenderedCasesReviewed, 0);
-  assert.equal(inventory.gates.refactorGateReady, false);
+  assert.equal(inventory.gates.mah3RenderedCasesReviewed, 180);
+  assert.equal(inventory.gates.refactorGateReady, true);
   assert.equal(inventory.gates.planningRuntimeWired, true);
   assert.equal(inventory.gates.dsrCanaryPassed, true);
   assert.equal(inventory.gates.qmsCanaryPassed, true);
