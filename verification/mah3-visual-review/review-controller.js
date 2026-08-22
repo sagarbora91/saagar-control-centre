@@ -677,7 +677,7 @@
     if (!response.ok) throw new Error('Baseline profile request failed: ' + response.status);
     model = await response.json();
     cases = model.cases;
-    if (!Array.isArray(cases) || cases.length !== 168) throw new Error('Evidence matrix is incomplete');
+    if (!Array.isArray(cases) || cases.length !== 180) throw new Error('Evidence matrix is incomplete');
     byId('identity').textContent = model.profile.profileId + ' · profile ' + model.profileSha256.slice(0, 12) + '… · www ' + model.fingerprint.treeSha256.slice(0, 12) + '… · runner ' + model.runnerFingerprint.treeSha256.slice(0, 12) + '…';
     cases.forEach(function (item, index) {
       var option = document.createElement('option');

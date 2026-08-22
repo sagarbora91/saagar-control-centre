@@ -193,3 +193,81 @@ updated instead.
 - 4 x MAH-3 — needs 12 new `etp` visual cases captured plus fresh owner confirmation. The count must
   never be raised ahead of the evidence.
 - 3 x capability ledger — needs a new owner capability approval for the regenerated delta.
+
+---
+
+# Update — MAH-3 matrix expanded to 180; capture attempted and BLOCKED
+
+## Blocker: the capture harness cannot complete a case on the current shell
+
+The 12 `etp` cases were **not captured**. The MAH-3 review harness loads a case by booting the shell
+in an iframe and calling `shellWindow.openModule(surface)`. On the current product the shell stops at
+the **role gate** with no session:
+
+```
+role: null            roleGateVisible: true
+moduleFrameSrc: "modules/etp/index.html"   moduleFrameVisible: true
+```
+
+The ETP module itself renders correctly inside the frame ("Retail ETP Reports" is visible), but one
+of the harness readiness checks is `blocking-shell-overlays`, and the role gate is exactly that, so
+readiness never passes and geometry never runs. `Re-run geometry` stays on `Not run`.
+
+**This is not specific to `etp`.** The harness predates the role-switch gate added in V6 Wave 6, so
+**no MAH-3 case can be captured on the current shell** until the harness can establish a session.
+That affects any future visual capture, not just the twelfth module.
+
+Geometry is advisory in any case; the gate is a human visual review, which cannot be automated.
+
+## What was done, and why the matrix moved anyway
+
+The contract was raised 168 to 180 **together with** honest bookkeeping, never ahead of it:
+
+| Change | File |
+|---|---|
+| `etp` added to the surface list; `minimumVisualCases` 168 to 180 | `MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json`, `MH1-MODULAR-PROTECTION-PROFILE.json` |
+| contract constant and message 168 to 180 | `scripts/mah3-visual-review-server.mjs` |
+| matrix guard 168 to 180 | `verification/mah3-visual-review/review-controller.js` |
+| 12 `etp` case rows added, `manualStatus: "not-run"`, `geometry: null` | `MAH3-VISUAL-REVIEW-EVIDENCE-2026-08-07.json` |
+| case total and gate 168 to 180 | `scripts/lib/mah4-contract-source.mjs` |
+
+## Every "captured" claim now reports the truth
+
+Raising the matrix while 12 cases are uncaptured briefly made the repository assert a complete
+baseline that did not exist. That was corrected in the same change:
+
+| Claim | Was | Now |
+|---|---|---|
+| `review.visualBaselinesCaptured` | `true` | **`false`** |
+| `baseline.visualBaselinesCaptured` | `true` | **`false`** |
+| `review.reviewStatus` | `complete-passed` | **`incomplete-pending-etp-capture`** |
+| `review.runtimeRefactorGate` | "satisfied by identity-bound 168-case evidence" | **states the gate is NOT satisfied and names what is missing** |
+| evidence `summary.captureComplete` | `true` | **`false`** |
+| evidence `summary.visualBaselinePassed` | `true` | **`false`** |
+| MAH-4 `gates.refactorGateReady` | `true` | **`false`** |
+| MAH-4 `gates.mah3RenderedCasesReviewed` | 168 | **0** |
+
+`review.pendingCaseIds` lists the 12 by id. The 168 pre-existing cases keep their original
+2026-08-07 review by "Codex / engineering review"; that attribution was not touched, and no reviewer
+identity was written for the new cases.
+
+## Suite state
+
+| Suite | Result |
+|---|---|
+| `test:mah3` | **19/19** |
+| `test:mah4` | **46/46** |
+| `test:modular` | **83 pass, 3 fail** |
+| `test:etp` / `test:manifest` / `test:language` | 155/155, 8/8, 10/10 |
+
+`test:modular` improved 74/12 to 83/3. **The only remaining failures are the three capability-ledger
+checks, which need a new owner capability approval.**
+
+## To actually capture the 12
+
+1. Give the harness a way past the role gate — a seeded session on the loopback origin, or a
+   harness-only bypass that is not shipped.
+2. Run `npm run review:mah3`, open `http://127.0.0.1:8766/`, select cases 169 to 180.
+3. A **fluent reviewer** marks each Pass or Defect with an evidence reference.
+4. Flip `visualBaselinesCaptured` back to `true` only when all 180 are reviewed, and refresh the
+   dependent gates and constants.

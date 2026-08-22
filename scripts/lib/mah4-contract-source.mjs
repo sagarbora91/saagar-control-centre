@@ -1152,8 +1152,8 @@ export function createMah4Inventory(root = defaultRoot) {
     },
     gates: {
       mah3RenderedCasesReviewed: renderedCasesReviewed,
-      mah3RenderedCaseTotal: 168,
-      refactorGateReady: renderedCasesReviewed === 168 && dsrCanaryPassed && qmsCanaryPassed,
+      mah3RenderedCaseTotal: 180,
+      refactorGateReady: renderedCasesReviewed === 180 && dsrCanaryPassed && qmsCanaryPassed,
       planningRuntimeWired,
       dsrCanaryPassed,
       qmsCanaryPassed,

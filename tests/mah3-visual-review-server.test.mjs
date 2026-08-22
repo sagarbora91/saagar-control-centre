@@ -69,7 +69,7 @@ test('MAH-3 profile hash, runner hash, and exact matrix reject drift', () => {
     const malformed = structuredClone(profile);
     malformed.matrix.languages = ['en', 'hi', 'mr'];
     fs.writeFileSync(malformedPath, JSON.stringify(malformed));
-    assert.throws(() => validateBaseline(root, malformedPath), /exact 168-case contract/);
+    assert.throws(() => validateBaseline(root, malformedPath), /exact 180-case contract/);
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }

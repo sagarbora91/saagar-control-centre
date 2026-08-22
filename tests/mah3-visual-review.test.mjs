@@ -41,20 +41,20 @@ test('MAH-3 baseline is bound to the exact dirty www tree and critical files', (
     treeSha256: actual.treeSha256
   });
   assert.equal(profile.baseline.runtimeRefactorApplied, true);
-  assert.equal(profile.baseline.visualBaselinesCaptured, true);
+  assert.equal(profile.baseline.visualBaselinesCaptured, false);
   assert.equal(profile.baseline.physicalDeviceAccepted, false);
   assert.equal(profile.baseline.nativeLanguageAccepted, false);
 });
 
-test('MAH-3 evidence runner covers the unchanged MAH-1 168-case matrix', () => {
+test('MAH-3 evidence runner covers the MAH-1 180-case matrix', () => {
   assert.deepEqual(profile.matrix.languages, mh1.languages);
   assert.deepEqual(profile.matrix.viewports, mh1.viewports);
   assert.deepEqual(profile.matrix.surfaces, mh1.surfaces);
   const cases = createEvidenceCases(profile);
-  assert.equal(cases.length, 168);
-  assert.equal(new Set(cases.map(item => item.id)).size, 168);
+  assert.equal(cases.length, 180);
+  assert.equal(new Set(cases.map(item => item.id)).size, 180);
   assert.equal(cases.filter(item => item.kind === 'shell').length, 36);
-  assert.equal(cases.filter(item => item.kind === 'module').length, 132);
+  assert.equal(cases.filter(item => item.kind === 'module').length, 144);
   assert.ok(cases.every(item => item.src.startsWith('/app/')));
   assert.ok(cases.every(item => item.src === '/app/index.html'));
   assert.ok(cases.every(item => !/(?:[a-z]+:)?\/\//i.test(item.src)));
