@@ -10,7 +10,7 @@
 
 | # | Item | Kind | Blocked by |
 |---|---|---|---|
-| **5A-1** | MAH-3 harness module-open handshake | **engineering** | nothing |
+| **5A-1** | ~~harness handshake~~ **NOT a defect** - capture needs a visible browser | environment | a desktop browser |
 | **5A-2** | Capture 12 `etp` visual cases | capture | 5A-1 |
 | **5A-3** | Fluent review of the 12 cases; restore `visualBaselinesCaptured` | **owner gate** | 5A-2 |
 | **5B-1** | Regenerate the capability delta | engineering | nothing |
@@ -31,7 +31,7 @@
 
 ---
 
-## 2. The one engineering blocker worth fixing first — 5A-1
+## 2. Why capture is blocked - 5A-1, corrected
 
 The MAH-3 capture harness cannot complete **any** module case on the current shell. Verified today on both `etp` and `planning`: both stall at `loadState: "Opening module"` and geometry never runs.
 
@@ -39,7 +39,7 @@ Two separate causes, one already fixed:
 
 **Fixed — the session gate.** The shell gained an owner-claim and role gate after the harness was written (V6 Wave 6). With no session it sat on a blocking overlay and `blocking-shell-overlays` readiness failed. `prepareOrigin()` in `verification/mah3-visual-review/review-controller.js` now seeds `st_v2_owner_setup_v1`, `st_v5_owner_name` and `saagar_current_role_v1` on the dedicated loopback origin, which is cleared before every case. **Nothing ships** — the product never sets these; the harness writes them only on `127.0.0.1:8766`. Verified working: the role gate is gone and the module frame renders.
 
-**Still open — the module-open handshake.** The harness does:
+**First theory, now withdrawn - the module-open handshake.** The harness does:
 
 ```js
 var loaded = waitForLoad(nestedFrame, 12000);
@@ -47,11 +47,11 @@ shellWindow.openModule(item.surface);
 await loaded;
 ```
 
-It waits for a plain `load` event on `#moduleFrame`. The shell's module opening has since moved behind `www/shared/shell-module-frame-controller.js` with an `ST_INIT`/`ST_READY` handshake, `removeAttribute('src')` on close and a `srcdoc` path. The `load` event the harness waits for no longer arrives as expected, so every module case hangs for 12s and then fails silently.
+It waits for a plain `load` event on `#moduleFrame`, and module opening has since moved behind `www/shared/shell-module-frame-controller.js`. That looked like the cause. It is not.
 
-**Fix:** teach the harness to await the MAH-4 readiness signal instead of a raw `load` event — resolve on `ST_READY` for the expected module id, keeping the timeout as a fallback. Harness-only change in `review-controller.js`; no product change.
+**CORRECTION, same day: this was a misdiagnosis of mine.** The handshake is not broken. The harness calls `nextPaint()`, which uses `requestAnimationFrame`. Measured directly in the automation browser: `document.hidden` is permanently `true` and **rAF never fires**, neither top-level nor inside the iframe, so `nextPaint()` can never resolve and the flow parks at "Opening module". The identical stall reproduces on `planning`, which was captured successfully on 2026-08-07. **There is no harness bug to fix.** Capture needs a **visible browser window**, which the headless automation pane cannot provide. Run it from a real desktop browser - the session seed now clears the role gate, which was a genuine blocker and is fixed.
 
-This single fix unblocks **5A-2 and 5C-1** — the ETP visual cases *and* the rendered-language matrix, which use the same harness.
+Clearing the role gate was still necessary and is done. Once run in a visible browser, the same harness serves **both 5A-2 and 5C-1** - the ETP visual cases and the rendered-language matrix.
 
 ---
 
@@ -59,7 +59,7 @@ This single fix unblocks **5A-2 and 5C-1** — the ETP visual cases *and* the re
 
 ### Stage 5A — visual evidence (engineering, then owner)
 
-1. **5A-1** fix the harness handshake. Verify by capturing one `planning` case green.
+1. **5A-1** run the harness in a **visible desktop browser** (not an automation pane). Verify by capturing one `planning` case green first.
 2. **5A-2** capture all 12 `etp` cases (169–180).
 3. **5A-3** fluent reviewer marks each Pass/Defect with an evidence reference. Then, and only then, set `review.visualBaselinesCaptured` and `baseline.visualBaselinesCaptured` back to `true`, restore `reviewStatus`, refresh `runtimeRefactorGate` prose, and update the MAH-4 gates (`mah3RenderedCasesReviewed` back to 180, `refactorGateReady` true) with the test constants.
 
