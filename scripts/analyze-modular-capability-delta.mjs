@@ -9,6 +9,24 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASELINE_PATH = 'verification/audit/2026-08-11-113428-b9f04b5/A3-capabilities.json';
 export const LEDGER_PATH = 'verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json';
 
+/* Owner-approved 2026-08-22; see verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json */
+const APPROVED_ETP_DELTA_IDS = Object.freeze(new Set([
+  "etp:action:etpimportform:1953c5a58d",
+  "etp:action:etpvalidate:b07d709f31",
+  "etp:action:etpconfirm:4d548862d9",
+  "etp:action:etpcoverageconfirmed:696a80d1fc",
+  "etp:action:etphistoryrefresh:04874c0f68",
+  "etp:action:tab-import:072653f2e1",
+  "etp:action:tab-coverage:3ecf856d2c",
+  "etp:action:tab-reconciliation:2b8b192693",
+  "etp:action:tab-verified:0711690845",
+  "etp:action:refresh-verified-views:df04d92f87",
+  "etp:action:refresh-exceptions:47fdf2b89f",
+  "etp:action:loading-published-scopes:10e05bdcbf",
+  "etp:action:loading-published-scopes:f833acd821",
+  "etp:route:entry",
+]));
+
 const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
   'cro_audit:action:st-v5-home-fab:c05eb3ddb3',
   'dsr:action:st-v5-home-fab:c05eb3ddb3',
@@ -75,6 +93,34 @@ function actionBindingSummary(capability) {
 
 function classification(change, before, after) {
   const capability = after || before;
+  /* Retail ETP became the twelfth modular module. The exact deltas below are
+     owner-approved in verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json
+     (package SHA-256 cf0b9085...). Anything outside these exact ids stays
+     unclassified and fail-closed. */
+  if (change === 'added' && APPROVED_ETP_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'etp-twelfth-module-capability-owner-approved',
+      reason: 'New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.'
+    };
+  }
+  if (change === 'added' && capability.capabilityId === 'etp:action:st-v5-home-fab:c05eb3ddb3') {
+    return {
+      reviewClass: 'shared-runtime-home-fab-binding',
+      reason: 'Structural back-to-home control restored to the ETP module; identical stable binding hash to the home-FAB already present in every other module.'
+    };
+  }
+  if (capability.capabilityId === 'shell:action:open-retail-etp:60a39c8e5d' && change === 'added') {
+    return {
+      reviewClass: 'etp-shell-route-relocation',
+      reason: 'ETP entry moved from a direct shell button to the Reports-owned module route; owner-approved 2026-08-22.'
+    };
+  }
+  if (capability.capabilityId === 'shell:action:open-etp-import:8cb1d3b022' && change === 'removed') {
+    return {
+      reviewClass: 'etp-shell-route-relocation',
+      reason: 'The legacy direct ETP import button was retired by the same approved relocation.'
+    };
+  }
   if (change === 'added' && capability.category === 'permission' && capability.surface.startsWith('script-shared-')) {
     return {
       reviewClass: 'shared-permission-authority-extraction',
@@ -188,11 +234,11 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 660);
+  assert.equal(current.length, 680);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 12, 'visible-action': 469, permission: 24, 'persisted-outcome': 86, 'failure-posture': 69 });
-  assert.equal(count('added'), 12);
-  assert.equal(count('removed'), 7);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 483, permission: 26, 'persisted-outcome': 86, 'failure-posture': 72 });
+  assert.equal(count('added'), 33);
+  assert.equal(count('removed'), 8);
   assert.equal(count('changed'), 88);
   assert.equal(classCount('handler-body-hash-only'), 52);
   assert.equal(classCount('failure-posture-source-boundary-change'), 14);

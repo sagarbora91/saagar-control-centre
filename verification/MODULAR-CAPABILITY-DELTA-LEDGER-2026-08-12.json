@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 660,
+    "capabilities": 680,
     "categories": {
-      "failure-posture": 69,
-      "permission": 24,
+      "failure-posture": 72,
+      "permission": 26,
       "persisted-outcome": 86,
-      "route": 12,
-      "visible-action": 469
+      "route": 13,
+      "visible-action": 483
     },
     "conflicts": 0,
-    "inventorySha256": "64978e85086a9f194742f2a579099802203bd475271b3af756dcc703a412eaa6"
+    "inventorySha256": "0c58357b09b3d3bebb714f5edb40f3f3ef1e5696ac6374179e6dc534c6d50c34"
   },
   "deltas": [
     {
@@ -1121,6 +1121,639 @@
       "ownerApproval": "pending",
       "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
       "reviewClass": "module-permission-authority-relocation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "b45dcefff4538f1a38c12f4325d3d40791af193019141865b92fd102214b03a2"
+          ],
+          "handlerNames": [
+            "confirmImport"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "etp:action:etpconfirm:4d548862d9",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "b45dcefff4538f1a38c12f4325d3d40791af193019141865b92fd102214b03a2",
+              "kind": "addEventListener",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "6b75beca909fc83f9b932cfd0b30ed5c8771cb6b09e8173bc90fdca382b86a26",
+                  "name": "confirmImport"
+                }
+              ]
+            }
+          ],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "fa03b7e4d4129c5f307e795519ec281a8a9fbff8cb7243a5a4221165e9ae14ed",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "48c3935b4cc5842583a782209efdb489996131405644c74e1c03763212e91cf4"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpcoverageconfirmed:696a80d1fc",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "change",
+              "expressionSha256": "48c3935b4cc5842583a782209efdb489996131405644c74e1c03763212e91cf4",
+              "kind": "addEventListener",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "input",
+          "type": "checkbox"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "edc24231fdee7957a29717b9ae816421598cfe5450acd51da9092fbd9790803b",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "caa10f0c33bd6803e7f44578b2cc52f261fe8ced83080bf42f974ca8439fc6a0"
+          ],
+          "handlerNames": [
+            "refreshScopes"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "etp:action:etphistoryrefresh:04874c0f68",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "caa10f0c33bd6803e7f44578b2cc52f261fe8ced83080bf42f974ca8439fc6a0",
+              "kind": "addEventListener",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "b4552d98e3bf359403e3dd4754751227a5d272c473bbab607dec3a88dd77a9c6",
+                  "name": "refreshScopes"
+                }
+              ]
+            }
+          ],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "c679a09311048c80e2c601f65d5cf5005aae68a06f86ed3b6008158fc2f6adc7",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 2,
+          "expressionSha256": [
+            "18b4d0dba67735650fc6d2409c80563a016461bc72ead1d4e64175fb1d79ae33",
+            "cce9b393de98932b6f426fcb3b1ea93315049b97bcf840645f1d439dec661db7"
+          ],
+          "handlerNames": [
+            "validateImport"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "etp:action:etpimportform:1953c5a58d",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "submit",
+              "expressionSha256": "cce9b393de98932b6f426fcb3b1ea93315049b97bcf840645f1d439dec661db7",
+              "kind": "addEventListener",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "6dd39b24a73e69cf0e1f219cec4b6856371c112caac463af424f040e7f70abd9",
+                  "name": "validateImport"
+                }
+              ]
+            },
+            {
+              "event": "submit",
+              "expressionSha256": "18b4d0dba67735650fc6d2409c80563a016461bc72ead1d4e64175fb1d79ae33",
+              "kind": "native-form",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "form"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "c8656757d1ecfd588315a67c44dbb1c4f3592a14d94af4a65571365df226cfe1",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "f52a8a21c5e6553c92f719826ad2e01e2d357fd6c08b4411533fa2a4ffd2c6e0"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpvalidate:b07d709f31",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "submit",
+              "expressionSha256": "f52a8a21c5e6553c92f719826ad2e01e2d357fd6c08b4411533fa2a4ffd2c6e0",
+              "kind": "native-form-submit",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "button",
+          "type": "submit"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "a0c780e68cbc4c609403159c733ef1c928a4b18178058b2d48eeb433e99e5c03",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:loading-published-scopes:10e05bdcbf",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:loading-published-scopes:f833acd821",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:refresh-exceptions:47fdf2b89f",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:refresh-verified-views:df04d92f87",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "4cd0e21a9a0795a14ec9aa5f0e7d1abff0492565770e43eafdf1e3e8afed1f33"
+          ],
+          "handlerNames": [
+            "go"
+          ],
+          "referencedHandlerBodies": 4
+        }
+      },
+      "capabilityId": "etp:action:st-v5-home-fab:c05eb3ddb3",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "4cd0e21a9a0795a14ec9aa5f0e7d1abff0492565770e43eafdf1e3e8afed1f33",
+              "kind": "alias-event-property",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "17f3253abe204ecf97df01217c1aac1e2f603d4c5a344b075adde3705e02aedc",
+                  "name": "go"
+                },
+                {
+                  "bodySha256": "a844708111983e7bdee81d9190969ad5344b02299b834d6ce84de0611ce83bc4",
+                  "name": "go"
+                },
+                {
+                  "bodySha256": "d2a9181d82be9455afbd55ceacac495b5a26945fb8bdbbbf61541f1dd51a6535",
+                  "name": "go"
+                },
+                {
+                  "bodySha256": "d69352094c0692c5536d3097a1163da64ce8743d6adfcac317e7a695f63f3e61",
+                  "name": "go"
+                }
+              ]
+            }
+          ],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "6671a417f08f895d1255aa5526c8849fc82fd70078ada12acfbaf07507e458c5",
+      "ownerApproval": "pending",
+      "reason": "Structural back-to-home control restored to the ETP module; identical stable binding hash to the home-FAB already present in every other module.",
+      "reviewClass": "shared-runtime-home-fab-binding"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:tab-coverage:3ecf856d2c",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "39166c834da694ea12dcd7f012ae2baad6bcc32ad08992b3a0ad1f9e2daf1a2a",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:tab-import:072653f2e1",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "39166c834da694ea12dcd7f012ae2baad6bcc32ad08992b3a0ad1f9e2daf1a2a",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:tab-reconciliation:2b8b192693",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "39166c834da694ea12dcd7f012ae2baad6bcc32ad08992b3a0ad1f9e2daf1a2a",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:tab-verified:0711690845",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "39166c834da694ea12dcd7f012ae2baad6bcc32ad08992b3a0ad1f9e2daf1a2a",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "etp:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 3,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "48cdea2da976c081641038f581836edb24ee50651e182c86e2500d2de14fddff",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "etp:permission:access-context",
+      "category": "permission",
+      "change": "added",
+      "current": {
+        "category": "permission",
+        "outcome": "shell access context participates in permission decisions",
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "db8837125896c7080143fe488515d71bc39fafaaf9efde63e3967115e8e85f94",
+      "ownerApproval": "pending",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "reviewClass": "declared-module-access-context"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "etp:route:entry",
+      "category": "route",
+      "change": "added",
+      "current": {
+        "category": "route",
+        "outcome": "loads manifest-bound module etp",
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "b532f6def39bb2fd821f84e6f26b61bcea4d85e5d1a4ecc408bc11c98fc1f5c2",
+      "ownerApproval": "pending",
+      "reason": "New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.",
+      "reviewClass": "etp-twelfth-module-capability-owner-approved"
     },
     {
       "baseline": {
@@ -5197,6 +5830,66 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-module-gateway:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 12,
+          "explicitFallbackSites": 23,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-module-gateway"
+      },
+      "currentOutcomeSha256": "384dc5515785f8978fb2cc89055d5e23baf21dfdfbbe88982f58d875d45d28de",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-module-gateway:permission:owner-session",
+      "category": "permission",
+      "change": "added",
+      "current": {
+        "category": "permission",
+        "outcome": "owner-session or owner-only decision is consulted",
+        "surface": "script-etp-module-gateway"
+      },
+      "currentOutcomeSha256": "b8ebd3d9a2e2914923ef6d128a366fea22587709437fd07e4dbb323a71a73ec8",
+      "ownerApproval": "pending",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "reviewClass": "declared-module-access-context"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-verified-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 8,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-verified-presentation"
+      },
+      "currentOutcomeSha256": "3ec00f260dab780665addd1a20a978e7bf788c76d59486bafe68bba81f7193f5",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
       "capabilityId": "script-shared-module-bridge:failure:posture",
       "category": "failure-posture",
       "change": "added",
@@ -7223,6 +7916,101 @@
       "ownerApproval": "pending",
       "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
       "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "c153d55343fdfa5079475b4f5c8bbd921ee1cd192fe556cb19e00e8c3fce436b",
+              "kind": "inline-event",
+              "qualifiedCalls": [
+                "open"
+              ],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "f435f62ef03977800960f1e7dc71f50f48813f2b0858898a2d6cc9539c95fbc6",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "c153d55343fdfa5079475b4f5c8bbd921ee1cd192fe556cb19e00e8c3fce436b"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "shell:action:open-etp-import:8cb1d3b022",
+      "category": "visible-action",
+      "change": "removed",
+      "current": null,
+      "currentOutcomeSha256": null,
+      "ownerApproval": "pending",
+      "reason": "The legacy direct ETP import button was retired by the same approved relocation.",
+      "reviewClass": "etp-shell-route-relocation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "41f6c24c94f6ca4ea121a482c2ca72a6a5db959c4a30a7c5d8b653b037afc94c"
+          ],
+          "handlerNames": [
+            "navigateToModule"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:open-retail-etp:60a39c8e5d",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "41f6c24c94f6ca4ea121a482c2ca72a6a5db959c4a30a7c5d8b653b037afc94c",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "03ac651292a6612e97f351665c233a77a2619cfda24464c8d020637819027822",
+                  "name": "navigateToModule"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "2ec76f8a2d7ae792bb7f69ed4f7b8edbc87c3869ec44e74c8155ff203779fc44",
+      "ownerApproval": "pending",
+      "reason": "ETP entry moved from a direct shell button to the Reports-owned module route; owner-approved 2026-08-22.",
+      "reviewClass": "etp-shell-route-relocation"
     },
     {
       "baseline": {
@@ -9578,16 +10366,16 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 12,
+    "added": 33,
     "bindingStructureChanged": 21,
-    "capabilityApprovalsRequired": 107,
+    "capabilityApprovalsRequired": 129,
     "changed": 88,
     "changedFailurePostures": 15,
     "changedVisibleActions": 73,
-    "comparisonDeltaSha256": "6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420",
+    "comparisonDeltaSha256": "155d95fedb479c36cca3cd1b63c720a40f149374d9235bf68a903cf4bf40dd28",
     "handlerBodyHashOnly": 52,
-    "netCapabilities": 5,
-    "removed": 7,
+    "netCapabilities": 25,
+    "removed": 8,
     "reportPresentationFallbacks": 1
   }
 }

@@ -12,11 +12,11 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   const recorded = JSON.parse(fs.readFileSync(path.join(root, LEDGER_PATH), 'utf8'));
   assert.deepEqual(recorded, expected);
   assert.equal(recorded.baseline.capabilities, 655);
-  assert.equal(recorded.current.capabilities, 660);
-  assert.equal(recorded.summary.added, 12);
-  assert.equal(recorded.summary.removed, 7);
+  assert.equal(recorded.current.capabilities, 680);
+  assert.equal(recorded.summary.added, 33);
+  assert.equal(recorded.summary.removed, 8);
   assert.equal(recorded.summary.changed, 88);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 107);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 129);
   assert.equal(recorded.summary.handlerBodyHashOnly, 52);
   assert.equal(recorded.summary.bindingStructureChanged, 21);
   assert.equal(recorded.summary.changedFailurePostures, 15);
@@ -33,6 +33,6 @@ test('capability review remains fail-closed until the owner explicitly approves 
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   assert.ok(ledger.deltas.every(item => item.ownerApproval === 'pending'));
   assert.ok(ledger.deltas.every(item => item.reason && item.baselineOutcomeSha256 !== item.currentOutcomeSha256));
-  assert.equal(ledger.deltas.filter(item => item.category === 'route').length, 0);
+  assert.equal(ledger.deltas.filter(item => item.category === 'route').length, 1);
   assert.equal(ledger.deltas.filter(item => item.category === 'persisted-outcome').length, 0);
 });

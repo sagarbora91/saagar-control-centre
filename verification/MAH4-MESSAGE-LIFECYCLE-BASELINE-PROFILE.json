@@ -6,9 +6,9 @@
     "mah3ProfileBytes": 7957,
     "mah3ProfileSha256": "18bf47b94e9de6a6d9424be4ace544361c68eced26f45248b7dcbebe5cbc0061",
     "mah3TreeSha256": "f6faa8908fa650af799e7933e9393f14672e202a6d99b0a32f34b5b606109d0e",
-    "currentWwwTreeSha256": "f6faa8908fa650af799e7933e9393f14672e202a6d99b0a32f34b5b606109d0e",
+    "currentWwwTreeSha256": "156f24fdaa5bfa1d8eab9987adda12b8b1f6f24929844145bf63468302cb89e0",
     "currentWwwFileCount": 103,
-    "currentWwwTotalBytes": 8065499,
+    "currentWwwTotalBytes": 8065547,
     "shell": {
       "path": "www/index.html",
       "bytes": 576070,

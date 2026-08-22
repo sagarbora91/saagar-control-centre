@@ -12,12 +12,12 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
 
-  var VERSION = 1;
+  var GATEWAY_VERSION = 1;
   var REPORTS = Object.freeze(['R003', 'R013', 'R022', 'R025']);
   var REGISTRY_KEY = 'saagar_etp_control_registry_v1';
   var MAX_SCOPES = 20;
   var MAX_HISTORY = 10;
-  var MAX_READ_ROWS = 200;
+  var GATEWAY_MAX_READ_ROWS = 200;
   var MAX_CHUNK_INDEX = 4095;
   var MAX_ROW_OFFSET = 499;
   var MAX_CELL_TEXT = 4096;
@@ -266,7 +266,7 @@
       if (!permitted('READ')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (!exact(request, ['reportId', 'fields', 'cursor', 'limit'])) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var reportId = String(request.reportId || '').toUpperCase(), fields = request.fields;
-      if (REPORTS.indexOf(reportId) < 0 || !Array.isArray(fields) || !fields.length || fields.length > 64 || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > MAX_READ_ROWS) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
+      if (REPORTS.indexOf(reportId) < 0 || !Array.isArray(fields) || !fields.length || fields.length > 64 || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > GATEWAY_MAX_READ_ROWS) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var seen = Object.create(null), projected = [], allowed = PROJECTIONS[reportId];
       for (var i = 0; i < fields.length; i++) {
         var field = String(fields[i]);
@@ -284,7 +284,7 @@
       return page ? freeze({ ok: true, page: page }) : failure('ETP_GATEWAY_RESPONSE_INVALID', 'READ');
     }
 
-    return { ok: true, gateway: freeze({ version: VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes }) };
+    return { ok: true, gateway: freeze({ version: GATEWAY_VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes }) };
   }
 
   function browserStatusReader(rootValue, lifecycle) {
@@ -319,5 +319,5 @@
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 
-  return freeze({ VERSION: VERSION, REPORTS: REPORTS, PROJECTIONS: PROJECTIONS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: MAX_READ_ROWS, create: create, bootstrap: bootstrap });
+  return freeze({ VERSION: GATEWAY_VERSION, REPORTS: REPORTS, PROJECTIONS: PROJECTIONS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: GATEWAY_MAX_READ_ROWS, create: create, bootstrap: bootstrap });
 });
