@@ -133,7 +133,7 @@ try {
   if (process.platform === 'win32') {
     run(
       process.env.ComSpec || 'cmd.exe',
-      ['/d', '/s', '/c', 'gradlew.bat assembleDebug'],
+      ['/d', '/s', '/c', '.\\gradlew.bat assembleDebug'],
       { cwd: androidDir }
     );
   } else {
