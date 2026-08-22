@@ -1,6 +1,8 @@
 # ETP localization import checkpoint — 2026-08-21
 
-**Status:** ETP-4 steps 1 and 2 are complete. **Step 3 (identity regeneration) is NOT done and the tree is red on 19 identity assertions.** Do not build an APK or run the controlled audit from this state.
+**Status (updated after merge):** ETP-4 steps 1 and 2 are complete, and the engineering half of step 3 is now done and merged — **`test:modular` improved from 74 pass / 12 fail to 79 pass / 7 fail, and `test:mah4` is 46/46.** The **7 remaining failures are all owner gates**: 4 MAH-3 needing captured `etp` visual evidence plus owner confirmation, and 3 capability-ledger checks needing a new owner capability approval. **No engineering remains before those gates.**
+
+Still: do not build an APK or run the controlled audit until the owner gates are cleared.
 
 > ## Correction — attribution, added 2026-08-21
 >
@@ -129,22 +131,42 @@ by changing product bytes.
 
 ## Resume point
 
-Partly done on branch `agent/etp-l10n-identity-regen` (`cf1b4d7`), not yet merged here.
+Items 1 to 3 are **merged into this branch** from `agent/etp-l10n-identity-regen` (`8b2cecb`).
+Full detail: `ETP-IDENTITY-REGEN-FINDINGS-2026-08-21.md`.
 
 | # | Work | State |
 |---|---|---|
-| 1 | **MAH-4 regeneration** — profile refresh plus six stale inventory constants, including the deliberate byte-total bump | **DONE on the branch, 46/46** |
-| 2 | **Fix `st-v5-module-audit-bridge` missing from `www/modules/etp/index.html`** | **OPEN — product defect, do this first** |
-| 3 | Add the `etp` entry to `MH1-MODULAR-PROTECTION-PROFILE.json` (hand-maintained, no generator) | OPEN |
+| 1 | **MAH-4 regeneration** — profile refresh plus six stale inventory constants, including the deliberate byte-total bump | **DONE — 46/46** |
+| 2 | **ETP module shared-runtime protections** — audit bridge, home-fab, back-script, mobile-boot, `.etp-tabs` responsive containment | **DONE** |
+| 3 | `etp` entry added to `MH1-MODULAR-PROTECTION-PROFILE.json` | **DONE — MH1 8/8** |
 | 4 | Capture 12 new `etp` visual cases; raise the MAH-3 contract 168 to 180 **with** the evidence and a fresh owner confirmation | OPEN — owner gate |
 | 5 | Regenerate the capability delta; obtain a new owner capability approval | OPEN — owner gate |
 | 6 | Rendered-language matrix and identity-bound visual approval | OPEN — owner gate |
 | 7 | One seeded APK; physical ETP fixture acceptance | OPEN — needs a device |
 | 8 | Final controlled audit or comparison; update the handoff | OPEN |
 
-Item 2 is a genuine implementation gap, not identity drift: eleven of twelve modules carry that
-bridge and `etp` does not. Settle it before capturing any evidence against the module, or the
-evidence will need recapturing.
+**Items 4 to 8 are the only work left, and 4, 5 and 6 are owner gates — no engineering remains
+before them.**
+
+Item 2 turned out to be wider than the reported single defect: ETP was missing four of six
+shared-runtime canaries, the home affordance, and any responsive containment. Its storage writes
+emitted no audit trail, and it had no back-to-home control. One deliberate deviation remains:
+`st-v5-emp-assist-script` was **not** added, because nothing requires it and the `employees` stage
+reads employee-master and customer storage keys, which has no place in a financial reports module.
+
+### Suite state on this branch after the merge
+
+| Suite | Result |
+|---|---|
+| `test:etp` | 155/155 |
+| `test:language` | 10/10 |
+| `test:manifest` | 8/8 |
+| `test:mah4` | **46/46** |
+| `test:mobile` | 6/6 |
+| `test:mah3` | 15 pass, **4 fail** — owner gate |
+| `test:modular` | 79 pass, **7 fail** — 4 MAH-3 + 3 capability, both owner gates |
+
+`test:modular` improved from 74/12 to 79/7. Every remaining failure is an owner gate.
 
 **Never raise the MAH-3 case count ahead of the captured evidence.** The profile records that gate
 as satisfied by identity-bound evidence and owner confirmation; moving the number alone manufactures
