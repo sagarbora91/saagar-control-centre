@@ -138,6 +138,52 @@ superseded APK `f7f18ea3`, not the artifact that will ship.
 Focused sweep: **438 tests, zero failures** — modular 86, MAH-4 46, MAH-3 19,
 ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8.
 
+### Release roles and the independence exception — 2026-08-22
+
+Record: `verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json`.
+
+| Role | Holder | Status |
+|---|---|---|
+| Privacy and legal reviewer | Sagar (sagarbora91) | **Owner self-review, not independent counsel** |
+| Production key custodian | Sagar (sagarbora91) | Assigned |
+| Independent release approver | Sagar (sagarbora91) | **NOT INDEPENDENT — same person as custodian** |
+| Representative staff testers | — | **UNFILLED** |
+
+#### The independence control is NOT satisfied
+
+`GATE-RELEASE` requires a named production-key custodian **and an independent
+release approver, who must not be the same person**. The owner directed on
+2026-08-22 that he hold both, after the requirement and its consequence were
+raised and explained. This is a single-owner business and no second authority is
+available.
+
+**This is recorded as an accepted exception, never as a satisfied control.** The
+gap appears in the `GATE-RELEASE` row, in that row's `requiredEvidence` line, and
+in a top-level `roleAssignments` block, so no part of the register can be read as
+claiming independence. **When `GATE-RELEASE` closes it closes carrying this
+exception, not as a clean pass.**
+
+Risk accepted, as written in the record: no second person will verify that the
+signed artifact matches what was reviewed, that prerequisite gates were genuinely
+closed, or that the carried exceptions were understood before release. The
+separation-of-duties control that normally catches a custodian signing the wrong
+artifact, or waving through an unmet gate, is absent. Any later reviewer,
+auditor, acquirer or regulator will see a self-approved release.
+
+Reopen condition: if a second person becomes available before release, they
+should perform the release approval and this exception can be withdrawn.
+
+Two mitigations are recorded and remain available. Neither restores independence,
+but both leave a better trail: have a non-custodian countersign the artifact hash
+even without being a formal approver, and keep the signing receipt and the release
+decision as separate dated records rather than one combined statement.
+
+#### Still unfilled
+
+`GATE-UAT` needs **named representative staff testers** for the cashier/maker and
+manager/checker rows of the role matrix. The owner can only fill the owner/admin
+row. This is now the only unnamed role in the programme.
+
 ### Exact remaining Phase 5 closure work
 
 1. ~~Owner approvals for MAH-3 169-180, the rendered-language matrix and
@@ -151,11 +197,14 @@ ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8.
    session. The Android-13 SM-T875 smoke does not prove an API-23-class device.
 5. When authorized files are available, run the real WLMHW/HEMW four-report ETP
    publication. Until then keep `GATE-ETP-PRODUCTION` deferred.
-6. Record a named staff UAT tester and named privacy/legal reviewer and obtain
-   their identity-bound decisions.
+6. Record a named staff UAT tester and obtain their identity-bound decision. The
+   privacy/legal reviewer is now named (owner self-review, 2026-08-22); the staff
+   testers are still **UNFILLED**.
 7. Build the production-signed artifact using custodian-held credentials, record
-   the named signing custodian, install/launch the exact signed APK, and obtain a
-   separate named independent release approval.
+   the named signing custodian, and install/launch the exact signed APK. The
+   release approval will be made by the custodian himself: the independence
+   control is **not satisfied** and closes as a recorded exception, not a pass.
+   `build:release` is verified working and fail-closes without credentials.
 8. Run the final controlled audit, reconcile the closure register, update this
    handoff, commit and push the final closure checkpoint.
 
