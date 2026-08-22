@@ -22,6 +22,7 @@ import { assessGeneratedIdentityReceipts,
 import { baselineTimingMetricsMatch, evaluateShellPerformance,
   validTimingSamples } from '../scripts/audit/audits/a10.mjs';
 import { orderedTokenSimilarity } from '../scripts/audit/audits/a2.mjs';
+import { renderedMatrixCoverage } from '../scripts/audit/audits/a6.mjs';
 import { EXTERNAL_EVIDENCE_TRUST_POLICY,
   externalEvidenceAuthorized, externalEvidenceSignaturePayload,
   verifyExternalEvidenceSignature } from '../scripts/audit/evidence-trust-root.mjs';
@@ -1228,7 +1229,40 @@ test('legacy counter-only rendered evidence remains unmeasured', async () => {
     options: Object.freeze({ mode: 'baseline', productBaseline: PRODUCT_BASELINE_SHA,
       auditToolingSha: 'a'.repeat(40), uiEvidence }) }));
   assert.equal(result.checks.find(item => item.id === 'A6-04').result, 'unmeasured');
-  assert.equal(result.checks.find(item => item.id === 'A6-05').result, 'unmeasured');
+  const matrixCheck = result.checks.find(item => item.id === 'A6-05');
+  assert.equal(matrixCheck.result, 'unmeasured');
+  assert.equal(matrixCheck.metric.requiredCells, 78);
+});
+
+test('A6 rendered coverage accepts the exact discovered 78-cell matrix', () => {
+  const matrix = Array.from({ length: 13 }, (_, surface) =>
+    ['mobile-390x844', 'desktop-1366x768'].flatMap(viewportId =>
+      ['en', 'mr', 'hi'].map(language => ({ surfaceId: `surface-${surface}`, viewportId, language })))).flat();
+  assert.equal(matrix.length, 78);
+  assert.deepEqual(renderedMatrixCoverage(matrix, matrix), {
+    requiredCells: 78, uniqueRequiredCells: 78, suppliedCells: 78,
+    missingCells: 0, duplicateCells: 0, unexpectedCells: 0, valid: true
+  });
+});
+
+test('A6 rendered coverage fails closed for missing, extra, and duplicate cells', () => {
+  const matrix = Array.from({ length: 78 }, (_, index) => ({
+    surfaceId: `surface-${index}`, viewportId: 'mobile-390x844', language: 'en'
+  }));
+  const missing = renderedMatrixCoverage(matrix, matrix.slice(0, -1));
+  assert.equal(missing.valid, false);
+  assert.equal(missing.missingCells, 1);
+
+  const extra = renderedMatrixCoverage(matrix, [...matrix, {
+    surfaceId: 'not-discovered', viewportId: 'mobile-390x844', language: 'en'
+  }]);
+  assert.equal(extra.valid, false);
+  assert.equal(extra.unexpectedCells, 1);
+
+  const duplicate = renderedMatrixCoverage(matrix, [...matrix.slice(0, -1), matrix[0]]);
+  assert.equal(duplicate.valid, false);
+  assert.equal(duplicate.duplicateCells, 1);
+  assert.equal(duplicate.missingCells, 1);
 });
 
 test('tooling identity includes the controlling audit program and evidence manifests are exact', () => {

@@ -26,7 +26,6 @@ const VIEWPORTS = Object.freeze([
   { id: 'desktop-1366x768', width: 1366, height: 768 }
 ]);
 const LANGUAGES = Object.freeze(['en', 'mr', 'hi']);
-const EXPECTED_RENDERED_CELLS = 72;
 const SAFE_BROWSER_IDENTITY = /^[A-Za-z0-9][A-Za-z0-9 ._+:/();-]{0,159}$/;
 const MAX_CELL_TARGETS = 512;
 const MAX_CELL_CONTRASTS = 512;
@@ -371,6 +370,33 @@ function cellIdentity(cell) {
   return [cell.surfaceId, cell.viewportId, cell.language].join('\\0');
 }
 
+export function renderedMatrixCoverage(matrixCells, evidenceCells) {
+  const expectedCells = Array.isArray(matrixCells) ? matrixCells : [];
+  const suppliedCells = Array.isArray(evidenceCells) ? evidenceCells : [];
+  const expected = new Set(expectedCells.map(cellIdentity));
+  const seen = new Set();
+  let duplicateCells = 0;
+  let unexpectedCells = 0;
+  for (const cell of suppliedCells) {
+    const key = cellIdentity(cell || {});
+    if (!expected.has(key)) unexpectedCells += 1;
+    else if (seen.has(key)) duplicateCells += 1;
+    else seen.add(key);
+  }
+  const missingCells = [...expected].filter(key => !seen.has(key)).length;
+  return Object.freeze({
+    requiredCells: expectedCells.length,
+    uniqueRequiredCells: expected.size,
+    suppliedCells: suppliedCells.length,
+    missingCells,
+    duplicateCells,
+    unexpectedCells,
+    valid: expectedCells.length > 0 && expected.size === expectedCells.length &&
+      suppliedCells.length === expectedCells.length && missingCells === 0 &&
+      duplicateCells === 0 && unexpectedCells === 0
+  });
+}
+
 function finiteCssMeasurement(value, minimum = 0, maximum = 10000) {
   return typeof value === 'number' && Number.isFinite(value) && value >= minimum && value <= maximum;
 }
@@ -464,17 +490,19 @@ function renderedUiEvidence(context, matrix) {
   if (!envelopeIntegrityValid) return result;
 
   const expected = new Map(matrix.cells.map((cell, index) => [cellIdentity(cell), { ...cell, index }]));
+  const requiredCells = matrix.cells.length;
   const sourceEntries = new Map(context.productFingerprint.entries.map(entry => [entry.path, entry.sha256]));
-  if (matrix.cells.length !== EXPECTED_RENDERED_CELLS || expected.size !== EXPECTED_RENDERED_CELLS) {
-    result.findings.push({ code: 'DISCOVERED_RENDERED_MATRIX_INVALID', requiredCells: EXPECTED_RENDERED_CELLS,
+  if (requiredCells === 0 || expected.size !== requiredCells) {
+    result.findings.push({ code: 'DISCOVERED_RENDERED_MATRIX_INVALID', requiredCells,
       discoveredCells: matrix.cells.length, uniqueCells: expected.size });
   }
   if (!Array.isArray(raw.cells)) {
     result.findings.push({ code: 'UI_EVIDENCE_CELLS_NOT_ARRAY' });
     return result;
   }
-  if (raw.cells.length !== EXPECTED_RENDERED_CELLS) {
-    result.findings.push({ code: 'UI_EVIDENCE_CELL_COUNT_INVALID', requiredCells: EXPECTED_RENDERED_CELLS,
+  const coverage = renderedMatrixCoverage(matrix.cells, raw.cells);
+  if (raw.cells.length !== requiredCells) {
+    result.findings.push({ code: 'UI_EVIDENCE_CELL_COUNT_INVALID', requiredCells,
       suppliedCells: raw.cells.length });
   }
 
@@ -489,8 +517,7 @@ function renderedUiEvidence(context, matrix) {
   };
   const seen = new Set();
   const valid = [];
-  const inspected = raw.cells.slice(0, EXPECTED_RENDERED_CELLS);
-  result.extraCells = Math.max(0, raw.cells.length - EXPECTED_RENDERED_CELLS);
+  const inspected = raw.cells;
   inspected.forEach((cell, cellIndex) => {
     if (!exactKeys(cell, UI_CELL_KEYS)) {
       result.malformedCells += 1;
@@ -566,9 +593,8 @@ function renderedUiEvidence(context, matrix) {
   result.measuredContrastSamples = valid.reduce((sum, cell) => sum + cell.measuredContrastSamples, 0);
   result.targetViolations = valid.reduce((sum, cell) => sum + cell.targetViolations, 0);
   result.contrastViolations = valid.reduce((sum, cell) => sum + cell.contrastViolations, 0);
-  result.matrixValid = envelopeValid && matrix.cells.length === EXPECTED_RENDERED_CELLS &&
-    expected.size === EXPECTED_RENDERED_CELLS && raw.cells.length === EXPECTED_RENDERED_CELLS &&
-    valid.length === EXPECTED_RENDERED_CELLS && result.duplicateCells === 0 && result.extraCells === 0 &&
+  result.matrixValid = envelopeValid && coverage.valid && valid.length === requiredCells &&
+    result.duplicateCells === 0 && result.extraCells === 0 &&
     result.malformedCells === 0 && missing.length === 0;
   return result;
 }
@@ -643,13 +669,13 @@ export async function run(context) {
     }),
     makeCheck({
       id: 'A6-05', title: 'Identity-bound rendered matrix evidence', result: matrixEvidenceResult, severity: 'P1', mandatory: true,
-      metric: { requiredCells: EXPECTED_RENDERED_CELLS, measuredCells: rendered.validCells.length,
+      metric: { requiredCells: matrix.cells.length, measuredCells: rendered.validCells.length,
         missingCells: rendered.missingCells, duplicateCells: rendered.duplicateCells, extraCells: rendered.extraCells,
         malformedCells: rendered.malformedCells, matrixSha256: rendered.matrixSha256,
         productFingerprintSha256: context.productFingerprint.treeSha256,
         productIdentityBound: rendered.envelopeValid, toolingIdentityBound: rendered.envelopeValid,
         browserIdentitySha256: rendered.browserIdentitySha256 },
-      rule: 'Exactly 72 unique mandatory surface, viewport and language cells must carry rendered evidence hashes bound to the exact product SHA, product fingerprint, tooling SHA, browser identity and matrix hash.',
+      rule: `Exactly ${matrix.cells.length} discovered unique mandatory surface, viewport and language cells must carry rendered evidence hashes bound to the exact product SHA, product fingerprint, tooling SHA, browser identity and matrix hash.`,
       evidence: rendered.matrixValid
         ? rendered.validCells.map(cell => renderedCellEvidence(cell, 'RENDERED_MATRIX_CELL_VERIFIED'))
         : rendered.findings,
