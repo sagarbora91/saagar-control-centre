@@ -1,7 +1,89 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-21 (Asia/Kolkata)
+**Updated:** 2026-08-22 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+
+## Current Phase 5 resume checkpoint — 2026-08-22
+
+This section supersedes older resume instructions below; the older sections are
+retained as historical evidence. Current branch `agent/modular-phase1-shared-spine-v2`
+is pushed through `1e34334c90acfb9870fd1eb1a827a6a9cf900d83`. The governed
+product identity remains `c809d04e4b67c6239218d5707908ac64f25fc94a` after the
+bounded ETP accessibility correction and MAH-2/MH1/MAH-3/MAH-4 regeneration.
+
+### Completed repository-controlled Phase 5 work
+
+- ETP checkbox target is 44 x 44 CSS pixels. Enabled primary-button contrast is
+  6.38:1 and disabled contrast is 4.97:1. Focused ETP UI validation passed 16/16.
+- Governed identity regeneration passed `test:manifest` 8/8 and `test:modular`
+  86/86. The current WWW tree SHA-256 is
+  `1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41`.
+- Fresh MAH-3 ETP cases 169-180 were visibly captured for the current identity.
+  External manifest SHA-256:
+  `d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94`.
+  The cases remain awaiting genuine owner review; capture alone is not a pass.
+- The signed rendered-language matrix covers 78/78 cells, 2,463 target
+  measurements and 6,303 contrast measurements with zero violations. A6-02,
+  A6-04 and A6-05 pass and the signature validates. Evidence SHA-256:
+  `f086db579c2fa4bbefaeee40ecdfbdb6f3377de5964382a3dc53b2d9a5ee8cc7`.
+  Fluent Marathi/Hindi owner approval remains open.
+- The R003/R013 presentation package is rebound to the corrected ETP identity;
+  focused tests pass 24/24. Its owner approval remains open.
+- PAYMENTTYPE25 remains under the owner's approved continued quarantine until an
+  authoritative Helios mapping becomes available.
+
+### Current seeded APK and SM-T875 session
+
+| Field | Current fact |
+|---|---|
+| APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` |
+| SHA-256 | `30922DADDA48E14112638A567248CB6DA35EC79F88D67F87F5FC05879B4393DD` |
+| Bytes | 7,218,076 |
+| Package/version | `com.saagartraders.bcc`, version 2.9, code 209, minSdk 23, targetSdk 34 |
+| Signing | debug-signed seeded test candidate; not a production release |
+| Device | Samsung SM-T875, Android 13 / API 33 |
+| Installed identity | pulled installed `base.apk` matches the candidate SHA-256 exactly |
+
+The 2026-08-22 physical session proved a successful cold launch, background and
+resume, native encrypted-store initialization with 6,558 records, and successful
+opening of Retail ETP Import, Verified Reports, Coverage & History, and
+Reconciliation & Exceptions. No crash, ANR or fatal Android/WebView/Capacitor
+error was observed. Empty verified views correctly fail closed with
+`ETP_VIEW_SCOPE_REQUIRED` because no report set is published. The session was a
+fresh install (`firstInstallTime` equals `lastUpdateTime`), so it does **not**
+prove install-replace/update preservation.
+
+The owner directed the real four-report session to be skipped for now. Therefore
+no R003/R013/R022/R025 validation, publication, verified read, publication
+history or production-data exception result is claimed. `GATE-ETP-PRODUCTION`
+is explicitly **deferred, not passed**.
+
+### Exact remaining Phase 5 closure work
+
+1. Obtain Sagar's exact identity-bound approvals for MAH-3 cases 169-180, the
+   78-cell rendered-language matrix, and R003/R013 exception presentation.
+2. Run physical install-replace/update preservation against the exact APK if that
+   gate is retained; the current fresh-install session cannot substitute for it.
+3. Run A10-04 five-save latency and A10-05 retained-memory measurements using
+   qualifying physical-device instrumentation, or carry them explicitly into the
+   independent release decision.
+4. Run the API-23/OEM document-provider interruption and safe-low-storage ETP
+   session. The Android-13 SM-T875 smoke does not prove an API-23-class device.
+5. When authorized files are available, run the real WLMHW/HEMW four-report ETP
+   publication. Until then keep `GATE-ETP-PRODUCTION` deferred.
+6. Record a named staff UAT tester and named privacy/legal reviewer and obtain
+   their identity-bound decisions.
+7. Build the production-signed artifact using custodian-held credentials, record
+   the named signing custodian, install/launch the exact signed APK, and obtain a
+   separate named independent release approval.
+8. Run the final controlled audit, reconcile the closure register, update this
+   handoff, commit and push the final closure checkpoint.
+
+Do not rebuild or recapture the current candidate merely to repeat a successful
+measurement. Rebuild only for a tracked product change, production signing, or a
+documented invalid capture. Do not relabel debug, synthetic, fresh-install or
+empty-state evidence as production publication, update preservation, UAT, legal,
+production signing or independent release acceptance.
 
 ## Phase 4 program completion checkpoint - 2026-08-21
 
