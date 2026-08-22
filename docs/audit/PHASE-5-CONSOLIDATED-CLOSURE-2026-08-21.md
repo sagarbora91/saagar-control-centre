@@ -131,3 +131,72 @@ Phase 5 is complete when:
 | `test:modular` | **83 pass, 3 fail** — the three capability-ledger checks (5B) |
 
 `test:modular` has gone 74/12 → 83/3 across this work.
+
+---
+
+## 7. Update 2026-08-22 — 5B complete, 5C blocked
+
+### 5B is done
+
+Owner approved all 17 capability deltas on 2026-08-22
+(`verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json`). Three narrowly
+scoped classification rules were added citing that approval, the analyser inventory was raised
+660 → 680, and the ledger was regenerated. The ledger itself correctly remains
+`approvalStatus: pending-owner-approval`; approval lives in the separate record, exactly as the
+107-row set was handled.
+
+One defect was fixed along the way. `A2-04` was failing because ETP-1's `etp-module-gateway.js`
+duplicated the constants `VERSION` and `MAX_READ_ROWS` with `etp-native-store.js`. The gateway's
+internals were renamed to `GATEWAY_VERSION` and `GATEWAY_MAX_READ_ROWS`; its **exported keys are
+unchanged**, so there is no API change.
+
+**Full sweep, 438 tests, zero failures:**
+
+| Suite | Result |
+|---|---|
+| `test:modular` | **86/0** (was 74 pass / 12 fail when this work began) |
+| `test:mah4` | 46/0 |
+| `test:mah3` | 19/0 |
+| `test:etp` | 155/0 |
+| `test:security` | 100/0 |
+| `test:manifest` / `test:language` / `test:mobile` / `test:settings` | 8/0 · 10/0 · 6/0 · 8/0 |
+
+### 5C-1 is blocked, and not by anything fixable here
+
+The rendered-language matrix recapture cannot be produced in this environment. Three independent
+reasons, each verified:
+
+1. **No producer exists.** `SAAGAR_RENDERED_UI_ATTESTATION` appears only in `scripts/audit/audits/a6.mjs`
+   (the validator), `scripts/audit/evidence-trust-root.mjs` (the signing policy) and
+   `scripts/audit/evidence-contract.mjs` (the path prefix). **Nothing in the repository writes one.**
+   The three existing attestations were produced by tooling that was never committed.
+2. **It must be Ed25519-signed** by trusted signer `phase4a-renderer-ed25519-9ec3b61bbbdb245f`.
+   `a6` gates validity on `trust.authorized`, so an unsigned record is worthless. That private key is
+   owner-provisioned and is not available here.
+3. **Rendering needs a visible browser** — the same `requestAnimationFrame` limitation that blocks
+   5A-2.
+
+This is the **same structural shape as A10-04/A10-05**: a validator with no producer, plus an
+owner-held signing key.
+
+**The existing attestation is now stale.** It is bound to product fingerprint `08734dfb`, and
+`www/app-i18n.js` changed with the wording import, so the current fingerprint has moved. `A6-04` and
+`A6-05` will fail on the next full audit run until a fresh matrix is captured and signed. Nothing in
+the focused suites covers this, which is why it is invisible today — exactly how the ETP-1 identity
+drift went unnoticed.
+
+### Revised remaining work
+
+| # | Item | Blocked by |
+|---|---|---|
+| 5A-2 | capture 12 `etp` visual cases | visible browser |
+| 5A-3 | fluent review of those 12 | owner |
+| **5C-1** | **rendered-language matrix** | **no producer + owner signing key + visible browser** |
+| 5C-2 | identity-bound visual approval | 5C-1 |
+| 5D-1 | PAYMENTTYPE25 disposition | owner decision, available now |
+| 5D-2 | ETP exceptions screen review | owner, available now |
+| 5E–5G | build, devices, production data, UAT, legal, signing, release, final audit | as before |
+
+**No engineering remains that can be done without either a visible browser, the signing key, a
+device, real data, or an owner decision.** 5D-1 and 5D-2 are the only items that need nothing but
+your judgement.
