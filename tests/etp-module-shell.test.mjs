@@ -32,6 +32,12 @@ test('ETP shell exposes the four bounded Reports-owned surfaces', () => {
   for (const report of ['R003', 'R013', 'R022', 'R025', 'PAYMENTTYPE25']) assert.match(etp, new RegExp(report));
 });
 
+test('ETP import confirmation controls preserve measured accessibility thresholds', () => {
+  assert.match(etp, /\.coverage-check input\{[^}]*width:44px;height:44px/);
+  assert.match(etp, /\.action\.primary\{[^}]*background:#7a5a00;color:#fff/);
+  assert.match(etp, /\.action\.primary:disabled\{[^}]*background:#667085;color:#fff;opacity:1/);
+});
+
 test('ETP module uses only the future narrow bridge gateway and has no direct fact/store capability', () => {
   const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
   assert.match(bridge, /etpGateway: getter\(function \(\) \{ return parentValue\('SaagarEtpModuleGateway'\); \}\)/);
