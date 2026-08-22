@@ -1,0 +1,53 @@
+{
+  "format": "SAAGAR_RELEASE_ROLE_ASSIGNMENT",
+  "schemaVersion": 1,
+  "recordedAt": "2026-08-22T21:11:51+05:30",
+  "recordedAgainstCommit": "ce3a75f",
+  "decidedBy": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "business-owner"
+  },
+  "roles": {
+    "privacyAndLegalReviewer": {
+      "identity": "Sagar (sagarbora91)",
+      "kind": "owner-self-review",
+      "note": "Not independent counsel. This is the business owner reviewing his own product against the privacy and legal checklist. Recorded as an owner self-review so the assurance level is not overstated."
+    },
+    "productionKeyCustodian": {
+      "identity": "Sagar (sagarbora91)",
+      "kind": "owner-held-key"
+    },
+    "independentReleaseApprover": {
+      "identity": "Sagar (sagarbora91)",
+      "kind": "NOT-INDEPENDENT",
+      "note": "Same person as the production key custodian. The independence control required by GATE-RELEASE is NOT satisfied."
+    },
+    "representativeStaffTesters": {
+      "identity": null,
+      "status": "UNFILLED",
+      "note": "GATE-UAT still needs named staff for the cashier/maker and manager/checker rows of the role matrix. The owner can only fill the owner/admin row."
+    }
+  },
+  "independenceException": {
+    "control": "GATE-RELEASE requires a named production-key custodian and an independent release approver, who must not be the same person.",
+    "satisfied": false,
+    "reason": "Single-owner business. The owner holds the signing key and is also the only available release authority.",
+    "ownerDirection": "Sagar directed on 2026-08-22 that he serve as production key custodian and release approver, after the independence requirement and its consequence were raised and explained.",
+    "riskAccepted": "No second person will verify that the signed artifact matches what was reviewed, that prerequisite gates were genuinely closed, or that the carried exceptions were understood before release. The separation-of-duties control that normally catches a custodian signing the wrong artifact, or waving through an unmet gate, is absent. Any later reviewer, auditor, acquirer or regulator examining this release will see a self-approved release.",
+    "doesNotClaim": [
+      "This is not an independent release approval",
+      "The register must not report the independence control as satisfied",
+      "This does not waive any prerequisite gate"
+    ],
+    "reopenCondition": "If a second person becomes available before release, they should perform the release approval and this exception can be withdrawn.",
+    "mitigationsAvailable": [
+      "Have a non-custodian second person countersign the artifact hash even if they are not a formal approver",
+      "Keep the signing receipt and the release decision as separate dated records rather than one combined statement"
+    ]
+  },
+  "consequenceForGateRelease": "GATE-RELEASE can be closed when the signing and release evidence exists, but it must close carrying this independence exception in its decision record, not as a clean pass.",
+  "stillUnfilled": [
+    "Named representative staff testers for GATE-UAT"
+  ]
+}

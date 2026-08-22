@@ -364,7 +364,14 @@
         "Owner acceptance with no unresolved P0 or P1 issue",
         "Separate privacy and legal checklist and approval"
       ],
-      "supportingEvidence": []
+      "supportingEvidence": [],
+      "roleAssignment": {
+        "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+        "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+        "privacyAndLegalReviewer": "Sagar (sagarbora91), owner self-review, not independent counsel",
+        "representativeStaffTesters": "UNFILLED",
+        "note": "The legal half has a named reviewer. The staff-matrix half still needs named cashier/maker and manager/checker testers; the owner can only fill the owner/admin row."
+      }
     },
     {
       "id": "GATE-RELEASE",
@@ -378,11 +385,19 @@
         "debuggable false and debug certificate absent",
         "Post-sign install and launch result",
         "All prerequisite gates closed or explicitly carried as accepted exceptions",
-        "Independent release decision naming the exact artifact"
+        "Release decision naming the exact artifact. NOTE: will be made by the key custodian himself; independence exception recorded in roleAssignment."
       ],
       "supportingEvidence": [
         "verification/audit/PHASE-4C1-FINAL-SEEDED-APK-2026-08-17.json proves debug-UAT identity only"
-      ]
+      ],
+      "roleAssignment": {
+        "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+        "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+        "productionKeyCustodian": "Sagar (sagarbora91)",
+        "releaseApprover": "Sagar (sagarbora91)",
+        "independenceSatisfied": false,
+        "note": "Owner directed on 2026-08-22 that he hold both roles. The independence control this gate requires is NOT satisfied and must not be reported as satisfied. When this gate closes it closes carrying a stated independence exception, not as a clean pass."
+      }
     }
   ],
   "carriedOpenExceptions": [
@@ -593,5 +608,11 @@
       "result": "Install-replace verified with full data preservation and clean relaunch; owner accepted. The seeded APK was also rebuilt from a clean tree and proved byte-identical, so the seeded build is reproducible."
     }
   },
-  "reconciledAt": "2026-08-22"
+  "reconciledAt": "2026-08-22",
+  "roleAssignments": {
+    "recordedAt": "2026-08-22",
+    "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+    "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+    "summary": "Owner holds privacy/legal reviewer, production key custodian and release approver. Independence between custodian and approver is NOT satisfied and is carried as an accepted exception. Staff UAT testers remain unfilled."
+  }
 }
