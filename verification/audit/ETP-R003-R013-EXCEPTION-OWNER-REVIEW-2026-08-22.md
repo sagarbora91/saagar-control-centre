@@ -2,7 +2,7 @@
 
 **Gate:** `GATE-ETP-EXCEPTIONS` / Phase 5D-2  
 **State:** `AWAITING_OWNER_REVIEW` — this package does not close the gate  
-**Product-code identity:** `c869bba04d84b22aa935f2a5c0247778ce651ece`  
+**Product-code identity:** `519c3e1de8e0843f2fff13909084e00b1e2712ad`
 **Review date:** 2026-08-22
 
 ## Exact review scope
@@ -50,7 +50,7 @@ not failure or recalculation of the verified revenue result.
 |---|---|
 | `www/etp-verified-presentation.js` | `031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6` |
 | `www/etp-module-gateway.js` | `50105e28e3fc64ed13f36ac5c83cab15c39010f6cef544c4ec0f62a4e7ad62af` |
-| `www/modules/etp/index.html` | `b70c8429caa745ec78a9ec67a873cad32c5604b10c1d27c0d23deb624feac3b7` |
+| `www/modules/etp/index.html` | `c3e0669a108a4575dc79d167626327fc2e55ac7bae1267d7ef9839e255c0b717` |
 | `tests/etp-verified-presentation.test.mjs` | `f64323b3e07d8180625f176626ae14895be3f87296583e2fbd8181d56a0dd838` |
 | `tests/etp-module-import-ui.test.mjs` | `785c41b9d93df6964c192b243bb752f2a7c659b428aca805d9787983a2fb143b` |
 | `tests/etp-import-ui.test.mjs` | `e8195aa72c6b2ece20dc5f09097c02d0efce89c54a64138c93ce5103e775959d` |
@@ -72,5 +72,4 @@ clear enough for operational use.
 
 ## Exact owner approval requested
 
-> I, Sagar (sagarbora91), reviewed the current Retail ETP R003 and R013 exception presentation bound to product-code identity c869bba04d84b22aa935f2a5c0247778ce651ece, etp-verified-presentation.js SHA-256 031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6, etp-module-gateway.js SHA-256 50105e28e3fc64ed13f36ac5c83cab15c39010f6cef544c4ec0f62a4e7ad62af, and ETP module index SHA-256 b70c8429caa745ec78a9ec67a873cad32c5604b10c1d27c0d23deb624feac3b7. I confirm that the R003 discount-enrichment and R013 CRO-attribution exception cards are intelligible, that their bounded status and difference counts are suitable for operational review, and that I understand these enrichment exceptions do not change verified revenue or sales totals. I approve closure of GATE-ETP-EXCEPTIONS for this exact identity. This approval does not approve source workbooks, PAYMENTTYPE25 classification, production publication, UAT, production signing or release.
-
+> I, Sagar (sagarbora91), reviewed the current Retail ETP R003 and R013 exception presentation bound to product-code identity 519c3e1de8e0843f2fff13909084e00b1e2712ad, etp-verified-presentation.js SHA-256 031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6, etp-module-gateway.js SHA-256 50105e28e3fc64ed13f36ac5c83cab15c39010f6cef544c4ec0f62a4e7ad62af, and ETP module index SHA-256 c3e0669a108a4575dc79d167626327fc2e55ac7bae1267d7ef9839e255c0b717. I confirm that the R003 discount-enrichment and R013 CRO-attribution exception cards are intelligible, that their bounded status and difference counts are suitable for operational review, and that I understand these enrichment exceptions do not change verified revenue or sales totals. I approve closure of GATE-ETP-EXCEPTIONS for this exact identity. This approval does not approve source workbooks, PAYMENTTYPE25 classification, production publication, UAT, production signing or release.
