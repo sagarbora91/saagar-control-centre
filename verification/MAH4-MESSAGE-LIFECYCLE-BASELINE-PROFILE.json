@@ -4,11 +4,11 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7957,
-    "mah3ProfileSha256": "482ca7a6c73d6d6db2567f5e4692342bf479f36eb64f7dc65f6c293db179e07b",
-    "mah3TreeSha256": "156f24fdaa5bfa1d8eab9987adda12b8b1f6f24929844145bf63468302cb89e0",
-    "currentWwwTreeSha256": "156f24fdaa5bfa1d8eab9987adda12b8b1f6f24929844145bf63468302cb89e0",
+    "mah3ProfileSha256": "f39b6478f37f3eee72a08538c5fe4b22b7f2313a421f7cc2c93be78619fcae5d",
+    "mah3TreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
+    "currentWwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
     "currentWwwFileCount": 103,
-    "currentWwwTotalBytes": 8065547,
+    "currentWwwTotalBytes": 8065619,
     "shell": {
       "path": "www/index.html",
       "bytes": 576070,

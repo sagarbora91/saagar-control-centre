@@ -46,7 +46,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // become solid high-contrast surfaces for deterministic rendered evidence.
   // +275 bytes on 2026-08-17: app-i18n defers Marathi/Hindi lookup construction
   // until a non-English language is selected; translations remain unchanged.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 8065547);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 8065619);
   assert.equal(inventory.upstream.manifest.moduleCount, 12);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
