@@ -7,9 +7,14 @@
 
 This section supersedes older resume instructions below; the older sections are
 retained as historical evidence. Current branch `agent/modular-phase1-shared-spine-v2`
-is pushed through `2648862`. The governed
-product identity remains `c809d04e4b67c6239218d5707908ac64f25fc94a` after the
-bounded ETP accessibility correction and MAH-2/MH1/MAH-3/MAH-4 regeneration.
+has a new bounded product correction at
+`a104f5f40bd2b475f9ab45fb407f99149fafb8d9`. The current WWW tree SHA-256 is
+`03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5`.
+The correction changes DAT-02 timing instrumentation only; it does not change
+storage semantics or UI wording. MAH-3/MAH-4 governed profiles were regenerated
+and the focused, modular and security sweeps are green. The earlier owner
+approvals remain valid historical evidence for `c809d04`, but their exact
+identity binding must be reconciled to this new product identity before release.
 
 ### Completed repository-controlled Phase 5 work
 
@@ -37,12 +42,12 @@ bounded ETP accessibility correction and MAH-2/MH1/MAH-3/MAH-4 regeneration.
 | Field | Current fact |
 |---|---|
 | APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` |
-| SHA-256 | `30922DADDA48E14112638A567248CB6DA35EC79F88D67F87F5FC05879B4393DD` |
+| SHA-256 | `90DDA701C2B9D44B89B6D7E6ACADB80A22CB67D5885616781C82DEC4F349D2DD` |
 | Bytes | 7,218,076 |
 | Package/version | `com.saagartraders.bcc`, version 2.9, code 209, minSdk 23, targetSdk 34 |
 | Signing | debug-signed seeded test candidate; not a production release |
 | Device | Samsung SM-T875, Android 13 / API 33 |
-| Installed identity | pulled installed `base.apk` matches the candidate SHA-256 exactly |
+| Installed identity | device-side `base.apk` SHA-256 matches the corrected candidate exactly |
 
 The 2026-08-22 physical session proved a successful cold launch, background and
 resume, native encrypted-store initialization with 6,558 records, and successful
@@ -58,7 +63,43 @@ no R003/R013/R022/R025 validation, publication, verified read, publication
 history or production-data exception result is claimed. `GATE-ETP-PRODUCTION`
 is explicitly **deferred, not passed**.
 
-### Owner approvals and device acceptance — 2026-08-22 evening
+### DAT-02 physical diagnostic and bounded correction — 2026-08-22
+
+The first SM-T875 DAT-02 attempt exposed a measurement defect, not slow storage:
+it reported a 10,291.2 ms frame p95 beside a 9.1 ms total p95. The rAF callback
+timestamp and `performance.now()` were being compared across different WebView
+clock domains during a window/surface replacement. Commit `a104f5f` now measures
+both frame endpoints and total time with one monotonic clock, with a permanent
+source regression test.
+
+The corrected APK was installed update-in-place and the exact installed APK hash
+matches `90dda701...`. Two controlled five-save runs, including the required A5
+stability repeat, passed on SM-T875 with no fatal exception or ANR:
+
+| Run | Export p95 | Frame p95 | Total p95 | Result |
+|---|---:|---:|---:|---|
+| Post-correction | 0.2 ms | 9.8 ms | 9.9 ms | **Accepted** |
+| A5 stability repeat | 9.3 ms | 10.6 ms | 10.7 ms | **Accepted** |
+
+Evidence: `verification/audit/PHASE-5-DAT02-SM-T875-2026-08-22.json`.
+
+This is a real physical-device pass for this SM-T875 and its two-year synthetic
+data profile. It does **not** close governed A10-04: the audit runner still has
+no qualifying device-runtime producer, rejects seeded-APK binding, and the
+controlled script also requires a second accepted/API-23-class device plus
+representative-real-volume justification. A10-05 remains unmeasured. No further
+DAT-02 repetition is pending on this SM-T875.
+
+The same session completed two Expense open/close PSS cycles as an external ADB
+diagnostic. PSS returned from 210,791 KB before opening Expense to 194,751 KB
+after the second close: -16,040 KB (-7.61%), with no fatal exception or ANR.
+That is healthy against the +10% diagnostic limit. Evidence:
+`verification/audit/PHASE-5-EXPENSE-MEMORY-DIAGNOSTIC-SM-T875-2026-08-22.json`.
+A10-05 remains formally `unmeasured`: `dumpsys meminfo` is not the compatible,
+signed, source-bound producer required by the audit runner. No further external
+ADB memory repetition is pending on this SM-T875.
+
+### Owner approvals and device acceptance — `c809d04` identity
 
 All three outstanding owner-review packages were approved, and physical update
 preservation was proved and accepted. Every hash cited by every package was
@@ -121,10 +162,12 @@ because no signing credentials are set. No release artifact was produced and the
 tree stayed clean. Without this fix that script would have failed on a host quirk
 at the exact moment the signing custodian ran it.
 
-#### Register standing after this session
+#### Register standing before the `a104f5f` DAT-02 correction
 
-**5 closed / 2 pending / 3 carried gates / 3 carried checks.** Twelve evidence
-hashes verified; the register validates against its own policy.
+The last reconciled register recorded **5 closed / 2 pending / 3 carried gates /
+3 carried checks**. Twelve evidence hashes verified and that register validated
+against its own policy for the pre-correction identity. Do not quote this count as
+a newly rebound `a104f5f` register until remaining item 7 below is complete.
 
 | State | Gates |
 |---|---|
@@ -190,9 +233,12 @@ row. This is now the only unnamed role in the programme.
    R003/R013.~~ **DONE 2026-08-22.**
 2. ~~Physical install-replace/update preservation.~~ **DONE and accepted
    2026-08-22;** `GATE-UPDATE-PHYSICAL` closed.
-3. Run A10-04 five-save latency and A10-05 retained-memory measurements using
-   qualifying physical-device instrumentation, or carry them explicitly into the
-   independent release decision.
+3. ~~Run the SM-T875 DAT-02 screen measurement.~~ **DONE twice and stable** for
+   the two-year synthetic profile. To close A10-04 rather than carry it, still
+   add a qualifying governed producer/build binding and satisfy the second-device
+   and representative-volume conditions. The two-cycle Expense ADB diagnostic
+   is also **DONE and healthy** (-7.61%), but A10-05 still needs its governed
+   producer/binding to close, or remains a carried exception.
 4. Run the API-23/OEM document-provider interruption and safe-low-storage ETP
    session. The Android-13 SM-T875 smoke does not prove an API-23-class device.
 5. When authorized files are available, run the real WLMHW/HEMW four-report ETP
@@ -200,12 +246,17 @@ row. This is now the only unnamed role in the programme.
 6. Record a named staff UAT tester and obtain their identity-bound decision. The
    privacy/legal reviewer is now named (owner self-review, 2026-08-22); the staff
    testers are still **UNFILLED**.
-7. Build the production-signed artifact using custodian-held credentials, record
+7. Reconcile the earlier identity-bound visual/language/exception approvals and
+   physical-update acceptance to corrected product commit `a104f5f`. Because the
+   change is non-visual and storage-semantics-neutral this should be a bounded
+   identity rebind, but it must be explicit; do not silently reuse `c809d04`
+   approvals for a changed artifact.
+8. Build the production-signed artifact using custodian-held credentials, record
    the named signing custodian, and install/launch the exact signed APK. The
    release approval will be made by the custodian himself: the independence
    control is **not satisfied** and closes as a recorded exception, not a pass.
    `build:release` is verified working and fail-closes without credentials.
-8. Run the final controlled audit, reconcile the closure register, update this
+9. Run the final controlled audit, reconcile the closure register, update this
    handoff, commit and push the final closure checkpoint.
 
 Do not rebuild or recapture the current candidate merely to repeat a successful

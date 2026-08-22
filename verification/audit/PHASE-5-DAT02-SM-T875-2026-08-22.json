@@ -1,0 +1,106 @@
+{
+  "format": "SAAGAR_DAT02_PHYSICAL_DIAGNOSTIC",
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-22T21:27:39+05:30",
+  "capturedBy": "assistant through adb on the owner's connected device",
+  "device": {
+    "model": "SM-T875",
+    "serial": "R52N807PTTE",
+    "androidRelease": "13",
+    "apiLevel": 33,
+    "type": "physical-android"
+  },
+  "artifact": {
+    "path": "V:\\Co work\\Projects\\Retail\\SaagarCC-C1-DemoData-2Years-v2.9.apk",
+    "sha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
+    "installedBaseApkSha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
+    "installedArtifactMatches": true,
+    "bytes": 7218076,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "minSdk": 23,
+    "targetSdk": 34,
+    "signingClass": "debug-signed seeded test candidate, not a production release",
+    "productCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9",
+    "wwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5"
+  },
+  "dataProfile": {
+    "classification": "two-year synthetic/demo seed",
+    "visibleSeedDays": 731,
+    "previouslyObservedNativeStoreRecords": 6558,
+    "representativeRealVolumeProved": false,
+    "caveat": "The controlled script says a demo-data pass does not by itself prove the real-volume DAT-02 gate unless the demo volume is confirmed to equal or exceed real operations."
+  },
+  "diagnosisAndCorrection": {
+    "initialResult": "rejected",
+    "initialMetricsMs": {
+      "exportP95": 0.4,
+      "frameP95": 10291.2,
+      "totalP95": 9.1
+    },
+    "initialScreenshot": {
+      "path": "V:\\Co work\\Projects\\Retail\\.audit-drafts\\dat02-result.png",
+      "sha256": "66e7eaa2f1884fd4e498d20a80a6e79ec9e5a69319a64402e5bf807353fa3f70"
+    },
+    "rootCause": "The rAF callback timestamp and performance.now() were compared as if they shared one clock domain. This Samsung WebView exposed different domains during a window/surface replacement, producing an impossible multi-second frame result beside a single-digit total result.",
+    "correction": "Both frame endpoints and total time now use performance.now() from one monotonic clock; a permanent source regression test enforces that rule.",
+    "correctionCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9"
+  },
+  "thresholdsMs": {
+    "samplesPerRun": 5,
+    "exportP95Maximum": 150,
+    "frameP95Maximum": 250,
+    "totalP95Maximum": 3000
+  },
+  "postCorrectionRuns": [
+    {
+      "purpose": "controlled post-correction run",
+      "capturedAt": "2026-08-22T21:25:03+05:30",
+      "result": "accepted",
+      "metricsMs": {
+        "exportP95": 0.2,
+        "frameP95": 9.8,
+        "totalP95": 9.9
+      },
+      "fatalExceptions": 0,
+      "anrs": 0,
+      "screenshot": {
+        "path": "V:\\Co work\\Projects\\Retail\\.audit-drafts\\dat02-fixed-result.png",
+        "sha256": "fe778bca4fae1e43d14ceab6079724ff1c288aacb316a30dd0a08bc25aec396a"
+      }
+    },
+    {
+      "purpose": "A5 stability repeat",
+      "capturedAt": "2026-08-22T21:27:39+05:30",
+      "result": "accepted",
+      "metricsMs": {
+        "exportP95": 9.3,
+        "frameP95": 10.6,
+        "totalP95": 10.7
+      },
+      "fatalExceptions": 0,
+      "anrs": 0,
+      "screenshot": {
+        "path": "V:\\Co work\\Projects\\Retail\\.audit-drafts\\dat02-stability-result.png",
+        "sha256": "8818a522c0064b15aecadaa9c5e39156da7c186ef082f5a4d04c0c1f98c9407a"
+      }
+    }
+  ],
+  "updateAndPersistenceObservations": {
+    "firstInstallTime": "2026-08-22 18:02:33",
+    "lastUpdateTime": "2026-08-22 21:24:22",
+    "userId": 10257,
+    "deviceEncryptionKeySha256": "128fa2776fb1d175da2119a8d77a57671be37f508a5a30582080e06e4a87a963",
+    "archiveSha256": "32bbabc99d352470e326dffdd363de249f2a48fe2476330dd758799f91b40533",
+    "meaning": "The corrected artifact was installed with update-in-place semantics and the previously captured user ID, wrapped DEK and archive identity remained unchanged."
+  },
+  "result": "pass-on-this-device-and-demo-profile",
+  "nonClaims": [
+    "Does not close governed A10-04: the committed audit runner still has no qualifying SAAGAR_A10_DEVICE_RUNTIME_ACCEPTANCE producer and rejects seeded-APK binding.",
+    "Does not satisfy the script's second accepted device or API-23-class device requirement.",
+    "Does not prove representative real-shop data volume.",
+    "Does not close A10-05 retained-memory acceptance.",
+    "Does not constitute staff UAT, production signing or release approval."
+  ]
+}
