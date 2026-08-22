@@ -4,11 +4,11 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7452,
-    "mah3ProfileSha256": "c5fd72b46a60854e2d6489c371d3f25a295fd8bd7a8a84a27943278feb0d8faf",
-    "mah3TreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
-    "currentWwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
+    "mah3ProfileSha256": "905b6f93e68a8cffc26b51fdd285823bb1d062d214fa20c1ec4e3eebb028c832",
+    "mah3TreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5",
+    "currentWwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5",
     "currentWwwFileCount": 103,
-    "currentWwwTotalBytes": 8065619,
+    "currentWwwTotalBytes": 8066007,
     "shell": {
       "path": "www/index.html",
       "bytes": 576070,
@@ -1181,8 +1181,8 @@
       },
       {
         "path": "www/storage-core.js",
-        "bytes": 89762,
-        "sha256": "a54938c4ead17d286c9bdc70facd86910d9dba4d3c33958ee967aa38a25df68f",
+        "bytes": 90150,
+        "sha256": "f58bd86058c0f4dc3dd577e348bc053a035efd3a6b7624f8526d95469c05d69e",
         "loadedBy": [
           "shell"
         ]

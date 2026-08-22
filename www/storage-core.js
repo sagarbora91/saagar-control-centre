@@ -608,11 +608,17 @@
       var samples = [];
       function oneSample() {
         return new Promise(function (resolve) {
-          window.requestAnimationFrame(function (frameStart) {
-            var beforeId = _persistCounter, totalStart = perfNow();
+          window.requestAnimationFrame(function () {
+            /* Some Android WebViews expose a requestAnimationFrame timestamp from
+               a different clock domain while their window/surface is being
+               replaced. DAT-02 must compare one monotonic clock throughout the
+               sample or a fast save can be reported with a multi-second frame
+               gap. */
+            var frameStart = perfNow(), beforeId = _persistCounter, totalStart = frameStart;
             _dirty = true;
             var save = flush();
-            window.requestAnimationFrame(function (frameEnd) {
+            window.requestAnimationFrame(function () {
+              var frameEnd = perfNow();
               Promise.resolve(save).then(function (ok) {
                 var perf = null;
                 for (var i = 0; i < _persistPerf.length; i++) if (_persistPerf[i].id > beforeId) { perf = _persistPerf[i]; break; }
