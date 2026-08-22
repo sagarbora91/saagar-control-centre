@@ -7,7 +7,7 @@
 
 This section supersedes older resume instructions below; the older sections are
 retained as historical evidence. Current branch `agent/modular-phase1-shared-spine-v2`
-is pushed through `1e34334c90acfb9870fd1eb1a827a6a9cf900d83`. The governed
+is pushed through `2648862`. The governed
 product identity remains `c809d04e4b67c6239218d5707908ac64f25fc94a` after the
 bounded ETP accessibility correction and MAH-2/MH1/MAH-3/MAH-4 regeneration.
 
@@ -49,21 +49,101 @@ resume, native encrypted-store initialization with 6,558 records, and successful
 opening of Retail ETP Import, Verified Reports, Coverage & History, and
 Reconciliation & Exceptions. No crash, ANR or fatal Android/WebView/Capacitor
 error was observed. Empty verified views correctly fail closed with
-`ETP_VIEW_SCOPE_REQUIRED` because no report set is published. The session was a
-fresh install (`firstInstallTime` equals `lastUpdateTime`), so it does **not**
-prove install-replace/update preservation.
+`ETP_VIEW_SCOPE_REQUIRED` because no report set is published. That first session was a fresh install (`firstInstallTime` equalled
+`lastUpdateTime`) and could not prove update preservation. **A second session at
+20:18 the same day did** — see below. `GATE-UPDATE-PHYSICAL` is now closed.
 
 The owner directed the real four-report session to be skipped for now. Therefore
 no R003/R013/R022/R025 validation, publication, verified read, publication
 history or production-data exception result is claimed. `GATE-ETP-PRODUCTION`
 is explicitly **deferred, not passed**.
 
+### Owner approvals and device acceptance — 2026-08-22 evening
+
+All three outstanding owner-review packages were approved, and physical update
+preservation was proved and accepted. Every hash cited by every package was
+independently recomputed before its approval was recorded.
+
+| Item | Result |
+|---|---|
+| MAH-3 ETP cases 169-180 | **Approved.** Baseline complete at **180/180**. All 12 screenshot hashes and the manifest hash `d1a47b0b...` re-verified |
+| 78-cell rendered-language matrix | **Approved.** `GATE-NATIVE-LANGUAGE` rebound to the current identity; Ed25519 signature verified valid and authorized |
+| R003/R013 exception presentation | **Approved.** `GATE-ETP-EXCEPTIONS` moved from carried exception to **closed** |
+| PAYMENTTYPE25 | Reconciled into the register as **closed** on the 2026-08-21 continued-quarantine disposition |
+| Physical update-in-place | **Accepted.** `GATE-UPDATE-PHYSICAL` **closed** |
+
+Approval records are in `verification/audit/approvals/`:
+`MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json`,
+`PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json`,
+`ETP-EXCEPTIONS-APPROVAL-2026-08-22.json`,
+`GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json`.
+
+**Transcription note.** The MAH-3 package states the visible harness is the
+authority for marking each case. The twelve results were transcribed from the
+identity-bound owner approval rather than marked case-by-case in the harness.
+Each case therefore carries an `evidenceRef` naming the external capture manifest
+and its own screenshot hash, and the approval record says so plainly.
+
+#### Install-replace evidence — the gap the earlier session left
+
+`adb install -r` on SM-T875, Android 13 / API 33, serial `R52N807PTTE`:
+
+| Check | Result |
+|---|---|
+| `firstInstallTime` | held at 18:02:33 — proves update, not fresh install |
+| `lastUpdateTime` | advanced to 20:18:08 — proves the replace occurred |
+| `userId` | 10257 unchanged |
+| `files/bcc.dek` | hash unchanged — the Keystore-wrapped DEK survived |
+| `saagar_qms_archive.json` (7.9 MB) | hash unchanged before, after, and post-relaunch |
+| WebView storage | 386 KB unchanged |
+| Relaunch | MainActivity focused, 0 fatals, 0 ANRs, 0 WebView/Capacitor errors |
+| Installed `base.apk` | equals the built artifact exactly |
+
+Evidence: `verification/audit/PHASE-5-UPDATE-PHYSICAL-EVIDENCE-2026-08-22.json`.
+
+#### Build reproducibility and a host-environment build fix
+
+The seeded APK was rebuilt from a clean tree at `a4612db` and came out
+**byte-identical** to the installed artifact and to the hash recorded above:
+`30922dad...`, 7,218,076 bytes. The seeded build is reproducible.
+
+Getting there required fixing a build bug that is host configuration, not project
+code. This machine sets `NoDefaultCurrentDirectoryInExePath=1`, so `cmd.exe` will not
+resolve a bare `gradlew.bat` from the working directory. `scripts/build-seeded-apk.mjs`,
+`build:apk` and `build:release` all used the bare name and all failed with
+`'gradlew.bat' is not recognized`. All three now use the current-directory-relative
+form, matching the convention already documented and used in
+`scripts/audit/runner-support.mjs` and `scripts/audit/controlled-probes.mjs`.
+
+**`build:release` was verified end to end.** It now reaches Gradle and stops at the
+intended fail-closed guard, `Signed release blocked: set SAAGAR_KEYSTORE_FILE...`,
+because no signing credentials are set. No release artifact was produced and the
+tree stayed clean. Without this fix that script would have failed on a host quirk
+at the exact moment the signing custodian ran it.
+
+#### Register standing after this session
+
+**5 closed / 2 pending / 3 carried gates / 3 carried checks.** Twelve evidence
+hashes verified; the register validates against its own policy.
+
+| State | Gates |
+|---|---|
+| Closed | UPDATE-API23, NATIVE-LANGUAGE, PAYMENTTYPE25, ETP-EXCEPTIONS, UPDATE-PHYSICAL |
+| Pending | UAT, RELEASE |
+| Carried | ETP-PHYSICAL, ETP-INTERRUPTION, ETP-PRODUCTION |
+
+`GATE-UPDATE-API23` is closed but carries `rebindingRequired`: it is bound to the
+superseded APK `f7f18ea3`, not the artifact that will ship.
+
+Focused sweep: **438 tests, zero failures** — modular 86, MAH-4 46, MAH-3 19,
+ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8.
+
 ### Exact remaining Phase 5 closure work
 
-1. Obtain Sagar's exact identity-bound approvals for MAH-3 cases 169-180, the
-   78-cell rendered-language matrix, and R003/R013 exception presentation.
-2. Run physical install-replace/update preservation against the exact APK if that
-   gate is retained; the current fresh-install session cannot substitute for it.
+1. ~~Owner approvals for MAH-3 169-180, the rendered-language matrix and
+   R003/R013.~~ **DONE 2026-08-22.**
+2. ~~Physical install-replace/update preservation.~~ **DONE and accepted
+   2026-08-22;** `GATE-UPDATE-PHYSICAL` closed.
 3. Run A10-04 five-save latency and A10-05 retained-memory measurements using
    qualifying physical-device instrumentation, or carry them explicitly into the
    independent release decision.
