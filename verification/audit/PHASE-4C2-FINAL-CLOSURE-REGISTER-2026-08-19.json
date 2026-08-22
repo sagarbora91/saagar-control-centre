@@ -80,8 +80,8 @@
   },
   "summary": {
     "gateTotal": 10,
-    "gatesClosed": 4,
-    "gatesOpen": 6,
+    "gatesClosed": 5,
+    "gatesOpen": 5,
     "allGatesClosed": false,
     "carriedOpenExceptionCount": 3,
     "carriedOpenExceptionIds": [
@@ -113,7 +113,7 @@
     "auditRunResult": "complete-with-findings-or-gaps",
     "findingCount": 1,
     "mandatoryUnmeasuredCount": 2,
-    "gatesPendingExternalAuthority": 3,
+    "gatesPendingExternalAuthority": 2,
     "gatesCarriedAsException": 3,
     "carriedExceptionTotal": 6,
     "carriedGateIds": [
@@ -186,19 +186,33 @@
     },
     {
       "id": "GATE-UPDATE-PHYSICAL",
-      "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "No physical-device update-in-place acceptance exists for the frozen seeded APK f7f18ea3. The owner has no Android device in hand, and acceptance-device re-designation away from Samsung SM-T875 has not been recorded.",
-      "requiredAuthority": "Business owner Sagar (sagarbora91) operating a physical Android device of API level at least 23, model named at execution time",
-      "requiredEvidence": [
-        "Named device model, Android version and API level",
-        "Installed APK SHA-256 equal to f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287",
-        "Update-in-place without uninstall or data clear",
-        "Preserved application data and normal relaunch",
-        "No unresolved crash, ANR or blank screen"
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-22T21:00:31+05:30",
+      "authority": {
+        "kind": "business-owner-and-physical-device-acceptor",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Samsung SM-T875, Android 13 / API 33, serial R52N807PTTE. adb install -r of APK 30922dad. firstInstallTime held at 18:02:33 while lastUpdateTime advanced to 20:18:08, proving update rather than fresh install; userId stayed 10257; bcc.dek and the 7.9 MB QMS archive hashes unchanged before, after and post-relaunch; WebView storage unchanged at 386 KB; MainActivity focused with zero fatals, ANRs or WebView errors; installed base.apk hash equals the built artifact.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+          "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
+          "result": "approve"
+        },
+        {
+          "path": "verification/audit/PHASE-5-UPDATE-PHYSICAL-EVIDENCE-2026-08-22.json",
+          "sha256": "eca69dfab75e679d77e09b9452a6424150ad936100056813ffaf44440cafaa0e",
+          "result": "pass"
+        }
       ],
-      "supportingEvidence": [
-        "GATE-UPDATE-API23 closes the emulator install-replace engineering row only and is explicitly not physical acceptance"
+      "nonClaims": [
+        "Not a production-signed release",
+        "Not physical API-23/OEM acceptance; this device is API 33",
+        "Not ETP production publication",
+        "Not staff UAT or legal approval",
+        "Does not close A10-04 or A10-05",
+        "No module smoke beyond launch and focus"
       ]
     },
     {
@@ -495,7 +509,7 @@
     "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
     "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
   ],
-  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 438 tests, and all three owner-review packages are approved. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
+  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 438 tests, all three owner-review packages are approved, and physical update-in-place is accepted on SM-T875. Remaining: an API-23-class OEM device for the two ETP device gates, authorized production data, and named people for UAT, legal, signing and release. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
   "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
   "etpHold": {
     "decidedAt": "2026-08-21",
@@ -572,6 +586,11 @@
         "R003/R013 exception presentation"
       ],
       "effect": "All three approved. The MAH-3 visual baseline is complete at 180/180, GATE-NATIVE-LANGUAGE is rebound to the current identity, and GATE-ETP-EXCEPTIONS moves from carried exception to closed."
+    },
+    "deviceSession": {
+      "at": "2026-08-22",
+      "device": "SM-T875 / Android 13 / API 33",
+      "result": "Install-replace verified with full data preservation and clean relaunch; owner accepted. The seeded APK was also rebuilt from a clean tree and proved byte-identical, so the seeded build is reproducible."
     }
   },
   "reconciledAt": "2026-08-22"

@@ -1,0 +1,57 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "GATE-UPDATE-PHYSICAL",
+  "decision": "approve",
+  "state": "closed",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "business-owner-and-physical-device-acceptor"
+  },
+  "receivedAt": "2026-08-22T21:00:31+05:30",
+  "evidence": [
+    {
+      "path": "verification/audit/PHASE-5-UPDATE-PHYSICAL-EVIDENCE-2026-08-22.json",
+      "sha256": "eca69dfab75e679d77e09b9452a6424150ad936100056813ffaf44440cafaa0e",
+      "result": "pass"
+    }
+  ],
+  "device": {
+    "model": "SM-T875",
+    "serial": "R52N807PTTE",
+    "androidRelease": "13",
+    "apiLevel": 33,
+    "type": "physical-android"
+  },
+  "artifact": {
+    "filename": "SaagarCC-C1-DemoData-2Years-v2.9.apk",
+    "sha256": "30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd",
+    "bytes": 7218076,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "signingClass": "debug-signed seeded test candidate"
+  },
+  "identityBinding": "Update-in-place by adb install -r on the named physical device. firstInstallTime held at 2026-08-22 18:02:33 while lastUpdateTime advanced to 20:18:08, proving an update rather than a fresh install. userId stayed 10257. The Keystore-wrapped bcc.dek hash and the 7.9 MB saagar_qms_archive.json hash were unchanged before the update, after the update, and again after relaunch. WebView storage stayed at 386 KB. Relaunch reached com.saagartraders.bcc/.MainActivity focused with zero fatal exceptions, ANRs or WebView/Capacitor errors. The installed base.apk SHA-256 equals the built artifact exactly.",
+  "approvalText": "I, Sagar (sagarbora91), accept the 2026-08-22 physical update-in-place session on Samsung SM-T875, Android 13 / API 33, serial R52N807PTTE, for APK SHA-256 30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd, package com.saagartraders.bcc version 2.9 code 209. I confirm the application was updated without uninstall or data clear, that application data and the encrypted-store key were preserved, and that the application relaunched normally with no unresolved crash, ANR or blank screen. I approve closure of GATE-UPDATE-PHYSICAL for this exact device and artifact.",
+  "supersedesPriorSession": "The earlier 2026-08-22 session was a fresh install (firstInstallTime equalled lastUpdateTime) and therefore could not establish update preservation. This session does.",
+  "nonClaims": [
+    "Not a production-signed release; this artifact is debug-signed",
+    "Not physical API-23/OEM document-provider acceptance; this device is API 33",
+    "Not ETP production publication",
+    "Not staff UAT or legal approval",
+    "Does not close A10-04 or A10-05",
+    "No module smoke beyond launch and focus was performed"
+  ],
+  "scope": {
+    "closes": ["GATE-UPDATE-PHYSICAL"],
+    "doesNotClose": [
+      "GATE-ETP-PHYSICAL",
+      "GATE-ETP-INTERRUPTION",
+      "GATE-ETP-PRODUCTION",
+      "GATE-UAT",
+      "GATE-RELEASE"
+    ]
+  }
+}
