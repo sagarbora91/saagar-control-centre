@@ -1,7 +1,9 @@
 # Phase 5 remaining-work inventory — 2026-08-22
 
-**Branch/HEAD:** `agent/modular-phase1-shared-spine-v2` at
-`f29b558` (local, `origin` and `github` synchronized at inspection).
+**Branch/HEAD:** `agent/modular-phase1-shared-spine-v2` at `efc7262`.
+**Refreshed 2026-08-22** after the visual capture, rendered-language matrix and
+SM-T875 session landed. The original inventory was pinned at `f29b558` and
+understated progress: items 1 and 4 below have since been completed.
 
 **Purpose:** record exactly what Sagar completed after the ETP implementation
 checkpoint and what still blocks final release closure. This inventory does not
@@ -50,10 +52,10 @@ rerun, replace or reinterpret preserved evidence.
 
 | Order | Item | State / blocker | Required authority or input |
 |---:|---|---|---|
-| 1 | Capture MAH-3 cases 169–180 for ETP | **OPEN** — requires a visible browser; headless automation keeps `document.hidden=true` and `requestAnimationFrame` never advances | Visible desktop browser |
+| 1 | Capture MAH-3 cases 169–180 for ETP | **DONE** — captured in a visible browser. All 12 screenshot hashes and the manifest hash `d1a47b0b…` independently re-verified | complete |
 | 2 | Review the 12 ETP visual cases | **OPEN** after capture | Fluent/visual owner reviewer |
 | 3 | Restore `visualBaselinesCaptured` and dependent MAH-3/MAH-4 gate fields | **OPEN** after all 12 cases pass review | Engineering, using exact reviewed evidence |
-| 4 | Produce the 72-cell rendered-language attestation | **BLOCKED** — repository has a validator but no committed producer; requires visible browser and owner-held Ed25519 key `phase4a-renderer-ed25519-9ec3b61bbbdb245f` | Capture producer + owner signing key |
+| 4 | Produce the rendered-language attestation | **DONE** — **78** cells (cardinality now derived, not 72), 2,463 target and 6,303 contrast measurements, zero violations. Ed25519 signature independently verified valid and authorized | complete |
 | 5 | Identity-bound fluent approval of the rendered matrix | **OPEN** after item 4 | Sagar as fluent Marathi/Hindi reviewer |
 | 6 | Review R003/R013 exception presentation | **OPEN** | Sagar/owner; confirm bounded exceptions remain intelligible and non-revenue |
 | 7 | Freeze post-evidence identity and build one seeded APK | **OPEN** after items 1–6 | Engineering |
@@ -74,12 +76,33 @@ rerun, replace or reinterpret preserved evidence.
 
 These are not passes and must survive into the final release decision.
 
-## Progress statement
+## Progress statement — refreshed 2026-08-22
 
-The ETP implementation and repository-controlled capability work are complete.
-Against the 16-item consolidated Phase 5 checklist, 3 items are fully closed
-(`5B-1`, `5B-2`, `5D-1`) and 13 remain. Most remaining items are evidence or
-external-authority work, not unfinished ETP feature engineering.
+The ETP implementation and all repository-controlled work are complete. Of the
+13 inventory items, **items 1 and 4 are now DONE** and **11 remain**.
+
+**Nothing engineering-side is blocking.** The critical path is now three owner
+reviews, then one build, then devices, data and signatures:
+
+| Blocked on | Items |
+|---|---|
+| **Owner review, ready now** | 2 (12 visual cases), 5 (rendered language), 6 (R003/R013 exceptions) |
+| Engineering, after those reviews | 3 (restore gate fields), 7 (freeze and build one APK) |
+| Named people | 11 (staff UAT + privacy/legal reviewer), 12 (signing custodian + independent approver) |
+| Device | 8 (install-replace), 9 (API-23 OEM) |
+| Real data | 10 (production four-report publication) |
+| Last | 13 (final audit, register and HANDOFF) |
+
+### Two facts the earlier draft did not carry
+
+1. **The product identity has moved past the Phase 4C.1 freeze.** Current is
+   `c809d04` / fingerprint `3527503a…`; the register was frozen at `ad2d643` /
+   `08734dfb` / APK `f7f18ea3`. `GATE-UPDATE-API23` and `GATE-NATIVE-LANGUAGE`
+   are therefore closed against a **superseded identity** and need rebinding to
+   the artifact that ships. Recorded in the register under `identityMigration`.
+2. **The SM-T875 session does not close `GATE-UPDATE-PHYSICAL`.** It was a fresh
+   install (`firstInstallTime` equals `lastUpdateTime`), so install-replace and
+   update preservation are unproven.
 
 ## No-repeat boundary
 

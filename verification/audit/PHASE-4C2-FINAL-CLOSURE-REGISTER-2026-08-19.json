@@ -80,8 +80,8 @@
   },
   "summary": {
     "gateTotal": 10,
-    "gatesClosed": 2,
-    "gatesOpen": 8,
+    "gatesClosed": 3,
+    "gatesOpen": 7,
     "allGatesClosed": false,
     "carriedOpenExceptionCount": 3,
     "carriedOpenExceptionIds": [
@@ -113,7 +113,7 @@
     "auditRunResult": "complete-with-findings-or-gaps",
     "findingCount": 1,
     "mandatoryUnmeasuredCount": 2,
-    "gatesPendingExternalAuthority": 4,
+    "gatesPendingExternalAuthority": 3,
     "gatesCarriedAsException": 4,
     "carriedExceptionTotal": 7,
     "carriedGateIds": [
@@ -121,7 +121,8 @@
       "GATE-ETP-INTERRUPTION",
       "GATE-ETP-PRODUCTION",
       "GATE-ETP-EXCEPTIONS"
-    ]
+    ],
+    "gatesClosedButNeedingRebinding": 2
   },
   "gates": [
     {
@@ -147,7 +148,12 @@
         "Not OEM document-provider evidence",
         "Not A10-04 or A10-05 measurement",
         "Not production signing or release approval"
-      ]
+      ],
+      "rebindingRequired": {
+        "reason": "Closed against the superseded Phase 4C.1 identity; see identityMigration.",
+        "boundTo": "APK f7f18ea3, which is not the artifact that will ship",
+        "status": "Needs re-running against the final production-signed artifact."
+      }
     },
     {
       "id": "GATE-NATIVE-LANGUAGE",
@@ -172,7 +178,12 @@
         "Not staff UAT or legal approval",
         "Does not close A10-01, A10-04 or A10-05",
         "Not production signing or release approval"
-      ]
+      ],
+      "rebindingRequired": {
+        "reason": "Closed against the superseded Phase 4C.1 identity; see identityMigration.",
+        "boundTo": "product fingerprint 08734dfb, superseded by the localization import",
+        "status": "A fresh 78-cell signed rendered matrix exists for the current identity and is AWAITING owner fluent approval."
+      }
     },
     {
       "id": "GATE-UPDATE-PHYSICAL",
@@ -310,18 +321,27 @@
     },
     {
       "id": "GATE-PAYMENTTYPE25",
-      "state": "open",
-      "decision": "pending-external-authority",
-      "reason": "Non-zero PAYMENTTYPE25 values remain safely quarantined. The owner has approved neither a tender mapping nor a continued-quarantine disposition.",
-      "requiredAuthority": "Business owner Sagar (sagarbora91)",
-      "requiredEvidence": [
-        "Explicit mapping identifier with SHA-256, or an explicit continued-quarantine decision",
-        "Decision covers 2,802 WLMHW and 18 HEMW R022 rows",
-        "No guessed tender mapping and no silent publication of excluded values"
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-21T15:01:34+05:30",
+      "authority": {
+        "kind": "business-owner",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Business disposition, not a code or device measurement. It binds to the PAYMENTTYPE25 population recorded in verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json: 2,802 non-zero WLMHW R022 rows and 18 HEMW rows.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-4-PAYMENTTYPE25-QUARANTINE-APPROVAL-2026-08-21.json",
+          "sha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277",
+          "result": "continued-quarantine"
+        }
       ],
-      "supportingEvidence": [
-        "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
-        "npm run test:etp passed PAYMENTTYPE25 quarantine behavior"
+      "disposition": "Continued quarantine. All non-zero PAYMENTTYPE25 tender values stay quarantined until an authoritative Helios mapping exists. They must not be classified, folded into Others, or silently published.",
+      "reopenCondition": "An authoritative Helios mapping identifier and its reviewed evidence become available.",
+      "nonClaims": [
+        "Not a tender mapping",
+        "Does not alter revenue or sales totals; quarantine drops tender attribution only",
+        "Does not close ETP production publication"
       ]
     },
     {
@@ -480,7 +500,7 @@
     "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
     "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
   ],
-  "honestStatusSentence": "Modular HTML migration and Phase 4C.1 engineering and evidence execution are complete. Phase 4C.2 external release acceptance is pending, with C-08 failed, A10-01, A10-04 and A10-05 carried open as owner-accepted exceptions, and the four Retail ETP gates carried open pending that module's separate modular migration while the feature nonetheless ships reachable.",
+  "honestStatusSentence": "Phase 5 repository-controlled work is complete and the focused suite sweep is green at 438 tests. Three owner-review packages are captured and awaiting judgement. The product identity has moved past the Phase 4C.1 freeze, so the two previously-closed gates need rebinding to the artifact that will ship. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
   "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
   "etpHold": {
     "decidedAt": "2026-08-21",
@@ -507,5 +527,67 @@
     },
     "optionNotTaken": "The alternative was to hide ETP behind a feature flag so the four gates would leave release scope honestly. That was not chosen because adding a flag is a product change that would supersede the frozen fingerprint, APK, comparison, capability approval and language approval, restarting Phase 4C.1.",
     "notCarried": "GATE-PAYMENTTYPE25 is deliberately NOT carried as an ETP exception. It is a business mapping disposition that needs no device, no production run and no modular migration, and it remains pending owner decision."
-  }
+  },
+  "identityMigration": {
+    "recordedAt": "2026-08-22",
+    "statement": "The Phase 4C.1 identity this register was frozen against is SUPERSEDED. The ETP twelfth module, the 119-row localization import, the shared-runtime protection repair and the ETP accessibility correction all changed product bytes.",
+    "frozenPhase4C1": {
+      "productCommit": "ad2d643dfa371c05779aafc52e0c2ecf618c1a42",
+      "productFingerprintSha256": "08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e",
+      "apkFilename": "SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk",
+      "apkSha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287"
+    },
+    "currentPhase5": {
+      "productCommit": "c809d04e4b67c6239218d5707908ac64f25fc94a",
+      "productFingerprintSha256": "3527503aa332c01f5c1c0ecb669f36a2d79a930f1fe0e106054db527067823a2",
+      "wwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
+      "seededApkFilename": "SaagarCC-C1-DemoData-2Years-v2.9.apk",
+      "seededApkSha256": "30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd",
+      "seededApkBytes": 7218076,
+      "signingClass": "debug-signed seeded test candidate, not a production release"
+    },
+    "consequence": "Gate rows closed against the 4C.1 identity are historically valid but are NOT bound to the artifact that will ship. They require rebinding before release."
+  },
+  "phase5Progress": {
+    "recordedAt": "2026-08-22",
+    "completedSinceRegisterFroze": [
+      "ETP implemented as the twelfth modular module with a bounded parent gateway",
+      "119-row localization package owner-approved and imported",
+      "ETP shared-runtime protections, audit bridge, home navigation and responsive containment repaired",
+      "Identity regeneration across MAH-2, MH1, MAH-3 and MAH-4",
+      "Capability inventory 660 to 680; 17 ETP deltas owner-approved 2026-08-22",
+      "ETP accessibility correction: 44x44 checkbox target, 6.38:1 enabled and 4.97:1 disabled contrast",
+      "MAH-3 contract honestly expanded 168 to 180 cases",
+      "12 ETP visual cases captured in a visible browser",
+      "78-cell rendered-language matrix captured and Ed25519-signed, signature verified valid",
+      "Physical SM-T875 session: cold launch, background/resume, encrypted store with 6,558 records, all four ETP surfaces opened, zero crash or fatal error"
+    ],
+    "focusedSuiteSweep": "438 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8",
+    "awaitingOwnerReview": [
+      {
+        "path": "verification/audit/MAH3-ETP-VISUAL-OWNER-REVIEW-2026-08-22.md",
+        "sha256": "ab502fe3e13c8f5bcd324e18d2e91b707f57c984744681af5a37754e42e86dc9",
+        "state": "AWAITING_OWNER_REVIEW",
+        "note": "12 ETP visual cases 169-180. Screenshots captured externally; all 12 file hashes and the manifest hash independently verified. Capture is not a pass."
+      },
+      {
+        "path": "verification/audit/PHASE-5C-RENDERED-LANGUAGE-OWNER-REVIEW-2026-08-22.md",
+        "sha256": "0228fddb8ed2465d73a4bddcf5b104f2162c97bcf6da7e711e7976695a1b897e",
+        "state": "AWAITING_OWNER_REVIEW",
+        "note": "78 cells, 2,463 target and 6,303 contrast measurements, zero violations, signature valid. Needs fluent Marathi and Hindi approval."
+      },
+      {
+        "path": "verification/audit/ETP-R003-R013-EXCEPTION-OWNER-REVIEW-2026-08-22.md",
+        "sha256": "880da292ec91364a0aa0feda2ecaaf123b0aeb00fdbb9efd3351c77aac80da20",
+        "state": "AWAITING_OWNER_REVIEW",
+        "note": "Bounded R003/R013 exception presentation rebound to the corrected ETP identity."
+      }
+    ],
+    "notProven": [
+      "The SM-T875 session was a fresh install (firstInstallTime equals lastUpdateTime), so it does NOT prove install-replace or update preservation. GATE-UPDATE-PHYSICAL stays open.",
+      "The real four-report session was skipped by owner direction. GATE-ETP-PRODUCTION is deferred, not passed.",
+      "No production signing exists; the current artifact is debug-signed."
+    ]
+  },
+  "reconciledAt": "2026-08-22"
 }
