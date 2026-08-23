@@ -1,5 +1,11 @@
 # Phase 5 remaining-work inventory — 2026-08-22
 
+> **Superseded historical snapshot.** This inventory predates the owner reviews,
+> corrected APK, SM-T875 update/DAT-02/memory sessions and the explicit `a104f5f`
+> approval rebind. Do not use its OPEN rows or 438-test count as current state.
+> The authoritative resume inventory is `docs/audit/HANDOFF.md` at checkpoint
+> `2347f6b` or later. The body below is retained as then-accurate history.
+
 **Branch/HEAD:** `agent/modular-phase1-shared-spine-v2` at `efc7262`.
 **Refreshed 2026-08-22** after the visual capture, rendered-language matrix and
 SM-T875 session landed. The original inventory was pinned at `f29b558` and

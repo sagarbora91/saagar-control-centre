@@ -5,6 +5,9 @@
 
 ## Current Phase 5 resume checkpoint — 2026-08-22
 
+Current remaining-work inventory after the 2026-08-23 crash recovery:
+`verification/audit/PHASE-5-CURRENT-REMAINING-INVENTORY-2026-08-23.md`.
+
 This section supersedes older resume instructions below; the older sections are
 retained as historical evidence. Current branch `agent/modular-phase1-shared-spine-v2`
 has a new bounded product correction at
@@ -23,20 +26,23 @@ record below.
   6.38:1 and disabled contrast is 4.97:1. Focused ETP UI validation passed 16/16.
 - Governed identity regeneration passed `test:manifest` 8/8 and `test:modular`
   86/86. The current WWW tree SHA-256 is
-  `1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41`.
+  `03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5`.
 - Fresh MAH-3 ETP cases 169-180 were visibly captured for the current identity.
   External manifest SHA-256:
   `d1a47b0b920d239c4b36d7a82fd9307525db41076ba0a0d05d7f971a5c026d94`.
-  The cases remain awaiting genuine owner review; capture alone is not a pass.
+  Sagar approved them and explicitly rebound the approval to `a104f5f`; the
+  MAH-3 baseline is complete at 180/180.
 - The signed rendered-language matrix covers 78/78 cells, 2,463 target
   measurements and 6,303 contrast measurements with zero violations. A6-02,
   A6-04 and A6-05 pass and the signature validates. Evidence SHA-256:
   `f086db579c2fa4bbefaeee40ecdfbdb6f3377de5964382a3dc53b2d9a5ee8cc7`.
-  Fluent Marathi/Hindi owner approval remains open.
+  Sagar's fluent Marathi/Hindi approval is complete and explicitly rebound to
+  `a104f5f`; `GATE-NATIVE-LANGUAGE` is closed.
 - The R003/R013 presentation package is rebound to the corrected ETP identity;
-  focused tests pass 24/24. Its owner approval remains open.
-- PAYMENTTYPE25 remains under the owner's approved continued quarantine until an
-  authoritative Helios mapping becomes available.
+  focused tests pass 24/24 and owner approval is complete;
+  `GATE-ETP-EXCEPTIONS` is closed.
+- PAYMENTTYPE25 is closed on the owner's approved continued-quarantine
+  disposition until an authoritative Helios mapping becomes available.
 
 ### Current seeded APK and SM-T875 session
 
@@ -205,8 +211,8 @@ shipping artifact.
 `GATE-UPDATE-API23` is closed but carries `rebindingRequired`: it is bound to the
 superseded APK `f7f18ea3`, not the artifact that will ship.
 
-Focused sweep: **438 tests, zero failures** — modular 86, MAH-4 46, MAH-3 19,
-ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8.
+Focused sweep: **439 tests, zero failures** — modular 86, MAH-4 46, MAH-3 19,
+ETP 155, security 101, manifest 8, language 10, mobile 6, settings 8.
 
 ### Release roles and the independence exception — 2026-08-22
 

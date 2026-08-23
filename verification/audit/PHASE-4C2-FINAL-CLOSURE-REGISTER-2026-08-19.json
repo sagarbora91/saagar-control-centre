@@ -381,7 +381,7 @@
       "id": "GATE-UAT",
       "state": "open",
       "decision": "pending-external-authority",
-      "reason": "Named representative staff UAT and an authorized privacy and legal review have not been received for the frozen identity. No legal reviewer has been named.",
+      "reason": "Representative staff UAT remains unperformed because the cashier/maker and manager/checker testers are unfilled. Sagar is named as privacy/legal owner self-reviewer, not independent counsel, but the identity-bound privacy/legal checklist decision still needs to be recorded.",
       "requiredAuthority": "Named representative staff, business owner and an authorized privacy and legal reviewer",
       "requiredEvidence": [
         "Completed role and store UAT matrix with expected and actual outcomes",
@@ -401,7 +401,7 @@
       "id": "GATE-RELEASE",
       "state": "open",
       "decision": "pending-external-authority",
-      "reason": "The frozen candidate is debug-signed. Production signing custody is not established, no independent release approver has been named, and prerequisite gates remain open.",
+      "reason": "The corrected candidate is debug-signed and prerequisite gates remain open. Sagar is named as production-key custodian and release approver, but the same-person assignment does not satisfy independence and is carried as an explicit exception. No production-signed artifact, signing receipt, post-sign device result or exact-artifact release decision exists.",
       "requiredAuthority": "Named production-key custodian and an independent release approver, who must not be the same person",
       "requiredEvidence": [
         "Production-signed artifact SHA-256 and signing certificate SHA-256",
@@ -548,7 +548,7 @@
     "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
     "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
   ],
-  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 438 tests, all three owner-review packages are approved, and physical update-in-place is accepted on SM-T875. Remaining: an API-23-class OEM device for the two ETP device gates, authorized production data, and named people for UAT, legal, signing and release. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
+  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 439 tests, all three owner-review packages are approved and rebound to a104f5f, and physical update-in-place is accepted on SM-T875 for corrected APK 90dda701. Remaining: an API-23-class OEM device for the two ETP device gates, authorized production data, representative staff UAT, production signing and release. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
   "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
   "etpHold": {
     "decidedAt": "2026-08-21",
@@ -612,7 +612,7 @@
       "Corrected a104f5f APK installed update-in-place; DAT-02 accepted twice; Expense memory diagnostic completed twice with -7.61% final retained PSS",
       "Owner explicitly rebound MAH-3 ETP visuals, native-language, ETP exception presentation and physical update acceptance to a104f5f"
     ],
-    "focusedSuiteSweep": "438 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 100, manifest 8, language 10, mobile 6, settings 8",
+    "focusedSuiteSweep": "439 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 101, manifest 8, language 10, mobile 6, settings 8",
     "awaitingOwnerReview": [],
     "notProven": [
       "The SM-T875 session was a fresh install (firstInstallTime equals lastUpdateTime), so it does NOT prove install-replace or update preservation. GATE-UPDATE-PHYSICAL stays open.",
