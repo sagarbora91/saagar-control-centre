@@ -1,9 +1,95 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-22 (Asia/Kolkata)
+**Updated:** 2026-08-23 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
-## Current Phase 5 resume checkpoint — 2026-08-22
+## Current Phase 5 resume checkpoint — 2026-08-23 ETP defect closure
+
+This section is the authoritative resume point and supersedes the older Phase 5
+checkpoint immediately below. Current branch
+`agent/modular-phase1-shared-spine-v2` contains the fixed product commit
+`d5a96dbf6f938249d1cff5ca4a79968b0c299c22` and device-acceptance evidence
+checkpoint `816fab29493823ef6cb253378663083c9177c543`. The fixed product fingerprint
+SHA-256 is `51694c67facf756c4d6a735403a7d4b7b2c1c5db30987f9e0a67e05f1a013161`;
+the WWW tree SHA-256 is
+`aa964dc6b40df928bde411c4551795e7fb9d3c0ab92c681baeb9c194f3cbd550`.
+
+### What changed after `a104f5f`
+
+Two physical-device defects were found and fixed without reopening completed
+modular-migration work:
+
+1. ETP now uses bounded asynchronous authorization. Import can recover through
+   in-module reauthentication after Android DocumentsUI backgrounds the WebView,
+   and publication always requests fresh action-bound Owner approval.
+2. The worker no longer mutates the frozen XLSX loader result. It constructs and
+   freezes a new report object containing the source and header-signature hashes.
+
+Permanent regression coverage was added. The focused set passed 32/32 and the
+complete ETP test selection passed **173/173**. Other previously green suites
+were not rerun because the owner directed that only final ETP validation,
+publication and readback be repeated.
+
+### Current APK and completed SM-T875 ETP session
+
+| Field | Current fact |
+|---|---|
+| APK | `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk` |
+| SHA-256 | `5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed` |
+| Bytes | 7,218,076 |
+| Package/version | `com.saagartraders.bcc`, version 2.9, code 209, minSdk 23, targetSdk 34 |
+| Signing | debug-signed seeded test candidate; not a production release |
+| Device | Samsung SM-T875, Android 13 / API 33, serial `R52N807PTTE` |
+
+The updated APK installed successfully through `adb install -r`. Using the exact
+deterministic synthetic-only WLMHW R003/R013/R022/R025 fixtures for 2026-08-21,
+the real device completed provider selection, worker validation, fresh
+action-bound publication approval, native `finishStage`/`publishStage`, immediate
+verified readback and force-stop/cold-launch persistence readback.
+
+The result is **PASS for this SM-T875 synthetic ETP engineering session**:
+
+- one verified scope `WLMHW | 2026-27 | 2026-08-21..2026-08-21`;
+- R022 and R025 each show one row, signed net INR 100.00 and quantity 1;
+- coverage history shows publication on 2026-08-23;
+- `rec_002_v1`, R003 and R013 checks pass;
+- PAYMENTTYPE25 remains explicitly quarantined with zero unresolved rows; and
+- final logs contain no application ANR, fatal exception, `ETP_WORKER_FAILED` or
+  `ETP_ACCESS_DENIED` event.
+
+Evidence:
+`verification/audit/PHASE-5-ETP-SM-T875-SYNTHETIC-DEVICE-ACCEPTANCE-2026-08-23.md`.
+No Owner PIN or other secret is recorded. Screenshots and logs remain outside the
+repository at `V:\Co work\Projects\Retail\.audit-drafts` with hashes recorded in
+the evidence document. The temporary fixture workspace remains untracked.
+
+### Exact remaining boundary
+
+The connected SM-T875 work requested for the final ETP rerun is complete and
+must not be repeated. Phase 5 production/release closure is still not complete:
+
+1. Run only the uncovered API-23-class OEM document-provider/interruption and
+   safe-low-storage cases against the eventual shipping artifact.
+2. Run the authorized real WLMHW/HEMW four-report publication; the synthetic
+   session is not production-data acceptance.
+3. Complete identity-bound staff UAT with named cashier/maker and
+   manager/checker testers. Sagar remains the owner/admin reviewer and the named
+   privacy/legal owner self-reviewer.
+4. Produce the production-signed APK, verify its certificate and non-debug
+   posture, install/launch its exact hash, and issue the release decision. Sagar
+   is both custodian and approver, so the independence control remains a recorded
+   exception rather than a pass.
+5. Rebind the applicable historical `a104f5f` approvals to the final fixed
+   shipping identity. `www/etp-module-gateway.js` changed after the prior rebind,
+   so those approval records must not be represented as already bound to
+   `d5a96db`.
+6. Run one final controlled audit only after the production artifact and external
+   decisions exist; then reconcile the closure register, handoff and final push.
+
+Current remaining-work authority:
+`verification/audit/PHASE-5-CURRENT-REMAINING-INVENTORY-2026-08-23.md`.
+
+## Historical Phase 5 resume checkpoint — 2026-08-22
 
 Current remaining-work inventory after the 2026-08-23 crash recovery:
 `verification/audit/PHASE-5-CURRENT-REMAINING-INVENTORY-2026-08-23.md`.

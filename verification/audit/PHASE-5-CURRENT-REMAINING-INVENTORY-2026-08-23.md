@@ -4,23 +4,27 @@
 `PHASE-5-REMAINING-INVENTORY-2026-08-22.md`, which is retained as a historical
 pre-approval snapshot.
 
-**Branch checkpoint:** `agent/modular-phase1-shared-spine-v2`, pushed through
-`2347f6b`. Product commit `a104f5f40bd2b475f9ab45fb407f99149fafb8d9`;
-product fingerprint SHA-256
-`4e42cf230b9650a7e0f8ad30633dbf639d2158215d99232dfe14f0ab90716667`;
+**Branch checkpoint:** `agent/modular-phase1-shared-spine-v2`. Fixed product
+commit `d5a96dbf6f938249d1cff5ca4a79968b0c299c22`; device-evidence checkpoint
+`816fab29493823ef6cb253378663083c9177c543`; product fingerprint SHA-256
+`51694c67facf756c4d6a735403a7d4b7b2c1c5db30987f9e0a67e05f1a013161`;
 WWW tree SHA-256
-`03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5`.
+`aa964dc6b40df928bde411c4551795e7fb9d3c0ab92c681baeb9c194f3cbd550`.
 
 **Corrected debug candidate:**
 `V:\Co work\Projects\Retail\SaagarCC-C1-DemoData-2Years-v2.9.apk`, SHA-256
-`90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd`,
+`5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed`,
 7,218,076 bytes. This is not a production release.
 
 ## Current status
 
-- Repository-controlled Phase 5 engineering: **complete**.
-- Focused verification: **439 tests, zero failures**.
-- Applicable owner approvals: **rebound to `a104f5f`**.
+- Repository-controlled ETP defect remediation: **complete**.
+- Current ETP verification: **173/173 passed**; the earlier 439-test focused
+  sweep remains historical evidence for `a104f5f` and was not repeated.
+- SM-T875 synthetic ETP validation/publication/readback: **passed**, including
+  force-stop/cold-launch persistence.
+- Applicable owner approvals: historically rebound to `a104f5f`; **final fixed
+  identity rebind remains pending** because `www/etp-module-gateway.js` changed.
 - Closure register: **5 closed gates, 2 pending gates, 3 carried-open gates**.
 - Audit comparison residue: **3 carried checks** (`A10-01`, `A10-04`,
   `A10-05`); `C-08` remains failed or unmeasured because of these checks.
@@ -30,18 +34,25 @@ WWW tree SHA-256
 
 | ID | Current state | Exact remaining work | Required input/authority | Can current SM-T875 close it? |
 |---|---|---|---|---|
-| `GATE-ETP-PHYSICAL` | Carried open, not passed | On a real API-23-class OEM device, select the four files through its document provider, retain URI permission, import, relaunch and verify readback against the final artifact | API-23-class physical/OEM device or qualifying cloud real-device farm; named tester; authorized safe four-file set | **No.** SM-T875 is API 33 |
-| `GATE-ETP-INTERRUPTION` | Carried open, not passed | Run only the two uncovered cases: document-provider interruption and safe low-storage; prove no partial generation or plaintext publication | Same API-23-class OEM device/tester and controlled storage setup | **No.** Do not repeat the already-banked emulator subset |
+| `GATE-ETP-PHYSICAL` | Carried open; SM-T875 synthetic path passed | On a real API-23-class OEM device, select the four files through its document provider, retain URI permission, import, relaunch and verify readback against the final shipping artifact | API-23-class physical/OEM device or qualifying cloud real-device farm; named tester; authorized safe four-file set | **No further SM-T875 work.** Its API-33 synthetic validation/publication/readback is banked |
+| `GATE-ETP-INTERRUPTION` | Carried open; SM-T875 picker-background reauth passed | Run only the uncovered API-23/OEM and safe-low-storage cases; prove no partial generation or plaintext publication | API-23-class OEM device/tester and controlled storage setup | **No further SM-T875 picker repetition.** Do not repeat the banked emulator or API-33 subsets |
 | `GATE-ETP-PRODUCTION` | Carried open, owner-deferred, not passed | Import untouched authorized WLMHW/HEMW R003, R013, R022 and R025; record bounded hashes/counts, complete-period declaration, manager reauthentication, REC-002, active/previous generation and metadata-only receipt | Authorized four-report production set; production-data custodian; Sagar as Owner/Admin | SM-T875 is optional; the gate itself needs the authorized data, not a particular device |
 | `GATE-UAT` | Pending | Complete the role/store matrix with cashier/maker, manager/checker and owner/admin; record expected/actual results, owner decision and privacy/legal checklist | Two named representative staff testers; Sagar owner/admin; Sagar owner self-review for privacy/legal unless independent counsel is added | Device may be used, but Codex/ADB cannot substitute for staff decisions |
 | `GATE-RELEASE` | Pending | Produce production-signed artifact and receipt; verify certificate, `debuggable=false`, no debug cert, exact-hash install/launch; issue exact-artifact release decision acknowledging every carried exception | Locally configured production keystore credentials; Sagar as custodian; release decision. Current same-person approver assignment remains a recorded independence exception | Final signed artifact must be tested; current debug APK cannot close it |
 
-## Closed gate that still needs final-artifact rebinding
+## Historical closed gates that still need final-artifact rebinding
 
 `GATE-UPDATE-API23` is historically closed against APK `f7f18ea3`, but its
 `rebindingRequired` flag remains. Do **one** install-replace/launch check on the
 eventual production-signed shipping artifact. Combine it with the API-23/OEM ETP
 session above; do not run a separate intermediate build merely to rebind it.
+
+`GATE-UPDATE-PHYSICAL`, `GATE-NATIVE-LANGUAGE` and `GATE-ETP-EXCEPTIONS` were
+approved/rebound to `a104f5f`. They remain valid historical evidence, but the
+records are not bound to fixed product commit `d5a96db`. Rebind them once to the
+eventual shipping identity after verifying the bounded ETP authorization/worker
+delta. Do not manufacture a new rendered capture unless the reviewer determines
+that the changed action-bound reauthentication text requires one.
 
 ## Carried audit checks — no work unless the owner changes disposition
 
@@ -67,6 +78,9 @@ unless Sagar explicitly reverses that disposition.
 5. Optional independent release approver. Sagar currently holds both custodian
    and approver roles; the separation-of-duties control remains unsatisfied and
    explicitly recorded as an exception.
+6. An explicit bounded approval rebind to the eventual fixed shipping commit and
+   APK identity. No approval received before `d5a96db` should be relabeled as if
+   it already names the new identity.
 
 ## Final engineering closure after inputs arrive
 
@@ -78,8 +92,12 @@ started early because signing or later evidence would force it to be repeated.
 ## Do-not-repeat boundary
 
 - Do not repeat MAH-3 visual capture, rendered-language capture, localization
-  review, R003/R013 presentation review or the `a104f5f` approval rebind.
+  review or R003/R013 presentation review merely because the product hash moved;
+  perform one bounded final-identity rebind unless visual review finds a material
+  presentation change.
 - Do not repeat SM-T875 update preservation, DAT-02 or Expense-memory diagnostics.
+- Do not repeat the completed SM-T875 synthetic ETP validation, publication,
+  readback or cold-relaunch persistence session.
 - Do not repeat the banked API-23 emulator interruption subset.
 - Do not rebuild another debug APK unless a tracked product change is approved.
 - Do not run the final audit before the production artifact and external decisions
