@@ -25,9 +25,9 @@ the owner cannot infer or substitute for those decisions.
 
 | UAT ID | Role/tester | Store context | Required workflow | Expected result | Actual result | Decision/evidence |
 |---|---|---|---|---|---|---|
-| `UAT-CASHIER-01` | Akash — Cashier/maker | To be confirmed (`WLMHW` or `HEMW`) | Create a representative non-sensitive daily record, save it, edit it, and read it back | Saved values remain accurate after edit and reopen | **PENDING** | Akash decision pending |
+| `UAT-CASHIER-01` | Akash — Cashier/maker | `WLMHW` | Create a representative non-sensitive daily record, save it, edit it, and read it back | Saved values remain accurate after edit and reopen | **PENDING** | Akash decision pending |
 | `UAT-CASHIER-02` | Akash — Cashier/maker | Same as above | Attempt a manager/owner-only action without manager authorization | The privileged action is denied or requires manager reauthentication; no unauthorized change occurs | **PENDING** | Akash decision pending |
-| `UAT-MANAGER-01` | Shadul — Manager/checker | To be confirmed (`WLMHW` or `HEMW`) | Review the maker record and complete the applicable checker/approval action | Correct record is shown; authorized review/approval is recorded accurately | **PENDING** | Shadul decision pending |
+| `UAT-MANAGER-01` | Shadul — Manager/checker | `WLMHW` | Review the maker record and complete the applicable checker/approval action | Correct record is shown; authorized review/approval is recorded accurately | **PENDING** | Shadul decision pending |
 | `UAT-MANAGER-02` | Shadul — Manager/checker | Same as above | Review an exception and open/report/export the relevant result using reauthentication where prompted | Exception is understandable; reauthentication is enforced; output matches the visible record | **PENDING** | Shadul decision pending |
 | `UAT-OWNER-01` | Sagar — Owner/admin | Both stores where applicable | Review backup/restore, access/PIN policy, ETP publication state and audit trail | Controls and audit information are understandable and acceptable for use | **PENDING** | Owner decision pending |
 
@@ -46,4 +46,3 @@ cannot pass with an unresolved P0/P1 defect.
 - Shadul manager/checker decision: **PENDING**
 - Sagar owner/admin decision: **PENDING**
 - Staff-UAT portion of `GATE-UAT`: **OPEN**
-
