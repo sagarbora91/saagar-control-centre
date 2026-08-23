@@ -123,11 +123,26 @@ test('trusted authorization fails closed per call and a denied confirm does not 
   assert.equal(denied.gateway.listScopes({ limit: 1 }).code, 'ETP_ACCESS_DENIED');
 });
 
+test('import and confirmation accept bounded asynchronous authorization', async () => {
+  const approvals = [];
+  const fx = fixture({ authorize(action) {
+    approvals.push(action);
+    return Promise.resolve(action === 'IMPORT' || action === 'CONFIRM');
+  } });
+  const files = core.REPORTS.map(id => ({ selectedReportId: id, file: { name: id + '.xlsx' } }));
+  const started = await fx.gateway.run({ scope, files, coverageConfirmed: true });
+  assert.equal(started.state, 'AWAITING_CONFIRMATION');
+  assert.equal((await fx.gateway.confirm({ confirmationToken: started.confirmationToken })).state, 'ACCEPTED');
+  assert.deepEqual(approvals, ['IMPORT', 'CONFIRM']);
+});
+
 test('browser authority admits only Owner or matrix-enabled Store Manager reads', () => {
   assert.match(gatewaySource, /snapshot\.isOwner === true/);
   assert.match(gatewaySource, /snapshot\.role === 'Store Manager'/);
   assert.match(gatewaySource, /rootValue\.roleCanOpen\('etp'\) === true/);
   assert.match(gatewaySource, /action === 'IMPORT' \|\| action === 'CONFIRM'/);
+  assert.match(gatewaySource, /rootValue && rootValue\.SaagarReauth/);
+  assert.match(gatewaySource, /publish verified Retail ETP reports/);
 });
 
 test('verified reads require an accepted unfenced generation matching the valid current receipt', async () => {

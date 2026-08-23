@@ -153,6 +153,9 @@
     function permitted(action) {
       try { return authorize(action) === true; } catch (_) { return false; }
     }
+    async function permittedAsync(action) {
+      try { return await authorize(action) === true; } catch (_) { return false; }
+    }
 
     function checkedScope(scope) {
       var checked;
@@ -193,7 +196,7 @@
     }
 
     async function run(request) {
-      if (!permitted('IMPORT')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
+      if (!await permittedAsync('IMPORT')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (!exact(request, ['scope', 'files', 'coverageConfirmed']) || request.coverageConfirmed !== true || !Array.isArray(request.files) || request.files.length !== 4) return failure('ETP_IMPORT_REQUEST_INVALID', 'SELECT');
       var normalized = checkedScope(request.scope);
       if (!normalized) return failure('ETP_SCOPE_INVALID', 'SELECT');
@@ -219,7 +222,7 @@
     }
 
     async function confirm(request) {
-      if (!permitted('CONFIRM')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
+      if (!await permittedAsync('CONFIRM')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
       if (!exact(request, ['confirmationToken']) || typeof request.confirmationToken !== 'string') return failure('ETP_CONFIRMATION_TOKEN_INVALID', 'CONFIRM');
       var life = pending[request.confirmationToken];
       if (!life) return failure('ETP_CONFIRMATION_TOKEN_INVALID', 'CONFIRM');
@@ -302,10 +305,16 @@
 
   function browserAuthorization(rootValue) {
     return function (action) {
-      var authority, snapshot;
+      var authority, snapshot, reauth;
       try { authority = rootValue && rootValue.SaagarOwnerSession; snapshot = authority && typeof authority.read === 'function' ? authority.read() : null; } catch (_) { return false; }
       if (!record(snapshot) || snapshot.version !== 1 || typeof snapshot.isOwner !== 'boolean' || typeof snapshot.role !== 'string') return false;
-      if (action === 'IMPORT' || action === 'CONFIRM') return snapshot.isOwner === true;
+      if (action === 'IMPORT' && snapshot.isOwner === true) return true;
+      if (action === 'IMPORT' || action === 'CONFIRM') {
+        try { reauth = rootValue && rootValue.SaagarReauth; } catch (_) { reauth = null; }
+        if (typeof reauth !== 'function') return false;
+        return reauth(action === 'CONFIRM' ? 'publish verified Retail ETP reports' : 'validate Retail ETP reports after file selection')
+          .then(function (approved) { return approved === true; }, function () { return false; });
+      }
       if (action !== 'READ') return false;
       if (snapshot.isOwner === true) return true;
       try { return snapshot.role === 'Store Manager' && typeof rootValue.roleCanOpen === 'function' && rootValue.roleCanOpen('etp') === true; } catch (_) { return false; }
