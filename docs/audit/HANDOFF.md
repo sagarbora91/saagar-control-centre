@@ -3,6 +3,33 @@
 **Updated:** 2026-08-23 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
+## Production-signed checkpoint — 2026-08-23
+
+Commit `dfa4ddb288bdfefb2dca9b249fef430dea370afb` fixes a release-only visual
+identity defect: the normal shipped SQLite-primary runtime no longer makes the
+production build display a `TEST` badge. The bounded correction, permanent
+regression coverage, governed profile regeneration and 681/zero-conflict
+capability reconciliation are pushed. The full offline aggregate is green.
+
+Corrected production-signed artifact:
+`V:\Co work\Projects\Retail\SaagarCC-v2.9-production-dfa4ddb.apk`, 5,696,008
+bytes, SHA-256
+`bc4ea8c17a5688b293e26c3ab18253069555b1744cb87e545878a64996a58bac`.
+Certificate SHA-256:
+`df7877f01d2956a7c9134aca06bf91ff03a953afebc561bf520b2b4d55f98519`;
+one RSA-4096 signer; v1/v2 verification passes; the APK and installed package
+are non-debug.
+
+The corrected hash installed update-in-place over the first production-signed
+candidate on SM-T875, preserved first-install time, launched MainActivity, read
+back byte-identically and rendered with no `TEST` badge. The first signed hash
+`aa4f5ff9...` is rejected and must not ship. Evidence:
+`verification/audit/PHASE-5-PRODUCTION-SIGNED-SM-T875-INSTALL-2026-08-23.md`.
+
+Production signing and SM-T875 exact-hash installation are now complete. Phase 5
+remains open on API-23/OEM coverage, authorized production reports, named staff
+UAT, final identity rebind, release decision and the final controlled audit.
+
 ## Resume reconciliation checkpoint — 2026-08-23
 
 The live repository was reconciled before further work. Branch

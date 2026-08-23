@@ -16,6 +16,15 @@ WWW tree SHA-256
 `5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed`,
 7,218,076 bytes. This is not a production release.
 
+**Current production-signed candidate:**
+`V:\Co work\Projects\Retail\SaagarCC-v2.9-production-dfa4ddb.apk`, SHA-256
+`bc4ea8c17a5688b293e26c3ab18253069555b1744cb87e545878a64996a58bac`,
+5,696,008 bytes, source commit `dfa4ddb288bdfefb2dca9b249fef430dea370afb`.
+It is non-debug, signed by certificate SHA-256
+`df7877f01d2956a7c9134aca06bf91ff03a953afebc561bf520b2b4d55f98519`,
+and installed/read back exactly on SM-T875. The earlier signed hash `aa4f5ff9...`
+is rejected because it visibly displayed a stale `TEST` badge.
+
 ## Resume reconciliation — 2026-08-23
 
 | Check | Reconciled result |
@@ -43,6 +52,8 @@ performance, memory, visual, language or synthetic ETP evidence was repeated.
 - Audit comparison residue: **3 carried checks** (`A10-01`, `A10-04`,
   `A10-05`); `C-08` remains failed or unmeasured because of these checks.
 - Final production release: **not complete**.
+- Production signing and exact-hash SM-T875 install/launch: **complete for
+  `dfa4ddb`**; final release decision and prerequisite external gates remain open.
 
 ## Remaining gates
 
@@ -52,7 +63,7 @@ performance, memory, visual, language or synthetic ETP evidence was repeated.
 | `GATE-ETP-INTERRUPTION` | Carried open; SM-T875 picker-background reauth passed | Run only the uncovered API-23/OEM and safe-low-storage cases; prove no partial generation or plaintext publication | API-23-class OEM device/tester and controlled storage setup | **No further SM-T875 picker repetition.** Do not repeat the banked emulator or API-33 subsets |
 | `GATE-ETP-PRODUCTION` | Carried open, owner-deferred, not passed | Import untouched authorized WLMHW/HEMW R003, R013, R022 and R025; record bounded hashes/counts, complete-period declaration, manager reauthentication, REC-002, active/previous generation and metadata-only receipt | Authorized four-report production set; production-data custodian; Sagar as Owner/Admin | SM-T875 is optional; the gate itself needs the authorized data, not a particular device |
 | `GATE-UAT` | Pending | Complete the role/store matrix with cashier/maker, manager/checker and owner/admin; record expected/actual results, owner decision and privacy/legal checklist | Two named representative staff testers; Sagar owner/admin; Sagar owner self-review for privacy/legal unless independent counsel is added | Device may be used, but Codex/ADB cannot substitute for staff decisions |
-| `GATE-RELEASE` | Pending | Produce production-signed artifact and receipt; verify certificate, `debuggable=false`, no debug cert, exact-hash install/launch; issue exact-artifact release decision acknowledging every carried exception | Locally configured production keystore credentials; Sagar as custodian; release decision. Current same-person approver assignment remains a recorded independence exception | Final signed artifact must be tested; current debug APK cannot close it |
+| `GATE-RELEASE` | Pending; signed-artifact build/install complete | Production-signed artifact, certificate, non-debug posture and exact-hash SM-T875 install/launch are verified. Remaining: complete prerequisite external gates, perform final identity rebind and issue the exact-artifact release decision acknowledging every carried exception | Sagar's release decision after API-23/OEM, production-data and staff-UAT inputs. Current same-person approver assignment remains a recorded independence exception | Corrected signed artifact is installed; SM-T875 cannot close the missing API-23 or human/data gates |
 
 ## Historical closed gates that still need final-artifact rebinding
 
@@ -86,19 +97,20 @@ unless Sagar explicitly reverses that disposition.
 2. Authorized WLMHW/HEMW R003/R013/R022/R025 files for the controlled production
    publication session.
 3. Names and participation of a cashier/maker tester and a manager/checker tester.
-4. Production signing credentials configured locally through the existing
-   `SAAGAR_*` environment contract. No signing variables are currently configured;
-   private key material must not be committed or pasted into evidence.
-5. Optional independent release approver. Sagar currently holds both custodian
+4. Optional independent release approver. Sagar currently holds both custodian
    and approver roles; the separation-of-duties control remains unsatisfied and
    explicitly recorded as an exception.
-6. An explicit bounded approval rebind to the eventual fixed shipping commit and
+5. An explicit bounded approval rebind to the eventual fixed shipping commit and
    APK identity. No approval received before `d5a96db` should be relabeled as if
    it already names the new identity.
 
+Production signing is no longer an unavailable input. The production key was
+created outside Git and used through the existing `SAAGAR_*` process-only
+environment contract; the custodian must retain the key and password securely.
+
 ## Final engineering closure after inputs arrive
 
-After the external sessions and signing are complete, run exactly one final
+After the external sessions and final decisions are complete, run exactly one final
 controlled audit/comparison, update the closure register and `HANDOFF.md`, verify
 all cited hashes, commit and push the final checkpoint. This final run must not be
 started early because signing or later evidence would force it to be repeated.
