@@ -16,6 +16,20 @@ WWW tree SHA-256
 `5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed`,
 7,218,076 bytes. This is not a production release.
 
+## Resume reconciliation — 2026-08-23
+
+| Check | Reconciled result |
+|---|---|
+| Repository | `e0cbe910391cfa4bf4b053121a26bc430fc12281` on the expected branch |
+| Upstream | `github/agent/modular-phase1-shared-spine-v2`; 0 ahead / 0 behind after fetch |
+| Working tree | No tracked changes; preserved untracked `.tmp-etp-synthetic-fixtures-device/` only |
+| Root APK | SHA-256 recomputed and matches `5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed` |
+| Graphify | Existing 6,158-node graph queried; `graphify check-update .` requires no update |
+| Internal work | None executable without recreating completed evidence or starting the final audit early |
+
+Phase 5 remains open on external inputs. No completed SM-T875, picker,
+performance, memory, visual, language or synthetic ETP evidence was repeated.
+
 ## Current status
 
 - Repository-controlled ETP defect remediation: **complete**.

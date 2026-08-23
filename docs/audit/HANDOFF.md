@@ -3,6 +3,28 @@
 **Updated:** 2026-08-23 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
 
+## Resume reconciliation checkpoint — 2026-08-23
+
+The live repository was reconciled before further work. Branch
+`agent/modular-phase1-shared-spine-v2` is at pushed checkpoint
+`e0cbe910391cfa4bf4b053121a26bc430fc12281`, tracking
+`github/agent/modular-phase1-shared-spine-v2` with zero commits ahead and zero
+behind after fetch. The working tree has no tracked changes; the intentionally
+preserved untracked `.tmp-etp-synthetic-fixtures-device/` directory remains.
+
+The root debug candidate still has SHA-256
+`5cea95d2461810b1e318efaa359f2c6a169edee8a26ed43164b1c87eaf3f5fed`.
+The existing 6,158-node Graphify graph answered the Phase 5 status query and
+`graphify check-update .` reported no update required.
+
+No additional repository-controlled closure work is currently executable
+without external input. The smallest inputs remain: an API-23-class OEM device
+or accepted real-device cloud equivalent, the authorized four-report production
+set and custodian, two named staff UAT participants, and locally configured
+production-signing credentials plus the release decision. Do not start the final
+controlled audit or final identity rebind until those inputs have converged on
+the frozen shipping artifact.
+
 ## Current Phase 5 resume checkpoint — 2026-08-23 ETP defect closure
 
 This section is the authoritative resume point and supersedes the older Phase 5
