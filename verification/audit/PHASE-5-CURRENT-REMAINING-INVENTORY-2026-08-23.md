@@ -62,7 +62,7 @@ performance, memory, visual, language or synthetic ETP evidence was repeated.
 | `GATE-ETP-PHYSICAL` | Carried open; SM-T875 synthetic path passed | On a real API-23-class OEM device, select the four files through its document provider, retain URI permission, import, relaunch and verify readback against the final shipping artifact | API-23-class physical/OEM device or qualifying cloud real-device farm; named tester; authorized safe four-file set | **No further SM-T875 work.** Its API-33 synthetic validation/publication/readback is banked |
 | `GATE-ETP-INTERRUPTION` | Carried open; SM-T875 picker-background reauth passed | Run only the uncovered API-23/OEM and safe-low-storage cases; prove no partial generation or plaintext publication | API-23-class OEM device/tester and controlled storage setup | **No further SM-T875 picker repetition.** Do not repeat the banked emulator or API-33 subsets |
 | `GATE-ETP-PRODUCTION` | Carried open, owner-deferred, not passed | Import untouched authorized WLMHW/HEMW R003, R013, R022 and R025; record bounded hashes/counts, complete-period declaration, manager reauthentication, REC-002, active/previous generation and metadata-only receipt | Authorized four-report production set; production-data custodian; Sagar as Owner/Admin | SM-T875 is optional; the gate itself needs the authorized data, not a particular device |
-| `GATE-UAT` | Pending | Complete the role/store matrix with cashier/maker, manager/checker and owner/admin; record expected/actual results, owner decision and privacy/legal checklist | Two named representative staff testers; Sagar owner/admin; Sagar owner self-review for privacy/legal unless independent counsel is added | Device may be used, but Codex/ADB cannot substitute for staff decisions |
+| `GATE-UAT` | In progress; staff participants named, results pending | Complete the role/store matrix with Akash (cashier/maker), Shadul (manager/checker) and Sagar (owner/admin); record expected/actual results, owner decision and privacy/legal checklist | Akash and Shadul must personally state their results; Sagar remains owner/admin and owner self-reviewer for privacy/legal unless independent counsel is added | Device may be used, but Codex/ADB cannot substitute for staff decisions |
 | `GATE-RELEASE` | Pending; signed-artifact build/install complete | Production-signed artifact, certificate, non-debug posture and exact-hash SM-T875 install/launch are verified. Remaining: complete prerequisite external gates, perform final identity rebind and issue the exact-artifact release decision acknowledging every carried exception | Sagar's release decision after API-23/OEM, production-data and staff-UAT inputs. Current same-person approver assignment remains a recorded independence exception | Corrected signed artifact is installed; SM-T875 cannot close the missing API-23 or human/data gates |
 
 ## Historical closed gates that still need final-artifact rebinding
@@ -96,7 +96,9 @@ unless Sagar explicitly reverses that disposition.
 1. A real Android API-23-class OEM device or qualifying cloud real-device farm.
 2. Authorized WLMHW/HEMW R003/R013/R022/R025 files for the controlled production
    publication session.
-3. Names and participation of a cashier/maker tester and a manager/checker tester.
+3. Participation and identity-bound decisions from named testers Akash
+   (cashier/maker) and Shadul (manager/checker). The working matrix is
+   `verification/audit/PHASE-5-STAFF-UAT-2026-08-23.md`.
 4. Optional independent release approver. Sagar currently holds both custodian
    and approver roles; the separation-of-duties control remains unsatisfied and
    explicitly recorded as an exception.

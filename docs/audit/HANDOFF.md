@@ -391,9 +391,11 @@ decision as separate dated records rather than one combined statement.
 
 #### Still unfilled
 
-`GATE-UAT` needs **named representative staff testers** for the cashier/maker and
-manager/checker rows of the role matrix. The owner can only fill the owner/admin
-row. This is now the only unnamed role in the programme.
+`GATE-UAT` now has named representative staff testers: **Akash** for the
+cashier/maker rows and **Shadul** for the manager/checker rows. Their workflows
+and identity-bound decisions are still pending in
+`verification/audit/PHASE-5-STAFF-UAT-2026-08-23.md`. The owner can only fill the
+owner/admin row and cannot substitute for either staff decision.
 
 ### Exact remaining Phase 5 closure work
 
@@ -411,9 +413,9 @@ row. This is now the only unnamed role in the programme.
    session. The Android-13 SM-T875 smoke does not prove an API-23-class device.
 5. When authorized files are available, run the real WLMHW/HEMW four-report ETP
    publication. Until then keep `GATE-ETP-PRODUCTION` deferred.
-6. Record a named staff UAT tester and obtain their identity-bound decision. The
-   privacy/legal reviewer is now named (owner self-review, 2026-08-22); the staff
-   testers are still **UNFILLED**.
+6. Run the staff UAT workflows with Akash (cashier/maker) and Shadul
+   (manager/checker), and obtain each tester's identity-bound decision. The
+   privacy/legal reviewer is already named (owner self-review, 2026-08-22).
 7. ~~Reconcile the earlier identity-bound visual/language/exception approvals and
    physical-update acceptance to corrected product commit `a104f5f`.~~ **DONE
    2026-08-22** through the explicit bounded rebind approval; no recapture or
