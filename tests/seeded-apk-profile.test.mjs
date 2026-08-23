@@ -51,6 +51,16 @@ test('production-oriented source remains clean while the seeded builder targets 
   assert.doesNotThrow(() => new vm.Script(inline));
 });
 
+test('normal SQLite-primary runtime keeps production build flavor', () => {
+  const buildFlavorSource = index.match(/function buildFlavor\(\)\{[\s\S]*?\n\}/)?.[0];
+  assert.ok(buildFlavorSource, 'buildFlavor function must remain present');
+  assert.match(buildFlavorSource, /__DEMO_SEED_ACTIVE\s*===\s*true/);
+  assert.match(buildFlavorSource, /__FORCE_STORAGE_CORE\s*===\s*true/);
+  assert.doesNotMatch(buildFlavorSource, /SaagarStore/,
+    'the shipped SQLite-primary runtime is not a TEST build signal');
+  assert.match(buildFlavorSource, /return\s+'PROD'/);
+});
+
 test('demo shell exposes an unmistakable synthetic-data profile and banner only when active', () => {
   assert.match(index, /__SAAGAR_DEMO_PROFILE/);
   assert.match(index, /SYNTHETIC DEMO DATA/);

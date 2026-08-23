@@ -103,6 +103,13 @@ function classification(change, before, after) {
       reason: 'New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.'
     };
   }
+  if (change === 'added' && capability.capabilityId ===
+    'script-etp-module-gateway:permission:reauthentication') {
+    return {
+      reviewClass: 'bounded-etp-reauthentication-authority',
+      reason: 'The fixed gateway now exposes its explicit action-bound reauthentication contract to the frozen analyser; final owner approval remains identity-bound.'
+    };
+  }
   if (change === 'added' && capability.capabilityId === 'etp:action:st-v5-home-fab:c05eb3ddb3') {
     return {
       reviewClass: 'shared-runtime-home-fab-binding',
@@ -234,10 +241,10 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 680);
+  assert.equal(current.length, 681);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 483, permission: 26, 'persisted-outcome': 86, 'failure-posture': 72 });
-  assert.equal(count('added'), 33);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 483, permission: 27, 'persisted-outcome': 86, 'failure-posture': 72 });
+  assert.equal(count('added'), 34);
   assert.equal(count('removed'), 8);
   assert.equal(count('changed'), 88);
   assert.equal(classCount('handler-body-hash-only'), 52);

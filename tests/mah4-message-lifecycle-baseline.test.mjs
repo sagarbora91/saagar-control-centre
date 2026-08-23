@@ -48,7 +48,11 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // until a non-English language is selected; translations remain unchanged.
   // +388 bytes on 2026-08-22: DAT-02 takes both frame timestamps from the same
   // monotonic clock on Android WebViews that replace their rendering surface.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 8066007);
+  // +690 bytes on 2026-08-23: bounded ETP reauthentication and frozen worker
+  // result construction close the two physical-device defects.
+  // -76 bytes on 2026-08-23: the normal shipped SQLite-primary runtime no longer
+  // makes a production-signed build display the stale TEST badge.
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 8066621);
   assert.equal(inventory.upstream.manifest.moduleCount, 12);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',

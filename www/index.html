@@ -7579,15 +7579,15 @@ function setTextSize(size){ if(size!=='normal'&&size!=='large') return; try{ saf
 /* ── BUILD BADGE (additive) — reads ONLY existing flags, invents none ──────────
    DEMO → the demo seeder ran (window.__DEMO_SEED_ACTIVE, published by the seed IIFE
           from the explicit DEMO_SEED_ENABLED===true flag).
-   TEST → the storage-core engine is forced/active (window.__FORCE_STORAGE_CORE, or
-          SaagarStore.enabled — the runtime signal that storage-core.js's
-          STORAGE_CORE_ENABLED test branch is live). DEMO wins if both are set.
+   TEST → the explicit storage-core test override is forced
+          (window.__FORCE_STORAGE_CORE). SaagarStore.enabled is the normal shipped
+          SQLite-primary runtime and must not label a production build as TEST.
+          DEMO wins if both are set.
    PROD → neither. The topbar badge stays hidden for PROD (unobtrusive); About still
           spells out "Production" for clarity. */
 function buildFlavor(){
   try{ if(window.__DEMO_SEED_ACTIVE === true) return 'DEMO'; }catch(e){}
   try{ if(window.__FORCE_STORAGE_CORE === true) return 'TEST'; }catch(e){}
-  try{ if(window.SaagarStore && window.SaagarStore.enabled === true) return 'TEST'; }catch(e){}
   return 'PROD';
 }
 function reflectBuildBadge(){
