@@ -7,7 +7,7 @@
   'use strict';
   if (!foundation && typeof require === 'function') foundation = require('./etp-import-foundation.js');
   var ETP_PROFILE_VERSION = 'retail-etp-core-v1';
-  var IDENTIFIER_POLICY = Object.freeze({ mode: 'EXACT_INTEGER_TEXT', maxDigits: 15, leadingZeroRepair: false });
+  var IDENTIFIER_POLICY = Object.freeze({ mode: 'EXACT_XLSX_INTEGER_TEXT', maxDigits: 32, leadingZeroRepair: false });
   var STORES = Object.freeze(['WLMHW', 'HEMW']);
   var COMMON = [
     ['TRANS_TYPE', 'transactionTypeRaw'], ['STORE CODE', 'storeCode'],
@@ -118,7 +118,8 @@
   }
   function normalizeFileAlias(value) {
     return String(value || '').split(/[\\/]/).pop().replace(/\.xlsx$/i, '')
-      .replace(/^\d{12}_/, '').replace(/^[RWH]\d{3}[_ -]+/i, '').split(/\s+-\s+/)[0]
+      .replace(/^\d{12}_/, '').replace(/^RO(22|25)(?=[_ -])/i, 'R0$1')
+      .replace(/^[RWH]\d{3}[_ -]+/i, '').split(/\s+-\s+/)[0]
       .toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
   }
   function detect(headers, fileLabel, selectedReportId) {

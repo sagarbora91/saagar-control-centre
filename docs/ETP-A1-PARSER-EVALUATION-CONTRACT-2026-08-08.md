@@ -30,6 +30,10 @@ The A0 batch ceiling is 250,000 rows so accepted metadata cannot imply a capacit
 
 Required identifiers must cross the parser boundary as text. A numeric source cell is refused as `XLSX_IDENTIFIER_NUMERIC_UNVERIFIED`; it is never silently stringified or padded. A repair rule needs real WLMHW and HEMW evidence plus an approved dictionary decision.
 
+### 2026-08-24 production-export amendment
+
+The source reporting system consistently serializes identifier and business-date integers as XLSX numeric lexical values, including scientific notation and decimal-zero forms. The approved `EXACT_XLSX_INTEGER_TEXT` rule canonicalizes only the exact decimal integer represented by the stored XLSX lexical string. It performs string arithmetic only: no IEEE-754 conversion, rounding, padding, or leading-zero repair. Fractional, negative, malformed, padded numeric lexical, and over-limit results remain refused as `XLSX_IDENTIFIER_NUMERIC_UNVERIFIED`. Dates remain subject to the existing calendar/Excel-serial validity rules after exact integer canonicalization.
+
 ## Provisional engineering gates
 
 - Parser-only debug APK delta: at most 2 MiB.

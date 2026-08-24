@@ -14,13 +14,14 @@
   function isoCompact(value) {
     if (value instanceof Date && Number.isFinite(value.getTime())) return value.toISOString().slice(0, 10).replace(/-/g, '');
     if (parserPolicy.isNumericToken(value)) {
-      if (value.lexical === '0') return '';
-      if (/^\d{8}$/.test(value.lexical)) {
-        var y=Number(value.lexical.slice(0,4)),m=Number(value.lexical.slice(4,6)),d=Number(value.lexical.slice(6,8)),direct=new Date(Date.UTC(y,m-1,d));
-        return direct.getUTCFullYear()===y&&direct.getUTCMonth()===m-1&&direct.getUTCDate()===d?value.lexical:null;
+      var integerText = parserPolicy.identifierText(value, { mode: 'EXACT_XLSX_INTEGER_TEXT', maxDigits: 8 });
+      if (integerText === '0') return '';
+      if (/^\d{8}$/.test(integerText)) {
+        var y=Number(integerText.slice(0,4)),m=Number(integerText.slice(4,6)),d=Number(integerText.slice(6,8)),direct=new Date(Date.UTC(y,m-1,d));
+        return direct.getUTCFullYear()===y&&direct.getUTCMonth()===m-1&&direct.getUTCDate()===d?integerText:null;
       }
-      if (!/^[1-9]\d{0,6}$/.test(value.lexical)) return null;
-      var serial = Number(value.lexical); if (!Number.isSafeInteger(serial) || serial === 60 || serial > 2958465) return null;
+      if (!/^[1-9]\d{0,6}$/.test(integerText || '')) return null;
+      var serial = Number(integerText); if (!Number.isSafeInteger(serial) || serial === 60 || serial > 2958465) return null;
       var excelDate = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
       return Number.isFinite(excelDate.getTime()) ? excelDate.toISOString().slice(0, 10).replace(/-/g, '') : null;
     }

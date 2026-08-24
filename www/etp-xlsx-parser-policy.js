@@ -23,16 +23,34 @@
     var normalized = text(value);
     return normalized == null ? '' : normalized.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
   }
+  function exactIntegerText(lexical, maxDigits) {
+    var match = /^(0|[1-9]\d*)(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/.exec(lexical);
+    if (!match) return null;
+    var fraction = match[2] || '', exponentText = match[3] || '0';
+    if (exponentText.length > 5) return null;
+    var exponent = Number(exponentText);
+    if (!Number.isSafeInteger(exponent) || Math.abs(exponent) > MAX_CELL_TEXT) return null;
+    var digits = match[1] + fraction, decimalAt = match[1].length + exponent;
+    if (decimalAt < digits.length) {
+      if (decimalAt < 0 || /[^0]/.test(digits.slice(Math.max(0, decimalAt)))) return null;
+      digits = decimalAt === 0 ? '0' : digits.slice(0, decimalAt);
+    } else if (decimalAt > digits.length) {
+      if (decimalAt > maxDigits) return null;
+      digits += '0'.repeat(decimalAt - digits.length);
+    }
+    digits = digits.replace(/^0+(?=\d)/, '');
+    return digits.length <= maxDigits ? digits : null;
+  }
   function identifierText(value, policy) {
     if (!isNumericToken(value)) return text(value);
-    var rule = policy && policy.mode === 'EXACT_INTEGER_TEXT' ? policy : null;
+    var rule = policy && policy.mode === 'EXACT_XLSX_INTEGER_TEXT' ? policy : null;
     if (!rule) return null;
     var lexical = value.lexical, maxDigits = Number(rule.maxDigits);
-    if (!Number.isSafeInteger(maxDigits) || maxDigits < 1 || maxDigits > 15) return null;
-    /* Excel numeric cells cannot prove display-only leading zeros. Accept only
-       the exact stored integer lexical value; never pad, round or expand. */
-    if (!/^(?:0|[1-9]\d*)$/.test(lexical) || lexical.length > maxDigits) return null;
-    return lexical;
+    if (!Number.isSafeInteger(maxDigits) || maxDigits < 1 || maxDigits > 64) return null;
+    /* Canonicalize only the exact decimal value stored in XLSX. Scientific
+       notation and insignificant decimal zeroes are expanded as strings, so
+       no IEEE-754 conversion, rounding, padding, or leading-zero repair occurs. */
+    return exactIntegerText(lexical, maxDigits);
   }
   function inspectTable(rows, requiredIdentifiers, identifierPolicy) {
     if (!Array.isArray(rows) || !rows.length || !Array.isArray(rows[0])) return refusal('XLSX_HEADER_INVALID', 'header');

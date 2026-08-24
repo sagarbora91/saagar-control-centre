@@ -77,6 +77,15 @@ test('WLMHW and HEMW ETP report-code filename prefixes normalize to one profile'
   assert.equal(parse('R003','HEMW',{fileLabel:'H003_All_Discount_Type.xlsx'}).ok,true);
 });
 
+test('approved RO22 and RO25 source-system filename prefixes normalize exactly', () => {
+  assert.equal(parse('R022','WLMHW',{fileLabel:'RO22_Revenue Report - Revenue Report.xlsx'}).ok,true);
+  assert.equal(parse('R025','WLMHW',{fileLabel:'RO25_SDB-VariantwiseSales - SDB-VariantwiseSales.xlsx'}).ok,true);
+  assert.equal(parse('R025','WLMHW',{fileLabel:'RO22_Revenue Report - Revenue Report.xlsx'}).code,
+    'REPORT_FILENAME_CONTRADICTS_HEADER');
+  assert.equal(parse('R022','WLMHW',{fileLabel:'RO23_Revenue Report - Revenue Report.xlsx'}).code,
+    'REPORT_FILENAME_CONTRADICTS_HEADER');
+});
+
 test('exact safe integer identifiers are canonical text without guessed padding', () => {
   const rows = table('R025');
   rows[1][rows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = policy.numericLexical('123');
@@ -86,8 +95,18 @@ test('exact safe integer identifiers are canonical text without guessed padding'
   assert.equal(profile.IDENTIFIER_POLICY.leadingZeroRepair, false);
 });
 
+test('source-system scientific and decimal-zero identifiers canonicalize exactly', () => {
+  for (const [lexical, expected] of [['123.0', '123'], ['1.23e3', '1230'], ['1.2345678901234567E+16', '12345678901234567']]) {
+    const rows = table('R025');
+    rows[1][rows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = policy.numericLexical(lexical);
+    const result = parser.parse({ rows, fileLabel: 'SDB Variantwise Sales.xlsx', expectedStoreCode: 'WLMHW', datePolicy });
+    assert.equal(result.ok, true, lexical);
+    assert.equal(result.rows[0].fields.invoiceNumber, expected, lexical);
+  }
+});
+
 test('ambiguous numeric identifier forms remain fail closed', () => {
-  for (const lexical of ['00123', '123.0', '1e3', '-1', '1234567890123456']) {
+  for (const lexical of ['00123', '123.5', '1e-3', '-1', '1e33']) {
     const rows = table('R025');
     rows[1][rows[0].findIndex((header) => foundation.normalizeHeader(header) === 'INVNUMBER')] = policy.numericLexical(lexical);
     assert.equal(parser.parse({ rows, fileLabel: 'SDB Variantwise Sales.xlsx', expectedStoreCode: 'WLMHW', datePolicy }).code, 'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED', lexical);
@@ -99,6 +118,8 @@ test('Excel serial dates convert deterministically while zero placeholders stay 
   rows[1][ref]=policy.numericLexical('0');
   assert.equal(parser.parse({rows,fileLabel:'All Discount Type.xlsx',expectedStoreCode:'WLMHW',datePolicy}).rows[0].fields.invoiceRefDate,'');
   rows[1][ref]=policy.numericLexical('46000');
+  assert.match(parser.parse({rows,fileLabel:'All Discount Type.xlsx',expectedStoreCode:'WLMHW',datePolicy}).rows[0].fields.invoiceRefDate,/^\d{8}$/);
+  rows[1][ref]=policy.numericLexical('4.6E+4');
   assert.match(parser.parse({rows,fileLabel:'All Discount Type.xlsx',expectedStoreCode:'WLMHW',datePolicy}).rows[0].fields.invoiceRefDate,/^\d{8}$/);
 });
 
