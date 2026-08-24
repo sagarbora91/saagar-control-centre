@@ -94,6 +94,8 @@ test('BKP-03 automatic delivery is provider-bound, encrypted, verified, and GFS-
   assert.match(offDevice, /copied\.verified !== true/);
   assert.match(nativeOffDevice, /ACTION_OPEN_DOCUMENT_TREE/);
   assert.match(nativeOffDevice, /takePersistableUriPermission/);
+  assert.doesNotMatch(nativeOffDevice, /\.getWeekYear\(/);
+  assert.match(nativeOffDevice, /private static int isoWeekYear\(Calendar cal\)/);
   assert.match(nativeOffDevice, /com\.android\.externalstorage\.documents/);
   assert.match(nativeOffDevice, /readback-hash-mismatch/);
   assert.match(nativeOffDevice, /prune\(folder, "backup-/);
