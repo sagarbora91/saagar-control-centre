@@ -40,10 +40,19 @@ test('ETP import confirmation controls preserve measured accessibility threshold
 
 test('ETP module uses only the future narrow bridge gateway and has no direct fact/store capability', () => {
   const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
-  assert.match(bridge, /etpGateway: getter\(function \(\) \{ return parentValue\('SaagarEtpModuleGateway'\); \}\)/);
+  assert.match(bridge, /etpImportGateway: getter\(function \(\) \{ var gateway = parentValue\('SaagarEtpModuleGateway'\); return gateway && gateway\.importFacade; \}\)/);
+  assert.match(bridge, /etpReadGateway: getter\(function \(\) \{ var gateway = parentValue\('SaagarEtpModuleGateway'\); return gateway && gateway\.readFacade; \}\)/);
   assert.match(etp, /SaagarModuleBridge/);
-  assert.match(etp, /bridge\.etpGateway\.listScopes/);
+  assert.match(etp, /bridge\.etpReadGateway\.listScopes/);
+  assert.match(etp, /bridge\.etpImportGateway\.run/);
   assert.doesNotMatch(etp, /SaagarEtp(?:NativeStore|VerifiedReader|ImportRuntime)|readFacts\s*\(|Capacitor\.Plugins|localStorage|indexedDB|window\.parent|parent\.postMessage/);
+});
+
+test('shell loads versioned readiness and query contracts before the parent gateway', () => {
+  const foundation = shell.indexOf('<script src="etp-foundation-status.js"></script>');
+  const query = shell.indexOf('<script src="etp-query-contract.js"></script>');
+  const gateway = shell.indexOf('<script src="etp-module-gateway.js"></script>');
+  assert.ok(foundation >= 0 && query > foundation && gateway > query);
 });
 
 test('Reports routes through governed module navigation and Settings remains ETP-free', () => {

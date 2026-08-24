@@ -73,7 +73,9 @@ test('coverage/history is bounded, metadata-only and rendered without HTML injec
 
 test('module has no direct native, fact, storage, export or parent capability', () => {
   assert.match(html, /SaagarModuleBridge/);
-  assert.match(html, /bridge\.etpGateway/);
+  assert.match(html, /bridge\.etpImportGateway/);
+  assert.match(html, /bridge\.etpReadGateway/);
+  assert.doesNotMatch(html, /bridge\.etpGateway/);
   assert.doesNotMatch(html, /SaagarEtp(?:NativeStore|VerifiedReader|ImportRuntime)|readFacts\s*\(|Capacitor\.Plugins|localStorage|indexedDB|window\.parent|parent\.postMessage|navigator\.share|\.download\s*=/);
 });
 

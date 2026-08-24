@@ -38,7 +38,8 @@
     photo: getter(function () { return localOrParent('SaagarPhoto'); }),
     jsZip: getter(function () { return parentValue('JSZip'); }),
     ensureJsZip: getter(function () { return parentValue('ensureJSZip'); }),
-    etpGateway: getter(function () { return parentValue('SaagarEtpModuleGateway'); })
+    etpImportGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.importFacade; }),
+    etpReadGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.readFacade; })
   });
   Object.freeze(api);
   Object.defineProperty(root, 'SaagarModuleBridge', {

@@ -21,6 +21,10 @@
   var MAX_CHUNK_INDEX = 4095;
   var MAX_ROW_OFFSET = 499;
   var MAX_CELL_TEXT = 4096;
+  var SUMMARY_PAGE_LIMIT = 200;
+  var SUMMARY_MAX_PAGES = 100;
+  var SUMMARY_MAX_ROWS = 20000;
+  var SUMMARY_MAX_GROUPS = 100;
   var PROJECTIONS = Object.freeze({
     R003: Object.freeze(['transaction_type_raw', 'net_amount', 'scheme_discount', 'user_discount']),
     R013: Object.freeze(['transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
@@ -139,16 +143,54 @@
     return freeze({ scopeKey: scopeKey, generationId: generationId, reportId: reportId, rows: freeze(rows), hasMore: page.hasMore, nextCursor: cursor });
   }
 
+  function summaryUnits(value, scale, optional) {
+    if ((value === null || value === undefined || value === '') && optional) return 0;
+    var raw = typeof value === 'number' && Number.isFinite(value) ? String(value) : (typeof value === 'string' ? value.trim() : '');
+    var match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(raw);
+    if (!match || (match[3] || '').length > scale) return null;
+    var fraction = match[3] || ''; while (fraction.length < scale) fraction += '0';
+    var number = Number(match[2] + fraction);
+    return Number.isSafeInteger(number) ? (match[1] ? -number : number) : null;
+  }
+  function summaryAdd(target, key, value) { var next = target[key] + value; if (!Number.isSafeInteger(next)) return false; target[key] = next; return true; }
+  function summaryLabel(value, fallback) { var out = String(value == null ? '' : value).trim().replace(/\s+/g, ' '); return out && out.length <= 80 ? out : fallback; }
+  function createSummary(reportId) {
+    var money = { R003: ['net_amount', 'scheme_discount', 'user_discount'], R013: ['net_amount'], R022: ['net_value', 'cash_amount', 'card_amount', 'bhim_upi_amount', 'phonepe_amount', 'paytm_amount', 'razorpay_amount', 'bharatpe_amount', 'cheque_amount', 'others_amount', 'payment_type24_amount'], R025: ['net_amount', 'scheme_discount', 'user_discount', 'tax_amount'] };
+    var sums = {}; money[reportId].forEach(function (key) { sums[key] = 0; });
+    return { reportId: reportId, rows: 0, sums: sums, quantity: 0, groups: Object.create(null), overflow: { rows: 0, net: 0 }, moneyFields: money[reportId], quantityField: { R022: 'invoice_quantity', R025: 'quantity', R013: 'quantity' }[reportId] || null };
+  }
+  function appendSummary(acc, rows) {
+    var signs = { INV: 1, SR: -1, BC: -1 };
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i], sign = signs[String(row.transaction_type_raw || '').toUpperCase()];
+      if (!sign) return failure('ETP_SUMMARY_ROW_INVALID', 'SUMMARY');
+      var money = {};
+      for (var n = 0; n < acc.moneyFields.length; n++) { var field = acc.moneyFields[n], parsed = summaryUnits(row[field], 2, field !== 'net_value' && field !== 'net_amount'); if (parsed === null || !Number.isSafeInteger(parsed * sign)) return failure('ETP_SUMMARY_ROW_INVALID', 'SUMMARY'); money[field] = parsed * sign; }
+      if (acc.quantityField) { var quantity = summaryUnits(row[acc.quantityField], 3, false); if (quantity === null || !summaryAdd(acc, 'quantity', quantity * sign)) return failure('ETP_SUMMARY_AGGREGATE_OVERFLOW', 'SUMMARY'); }
+      for (var key in money) if (own(money, key) && !summaryAdd(acc.sums, key, money[key])) return failure('ETP_SUMMARY_AGGREGATE_OVERFLOW', 'SUMMARY');
+      acc.rows++;
+      var groupKey = acc.reportId === 'R025' ? summaryLabel(row.brand, 'Unspecified brand') : (acc.reportId === 'R013' ? summaryLabel(row.cro_number, 'Unassigned CRO') : '');
+      if (groupKey) { var net = money.net_value === undefined ? (money.net_amount || 0) : money.net_value, item = acc.groups[groupKey]; if (!item) { if (Object.keys(acc.groups).length >= SUMMARY_MAX_GROUPS) { acc.overflow.rows++; if (!summaryAdd(acc.overflow, 'net', net)) return failure('ETP_SUMMARY_AGGREGATE_OVERFLOW', 'SUMMARY'); continue; } item = acc.groups[groupKey] = { label: groupKey, rows: 0, net: 0 }; } item.rows++; if (!summaryAdd(item, 'net', net)) return failure('ETP_SUMMARY_AGGREGATE_OVERFLOW', 'SUMMARY'); }
+    }
+    return { ok: true };
+  }
+  function finishSummary(acc) {
+    var groups = Object.keys(acc.groups).map(function (key) { return acc.groups[key]; }).sort(function (a, b) { return Math.abs(b.net) - Math.abs(a.net) || a.label.localeCompare(b.label); }).slice(0, 10).map(function (item) { return freeze({ label: item.label, rowCount: item.rows, netUnits: item.net }); });
+    if (acc.overflow.rows) groups.push(freeze({ label: 'Other verified groups', rowCount: acc.overflow.rows, netUnits: acc.overflow.net }));
+    var sums = {}; Object.keys(acc.sums).forEach(function (key) { sums[key] = acc.sums[key]; });
+    return freeze({ reportId: acc.reportId, rowCount: acc.rows, quantityUnits: acc.quantity, moneyUnits: freeze(sums), groups: freeze(groups) });
+  }
+
   function create(options) {
     options = options || {};
-    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core;
+    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core, foundationStatus = options.foundationStatus, queryContract = options.queryContract;
     var storage = options.storage, statusReader = options.statusReader, tokenFactory = options.tokenFactory, authorize = options.authorize;
     if (!requireMethod(runtime, 'run') || !requireMethod(runtime, 'confirm') || !requireMethod(runtime, 'readVerified') ||
-        !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') ||
+        !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') || !requireMethod(foundationStatus, 'evaluate') || !requireMethod(queryContract, 'canonicalize') || !requireMethod(queryContract, 'validateCursorBinding') || !requireMethod(queryContract, 'cursorBindingMatches') ||
         !storage || typeof storage.getItem !== 'function' || typeof statusReader !== 'function' || typeof authorize !== 'function') {
       return failure('ETP_GATEWAY_DEPENDENCY_INVALID', 'CREATE');
     }
-    var pending = Object.create(null), sequence = 0;
+    var pending = Object.create(null), cursors = Object.create(null), cursorOrder = [], sequence = 0;
 
     function permitted(action) {
       try { return authorize(action) === true; } catch (_) { return false; }
@@ -193,6 +235,31 @@
       }
       sequence += 1;
       return /^[a-f0-9]{32}$/.test(candidate) ? 'confirm_' + candidate + '_' + sequence : '';
+    }
+    function makeCursorToken() {
+      var candidate = '';
+      if (typeof tokenFactory === 'function') candidate = String(tokenFactory());
+      else {
+        var cryptoApi = options.crypto || (root && root.crypto), bytes = new Uint8Array(16);
+        if (cryptoApi && typeof cryptoApi.getRandomValues === 'function') { cryptoApi.getRandomValues(bytes); for (var i = 0; i < bytes.length; i++) candidate += ('0' + bytes[i].toString(16)).slice(-2); }
+      }
+      sequence += 1;
+      return /^[a-f0-9]{32}$/.test(candidate) ? 'cur_' + candidate + '_' + sequence : '';
+    }
+    function issueCursor(context, coordinate) {
+      var token = makeCursorToken(); if (!token) return '';
+      var checked = queryContract.validateCursorBinding({ contractVersion: queryContract.VERSION, token: token, scopeKey: context.scopeKey, generationId: context.generationId, reportId: context.reportId, querySignatureInput: context.querySignatureInput });
+      if (!checked.ok) return '';
+      cursors[token] = { binding: checked.binding, coordinate: freeze({ chunkIndex: coordinate.chunkIndex, rowOffset: coordinate.rowOffset }) };
+      cursorOrder.push(token); if (cursorOrder.length > 512) delete cursors[cursorOrder.shift()];
+      return token;
+    }
+    function consumeCursor(token, context) {
+      var stored = cursors[token];
+      if (!stored || !queryContract.cursorBindingMatches(stored.binding, context)) return null;
+      delete cursors[token];
+      var index = cursorOrder.indexOf(token); if (index >= 0) cursorOrder.splice(index, 1);
+      return stored.coordinate;
     }
 
     async function run(request) {
@@ -247,7 +314,11 @@
         var clean = sanitizeReceipt(history[i], core);
         if (clean) cleanHistory.push(clean);
       }
-      return freeze({ ok: true, scope: context.normalized.scope, status: freeze({ state: 'ACCEPTED', restoreFence: false, activeGenerationId: context.status.activeGenerationId }), currentReceipt: sanitizeReceipt(context.receipt, core), history: freeze(cleanHistory) });
+      var currentReceipt = sanitizeReceipt(context.receipt, core);
+      var statusPublishedAt = currentReceipt && /^\d{4}-\d{2}-\d{2}$/.test(currentReceipt.publishedAt) ? currentReceipt.publishedAt + 'T00:00:00Z' : (currentReceipt && currentReceipt.publishedAt);
+      var status = foundationStatus.evaluate({ contractVersion: foundationStatus.VERSION, scope: context.normalized.scope, factStoreAvailable: true, nativeStatus: freeze({ state: context.status.state, restoreFence: context.status.restoreFence, activeGenerationId: context.status.activeGenerationId }), receipt: currentReceipt ? freeze({ activeGenerationId: currentReceipt.activeGenerationId, reconciliationStatus: currentReceipt.reconciliationStatus, coverage: currentReceipt.coverage, exceptions: currentReceipt.exceptions, profileVersion: currentReceipt.profileVersion, ruleVersion: currentReceipt.ruleVersion, publishedAt: statusPublishedAt }) : null });
+      if (!status || status.ok !== true) return failure('ETP_FOUNDATION_STATUS_INVALID', 'INSPECT');
+      return freeze({ ok: true, scope: context.normalized.scope, status: status, currentReceipt: currentReceipt, history: freeze(cleanHistory) });
     }
 
     function listScopes(request) {
@@ -276,18 +347,48 @@
         if (!/^[a-z][a-z0-9_]{0,63}$/.test(field) || FORBIDDEN_FIELD.test(field) || allowed.indexOf(field) < 0 || seen[field]) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
         seen[field] = true; projected.push(field);
       }
-      if (request.cursor !== null && (!exact(request.cursor, ['chunkIndex', 'rowOffset']) || !Number.isSafeInteger(request.cursor.chunkIndex) || request.cursor.chunkIndex < 0 || request.cursor.chunkIndex > MAX_CHUNK_INDEX || !Number.isSafeInteger(request.cursor.rowOffset) || request.cursor.rowOffset < 0 || request.cursor.rowOffset > MAX_ROW_OFFSET)) return failure('ETP_READ_CURSOR_INVALID', 'READ');
+      var canonical = queryContract.canonicalize({ contractVersion: queryContract.VERSION, reportId: reportId, fields: projected, filters: [], sort: [], limit: request.limit, cursor: request.cursor });
+      if (!canonical.ok) return failure(canonical.code === 'ETP_QUERY_CURSOR_INVALID' ? 'ETP_READ_CURSOR_INVALID' : 'ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var context = await verifiedContext(scope);
       if (context.error) return context.error;
+      var cursorContext = { scopeKey: context.normalized.scope.scopeKey, generationId: context.receipt.activeGenerationId, reportId: reportId, querySignatureInput: canonical.signatureInput };
+      var rawCursor = null;
+      if (request.cursor !== null) { rawCursor = consumeCursor(request.cursor, cursorContext); if (!rawCursor) return failure('ETP_READ_CURSOR_INVALID', 'READ'); }
       var result;
-      try { result = await runtime.readVerified(context.normalized.checked.scope, { reportId: reportId, fields: projected, cursor: request.cursor, limit: request.limit }); }
+      try { result = await runtime.readVerified(context.normalized.checked.scope, { reportId: reportId, fields: projected, cursor: rawCursor, limit: request.limit }); }
       catch (_) { return failure('ETP_VERIFIED_READ_FAILED', 'READ'); }
       if (!result || result.ok !== true) return cleanFailure(result, 'ETP_VERIFIED_READ_FAILED', 'READ');
       var page = sanitizePage(result, context.normalized.scope.scopeKey, context.receipt.activeGenerationId, reportId, projected, request.limit);
-      return page ? freeze({ ok: true, page: page }) : failure('ETP_GATEWAY_RESPONSE_INVALID', 'READ');
+      if (!page) return failure('ETP_GATEWAY_RESPONSE_INVALID', 'READ');
+      var nextCursor = null;
+      if (page.hasMore) { nextCursor = issueCursor(cursorContext, page.nextCursor); if (!nextCursor) return failure('ETP_GATEWAY_ENTROPY_UNAVAILABLE', 'READ'); }
+      return freeze({ ok: true, page: freeze({ scopeKey: page.scopeKey, generationId: page.generationId, reportId: page.reportId, rows: page.rows, hasMore: page.hasMore, nextCursor: nextCursor }) });
     }
 
-    return { ok: true, gateway: freeze({ version: GATEWAY_VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes }) };
+    async function loadSummary(scope) {
+      var inspected = await inspectScope(scope, { historyLimit: 5 });
+      if (!inspected.ok) return inspected;
+      if (inspected.status.status === 'NOT_READY' || inspected.status.showValues !== true) return failure('ETP_SUMMARY_NOT_READY', 'SUMMARY');
+      var summaries = {}, pages = 0, totalRows = 0;
+      for (var r = 0; r < REPORTS.length; r++) {
+        var reportId = REPORTS[r], acc = createSummary(reportId), cursor = null, seen = Object.create(null), more = true;
+        while (more) {
+          if (pages >= SUMMARY_MAX_PAGES || totalRows >= SUMMARY_MAX_ROWS) return failure('ETP_SUMMARY_REFRESH_LIMIT_EXCEEDED', 'SUMMARY');
+          if (cursor !== null) { if (seen[cursor]) return failure('ETP_SUMMARY_CURSOR_REPEATED', 'SUMMARY'); seen[cursor] = true; }
+          var result = await readVerified(scope, { reportId: reportId, fields: PROJECTIONS[reportId].slice(), cursor: cursor, limit: SUMMARY_PAGE_LIMIT });
+          if (!result.ok || !result.page || !Array.isArray(result.page.rows)) return failure(result.code || 'ETP_SUMMARY_READ_FAILED', 'SUMMARY');
+          pages++; totalRows += result.page.rows.length; if (totalRows > SUMMARY_MAX_ROWS) return failure('ETP_SUMMARY_REFRESH_LIMIT_EXCEEDED', 'SUMMARY');
+          var appended = appendSummary(acc, result.page.rows); if (!appended.ok) return appended;
+          more = result.page.hasMore === true; cursor = more ? result.page.nextCursor : null; if (more && !queryContract.isOpaqueToken(cursor)) return failure('ETP_SUMMARY_CURSOR_INVALID', 'SUMMARY');
+        }
+        summaries[reportId] = finishSummary(acc);
+      }
+      return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, history: inspected.history, summaries: freeze(summaries), pages: pages, rowCount: totalRows });
+    }
+
+    var readFacade = freeze({ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary });
+    var importFacade = freeze({ run: run, confirm: confirm });
+    return { ok: true, gateway: freeze({ version: GATEWAY_VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes, loadSummary: loadSummary, readFacade: readFacade, importFacade: importFacade }) };
   }
 
   function browserStatusReader(rootValue, lifecycle) {
@@ -324,7 +425,7 @@
   function bootstrap() {
     try {
       var lifecycle = root && root.SaagarEtpStoreLifecyclePolicy;
-      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
+      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, foundationStatus: root && root.SaagarEtpFoundationStatus, queryContract: root && root.SaagarEtpQueryContract, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 

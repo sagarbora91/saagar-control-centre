@@ -42,10 +42,10 @@
     <p>WLMHW and HEMW · encrypted on-device facts · read-only reporting shell</p>
   </header>
   <nav class="etp-tabs" role="tablist" aria-label="Retail ETP sections">
-    <button class="etp-tab" id="tab-import" role="tab" aria-controls="panel-import" aria-selected="true" data-view="import">Import</button>
-    <button class="etp-tab" id="tab-verified" role="tab" aria-controls="panel-verified" aria-selected="false" data-view="verified" data-etp-view-tab="verified">Verified Reports</button>
-    <button class="etp-tab" id="tab-coverage" role="tab" aria-controls="panel-coverage" aria-selected="false" data-view="coverage">Coverage &amp; History</button>
-    <button class="etp-tab" id="tab-reconciliation" role="tab" aria-controls="panel-reconciliation" aria-selected="false" data-view="reconciliation" data-etp-view-tab="exceptions">Reconciliation &amp; Exceptions</button>
+    <button data-action="tab-import" class="etp-tab" id="tab-import" role="tab" aria-controls="panel-import" aria-selected="true" data-view="import">Import</button>
+    <button data-action="tab-verified" class="etp-tab" id="tab-verified" role="tab" aria-controls="panel-verified" aria-selected="false" data-view="verified" data-etp-view-tab="verified">Verified Reports</button>
+    <button data-action="tab-coverage" class="etp-tab" id="tab-coverage" role="tab" aria-controls="panel-coverage" aria-selected="false" data-view="coverage">Coverage &amp; History</button>
+    <button data-action="tab-reconciliation" class="etp-tab" id="tab-reconciliation" role="tab" aria-controls="panel-reconciliation" aria-selected="false" data-view="reconciliation" data-etp-view-tab="exceptions">Reconciliation &amp; Exceptions</button>
   </nav>
   <main data-etp-verified-root>
     <div class="card status" role="status" aria-live="polite">
@@ -56,23 +56,23 @@
     <section class="etp-panel" id="panel-import" role="tabpanel" aria-labelledby="tab-import" data-panel="import">
       <h2>Import &amp; Validate</h2>
       <p class="lead">Select the exact R003, R013, R022 and R025 reports. A workbook may span multiple financial years; only rows inside the explicitly selected one-year scope are reconciled and published after Owner approval.</p>
-      <form class="card" id="etpImportForm" novalidate>
+      <form data-action="etp-import-form" class="card" id="etpImportForm" novalidate>
         <h3>Store and complete period</h3>
         <div class="form-grid">
-          <label class="field">Store<select data-etp-scope="storeCode"><option value="WLMHW">WLMHW</option><option value="HEMW">HEMW</option></select></label>
-          <label class="field">Financial year<input data-etp-scope="financialYear" inputmode="numeric" maxlength="7" placeholder="2026-27" autocomplete="off"></label>
-          <label class="field">From<input data-etp-scope="periodStart" type="date"></label>
-          <label class="field">To<input data-etp-scope="periodEnd" type="date"></label>
+          <label class="field">Store<select data-field="store-code" data-etp-scope="storeCode"><option value="WLMHW">WLMHW</option><option value="HEMW">HEMW</option></select></label>
+          <label class="field">Financial year<input data-field="financial-year" data-etp-scope="financialYear" inputmode="numeric" maxlength="7" placeholder="2026-27" autocomplete="off"></label>
+          <label class="field">From<input data-field="period-start" data-etp-scope="periodStart" type="date"></label>
+          <label class="field">To<input data-field="period-end" data-etp-scope="periodEnd" type="date"></label>
         </div>
         <div class="file-grid" aria-label="Required Retail ETP reports">
-          <label class="file-field"><strong>R003</strong><span data-etp-file-name="R003">Choose All Discount Type XLSX</span><input data-etp-file="R003" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R013</strong><span data-etp-file-name="R013">Choose CRO Wise Sales XLSX</span><input data-etp-file="R013" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R022</strong><span data-etp-file-name="R022">Choose Revenue Report XLSX</span><input data-etp-file="R022" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R025</strong><span data-etp-file-name="R025">Choose SDB Variantwise Sales XLSX</span><input data-etp-file="R025" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R003</strong><span data-etp-file-name="R003">Choose All Discount Type XLSX</span><input data-field="report-r003" data-etp-file="R003" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R013</strong><span data-etp-file-name="R013">Choose CRO Wise Sales XLSX</span><input data-field="report-r013" data-etp-file="R013" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R022</strong><span data-etp-file-name="R022">Choose Revenue Report XLSX</span><input data-field="report-r022" data-etp-file="R022" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R025</strong><span data-etp-file-name="R025">Choose SDB Variantwise Sales XLSX</span><input data-field="report-r025" data-etp-file="R025" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
         </div>
-        <label class="coverage-check"><input id="etpCoverageConfirmed" type="checkbox"> <span>I confirm all four exports cover the complete selected period. Rows outside this scope remain unpublished. Publication requires fresh Owner approval.</span></label>
+        <label class="coverage-check"><input data-action="etp-coverage-confirmed" id="etpCoverageConfirmed" type="checkbox"> <span>I confirm all four exports cover the complete selected period. Rows outside this scope remain unpublished. Publication requires fresh Owner approval.</span></label>
         <div class="notice" id="etpImportNotice" role="status" aria-live="polite">Select an exact scope and all four reports. Nothing is published during validation.</div>
-        <div class="actions"><button class="action" id="etpValidate" type="submit">Validate reports</button><button class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
+        <div class="actions"><button data-action="etp-validate" class="action" id="etpValidate" type="submit">Validate reports</button><button data-action="etp-confirm" class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
       </form>
       <p class="privacy">Selected workbook bytes are used only for validation and are released after a terminal success. Raw rows and customer information are never rendered here.</p>
     </section>
@@ -80,8 +80,8 @@
     <section class="etp-panel" id="panel-verified" role="tabpanel" aria-labelledby="tab-verified" data-panel="verified" hidden>
       <h2>Verified Reports</h2>
       <p class="lead">Only an authenticated active generation with passed blocking reconciliation may supply these read-only views.</p>
-      <button class="etp-active-scope" type="button" data-etp-active-scope="verified" data-etp-scope-picker>Loading published scopes…</button>
-      <button class="action" type="button" data-etp-verified-refresh>Refresh verified views</button>
+      <button data-action="select-verified-scope" class="etp-active-scope" type="button" data-etp-active-scope="verified" data-etp-scope-picker>Loading published scopes…</button>
+      <button data-action="refresh-verified-views" class="action" type="button" data-etp-verified-refresh>Refresh verified views</button>
       <div class="placeholder-grid" data-etp-verified-content>
         <article class="card placeholder"><h3>R022 · Revenue &amp; tender</h3><p>Invoice-level revenue and approved payment classifications.</p><span class="tag">Verified projection pending</span></article>
         <article class="card placeholder"><h3>R025 · Sales detail</h3><p>Item-level quantity, value, tax and safe product dimensions.</p><span class="tag">Verified projection pending</span></article>
@@ -93,15 +93,15 @@
     <section class="etp-panel" id="panel-coverage" role="tabpanel" aria-labelledby="tab-coverage" data-panel="coverage" hidden>
       <h2>Coverage &amp; History</h2>
       <p class="lead">Current receipt, verified-through date, four-report completeness, restore fence and bounded supersession history.</p>
-      <article class="card"><div class="actions"><button class="action" id="etpHistoryRefresh" type="button">Refresh history</button></div><div id="etpScopeList" class="scope-list"><p>No verified scope loaded.</p></div></article>
+      <article class="card"><div class="actions"><button data-action="etp-history-refresh" class="action" id="etpHistoryRefresh" type="button">Refresh history</button></div><div id="etpScopeList" class="scope-list"><p>No verified scope loaded.</p></div></article>
       <article class="card" id="etpScopeDetail" hidden><h3 id="etpScopeHeading">Verified scope</h3><div id="etpScopeSummary"></div></article>
     </section>
 
     <section class="etp-panel" id="panel-reconciliation" role="tabpanel" aria-labelledby="tab-reconciliation" data-panel="reconciliation" hidden>
       <h2>Reconciliation &amp; Exceptions</h2>
       <p class="lead">REC-002, R003 and R013 controls remain visible alongside all unresolved tender classifications.</p>
-      <button class="etp-active-scope" type="button" data-etp-active-scope="exceptions" data-etp-scope-picker>Loading published scopes…</button>
-      <button class="action" type="button" data-etp-verified-refresh>Refresh exceptions</button>
+      <button data-action="select-exceptions-scope" class="etp-active-scope" type="button" data-etp-active-scope="exceptions" data-etp-scope-picker>Loading published scopes…</button>
+      <button data-action="refresh-exceptions" class="action" type="button" data-etp-verified-refresh>Refresh exceptions</button>
       <div class="placeholder-grid" data-etp-exceptions-content>
         <article class="card placeholder"><h3>R022 ↔ R025</h3><p>Blocking quantity and net-value reconciliation.</p><span class="tag">Status pending</span></article>
         <article class="card placeholder"><h3>PAYMENTTYPE25</h3><p>Unresolved rows remain quarantined and excluded from classified tender reporting.</p><span class="tag">Never folded into Others</span></article>
@@ -116,9 +116,13 @@
       var REPORTS = ['R003', 'R013', 'R022', 'R025'];
       var state = { busy: false, confirmationToken: '', files: Object.create(null), activeScope: null };
       var presentationController = null;
-      function gateway() {
+      function importGateway() {
         var bridge = window.SaagarModuleBridge;
-        return bridge && bridge.etpGateway && typeof bridge.etpGateway.listScopes === 'function' ? bridge.etpGateway : null;
+        return bridge && bridge.etpImportGateway && typeof bridge.etpImportGateway.run === 'function' && typeof bridge.etpImportGateway.confirm === 'function' ? bridge.etpImportGateway : null;
+      }
+      function readGateway() {
+        var bridge = window.SaagarModuleBridge;
+        return bridge && bridge.etpReadGateway && typeof bridge.etpReadGateway.listScopes === 'function' && typeof bridge.etpReadGateway.loadSummary === 'function' ? bridge.etpReadGateway : null;
       }
       function text(element, value) { if (element) element.textContent = String(value == null ? '' : value); }
       function safeCode(value, fallback) {
@@ -173,7 +177,7 @@
       async function validateImport(event) {
         event.preventDefault();
         if (state.busy) return;
-        var api = gateway(), selectedScope = scope();
+        var api = importGateway(), selectedScope = scope();
         if (!api || typeof api.run !== 'function' || typeof api.confirm !== 'function') { setNotice('Secure ETP gateway unavailable. Nothing was changed.', 'error'); return; }
         if (!completeScope(selectedScope)) { setNotice('Enter a valid store, financial year and complete date period.', 'error'); return; }
         if (!filesReady()) { setNotice('Select one exact XLSX export for each of R003, R013, R022 and R025.', 'error'); return; }
@@ -200,7 +204,7 @@
       }
       async function confirmImport() {
         if (state.busy || !state.confirmationToken) return;
-        var api = gateway(), token = state.confirmationToken;
+        var api = importGateway(), token = state.confirmationToken;
         state.confirmationToken = '';
         if (!api || typeof api.confirm !== 'function') { setNotice('Secure ETP gateway unavailable. Nothing was changed.', 'error'); setBusy(false); return; }
         setBusy(true); setNotice('Requesting fresh Owner approval and atomic publication…', '');
@@ -249,7 +253,7 @@
         host.appendChild(message);
       }
       async function inspect(selectedScope) {
-        var api = gateway();
+        var api = readGateway();
         if (!api || typeof api.inspectScope !== 'function') { renderScopeDetail(null); return; }
         try {
           var result = await api.inspectScope(selectedScope, { historyLimit: 10 });
@@ -258,7 +262,7 @@
         } catch (_) { renderScopeError('ETP_STATUS_UNAVAILABLE'); }
       }
       async function refreshScopes() {
-        var api = gateway();
+        var api = readGateway();
         var host = document.getElementById('etpScopeList');
         if (!api) { text(document.getElementById('gatewayTitle'), 'Verified data gateway unavailable'); text(document.getElementById('gatewayStatus'), 'No ETP data can be read or changed.'); text(host, 'Secure ETP gateway unavailable.'); return; }
         try {
@@ -318,14 +322,14 @@
       document.getElementById('etpConfirm').addEventListener('click', confirmImport);
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
       var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
-      if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),gateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
+      if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),readGateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
       select('import', false);
       refreshScopes();
     })();
   </script>
 
   <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-  <button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+  <button id="st-v5-home-fab" data-action="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
   <div id="st-v5-next-chips"></div>
   <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'etp',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 

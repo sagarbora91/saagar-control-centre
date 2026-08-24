@@ -9,6 +9,8 @@ const require = createRequire(import.meta.url);
 const gatewayApi = require('../www/etp-module-gateway.js');
 const lifecycle = require('../www/etp-store-lifecycle-policy.js');
 const core = require('../www/etp-core-contract.js');
+const foundationStatus = require('../www/etp-foundation-status.js');
+const queryContract = require('../www/etp-query-contract.js');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const generationA = `etp_${'a'.repeat(32)}`;
 const generationB = `etp_${'b'.repeat(32)}`;
@@ -47,7 +49,7 @@ function make(overrides = {}) {
         rows: [{ [request.fields[0]]: 'safe' }], hasMore: false, nextCursor: null } };
     }
   };
-  const result = gatewayApi.create({ runtime, lifecyclePolicy: lifecycle, core,
+  const result = gatewayApi.create({ runtime, lifecyclePolicy: lifecycle, core, foundationStatus, queryContract,
     storage: overrides.storage || storageWith(),
     authorize: overrides.authorize || (() => true),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: {

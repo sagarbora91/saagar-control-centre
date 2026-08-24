@@ -7,6 +7,8 @@ const require = createRequire(import.meta.url);
 const gatewayApi = require('../www/etp-module-gateway.js');
 const lifecycle = require('../www/etp-store-lifecycle-policy.js');
 const core = require('../www/etp-core-contract.js');
+const foundationStatus = require('../www/etp-foundation-status.js');
+const queryContract = require('../www/etp-query-contract.js');
 const gatewaySource = fs.readFileSync(new URL('../www/etp-module-gateway.js', import.meta.url), 'utf8');
 
 const generationA = 'etp_' + 'a'.repeat(32);
@@ -56,6 +58,8 @@ function fixture(overrides = {}) {
     runtime: overrides.runtime || runtime,
     lifecyclePolicy: overrides.lifecyclePolicy || lifecycle,
     core: overrides.core || core,
+    foundationStatus: overrides.foundationStatus || foundationStatus,
+    queryContract: overrides.queryContract || queryContract,
     storage: overrides.storage || storageWith(),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: { state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } })),
     authorize: overrides.authorize || (() => true),
@@ -67,7 +71,11 @@ function fixture(overrides = {}) {
 test('fails closed when any gateway dependency is absent and exposes no raw native surface', () => {
   assert.equal(gatewayApi.create({}).code, 'ETP_GATEWAY_DEPENDENCY_INVALID');
   const { gateway } = fixture();
-  assert.deepEqual(Object.keys(gateway).sort(), ['confirm', 'inspectScope', 'listScopes', 'readVerified', 'reports', 'run', 'version']);
+  assert.deepEqual(Object.keys(gateway).sort(), ['confirm', 'importFacade', 'inspectScope', 'listScopes', 'loadSummary', 'readFacade', 'readVerified', 'reports', 'run', 'version']);
+  assert.deepEqual(Object.keys(gateway.readFacade).sort(), ['inspectScope', 'listScopes', 'loadSummary']);
+  assert.equal(Object.isFrozen(gateway.readFacade), true);
+  assert.deepEqual(Object.keys(gateway.importFacade).sort(), ['confirm', 'run']);
+  assert.equal(Object.isFrozen(gateway.importFacade), true);
   assert.equal('plugin' in gateway, false);
   assert.equal('readFacts' in gateway, false);
   assert.equal(Object.isFrozen(gateway), true);
@@ -175,6 +183,8 @@ test('scope inspection returns only sanitized current receipt and bounded valida
   assert.equal(result.ok, true);
   assert.equal(result.history.length, 10);
   assert.equal(result.currentReceipt.exceptions.paymentType25.persisted, false);
+  assert.equal(result.status.contractVersion, foundationStatus.VERSION);
+  assert.equal(result.status.status, 'READY_WITH_WARNINGS');
   assert.equal('lifecycle' in result.currentReceipt, false);
   assert.equal(JSON.stringify(result).includes('workbook'), false);
   assert.equal(JSON.stringify(result).includes('Secret'), false);

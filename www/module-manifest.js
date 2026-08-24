@@ -204,8 +204,8 @@
       "id": "module-bridge",
       "version": 1,
       "file": "shared/module-bridge.js",
-      "bytes": 2467,
-      "sha256": "e3851db4edf6fa735ab34c1ba0e6ab89ed185231e8faeabaadb4622e2e6a7515"
+      "bytes": 2656,
+      "sha256": "768a25b0ea4bdd76c826b72a9ea99d78a16bf08aa0d47ec170d827d3b9114c43"
     },
     {
       "id": "module-runtime",
@@ -267,8 +267,8 @@
       "id": "etp-verified-presentation",
       "version": 1,
       "file": "etp-verified-presentation.js",
-      "bytes": 11861,
-      "sha256": "031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6"
+      "bytes": 8603,
+      "sha256": "31b4d32b1e75aaa293477e37652ce4fbcb2fe8a2c0fe288d6cf7f338e2218376"
     }
   ],
   "modules": [
@@ -443,8 +443,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 33451,
-      "sha256": "ef846baf580b20faa9e3cba82e790164edddf0e227f5ff79c0593398c733e85e",
+      "bytes": 34473,
+      "sha256": "b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12",
       "src": "modules/etp/index.html"
     }
   ]
