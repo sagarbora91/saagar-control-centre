@@ -3,7 +3,29 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6B engineering complete; begin Phase 6C — 2026-08-24
+## RESUME HERE — Phase 6C.1 contract frozen; begin Planning proof — 2026-08-24
+
+### Phase 6C.1 crash checkpoint
+
+The read-only Shared CSS, Planning and Source/Visual comparator audits are complete. They found
+that the plan's 189-rule description had drifted: the current canonical legacy mobile authority
+is 191 rules, 24,977 bytes, SHA-256
+`acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443`. Planning, Stock, DSR,
+Expense, Grooming, CRO Audit, Leave and Tax match it byte-for-byte. Service, QMS and Payroll
+contain bounded local deltas which must remain after the shared import.
+
+Resume with the Planning-only proof. Create `www/shared/module-mobile-legacy.css` from the exact
+Planning style body, preserve the existing common asset first in cascade order, and keep the
+`st-v5-mobile-css` identity on the new legacy link. Do not reuse
+`scripts/migrate-phase1-mobile-common-css.mjs`: it extracts only six selectors and enumerates ETP.
+The Phase 6C extractor must use the explicit eleven-module allowlist; ETP must have zero imports
+of the new asset and unchanged source/manifest identity. The controlling contract is:
+
+`verification/audit/PHASE-6C-EXTRACTION-CONTRACT-2026-08-24.md`
+
+No module source, APK, Firebase project or external publication was changed at this checkpoint.
+
+## Historical resume point — Phase 6B engineering complete; begin Phase 6C — 2026-08-24
 
 ### Phase 6B closure checkpoint
 

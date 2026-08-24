@@ -328,8 +328,10 @@ Comparator. Lead Integrator owns shared imports and identities.
 
 **Build work:**
 
-1. Extract the complete byte-identical 189-rule `base layer (all modules)` into a clearly named
-   temporary legacy shared asset.
+1. Extract the current 191-rule, 24,977-byte canonical legacy mobile authority into
+   `www/shared/module-mobile-legacy.css`. Eight modules currently carry those exact bytes;
+   Service, QMS and Payroll carry the same authority plus bounded local deltas that must remain
+   after the shared import. The earlier 189-rule measurement is historical, not a slicing rule.
 2. Prove the extraction on Planning first.
 3. After Planning passes, remove the duplicate block mechanically from the other ten legacy
    modules.
@@ -339,7 +341,8 @@ Comparator. Lead Integrator owns shared imports and identities.
 **Engineering exit:**
 
 - Planning matches its before state at governed widths;
-- eleven duplicate copies reduce to one legacy shared copy;
+- eleven inline authorities reduce to one legacy shared copy plus the bounded Service, QMS and
+  Payroll delta rules;
 - every module keeps its own delta rules;
 - ETP product bytes/layout remain unaffected;
 - there is still no responsive redesign in this phase.
