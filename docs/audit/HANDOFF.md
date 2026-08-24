@@ -3,7 +3,28 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6H.1 ETP E2 engineering complete; begin Phase 6H.2 E3 — 2026-08-24
+## RESUME HERE — Phase 6H engineering complete; begin Phase 6I cleanup/source freeze — 2026-08-24
+
+### Phase 6H engineering closure
+
+The complete E2 → E3 → E4 → E6 → E5 engineering sequence is implemented. Verified analytics,
+invoice-grain CRO reconciliation, immutable target/Leave planning, durable exception monitoring,
+and golden-tested incentive/Payroll controls now share the same fail-closed ETP boundary.
+Declarations never become verified achievement or payment basis. E6 restatements feed explicit E5
+clawbacks, and the Payroll earning line is controlled and non-editable.
+
+E4 and E5 correctly remain inactive until the owner supplies and approves the authoritative target
+source and incentive scheme version. Synthetic fixtures prove behavior but carry no business authority.
+
+The integrated Phase 6H aggregate is **334/334**. Exact boundaries and gates are recorded in:
+
+`verification/audit/PHASE-6H-ENGINEERING-CLOSURE-2026-08-24.md`
+
+Begin Phase 6I integration cleanup, documentation and source freeze. No owner target/scheme
+approval, rendered-browser, emulator, physical-device, staff-UAT, APK/build/sign, Firebase,
+upload, publication, release or billing acceptance is claimed.
+
+## Historical resume point — Phase 6H.1 ETP E2 engineering complete; begin Phase 6H.2 E3 — 2026-08-24
 
 ### Phase 6H.1 engineering closure
 

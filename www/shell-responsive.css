@@ -8,6 +8,7 @@ button,input:not([type="hidden"]),select,textarea,.btn,[role="button"]{min-heigh
 .top-actions,.brand,.brand-meta,.home-store-context,.section-head{min-width:0}
 .top-actions{max-width:100%}
 .etp-e2-home{margin-top:12px}.etp-e2-heading{font-weight:800;color:var(--navy,#0d2340)}.etp-e2-note{margin:5px 0;color:var(--gray-600,#667085);font-size:12px}.etp-e2-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:8px;margin-top:9px}.etp-e2-metric{-webkit-flex:1 1 92px;flex:1 1 92px;min-width:0;border:1px solid var(--gray-200,#e5e7eb);border-radius:9px;padding:8px}.etp-e2-metric span,.etp-e2-metric strong{display:block}.etp-e2-metric span{font-size:11px;color:var(--gray-600,#667085)}.etp-e2-open{min-height:44px;margin-top:8px;border:1px solid var(--gold,#b8922a);border-radius:9px;background:#fff;color:var(--navy,#0d2340);padding:0 12px;font-weight:700}
+.etp-e6-home{display:grid;gap:4px;margin-top:12px;border-left:4px solid var(--gold,#b8922a)}.etp-e6-home span{color:var(--gray-600,#667085);font-size:13px}
 
 @media(max-width:639px){
   html[data-shell-tier="mobile"],html[data-shell-tier="mobile"] body{overflow-x:hidden}

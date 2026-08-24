@@ -2,7 +2,8 @@
 export function restorePrePhase6h1EtpIndex(source) {
   return String(source)
     .replace("    .etp-e2-views{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}.etp-e2-views .action[aria-pressed=\"true\"]{border-color:var(--navy);background:var(--navy);color:#fff}.etp-e2-banner{border-left:5px solid #247a52}.etp-e2-banner h3{color:#1d6946}\n", '')
-    .replace(/      <div class="etp-e2-views"[^\n]+\n/, '');
+    .replace(/      <div class="etp-e2-views"[^\n]+\n/, '')
+    .replace(/      <div class="placeholder-grid" data-etp-phase6h-operations>[\s\S]*?      <\/div>\n/, '');
 }
 export function restorePrePhase6h1GatewaySource(source) {
   return String(source)

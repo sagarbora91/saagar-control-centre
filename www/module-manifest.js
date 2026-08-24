@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 29) fail('sharedAssets must contain exactly twenty-nine entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 34) fail('sharedAssets must contain exactly thirty-four entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -205,6 +205,11 @@
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
       ,{ id: 'etp-verified-analytics', file: 'etp-verified-analytics.js' }
       ,{ id: 'etp-analytics-consumer', file: 'etp-analytics-consumer.js' }
+      ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }
+      ,{ id: 'etp-target-planning', file: 'etp-target-planning.js' }
+      ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }
+      ,{ id: 'etp-incentive-control', file: 'etp-incentive-control.js' }
+      ,{ id: 'etp-operations-consumer', file: 'etp-operations-consumer.js' }
     ];
     var frozenShared = input.sharedAssets.map(function(shared, index){
       var label='sharedAssets['+index+']', expected=expectedShared[index];
@@ -421,6 +426,41 @@
       "file": "etp-analytics-consumer.js",
       "bytes": 4850,
       "sha256": "a069996397f4720aeeb392544f35232939039dde6e69f61572df9a3223ef48a0"
+    },
+    {
+      "id": "etp-cro-reconciliation",
+      "version": 1,
+      "file": "etp-cro-reconciliation.js",
+      "bytes": 12226,
+      "sha256": "a0c057dbc972915db0d403f8fab90f76935f21253c38a5f366003f7b5d953cd4"
+    },
+    {
+      "id": "etp-target-planning",
+      "version": 1,
+      "file": "etp-target-planning.js",
+      "bytes": 15967,
+      "sha256": "87d4c98e685063ed1a8ddf541a7da53c5469d324588ec72513333c8df3dd5ede"
+    },
+    {
+      "id": "etp-exception-monitor",
+      "version": 1,
+      "file": "etp-exception-monitor.js",
+      "bytes": 15570,
+      "sha256": "a51e2b4f9c47e4c79ea2ae27d3d9fe1f01bc9e26bf9eed5979605ee4c9984b8e"
+    },
+    {
+      "id": "etp-incentive-control",
+      "version": 1,
+      "file": "etp-incentive-control.js",
+      "bytes": 8501,
+      "sha256": "b832edf6ed7da38807bbd8103c05793f069bce9ecd7a123435ce3f71272ff327"
+    },
+    {
+      "id": "etp-operations-consumer",
+      "version": 1,
+      "file": "etp-operations-consumer.js",
+      "bytes": 1633,
+      "sha256": "59cef49ac2ce4b4836d9fdc49b9b8412da1da5429f0227da21d6ecbda33993e9"
     }
   ],
   "modules": [
@@ -595,8 +635,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 35223,
-      "sha256": "a7c67cbef3079188f10c9af490efa890e2132742bfa4fda6d251a463a3d5b50d",
+      "bytes": 36361,
+      "sha256": "eeec42e09c2c6c209d0f15fb8a81e79874de71fa7befe4b943bd577d897d4cae",
       "src": "modules/etp/index.html"
     }
   ]

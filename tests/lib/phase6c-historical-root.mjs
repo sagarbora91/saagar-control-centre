@@ -14,7 +14,7 @@ import { restorePhase6eEtpGatewaySource, restorePhase6eEtpPresentationSource } f
 import { restorePhase6eFamilyASource } from './phase6f-family-a-source.mjs';
 import { restorePrePhase6gFamilyBSource } from './phase6g-family-b-source.mjs';
 import { restorePrePhase6gShellAssets } from './phase6g-shell-source.mjs';
-import { restorePrePhase6h1GatewaySource, restorePrePhase6h1PresentationSource } from './phase6h1-etp-source.mjs';
+import { restorePrePhase6h1EtpIndex, restorePrePhase6h1GatewaySource, restorePrePhase6h1PresentationSource } from './phase6h1-etp-source.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -44,10 +44,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shell-responsive.css'));
   fs.rmSync(path.join(workspaceRoot, 'www/shared/shell-responsive-runtime.js'));
   const etpPhase6hPath = path.join(workspaceRoot, 'www/modules/etp/index.html');
-  fs.writeFileSync(etpPhase6hPath, fs.readFileSync(etpPhase6hPath, 'utf8')
-    .replace("    .etp-e2-views{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}.etp-e2-views .action[aria-pressed=\"true\"]{border-color:var(--navy);background:var(--navy);color:#fff}.etp-e2-banner{border-left:5px solid #247a52}.etp-e2-banner h3{color:#1d6946}\n", '')
-    .replace(/      <div class="etp-e2-views"[^\n]+\n/, ''), 'utf8');
-  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js']) {
+  fs.writeFileSync(etpPhase6hPath, restorePrePhase6h1EtpIndex(fs.readFileSync(etpPhase6hPath, 'utf8')), 'utf8');
+  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js', 'etp-cro-reconciliation.js', 'etp-target-planning.js', 'etp-exception-monitor.js', 'etp-incentive-control.js', 'etp-operations-consumer.js']) {
     const assetPath = path.join(workspaceRoot, 'www', asset); if (fs.existsSync(assetPath)) fs.rmSync(assetPath);
   }
   const phase6hGatewayPath = path.join(workspaceRoot, 'www/etp-module-gateway.js');
@@ -86,8 +84,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
-    .replace("input.sharedAssets.length !== 29", "input.sharedAssets.length !== 27")
-    .replace("sharedAssets must contain exactly twenty-nine entries", "sharedAssets must contain exactly twenty-seven entries")
+    .replace("input.sharedAssets.length !== 34", "input.sharedAssets.length !== 27")
+    .replace("sharedAssets must contain exactly thirty-four entries", "sharedAssets must contain exactly twenty-seven entries")
     .replace("input.sharedAssets.length !== 27", "input.sharedAssets.length !== 25")
     .replace("sharedAssets must contain exactly twenty-seven entries", "sharedAssets must contain exactly twenty-five entries")
     .replace("input.sharedAssets.length !== 25", "input.sharedAssets.length !== 20")
@@ -97,6 +95,11 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   for (const entry of [
     "      ,{ id: 'etp-verified-analytics', file: 'etp-verified-analytics.js' }\n",
     "      ,{ id: 'etp-analytics-consumer', file: 'etp-analytics-consumer.js' }\n",
+    "      ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }\n",
+    "      ,{ id: 'etp-target-planning', file: 'etp-target-planning.js' }\n",
+    "      ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }\n",
+    "      ,{ id: 'etp-incentive-control', file: 'etp-incentive-control.js' }\n",
+    "      ,{ id: 'etp-operations-consumer', file: 'etp-operations-consumer.js' }\n",
     "      ,{ id: 'module-rendered-components', file: 'shared/module-rendered-components.js' }\n",
     "      ,{ id: 'leave-ui-css', file: 'modules/leave/leave-ui.css' }\n",
     "      ,{ id: 'cro-audit-ui-css', file: 'modules/cro_audit/cro-audit-ui.css' }\n",
@@ -124,7 +127,7 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-rendered-components.js'));
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
-    'etp-verified-analytics', 'etp-analytics-consumer',
+    'etp-verified-analytics', 'etp-analytics-consumer', 'etp-cro-reconciliation', 'etp-target-planning', 'etp-exception-monitor', 'etp-incentive-control', 'etp-operations-consumer',
     'module-rendered-components', 'leave-ui-css', 'cro-audit-ui-css', 'tax-ui-css', 'dsr-ui-css', 'qms-view', 'qms-ui-css',
     'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css',
     'stock-ui-css', 'payroll-ui-css', 'grooming-ui-css', 'service-ui-css'

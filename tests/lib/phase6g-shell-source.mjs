@@ -9,8 +9,16 @@ export function restorePrePhase6gShellAssets(input) {
   index = index
     .replace('<script src="etp-verified-analytics.js"></script>\n', '')
     .replace('<script src="etp-analytics-consumer.js"></script>\n', '')
+    .replace('<script src="etp-cro-reconciliation.js"></script>\n', '')
+    .replace('<script src="etp-target-planning.js"></script>\n', '')
+    .replace('<script src="etp-exception-monitor.js"></script>\n', '')
+    .replace('<script src="etp-incentive-control.js"></script>\n', '')
+    .replace('<script src="etp-operations-consumer.js"></script>\n', '')
     .replace(/\n      <!-- Phase 6H\.1: sanitized, read-only ETP E2 summary; never a declaration\. -->\n      <div class="card card-pad etp-e2-home" id="etpAnalyticsHome" aria-live="polite"><\/div>\n/, '')
     .replace('  try{ renderEtpAnalyticsHome(); }catch(e){} // Phase 6H.1: verified ETP only; never declaration totals.\n', '')
+    .replace('      <div class="card card-pad etp-e6-home" id="etpExceptionHome" aria-live="polite"></div>\n', '')
+    .replace('  try{ renderEtpExceptionHome(); }catch(e){} // Phase 6H.4: sanitized controlled-state summary; never raw evidence.\n', '')
+    .replace(/function renderEtpExceptionHome\(\)\{[\s\S]*?\n\}\n(?=\/\* TODAY DETAIL)/, '')
     .replace(/var __etpHomeAnalyticsSeq=0;\nasync function renderEtpAnalyticsHome\(\)\{[\s\S]*?\n\}\n(?=\/\* TODAY DETAIL)/, '')
     .replace(/<script>try\{var __nativeAuthority[\s\S]*?<\/script>/,
       "<script>try{var __nativeAuthority=localStorage.getItem('saagar_native_store_migrated_v1')==='1';var __m=__nativeAuthority?null:localStorage.getItem('saagar_ui_mode');var __mob=(__m==='mobile')||(__m!=='desktop'&&(window.innerWidth||document.documentElement.clientWidth||0)<900);if(__mob)document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>")

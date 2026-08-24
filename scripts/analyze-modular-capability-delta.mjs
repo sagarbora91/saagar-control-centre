@@ -255,10 +255,10 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 697);
+  assert.equal(current.length, 699);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 489, permission: 27, 'persisted-outcome': 86, 'failure-posture': 82 });
-  assert.equal(count('added'), 392);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 489, permission: 27, 'persisted-outcome': 86, 'failure-posture': 84 });
+  assert.equal(count('added'), 394);
   assert.equal(count('removed'), 350);
   assert.equal(count('changed'), 40);
   assert.equal(classCount('handler-body-hash-only'), 21);
