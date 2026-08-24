@@ -8,9 +8,11 @@ import { unzipSync } from 'fflate';
 import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
 const profile=require('../www/etp-retail-profile.js');
+const tableParser=require('../www/etp-retail-table-parser.js');
 const loaderApi=require('../www/etp-retail-xlsx-loader.js');
 const numeric=require('../www/etp-xlsx-parser-policy.js');
 const core=require('../www/etp-core-contract.js');
+const profileAuthority=require('../www/etp-profile-authority.js');
 const reconciliation=require('../www/etp-reconciliation-policy.js');
 const REPORTS=['R003','R013','R022','R025'];
 const inputs=process.argv.slice(2);
@@ -20,6 +22,8 @@ function hash(bytes){return crypto.createHash('sha256').update(bytes).digest('he
 function safeFacts(rows){return rows.map(row=>row.fields);}
 function exactZero(value){return /^[-+]?0+(?:\.0+)?$/.test(String(value==null?'':value).trim());}
 async function verify(archivePath,storeCode){
+  const decision=profileAuthority.authorize({storeCode,purpose:'AGGREGATE_EVIDENCE',profileVersion:profile.ETP_PROFILE_VERSION,parserVersion:tableParser.PARSER_VERSION});
+  if(!decision.ok)return{ok:false,storeCode,productionReady:false,code:decision.code};
   const archive=unzipSync(fs.readFileSync(archivePath)),entries=Object.entries(archive),reports={},aggregates=[];
   for(const id of REPORTS){
     const number=id.slice(1),matched=entries.filter(([name])=>new RegExp('(?:^|/)[RWH]'+number+'[_ -]','i').test(name.replace(/\\/g,'/'))&&/\.xlsx$/i.test(name));
@@ -34,8 +38,8 @@ async function verify(archivePath,storeCode){
   const attribution=reconciliation.compareReports(safeFacts(reports.R013.rows),safeFacts(reports.R025.rows),core.ATTRIBUTION_RULE,{left:coverage.coverage.R013,right:coverage.coverage.R025});
   const discount=reconciliation.compareReports(safeFacts(reports.R003.rows),safeFacts(reports.R025.rows),core.DISCOUNT_RULE,{left:coverage.coverage.R003,right:coverage.coverage.R025});
   const left=reconciliation.aggregateReportRows('R022',safeFacts(reports.R022.rows),core.RECON_RULE),right=reconciliation.aggregateReportRows('R025',safeFacts(reports.R025.rows),core.RECON_RULE),leftKeys=new Set(left.groups.map(x=>JSON.stringify(x.key))),rightKeys=new Set(right.groups.map(x=>JSON.stringify(x.key)));
-  return{ok:true,storeCode,reports:aggregates,reconciliation:{status:recon.status,code:recon.code,differenceCount:Array.isArray(recon.differences)?recon.differences.length:0,leftGroups:left.groups.length,rightGroups:right.groups.length,sharedGroups:[...leftKeys].filter(x=>rightKeys.has(x)).length,differencesByMeasure:Object.fromEntries(core.RECON_RULE.measures.map(m=>[m.name,recon.differences.filter(d=>d.measure===m.name).length]))},attribution:{status:attribution.status,code:attribution.code,differenceCount:attribution.differences.length},discountEnrichment:{status:discount.status,code:discount.code,differenceCount:discount.differences.length}};
+  return{ok:true,storeCode,productionReady:decision.productionReady,authority:{contractVersion:decision.binding.contractVersion,authorityId:decision.binding.authorityId,status:decision.binding.status,purpose:decision.binding.purpose,profileVersion:decision.binding.profileVersion,parserVersion:decision.binding.parserVersion,evidenceIdentity:decision.binding.evidenceIdentity},reports:aggregates,reconciliation:{status:recon.status,code:recon.code,differenceCount:Array.isArray(recon.differences)?recon.differences.length:0,leftGroups:left.groups.length,rightGroups:right.groups.length,sharedGroups:[...leftKeys].filter(x=>rightKeys.has(x)).length,differencesByMeasure:Object.fromEntries(core.RECON_RULE.measures.map(m=>[m.name,recon.differences.filter(d=>d.measure===m.name).length]))},attribution:{status:attribution.status,code:attribution.code,differenceCount:attribution.differences.length},discountEnrichment:{status:discount.status,code:discount.code,differenceCount:discount.differences.length}};
 }
 const results=[await verify(inputs[0],'WLMHW'),await verify(inputs[1],'HEMW')];
-const evidence={format:'SAAGAR_ETP_CORE_REAL_CONFORMANCE',contractVersion:core.VERSION,evaluatedAt:new Date().toISOString(),privacy:'aggregate metadata only; source workbooks remain external',results,passed:results.every(x=>x.ok&&x.reports.length===4&&x.reports.every(r=>!r.piiCanaryPresent&&(r.reportId!=='R022'||r.paymentType25ExcludedFromFacts===true))&&x.reconciliation.status==='PASS')};
+const evidence={format:'SAAGAR_ETP_CORE_REAL_CONFORMANCE',contractVersion:core.ETP_CORE_VERSION,evaluatedAt:new Date().toISOString(),privacy:'aggregate metadata only; source workbooks remain external',productionReady:false,results,passed:results.every(x=>x.ok&&x.reports.length===4&&x.reports.every(r=>!r.piiCanaryPresent&&(r.reportId!=='R022'||r.paymentType25ExcludedFromFacts===true))&&x.reconciliation.status==='PASS')};
 process.stdout.write(JSON.stringify(evidence,null,2)+'\n');if(!evidence.passed)process.exitCode=1;

@@ -14,6 +14,8 @@ const core=require('../www/etp-core-contract.js');
 const registryApi=require('../www/etp-control-registry.js');
 const readerApi=require('../www/etp-verified-reader.js');
 const profileAuthority=require('../www/etp-profile-authority.js');
+const importHistoryApi=require('../www/etp-import-history.js');
+const tenderDictionaryApi=require('../www/etp-tender-dictionary.js');
 
 const scope={storeCode:'WLMHW',financialYear:'2026-27',periodStart:'2026-04-01',periodEnd:'2026-04-30'};
 function loaded(id){
@@ -25,8 +27,8 @@ function harness(loaderOverride){
   const calls=[],stagedChunks=[];
   const nativeApi={create:()=>({ok:true,adapter:{readStatus:async()=>({ok:true,status:{state:'EMPTY',activeGenerationId:null,restoreFence:false}}),beginStage:async()=>{calls.push('begin');return {ok:true};},appendChunk:async(_lifecycle,chunk)=>{calls.push('append');stagedChunks.push(structuredClone(chunk));return {ok:true};},finishStage:async()=>{calls.push('finish');return {ok:true};},publish:async()=>{calls.push('publish');return {ok:true};}}})};
   const values=new Map(),storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)};
-  const made=runtimeApi.create({profile,profileAuthority,loader:loaderOverride||{load:async input=>loaded(input.selectedReportId)},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
-  assert.equal(made.ok,true);return {runtime:made.runtime,calls,stagedChunks};
+  const made=runtimeApi.create({profile,profileAuthority,importHistoryApi,tenderDictionaryApi,loader:loaderOverride||{load:async input=>loaded(input.selectedReportId)},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
+  assert.equal(made.ok,true);return {runtime:made.runtime,calls,stagedChunks,storage};
 }
 function request(){return {scope,files:['R003','R013','R022','R025'].map(id=>({selectedReportId:id,file:{name:id+'.xlsx',arrayBuffer:async()=>new TextEncoder().encode(id).buffer}})),coverageDeclaration:{confirmed:true,confirmedByRole:'OWNER',reports:Object.fromEntries(['R003','R013','R022','R025'].map(id=>[id,{status:'COMPLETE'}]))},confirmed:false};}
 
@@ -38,6 +40,11 @@ test('browser facade completes four-report parse, validation, reconciliation, st
   assert.equal(published.ok,true);assert.equal(published.lifecycle.state,'ACCEPTED');assert.equal(h.calls.at(-1),'publish');
   assert.equal(published.receipt.ruleVersion,'rec_002_v1');
   assert.equal(published.receipt.profileAuthority.evidenceIdentity,'WLMHW_PROFILE_EVIDENCE_2026_08_24_V1');
+  assert.deepEqual(published.receipt.tenderDictionary,tenderDictionaryApi.BUILD_IDENTITY);
+  const history=JSON.parse(h.storage.getItem(importHistoryApi.KEY));
+  assert.deepEqual(history.events.map(event=>event.outcome).sort(),['ACCEPTED','VALIDATED']);
+  assert.equal(history.events.every(event=>event.actorId==='BUILD_AUTHORIZED_OWNER'&&event.digestRefs.length===4),true);
+  assert.doesNotMatch(JSON.stringify(history),/filename|fileLabel|workbook|rows|customer|mobile|privateBytes/i);
 });
 
 test('precise numeric identifier refusal is surfaced without native staging',async()=>{
@@ -119,7 +126,7 @@ test('HEMW production is denied before file reads, native status or staging',asy
   let fileReads=0,loaderCalls=0,nativeCalls=0;
   const deniedNative={create:()=>({ok:true,adapter:{readStatus:async()=>{nativeCalls++;return{ok:true,status:{state:'EMPTY',activeGenerationId:null,restoreFence:false}};},beginStage:async()=>{nativeCalls++;},appendChunk:async()=>{nativeCalls++;},finishStage:async()=>{nativeCalls++;},publish:async()=>{nativeCalls++;}}})};
   const storage={getItem:()=>null,setItem:()=>{}};
-  const made=runtimeApi.create({profile,profileAuthority,loader:{load:async()=>{loaderCalls++;return{ok:false};}},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi:deniedNative,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
+  const made=runtimeApi.create({profile,profileAuthority,importHistoryApi,tenderDictionaryApi,loader:{load:async()=>{loaderCalls++;return{ok:false};}},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi:deniedNative,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
   const heRequest=request();heRequest.scope={...scope,storeCode:'HEMW'};heRequest.files=heRequest.files.map(item=>({...item,file:{name:item.file.name,arrayBuffer:async()=>{fileReads++;return new ArrayBuffer(1);}}}));
   const result=await made.runtime.run(heRequest);assert.equal(result.code,'ETP_HEMW_PROFILE_AUTHORIZATION_REQUIRED');assert.equal(fileReads,0);assert.equal(loaderCalls,0);assert.equal(nativeCalls,0);
 });
@@ -141,6 +148,6 @@ test('staged browser assets exactly match pinned installed dependency bytes',()=
 
 test('facade compiles a native-safe fact dictionary from the complete Retail profile',()=>{
   const storage={getItem:()=>null,setItem:()=>{}};
-  const made=runtimeApi.create({profile,profileAuthority,loader:{load:async()=>({ok:false})},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
+  const made=runtimeApi.create({profile,profileAuthority,importHistoryApi,tenderDictionaryApi,loader:{load:async()=>({ok:false})},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
   assert.equal(made.ok,true);
 });

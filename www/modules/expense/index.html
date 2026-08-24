@@ -590,7 +590,7 @@ tbody tr:hover td{background:var(--cream)}
   <div class="hdr-right">
     <div class="role-sel">
       <label>Role</label>
-      <select id="roleSel" onchange="setRole(this.value)">
+      <select data-action="select-role" id="roleSel" onchange="setRole(this.value)">
         <option value="cashier">Cashier (maker)</option>
         <option value="accounts">Accounts (checker)</option>
         <option value="owner">Owner (approver)</option>
@@ -601,16 +601,16 @@ tbody tr:hover td{background:var(--cream)}
 </header>
 
 <nav class="tabs" id="tabBar">
-  <button class="tab active" data-sec="dash" onclick="go('dash')">Dashboard</button>
-  <button class="tab" data-sec="ledger" onclick="go('ledger')">Ledger</button>
-  <button class="tab" data-sec="udhaar" onclick="go('udhaar')">Udhaar <span class="pill" id="udhaarPill">0</span></button>
-  <button class="tab" data-sec="stmt" onclick="go('stmt')">Cash Statement</button>
-  <button class="tab" data-sec="petty" onclick="go('petty')">Petty Cash</button>
-  <button class="tab" data-sec="vendors" onclick="go('vendors')">Vendors</button>
-  <button class="tab" data-sec="budget" onclick="go('budget')">Budgets</button>
-  <button class="tab" data-sec="sync" onclick="go('sync')">Cross-module <span class="pill" id="syncPill">0</span></button>
-  <button class="tab" data-sec="close" onclick="go('close')">Month &amp; Tax</button>
-  <button class="tab" id="auditTabBtn" data-sec="audit" onclick="go('audit')">Audit</button>
+  <button data-action="open-dashboard" class="tab active" data-sec="dash" onclick="go('dash')">Dashboard</button>
+  <button data-action="open-ledger" class="tab" data-sec="ledger" onclick="go('ledger')">Ledger</button>
+  <button data-action="open-udhaar" class="tab" data-sec="udhaar" onclick="go('udhaar')">Udhaar <span class="pill" id="udhaarPill">0</span></button>
+  <button data-action="open-cash-statement" class="tab" data-sec="stmt" onclick="go('stmt')">Cash Statement</button>
+  <button data-action="open-petty-cash" class="tab" data-sec="petty" onclick="go('petty')">Petty Cash</button>
+  <button data-action="open-vendors" class="tab" data-sec="vendors" onclick="go('vendors')">Vendors</button>
+  <button data-action="open-budgets" class="tab" data-sec="budget" onclick="go('budget')">Budgets</button>
+  <button data-action="open-cross-module" class="tab" data-sec="sync" onclick="go('sync')">Cross-module <span class="pill" id="syncPill">0</span></button>
+  <button data-action="open-month-tax" class="tab" data-sec="close" onclick="go('close')">Month &amp; Tax</button>
+  <button data-action="open-audit" class="tab" id="auditTabBtn" data-sec="audit" onclick="go('audit')">Audit</button>
 </nav>
 
 <div class="wrap">
@@ -974,14 +974,14 @@ function renderDash(){
     kpi('Month P&L',nINR(sum(tMonth,'income')-sum(tMonth,'expense')),(sum(tMonth,'income')-sum(tMonth,'expense'))<0?'loss':'profit',(sum(tMonth,'income')-sum(tMonth,'expense'))<0?'r':'g')+
     kpi('Top expense head',topCat||'—',topCat?nINR(byCat[topCat]):'no expenses','a')+
   '</div>'+
-  '<div class="card"><div class="card-h"><div><h3>'+dayLbl+'’s cash position</h3><p>'+t+' · auto-computed from the ledger</p></div><div class="actions"><button class="btn sm p" onclick="go(\'stmt\')">Open cash statement →</button></div></div>'+
+  '<div class="card"><div class="card-h"><div><h3>'+dayLbl+'’s cash position</h3><p>'+t+' · auto-computed from the ledger</p></div><div class="actions"><button data-action="dashboard-open-cash-statement" class="btn sm p" onclick="go(\'stmt\')">Open cash statement →</button></div></div>'+
     '<div class="row" style="gap:20px"><div><div class="small muted">Expected closing cash</div><div style="font-size:22px;font-family:var(--font-serif)">'+nINR(d.expectedClosing)+'</div></div>'+
     '<div><div class="small muted">Counted</div><div style="font-size:22px;font-family:var(--font-serif)">'+nINR(counted)+'</div></div>'+
     '<div><div class="small muted">Status</div><div style="margin-top:6px">'+reconHtml+'</div></div></div></div>'+
-  (pend?'<div class="banner info">⤢ <div><b>'+pend+'</b> cross-module item(s) waiting to be posted to the ledger (WSC / Payroll / Stock / QMS). <button class="btn xs" onclick="go(\'sync\')">Review</button></div></div>':'')+
-  (unappr.length?'<div class="banner warn">✔ <div><b>'+unappr.length+'</b> closed day(s) awaiting checker approval: '+unappr.slice(0,5).join(', ')+'. <button class="btn xs" onclick="go(\'close\')">Open</button></div></div>':'')+
+  (pend?'<div class="banner info">⤢ <div><b>'+pend+'</b> cross-module item(s) waiting to be posted to the ledger (WSC / Payroll / Stock / QMS). <button data-action="dashboard-review-cross-module" class="btn xs" onclick="go(\'sync\')">Review</button></div></div>':'')+
+  (unappr.length?'<div class="banner warn">✔ <div><b>'+unappr.length+'</b> closed day(s) awaiting checker approval: '+unappr.slice(0,5).join(', ')+'. <button data-action="dashboard-open-month-close" class="btn xs" onclick="go(\'close\')">Open</button></div></div>':'')+
   recurringNudge()+
-  '<div class="card"><div class="card-h"><div><h3>Recent ledger entries</h3><p>Newest first</p></div><div class="actions"><button class="btn sm" onclick="go(\'ledger\')">All entries →</button></div></div>'+
+  '<div class="card"><div class="card-h"><div><h3>Recent ledger entries</h3><p>Newest first</p></div><div class="actions"><button data-action="dashboard-open-all-ledger-entries" class="btn sm" onclick="go(\'ledger\')">All entries →</button></div></div>'+
     ledgerTable(led.slice().sort(function(a,b){return (b.date+b.createdAt).localeCompare(a.date+a.createdAt);}).slice(0,8),true)+'</div>';
 }
 function kpi(l,v,s,c){ return '<div class="kpi '+(c||'')+'"><div class="l">'+l+'</div><div class="v">'+v+'</div><div class="s">'+esc(s)+'</div></div>'; }
@@ -999,7 +999,7 @@ function renderLedger(){
     ? '<div class="card"><div class="card-h"><div><h3>Add to ledger</h3><p>Read-only historical view.</p></div></div>'+
       '<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Adding ledger entries is disabled in historical view. Switch the view date to today to record new entries.</div></div></div>'
     : '<div class="card"><div class="card-h"><div><h3>Add to ledger</h3><p>The master record. Cash entries auto-flow into that day’s locked Cash Statement.</p></div></div>'+
-      '<div class="seg" style="margin-bottom:14px"><button class="'+(entryType==='income'?'on inc':'')+'" onclick="setET(\'income\')">＋ Income</button><button class="'+(entryType==='expense'?'on exp':'')+'" onclick="setET(\'expense\')">－ Expense</button></div>'+
+      '<div class="seg" style="margin-bottom:14px"><button data-action="select-income-entry" class="'+(entryType==='income'?'on inc':'')+'" onclick="setET(\'income\')">＋ Income</button><button data-action="select-expense-entry" class="'+(entryType==='expense'?'on exp':'')+'" onclick="setET(\'expense\')">－ Expense</button></div>'+
       '<div class="fgrid">'+
        fld('Date <span style="color:#dc2626">*</span>','<input type="date" id="f_date" value="'+asOf()+'">')+
        fld('Amount (₹) <span style="color:#dc2626">*</span>','<input type="number" id="f_amt" min="0" step="0.01" placeholder="0.00">')+
@@ -1016,13 +1016,13 @@ function renderLedger(){
        fld('Description <span style="color:#dc2626">*</span>','<input id="f_desc" placeholder="what is this for?">','full')+
        fld('Notes','<input id="f_notes" placeholder="optional">','full')+
       '</div>'+
-      '<div class="row" style="margin-top:14px"><button class="btn p" onclick="addEntry()">Save to ledger</button><span class="small muted">Duplicate (same date+amount+desc) will warn before saving.</span></div>'+
+      '<div class="row" style="margin-top:14px"><button data-action="save-ledger-entry" class="btn p" onclick="addEntry()">Save to ledger</button><span class="small muted">Duplicate (same date+amount+desc) will warn before saving.</span></div>'+
      '</div>';
   document.getElementById('ledgerC').innerHTML =
   addCard+
   recurringCard()+
   '<div class="card"><div class="card-h"><div><h3>Ledger</h3><p>All income &amp; expense. Locked-day entries cannot be edited until the day is reopened.</p></div>'+
-   '<div class="actions"><button class="btn sm" onclick="exportLedgerCSV()">⇩ CSV</button></div></div>'+
+   '<div class="actions"><button data-action="export-ledger-csv" class="btn sm" onclick="exportLedgerCSV()">⇩ CSV</button></div></div>'+
    '<div class="fgrid" style="margin-bottom:12px">'+
     fld('Type','<select id="lf_type" onchange="applyLF()"><option value="">All</option><option>income</option><option>expense</option></select>')+
     fld('Mode','<select id="lf_mode" onchange="applyLF()"><option value="">All</option>'+MODES.map(function(x){return '<option>'+x+'</option>';}).join('')+'</select>')+
@@ -1062,12 +1062,12 @@ function ledgerTable(rows,compact){
       '<td>'+esc(e.category)+'</td>'+
       '<td><span class="bdg '+e.mode.toLowerCase()+'">'+e.mode+'</span></td>'+
       '<td>'+esc(e.vendor||'—')+'</td>'+
-      '<td>'+esc(e.description||'—')+statusBdg+(e.void?' <span class="bdg void">void</span>':'')+(e.billPhoto?' <button class="btn xs" title="View bill photo" onclick="viewPhoto(\''+e.id+'\')">📎</button>':'')+'</td>'+
+      '<td>'+esc(e.description||'—')+statusBdg+(e.void?' <span class="bdg void">void</span>':'')+(e.billPhoto?' <button data-action="view-ledger-photo" class="btn xs" title="View bill photo" onclick="viewPhoto(\''+e.id+'\')">📎</button>':'')+'</td>'+
       '<td class="num">'+nINR(e.amount)+'</td>'+
       '<td>'+(e.source?'<span class="bdg src">'+e.source+'</span>':'<span class="muted small">manual</span>')+'</td>'+
-      (compact?'':'<td class="num"><button class="btn xs" title="Send on WhatsApp" onclick="shareEntry(\''+e.id+'\')">↗ Send</button> '+
-        (isSuperAdmin()&&!e.void&&e.status==='pending'&&!isPast()?'<button class="btn xs green" onclick="approveEntry(\''+e.id+'\')">Approve</button> ':'')+
-        (e.void?'':apprLocked?'<span class="bdg locked" title="approved — locked">🔒</span>':((isPast()||dayLocked)?'<span class="bdg locked" title="'+(isPast()?'historical view':'day locked')+'">🔒</span>':'<button class="btn xs" onclick="editEntry(\''+e.id+'\')">Edit</button> <button class="btn xs red" onclick="voidEntry(\''+e.id+'\')">Void</button>'))+'</td>')+
+      (compact?'':'<td class="num"><button data-action="share-ledger-entry" class="btn xs" title="Send on WhatsApp" onclick="shareEntry(\''+e.id+'\')">↗ Send</button> '+
+        (isSuperAdmin()&&!e.void&&e.status==='pending'&&!isPast()?'<button data-action="approve-ledger-entry" class="btn xs green" onclick="approveEntry(\''+e.id+'\')">Approve</button> ':'')+
+        (e.void?'':apprLocked?'<span class="bdg locked" title="approved — locked">🔒</span>':((isPast()||dayLocked)?'<span class="bdg locked" title="'+(isPast()?'historical view':'day locked')+'">🔒</span>':'<button data-action="edit-ledger-entry" class="btn xs" onclick="editEntry(\''+e.id+'\')">Edit</button> <button data-action="void-ledger-entry" class="btn xs red" onclick="voidEntry(\''+e.id+'\')">Void</button>'))+'</td>')+
      '</tr>';
    }).join('')+'</tbody></table></div>';
 }
@@ -1360,7 +1360,7 @@ function recurringNudge(){
   var names=due.slice(0,4).map(function(t){return t.name;}).join(', ');
   return '<div class="banner warn">🔁 <div><b>'+due.length+'</b> recurring expense'+(due.length===1?'':'s')+
     ' not yet posted this month: '+esc(names)+(due.length>4?'…':'')+
-    ' <button class="btn xs" onclick="go(\'ledger\')">Post now</button></div></div>';
+    ' <button data-action="open-ledger-to-post" class="btn xs" onclick="go(\'ledger\')">Post now</button></div></div>';
 }
 function recurringCard(){
   var past=isPast(), tpls=getRecTpls(), manage=can('recurring');
@@ -1371,10 +1371,10 @@ function recurringCard(){
       :got?'<span class="bdg ok">posted'+(got>1?' ×'+got:'')+'</span>'
       :(dNow>=eff?'<span class="bdg warn">due — not posted</span>'
                  :'<span class="muted small">upcoming · day '+eff+'</span>');
-    var btns=past?'':((t.active?'<button class="btn xs green" onclick="postRecurring(\''+t.id+'\')">'+(got?'Post again':'Post now')+'</button>':'')+
-      (manage?' <button class="btn xs" onclick="editRecTpl(\''+t.id+'\')">Edit</button>'+
-              ' <button class="btn xs" onclick="toggleRecTpl(\''+t.id+'\')">'+(t.active?'Deactivate':'Activate')+'</button>'+
-              ' <button class="btn xs red" onclick="delRecTpl(\''+t.id+'\')">✕</button>':''));
+    var btns=past?'':((t.active?'<button data-action="post-recurring-entry" class="btn xs green" onclick="postRecurring(\''+t.id+'\')">'+(got?'Post again':'Post now')+'</button>':'')+
+      (manage?' <button data-action="edit-recurring-template" class="btn xs" onclick="editRecTpl(\''+t.id+'\')">Edit</button>'+
+              ' <button data-action="toggle-recurring-template" class="btn xs" onclick="toggleRecTpl(\''+t.id+'\')">'+(t.active?'Deactivate':'Activate')+'</button>'+
+              ' <button data-action="delete-recurring-template" class="btn xs red" onclick="delRecTpl(\''+t.id+'\')">✕</button>':''));
     return '<div class="fitem"><div class="ic">🔁</div>'+
       '<div><b>'+esc(t.name)+'</b> <span class="muted small">'+esc(t.category)+' · '+esc(t.mode)+
         (t.vendor?' · '+esc(t.vendor):'')+(t.firm?' · '+esc(t.firm):'')+(t.store?' · '+esc(storeName(t.store)):'')+
@@ -1392,7 +1392,7 @@ function recurringCard(){
         fld('Vendor / payee','<input id="rt_vendor" placeholder="optional">')+
         fld('Firm','<select id="rt_firm">'+orgFirms().map(function(f){return '<option>'+esc(f)+'</option>';}).join('')+'</select>')+
         fld('Store (cash drawer)','<select id="rt_store">'+storeOpts('')+'</select>')+
-      '</div><div class="row" style="margin-top:12px"><button class="btn p" onclick="addRecTpl()">Add template</button></div>'
+      '</div><div class="row" style="margin-top:12px"><button data-action="add-recurring-template" class="btn p" onclick="addRecTpl()">Add template</button></div>'
     : (past?'':'<div class="small muted" style="margin-top:10px">Accounts / Owner can add or edit templates. Any role can post.</div>');
   return '<div class="card"><div class="card-h"><div><h3>Recurring expenses</h3>'+
     '<p>Rent, salary, utilities, insurance — one tap posts this month’s entry into the ledger (amount editable at post time).</p></div></div>'+
@@ -1521,8 +1521,8 @@ var SST='';
 function setSST(s){ SST=s; renderStmt(); }
 /* Wave-5: segmented scope control [ All (business) | store… ] shown atop the tab. */
 function stScopeBar(){
-  var btns='<button class="'+(SST===''?'on inc':'')+'" onclick="setSST(\'\')">All (business)</button>'+
-    orgStores().map(function(s){ return '<button class="'+(SST===s.code?'on inc':'')+'" onclick="setSST(\''+esc(s.code)+'\')">'+esc(s.name)+'</button>'; }).join('');
+  var btns='<button data-action="filter-statement-all-stores" class="'+(SST===''?'on inc':'')+'" onclick="setSST(\'\')">All (business)</button>'+
+    orgStores().map(function(s){ return '<button data-action="filter-statement-store" class="'+(SST===s.code?'on inc':'')+'" onclick="setSST(\''+esc(s.code)+'\')">'+esc(s.name)+'</button>'; }).join('');
   return '<div class="seg" style="margin-bottom:14px">'+btns+'</div>';
 }
 /* Wave-5: compact both-drawer status strip for the All (business) view. */
@@ -1549,7 +1549,7 @@ function renderStmt(){
   var pastDay=SD<todayStr(), ro=locked||pastDay;
   document.getElementById('stmtC').innerHTML =
   '<div class="card"><div class="card-h"><div><h3>Daily Cash Statement</h3><p>Auto-built from the ledger. Rows are read-only — add money in the Ledger tab.</p></div>'+
-   '<div class="actions"><input type="date" value="'+SD+'" onchange="SD=this.value;renderStmt()" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:7px"><button class="btn sm" onclick="printStmt()">⎙ Print / WhatsApp</button></div></div>'+
+   '<div class="actions"><input type="date" value="'+SD+'" onchange="SD=this.value;renderStmt()" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:7px"><button data-action="print-cash-statement" class="btn sm" onclick="printStmt()">⎙ Print / WhatsApp</button></div></div>'+
    stScopeBar()+
    stDrawerStrip()+
    (locked?'<div class="banner lock">🔒 <div>This day is <b>locked</b> ('+ (st.closedBy||'?') +' · '+(st.closedAt||'').slice(0,16).replace('T',' ')+'). '+(st.approved?'Approved by '+st.approvedBy+'.':'Awaiting checker approval.')+'</div></div>':'')+
@@ -1578,9 +1578,9 @@ function renderStmt(){
      (pastDay
        ? '<span class="small muted">Historical view — close, approve and reopen are available only for today.</span>'
        : (locked
-         ? (can('approve') && !st.approved ? '<button class="btn green" onclick="approveDay()">✔ Approve day (checker)</button> ' : '')+
-           (can('reopen') ? '<button class="btn red" onclick="reopenDay()">↺ Reopen (owner)</button>' : '')
-         : (can('close') ? '<button class="btn p" onclick="closeDay()">🔒 Close &amp; lock day</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
+         ? (can('approve') && !st.approved ? '<button data-action="approve-business-day" class="btn green" onclick="approveDay()">✔ Approve day (checker)</button> ' : '')+
+           (can('reopen') ? '<button data-action="reopen-business-day" class="btn red" onclick="reopenDay()">↺ Reopen (owner)</button>' : '')
+         : (can('close') ? '<button data-action="close-business-day" class="btn p" onclick="closeDay()">🔒 Close &amp; lock day</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
    '</div>'+
    '<div class="small muted" style="margin-top:8px">Carry-forward to next day = counted cash − bank deposit = <b>'+nINR(Math.max(counted-bankDep,0))+'</b></div>'+
   '</div>';
@@ -1597,7 +1597,7 @@ function renderStmtStore(store){
   var pastDay=SD<todayStr(), ro=locked||pastDay;
   document.getElementById('stmtC').innerHTML =
   '<div class="card"><div class="card-h"><div><h3>Cash Statement — '+esc(storeName(store))+'</h3><p>Per-store cash drawer. Only entries tagged to this store are shown.</p></div>'+
-   '<div class="actions"><input type="date" value="'+SD+'" onchange="SD=this.value;renderStmt()" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:7px"><button class="btn sm" onclick="printStmt()">⎙ Print / WhatsApp</button></div></div>'+
+   '<div class="actions"><input type="date" value="'+SD+'" onchange="SD=this.value;renderStmt()" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:7px"><button data-action="print-store-statement" class="btn sm" onclick="printStmt()">⎙ Print / WhatsApp</button></div></div>'+
    stScopeBar()+
    '<div class="banner info">ℹ <div>Untagged legacy entries are not shown here; see <b>All (business)</b> for the full day. Closing this drawer does not lock the other store or the business day.</div></div>'+
    (locked?'<div class="banner lock">🔒 <div>This drawer is <b>closed</b> ('+ (sub.closedBy||'?') +' · '+((sub.closedAt||'')+'').slice(0,16).replace('T',' ')+'). '+(sub.approved?'Approved by '+esc(sub.approvedBy||'')+'.':'Awaiting checker approval.')+'</div></div>':'')+
@@ -1626,9 +1626,9 @@ function renderStmtStore(store){
      (pastDay
        ? '<span class="small muted">Historical view — close, approve and reopen are available only for today.</span>'
        : (locked
-         ? (can('approve') && !sub.approved ? '<button class="btn green" onclick="approveStoreDay(\''+esc(store)+'\')">✔ Approve drawer (checker)</button> ' : '')+
-           (can('reopen') ? '<button class="btn red" onclick="reopenStoreDay(\''+esc(store)+'\')">↺ Reopen (owner)</button>' : '')
-         : (can('close') ? '<button class="btn p" onclick="closeStoreDay(\''+esc(store)+'\')">🔒 Close &amp; lock drawer</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
+         ? (can('approve') && !sub.approved ? '<button data-action="approve-store-day" class="btn green" onclick="approveStoreDay(\''+esc(store)+'\')">✔ Approve drawer (checker)</button> ' : '')+
+           (can('reopen') ? '<button data-action="reopen-store-day" class="btn red" onclick="reopenStoreDay(\''+esc(store)+'\')">↺ Reopen (owner)</button>' : '')
+         : (can('close') ? '<button data-action="close-store-day" class="btn p" onclick="closeStoreDay(\''+esc(store)+'\')">🔒 Close &amp; lock drawer</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
    '</div>'+
    '<div class="small muted" style="margin-top:8px">Carry-forward to next day = counted cash − bank deposit = <b>'+nINR(Math.max(counted-bankDep,0))+'</b></div>'+
   '</div>';
@@ -1844,14 +1844,14 @@ function renderPetty(){
    '<div class="kpi a"><div class="l">Status</div><div class="v" style="font-size:15px">'+((pt.float-spent)<0.15*pt.float&&pt.float?'Replenish soon':'Healthy')+'</div></div></div>'+
    '<div class="fgrid" style="margin-top:6px">'+
     fld('Set / top-up float (₹)','<input id="pt_f" type="number" min="0" placeholder="e.g. 5000"'+dis+'>')+
-    fld('','<button class="btn p block" style="margin-top:22px" onclick="setFloat()"'+dis+'>Set / add float</button>')+
+    fld('','<button data-action="set-petty-cash-float" class="btn p block" style="margin-top:22px" onclick="setFloat()"'+dis+'>Set / add float</button>')+
    '</div></div>'+
   '<div class="card"><div class="card-h"><div><h3>Quick petty disbursement</h3></div></div>'+
    '<div class="fgrid">'+
     fld('Amount (₹)','<input id="pt_a" type="number" min="0"'+dis+'>')+
     fld('Category','<select id="pt_c"'+dis+'>'+EXP_CATS.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select>')+
     fld('For','<input id="pt_d" placeholder="tea / auto / sundry"'+dis+'>','full')+
-   '</div><button class="btn p" style="margin-top:12px" onclick="pettyOut()"'+dis+'>Record disbursement</button></div>';
+   '</div><button data-action="record-petty-cash-disbursement" class="btn p" style="margin-top:12px" onclick="pettyOut()"'+dis+'>Record disbursement</button></div>';
 }
 function setFloat(){ if(isPast()){ toast('Historical view is read-only','err'); return; } var pt=L(K.petty,{float:0,history:[]}); var add=num(val('pt_f')); if(add<=0){toast('Enter amount','err');return;} pt.float+=add; pt.history.push({at:new Date().toISOString(),by:role(),add:add}); S(K.petty,pt); audit('petty.float','+'+nINR(add)); toast('Float updated','ok'); renderPetty(); }
 function pettyOut(){
@@ -1880,11 +1880,11 @@ function renderVendors(){
   document.getElementById('vendorsC').innerHTML=
   (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Vendor list is read-only in historical view.</div></div>':'')+
   '<div class="card"><div class="card-h"><div><h3>Vendors / payees</h3><p>Used for entry auto-complete and spend reports.</p></div></div>'+
-   '<div class="row"><input id="vn" placeholder="vendor name"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1"><input id="vgst" placeholder="GSTIN (optional)"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;width:170px;text-transform:uppercase"><button class="btn p" onclick="addVendor()"'+(past?' disabled':'')+'>Add</button></div>'+
+   '<div class="row"><input id="vn" placeholder="vendor name"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1"><input id="vgst" placeholder="GSTIN (optional)"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;width:170px;text-transform:uppercase"><button data-action="add-vendor" class="btn p" onclick="addVendor()"'+(past?' disabled':'')+'>Add</button></div>'+
    '<div class="twrap" style="margin-top:14px"><table class="gm-tbl-vendors"><thead><tr><th>Vendor</th><th>GSTIN</th><th class="num">Total spend</th><th class="num">Entries</th><th></th></tr></thead><tbody>'+
     (vs.length?vs.map(function(v,vi){
       var cnt=led.filter(function(e){return e.vendor===v.name;}).length;
-      return '<tr><td class="name-cell" data-label="Vendor">'+esc(v.name)+'</td><td data-label="GSTIN"><input value="'+esc(v.gstin||'')+'" placeholder="—"'+(past?' disabled':'')+' style="width:150px;max-width:100%;padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;text-transform:uppercase" onchange="setVendGstin('+vi+',this.value)"></td><td class="num" data-label="Total spend">'+nINR(spend[v.name]||0)+'</td><td class="num" data-label="Entries">'+cnt+'</td><td class="num gm-del-cell" data-label="">'+(past?'':'<button class="btn xs red" onclick="delVendor('+vi+')">Remove</button>')+'</td></tr>';
+      return '<tr><td class="name-cell" data-label="Vendor">'+esc(v.name)+'</td><td data-label="GSTIN"><input value="'+esc(v.gstin||'')+'" placeholder="—"'+(past?' disabled':'')+' style="width:150px;max-width:100%;padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;text-transform:uppercase" onchange="setVendGstin('+vi+',this.value)"></td><td class="num" data-label="Total spend">'+nINR(spend[v.name]||0)+'</td><td class="num" data-label="Entries">'+cnt+'</td><td class="num gm-del-cell" data-label="">'+(past?'':'<button data-action="remove-vendor" class="btn xs red" onclick="delVendor('+vi+')">Remove</button>')+'</td></tr>';
     }).join(''):'<tr><td colspan="5"><div class="empty">No vendors yet. They are also auto-added when you type a payee on an entry.</div></td></tr>')+
    '</tbody></table></div></div>';
 }
@@ -1907,7 +1907,7 @@ function renderBudget(){
   document.getElementById('budgetC').innerHTML=
   (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Budgets for '+m+' are read-only in historical view.</div></div>':'')+
   '<div class="card"><div class="card-h"><div><h3>Monthly budgets — '+m+'</h3><p>Set a cap per expense head; actuals tracked live from the ledger.</p></div>'+
-   '<div class="actions">'+(past?'':'<button class="btn sm" onclick="copyBudgets()">⇩ Copy last month’s budgets</button>')+'</div></div>'+
+   '<div class="actions">'+(past?'':'<button data-action="copy-previous-month-budgets" class="btn sm" onclick="copyBudgets()">⇩ Copy last month’s budgets</button>')+'</div></div>'+
    '<div class="twrap"><table class="gm-tbl-budget"><thead><tr><th>Category</th><th class="num">Budget</th><th class="num">Actual</th><th class="num">Used</th><th>Status</th></tr></thead><tbody>'+
     EXP_CATS.map(function(c){
       var bg=num(bm[c]), ac=act[c]||0, pct=bg?Math.round(ac/bg*100):0;
@@ -2004,7 +2004,7 @@ function renderSync(){
   function block(src,title,note){
     var arr=bySrc[src], pend=arr.filter(function(i){return !i.posted;});
     return '<div class="card"><div class="card-h"><div><h3>'+title+'</h3><p>'+note+'</p></div>'+
-      '<div class="actions">'+(pend.length&&!past?'<button class="btn sm green" onclick="postSrc(\''+src+'\')">Post '+pend.length+' to ledger</button>':'')+'</div></div>'+
+      '<div class="actions">'+(pend.length&&!past?'<button data-action="post-source-items" class="btn sm green" onclick="postSrc(\''+src+'\')">Post '+pend.length+' to ledger</button>':'')+'</div></div>'+
       (arr.length?'<div class="twrap"><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th><th>Mode</th><th>State</th></tr></thead><tbody>'+
         arr.slice(0,40).map(function(i){return '<tr><td>'+i.date+'</td><td><span class="bdg '+(i.type==='income'?'inc':'exp')+'">'+i.type+'</span></td><td>'+esc(i.desc)+'</td><td class="num">'+nINR(i.amount)+'</td><td><span class="bdg '+i.mode.toLowerCase()+'">'+i.mode+'</span></td><td>'+(i.posted?'<span class="bdg ok">posted</span>':'<span class="bdg warn">pending</span>')+'</td></tr>';}).join('')+
         '</tbody></table></div>':'<div class="empty">No '+src.toUpperCase()+' data found in this device. '+(src==='qms'?'QMS is not part of this 7-module build — this feed activates automatically if QMS data ever exists here.':'Use the '+src.toUpperCase()+' module first.')+'</div>')+
@@ -2013,7 +2013,7 @@ function renderSync(){
   document.getElementById('syncC').innerHTML=
    (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Posting cross-module items to the ledger is disabled in historical view.</div></div>':'')+
    '<div class="banner info">⤢ <div>Expense Manager is the central ledger. It reads other modules in this app and posts their money movements here once — de-duplicated by source reference. <b>'+pending.length+'</b> item(s) pending.</div></div>'+
-   (pending.length&&!past?'<div class="card"><button class="btn p" onclick="postSrc(\'all\')">Post all '+pending.length+' pending items to ledger</button></div>':'')+
+   (pending.length&&!past?'<div class="card"><button data-action="post-all-source-items" class="btn p" onclick="postSrc(\'all\')">Post all '+pending.length+' pending items to ledger</button></div>':'')+
    block('wsc','Watch Service Centre → Income','Closed/delivered service cases become service income.')+
    block('payroll','Payroll Suite → Expense','Monthly gross per firm becomes a salary expense.')+
    block('stock','Daily Stock Register → Expense','GRN (goods received) value becomes an inventory cost.')+
@@ -2084,8 +2084,8 @@ function renderClose(){
    '<div class="small muted" style="margin-top:6px">Estimates from your own configured rates — not tax advice. Verify with your CA before filing.</div>'+
    (function(){ var bf={}; led.forEach(function(e){ var f=e.firm||'Unassigned'; bf[f]=bf[f]||{i:0,x:0}; if(e.type==='income')bf[f].i+=e.amount; else bf[f].x+=e.amount; }); var ks=Object.keys(bf).sort(); if(!ks.length) return ''; return '<h3 style="margin:16px 0 6px">Per-firm P&L — '+CM+'</h3><div class="twrap"><table class="gm-tbl-firmpl"><thead><tr><th>Firm</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th></tr></thead><tbody>'+ks.map(function(k){ var n=bf[k].i-bf[k].x; return '<tr><td class="name-cell" data-label="Firm">'+esc(k)+'</td><td class="num" data-label="Income">'+nINR(bf[k].i)+'</td><td class="num" data-label="Expense">'+nINR(bf[k].x)+'</td><td class="num" data-label="Net" style="color:'+(n<0?'var(--red)':'var(--green)')+'">'+nINR(n)+'</td></tr>'; }).join('')+'</tbody></table></div>'; })()+
    '<div class="row" style="margin-top:14px">'+
-     (isPast()?'<span class="small muted">Historical view — month-lock / tax-feed generation is available only when viewing today.</span>':(can('monthlock')?'<button class="btn p" onclick="genTaxFeed()">Generate &amp; lock Tax feed for '+CM+'</button>':'<span class="small muted">Only Owner can lock the month / generate the tax feed.</span>'))+
-     '<button class="btn sm" onclick="exportMonthCSV()">⇩ Month CSV</button></div>'+
+     (isPast()?'<span class="small muted">Historical view — month-lock / tax-feed generation is available only when viewing today.</span>':(can('monthlock')?'<button data-action="generate-lock-tax-feed" class="btn p" onclick="genTaxFeed()">Generate &amp; lock Tax feed for '+CM+'</button>':'<span class="small muted">Only Owner can lock the month / generate the tax feed.</span>'))+
+     '<button data-action="export-month-csv" class="btn sm" onclick="exportMonthCSV()">⇩ Month CSV</button></div>'+
    (saved?'<div class="banner ok" style="margin-top:14px">✔ <div>Tax feed generated '+ (saved.generatedAt||'').slice(0,16).replace('T',' ') +' by '+saved.by+' — Income '+nINR(saved.income)+', Expense '+nINR(saved.expense)+', GST est. '+nINR(saved.gstEstimate)+'. Stored for Tax Compliance under <code>gm_tax_feed['+CM+']</code>.</div></div>':'')+
    /* P1-18: stale warning — stored flag (module writes) OR derived createdAt>generatedAt
       (catches the bridge's ungated appends; both are toISOString() UTC strings, so the
@@ -2166,7 +2166,7 @@ function renderAudit(){
   var a=L(K.audit,[]);
   document.getElementById('auditC').innerHTML=
   '<div class="card"><div class="card-h"><div><h3>Audit trail</h3><p>'+a.length+' event(s). Every create / edit / void / close / reopen / sync / month-lock.</p></div>'+
-   '<div class="actions"><button class="btn sm" onclick="exportAuditCSV()">⇩ CSV</button></div></div>'+
+   '<div class="actions"><button data-action="export-audit-csv" class="btn sm" onclick="exportAuditCSV()">⇩ CSV</button></div></div>'+
    (a.length?'<div class="twrap"><table><thead><tr><th>When</th><th>Role</th><th>Action</th><th>Detail</th></tr></thead><tbody>'+
      a.slice(0,300).map(function(x){return '<tr><td class="small">'+(x.at||'').slice(0,16).replace('T',' ')+'</td><td><span class="bdg src">'+esc(x.by)+'</span></td><td>'+esc(x.action)+'</td><td class="small">'+esc(x.detail)+'</td></tr>';}).join('')+
      '</tbody></table></div>':'<div class="empty">No audit events yet.</div>')+
@@ -2258,7 +2258,7 @@ function renderUdhaar(){
         fld('Due date','<input id="ud_due" type="date" value="'+defDue+'">')+
         fld('Note','<input id="ud_note" placeholder="e.g. Titan Raga, promised in 30 days">','full')+
       '</div>'+
-      '<div class="row" style="margin-top:14px"><button class="btn p" onclick="addReceivable()">Add credit</button><span class="small muted">Isolated from the cash ledger — this is your receivables diary.</span></div></div>';
+      '<div class="row" style="margin-top:14px"><button data-action="add-receivable" class="btn p" onclick="addReceivable()">Add credit</button><span class="small muted">Isolated from the cash ledger — this is your receivables diary.</span></div></div>';
   var summary='<div class="card"><div class="card-h"><div><h3>Outstanding</h3><p>Total money owed to you</p></div><div class="actions"><b style="font-size:20px">'+nINR(totalOut)+'</b></div></div>'+
     '<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:4px">'+
       '<span class="bdg">0–30 days · '+nINR(buckets['0–30'])+'</span>'+
@@ -2275,7 +2275,7 @@ function renderUdhaar(){
         '<td class="num">'+nINR(r.amount)+'</td>'+
         '<td class="num">'+nINR(udPaid(r))+'</td>'+
         '<td class="num"><b>'+nINR(udOut(r))+'</b></td>'+
-        '<td class="num">'+(isPast()?'<span class="bdg locked">🔒</span>':'<button class="btn xs p" onclick="payReceivable(\''+r.id+'\')">Pay</button> <button class="btn xs" onclick="remindReceivable(\''+r.id+'\')">Remind</button> <button class="btn xs red" onclick="voidReceivable(\''+r.id+'\')">✕</button>')+'</td>'+
+        '<td class="num">'+(isPast()?'<span class="bdg locked">🔒</span>':'<button data-action="pay-receivable" class="btn xs p" onclick="payReceivable(\''+r.id+'\')">Pay</button> <button data-action="remind-receivable" class="btn xs" onclick="remindReceivable(\''+r.id+'\')">Remind</button> <button data-action="void-receivable" class="btn xs red" onclick="voidReceivable(\''+r.id+'\')">✕</button>')+'</td>'+
         '</tr>'; }).join('')+'</tbody></table></div></div>'
     : '<div class="card"><div class="empty">No outstanding credit. Everyone has paid up. 🎉</div></div>';
   document.getElementById('udhaarC').innerHTML = form+summary+list;
@@ -2283,7 +2283,7 @@ function renderUdhaar(){
 
 function modal(title,bodyHtml,onOk){
   var r=document.getElementById('modalRoot');
-  r.innerHTML='<div class="mbk" id="mbk"><div class="modal"><div class="modal-h"><h3>'+esc(title)+'</h3><button class="btn xs" onclick="closeModal()">✕</button></div><div class="modal-b">'+bodyHtml+'<div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn p" id="mok">Confirm</button></div></div></div></div>';
+  r.innerHTML='<div class="mbk" id="mbk"><div class="modal"><div class="modal-h"><h3>'+esc(title)+'</h3><button data-action="close-generated-modal" class="btn xs" onclick="closeModal()">✕</button></div><div class="modal-b">'+bodyHtml+'<div class="row" style="margin-top:16px;justify-content:flex-end"><button data-action="cancel-generated-modal" class="btn" onclick="closeModal()">Cancel</button><button data-action="confirm-generated-modal" class="btn p" id="mok">Confirm</button></div></div></div></div>';
   document.getElementById('mok').onclick=async function(){ if((await Promise.resolve(onOk()))!==false) closeModal(); };
   document.getElementById('mbk').addEventListener('click',function(e){ if(e.target.id==='mbk') closeModal(); });
 }
@@ -2310,7 +2310,7 @@ window.addEventListener('st-date',function(e){
 </script>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button data-action="st-v5-home-fab" id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'expense',nextSteps:[{id:'tax',label:'Check Tax →'}],customerSelectors:[],accessContext:true});</script>
 

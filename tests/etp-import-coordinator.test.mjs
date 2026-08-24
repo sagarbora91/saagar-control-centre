@@ -9,10 +9,11 @@ const profileAuthority = require('../www/etp-profile-authority.js');
 const H = 'a'.repeat(64), S = 'b'.repeat(64);
 const scope = { storeCode: 'WLMHW', financialYear: '2026-27', periodStart: '2026-04-01', periodEnd: '2026-04-30' };
 const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
+const tenderIdentity={contractVersion:'ETP_TENDER_DICTIONARY_V1',versionId:'retail-etp-tender-v1',effectiveAt:'2026-08-24T00:00:00.000Z'};
 function fixture(generationId = 'gen1') {
   const scopeKey = 'WLMHW|2026-27|2026-04-01..2026-04-30';
   return {
-    manifest: { scopeKey, generationId, authority:authorityBinding, reports: ['R003', 'R013', 'R022', 'R025'].map(reportId => ({ reportId, sourceSha256: S, headerSignatureSha256: H, rowCount: 1 })) },
+    manifest: { scopeKey, generationId, authority:authorityBinding, tenderDictionary:tenderIdentity, reports: ['R003', 'R013', 'R022', 'R025'].map(reportId => ({ reportId, sourceSha256: S, headerSignatureSha256: H, rowCount: 1 })) },
     chunks: ['R003', 'R013', 'R022', 'R025'].map(reportId => ({ reportId, chunkIndex: 0, rows: [{ document_id: reportId + '-1' }] }))
   };
 }

@@ -10,6 +10,8 @@ const core = require('../www/etp-core-contract.js');
 const foundationStatus = require('../www/etp-foundation-status.js');
 const queryContract = require('../www/etp-query-contract.js');
 const profileAuthority = require('../www/etp-profile-authority.js');
+const importHistoryApi = require('../www/etp-import-history.js');
+const tenderDictionaryApi = require('../www/etp-tender-dictionary.js');
 const gatewaySource = fs.readFileSync(new URL('../www/etp-module-gateway.js', import.meta.url), 'utf8');
 
 const generationA = 'etp_' + 'a'.repeat(32);
@@ -20,7 +22,7 @@ const scopeKey = 'WLMHW|2026-27|2026-04-01..2026-04-30';
 function receipt(generationId = generationA, publishedAt = '2026-05-01') {
   const life = lifecycle.create(scope, generationId).lifecycle;
   const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
-  const accepted = Object.freeze({ ...life, state: 'ACCEPTED', candidateGenerationId: null, activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe',manifest:{authority:authorityBinding} });
+  const accepted = Object.freeze({ ...life, state: 'ACCEPTED', candidateGenerationId: null, activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe',manifest:{authority:authorityBinding,tenderDictionary:tenderDictionaryApi.BUILD_IDENTITY} });
   return {
     contractVersion: core.ETP_CORE_VERSION,
     scopeKey,
@@ -28,7 +30,7 @@ function receipt(generationId = generationA, publishedAt = '2026-05-01') {
     activeGenerationId: generationId,
     profileVersion: core.ETP_CORE_VERSION,
     parserVersion: profileAuthority.PARSER_VERSION,
-    profileAuthority: authorityBinding,
+    profileAuthority: authorityBinding, tenderDictionary: tenderDictionaryApi.BUILD_IDENTITY,
     ruleVersion: core.RECON_RULE.ruleVersion,
     reconciliationStatus: 'PASS',
     enrichments: { R003: { status: 'FAIL', differenceCount: 2 }, R013: { status: 'PASS', differenceCount: 0 }, paymentType25: { status: 'QUARANTINED', rowCount: 9, persisted: false } },
@@ -40,7 +42,7 @@ function receipt(generationId = generationA, publishedAt = '2026-05-01') {
 
 function storageWith(current = receipt(), history = []) {
   const value = JSON.stringify({ scopes: { [scopeKey]: { current, history } } });
-  return { getItem(key) { return key === gatewayApi.REGISTRY_KEY ? value : null; } };
+  return { getItem(key) { return key === gatewayApi.REGISTRY_KEY ? value : null; }, setItem() {} };
 }
 
 function fixture(overrides = {}) {
@@ -65,6 +67,7 @@ function fixture(overrides = {}) {
     foundationStatus: overrides.foundationStatus || foundationStatus,
     queryContract: overrides.queryContract || queryContract,
     profileAuthority: overrides.profileAuthority || profileAuthority,
+    importHistoryApi, tenderDictionaryApi,
     storage: overrides.storage || storageWith(),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: { state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } })),
     authorize: overrides.authorize || (() => true),

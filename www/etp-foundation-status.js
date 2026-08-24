@@ -15,8 +15,8 @@
   function freeze(value){return Object.freeze(value);}
   function plain(value){if(!value||typeof value!=='object'||Array.isArray(value))return false;var proto=Object.getPrototypeOf(value);return proto===Object.prototype||proto===null;}
   function own(value,key){return Object.prototype.hasOwnProperty.call(value,key);}
-  function exact(value,keys){if(!plain(value))return false;var actual=Object.keys(value).sort(),expected=keys.slice().sort();return actual.length===expected.length&&actual.every(function(key,index){return key===expected[index]&&BLOCKED.indexOf(key)<0;});}
-  function iso(value){var raw=String(value||''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);if(!match)return'';var date=new Date(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3])));return date.getUTCFullYear()===Number(match[1])&&date.getUTCMonth()===Number(match[2])-1&&date.getUTCDate()===Number(match[3])?raw:'';}
+  function exact(value,keys){if(!plain(value))return false;var actual=Object.keys(value);if(actual.length!==keys.length)return false;for(var i=0;i<actual.length;i++)if(BLOCKED.indexOf(actual[i])>=0||keys.indexOf(actual[i])<0)return false;return true;}
+  function iso(value){var raw=String(value||'');if(!/^\d{4}-\d{2}-\d{2}$/.test(raw))return'';var parts=raw.split('-'),date=new Date(raw+'T00:00:00Z');return !Number.isNaN(date.getTime())&&date.getUTCFullYear()===Number(parts[0])&&date.getUTCMonth()+1===Number(parts[1])&&date.getUTCDate()===Number(parts[2])?raw:'';}
   function timestamp(value){var raw=String(value||'');if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(raw))return'';var time=Date.parse(raw);return Number.isFinite(time)?new Date(time).toISOString():'';}
   function financialYear(value){var match=/^(\d{4})-(\d{2})$/.exec(String(value||''));return match&&Number(match[2])===(Number(match[1])+1)%100?match[0]:'';}
   function yearOf(date){var year=Number(date.slice(0,4)),start=date.slice(5,7)>='04'?year:year-1,end=String((start+1)%100);return String(start)+'-'+(end.length<2?'0'+end:end);}

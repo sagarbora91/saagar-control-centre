@@ -1566,7 +1566,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
   </div>
   <div class="header-right">
     <div class="badge-pill">Service Centre</div>
-    <button class="btn btn-ghost btn-sm" id="btn-back-dash" onclick="showView('dash')" style="display:none">← Cases</button>
+    <button data-action="btn-back-dash" class="btn btn-ghost btn-sm" id="btn-back-dash" onclick="showView('dash')" style="display:none">← Cases</button>
   </div>
 </header>
 
@@ -1581,14 +1581,14 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label class="btn btn-ghost btn-sm" id="wp-mand-toggle" title="Require a watch photo before a case can be saved" style="display:none;cursor:pointer;gap:6px;align-items:center">
-          <input type="checkbox" id="wp-mand-cb" onchange="setWatchPhotoMandatory(this.checked)" style="margin:0">
+          <input data-action="wp-mand-cb" type="checkbox" id="wp-mand-cb" onchange="setWatchPhotoMandatory(this.checked)" style="margin:0">
           📸 Watch photo required
         </label>
-        <button class="btn btn-ghost btn-sm" id="btn-export-csv" onclick="exportCSV()" style="display:none">
+        <button data-action="btn-export-csv" class="btn btn-ghost btn-sm" id="btn-export-csv" onclick="exportCSV()" style="display:none">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
           Export CSV
         </button>
-        <button class="btn btn-primary" onclick="openNew()">
+        <button data-action="new-service-order" class="btn btn-primary" onclick="openNew()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           New Service Order
         </button>
@@ -1629,7 +1629,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
       <div class="d3-modal" role="dialog" aria-modal="true" aria-labelledby="svc-d3-transition-title">
         <div class="d3-modal-head">
           <div><h3 id="svc-d3-transition-title">Change Service stage</h3><p id="svc-d3-transition-path"></p></div>
-          <button type="button" class="d3-modal-close" onclick="svcD3CloseTransition()" aria-label="Close">×</button>
+          <button data-action="close-3e40663b41" type="button" class="d3-modal-close" onclick="svcD3CloseTransition()" aria-label="Close">×</button>
         </div>
         <div class="d3-modal-body">
           <div class="field-group"><label class="field-label" for="svc-d3-actor">Staff / actor *</label><input class="field-input" id="svc-d3-actor" maxlength="80"></div>
@@ -1643,14 +1643,14 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div class="field-group"><label class="field-label" for="svc-d3-notification">Customer notification status *</label><select class="field-input" id="svc-d3-notification"><option value="pending">Pending — notify now</option><option value="notified">Notified</option><option value="declined">Customer declined updates</option><option value="unreachable">Unreachable</option></select></div>
           </div>
         </div>
-        <div class="d3-modal-actions"><button type="button" class="btn btn-ghost" onclick="svcD3CloseTransition()">Cancel</button><button type="button" class="btn btn-primary" onclick="svcD3ConfirmTransition()">Confirm change</button></div>
+        <div class="d3-modal-actions"><button data-action="cancel-c9f1a87e38" type="button" class="btn btn-ghost" onclick="svcD3CloseTransition()">Cancel</button><button data-action="confirm-change" type="button" class="btn btn-primary" onclick="svcD3ConfirmTransition()">Confirm change</button></div>
       </div>
     </div>
 
     <div class="svc-search-bar">
       <svg class="svc-search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="svc-search" class="svc-search-input" type="text" placeholder="Search cases by ID, name, mobile, brand or model…" oninput="onSearch(this.value)" autocomplete="off">
-      <button id="svc-search-clear" class="svc-search-clear" type="button" onclick="clearSearch()" style="display:none" aria-label="Clear search">✕</button>
+      <input data-action="svc-search" id="svc-search" class="svc-search-input" type="text" placeholder="Search cases by ID, name, mobile, brand or model…" oninput="onSearch(this.value)" autocomplete="off">
+      <button data-action="svc-search-clear" id="svc-search-clear" class="svc-search-clear" type="button" onclick="clearSearch()" style="display:none" aria-label="Clear search">✕</button>
     </div>
 
     <!-- Repair-stage + overdue quick filters (apply to open cases; hidden in the Closed view) -->
@@ -1659,11 +1659,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
     <div class="section-header">
       <div class="section-label" id="list-title">All Cases</div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-sm" id="btn-exp-open" type="button" onclick="exportOpenCSV()">
+        <button data-action="btn-exp-open" class="btn btn-ghost btn-sm" id="btn-exp-open" type="button" onclick="exportOpenCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
           Export Open (ageing)
         </button>
-        <button class="btn btn-ghost btn-sm" id="btn-exp-closed" type="button" onclick="exportClosedCSV()">
+        <button data-action="btn-exp-closed" class="btn btn-ghost btn-sm" id="btn-exp-closed" type="button" onclick="exportClosedCSV()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
           Export Closed
         </button>
@@ -1747,9 +1747,9 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
       </nav>
 
       <div class="sidebar-actions">
-        <button class="btn btn-gold" onclick="doSave()" style="justify-content:center">Save Order</button>
-        <button class="btn btn-ghost" onclick="doPrint()" style="justify-content:center;font-size:12px">🖨 Print</button>
-        <button class="btn btn-ghost" onclick="showView('dash')" style="justify-content:center;font-size:12px;color:var(--g500)">← Back</button>
+        <button data-action="save-order-179d14e8b0" class="btn btn-gold" onclick="doSave()" style="justify-content:center">Save Order</button>
+        <button data-action="print-177e54a8c5" class="btn btn-ghost" onclick="doPrint()" style="justify-content:center;font-size:12px">🖨 Print</button>
+        <button data-action="back" class="btn btn-ghost" onclick="showView('dash')" style="justify-content:center;font-size:12px;color:var(--g500)">← Back</button>
       </div>
     </aside>
 
@@ -1768,9 +1768,9 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           </div>
         </div>
         <div class="form-topbar-right">
-          <button class="btn btn-ghost btn-sm" onclick="showView('dash')">Cancel</button>
-          <button class="btn btn-ghost btn-sm" onclick="doPrint()">🖨 Print</button>
-          <button class="btn btn-gold btn-sm" onclick="doSave()">Save Order</button>
+          <button data-action="cancel-a9e64f4c9d" class="btn btn-ghost btn-sm" onclick="showView('dash')">Cancel</button>
+          <button data-action="print-8132c138b0" class="btn btn-ghost btn-sm" onclick="doPrint()">🖨 Print</button>
+          <button data-action="save-order-235acec870" class="btn btn-gold btn-sm" onclick="doSave()">Save Order</button>
         </div>
       </div>
 
@@ -1787,11 +1787,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             </div>
             <div class="field-group">
               <label class="field-label">Date Received <span class="req">*</span></label>
-              <input type="date" class="field-input" id="f-dr" oninput="cpDebounced()">
+              <input data-action="f-dr" type="date" class="field-input" id="f-dr" oninput="cpDebounced()">
             </div>
             <div class="field-group">
               <label class="field-label">Service Advisor</label>
-              <select class="field-input" id="f-adv" onchange="cpDebounced()"><option value="">-----------</option></select>
+              <select data-action="f-adv" class="field-input" id="f-adv" onchange="cpDebounced()"><option value="">-----------</option></select>
             </div>
             <div class="field-group">
               <label class="field-label">Expected Delivery</label>
@@ -1822,11 +1822,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="grid-2">
             <div class="field-group">
               <label class="field-label">Full Name <span class="req">*</span></label>
-              <input class="field-input" id="f-cn" placeholder="Full name" oninput="cpDebounced()">
+              <input data-action="f-cn" class="field-input" id="f-cn" placeholder="Full name" oninput="cpDebounced()">
             </div>
             <div class="field-group">
               <label class="field-label">Mobile No <span class="req">*</span></label>
-              <input class="field-input" id="f-cm" placeholder="+91" oninput="cpDebounced()" onblur="svcAutofillFromMaster()">
+              <input data-action="f-cm" class="field-input" id="f-cm" placeholder="+91" oninput="cpDebounced()" onblur="svcAutofillFromMaster()">
             </div>
             <div class="field-group">
               <label class="field-label">Email</label>
@@ -1851,7 +1851,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div class="field-group col-span-2" id="svcLegalNotice" style="border:1px solid #cbd6e4;border-radius:10px;padding:12px;background:#f7fafc">
               <label class="field-label">Privacy notice & customer age status</label>
               <div style="font-size:12px;line-height:1.5;color:#52627a">We use these details to create and perform the watch-service order, document item custody and condition, communicate progress, collect payment, and maintain invoice, warranty or claim records. Promotional WhatsApp is optional and separate.</div>
-              <button class="btn btn-ghost" type="button" onclick="svcOpenPrivacyNotice()" style="margin-top:8px">Read full privacy notice & rights</button>
+              <button data-action="read-full-privacy-notice-rights" class="btn btn-ghost" type="button" onclick="svcOpenPrivacyNotice()" style="margin-top:8px">Read full privacy notice & rights</button>
               <div class="grid-2" style="margin-top:10px">
                 <div class="field-group"><label class="field-label">Customer age status <span class="req">*</span></label><select class="field-input" id="svc-legal-age"><option value="">Select</option><option value="adult">Adult (18+)</option><option value="minor">Under 18 — guardian present</option></select></div>
                 <div class="field-group"><label class="field-label">Guardian name (if under 18)</label><input class="field-input" id="svc-guardian-name" placeholder="Parent / lawful guardian"></div>
@@ -1875,11 +1875,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="grid-2">
             <div class="field-group">
               <label class="field-label">Brand <span class="req">*</span></label>
-              <input class="field-input" id="f-wb" placeholder="e.g. Titan, Rolex, Omega" oninput="cpDebounced()">
+              <input data-action="f-wb" class="field-input" id="f-wb" placeholder="e.g. Titan, Rolex, Omega" oninput="cpDebounced()">
             </div>
             <div class="field-group">
               <label class="field-label">Model Name <span class="req">*</span></label>
-              <input class="field-input" id="f-wm" placeholder="Model / collection" oninput="cpDebounced()">
+              <input data-action="f-wm" class="field-input" id="f-wm" placeholder="Model / collection" oninput="cpDebounced()">
             </div>
             <div class="field-group">
               <label class="field-label">Reference No</label>
@@ -1908,11 +1908,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div class="field-group col-span-2">
               <label class="field-label">Movement Type</label>
               <div class="radio-group">
-                <label class="radio-opt"><input type="radio" name="mv" value="Quartz" onchange="cp()"><span>Quartz</span></label>
-                <label class="radio-opt"><input type="radio" name="mv" value="Automatic" onchange="cp()"><span>Automatic</span></label>
-                <label class="radio-opt"><input type="radio" name="mv" value="Manual Wind" onchange="cp()"><span>Manual Wind</span></label>
-                <label class="radio-opt"><input type="radio" name="mv" value="Smartwatch" onchange="cp()"><span>Smartwatch</span></label>
-                <label class="radio-opt"><input type="radio" name="mv" value="Unknown" onchange="cp()"><span>Unknown</span></label>
+                <label class="radio-opt"><input data-action="mv-a6e178bc43" type="radio" name="mv" value="Quartz" onchange="cp()"><span>Quartz</span></label>
+                <label class="radio-opt"><input data-action="mv-66406844cd" type="radio" name="mv" value="Automatic" onchange="cp()"><span>Automatic</span></label>
+                <label class="radio-opt"><input data-action="mv-53a842e403" type="radio" name="mv" value="Manual Wind" onchange="cp()"><span>Manual Wind</span></label>
+                <label class="radio-opt"><input data-action="mv-9b177db3af" type="radio" name="mv" value="Smartwatch" onchange="cp()"><span>Smartwatch</span></label>
+                <label class="radio-opt"><input data-action="mv-7cdae40d2d" type="radio" name="mv" value="Unknown" onchange="cp()"><span>Unknown</span></label>
               </div>
             </div>
             <div class="field-group">
@@ -1939,7 +1939,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div class="wp-actions">
               <label class="wp-btn">📷 Camera<input data-action="watch-photo-camera" type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhoto(this)"></label>
               <label class="wp-btn">🖼 Upload<input data-action="watch-photo-upload" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhoto(this)"></label>
-              <button type="button" class="wp-btn wp-remove" id="wp-remove" style="display:none" onclick="removeWatchPhoto()">✕ Remove</button>
+              <button data-action="wp-remove" type="button" class="wp-btn wp-remove" id="wp-remove" style="display:none" onclick="removeWatchPhoto()">✕ Remove</button>
             </div>
             <div class="wp-preview" id="wp-preview" style="display:none"><img id="wp-preview-img" alt="Watch photo — received"></div>
             <div class="wp-empty" id="wp-empty">No photo attached yet. JPG / PNG / WEBP — auto-compressed.</div>
@@ -1985,11 +1985,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="field-group" style="margin-bottom:14px">
             <label class="field-label">Overall Cosmetic Grade</label>
             <div class="radio-group">
-              <label class="radio-opt"><input type="radio" name="grd" value="Mint" onchange="cp()"><span>Mint</span></label>
-              <label class="radio-opt"><input type="radio" name="grd" value="Excellent" onchange="cp()"><span>Excellent</span></label>
-              <label class="radio-opt"><input type="radio" name="grd" value="Good" onchange="cp()"><span>Good</span></label>
-              <label class="radio-opt"><input type="radio" name="grd" value="Fair" onchange="cp()"><span>Fair</span></label>
-              <label class="radio-opt"><input type="radio" name="grd" value="Poor" onchange="cp()"><span>Poor</span></label>
+              <label class="radio-opt"><input data-action="grd-f88467462a" type="radio" name="grd" value="Mint" onchange="cp()"><span>Mint</span></label>
+              <label class="radio-opt"><input data-action="grd-51545d0b9c" type="radio" name="grd" value="Excellent" onchange="cp()"><span>Excellent</span></label>
+              <label class="radio-opt"><input data-action="grd-66e051f54c" type="radio" name="grd" value="Good" onchange="cp()"><span>Good</span></label>
+              <label class="radio-opt"><input data-action="grd-e7b7abb167" type="radio" name="grd" value="Fair" onchange="cp()"><span>Fair</span></label>
+              <label class="radio-opt"><input data-action="grd-cb4b3bd3e9" type="radio" name="grd" value="Poor" onchange="cp()"><span>Poor</span></label>
             </div>
           </div>
           <div class="field-group">
@@ -2044,14 +2044,14 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div>
               <div class="check-col-title">Service Authorization <span style="color:var(--red)">*</span></div>
               <div class="check-grid">
-                <label class="check-opt"><input type="checkbox" class="aa" value="Complete Service" onchange="cp()"><span>Complete Service</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Partial Service" onchange="cp()"><span>Partial Service</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Battery Replacement" onchange="cp()"><span>Battery Replacement</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Water Resistance Test" onchange="cp()"><span>Water Resistance Test</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Polishing Only" onchange="cp()"><span>Polishing Only</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Glass Replacement" onchange="cp()"><span>Glass Replacement</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Strap Replacement" onchange="cp()"><span>Strap Replacement</span></label>
-                <label class="check-opt"><input type="checkbox" class="aa" value="Bracelet Repair" onchange="cp()"><span>Bracelet Repair</span></label>
+                <label class="check-opt"><input data-action="input-1809abffd8322b" type="checkbox" class="aa" value="Complete Service" onchange="cp()"><span>Complete Service</span></label>
+                <label class="check-opt"><input data-action="input-abf0257db60e00" type="checkbox" class="aa" value="Partial Service" onchange="cp()"><span>Partial Service</span></label>
+                <label class="check-opt"><input data-action="input-d0e03c6a4cba2f" type="checkbox" class="aa" value="Battery Replacement" onchange="cp()"><span>Battery Replacement</span></label>
+                <label class="check-opt"><input data-action="input-766563d07f1b41" type="checkbox" class="aa" value="Water Resistance Test" onchange="cp()"><span>Water Resistance Test</span></label>
+                <label class="check-opt"><input data-action="input-9c978046be8be9" type="checkbox" class="aa" value="Polishing Only" onchange="cp()"><span>Polishing Only</span></label>
+                <label class="check-opt"><input data-action="input-f1115dcc6346a9" type="checkbox" class="aa" value="Glass Replacement" onchange="cp()"><span>Glass Replacement</span></label>
+                <label class="check-opt"><input data-action="input-30f40f7ee5a0dc" type="checkbox" class="aa" value="Strap Replacement" onchange="cp()"><span>Strap Replacement</span></label>
+                <label class="check-opt"><input data-action="input-32822de32cc548" type="checkbox" class="aa" value="Bracelet Repair" onchange="cp()"><span>Bracelet Repair</span></label>
               </div>
             </div>
           </div>
@@ -2069,7 +2069,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div>
               <div class="check-col-title">Mechanical</div>
               <div class="check-grid">
-                <label class="check-opt"><input type="checkbox" class="im" value="Not Running/Stopped" onchange="cp()"><span>Not Running/Stopped</span></label>
+                <label class="check-opt"><input data-action="input-adc7f33a4568ef" type="checkbox" class="im" value="Not Running/Stopped" onchange="cp()"><span>Not Running/Stopped</span></label>
                 <label class="check-opt"><input type="checkbox" class="im" value="Running Fast"><span>Running Fast</span></label>
                 <label class="check-opt"><input type="checkbox" class="im" value="Running Slow"><span>Running Slow</span></label>
                 <label class="check-opt"><input type="checkbox" class="im" value="Losing Time"><span>Losing Time</span></label>
@@ -2082,7 +2082,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div>
               <div class="check-col-title">Cosmetic</div>
               <div class="check-grid">
-                <label class="check-opt"><input type="checkbox" class="ic" value="Glass Scratched" onchange="cp()"><span>Glass Scratched</span></label>
+                <label class="check-opt"><input data-action="input-36b8fedf362878" type="checkbox" class="ic" value="Glass Scratched" onchange="cp()"><span>Glass Scratched</span></label>
                 <label class="check-opt"><input type="checkbox" class="ic" value="Glass Cracked"><span>Glass Cracked/Broken</span></label>
                 <label class="check-opt"><input type="checkbox" class="ic" value="Dial Damaged"><span>Dial Damaged</span></label>
                 <label class="check-opt"><input type="checkbox" class="ic" value="Hands Damaged"><span>Hands Damaged</span></label>
@@ -2136,7 +2136,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="grid-3">
             <div class="field-group">
               <label class="field-label">Technician Name</label>
-              <select class="field-input" id="f-tn" onchange="onTechSelect()"><option value="">-----------</option></select>
+              <select data-action="f-tn" class="field-input" id="f-tn" onchange="onTechSelect()"><option value="">-----------</option></select>
             </div>
             <div class="field-group">
               <label class="field-label">Tech. ID / Initials</label>
@@ -2150,11 +2150,11 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="grid-2" style="margin-top:14px">
             <div class="field-group">
               <label class="field-label">Point Remarks — Company / Brand</label>
-              <select class="field-input" id="f-pr-brand" onchange="onPointRemarkBrand()"><option value="">-----------</option></select>
+              <select data-action="f-pr-brand" class="field-input" id="f-pr-brand" onchange="onPointRemarkBrand()"><option value="">-----------</option></select>
             </div>
             <div class="field-group">
               <label class="field-label">Point Remarks (type to override)</label>
-              <input class="field-input" id="f-pr-txt" placeholder="Type or pick a company/brand" oninput="cpDebounced()">
+              <input data-action="f-pr-txt" class="field-input" id="f-pr-txt" placeholder="Type or pick a company/brand" oninput="cpDebounced()">
             </div>
           </div>
         </div>
@@ -2181,18 +2181,18 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <tbody id="est-tbody"></tbody>
           </table>
           </div>
-          <button class="add-line-btn" onclick="addRow()">
+          <button data-action="add-line" class="add-line-btn" onclick="addRow()">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             Add Line
           </button>
           <div class="est-totals">
             <div class="tot-row">
               <span class="tot-label">Sub-Total</span>
-              <span>₹ <input class="tot-input" id="f-st" placeholder="0.00" oninput="subTotalDirty=true;cpDebounced()"></span>
+              <span>₹ <input data-action="f-st" class="tot-input" id="f-st" placeholder="0.00" oninput="subTotalDirty=true;cpDebounced()"></span>
             </div>
             <div class="tot-row">
               <span class="tot-label">GST %</span>
-              <span><input class="tot-input" id="f-gst" placeholder="0" oninput="calcTotalDebounced()"> %</span>
+              <span><input data-action="f-gst" class="tot-input" id="f-gst" placeholder="0" oninput="calcTotalDebounced()"> %</span>
             </div>
             <div class="tot-row">
               <span class="tot-label">GST Amount</span>
@@ -2204,7 +2204,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             </div>
             <div class="tot-row">
               <span class="tot-label">Advance Paid</span>
-              <span>₹ <input class="tot-input" id="f-advpaid" placeholder="0.00" inputmode="decimal" oninput="cpDebounced();updateBalance()"></span>
+              <span>₹ <input data-action="f-advpaid" class="tot-input" id="f-advpaid" placeholder="0.00" inputmode="decimal" oninput="cpDebounced();updateBalance()"></span>
             </div>
           </div>
           <div style="font-size:11px;color:var(--g400);margin-top:8px;font-style:italic">
@@ -2245,15 +2245,15 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
         </div>
         <div class="sec-body">
           <div class="check-grid" style="margin-bottom:16px;gap:10px">
-            <label class="check-opt"><input type="checkbox" id="a1" onchange="cp()"><span>I have read, understood, and agree to the Terms &amp; Conditions above.</span></label>
-            <label class="check-opt"><input type="checkbox" id="a2" onchange="cp()"><span>I authorize the service centre to perform the work as described herein.</span></label>
-            <label class="check-opt"><input type="checkbox" id="a3" onchange="cp()"><span>I agree to pay the estimate (or revised amount, if I approve any changes).</span></label>
-            <label class="check-opt"><input type="checkbox" id="a4" onchange="cp()"><span>I confirm the condition report accurately reflects the watch at the time of handover.</span></label>
+            <label class="check-opt"><input data-action="a1" type="checkbox" id="a1" onchange="cp()"><span>I have read, understood, and agree to the Terms &amp; Conditions above.</span></label>
+            <label class="check-opt"><input data-action="a2" type="checkbox" id="a2" onchange="cp()"><span>I authorize the service centre to perform the work as described herein.</span></label>
+            <label class="check-opt"><input data-action="a3" type="checkbox" id="a3" onchange="cp()"><span>I agree to pay the estimate (or revised amount, if I approve any changes).</span></label>
+            <label class="check-opt"><input data-action="a4" type="checkbox" id="a4" onchange="cp()"><span>I confirm the condition report accurately reflects the watch at the time of handover.</span></label>
           </div>
           <div class="grid-3">
             <div class="field-group">
               <label class="field-label">Customer Name</label>
-              <input class="field-input" id="f-an" placeholder="Full name" oninput="cpDebounced()">
+              <input data-action="f-an" class="field-input" id="f-an" placeholder="Full name" oninput="cpDebounced()">
             </div>
             <div class="field-group">
               <label class="field-label">Date</label>
@@ -2277,7 +2277,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
           <div class="grid-3" style="margin-bottom:16px">
             <div class="field-group">
               <label class="field-label">Received By</label>
-              <select class="field-input" id="f-rb" onchange="cpDebounced()"><option value="">-----------</option></select>
+              <select data-action="f-rb" class="field-input" id="f-rb" onchange="cpDebounced()"><option value="">-----------</option></select>
             </div>
             <div class="field-group">
               <label class="field-label">Designation</label>
@@ -2289,7 +2289,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             </div>
           </div>
           <label class="check-opt" style="align-items:center">
-            <input type="checkbox" id="f-oc" onchange="cp()">
+            <input data-action="f-oc" type="checkbox" id="f-oc" onchange="cp()">
             <span style="font-weight:600;color:var(--navy);font-size:13px">Yes — service order is confirmed.</span>
           </label>
         </div>
@@ -2322,7 +2322,7 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
               <div class="wp-actions">
                 <label class="wp-btn">📷 Camera<input data-action="watch-photo-after-camera" type="file" accept="image/*" capture="environment" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
                 <label class="wp-btn">🖼 Upload<input data-action="watch-photo-after-upload" type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="onWatchPhotoAfter(this)"></label>
-                <button type="button" class="wp-btn wp-remove" id="wp-after-remove" style="display:none" onclick="removeWatchPhotoAfter()">✕ Remove</button>
+                <button data-action="wp-after-remove" type="button" class="wp-btn wp-remove" id="wp-after-remove" style="display:none" onclick="removeWatchPhotoAfter()">✕ Remove</button>
               </div>
               <div class="wp-preview" id="wp-after-preview" style="display:none"><img id="wp-after-img" alt="Watch photo — after service"></div>
               <div class="wp-empty" id="wp-after-empty">No after-service photo yet. JPG / PNG / WEBP — auto-compressed.</div>
@@ -2330,16 +2330,16 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div class="grid-2" style="margin-bottom:16px">
               <div class="field-group">
                 <label class="field-label">Final Amount Charged (₹)</label>
-                <input class="field-input" id="f-fa" placeholder="₹ 0.00" inputmode="decimal" oninput="calcDeno();updateBalance()">
+                <input data-action="f-fa" class="field-input" id="f-fa" placeholder="₹ 0.00" inputmode="decimal" oninput="calcDeno();updateBalance()">
                 <div id="f-balance-hint" style="font-size:11.5px;font-weight:600;margin-top:5px;display:none"></div>
               </div>
               <div class="field-group">
                 <label class="field-label">Payment Mode</label>
                 <div class="radio-group">
-                  <label class="radio-opt"><input type="radio" name="pm" value="Cash" onchange="togglePayRef()"><span>Cash</span></label>
-                  <label class="radio-opt"><input type="radio" name="pm" value="Card" onchange="togglePayRef()"><span>Card</span></label>
-                  <label class="radio-opt"><input type="radio" name="pm" value="UPI" onchange="togglePayRef()"><span>UPI</span></label>
-                  <label class="radio-opt"><input type="radio" name="pm" value="Bank Transfer" onchange="togglePayRef()"><span>Bank Transfer</span></label>
+                  <label class="radio-opt"><input data-action="pm-60116ece91" type="radio" name="pm" value="Cash" onchange="togglePayRef()"><span>Cash</span></label>
+                  <label class="radio-opt"><input data-action="pm-c9d1dd5a73" type="radio" name="pm" value="Card" onchange="togglePayRef()"><span>Card</span></label>
+                  <label class="radio-opt"><input data-action="pm-9cb4b6f988" type="radio" name="pm" value="UPI" onchange="togglePayRef()"><span>UPI</span></label>
+                  <label class="radio-opt"><input data-action="pm-ec372dbb96" type="radio" name="pm" value="Bank Transfer" onchange="togglePayRef()"><span>Bank Transfer</span></label>
                 </div>
               </div>
               <div class="field-group" id="f-pr-grp">
@@ -2358,16 +2358,16 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
             <div id="f-deno-wrap" style="display:none;margin-bottom:16px">
               <div class="deno-hdr">Physical cash counted</div>
               <div class="deno-body">
-                <div class="deno-row"><span class="deno-lbl">₹2000</span><input class="deno-inp" id="dn2000" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv2000">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹500</span><input class="deno-inp" id="dn500" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv500">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹200</span><input class="deno-inp" id="dn200" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv200">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹100</span><input class="deno-inp" id="dn100" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv100">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹50</span><input class="deno-inp" id="dn50" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv50">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹20</span><input class="deno-inp" id="dn20" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv20">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹10</span><input class="deno-inp" id="dn10" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv10">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹5</span><input class="deno-inp" id="dn5" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv5">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹2</span><input class="deno-inp" id="dn2" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv2">₹0</span></div>
-                <div class="deno-row"><span class="deno-lbl">₹1</span><input class="deno-inp" id="dn1" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv1">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹2000</span><input data-action="dn2000" class="deno-inp" id="dn2000" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv2000">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹500</span><input data-action="dn500" class="deno-inp" id="dn500" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv500">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹200</span><input data-action="dn200" class="deno-inp" id="dn200" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv200">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹100</span><input data-action="dn100" class="deno-inp" id="dn100" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv100">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹50</span><input data-action="dn50" class="deno-inp" id="dn50" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv50">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹20</span><input data-action="dn20" class="deno-inp" id="dn20" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv20">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹10</span><input data-action="dn10" class="deno-inp" id="dn10" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv10">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹5</span><input data-action="dn5" class="deno-inp" id="dn5" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv5">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹2</span><input data-action="dn2" class="deno-inp" id="dn2" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv2">₹0</span></div>
+                <div class="deno-row"><span class="deno-lbl">₹1</span><input data-action="dn1" class="deno-inp" id="dn1" type="number" min="0" inputmode="numeric" placeholder="0" oninput="calcDeno()"><span class="deno-val" id="dv1">₹0</span></div>
               </div>
               <div class="deno-total-row"><span>Total</span><span id="f-deno-total">₹0</span></div>
               <div class="deno-hint" id="f-deno-hint"></div>
@@ -2401,12 +2401,12 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
               </div>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button class="btn btn-green" onclick="closeCase()" style="flex:1;min-width:200px;justify-content:center">
+              <button data-action="mark-as-delivered-amp-close-case" class="btn btn-green" onclick="closeCase()" style="flex:1;min-width:200px;justify-content:center">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 Mark as Delivered &amp; Close Case
               </button>
-              <button class="btn btn-ghost" onclick="doProforma()" style="justify-content:center">🧾 Proforma Invoice</button>
-              <button class="btn btn-ghost" onclick="doTaxInvoice()" style="justify-content:center" title="GST tax invoice (service / non-franchise only)">🧾 GST Tax Invoice</button>
+              <button data-action="proforma-invoice" class="btn btn-ghost" onclick="doProforma()" style="justify-content:center">🧾 Proforma Invoice</button>
+              <button data-action="gst-tax-invoice-service-non-franchise-only" class="btn btn-ghost" onclick="doTaxInvoice()" style="justify-content:center" title="GST tax invoice (service / non-franchise only)">🧾 GST Tax Invoice</button>
             </div>
           </div>
         </div>
@@ -2414,16 +2414,16 @@ html.bcc-mobile #form-wiznav{display:flex;position:sticky;bottom:0;align-items:c
 
       <!-- BOTTOM ACTIONS -->
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;padding-top:6px">
-        <button class="btn btn-ghost" onclick="showView('dash')">Cancel</button>
-        <button class="btn btn-ghost" onclick="doPrint()">🖨 Print</button>
-        <button class="btn btn-gold" onclick="doSave()">Save Order</button>
+        <button data-action="cancel-aadf0c90d2" class="btn btn-ghost" onclick="showView('dash')">Cancel</button>
+        <button data-action="print-55e02303ef" class="btn btn-ghost" onclick="doPrint()">🖨 Print</button>
+        <button data-action="save-order-df9e5c6aa8" class="btn btn-gold" onclick="doSave()">Save Order</button>
       </div>
 
       <!-- MOBILE STEP-WIZARD NAV (mobile only via html.bcc-mobile) -->
       <div id="form-wiznav">
-        <button type="button" class="wiz-btn" id="wiz-back" onclick="showFormStep(curStep-1)">‹ Back</button>
+        <button data-action="wiz-back" type="button" class="wiz-btn" id="wiz-back" onclick="showFormStep(curStep-1)">‹ Back</button>
         <span id="wiz-step-label">Order Details</span>
-        <button type="button" class="wiz-btn wiz-next" id="wiz-next" onclick="showFormStep(curStep+1)">Next ›</button>
+        <button data-action="wiz-next" type="button" class="wiz-btn wiz-next" id="wiz-next" onclick="showFormStep(curStep+1)">Next ›</button>
       </div>
     </main>
   </div>
@@ -2920,11 +2920,11 @@ function svcD3RenderWorkboard() {
         <div class="d3-card-meta">${escapeHtml(due)} · ${escapeHtml(owner)}</div>
         <div class="d3-card-safe" title="${escapeHtml(card.safeStatusText)}">${escapeHtml(card.safeStatusLabel)}</div>
         <div class="d3-card-actions">
-          <button type="button" onclick="svcD3OpenCase(${index})">Open</button>
-          <button type="button" onclick="svcD3CopyStatus(${index})">Copy status</button>
-          ${card.stage === 'ready' ? `<button type="button" onclick="svcD3OpenTransition(${index},'ready')">Readiness</button>` : ''}
+          <button data-action="workboard-open-case" type="button" onclick="svcD3OpenCase(${index})">Open</button>
+          <button data-action="workboard-copy-status" type="button" onclick="svcD3CopyStatus(${index})">Copy status</button>
+          ${card.stage === 'ready' ? `<button data-action="workboard-open-readiness" type="button" onclick="svcD3OpenTransition(${index},'ready')">Readiness</button>` : ''}
         </div>
-        <select class="d3-stage-select" aria-label="Change service stage" onchange="svcD3BoardTransition(${index},this.value);this.value=''">${svcD3TransitionOptions()}</select>
+        <select data-action="workboard-transition" class="d3-stage-select" aria-label="Change service stage" onchange="svcD3BoardTransition(${index},this.value);this.value=''">${svcD3TransitionOptions()}</select>
       </div>`;
     }).join('');
     return `<section class="d3-lane d3-lane-${lane}">
@@ -2936,7 +2936,7 @@ function svcD3RenderWorkboard() {
     const index = indexFor(item.caseId);
     const due = item.dueDate ? ' · due ' + item.dueDate : '';
     const owner = item.ownerLabel ? ' · ' + item.ownerLabel : ' · unassigned';
-    return `<button class="d3-exception d3-exception-${escapeHtml(item.severity)}" type="button" onclick="svcD3OpenCase(${index})">
+    return `<button data-action="exception-open-case" class="d3-exception d3-exception-${escapeHtml(item.severity)}" type="button" onclick="svcD3OpenCase(${index})">
       <span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(item.caseId + due + owner)}</small></span>
       <span class="d3-ex-code">${escapeHtml(item.code)}</span>
     </button>`;
@@ -3278,7 +3278,7 @@ function renderStageChips(openCases) {
   if (dashFilter === 'closed') { host.innerHTML = ''; host.style.display = 'none'; return; }
   host.style.display = 'flex';
   const chip = (key, label, n, extra) =>
-    `<button class="stage-chip ${stageFilter === key ? 'on' : ''} ${extra || ''}" type="button" onclick="setStageFilter('${key}')">${label}<span class="chip-n">${n}</span></button>`;
+    `<button data-action="filter-stage" class="stage-chip ${stageFilter === key ? 'on' : ''} ${extra || ''}" type="button" onclick="setStageFilter('${key}')">${label}<span class="chip-n">${n}</span></button>`;
   let html = chip('', 'All stages', openCases.length, '');
   STAGE_KEYS.forEach(k => { html += chip(k, stageLabel(k), openCases.filter(c => stageOf(c) === k).length, ''); });
   html += chip('overdue', '⚠ Overdue', openCases.filter(isOverdue).length, 'over');
@@ -3404,12 +3404,12 @@ function renderPager(elId, type, total) {
     else if (nums[nums.length - 1] !== '…') nums.push('…');
   }
 
-  let html = `<button class="pg-btn" type="button" ${cur <= 1 ? 'disabled' : ''} onclick="gotoPage('${type}',${cur - 1})">‹ Prev</button>`;
+  let html = `<button data-action="page-previous" class="pg-btn" type="button" ${cur <= 1 ? 'disabled' : ''} onclick="gotoPage('${type}',${cur - 1})">‹ Prev</button>`;
   html += nums.map(p => p === '…'
     ? `<span class="pg-ellipsis">…</span>`
-    : `<button class="pg-btn ${p === cur ? 'active' : ''}" type="button" onclick="gotoPage('${type}',${p})">${p}</button>`
+    : `<button data-action="page-select" class="pg-btn ${p === cur ? 'active' : ''}" type="button" onclick="gotoPage('${type}',${p})">${p}</button>`
   ).join('');
-  html += `<button class="pg-btn" type="button" ${cur >= pages ? 'disabled' : ''} onclick="gotoPage('${type}',${cur + 1})">Next ›</button>`;
+  html += `<button data-action="page-next" class="pg-btn" type="button" ${cur >= pages ? 'disabled' : ''} onclick="gotoPage('${type}',${cur + 1})">Next ›</button>`;
   el.innerHTML = html;
 }
 
@@ -3442,7 +3442,7 @@ function renderList(elId, list, type) {
     const over = isOpen && isOverdue(c);
     const stg = stageOf(c);
     // Inline stage dropdown lets staff update "where is the watch" straight from the list.
-    const stageSel = `<select class="stage-sel" style="border-color:${stageColor(stg)};color:${stageColor(stg)}" onchange="svcD3ListTransition(${cardIndex},this.value)" onclick="event.stopPropagation()">`
+    const stageSel = `<select data-action="list-transition" class="stage-sel" style="border-color:${stageColor(stg)};color:${stageColor(stg)}" onchange="svcD3ListTransition(${cardIndex},this.value)" onclick="event.stopPropagation()">`
       + STAGE_KEYS.map(k => `<option value="${k}"${stg === k ? ' selected' : ''}>${stageLabel(k)}</option>`).join('') + `</select>`;
     return `<div class="case-card">
       <div class="case-stripe" style="background:${over ? 'var(--red)' : isOpen ? stageColor(stg) : 'var(--green)'}"></div>
@@ -3462,12 +3462,12 @@ function renderList(elId, list, type) {
         </div>
         <div class="case-right">
           ${isOpen ? stageSel : `<span class="status-pill status-closed">Delivered</span>`}
-          <button class="btn btn-ghost btn-sm" onclick="openEdit('${c.id}')">Edit</button>
-          <button class="btn btn-ghost btn-sm" onclick="openFollowUps('${c.id}')">Follow-up${(c.followUps || []).length ? ' (' + (c.followUps || []).length + ')' : ''}</button>
-          ${isOpen ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();markEstimateApproved('${c.id}')" style="color:var(--green);border-color:var(--green)">${c.estimateApproval && c.estimateApproval.at ? '✔ Approved' : 'Mark approved'}</button>` : ''}
-          <button class="btn btn-ghost btn-sm" onclick="printById('${c.id}')">Print</button>
-          ${!isOpen ? `<button class="btn btn-ghost btn-sm" onclick="printProformaById('${c.id}')">🧾 Proforma Invoice</button>` : ''}
-          <button class="btn btn-danger btn-sm" onclick="delCase('${c.id}')">Delete</button>
+          <button data-action="edit-case" class="btn btn-ghost btn-sm" onclick="openEdit('${c.id}')">Edit</button>
+          <button data-action="open-follow-ups" class="btn btn-ghost btn-sm" onclick="openFollowUps('${c.id}')">Follow-up${(c.followUps || []).length ? ' (' + (c.followUps || []).length + ')' : ''}</button>
+          ${isOpen ? `<button data-action="approve-estimate" class="btn btn-ghost btn-sm" onclick="event.stopPropagation();markEstimateApproved('${c.id}')" style="color:var(--green);border-color:var(--green)">${c.estimateApproval && c.estimateApproval.at ? '✔ Approved' : 'Mark approved'}</button>` : ''}
+          <button data-action="print-case" class="btn btn-ghost btn-sm" onclick="printById('${c.id}')">Print</button>
+          ${!isOpen ? `<button data-action="print-proforma" class="btn btn-ghost btn-sm" onclick="printProformaById('${c.id}')">🧾 Proforma Invoice</button>` : ''}
+          <button data-action="delete-case" class="btn btn-danger btn-sm" onclick="delCase('${c.id}')">Delete</button>
         </div>
       </div>
     </div>`;
@@ -3683,11 +3683,11 @@ function addRow() {
   const tr = document.createElement('tr');
   tr.id = 'er' + r;
   tr.innerHTML = `
-    <td><input id="ed${r}" placeholder="Description" oninput="autoCalcRow(${r})"></td>
-    <td><input type="number" id="eq${r}" placeholder="1" style="width:55px" oninput="autoCalcRow(${r})"></td>
-    <td><input type="number" id="eu${r}" placeholder="0.00" oninput="autoCalcRow(${r})"></td>
+    <td><input data-action="estimate-description" id="ed${r}" placeholder="Description" oninput="autoCalcRow(${r})"></td>
+    <td><input data-action="estimate-quantity" type="number" id="eq${r}" placeholder="1" style="width:55px" oninput="autoCalcRow(${r})"></td>
+    <td><input data-action="estimate-unit-price" type="number" id="eu${r}" placeholder="0.00" oninput="autoCalcRow(${r})"></td>
     <td><input type="number" id="et${r}" placeholder="0.00" readonly></td>
-    <td><button class="del-row-btn" onclick="delRow(${r})">✕</button></td>`;
+    <td><button data-action="delete-estimate-row" class="del-row-btn" onclick="delRow(${r})">✕</button></td>`;
   document.getElementById('est-tbody').appendChild(tr);
 }
 
@@ -4743,7 +4743,7 @@ applyReadOnlyUI();
         <h3 id="fu-title">Follow-Up Log</h3>
         <div class="fu-sub" id="fu-subtitle"></div>
       </div>
-      <button class="fu-close" type="button" onclick="closeFollowUps()" aria-label="Close">×</button>
+      <button data-action="close-7dc14e8101" class="fu-close" type="button" onclick="closeFollowUps()" aria-label="Close">×</button>
     </div>
     <div class="fu-body">
       <div class="fu-addform">
@@ -4787,8 +4787,8 @@ applyReadOnlyUI();
           <textarea class="field-textarea" id="fu-remarks" placeholder="What was discussed / next step…"></textarea>
         </div>
         <div class="fu-full" style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" type="button" onclick="addFollowUp()">+ Add Follow-up</button>
-          <button class="btn btn-ghost btn-sm" type="button" onclick="waForCase()" style="color:#1f9d4f;border-color:#1f9d4f">💬 Send WhatsApp</button>
+          <button data-action="add-follow-up" class="btn btn-primary btn-sm" type="button" onclick="addFollowUp()">+ Add Follow-up</button>
+          <button data-action="send-whatsapp" class="btn btn-ghost btn-sm" type="button" onclick="waForCase()" style="color:#1f9d4f;border-color:#1f9d4f">💬 Send WhatsApp</button>
         </div>
       </div>
       <div class="fu-list" id="fu-list"></div>
@@ -4797,7 +4797,7 @@ applyReadOnlyUI();
 </div>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button data-action="st-v5-home-fab" id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'service',nextSteps:[{id:'qms',label:'Back to Queue →'}],customerSelectors:['#f-cn','#f-an','#f-dcs'],accessContext:true});</script>
 

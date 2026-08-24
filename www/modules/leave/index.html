@@ -801,17 +801,17 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn btn-teal"  id="hdrStaffBtn"   onclick="openEmployeeMaster()">👥 Staff Master</button>
-    <button class="btn btn-ghost" id="hdrAddLeave"   onclick="openAddLeaveModal()">＋ Add Leave</button>
-    <button class="btn btn-ghost" id="hdrAddAgenda"  onclick="openAddAgendaModal()">📅 Add Agenda</button>
-    <button class="btn btn-ghost" id="hdrApprovals"  onclick="openApprovals()">✔ Approvals <span class="appr-badge" id="apprCount">0</span></button>
-    <button class="btn btn-ghost" onclick="openReport()">📊 Report</button>
-    <button class="btn btn-ghost" onclick="printCalendar()">🖨 Print</button>
-    <button class="btn btn-ghost" id="hdrImport"     onclick="document.getElementById('importInput').click()">⬆ Import</button>
-    <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
-    <button class="btn btn-danger" id="hdrClearAll"  onclick="openClearConfirm()">🗑 Clear All</button>
+    <button data-action="open-staff-master" class="btn btn-teal"  id="hdrStaffBtn"   onclick="openEmployeeMaster()">👥 Staff Master</button>
+    <button data-action="open-add-leave" class="btn btn-ghost" id="hdrAddLeave"   onclick="openAddLeaveModal()">＋ Add Leave</button>
+    <button data-action="open-add-agenda" class="btn btn-ghost" id="hdrAddAgenda"  onclick="openAddAgendaModal()">📅 Add Agenda</button>
+    <button data-action="open-approvals" class="btn btn-ghost" id="hdrApprovals"  onclick="openApprovals()">✔ Approvals <span class="appr-badge" id="apprCount">0</span></button>
+    <button data-action="open-report" class="btn btn-ghost" onclick="openReport()">📊 Report</button>
+    <button data-action="print-calendar" class="btn btn-ghost" onclick="printCalendar()">🖨 Print</button>
+    <button data-action="import-leave-data" class="btn btn-ghost" id="hdrImport"     onclick="document.getElementById('importInput').click()">⬆ Import</button>
+    <button data-action="export-leave-data" class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
+    <button data-action="open-clear-all" class="btn btn-danger" id="hdrClearAll"  onclick="openClearConfirm()">🗑 Clear All</button>
   </div>
-  <input type="file" id="importInput" accept=".json" onchange="importJSON(event)" style="display:none">
+  <input data-action="import-leave-file" type="file" id="importInput" accept=".json" onchange="importJSON(event)" style="display:none">
 </header>
 
 <!-- ── MAIN ── -->
@@ -819,15 +819,15 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
   <div class="cal-nav">
     <div style="display:flex;align-items:center;gap:9px;">
       <span class="fy-badge" id="fyBadge">FY 2026–27</span>
-      <button class="btn btn-ghost" onclick="goToToday()">Today</button>
+      <button data-action="go-today" class="btn btn-ghost" onclick="goToToday()">Today</button>
     </div>
     <div class="cal-nav-center">
-      <button class="nav-btn" onclick="prevMonth()">&#8249;</button>
+      <button data-action="previous-month" class="nav-btn" onclick="prevMonth()">&#8249;</button>
       <div class="month-label" id="monthLabel">May <span>2026</span></div>
-      <button class="nav-btn" onclick="nextMonth()">&#8250;</button>
+      <button data-action="next-month" class="nav-btn" onclick="nextMonth()">&#8250;</button>
     </div>
     <div>
-      <select class="form-select" style="width:auto;padding:7px 11px;font-size:12px;" onchange="jumpToMonth(this.value)" id="monthJumper"></select>
+      <select data-action="jump-to-month" class="form-select" style="width:auto;padding:7px 11px;font-size:12px;" onchange="jumpToMonth(this.value)" id="monthJumper"></select>
     </div>
   </div>
 
@@ -867,13 +867,13 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       <div class="capacity-grid" id="storeCapGrid"></div>
       <div class="section-head">
         <span class="section-title">Absent Staff</span>
-        <button class="btn btn-ghost" id="dayAddLeaveBtn" style="font-size:11px;padding:5px 10px;" onclick="openAddLeaveModal(currentDayKey)">＋ Add</button>
+        <button data-action="day-add-leave" class="btn btn-ghost" id="dayAddLeaveBtn" style="font-size:11px;padding:5px 10px;" onclick="openAddLeaveModal(currentDayKey)">＋ Add</button>
       </div>
       <div class="leave-list" id="dayLeaveList"></div>
       <div class="sep"></div>
       <div class="section-head">
         <span class="section-title">Agenda &amp; Meetings</span>
-        <button class="btn btn-ghost" id="dayAddAgendaBtn" style="font-size:11px;padding:5px 10px;" onclick="openAddAgendaModal(currentDayKey)">＋ Add</button>
+        <button data-action="day-add-agenda" class="btn btn-ghost" id="dayAddAgendaBtn" style="font-size:11px;padding:5px 10px;" onclick="openAddAgendaModal(currentDayKey)">＋ Add</button>
       </div>
       <div class="agenda-list" id="dayAgendaList"></div>
     </div>
@@ -910,12 +910,12 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       <div class="form-grid">
         <div class="form-row">
           <label class="form-label">Staff Name *</label>
-          <select class="form-select" id="leaveName" onchange="onLeaveFormChange()">
+          <select data-action="select-leave-employee" class="form-select" id="leaveName" onchange="onLeaveFormChange()">
             <option value="">— Select Staff Member —</option>
           </select>
           <div id="leaveNameHint" style="display:none;font-size:11px;color:var(--amber);margin-top:5px;">
             No employees in Staff Master.
-            <button type="button" onclick="closeAddLeave();openEmployeeMaster();" style="background:none;border:none;color:var(--rust);cursor:pointer;font-size:11px;text-decoration:underline;padding:0;">Add employees first ›</button>
+            <button data-action="open-employee-master-from-leave" type="button" onclick="closeAddLeave();openEmployeeMaster();" style="background:none;border:none;color:var(--rust);cursor:pointer;font-size:11px;text-decoration:underline;padding:0;">Add employees first ›</button>
           </div>
         </div>
         <div class="form-row">
@@ -928,17 +928,17 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       <div class="form-grid">
         <div class="form-row">
           <label class="form-label">Leave From *</label>
-          <input class="form-input" type="date" id="leaveFrom" onchange="onLeaveFormChange()">
+          <input data-action="change-leave-from" class="form-input" type="date" id="leaveFrom" onchange="onLeaveFormChange()">
         </div>
         <div class="form-row">
           <label class="form-label">Leave To *</label>
-          <input class="form-input" type="date" id="leaveTo" onchange="onLeaveFormChange()">
+          <input data-action="change-leave-to" class="form-input" type="date" id="leaveTo" onchange="onLeaveFormChange()">
         </div>
       </div>
       <div class="form-grid">
         <div class="form-row">
           <label class="form-label">Leave Type *</label>
-          <select class="form-select" id="leaveType" onchange="onLeaveFormChange()">
+          <select data-action="select-leave-type" class="form-select" id="leaveType" onchange="onLeaveFormChange()">
             <option value="full_day">Full Day</option>
             <option value="half_day_am">Half Day — Morning (till 2 PM)</option>
             <option value="half_day_pm">Half Day — Afternoon (after 5 PM)</option>
@@ -946,7 +946,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
         </div>
         <div class="form-row">
           <label class="form-label">Leave Category</label>
-          <select class="form-select" id="leaveCategory" onchange="onLeaveFormChange()">
+          <select data-action="select-leave-category" class="form-select" id="leaveCategory" onchange="onLeaveFormChange()">
             <option value="Casual Leave">Casual Leave</option>
             <option value="Sick Leave">Sick Leave</option>
             <option value="Earned Leave">Earned Leave</option>
@@ -963,7 +963,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       </div>
       <div class="form-actions">
         <button data-action="add-leave-cancel" class="btn btn-ghost" onclick="closeAddLeave()">Cancel</button>
-        <button class="btn btn-gold" onclick="submitLeave()">Submit for Approval</button>
+        <button data-action="submit-leave" class="btn btn-gold" onclick="submitLeave()">Submit for Approval</button>
       </div>
     </div>
   </div>
@@ -1008,7 +1008,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       </div>
       <div class="form-actions">
         <button data-action="add-agenda-cancel" class="btn btn-ghost" onclick="closeAddAgenda()">Cancel</button>
-        <button class="btn btn-gold" onclick="submitAgenda()">Save Agenda</button>
+        <button data-action="save-agenda" class="btn btn-gold" onclick="submitAgenda()">Save Agenda</button>
       </div>
     </div>
   </div>
@@ -1031,7 +1031,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
           <div><label class="form-label">Casual Leave</label><input class="form-input" type="number" min="0" id="entDef0" style="width:90px"></div>
           <div><label class="form-label">Sick Leave</label><input class="form-input" type="number" min="0" id="entDef1" style="width:90px"></div>
           <div><label class="form-label">Earned Leave</label><input class="form-input" type="number" min="0" id="entDef2" style="width:90px"></div>
-          <button class="btn btn-gold" onclick="saveEntDefaults()">Save Defaults</button>
+          <button data-action="save-entitlement-defaults" class="btn btn-gold" onclick="saveEntDefaults()">Save Defaults</button>
         </div>
         <div style="font-size:11px;color:var(--ink-dim);margin-top:7px;">Applies to every employee. Per-employee overrides: the ⚙ button on a staff row below. Maternity / Comp-Off / Other are not quota-tracked.</div>
       </div>
@@ -1042,7 +1042,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
           <span style="font-size:11px;color:var(--ink-dim);">
             Leave dates on these days are auto-skipped. Uncheck both to record leave every day of a 7-day trading week (jewellery / watch stores). Default: Sun + Sat.
           </span>
-          <button class="btn btn-gold" onclick="saveWeekOffFromUI()">Save Weekly Off</button>
+          <button data-action="save-weekly-off" class="btn btn-gold" onclick="saveWeekOffFromUI()">Save Weekly Off</button>
         </div>
       </div>
       <div class="emp-add-panel" style="margin-bottom:12px;">
@@ -1050,7 +1050,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
           <div><label class="form-label">Titan World / WLMHW</label><input class="form-input" type="number" min="0" id="capWLMHW" style="width:130px"></div>
           <div><label class="form-label">Helios / HEMW</label><input class="form-input" type="number" min="0" id="capHEMW" style="width:130px"></div>
-          <button class="btn btn-gold" onclick="saveStoreCapsFromUI()">Save Store Caps</button>
+          <button data-action="save-store-caps" class="btn btn-gold" onclick="saveStoreCapsFromUI()">Save Store Caps</button>
         </div>
         <div style="font-size:11px;color:var(--ink-dim);margin-top:7px;">Advisory only — flags a store as over-capacity in the day view. Does not block adding leave. Staff store comes from the central Employee Master.</div>
       </div>
@@ -1086,7 +1086,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink);cursor:pointer;">
             <input type="checkbox" id="bkHard"><span>Block leave, not just warn</span>
           </label>
-          <button class="btn btn-gold" onclick="addBlackout()">Add</button>
+          <button data-action="add-blackout" class="btn btn-gold" onclick="addBlackout()">Add</button>
         </div>
         <div style="font-size:11px;color:var(--ink-dim);margin-top:7px;">Blackout days warn against new leave; tick Block to hard-stop it. Store Holiday just marks the day. Store scope uses the central Employee Master to decide who is affected.</div>
       </div>
@@ -1100,7 +1100,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
           </div>
           <div class="form-row" style="margin:0">
             <label class="form-label">Employee ID</label>
-            <select class="form-input" id="empId" onchange="onEmpIdSelect()">
+            <select data-action="select-employee-id" class="form-input" id="empId" onchange="onEmpIdSelect()">
               <option value="">-----------</option>
             </select>
           </div>
@@ -1110,7 +1110,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
           <input class="form-input" id="empDept" placeholder="e.g. Sales, Admin, Accounts">
         </div>
         <div style="display:flex;justify-content:flex-end;margin-top:11px;">
-          <button class="btn btn-gold" onclick="addEmployee()">Add Employee</button>
+          <button data-action="add-employee" class="btn btn-gold" onclick="addEmployee()">Add Employee</button>
         </div>
       </div>
     </div>
@@ -1126,7 +1126,7 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
         <div class="modal-date-sub" id="reportSub">Employee-wise summary</div>
       </div>
       <div style="display:flex;gap:7px;align-items:center;">
-        <button class="btn btn-green" onclick="exportReportCSV()" style="font-size:12px;">⬇ CSV</button>
+        <button data-action="export-report-csv" class="btn btn-green" onclick="exportReportCSV()" style="font-size:12px;">⬇ CSV</button>
         <button data-action="report-close" class="modal-close" onclick="closeReport()">✕</button>
       </div>
     </div>
@@ -1177,8 +1177,8 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
       </div>
       <div class="form-actions">
         <button data-action="clear-confirm-cancel" class="btn btn-ghost" onclick="closeClearConfirm()">Cancel</button>
-        <button class="btn btn-green" onclick="exportJSON()" style="margin-right:auto;">⬇ Backup First</button>
-        <button class="btn btn-danger" onclick="executeClearData()">Delete Everything</button>
+        <button data-action="backup-before-clear" class="btn btn-green" onclick="exportJSON()" style="margin-right:auto;">⬇ Backup First</button>
+        <button data-action="delete-everything" class="btn btn-danger" onclick="executeClearData()">Delete Everything</button>
       </div>
     </div>
   </div>
@@ -1514,9 +1514,9 @@ function renderApprovals() {
     info.appendChild(nm2); info.appendChild(mt);
     row.appendChild(info);
     if (!ro) {
-      const ok = document.createElement('button'); ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
+      const ok = document.createElement('button'); ok.dataset.action = 'approve-pending-leave'; ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
       ok.onclick = () => decideLeave(p.key, l.id, 'approved');
-      const no = document.createElement('button'); no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
+      const no = document.createElement('button'); no.dataset.action = 'reject-pending-leave'; no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
       no.onclick = () => decideLeave(p.key, l.id, 'rejected');
       row.appendChild(ok); row.appendChild(no);
     }
@@ -1621,7 +1621,7 @@ function renderBlackouts() {
     t2.textContent = range + ' · ' + scope + ' · ' + (e.kind === 'holiday' ? 'Store holiday' : (e.hard ? 'Blackout (hard block)' : 'Blackout (warn)'));
     info.appendChild(t1); info.appendChild(t2);
     const del = document.createElement('button');
-    del.className = 'emp-del'; del.title = 'Remove'; del.textContent = '×';
+    del.dataset.action = 'remove-blackout'; del.className = 'emp-del'; del.title = 'Remove'; del.textContent = '×';
     del.onclick = () => removeBlackout(e.id);
     row.appendChild(info); row.appendChild(del);
     host.appendChild(row);
@@ -2245,17 +2245,17 @@ function openDayModal(key) {
       }
       if (st === 'rejected') row.classList.add('leave-row-rejected');
       if (!readOnly && st === 'pending') {
-        const ok = document.createElement('button'); ok.className = 'leave-row-del';
+        const ok = document.createElement('button'); ok.dataset.action = 'approve-day-leave'; ok.className = 'leave-row-del';
         ok.style.cssText = 'background:color-mix(in srgb, var(--green) 10%, transparent);color:var(--green);';
         ok.title = 'Approve'; ok.textContent = '✓';
         ok.onclick = e => { e.stopPropagation(); decideLeave(key, l.id, 'approved'); };
         row.appendChild(ok);
-        const no = document.createElement('button'); no.className = 'leave-row-del'; no.title = 'Reject'; no.textContent = '⊘';
+        const no = document.createElement('button'); no.dataset.action = 'reject-day-leave'; no.className = 'leave-row-del'; no.title = 'Reject'; no.textContent = '⊘';
         no.onclick = e => { e.stopPropagation(); decideLeave(key, l.id, 'rejected'); };
         row.appendChild(no);
       }
       if (!readOnly) {   // no delete control when viewing the past
-        const del = document.createElement('button'); del.className = 'leave-row-del'; del.title = 'Remove leave'; del.textContent = '×';
+        const del = document.createElement('button'); del.dataset.action = 'remove-day-leave'; del.className = 'leave-row-del'; del.title = 'Remove leave'; del.textContent = '×';
         del.onclick = e => { e.stopPropagation(); removeLeave(key, i); };
         row.appendChild(del);
       }
@@ -2292,7 +2292,7 @@ function openDayModal(key) {
       }
       row.appendChild(tm); row.appendChild(content);
       if (!readOnly) {   // no delete control when viewing the past
-        const del = document.createElement('button'); del.className = 'agenda-del'; del.textContent = '✕'; del.title = 'Remove';
+        const del = document.createElement('button'); del.dataset.action = 'remove-day-agenda'; del.className = 'agenda-del'; del.textContent = '✕'; del.title = 'Remove';
         del.onclick = () => removeAgenda(key, i);
         row.appendChild(del);
       }
@@ -2360,9 +2360,9 @@ function openStaffDetail(key, idx) {
   body.appendChild(grid);
   if (leaveStatus(leave) === 'pending' && !isPastView()) {
     const acts = document.createElement('div'); acts.className = 'form-actions';
-    const no = document.createElement('button'); no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
+    const no = document.createElement('button'); no.dataset.action = 'reject-staff-leave'; no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
     no.onclick = () => decideLeave(key, leave.id, 'rejected');
-    const ok = document.createElement('button'); ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
+    const ok = document.createElement('button'); ok.dataset.action = 'approve-staff-leave'; ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
     ok.onclick = () => decideLeave(key, leave.id, 'approved');
     acts.appendChild(no); acts.appendChild(ok);
     body.appendChild(acts);
@@ -2813,11 +2813,11 @@ function renderEmpList() {
     mt.textContent = ([emp.empId, emp.department].filter(Boolean).join(' · ') || 'No ID / department')
                    + ' · ' + qStr + '/FY' + (hasOv ? ' (custom)' : '');
     info.appendChild(nm); info.appendChild(mt);
-    const cog   = document.createElement('button'); cog.className = 'emp-del';
+    const cog   = document.createElement('button'); cog.dataset.action = 'edit-employee-entitlements'; cog.className = 'emp-del';
     cog.style.cssText = 'background:color-mix(in srgb, var(--gold) 12%, transparent);color:var(--gold);';
     cog.title = 'Set leave entitlements'; cog.textContent = '⚙';
     cog.onclick = () => toggleEntEditor(i);
-    const del   = document.createElement('button'); del.className = 'emp-del'; del.title = 'Remove'; del.textContent = '×';
+    const del   = document.createElement('button'); del.dataset.action = 'remove-employee'; del.className = 'emp-del'; del.title = 'Remove'; del.textContent = '×';
     del.onclick = () => removeEmployee(i);
     row.appendChild(av); row.appendChild(info); row.appendChild(cog); row.appendChild(del);
     list.appendChild(row);
@@ -2833,7 +2833,7 @@ function renderEmpList() {
         if (ov[c] != null) inp.value = ov[c];
         wrap.appendChild(lb); wrap.appendChild(inp); ed.appendChild(wrap);
       });
-      const sv = document.createElement('button'); sv.className = 'btn btn-gold'; sv.textContent = 'Save';
+      const sv = document.createElement('button'); sv.dataset.action = 'save-employee-entitlements'; sv.className = 'btn btn-gold'; sv.textContent = 'Save';
       sv.onclick = () => saveEntOverride(i);
       ed.appendChild(sv);
       const note = document.createElement('div'); note.style.cssText = 'font-size:11px;color:var(--ink-dim);flex-basis:100%;';
@@ -3371,7 +3371,7 @@ applyAsOfDate();
 </script>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button data-action="st-v5-home-fab" id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'leave',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 

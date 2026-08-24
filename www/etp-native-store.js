@@ -65,9 +65,11 @@
   }
   function validateManifest(policy, lifecycle) {
     var value = lifecycle.manifest, seen = Object.create(null);
-    if (!record(value) || !exact(value, ['scopeKey', 'generationId', 'authority', 'reports']) || value.scopeKey !== lifecycle.scopeKey || value.generationId !== lifecycle.candidateGenerationId || !Array.isArray(value.reports) || value.reports.length !== REPORTS.length) return error('ETP_MANIFEST_INVALID');
+    if (!record(value) || !exact(value, ['scopeKey', 'generationId', 'authority', 'tenderDictionary', 'reports']) || value.scopeKey !== lifecycle.scopeKey || value.generationId !== lifecycle.candidateGenerationId || !Array.isArray(value.reports) || value.reports.length !== REPORTS.length) return error('ETP_MANIFEST_INVALID');
     var authority=value.authority;
     if(!record(authority)||!exact(authority,['contractVersion','authorityId','storeCode','status','purpose','profileVersion','parserVersion','evidenceIdentity'])||authority.contractVersion!=='ETP_PROFILE_AUTHORITY_V1'||authority.storeCode!==lifecycle.scope.storeCode||authority.storeCode!=='WLMHW'||authority.status!=='PRODUCTION_AUTHORIZED'||authority.purpose!=='PRODUCTION')return error('ETP_MANIFEST_INVALID');
+    var dictionary=value.tenderDictionary;
+    if(!record(dictionary)||!exact(dictionary,['contractVersion','versionId','effectiveAt'])||dictionary.contractVersion!=='ETP_TENDER_DICTIONARY_V1'||dictionary.versionId!=='retail-etp-tender-v1'||dictionary.effectiveAt!=='2026-08-24T00:00:00.000Z')return error('ETP_MANIFEST_INVALID');
     var reports = [];
     for (var i = 0; i < value.reports.length; i++) {
       var entry = value.reports[i], id = record(entry) ? String(entry.reportId || '').toUpperCase() : '';
@@ -75,7 +77,7 @@
       seen[id] = true; reports.push(freeze({ reportId: id, sourceSha256: entry.sourceSha256, headerSignatureSha256: entry.headerSignatureSha256, rowCount: entry.rowCount }));
     }
     reports.sort(function (a, b) { return a.reportId.localeCompare(b.reportId); });
-    return { ok: true, manifest: freeze({ scopeKey: value.scopeKey, generationId: value.generationId, authority: freeze({contractVersion:authority.contractVersion,authorityId:authority.authorityId,storeCode:authority.storeCode,status:authority.status,purpose:authority.purpose,profileVersion:authority.profileVersion,parserVersion:authority.parserVersion,evidenceIdentity:authority.evidenceIdentity}), reports: freeze(reports) }) };
+    return { ok: true, manifest: freeze({ scopeKey: value.scopeKey, generationId: value.generationId, authority: freeze({contractVersion:authority.contractVersion,authorityId:authority.authorityId,storeCode:authority.storeCode,status:authority.status,purpose:authority.purpose,profileVersion:authority.profileVersion,parserVersion:authority.parserVersion,evidenceIdentity:authority.evidenceIdentity}), tenderDictionary:freeze({contractVersion:dictionary.contractVersion,versionId:dictionary.versionId,effectiveAt:dictionary.effectiveAt}), reports: freeze(reports) }) };
   }
   function validateFact(row, allowed) {
     if (!record(row) || forbiddenKey(row) || ownKeys(row).length > MAX_FIELDS) return error('ETP_FACT_SHAPE_INVALID');

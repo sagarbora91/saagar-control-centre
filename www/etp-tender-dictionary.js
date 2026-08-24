@@ -8,8 +8,8 @@
   var CANONICAL=Object.freeze(['Cash','Card','BHIM UPI','PhonePe','Paytm','Razorpay','BharatPe','Cheque','Others']);
   var SOURCE_FIELDS=Object.freeze(['cash_amount','card_amount','bhim_upi_amount','phonepe_amount','paytm_amount','razorpay_amount','bharatpe_amount','cheque_amount','others_amount','payment_type24_amount']);
   var BLOCKED=Object.freeze(['__proto__','prototype','constructor']);
-  function freeze(value){return Object.freeze(value);}function plain(value){if(!value||typeof value!=='object'||Array.isArray(value))return false;var proto=Object.getPrototypeOf(value);return proto===Object.prototype||proto===null;}function exact(value,keys){if(!plain(value))return false;var actual=Object.keys(value).sort(),expected=keys.slice().sort();return actual.length===expected.length&&actual.every(function(key,index){return key===expected[index]&&BLOCKED.indexOf(key)<0;});}function fail(code){return freeze({ok:false,code:code});}
-  function timestamp(value){var raw=String(value||'');if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(raw))return'';var time=Date.parse(raw);return Number.isFinite(time)?new Date(time).toISOString():'';}
+  function freeze(value){return Object.freeze(value);}function plain(value){if(!value||typeof value!=='object'||Array.isArray(value))return false;var proto=Object.getPrototypeOf(value);return proto===Object.prototype||proto===null;}function exact(value,keys){if(!plain(value))return false;var remaining=keys.slice(),actual=Object.keys(value);if(actual.length!==remaining.length)return false;while(actual.length){var key=actual.pop(),at=remaining.indexOf(key);if(at<0||BLOCKED.indexOf(key)>=0)return false;remaining.splice(at,1);}return remaining.length===0;}function fail(code){return freeze({ok:false,code:code});}
+  function timestamp(value){var raw=String(value||''),parsed=Date.parse(raw);if(!Number.isFinite(parsed)||raw.slice(-1)!=='Z')return'';var canonical=new Date(parsed).toISOString();return canonical.slice(0,19)===raw.slice(0,19)?canonical:'';}
   function versionId(value){var out=String(value||'').trim();return /^[A-Za-z][A-Za-z0-9._:-]{0,79}$/.test(out)?out:'';}
   function validate(value){
     try {
@@ -28,5 +28,7 @@
     function list(){return freeze({ok:true,versions:freeze(load().map(function(item){return freeze({versionId:item.versionId,effectiveAt:item.effectiveAt});}))});}
     return freeze({ok:true,registry:freeze({register:register,get:get,list:list})});
   }
-  return freeze({VERSION:VERSION,KEY:KEY,MAX_VERSIONS:MAX_VERSIONS,CANONICAL:CANONICAL,SOURCE_FIELDS:SOURCE_FIELDS,validate:validate,resolve:resolve,createRegistry:createRegistry});
+  var BUILD_DICTIONARY=validate({contractVersion:VERSION,versionId:'retail-etp-tender-v1',effectiveAt:'2026-08-24T00:00:00Z',mappings:[{sourceField:'cash_amount',canonicalTender:'Cash'},{sourceField:'card_amount',canonicalTender:'Card'},{sourceField:'bhim_upi_amount',canonicalTender:'BHIM UPI'},{sourceField:'phonepe_amount',canonicalTender:'PhonePe'},{sourceField:'paytm_amount',canonicalTender:'Paytm'},{sourceField:'razorpay_amount',canonicalTender:'Razorpay'},{sourceField:'bharatpe_amount',canonicalTender:'BharatPe'},{sourceField:'cheque_amount',canonicalTender:'Cheque'},{sourceField:'others_amount',canonicalTender:'Others'}]}).dictionary;
+  var BUILD_IDENTITY=freeze({contractVersion:BUILD_DICTIONARY.contractVersion,versionId:BUILD_DICTIONARY.versionId,effectiveAt:BUILD_DICTIONARY.effectiveAt});
+  return freeze({VERSION:VERSION,KEY:KEY,MAX_VERSIONS:MAX_VERSIONS,CANONICAL:CANONICAL,SOURCE_FIELDS:SOURCE_FIELDS,BUILD_DICTIONARY:BUILD_DICTIONARY,BUILD_IDENTITY:BUILD_IDENTITY,validate:validate,resolve:resolve,createRegistry:createRegistry});
 });

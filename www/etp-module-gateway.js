@@ -95,6 +95,7 @@
       profileVersion: String(receipt.profileVersion),
       parserVersion: String(receipt.parserVersion),
       profileAuthority: freeze({ contractVersion: String(receipt.profileAuthority.contractVersion), authorityId: String(receipt.profileAuthority.authorityId), storeCode: String(receipt.profileAuthority.storeCode), status: String(receipt.profileAuthority.status), purpose: String(receipt.profileAuthority.purpose), profileVersion: String(receipt.profileAuthority.profileVersion), parserVersion: String(receipt.profileAuthority.parserVersion), evidenceIdentity: String(receipt.profileAuthority.evidenceIdentity) }),
+      tenderDictionary: freeze({ contractVersion: String(receipt.tenderDictionary.contractVersion), versionId: String(receipt.tenderDictionary.versionId), effectiveAt: String(receipt.tenderDictionary.effectiveAt) }),
       ruleVersion: String(receipt.ruleVersion),
       reconciliationStatus: String(receipt.reconciliationStatus),
       publishedAt: String(receipt.publishedAt),
@@ -185,13 +186,14 @@
 
   function create(options) {
     options = options || {};
-    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core, foundationStatus = options.foundationStatus, queryContract = options.queryContract, profileAuthority = options.profileAuthority;
+    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core, foundationStatus = options.foundationStatus, queryContract = options.queryContract, profileAuthority = options.profileAuthority, historyApi = options.importHistoryApi, tenderApi = options.tenderDictionaryApi;
     var storage = options.storage, statusReader = options.statusReader, tokenFactory = options.tokenFactory, authorize = options.authorize;
     if (!requireMethod(runtime, 'run') || !requireMethod(runtime, 'confirm') || !requireMethod(runtime, 'readVerified') ||
-        !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') || !requireMethod(foundationStatus, 'evaluate') || !requireMethod(queryContract, 'canonicalize') || !requireMethod(queryContract, 'validateCursorBinding') || !requireMethod(queryContract, 'cursorBindingMatches') || !requireMethod(profileAuthority, 'authorize') ||
+        !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') || !requireMethod(foundationStatus, 'evaluate') || !requireMethod(queryContract, 'canonicalize') || !requireMethod(queryContract, 'validateCursorBinding') || !requireMethod(queryContract, 'cursorBindingMatches') || !requireMethod(profileAuthority, 'authorize') || !historyApi || typeof historyApi.create !== 'function' || !tenderApi || typeof tenderApi.validate !== 'function' || !tenderApi.validate(tenderApi.BUILD_DICTIONARY).ok ||
         !storage || typeof storage.getItem !== 'function' || typeof statusReader !== 'function' || typeof authorize !== 'function') {
       return failure('ETP_GATEWAY_DEPENDENCY_INVALID', 'CREATE');
     }
+    var historyMade = historyApi.create({ storage: storage }); if (!historyMade || !historyMade.ok) return failure('ETP_GATEWAY_DEPENDENCY_INVALID', 'CREATE');
     var pending = Object.create(null), cursors = Object.create(null), cursorOrder = [], sequence = 0;
 
     function permitted(action) {
@@ -322,7 +324,8 @@
       var statusPublishedAt = currentReceipt && /^\d{4}-\d{2}-\d{2}$/.test(currentReceipt.publishedAt) ? currentReceipt.publishedAt + 'T00:00:00Z' : (currentReceipt && currentReceipt.publishedAt);
       var status = foundationStatus.evaluate({ contractVersion: foundationStatus.VERSION, scope: context.normalized.scope, factStoreAvailable: true, nativeStatus: freeze({ state: context.status.state, restoreFence: context.status.restoreFence, activeGenerationId: context.status.activeGenerationId }), receipt: currentReceipt ? freeze({ activeGenerationId: currentReceipt.activeGenerationId, reconciliationStatus: currentReceipt.reconciliationStatus, coverage: currentReceipt.coverage, exceptions: currentReceipt.exceptions, profileVersion: currentReceipt.profileVersion, ruleVersion: currentReceipt.ruleVersion, publishedAt: statusPublishedAt }) : null });
       if (!status || status.ok !== true) return failure('ETP_FOUNDATION_STATUS_INVALID', 'INSPECT');
-      return freeze({ ok: true, scope: context.normalized.scope, status: status, currentReceipt: currentReceipt, history: freeze(cleanHistory) });
+      var importHistory = historyMade.history.list(context.normalized.scope.scopeKey, limit); if (!importHistory.ok) return failure('ETP_IMPORT_HISTORY_INVALID', 'INSPECT');
+      return freeze({ ok: true, scope: context.normalized.scope, status: status, currentReceipt: currentReceipt, history: freeze(cleanHistory), importHistory: importHistory.events });
     }
 
     function listScopes(request) {
@@ -387,7 +390,7 @@
         }
         summaries[reportId] = finishSummary(acc);
       }
-      return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, history: inspected.history, summaries: freeze(summaries), pages: pages, rowCount: totalRows });
+      return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, history: inspected.history, importHistory: inspected.importHistory, summaries: freeze(summaries), pages: pages, rowCount: totalRows });
     }
 
     var readFacade = freeze({ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary });
@@ -429,7 +432,7 @@
   function bootstrap() {
     try {
       var lifecycle = root && root.SaagarEtpStoreLifecyclePolicy;
-      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, foundationStatus: root && root.SaagarEtpFoundationStatus, queryContract: root && root.SaagarEtpQueryContract, profileAuthority: root && root.SaagarEtpProfileAuthority, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
+      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, foundationStatus: root && root.SaagarEtpFoundationStatus, queryContract: root && root.SaagarEtpQueryContract, profileAuthority: root && root.SaagarEtpProfileAuthority, importHistoryApi: root && root.SaagarEtpImportHistory, tenderDictionaryApi: root && root.SaagarEtpTenderDictionary, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 

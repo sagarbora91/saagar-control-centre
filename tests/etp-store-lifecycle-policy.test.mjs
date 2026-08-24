@@ -7,8 +7,9 @@ const profileAuthority = require('../www/etp-profile-authority.js');
 
 const scope = { storeCode: 'WLMHW', financialYear: '2024-25', periodStart: '2024-09-16', periodEnd: '2025-03-31' };
 const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
+const tenderIdentity={contractVersion:'ETP_TENDER_DICTIONARY_V1',versionId:'retail-etp-tender-v1',effectiveAt:'2026-08-24T00:00:00.000Z'};
 function manifest(generationId = 'gen:001', override = {}) {
-  return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, authority:authorityBinding, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 100 + index })), ...override };
+  return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, authority:authorityBinding, tenderDictionary:tenderIdentity, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 100 + index })), ...override };
 }
 function advance(lifecycle, events) { return events.reduce((value, event) => { const result = policy.transition(value, event); assert.equal(result.ok, true); return result.lifecycle; }, lifecycle); }
 
@@ -74,6 +75,8 @@ test('deterministic source-hash identity makes an unchanged reimport a no-op des
 });
 
 test('authority and evidence identity participate in manifest identity',()=>{const one=manifest('gen:001'),changed=manifest('gen:002',{authority:{...authorityBinding,evidenceIdentity:'WLMHW_PROFILE_EVIDENCE_REBOUND_V2'}});assert.notEqual(policy.manifestIdentity(one),policy.manifestIdentity(changed));});
+
+test('tender dictionary identity participates in replay identity and cannot cross versions',()=>{const one=manifest('gen:001'),changed=manifest('gen:002',{tenderDictionary:{...tenderIdentity,versionId:'retail-etp-tender-v2'}});assert.notEqual(policy.manifestIdentity(one),policy.manifestIdentity(changed));const life=advance(policy.create(scope,'gen:002').lifecycle,['PREFLIGHT_PASS','PARSE_PASS','POLICY_PASS','BEGIN_STAGING','STAGE_COMPLETE']);assert.equal(policy.attachManifest(life,changed).ok,false);});
 
 test('HEMW cannot forge a production authority binding while evidence is pending',()=>{const heScope={...scope,storeCode:'HEMW'},life=advance(policy.create(heScope,'gen:001').lifecycle,['PREFLIGHT_PASS','PARSE_PASS','POLICY_PASS','BEGIN_STAGING','STAGE_COMPLETE']),forged=manifest('gen:001',{scopeKey:'HEMW|2024-25|2024-09-16..2025-03-31',authority:{...authorityBinding,storeCode:'HEMW'}});assert.equal(policy.attachManifest(life,forged).ok,false);});
 

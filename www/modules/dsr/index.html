@@ -1410,11 +1410,11 @@ html.bcc-mobile .accordion-header::after {
       </div>
 
       <div class="role-sw">
-        <button class="role-sw-btn active" id="rtab-staff" onclick="setLoginRole('staff')">
+        <button data-action="dsr-login-role-staff" class="role-sw-btn active" id="rtab-staff" onclick="setLoginRole('staff')">
           <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Staff
         </button>
-        <button class="role-sw-btn" id="rtab-sm" onclick="setLoginRole('sm')">
+        <button data-action="dsr-login-role-manager" class="role-sw-btn" id="rtab-sm" onclick="setLoginRole('sm')">
           <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="9" width="5" height="5" rx="1.2" stroke="currentColor" stroke-width="1.5"/><path d="M9 11.5h5M11.5 9v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Manager
         </button>
@@ -1434,7 +1434,7 @@ html.bcc-mobile .accordion-header::after {
             <option value="rso">RSO — Retail Sales Officer</option>
           </select>
         </div>
-        <button class="btn-login" onclick="loginStaff()">
+        <button data-action="dsr-staff-login" class="btn-login" onclick="loginStaff()">
           Start Today's Register
           <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -1446,7 +1446,7 @@ html.bcc-mobile .accordion-header::after {
           <label class="lf-lbl">Manager Password <span class="req">*</span></label>
           <input class="lf-inp" id="sm-pw-inp" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')loginSM()" />
         </div>
-        <button class="btn-login" onclick="loginSM()">
+        <button data-action="dsr-manager-login" class="btn-login" onclick="loginSM()">
           Login as Manager
           <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -1478,49 +1478,49 @@ html.bcc-mobile .accordion-header::after {
       </div>
       <span class="hdr-chip" id="staff-role-badge">CRO</span>
       <span class="hdr-clock" id="live-clock">00:00</span>
-      <button class="hdr-btn-exit" onclick="logout()">Exit</button>
+      <button data-action="dsr-staff-logout" class="hdr-btn-exit" onclick="logout()">Exit</button>
     </div>
   </header>
 
   <div class="tabbar">
     <div class="tabbar-inner" id="staff-tnav">
-      <button class="tab-btn active" id="stbtn-daystart" onclick="goStaffTab('daystart')">
+      <button data-action="dsr-staff-tab-daystart" class="tab-btn active" id="stbtn-daystart" onclick="goStaffTab('daystart')">
         <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 6h14" stroke="currentColor" stroke-width="1.5"/></svg>
         Day Start<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-opening" onclick="goStaffTab('opening')">
+      <button data-action="dsr-staff-tab-opening" class="tab-btn" id="stbtn-opening" onclick="goStaffTab('opening')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M3 13V6l5-4 5 4v7H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="6" y="9" width="4" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/></svg>
         Opening<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-inout" onclick="goStaffTab('inout')">
+      <button data-action="dsr-staff-tab-inout" class="tab-btn" id="stbtn-inout" onclick="goStaffTab('inout')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M10 8H2M6 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 2v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         In/Out<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-sales" onclick="goStaffTab('sales')">
+      <button data-action="dsr-staff-tab-sales" class="tab-btn" id="stbtn-sales" onclick="goStaffTab('sales')">
         <svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="13" r="1.2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="13" r="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M1 1h2l2.5 8h6l1.5-5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Sales<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-nonpurch" onclick="goStaffTab('nonpurch')">
+      <button data-action="dsr-staff-tab-nonpurchase" class="tab-btn" id="stbtn-nonpurch" onclick="goStaffTab('nonpurch')">
         <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Visitors<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-visitors" onclick="goStaffTab('visitors')">
+      <button data-action="dsr-staff-tab-visitors" class="tab-btn" id="stbtn-visitors" onclick="goStaffTab('visitors')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M2 13c0-2.5 2-4 4-4s4 1.5 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="6" cy="5" r="2.4" stroke="currentColor" stroke-width="1.5"/><path d="M11 9c1.6 0 3 1.2 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Walk-ins<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-tasks" onclick="goStaffTab('tasks')">
+      <button data-action="dsr-staff-tab-tasks" class="tab-btn" id="stbtn-tasks" onclick="goStaffTab('tasks')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Tasks<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-marketing" onclick="goStaffTab('marketing')">
+      <button data-action="dsr-staff-tab-marketing" class="tab-btn" id="stbtn-marketing" onclick="goStaffTab('marketing')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M1 9V7l10-5v12L1 9z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 6.5c1.657 0 3 .672 3 1.5s-1.343 1.5-3 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M4 14l1-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Marketing<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-cleaning" onclick="goStaffTab('cleaning')">
+      <button data-action="dsr-staff-tab-cleaning" class="tab-btn" id="stbtn-cleaning" onclick="goStaffTab('cleaning')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M4 14c0-4 2-7 5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="4" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M6 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Cleaning<span class="tab-dot"></span>
       </button>
-      <button class="tab-btn" id="stbtn-closing" onclick="goStaffTab('closing')">
+      <button data-action="dsr-staff-tab-closing" class="tab-btn" id="stbtn-closing" onclick="goStaffTab('closing')">
         <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Closing<span class="tab-dot"></span>
       </button>
@@ -1564,25 +1564,25 @@ html.bcc-mobile .accordion-header::after {
     </div>
     <div class="hdr-actions">
       <span class="hdr-chip">SM</span>
-      <button class="hdr-btn-exit" onclick="logout()">Exit</button>
+      <button data-action="dsr-manager-logout" class="hdr-btn-exit" onclick="logout()">Exit</button>
     </div>
   </header>
 
   <div class="tabbar">
     <div class="tabbar-inner" id="sm-tnav">
-      <button class="tab-btn active" id="smtbtn-submissions" onclick="goSMTab('submissions')">
+      <button data-action="dsr-manager-tab-submissions" class="tab-btn active" id="smtbtn-submissions" onclick="goSMTab('submissions')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Submissions
       </button>
-      <button class="tab-btn" id="smtbtn-audit" onclick="goSMTab('audit')">
+      <button data-action="dsr-manager-tab-audit" class="tab-btn" id="smtbtn-audit" onclick="goSMTab('audit')">
         <svg viewBox="0 0 16 16" fill="none"><path d="M2 12l4-4 3 3 5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Audit
       </button>
-      <button class="tab-btn" id="smtbtn-dashboard" onclick="goSMTab('dashboard')">
+      <button data-action="dsr-manager-tab-dashboard" class="tab-btn" id="smtbtn-dashboard" onclick="goSMTab('dashboard')">
         <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="8" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="6" y="4" width="4" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="1" width="4" height="14" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
         Dashboard
       </button>
-      <button class="tab-btn" id="smtbtn-settings" onclick="goSMTab('settings')">
+      <button data-action="dsr-manager-tab-settings" class="tab-btn" id="smtbtn-settings" onclick="goSMTab('settings')">
         <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Settings
       </button>
@@ -1950,8 +1950,8 @@ function renderFollowUpCard(rec){
       +(rs?('<br><span class="sub">'+rs+'</span>'):'')
       +'<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'
       +'<a class="btn btn-outline btn-sm" href="tel:'+esc(f.m10)+'">Call</a>'
-      +'<button class="btn btn-green btn-sm" onclick="stWaLink(\'https://wa.me/91'+esc(f.m10)+'?text='+enc+'\',\'dsr-nonbuyer-followup\',\'promotional-customer-message\')">WhatsApp</button>'
-      +'<button class="btn btn-primary btn-sm" onclick="markFollowedUp(\''+esc(f.date)+'\',\''+esc(f.ref)+'\')">Mark contacted</button>'
+      +'<button data-action="stwalink" data-action-key="definition-01" class="btn btn-green btn-sm" onclick="stWaLink(\'https://wa.me/91'+esc(f.m10)+'?text='+enc+'\',\'dsr-nonbuyer-followup\',\'promotional-customer-message\')">WhatsApp</button>'
+      +'<button data-action="markfollowedup" data-action-key="definition-01" class="btn btn-primary btn-sm" onclick="markFollowedUp(\''+esc(f.date)+'\',\''+esc(f.ref)+'\')">Mark contacted</button>'
       +'</div></div></div>';
   }).join('');
   return '<div class="card"><div class="card-hdr"><div class="card-title">'
@@ -2452,7 +2452,7 @@ function renderOpening() {
             const c = stockCatOf(name, g.short);
             return `<div class="fgrp">
               <label class="flbl">${esc(name)} <span class="req">*</span>${d4Carried[c.id] ? `<span class="dsr-d4-carried" title="Carried from the closing count on ${esc(d4Carried[c.id])}">carried ${esc(d4Carried[c.id])}</span>` : ''}</label>
-              <input class="finp" type="number" min="0" placeholder="0"
+              <input data-action="updopening" data-action-key="definition-01" class="finp" type="number" min="0" placeholder="0"
                 value="${esc(rec.opening[c.id])}"
                 ${locked?'disabled':''}
                 oninput="updOpening('${c.id}',this.value)" />
@@ -2495,8 +2495,8 @@ function renderInOut() {
       </div>
     </div>
     ${!locked ? (isOut
-      ? `<button class="btn btn-green btn-lg" style="margin-bottom:14px" onclick="logIn()"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Mark Back In</button>`
-      : `<button class="btn btn-amber btn-lg" style="margin-bottom:14px" onclick="showIOModal()"><svg viewBox="0 0 16 16" fill="none"><path d="M10 8H2M6 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 2v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Mark Out of Store</button>`) : ''}
+      ? `<button data-action="login" class="btn btn-green btn-lg" style="margin-bottom:14px" onclick="logIn()"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Mark Back In</button>`
+      : `<button data-action="showiomodal" class="btn btn-amber btn-lg" style="margin-bottom:14px" onclick="showIOModal()"><svg viewBox="0 0 16 16" fill="none"><path d="M10 8H2M6 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 2v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> Mark Out of Store</button>`) : ''}
     <div class="card">
       <div class="card-hdr">
         <div class="card-title"><div class="card-icon ci-sky"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>Movement Log</div>
@@ -2550,8 +2550,8 @@ function showIOModal() {
       </select>
     </div>
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-amber" style="flex:1" onclick="logOut()">Confirm Out</button>
+      <button data-action="closemodal" data-action-key="definition-01" class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button data-action="logout" class="btn btn-amber" style="flex:1" onclick="logOut()">Confirm Out</button>
     </div>`;
   openModal();
 }
@@ -2609,8 +2609,8 @@ function renderVisitors() {
             <div class="entry-hdr"><span class="entry-num">${name}</span>${isPastView()?'<span class="badge badge-amber">Not marked</span>':''}</div>
             ${meta?`<div class="entry-detail" style="margin-bottom:10px">${meta}</div>`:''}
             ${isPastView() ? '' : `<div style="display:flex;gap:10px">
-              <button class="btn btn-green btn-sm" style="flex:1" onclick="visitorPurchase('${sref}')">Purchase</button>
-              <button class="btn btn-outline btn-sm" style="flex:1" onclick="visitorNonPurch('${sref}')">Non-purchase</button>
+              <button data-action="visitorpurchase" data-action-key="definition-01" class="btn btn-green btn-sm" style="flex:1" onclick="visitorPurchase('${sref}')">Purchase</button>
+              <button data-action="visitornonpurch" data-action-key="definition-01" class="btn btn-outline btn-sm" style="flex:1" onclick="visitorNonPurch('${sref}')">Non-purchase</button>
             </div>`}
           </div>`;
         }).join('')}`;
@@ -2670,7 +2670,7 @@ function renderSales() {
     <div class="summary-bar">
       <div><div class="summary-bar-lbl">Total Sales Today</div><div class="summary-bar-val">${fmtAmt(total)}<span class="sub">${rec.sales.length} bill${rec.sales.length!==1?'s':''}</span></div></div>
     </div>
-    ${!locked ? `<button class="btn btn-green btn-lg" style="margin-bottom:14px" onclick="showSaleModal(null)"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Sale</button>` : ''}
+    ${!locked ? `<button data-action="showsalemodal" data-action-key="definition-01" class="btn btn-green btn-lg" style="margin-bottom:14px" onclick="showSaleModal(null)"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Sale</button>` : ''}
     ${rec.sales.length===0
       ? `<div class="empty-state">
           <div class="empty-icon-wrap"><svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="13" r="1.2" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="13" r="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M1 1h2l2.5 8h6l1.5-5H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -2678,13 +2678,13 @@ function renderSales() {
           <div class="empty-sub">${dsrD4NoSalesAck(rec)
             ? `Confirmed: no sales today (${esc(dsrD4NoSalesAck(rec).at)}${dsrD4NoSalesAck(rec).by ? ' · ' + esc(dsrD4NoSalesAck(rec).by) : ''})`
             : 'A day with no sales must be confirmed before you can submit.'}</div>
-          ${locked ? '' : `<button class="btn ${dsrD4NoSalesAck(rec) ? 'btn-outline' : 'btn-green'} btn-sm" style="margin-top:10px" onclick="dsrD4ToggleNoSales()">${dsrD4NoSalesAck(rec) ? 'Undo confirmation' : 'Confirm no sales today'}</button>`}
+          ${locked ? '' : `<button data-action="dsrd4togglenosales" data-action-key="definition-01" class="btn ${dsrD4NoSalesAck(rec) ? 'btn-outline' : 'btn-green'} btn-sm" style="margin-top:10px" onclick="dsrD4ToggleNoSales()">${dsrD4NoSalesAck(rec) ? 'Undo confirmation' : 'Confirm no sales today'}</button>`}
          </div>`
       : rec.sales.map((s,i) => { const fromQMS = s.source==='qms'; return `
         <div class="entry-item"${fromQMS?' style="border-left:3px solid var(--navy)"':''}>
           <div class="entry-hdr">
             <span class="entry-num">Bill #${i+1}${fromQMS?' <span style="font-size:11px;font-weight:700;color:var(--navy);background:var(--blue-pale);border:1px solid var(--gray-300);border-radius:999px;padding:2px 8px;margin-left:6px">from QMS \u2014 locked</span>':''}</span>
-            ${(!locked && !fromQMS) ? `<span style="display:inline-flex;gap:6px"><button class="btn btn-outline btn-sm" onclick="showSaleModal(${i})">Edit</button><button class="btn btn-ghost btn-sm" onclick="deleteSale(${i})"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Remove</button></span>` : (fromQMS ? '<span class="sub" style="font-size:11px" title="Auto-filled from a closed Queue Management sale">\uD83D\uDD12 auto</span>' : '')}
+            ${(!locked && !fromQMS) ? `<span style="display:inline-flex;gap:6px"><button data-action="showsalemodal" data-action-key="definition-02" class="btn btn-outline btn-sm" onclick="showSaleModal(${i})">Edit</button><button data-action="deletesale" data-action-key="definition-01" class="btn btn-ghost btn-sm" onclick="deleteSale(${i})"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Remove</button></span>` : (fromQMS ? '<span class="sub" style="font-size:11px" title="Auto-filled from a closed Queue Management sale">\uD83D\uDD12 auto</span>' : '')}
           </div>
           <div class="entry-detail"><b>Bill No:</b> ${esc(s.billNo)} &nbsp;·&nbsp; <b>Product:</b> ${esc(s.product)}${s.customer ? `<br><b>Customer:</b> ${esc(s.customer)}` : ''}${s.mobile ? `<br><b>Mobile:</b> ${esc(s.mobile)}` : ''}${s.paymentMode ? ` &nbsp;·&nbsp; <b>Mode:</b> ${esc(s.paymentMode)}` : ''}</div>
           <div class="entry-amount">${fmtAmt(s.amount)}</div>
@@ -2726,8 +2726,8 @@ function showSaleModal(idx) {
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-green" style="flex:1" onclick="saveSale(${idx})">Save</button>
+      <button data-action="closemodal" data-action-key="definition-02" class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button data-action="savesale" data-action-key="definition-01" class="btn btn-green" style="flex:1" onclick="saveSale(${idx})">Save</button>
     </div>`;
   openModal();
 }
@@ -2776,7 +2776,7 @@ function renderNonPurch() {
     <div class="summary-bar">
       <div><div class="summary-bar-lbl">Non-Purchase Visitors</div><div class="summary-bar-val">${rec.nonpurch.length}<span class="sub">${withMobile} with mobile</span></div></div>
     </div>
-    ${!locked ? `<button class="btn btn-primary btn-lg" style="margin-bottom:14px" onclick="showNPModal(null)"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Visitor</button>` : ''}
+    ${!locked ? `<button data-action="shownpmodal" class="btn btn-primary btn-lg" style="margin-bottom:14px" onclick="showNPModal(null)"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Visitor</button>` : ''}
     ${rec.nonpurch.length===0
       ? `<div class="empty-state">
           <div class="empty-icon-wrap"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
@@ -2787,7 +2787,7 @@ function renderNonPurch() {
         <div class="entry-item">
           <div class="entry-hdr">
             <span class="entry-num">Visitor #${i+1}</span>
-            ${!locked ? `<button class="btn btn-ghost btn-sm" onclick="deleteNP(${i})"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Remove</button>` : ''}
+            ${!locked ? `<button data-action="deletenp" data-action-key="definition-01" class="btn btn-ghost btn-sm" onclick="deleteNP(${i})"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Remove</button>` : ''}
           </div>
           <div class="entry-detail">
             <b>Name:</b> ${esc(n.customer||'Anonymous')} &nbsp;·&nbsp; <b>Mobile:</b> ${esc(n.mobile||'—')}<br>
@@ -2811,8 +2811,8 @@ function showNPModal(idx) {
     <div class="fgrp"><label class="flbl">Additional Remarks</label>
       <textarea class="finp" id="np-rem" placeholder="Any notes…">${esc(n.remarks)}</textarea></div>
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" style="flex:1" onclick="saveNP(${idx})">Save</button>
+      <button data-action="closemodal" data-action-key="definition-03" class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button data-action="savenp" data-action-key="definition-01" class="btn btn-primary" style="flex:1" onclick="saveNP(${idx})">Save</button>
     </div>`;
   openModal();
 }
@@ -2854,7 +2854,7 @@ function renderTasks() {
         <div class="task-row">
           <span class="task-lbl">${esc(t.label)}</span>
           <div class="task-num-wrap">
-            <input class="finp task-num-inp" type="number" min="0" step="1" placeholder="0"
+            <input data-action="settaskcount" data-action-key="definition-01" class="finp task-num-inp" type="number" min="0" step="1" placeholder="0"
               value="${rec.tasks[t.id] === undefined ? '' : esc(rec.tasks[t.id])}"
               ${locked?'disabled':''}
               oninput="setTaskCount('${t.id}',this.value,this)" />
@@ -2903,9 +2903,9 @@ function renderMarketing() {
           <div class="mkt-icon"><svg viewBox="0 0 16 16" fill="none"><path d="${m.svgPath}" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <div class="mkt-lbl">${esc(m.label)}</div>
           <div class="mkt-counter">
-            ${!locked ? `<button class="mkt-btn" onclick="adjMkt('${m.id}',-1)">−</button>` : ''}
+            ${!locked ? `<button data-action="adjmkt" data-action-key="definition-01" class="mkt-btn" onclick="adjMkt('${m.id}',-1)">−</button>` : ''}
             <span class="mkt-val">${+rec.marketing[m.id]||0}</span>
-            ${!locked ? `<button class="mkt-btn" onclick="adjMkt('${m.id}',1)">+</button>` : ''}
+            ${!locked ? `<button data-action="adjmkt" data-action-key="definition-02" class="mkt-btn" onclick="adjMkt('${m.id}',1)">+</button>` : ''}
           </div>
         </div>`).join('')}
     </div>`;
@@ -2939,11 +2939,11 @@ function renderCleaning() {
           </div>
           ${!locked ? `
           <label class="cp-check-row">
-            <input type="checkbox" ${cp.done?'checked':''} onchange="setCPDone(${n},this.checked)" />
+            <input data-action="setcpdone" data-action-key="definition-01" type="checkbox" ${cp.done?'checked':''} onchange="setCPDone(${n},this.checked)" />
             <span class="cp-check-lbl">Mark checkpoint as complete</span>
           </label>` : ''}
           <div class="photo-zone${cp.photo?' has-photo':''}">
-            ${!locked ? `<input type="file" accept="image/*" capture="environment" onchange="handlePhoto(${n},this)" />` : ''}
+            ${!locked ? `<input data-action="handlephoto" data-action-key="definition-01" type="file" accept="image/*" capture="environment" onchange="handlePhoto(${n},this)" />` : ''}
             <img class="photo-prev${cp.photo?' show':''}" id="photo-prev-${n}" src="${cp.photo||''}" alt="Photo ${n}" />
             ${!cp.photo ? `<div><div class="photo-icon"><svg viewBox="0 0 16 16" fill="none"><path d="M14 12a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1h2.5l1-1.5h3L10.5 5H13a1 1 0 011 1v6z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8.5" r="2" stroke="currentColor" stroke-width="1.5"/></svg></div><div class="photo-lbl-text">Tap to capture or upload photo</div></div>` : ''}
           </div>
@@ -2997,7 +2997,7 @@ function renderClosing() {
             const c = stockCatOf(name, g.short);
             return `<div class="fgrp">
               <label class="flbl">${esc(name)} <span class="req">*</span></label>
-              <input class="finp" type="number" min="0" placeholder="0"
+              <input data-action="updclosing" data-action-key="definition-01" class="finp" type="number" min="0" placeholder="0"
                 value="${esc(rec.closing[c.id])}"
                 ${locked?'disabled':''}
                 oninput="updClosing('${c.id}',this.value)" />
@@ -3050,7 +3050,7 @@ function renderClosing() {
           <div class="locked-sub">Submitted at ${rec.submitTime}</div>
          </div>`
       : `${missing.length > 0 ? `<div class="missing-list"><strong>Complete these before submitting:</strong><ul>${missing.map(m=>`<li>${m}</li>`).join('')}</ul></div>` : ''}
-         <button class="submit-btn" onclick="showSubmitConfirm()" ${missing.length>0?'disabled':''}>
+         <button data-action="showsubmitconfirm" data-action-key="definition-01" class="submit-btn" onclick="showSubmitConfirm()" ${missing.length>0?'disabled':''}>
            <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
            ${missing.length===0?'Submit & Lock Day Report':'Complete All Sections First'}
          </button>`}`;
@@ -3085,8 +3085,8 @@ function showSubmitConfirm() {
       Once submitted, <strong>all data will be locked</strong> and cannot be edited. The manager will review and audit your report.
     </p>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-green" style="flex:1" onclick="submitDay()">Submit Now</button>
+      <button data-action="closemodal" data-action-key="definition-04" class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button data-action="submitday" class="btn btn-green" style="flex:1" onclick="submitDay()">Submit Now</button>
     </div>`;
   openModal();
 }
@@ -3102,7 +3102,7 @@ function submitDay() {
     </p>
     <ul class="dsr-d4-missing">${miss.map(item => '<li>' + esc(item) + '</li>').join('')}</ul>
     <div style="display:flex;gap:10px;margin-top:18px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Close</button>
+      <button data-action="closemodal" data-action-key="definition-05" class="btn btn-outline" style="flex:1" onclick="closeModal()">Close</button>
     </div>`;
     openModal();
     return;
@@ -3125,8 +3125,8 @@ function renderSMSubmissions() {
   const recs  = getAllForDate(date);
   el('stsec-submissions').innerHTML = `
     <div class="sm-date-row">
-      <input class="sm-date-inp" type="date" value="${date}" onchange="st.smDate=this.value;renderSMSubmissions()" />
-      <button class="btn btn-primary btn-sm" onclick="renderSMSubmissions()">Load</button>
+      <input data-action="rendersmsubmissions" data-action-key="definition-01" class="sm-date-inp" type="date" value="${date}" onchange="st.smDate=this.value;renderSMSubmissions()" />
+      <button data-action="rendersmsubmissions" data-action-key="definition-02" class="btn btn-primary btn-sm" onclick="renderSMSubmissions()">Load</button>
     </div>
     <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:12px">${fmtDate(date)} — ${recs.length} record${recs.length!==1?'s':''}</div>
     ${recs.length===0
@@ -3204,7 +3204,7 @@ function renderSMAudit() {
       ${r.submitted ? `<div class="info-row"><span class="info-key">Submitted</span><span class="info-val" style="font-family:'DM Mono',monospace">${r.submitTime}</span></div>` : ''}
       ${r.submitted && !isReadOnlyDate(r.date) ? `
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
-          <button class="btn btn-outline btn-sm" style="color:var(--amber);border-color:var(--amber)" onclick="unlockForCorrection()">
+          <button data-action="unlockforcorrection" class="btn btn-outline btn-sm" style="color:var(--amber);border-color:var(--amber)" onclick="unlockForCorrection()">
             <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M5 7V5a3 3 0 016 0M4 7h8a1 1 0 011 1v5a1 1 0 01-1 1H4a1 1 0 01-1-1V8a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             Unlock for correction
           </button>
@@ -3220,7 +3220,7 @@ function renderSMAudit() {
     <div class="card">
       <div class="card-hdr">
         <div class="card-title"><div class="card-icon ci-gold"><svg viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>Full Report</div>
-        <button class="btn btn-outline btn-sm" onclick="exportSingleCSV()">Export CSV</button>
+        <button data-action="exportsinglecsv" class="btn btn-outline btn-sm" onclick="exportSingleCSV()">Export CSV</button>
       </div>
 
       <div class="report-sec">
@@ -3292,7 +3292,7 @@ function renderSMAudit() {
           <div style="font-size:14px;font-weight:700;color:var(--accent);margin-top:6px">Score: ${r.audit.total}/100</div>
           ${r.audit.remarks?`<div style="font-size:13px;color:var(--muted);margin-top:6px">${esc(r.audit.remarks)}</div>`:''}
           <div style="font-size:11px;color:var(--subtle);margin-top:4px;font-family:'DM Mono',monospace">Audited at ${r.audit.auditTime}</div>
-          <button class="btn btn-outline btn-sm" style="margin-top:14px" onclick="resetAudit()">Re-Audit</button>
+          <button data-action="resetaudit" class="btn btn-outline btn-sm" style="margin-top:14px" onclick="resetAudit()">Re-Audit</button>
          </div>`
       : `<div class="card">
           <div class="card-hdr">
@@ -3304,7 +3304,7 @@ function renderSMAudit() {
               <div class="score-item">
                 <div class="score-lbl">${sec}</div>
                 <div class="score-max">Max: ${max}</div>
-                <input class="score-inp" id="sc-${sec}" type="number" min="0" max="${max}"
+                <input data-action="calctotalscore" data-action-key="definition-01" class="score-inp" id="sc-${sec}" type="number" min="0" max="${max}"
                   value="${a[sec]!==undefined?a[sec]:autoScores[sec]}"
                   oninput="calcTotalScore()" />
               </div>`).join('')}
@@ -3319,8 +3319,8 @@ function renderSMAudit() {
             <textarea class="finp" id="audit-remarks" placeholder="Comments or observations…">${esc(a.remarks||'')}</textarea>
           </div>
           <div class="audit-ar-grid">
-            <button class="btn-reject" onclick="submitAudit(false)"><svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Reject</button>
-            <button class="btn-approve" onclick="submitAudit(true)"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Approve</button>
+            <button data-action="submitaudit" data-action-key="definition-01" class="btn-reject" onclick="submitAudit(false)"><svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Reject</button>
+            <button data-action="submitaudit" data-action-key="definition-02" class="btn-approve" onclick="submitAudit(true)"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Approve</button>
           </div>
          </div>`}`;
 
@@ -3451,9 +3451,9 @@ function renderDashboard() {
            </tbody>
          </table>`}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-      <button class="btn btn-primary btn-sm" onclick="sendDsrDaySummary()">📲 Send Day Summary</button>
-      <button class="btn btn-outline btn-sm" onclick="exportAllCSV()">Export 30-Day CSV</button>
-      <button class="btn btn-outline btn-sm" onclick="exportAllCSV('today')">Export Today</button>
+      <button data-action="senddsrdaysummary" class="btn btn-primary btn-sm" onclick="sendDsrDaySummary()">📲 Send Day Summary</button>
+      <button data-action="exportallcsv" data-action-key="definition-01" class="btn btn-outline btn-sm" onclick="exportAllCSV()">Export 30-Day CSV</button>
+      <button data-action="exportallcsv" data-action-key="definition-02" class="btn btn-outline btn-sm" onclick="exportAllCSV('today')">Export Today</button>
     </div>`;
 }
 /* P1-15: one-tap end-of-day DSR summary → WhatsApp (offline wa.me; no phone =
@@ -3511,7 +3511,7 @@ function renderSMSettings() {
       </div>
       <div style="display:flex;gap:8px">
         <input class="finp" id="new-staff-inp" placeholder="Add new staff name" style="flex:1" onkeydown="if(event.key==='Enter')addStaff()" />
-        <button class="btn btn-primary" onclick="addStaff()">Add</button>
+        <button data-action="addstaff" class="btn btn-primary" onclick="addStaff()">Add</button>
       </div>
     </div>
     <div class="danger-zone">
@@ -3520,7 +3520,7 @@ function renderSMSettings() {
         Danger Zone
       </div>
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Permanently delete all staff records. This cannot be undone.</p>
-      <button class="btn btn-red btn-sm" onclick="confirmDeleteAll()">Delete All Records</button>
+      <button data-action="confirmdeleteall" class="btn btn-red btn-sm" onclick="confirmDeleteAll()">Delete All Records</button>
     </div>`;
 }
 function addStaff() {
@@ -3550,8 +3550,8 @@ function confirmDeleteAll() {
       <input class="finp" id="del-confirm-inp" placeholder="DELETE" />
     </div>
     <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-red" style="flex:1" onclick="doDeleteAll()">Delete All</button>
+      <button data-action="closemodal" data-action-key="definition-06" class="btn btn-outline" style="flex:1" onclick="closeModal()">Cancel</button>
+      <button data-action="dodeleteall" class="btn btn-red" style="flex:1" onclick="doDeleteAll()">Delete All</button>
     </div>`;
   openModal();
 }

@@ -807,11 +807,11 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       <div class="frow">
         <div class="fg">
           <label class="flabel">Date <span style="color:#dc2626">*</span></label>
-          <input class="finput" type="date" id="f-date" onchange="onCroDateChange()">
+          <input data-action="change-audit-date" class="finput" type="date" id="f-date" onchange="onCroDateChange()">
         </div>
         <div class="fg">
           <label class="flabel">Store <span style="color:#dc2626">*</span></label>
-          <select class="fsel" id="f-store" onchange="onCroDateChange()">
+          <select data-action="change-audit-store" class="fsel" id="f-store" onchange="onCroDateChange()">
             <option value="">Select…</option>
             <option>Titan World, Latur</option>
             <option>Helios, Latur</option>
@@ -821,7 +821,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       <div class="frow">
         <div class="fg" style="flex:2">
           <label class="flabel">Chief Retail Officer Name <span style="color:#dc2626">*</span></label>
-          <input class="finput" type="text" id="f-cro" placeholder="Chief Retail Officer full name" list="cro-dl" autocomplete="off" oninput="onCroDateChange()" onchange="onCroDateChange()">
+          <input data-action="change-cro" class="finput" type="text" id="f-cro" placeholder="Chief Retail Officer full name" list="cro-dl" autocomplete="off" oninput="onCroDateChange()" onchange="onCroDateChange()">
           <datalist id="cro-dl"></datalist>
         </div>
         <div class="fg">
@@ -839,7 +839,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       <div class="ctx-banner" id="cro-dup" style="background:var(--amber-pale);border-color:rgba(180,83,9,.25)">
         <div class="ctx-hd" style="color:var(--amber)">Duplicate check</div>
         <div class="ctx-line" id="cro-dup-line"></div>
-        <button class="print-btn" id="cro-dup-btn" style="margin-top:8px;background:var(--navy);color:var(--white);border-color:var(--navy)">Edit existing audit</button>
+        <button data-action="edit-existing-audit" class="print-btn" id="cro-dup-btn" style="margin-top:8px;background:var(--navy);color:var(--white);border-color:var(--navy)">Edit existing audit</button>
       </div>
     </div>
 
@@ -860,7 +860,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       </div>
       <div class="sub-meta"><span id="sub-done">0 rated</span><span id="sub-pts">0 / 100 pts</span></div>
       <div class="sub-bar"><div class="sub-fill" id="sub-fill" style="width:0%"></div></div>
-      <button class="sbtn green" onclick="submitAudit()">Save &amp; Submit Audit</button>
+      <button data-action="submit-audit" class="sbtn green" onclick="submitAudit()">Save &amp; Submit Audit</button>
     </div>
   </div>
 </div>
@@ -870,21 +870,21 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
   <div class="wrap">
     <!-- P1-24 — store filter (reuses period-toggle styles) -->
     <div class="period-toggle" id="store-toggle" style="margin-bottom:8px">
-      <button class="pt-btn active" id="ps-all" onclick="setDashStore('')">All Stores</button>
-      <button class="pt-btn" id="ps-WLMHW" onclick="setDashStore('WLMHW')">Titan World</button>
-      <button class="pt-btn" id="ps-HEMW" onclick="setDashStore('HEMW')">Helios</button>
+      <button data-action="dashboard-all-stores" class="pt-btn active" id="ps-all" onclick="setDashStore('')">All Stores</button>
+      <button data-action="dashboard-first-store" class="pt-btn" id="ps-WLMHW" onclick="setDashStore('WLMHW')">Titan World</button>
+      <button data-action="dashboard-second-store" class="pt-btn" id="ps-HEMW" onclick="setDashStore('HEMW')">Helios</button>
     </div>
     <div class="period-toggle">
-      <button class="pt-btn active" id="pt-week" onclick="setPeriod('week')">Weekly</button>
-      <button class="pt-btn" id="pt-month" onclick="setPeriod('month')">Monthly</button>
+      <button data-action="period-week" class="pt-btn active" id="pt-week" onclick="setPeriod('week')">Weekly</button>
+      <button data-action="period-month" class="pt-btn" id="pt-month" onclick="setPeriod('month')">Monthly</button>
     </div>
     <div class="period-nav">
-      <button class="pn-btn" onclick="shiftPeriod(-1)">← Prev</button>
+      <button data-action="previous-period" class="pn-btn" onclick="shiftPeriod(-1)">← Prev</button>
       <div style="text-align:center">
         <div class="pn-lbl" id="pn-lbl">—</div>
         <div class="pn-sub" id="pn-sub"></div>
       </div>
-      <button class="pn-btn" onclick="shiftPeriod(1)">Next →</button>
+      <button data-action="next-period" class="pn-btn" onclick="shiftPeriod(1)">Next →</button>
     </div>
     <div id="dash-content"></div>
   </div>
@@ -898,13 +898,13 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       <div class="card-sub">Click any record to view full breakdown</div>
       <div class="hi-filters">
         <div class="fg"><label class="flabel">Chief Retail Officer</label>
-          <input class="finput" type="text" id="h-cro" placeholder="All" oninput="renderHistory()"></div>
+          <input data-action="filter-history-cro" class="finput" type="text" id="h-cro" placeholder="All" oninput="renderHistory()"></div>
         <div class="fg"><label class="flabel">From</label>
-          <input class="finput" type="date" id="h-from" onchange="renderHistory()"></div>
+          <input data-action="filter-history-from" class="finput" type="date" id="h-from" onchange="renderHistory()"></div>
         <div class="fg"><label class="flabel">To</label>
-          <input class="finput" type="date" id="h-to" onchange="renderHistory()"></div>
+          <input data-action="filter-history-to" class="finput" type="date" id="h-to" onchange="renderHistory()"></div>
         <div class="fg" style="display:flex;align-items:flex-end">
-          <button class="sbtn" style="margin-top:0" onclick="clearHF()">Clear</button></div>
+          <button data-action="clear-history-filters" class="sbtn" style="margin-top:0" onclick="clearHF()">Clear</button></div>
       </div>
       <div class="stat-grid" id="hist-stats"></div>
       <div id="hist-list"></div>
@@ -922,36 +922,36 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
       <div class="frow">
         <div class="fg">
           <label class="flabel">NPS Surveys / Month</label>
-          <input class="finput" type="number" id="s-surveys" min="1" placeholder="80" oninput="updDerived()">
+          <input data-action="change-survey-target" class="finput" type="number" id="s-surveys" min="1" placeholder="80" oninput="updDerived()">
           <div class="set-derived" id="d-surveys">Weekly: ~18 · Daily: ~3</div>
         </div>
         <div class="fg">
           <label class="flabel">NPS Score Target (0–100)</label>
-          <input class="finput" type="number" id="s-nps-score" min="1" max="100" placeholder="85" oninput="updDerived()">
+          <input data-action="change-nps-target" class="finput" type="number" id="s-nps-score" min="1" max="100" placeholder="85" oninput="updDerived()">
           <div class="set-derived" id="d-nps">Score ≥ 85 = full 5 pts</div>
         </div>
       </div>
       <div class="frow">
         <div class="fg">
           <label class="flabel">Response Rate Target (%)</label>
-          <input class="finput" type="number" id="s-rate" min="1" max="100" placeholder="40" oninput="updDerived()">
+          <input data-action="change-collection-rate-target" class="finput" type="number" id="s-rate" min="1" max="100" placeholder="40" oninput="updDerived()">
           <div class="set-derived" id="d-rate">Surveys ÷ Bills × 100 — target 40%</div>
         </div>
         <div class="fg">
           <label class="flabel">Google Reviews / Month</label>
-          <input class="finput" type="number" id="s-reviews" min="1" placeholder="30" oninput="updDerived()">
+          <input data-action="change-review-target" class="finput" type="number" id="s-reviews" min="1" placeholder="30" oninput="updDerived()">
           <div class="set-derived" id="d-reviews">Weekly: ~7 · Daily: ~1</div>
         </div>
       </div>
       <div class="frow">
         <div class="fg">
           <label class="flabel">Marketing Activities / Month</label>
-          <input class="finput" type="number" id="s-mktg" min="1" placeholder="120" oninput="updDerived()">
+          <input data-action="change-marketing-target" class="finput" type="number" id="s-mktg" min="1" placeholder="120" oninput="updDerived()">
           <div class="set-derived" id="d-mktg">Calls + visits. Weekly: ~28 · Daily: ~5</div>
         </div>
         <div class="fg"></div>
       </div>
-      <button class="sbtn" onclick="saveSettings()">Save Targets</button>
+      <button data-action="save-targets" class="sbtn" onclick="saveSettings()">Save Targets</button>
     </div>
     <!-- P1-24 — optional per-store target overrides (saved by the same Save Targets button) -->
     <div class="card">
@@ -1001,7 +1001,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--g800);min-
   <div class="modal" id="modal-box">
     <div class="mhead">
       <div class="mtitle" id="m-title">Audit Result</div>
-      <button class="mclose" onclick="hideMO()">✕</button>
+      <button data-action="close-modal" class="mclose" onclick="hideMO()">✕</button>
     </div>
     <div class="mbody" id="m-body"></div>
   </div>
@@ -1329,7 +1329,7 @@ function croReviewRowsHtml(){
   return list.map(r=>`<div class="rev-row" data-cid="${stEsc(r.cid)}">
     <div class="rev-id"><span class="rev-nm">${stEsc(r.name||'—')}</span><span class="rev-mo mono">${stEsc(r.mobile||'')}</span></div>
     <div class="rev-act">
-      <button type="button" class="btn xs rev-ask" onclick="croReviewSend('${stEsc(r.cid)}')">📲 Ask</button>
+      <button data-action="ask-for-review" type="button" class="btn xs rev-ask" onclick="croReviewSend('${stEsc(r.cid)}')">📲 Ask</button>
       <label class="rev-ck"><input type="checkbox" ${r.requested?'checked':''} onchange="croReviewTick('${stEsc(r.cid)}','requested',this.checked)">Requested</label>
       <label class="rev-ck"><input type="checkbox" ${r.received?'checked':''} onchange="croReviewTick('${stEsc(r.cid)}','received',this.checked)">Received</label>
     </div>
@@ -1879,8 +1879,8 @@ function showModal(a){
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px">Task Breakdown</div>
     ${rows}
-    <button class="print-btn" onclick="loadAuditForEdit('${a.id}')">✎ Edit this audit</button>
-    <button class="print-btn" onclick="printAudit('${a.id}')">🖨 Print / Save as PDF</button>`;
+    <button data-action="edit-audit-record" class="print-btn" onclick="loadAuditForEdit('${a.id}')">✎ Edit this audit</button>
+    <button data-action="print-audit-record" class="print-btn" onclick="printAudit('${a.id}')">🖨 Print / Save as PDF</button>`;
   document.getElementById('mo').classList.add('show');
 }
 function hideMO(){ document.getElementById('mo').classList.remove('show'); }
@@ -1926,7 +1926,7 @@ function renderHistory(){
         <div class="hi-date">${fmtDate(a.date)}</div>
         <div><div class="hi-cro">${stEsc(a.cro)}</div><div class="hi-store">${stEsc(a.store)} · SM: ${stEsc(a.sm)}</div></div>
         <div class="hi-spill ${g.cls}">${a.total}/100</div>
-        <button class="hi-del" onclick="delAudit('${a.id}',event)" title="Delete">✕</button>
+        <button data-action="delete-audit-record" class="hi-del" onclick="delAudit('${a.id}',event)" title="Delete">✕</button>
       </div></div>`;
   }).join('');
   stApplyReadOnly(); // disable delete buttons when viewing a past day
@@ -2689,7 +2689,7 @@ window.addEventListener('st-date', function(e){
 <script>(function(){function ld(){try{var m=JSON.parse(localStorage.getItem("saagar_employee_master_v1")||"[]");if(!Array.isArray(m))return;var o=m.filter(function(e){return e&&e.name&&e.active!==false;}).map(function(e){return '<option value="'+String(e.name).replace(/"/g,"&quot;")+'"></option>';}).join("");["cro-dl","sm-dl"].forEach(function(id){var dl=document.getElementById(id);if(dl)dl.innerHTML=o;});/* J: re-apply leave filter to the CRO list after every (re)populate; SM list stays unfiltered */if(typeof window.applyCroLeaveFilter==="function")window.applyCroLeaveFilter();}catch(e){}}document.addEventListener("DOMContentLoaded",ld);ld();setTimeout(ld,800);})();</script>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button data-action="st-v5-home-fab" id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'cro_audit',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 

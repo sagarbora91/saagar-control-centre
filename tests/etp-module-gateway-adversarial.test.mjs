@@ -12,6 +12,8 @@ const core = require('../www/etp-core-contract.js');
 const foundationStatus = require('../www/etp-foundation-status.js');
 const queryContract = require('../www/etp-query-contract.js');
 const profileAuthority = require('../www/etp-profile-authority.js');
+const importHistoryApi = require('../www/etp-import-history.js');
+const tenderDictionaryApi = require('../www/etp-tender-dictionary.js');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const generationA = `etp_${'a'.repeat(32)}`;
 const generationB = `etp_${'b'.repeat(32)}`;
@@ -24,7 +26,7 @@ function receipt(generationId = generationA, publishedAt = '2026-05-01', payment
   return {
     contractVersion: core.ETP_CORE_VERSION, scopeKey, storeCode: scope.storeCode,
     activeGenerationId: generationId, profileVersion: core.ETP_CORE_VERSION,
-    parserVersion: profileAuthority.PARSER_VERSION, profileAuthority: authorityBinding,
+    parserVersion: profileAuthority.PARSER_VERSION, profileAuthority: authorityBinding, tenderDictionary: tenderDictionaryApi.BUILD_IDENTITY,
     ruleVersion: core.RECON_RULE.ruleVersion, reconciliationStatus: 'PASS',
     enrichments: { R003: { status: 'PASS', differenceCount: 0 }, R013: { status: 'PASS', differenceCount: 0 },
       paymentType25: { status: 'QUARANTINED', rowCount: paymentRows, persisted: false } },
@@ -32,13 +34,13 @@ function receipt(generationId = generationA, publishedAt = '2026-05-01', payment
       declaredPeriodEnd: scope.periodEnd, evidenceId: 'f'.repeat(64), zeroActivityConfirmed: false }])),
     publishedAt,
     lifecycle: { ...life, state: 'ACCEPTED', candidateGenerationId: null, activeGenerationId: generationId,
-      activeManifestIdentity: `manifest-${generationId}`, manifest:{authority:authorityBinding} }
+      activeManifestIdentity: `manifest-${generationId}`, manifest:{authority:authorityBinding,tenderDictionary:tenderDictionaryApi.BUILD_IDENTITY} }
   };
 }
 
 function storageWith(current = receipt(), history = []) {
   const value = JSON.stringify({ scopes: { [scopeKey]: { current, history } } });
-  return { getItem(key) { return key === gatewayApi.REGISTRY_KEY ? value : null; } };
+  return { getItem(key) { return key === gatewayApi.REGISTRY_KEY ? value : null; }, setItem() {} };
 }
 
 function make(overrides = {}) {
@@ -52,7 +54,7 @@ function make(overrides = {}) {
         rows: [{ [request.fields[0]]: 'safe' }], hasMore: false, nextCursor: null } };
     }
   };
-  const result = gatewayApi.create({ runtime, lifecyclePolicy: lifecycle, core, foundationStatus, queryContract, profileAuthority,
+  const result = gatewayApi.create({ runtime, lifecyclePolicy: lifecycle, core, foundationStatus, queryContract, profileAuthority, importHistoryApi, tenderDictionaryApi,
     storage: overrides.storage || storageWith(),
     authorize: overrides.authorize || (() => true),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: {
@@ -135,6 +137,8 @@ test('recreated gateway exposes only validated bounded history and matching acti
   assert.equal((await stale.gateway.inspectScope(scope, { historyLimit: 2 })).code,
     'ETP_VERIFIED_GENERATION_UNAVAILABLE');
 });
+
+test('gateway import history is scope-bound metadata only and ignores corrupt private entries',async()=>{const valid={contractVersion:importHistoryApi.VERSION,eventId:'evt-safe-1',scopeKey,storeCode:'WLMHW',financialYear:'2026-27',periodStart:'2026-04-01',periodEnd:'2026-04-30',outcome:'ACCEPTED',warningCodes:['PAYMENTTYPE25_QUARANTINED'],counts:{sourceCount:8,selectedCount:4,excludedCount:4},actorId:'BUILD_AUTHORIZED_OWNER',occurredAt:'2026-08-24T00:00:00Z',digestRefs:['sha256:'+'a'.repeat(64)]};const registry=JSON.stringify({scopes:{[scopeKey]:{current:receipt(),history:[]}}}),history=JSON.stringify({contractVersion:importHistoryApi.VERSION,events:[valid,{...valid,eventId:'evt-private',filename:'private.xlsx'}]});const storage={getItem(key){return key===gatewayApi.REGISTRY_KEY?registry:key===importHistoryApi.KEY?history:null;},setItem(){}};const made=make({storage});const inspected=await made.gateway.inspectScope(scope,{historyLimit:5});assert.equal(inspected.ok,true);assert.deepEqual(inspected.importHistory,[importHistoryApi.validateEvent(valid).event]);assert.doesNotMatch(JSON.stringify(inspected.importHistory),/filename|workbook|rows|customer|mobile/i);assert.equal((await made.gateway.inspectScope({...scope,periodStart:'2026-04-02'},{historyLimit:5})).ok,false);});
 
 test('shell access denies ETP to every default staff role except Store Manager before module PIN entry', () => {
   const shell = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');

@@ -607,7 +607,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
       <div class="frow">
         <div class="fg">
           <label class="flabel">CRO Name <span style="color:#dc2626">*</span></label>
-          <input class="finput" id="cro-inp" type="text" placeholder="e.g. Rahul Sharma"
+          <input data-action="cro-inp" class="finput" id="cro-inp" type="text" placeholder="e.g. Rahul Sharma"
             oninput="onNamePick()" onkeydown="if(event.key==='Enter')tryStart()" autocomplete="off" list="grm-emp-list"><datalist id="grm-emp-list"></datalist>
         </div>
         <div class="fg">
@@ -618,7 +618,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
           </div>
         </div>
       </div>
-      <button class="sbtn" id="startbtn" onclick="startCL()" disabled>Start Grooming Checklist →</button>
+      <button data-action="startbtn" class="sbtn" id="startbtn" onclick="startCL()" disabled>Start Grooming Checklist →</button>
     </div>
 
     <!-- Checklist -->
@@ -632,8 +632,8 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
           </div>
         </div>
         <div class="actrow">
-          <button class="btn2" onclick="changeCRO()">Change CRO</button>
-          <button class="btnsave" onclick="saveCRO()">Save →</button>
+          <button data-action="change-cro" class="btn2" onclick="changeCRO()">Change CRO</button>
+          <button data-action="save" class="btnsave" onclick="saveCRO()">Save →</button>
         </div>
       </div>
 
@@ -725,19 +725,19 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
     <div class="filter-bar">
       <div class="fg">
         <label class="flabel">Select Date</label>
-        <input class="finput" type="date" id="day-picker" style="width:190px" onchange="renderDaily()">
+        <input data-action="day-picker" class="finput" type="date" id="day-picker" style="width:190px" onchange="renderDaily()">
       </div>
       <!-- P1-21: in-memory store filter (kept in sync with the Month-End copy) -->
       <div class="fg">
         <label class="flabel">Store</label>
-        <select class="finput" id="grm-store-daily" style="width:190px" onchange="grmSetStore(this.value)">
+        <select data-action="grm-store-daily" class="finput" id="grm-store-daily" style="width:190px" onchange="grmSetStore(this.value)">
           <option value="ALL">All stores</option>
           <option value="WLMHW">Titan World</option>
           <option value="HEMW">Helios</option>
           <option value="UNASSIGNED">Unassigned</option>
         </select>
       </div>
-      <button class="btn2" onclick="clearDay()" style="margin-bottom:1px">Clear Day's Data</button>
+      <button data-action="clear-day-s-data" class="btn2" onclick="clearDay()" style="margin-bottom:1px">Clear Day's Data</button>
     </div>
 
     <div class="statgrid">
@@ -761,19 +761,19 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
     <div class="filter-bar">
       <div class="fg">
         <label class="flabel">Select Month</label>
-        <input class="finput" type="month" id="month-picker" style="width:190px" onchange="renderMonthly()">
+        <input data-action="month-picker" class="finput" type="month" id="month-picker" style="width:190px" onchange="renderMonthly()">
       </div>
       <!-- P1-21: in-memory store filter (kept in sync with the Daily copy) -->
       <div class="fg">
         <label class="flabel">Store</label>
-        <select class="finput" id="grm-store-monthly" style="width:190px" onchange="grmSetStore(this.value)">
+        <select data-action="grm-store-monthly" class="finput" id="grm-store-monthly" style="width:190px" onchange="grmSetStore(this.value)">
           <option value="ALL">All stores</option>
           <option value="WLMHW">Titan World</option>
           <option value="HEMW">Helios</option>
           <option value="UNASSIGNED">Unassigned</option>
         </select>
       </div>
-      <button class="btn2" onclick="exportCSV()" style="margin-bottom:1px">Export CSV</button>
+      <button data-action="export-csv" class="btn2" onclick="exportCSV()" style="margin-bottom:1px">Export CSV</button>
     </div>
 
     <div class="statgrid">
@@ -819,7 +819,7 @@ body{font-family:var(--font-sans);background:var(--cream);color:var(--gray-800);
 </div><!-- /wrap -->
 
 <div class="footer">SAAGAR TRADERS · TITAN WORLD &amp; HELIOS · LATUR · GROOMING AUDIT SYSTEM</div>
-<button id="grm-float-save" type="button" onclick="saveCRO()" title="Save checklist">
+<button data-action="grm-float-save" id="grm-float-save" type="button" onclick="saveCRO()" title="Save checklist">
   <svg viewBox="0 0 16 16" width="14" height="14" fill="none"><polyline points="3,8 6.5,11.5 13,4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
   Save
 </button>
@@ -1219,7 +1219,7 @@ function renderDaily() {
     const _reKey = String(rec.name||'').trim().toLowerCase();
     const _reCnt = (grmTodayCounts()[_reKey]||0);
     const reBtn = (!roView && rec.pct < grmFailPct() && _reCnt < 2)
-      ? `<button class="del-btn grm-recheck" style="background:#b91c1c;color:#fff;width:auto;padding:0 10px;font-size:12px;font-weight:600" data-nm="${esc(rec.name)}" data-gd="${esc(rec.gender)}" title="Re-check now">Re-check</button>`
+      ? `<button data-action="recheck-record" class="del-btn grm-recheck" style="background:#b91c1c;color:#fff;width:auto;padding:0 10px;font-size:12px;font-weight:600" data-nm="${esc(rec.name)}" data-gd="${esc(rec.gender)}" title="Re-check now">Re-check</button>`
       : '';
     // P1-22: checker attribution — legacy records without checkedBy show nothing
     // extra; esc() on checkedBy is MANDATORY (names travel via migration export).
@@ -1244,7 +1244,7 @@ function renderDaily() {
           <span class="score-pill ${pillC}">${rec.pct}%</span>
           <span style="font-size:11px;color:var(--gray-400)">${rec.checked}/${rec.total}</span>
           ${reBtn}
-          ${roView ? '' : `<button class="del-btn" onclick="delDay('${dateStr}',${origIdx})" title="Delete">✕</button>`}
+          ${roView ? '' : `<button data-action="delete-day-record" class="del-btn" onclick="delDay('${dateStr}',${origIdx})" title="Delete">✕</button>`}
         </div>
       </div>
       <div class="chips">${chips}</div>`;
@@ -1276,7 +1276,7 @@ function renderPending(dateStr){
   var pend=grmPendingForDate(dateStr);
   if(dateStr!==todayKey() || !pend.length){ el.innerHTML=''; return; }
   var chips=pend.map(function(e){
-    return '<button class="grm-pending-chip" type="button" data-nm="'+esc(e.name)+'">'+esc(e.name)+' · Start check</button>';
+    return '<button data-action="start-pending-check" class="grm-pending-chip" type="button" data-nm="'+esc(e.name)+'">'+esc(e.name)+' · Start check</button>';
   }).join('');
   el.innerHTML='<div class="grm-pending"><div class="grm-pending-hd">Pending this morning — '+pend.length+'</div><div class="grm-pending-row">'+chips+'</div></div>';
 }
@@ -1556,7 +1556,7 @@ renderMonthly();
 </script>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button data-action="st-v5-home-fab" id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'grooming',nextSteps:[{id:'qms',label:'Open Queue →'}],customerSelectors:[],accessContext:false});</script>
 
