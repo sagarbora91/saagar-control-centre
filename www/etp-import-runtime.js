@@ -53,23 +53,27 @@
       },
       validate:async function(value){
         var reports=value&&value.parsed&&value.parsed.reports;if(!reports||reports!==parsedReports)return failure('ETP_PARSE_STATE_INVALID','VALIDATE');
-        var manifest={scopeKey:[value.scope.storeCode,value.scope.financialYear,value.scope.periodStart+'..'+value.scope.periodEnd].join('|'),generationId:options.currentGenerationId(),reports:[]},chunks=[],quarantines={paymentType25Rows:0};
+        var manifest={scopeKey:[value.scope.storeCode,value.scope.financialYear,value.scope.periodStart+'..'+value.scope.periodEnd].join('|'),generationId:options.currentGenerationId(),reports:[]},chunks=[],quarantines={paymentType25Rows:0},scopedReports={},scopeSelection={mode:'EXPLICIT_SCOPE_FILTER',sourceRows:0,selectedRows:0,excludedRows:0,reports:{}};
         for(var r=0;r<REPORTS.length;r++){
-          var id=REPORTS[r],loaded=reports[id],factRows=[];
+          var id=REPORTS[r],loaded=reports[id],factRows=[],selectedRows=[];
           for(var n=0;n<loaded.rows.length;n++){
-            var row=loaded.rows[n];if(row.businessDate<value.scope.periodStart||row.businessDate>value.scope.periodEnd)return failure('ETP_ROW_OUTSIDE_SELECTED_PERIOD','VALIDATE',{reportId:id,row:n+2});if(id==='R022'&&row.fields.paymentType25Amount!=null&&row.fields.paymentType25Amount!==''&&!exactZero(row.fields.paymentType25Amount))quarantines.paymentType25Rows++;
+            var row=loaded.rows[n];
+            if(row.businessDate<value.scope.periodStart||row.businessDate>value.scope.periodEnd)continue;
+            selectedRows.push(row);if(id==='R022'&&row.fields.paymentType25Amount!=null&&row.fields.paymentType25Amount!==''&&!exactZero(row.fields.paymentType25Amount))quarantines.paymentType25Rows++;
             var fact={};Object.keys(row.fields).forEach(function(key){var field=snake(key);if(allowedSet[field])fact[field]=row.fields[key];});factRows.push(fact);
           }
-          if(!factRows.length)return failure('ETP_ZERO_ACTIVITY_CONFIRMATION_REQUIRED','VALIDATE',{reportId:id});
+          if(!factRows.length)return failure('ETP_SELECTED_SCOPE_HAS_NO_ROWS','VALIDATE',{reportId:id});
+          var excluded=loaded.rows.length-selectedRows.length;scopeSelection.sourceRows+=loaded.rows.length;scopeSelection.selectedRows+=selectedRows.length;scopeSelection.excludedRows+=excluded;scopeSelection.reports[id]={sourceRows:loaded.rows.length,selectedRows:selectedRows.length,excludedRows:excluded};
+          scopedReports[id]=Object.assign({},loaded,{rows:selectedRows,rowCount:selectedRows.length});
           manifest.reports.push({reportId:id,sourceSha256:loaded.sourceSha256,headerSignatureSha256:loaded.headerSignatureSha256,rowCount:factRows.length});
           for(var at=0;at<factRows.length;at+=CHUNK_ROWS)chunks.push({reportId:id,chunkIndex:Math.floor(at/CHUNK_ROWS),rows:factRows.slice(at,at+CHUNK_ROWS)});
         }
-        return {ok:true,manifest:manifest,chunks:chunks,reports:reports,quarantines:quarantines};
+        return {ok:true,manifest:manifest,chunks:chunks,reports:scopedReports,quarantines:quarantines,scopeSelection:scopeSelection};
       },
       reconcile:async function(value){
         var reports=value.validated.reports,left=reports.R022.rows.map(function(row){return row.fields;}),right=reports.R025.rows.map(function(row){return row.fields;});
         var checkedCoverage=core.coverage(value.scope,reports,value.coverageDeclaration);if(!checkedCoverage.ok)return checkedCoverage;
-        var coverage={left:checkedCoverage.coverage.R022,right:checkedCoverage.coverage.R025},result=reconciliation.compareReports(left,right,core.RECON_RULE,coverage);result.coverage=checkedCoverage.coverage;if(result.status==='PASS'){var attribution=reconciliation.compareReports(reports.R013.rows.map(function(row){return row.fields;}),right,core.ATTRIBUTION_RULE,{left:checkedCoverage.coverage.R013,right:checkedCoverage.coverage.R025}),discount=reconciliation.compareReports(reports.R003.rows.map(function(row){return row.fields;}),right,core.DISCOUNT_RULE,{left:checkedCoverage.coverage.R003,right:checkedCoverage.coverage.R025});result.enrichments={R013:{status:attribution.status,differenceCount:attribution.differences.length},R003:{status:discount.status,differenceCount:discount.differences.length},paymentType25:{status:'QUARANTINED',rowCount:value.validated.quarantines.paymentType25Rows,persisted:false}};}return result;
+        var coverage={left:checkedCoverage.coverage.R022,right:checkedCoverage.coverage.R025},result=reconciliation.compareReports(left,right,core.RECON_RULE,coverage);result.coverage=checkedCoverage.coverage;result.scopeSelection=value.validated.scopeSelection;if(result.status==='PASS'){var attribution=reconciliation.compareReports(reports.R013.rows.map(function(row){return row.fields;}),right,core.ATTRIBUTION_RULE,{left:checkedCoverage.coverage.R013,right:checkedCoverage.coverage.R025}),discount=reconciliation.compareReports(reports.R003.rows.map(function(row){return row.fields;}),right,core.DISCOUNT_RULE,{left:checkedCoverage.coverage.R003,right:checkedCoverage.coverage.R025});result.enrichments={R013:{status:attribution.status,differenceCount:attribution.differences.length},R003:{status:discount.status,differenceCount:discount.differences.length},paymentType25:{status:'QUARANTINED',rowCount:value.validated.quarantines.paymentType25Rows,persisted:false}};}return result;
       },
       authorizePublication:async function(value){if(typeof options.authorizePublication!=='function')return{ok:false};try{return(await options.authorizePublication(value))===true?{ok:true}:{ok:false};}catch(_){return{ok:false};}}
     };

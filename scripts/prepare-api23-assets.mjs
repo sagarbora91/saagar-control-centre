@@ -12,8 +12,10 @@ const sourceDir = path.join(root, 'www');
 const require = createRequire(import.meta.url);
 const manifest = require(path.join(sourceDir, 'module-manifest.js'));
 
-const POLYFILLS = `(function(){'use strict';
+export const LEGACY_WEBVIEW_PRELUDE = `(function(){'use strict';
 if(typeof window.globalThis==='undefined')window.globalThis=window;
+var legacyRoot=document.documentElement,legacyClass='saagar-legacy-webview',chromeMatch=String(navigator.userAgent||'').match(/(?:Chrome|CriOS)\\/(\\d+)/),legacyWebView=chromeMatch?parseInt(chromeMatch[1],10)<57:!(window.CSS&&CSS.supports&&CSS.supports('display','grid'));
+if(legacyWebView&&(' '+legacyRoot.className+' ').indexOf(' '+legacyClass+' ')<0)legacyRoot.className=(legacyRoot.className?legacyRoot.className+' ':'')+legacyClass;
 if(!Array.from)Array.from=function(x){return Array.prototype.slice.call(x);};
 if(!Array.prototype.includes)Array.prototype.includes=function(x,n){return this.indexOf(x,n||0)!==-1;};
 if(!Array.prototype.find)Array.prototype.find=function(fn,t){for(var i=0;i<this.length;i++)if(fn.call(t,this[i],i,this))return this[i];};
@@ -31,6 +33,7 @@ if(!Number.isFinite)Number.isFinite=function(x){return typeof x==='number'&&isFi
 if(!Number.isInteger)Number.isInteger=function(x){return Number.isFinite(x)&&Math.floor(x)===x;};
 if(window.NodeList&&!NodeList.prototype.forEach)NodeList.prototype.forEach=Array.prototype.forEach;
 if(window.HTMLCollection&&!HTMLCollection.prototype.forEach)HTMLCollection.prototype.forEach=Array.prototype.forEach;
+if(window.Element&&!Element.prototype.replaceChildren)Element.prototype.replaceChildren=function(){while(this.firstChild)this.removeChild(this.firstChild);for(var i=0;i<arguments.length;i++){var child=arguments[i];this.appendChild(child&&typeof child==='object'&&typeof child.nodeType==='number'?child:document.createTextNode(String(child)));}};
 })();`;
 
 function collectCssVariables(source, target) {
@@ -97,7 +100,7 @@ export function transformHtml(source, filename, cssVariables) {
   });
   return resolveHtmlCssVariables(transformed
     .replace(/x=>x\.checked=true/g, 'function(x){x.checked=true;}')
-    .replace(/<head([^>]*)>/i, `<head$1>\n<script>${POLYFILLS}</script>`), cssVariables);
+    .replace(/<head([^>]*)>/i, `<head$1>\n<script>${LEGACY_WEBVIEW_PRELUDE}</script>`), cssVariables);
 }
 
 function filesUnder(dir) {

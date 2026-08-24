@@ -46,6 +46,12 @@ test('scope validation checks a real consecutive financial year and period membe
   assert.match(html, /fy\(start\) === value\.financialYear && fy\(end\) === value\.financialYear/);
 });
 
+test('multi-year source exports are explicitly bounded to the selected publication scope', () => {
+  assert.match(html, /A workbook may span multiple financial years/);
+  assert.match(html, /only rows inside the explicitly selected one-year scope are reconciled and published/);
+  assert.match(html, /Rows outside this scope remain unpublished/);
+});
+
 test('publication consumes only the opaque confirmation token and defaults fail closed', () => {
   assert.match(html, /\^confirm_\[a-f0-9\]\{32\}_\\d\+\$/);
   assert.match(html, /api\.confirm\(\{ confirmationToken: token \}\)/);
@@ -94,4 +100,11 @@ test('published scope selection survives tab changes and drives verified and exc
 
 test('verified presentation has explicit responsive status and aggregation styles', () => {
   for (const cls of ['etp-active-scope', 'etp-v-metrics', 'etp-v-metric', 'etp-v-groups', 'etp-v-error', 'etp-v-quarantine']) assert.match(html, new RegExp('\\.' + cls));
+});
+
+test('legacy WebView fallback is isolated from modern tablets and covers generated list rows', () => {
+  assert.match(html, /html\.saagar-legacy-webview \.form-grid/);
+  assert.match(html, /html\.saagar-legacy-webview \.etp-v-groups>\*/);
+  assert.match(html, /html\.saagar-legacy-webview \.file-field strong/);
+  assert.doesNotMatch(html, /html\.saagar-api23/);
 });

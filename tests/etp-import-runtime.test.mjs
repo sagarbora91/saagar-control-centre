@@ -21,11 +21,11 @@ function loaded(id){
   return {ok:true,reportId:id,storeCode:'WLMHW',signatureKey:'signature-'+id,rows:[{businessDate:'2026-04-15',fields}]};
 }
 function harness(loaderOverride){
-  const calls=[];
-  const nativeApi={create:()=>({ok:true,adapter:{readStatus:async()=>({ok:true,status:{state:'EMPTY',activeGenerationId:null,restoreFence:false}}),beginStage:async()=>{calls.push('begin');return {ok:true};},appendChunk:async()=>{calls.push('append');return {ok:true};},finishStage:async()=>{calls.push('finish');return {ok:true};},publish:async()=>{calls.push('publish');return {ok:true};}}})};
+  const calls=[],stagedChunks=[];
+  const nativeApi={create:()=>({ok:true,adapter:{readStatus:async()=>({ok:true,status:{state:'EMPTY',activeGenerationId:null,restoreFence:false}}),beginStage:async()=>{calls.push('begin');return {ok:true};},appendChunk:async(_lifecycle,chunk)=>{calls.push('append');stagedChunks.push(structuredClone(chunk));return {ok:true};},finishStage:async()=>{calls.push('finish');return {ok:true};},publish:async()=>{calls.push('publish');return {ok:true};}}})};
   const values=new Map(),storage={getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v)};
   const made=runtimeApi.create({profile,loader:loaderOverride||{load:async input=>loaded(input.selectedReportId)},testOnlySynchronousParser:true,lifecyclePolicy:lifecycle,coordinatorApi:coordinator,nativeApi,reconciliationPolicy:reconciliation,coreContract:core,controlRegistryApi:registryApi,verifiedReaderApi:readerApi,storage,authorizePublication:async()=>true,plugin:{},crypto:crypto.webcrypto,datePolicy:{earliestDate:'2024-04-01',asOfDate:'2026-08-08',maxFutureDays:2}});
-  assert.equal(made.ok,true);return {runtime:made.runtime,calls};
+  assert.equal(made.ok,true);return {runtime:made.runtime,calls,stagedChunks};
 }
 function request(){return {scope,files:['R003','R013','R022','R025'].map(id=>({selectedReportId:id,file:{name:id+'.xlsx',arrayBuffer:async()=>new TextEncoder().encode(id).buffer}})),coverageDeclaration:{confirmed:true,confirmedByRole:'OWNER',reports:Object.fromEntries(['R003','R013','R022','R025'].map(id=>[id,{status:'COMPLETE'}]))},confirmed:false};}
 
@@ -49,6 +49,68 @@ test('precise numeric identifier refusal is surfaced without native staging',asy
 test('non-zero unresolved PAYMENTTYPE25 is excluded and recorded as quarantine metadata',async()=>{
   const h=harness({load:async input=>{const value=loaded(input.selectedReportId);if(input.selectedReportId==='R022')value.rows[0].fields.paymentType25Amount='1.00';return value;}}),checked=await h.runtime.run(request());
   assert.equal(checked.ok,true);const result=await h.runtime.confirm(checked.lifecycle);assert.equal(result.receipt.enrichments.paymentType25.rowCount,1);assert.equal(result.receipt.enrichments.paymentType25.persisted,false);
+});
+
+test('multi-financial-year workbooks publish only the explicit one-year scope',async()=>{
+  const h=harness({load:async input=>{
+    const value=loaded(input.selectedReportId), outside=structuredClone(value.rows[0]);
+    outside.businessDate='2025-03-31';outside.fields.invoiceDate='20250331';
+    if(input.selectedReportId==='R025')outside.fields.netAmount='999.00';
+    value.rows.unshift(outside);return value;
+  }}),checked=await h.runtime.run(request());
+  assert.equal(checked.ok,true,JSON.stringify(checked));
+  assert.equal(checked.awaitingConfirmation,true);
+  assert.deepEqual(checked.reconciliation.scopeSelection,{
+    mode:'EXPLICIT_SCOPE_FILTER',sourceRows:8,selectedRows:4,excludedRows:4,
+    reports:Object.fromEntries(['R003','R013','R022','R025'].map(id=>[id,{sourceRows:2,selectedRows:1,excludedRows:1}]))
+  });
+  assert.equal(checked.reconciliation.status,'PASS','out-of-scope economics must not enter selected-scope reconciliation');
+  assert.equal(h.stagedChunks.length,4);
+  for(const chunk of h.stagedChunks){
+    assert.equal(chunk.scopeKey,'WLMHW|2026-27|2026-04-01..2026-04-30');
+    assert.ok(chunk.rows.length>0);
+    for(const row of chunk.rows){
+      assert.equal(row.invoice_date,'20260415');
+      assert.notEqual(row.net_amount,'999.00');
+    }
+  }
+});
+
+test('scope filtering includes both period boundaries and excludes adjacent dates',async()=>{
+  const h=harness({load:async input=>{
+    const value=loaded(input.selectedReportId),template=value.rows[0];
+    function at(date){const row=structuredClone(template);row.businessDate=date;row.fields.invoiceDate=date.replace(/-/g,'');return row;}
+    value.rows=[at('2026-03-31'),at('2026-04-01'),at('2026-04-30'),at('2026-05-01')];
+    return value;
+  }}),checked=await h.runtime.run(request());
+  assert.equal(checked.ok,true,JSON.stringify(checked));
+  assert.equal(checked.reconciliation.scopeSelection.sourceRows,16);
+  assert.equal(checked.reconciliation.scopeSelection.selectedRows,8);
+  assert.equal(checked.reconciliation.scopeSelection.excludedRows,8);
+  for(const chunk of h.stagedChunks){
+    assert.deepEqual(chunk.rows.map(row=>row.invoice_date),['20260401','20260430']);
+  }
+});
+
+test('only in-scope PAYMENTTYPE25 rows contribute to quarantine metadata',async()=>{
+  const h=harness({load:async input=>{
+    const value=loaded(input.selectedReportId);
+    if(input.selectedReportId==='R022'){
+      value.rows[0].fields.paymentType25Amount='2.00';
+      const outside=structuredClone(value.rows[0]);outside.businessDate='2025-03-31';outside.fields.invoiceDate='20250331';outside.fields.paymentType25Amount='99.00';value.rows.push(outside);
+    }
+    return value;
+  }}),checked=await h.runtime.run(request());
+  assert.equal(checked.ok,true,JSON.stringify(checked));
+  const published=await h.runtime.confirm(checked.lifecycle);
+  assert.equal(published.receipt.enrichments.paymentType25.rowCount,1);
+});
+
+test('a selected scope with no rows fails before native staging',async()=>{
+  const h=harness({load:async input=>{const value=loaded(input.selectedReportId);value.rows[0].businessDate='2025-03-31';value.rows[0].fields.invoiceDate='20250331';return value;}}),result=await h.runtime.run(request());
+  assert.equal(result.code,'ETP_SELECTED_SCOPE_HAS_NO_ROWS');
+  assert.equal(result.coordinatorCode,'ETP_POLICY_REJECTED');
+  assert.deepEqual(h.calls,[]);
 });
 
 test('shell loads pinned local bundles and runtime dependencies before the governed gateway',()=>{

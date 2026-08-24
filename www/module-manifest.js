@@ -443,8 +443,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 32318,
-      "sha256": "c3e0669a108a4575dc79d167626327fc2e55ac7bae1267d7ef9839e255c0b717",
+      "bytes": 33451,
+      "sha256": "ef846baf580b20faa9e3cba82e790164edddf0e227f5ff79c0593398c733e85e",
       "src": "modules/etp/index.html"
     }
   ]

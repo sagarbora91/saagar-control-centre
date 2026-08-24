@@ -9,7 +9,7 @@
       bytes: 4276,
       sha256: '295819db2ec8cd82266fe8000507b871254f7d33ff17d3ff6491a8700e04691f'
     }),
-    Object.freeze({ id: 'shell-core-css', version: 5, file: 'shell-core.css', bytes: 49286, sha256: 'f36f917f3425985c46affb8384ab1ed06a77c5b8b574eb48ba60c7974ada3a2c' }),
+    Object.freeze({ id: 'shell-core-css', version: 6, file: 'shell-core.css', bytes: 49939, sha256: '8c442c540626650c268979a0a979739ce5fe2e6199558efeb641129802c3fefb' }),
     Object.freeze({ id: 'shell-features-css', version: 1, file: 'shell-features.css', bytes: 3299, sha256: '3e1798eec8cd48748880653bd011a549895f7304c9939fd123bfc32d0d9d3e1d' }),
     Object.freeze({ id: 'shell-fonts-css', version: 1, file: 'shell-fonts.css', bytes: 425, sha256: '6eda39319a36eefff030468230db29f57b902c73ab47b3709a93d26964846852' }),
     Object.freeze({ id: 'shell-mobile-css', version: 2, file: 'shell-mobile.css', bytes: 1383, sha256: 'a63c3386a9551d8017b9e49110c04b45ab6b75d229a5d3e78c327da42cd18b2d' }),
