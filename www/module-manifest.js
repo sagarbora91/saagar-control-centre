@@ -282,8 +282,8 @@
       "file": "modules/stock/index.html",
       "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
       "summary": "Inventory movement and variance control for store operations.",
-      "bytes": 220441,
-      "sha256": "b6563b3aa095b7da518979ec22dcb466e473180253cd073955794eb166af796e",
+      "bytes": 221367,
+      "sha256": "f0e478919ae3352b9bc28dc70c34b58c0cc890b763802c2b36e690af8f646608",
       "source_title": "Saagar Traders — Daily Stock Register v3",
       "src": "modules/stock/index.html"
     },

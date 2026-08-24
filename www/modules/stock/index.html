@@ -732,26 +732,26 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
   <div class="hdr-right">
     <div class="date-lbl" id="hdr-date"></div>
     <div class="mode-tog">
-      <button class="mbtn"        id="mbtn-sm"  onclick="setMode('sm')">SM</button>
-      <button class="mbtn active" id="mbtn-cro" onclick="setMode('cro')">CRO</button>
+      <button data-action="mbtn-sm" class="mbtn"        id="mbtn-sm"  onclick="setMode('sm')">SM</button>
+      <button data-action="mbtn-cro" class="mbtn active" id="mbtn-cro" onclick="setMode('cro')">CRO</button>
     </div>
   </div>
 </div>
 
 <!-- STORE NAV -->
 <div class="store-nav">
-  <button class="snav-btn active" id="snav-tw" onclick="setStore('titanworld')">Titan World (WLMHW)</button>
-  <button class="snav-btn"        id="snav-he" onclick="setStore('helios')">Helios (HEMW)</button>
+  <button data-action="snav-tw" class="snav-btn active" id="snav-tw" onclick="setStore('titanworld')">Titan World (WLMHW)</button>
+  <button data-action="snav-he" class="snav-btn"        id="snav-he" onclick="setStore('helios')">Helios (HEMW)</button>
 </div>
 
 <!-- TAB NAV -->
 <div class="tab-nav">
-  <button class="tab-btn active" id="tbtn-opening"   onclick="goTab('opening')">Opening Stock</button>
-  <button class="tab-btn"        id="tbtn-movements" onclick="goTab('movements')">Day Movements</button>
-  <button class="tab-btn tab-locked" id="tbtn-closing" onclick="goTab('closing')" title="Submit Day Movements first">Closing Stock</button>
-  <button class="tab-btn"        id="tbtn-summary"   onclick="goTab('summary')">Summary Report</button>
-  <button class="tab-btn"        id="tbtn-monthly"   onclick="goTab('monthly')">Monthly</button>
-  <button class="tab-btn tab-locked" id="tbtn-settings" onclick="goTab('settings')" title="SM login required">⚙ Settings</button>
+  <button data-action="tbtn-opening" class="tab-btn active" id="tbtn-opening"   onclick="goTab('opening')">Opening Stock</button>
+  <button data-action="tbtn-movements" class="tab-btn"        id="tbtn-movements" onclick="goTab('movements')">Day Movements</button>
+  <button data-action="tbtn-closing" class="tab-btn tab-locked" id="tbtn-closing" onclick="goTab('closing')" title="Submit Day Movements first">Closing Stock</button>
+  <button data-action="tbtn-summary" class="tab-btn"        id="tbtn-summary"   onclick="goTab('summary')">Summary Report</button>
+  <button data-action="tbtn-monthly" class="tab-btn"        id="tbtn-monthly"   onclick="goTab('monthly')">Monthly</button>
+  <button data-action="tbtn-settings" class="tab-btn tab-locked" id="tbtn-settings" onclick="goTab('settings')" title="SM login required">⚙ Settings</button>
 </div>
 
 <div class="main">
@@ -770,7 +770,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
       <div class="btn-row">
         <span id="open-lock-badge" style="display:none" class="lk-badge">🔒 Locked</span>
         <button data-action="print-opening-register" class="btn btn-outline btn-sm no-print" onclick="printOpeningReg()">🖨 Print</button>
-        <button class="btn btn-navy btn-sm no-print" id="btn-lock-open" onclick="toggleLock('opening')">Lock Opening</button>
+        <button data-action="btn-lock-open" class="btn btn-navy btn-sm no-print" id="btn-lock-open" onclick="toggleLock('opening')">Lock Opening</button>
       </div>
     </div>
     <div class="info-bar">
@@ -821,8 +821,8 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
       <div class="btn-row">
         <span id="mov-submitted-badge" style="display:none" class="lk-badge">✓ Submitted</span>
         <button data-action="print-movements-register" class="btn btn-outline btn-sm no-print" onclick="printMovementsReg()">🖨 Print</button>
-        <button class="btn btn-outline btn-sm no-print" id="btn-reopen-mov" style="display:none" onclick="reopenMovements()">🔓 Re-open</button>
-        <button class="btn btn-gold no-print" id="btn-submit-mov" onclick="submitMovements()">Submit &amp; Proceed to Closing →</button>
+        <button data-action="btn-reopen-mov" class="btn btn-outline btn-sm no-print" id="btn-reopen-mov" style="display:none" onclick="reopenMovements()">🔓 Re-open</button>
+        <button data-action="btn-submit-mov" class="btn btn-gold no-print" id="btn-submit-mov" onclick="submitMovements()">Submit &amp; Proceed to Closing →</button>
       </div>
     </div>
     <div class="info-bar" id="mov-info">
@@ -862,7 +862,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
       <div class="btn-row">
         <span id="close-lock-badge" style="display:none" class="lk-badge">🔒 Locked</span>
         <button data-action="print-closing-register" class="btn btn-outline btn-sm no-print" onclick="printClosingReg()">🖨 Print</button>
-        <button class="btn btn-navy btn-sm no-print" id="btn-lock-close" onclick="toggleLock('closing')">Lock Closing</button>
+        <button data-action="btn-lock-close" class="btn btn-navy btn-sm no-print" id="btn-lock-close" onclick="toggleLock('closing')">Lock Closing</button>
       </div>
     </div>
     <div class="cmeter" id="cmeter-closing" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -908,7 +908,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
         <div class="sec-sub">End of Day — Brand-wise Stock Movement</div>
       </div>
       <div class="btn-row no-print">
-        <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ Export CSV</button>
+        <button data-action="export-csv" class="btn btn-outline btn-sm" onclick="exportCSV()">↓ Export CSV</button>
         <button data-action="print-summary-register" class="btn btn-gold btn-sm"    onclick="printSummaryReg()">🖨 Print A4</button>
       </div>
     </div>
@@ -951,8 +951,8 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
         <div class="sec-sub">Variance &amp; shrinkage — brand-wise month view</div>
       </div>
       <div class="btn-row no-print">
-        <input type="month" class="finp" id="mon-month" style="max-width:170px" onchange="monSetMonth(this.value)">
-        <select class="finp" id="mon-n" style="max-width:180px" onchange="monSetN(this.value)"
+        <input data-action="mon-month" type="month" class="finp" id="mon-month" style="max-width:170px" onchange="monSetMonth(this.value)">
+        <select data-action="mon-n" class="finp" id="mon-n" style="max-width:180px" onchange="monSetN(this.value)"
                 title="A brand is a repeat offender when it has a counted variance or theft on at least this many days of the month">
           <option value="2">Offender ≥ 2 days</option>
           <option value="3" selected>Offender ≥ 3 days</option>
@@ -1007,13 +1007,13 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
         <h3>Date &amp; Session</h3>
         <div class="frow">
           <label class="flbl">Working Date</label>
-          <input type="date" class="finp" id="set-date" onchange="setDate(this.value)">
+          <input data-action="set-date" type="date" class="finp" id="set-date" onchange="setDate(this.value)">
         </div>
         <div class="frow">
           <label class="flbl">Store</label>
           <div style="display:flex;gap:8px;margin-top:4px;">
-            <button class="btn btn-navy btn-sm" id="set-btn-tw" onclick="setStore('titanworld')">Titan World</button>
-            <button class="btn btn-outline btn-sm" id="set-btn-he" onclick="setStore('helios')">Helios</button>
+            <button data-action="set-btn-tw" class="btn btn-navy btn-sm" id="set-btn-tw" onclick="setStore('titanworld')">Titan World</button>
+            <button data-action="set-btn-he" class="btn btn-outline btn-sm" id="set-btn-he" onclick="setStore('helios')">Helios</button>
           </div>
         </div>
         <div class="frow">
@@ -1041,17 +1041,17 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
         <div class="frow">
           <label class="flbl">Export today's data</label>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-outline btn-sm" onclick="exportJSON()">↓ JSON</button>
-            <button class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
+            <button data-action="json" class="btn btn-outline btn-sm" onclick="exportJSON()">↓ JSON</button>
+            <button data-action="csv" class="btn btn-outline btn-sm" onclick="exportCSV()">↓ CSV</button>
           </div>
         </div>
         <div class="frow">
           <label class="flbl">Import data (SM only)</label>
-          <input type="file" accept=".json" id="import-file" class="finp" onchange="importJSON(this)" style="font-size:11px;padding:5px;">
+          <input data-action="import-file" type="file" accept=".json" id="import-file" class="finp" onchange="importJSON(this)" style="font-size:11px;padding:5px;">
         </div>
         <div class="frow">
           <label class="flbl">Full backup (all dates)</label>
-          <button class="btn btn-outline btn-sm" onclick="exportAllJSON()">↓ Full Backup JSON</button>
+          <button data-action="full-backup-json" class="btn btn-outline btn-sm" onclick="exportAllJSON()">↓ Full Backup JSON</button>
         </div>
         <p style="font-size:11px;color:var(--gray-400);margin-top:8px;">⚠ Always use the same browser on the same device.</p>
       </div>
@@ -1064,18 +1064,18 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
           <input type="text" class="finp" id="brand-inp" placeholder="New brand name (e.g. NEBULA)" onkeydown="if(event.key==='Enter')addBrand()">
           <button data-action="add-brand" class="btn btn-navy btn-sm" onclick="addBrand()">+ Add</button>
         </div>
-        <button class="btn btn-outline btn-sm" style="margin-top:8px;font-size:11px;" onclick="resetBrandsToDefault()">↺ Reset to defaults</button>
+        <button data-action="reset-to-defaults" class="btn btn-outline btn-sm" style="margin-top:8px;font-size:11px;" onclick="resetBrandsToDefault()">↺ Reset to defaults</button>
       </div>
 
       <div class="set-card danger-zone">
         <h3>⚠ Danger Zone</h3>
         <div class="frow">
           <label class="flbl">Clear today's data (current store)</label>
-          <button class="btn btn-red btn-sm" onclick="clearDay()">Clear Day</button>
+          <button data-action="clear-day" class="btn btn-red btn-sm" onclick="clearDay()">Clear Day</button>
         </div>
         <div class="frow">
           <label class="flbl">Clear ALL data (all stores, all dates)</label>
-          <button class="btn btn-red btn-sm" onclick="clearAll()">⚠ Clear Everything</button>
+          <button data-action="clear-everything" class="btn btn-red btn-sm" onclick="clearAll()">⚠ Clear Everything</button>
         </div>
         <p style="font-size:11px;color:var(--gray-400);margin-top:8px;">Export a backup before clearing. This cannot be undone.</p>
       </div>
@@ -1095,7 +1095,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
            onkeydown="if(event.key==='Enter')smAuthSubmit();if(event.key==='Escape')smAuthCancel()">
     <div class="modal-err" id="sm-pw-err"></div>
     <div class="modal-btns">
-      <button class="btn btn-navy btn-sm" onclick="smAuthSubmit()">Login</button>
+      <button data-action="login" class="btn btn-navy btn-sm" onclick="smAuthSubmit()">Login</button>
       <button data-action="sm-auth-cancel" class="btn btn-outline btn-sm" onclick="smAuthCancel()">Cancel</button>
     </div>
   </div>
@@ -1108,12 +1108,12 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
     <h3>Delete All Data</h3>
     <p>This will <strong>permanently erase</strong> all stock data for all stores and all dates. This cannot be undone.</p>
     <p style="margin-top:8px;">Type <strong>DELETE</strong> in capitals to confirm:</p>
-    <input type="text" id="del-inp" class="finp" placeholder="Type DELETE here"
+    <input data-action="del-inp" type="text" id="del-inp" class="finp" placeholder="Type DELETE here"
            onkeydown="if(event.key==='Enter')delConfirmSubmit();if(event.key==='Escape')delCancel()"
            oninput="document.getElementById('del-submit-btn').disabled=this.value!=='DELETE'">
     <div class="modal-err" id="del-err"></div>
     <div class="modal-btns">
-      <button class="btn btn-red btn-sm" id="del-submit-btn" disabled onclick="delConfirmSubmit()">⚠ Delete Everything</button>
+      <button data-action="del-submit-btn" class="btn btn-red btn-sm" id="del-submit-btn" disabled onclick="delConfirmSubmit()">⚠ Delete Everything</button>
       <button data-action="delete-cancel" class="btn btn-outline btn-sm" onclick="delCancel()">Cancel</button>
     </div>
   </div>
@@ -1129,7 +1129,7 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
     <div id="clk-gaps"></div>
     <div class="modal-err" id="clk-err"></div>
     <div class="modal-btns">
-      <button class="btn btn-navy btn-sm" id="clk-confirm-btn" onclick="doLockClosing()">🔒 Lock &amp; Sign Off</button>
+      <button data-action="clk-confirm-btn" class="btn btn-navy btn-sm" id="clk-confirm-btn" onclick="doLockClosing()">🔒 Lock &amp; Sign Off</button>
       <button data-action="lock-cancel" class="btn btn-outline btn-sm" onclick="closeLockCancel()">Cancel</button>
     </div>
   </div>
@@ -1141,10 +1141,10 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
     <div class="modal-icon">🔓</div>
     <h3 id="rop-title">Re-open</h3>
     <p style="margin-bottom:10px;">This day was signed off. Enter a reason — it is recorded in the audit trail with your name and time.</p>
-    <input type="text" class="si" id="rop-reason" placeholder="Reason for re-opening" oninput="ropValidate()">
+    <input data-action="rop-reason" type="text" class="si" id="rop-reason" placeholder="Reason for re-opening" oninput="ropValidate()">
     <div class="modal-err" id="rop-err"></div>
     <div class="modal-btns">
-      <button class="btn btn-navy btn-sm" id="rop-confirm-btn" disabled onclick="doReopenConfirm()">🔓 Unlock &amp; Record</button>
+      <button data-action="rop-confirm-btn" class="btn btn-navy btn-sm" id="rop-confirm-btn" disabled onclick="doReopenConfirm()">🔓 Unlock &amp; Record</button>
       <button data-action="reopen-cancel" class="btn btn-outline btn-sm" onclick="reopenCancel()">Cancel</button>
     </div>
   </div>
@@ -1159,8 +1159,8 @@ body.st-readonly .tab-nav { box-shadow: inset 0 -3px 0 var(--gold); }
     <div id="thf-rows"></div>
     <div class="modal-err" id="thf-err"></div>
     <div class="modal-btns">
-      <button class="btn btn-navy btn-sm" id="thf-confirm-btn" onclick="doSubmitTheftRemarks()">Submit with Remarks</button>
-      <button class="btn btn-outline btn-sm" onclick="theftSheetCancel()">Back</button>
+      <button data-action="thf-confirm-btn" class="btn btn-navy btn-sm" id="thf-confirm-btn" onclick="doSubmitTheftRemarks()">Submit with Remarks</button>
+      <button data-action="back" class="btn btn-outline btn-sm" onclick="theftSheetCancel()">Back</button>
     </div>
   </div>
 </div>
@@ -3732,7 +3732,7 @@ window.addEventListener('st-date', function (e) {
 </script>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button id="st-v5-home-fab" data-action="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'stock',nextSteps:[],customerSelectors:[],accessContext:true});</script>
 
