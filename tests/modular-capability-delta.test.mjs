@@ -15,11 +15,11 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   assert.equal(recorded.current.capabilities, 687);
   assert.equal(recorded.summary.added, 382);
   assert.equal(recorded.summary.removed, 350);
-  assert.equal(recorded.summary.changed, 37);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 769);
+  assert.equal(recorded.summary.changed, 38);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 770);
   assert.equal(recorded.summary.handlerBodyHashOnly, 18);
   assert.equal(recorded.summary.bindingStructureChanged, 3);
-  assert.equal(recorded.summary.changedFailurePostures, 16);
+  assert.equal(recorded.summary.changedFailurePostures, 17);
   assert.equal(recorded.summary.reportPresentationFallbacks, 1);
   const presentationFallback = recorded.deltas.find(item => item.capabilityId === 'script-etp-import-ui:failure:posture');
   assert.equal(presentationFallback.change, 'changed');

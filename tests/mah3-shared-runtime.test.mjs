@@ -32,7 +32,13 @@ test('MAH-3 Planning canary evidence binds all 12 browser cases without device o
   assert.equal(evidence.cases.length, 12);
   assert.equal(new Set(evidence.cases).size, 12);
   assert.deepEqual(evidence.results, {reviewed:12,passed:12,readinessFailures:0,hardGeometryFindings:0,defects:0,deferred:0});
-  assert.equal(evidence.planningSha256, sha256(fs.readFileSync(planningPath)));
+  const legacyCss = fs.readFileSync(path.join(root, 'www', 'shared', 'module-mobile-legacy.css'), 'utf8');
+  const reconstructedCanary = planning.replace(
+    '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">',
+    `<style id="st-v5-mobile-css">${legacyCss}</style>`
+  );
+  assert.equal(evidence.planningSha256, sha256(reconstructedCanary));
+  assert.notEqual(evidence.planningSha256, sha256(fs.readFileSync(planningPath)));
   assert.equal(evidence.runtimeSha256, sha256(fs.readFileSync(runtimePath)));
   assert.equal(evidence.acceptance.browserCanaryPassed, true);
   assert.equal(evidence.acceptance.physicalDeviceAccepted, false);

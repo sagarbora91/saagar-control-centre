@@ -3,7 +3,26 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6C.1 contract frozen; begin Planning proof — 2026-08-24
+## RESUME HERE — Phase 6C.2 Planning source proof built; visual gate pending — 2026-08-24
+
+### Phase 6C.2 crash checkpoint
+
+The Planning-only extraction is implemented and source-proven. The exact 24,977-byte canonical
+authority now lives at `www/shared/module-mobile-legacy.css`; Planning imports it after the
+existing common asset. Exact reconstruction restores Planning's pre-extraction bytes and SHA.
+The other ten legacy modules remain inline, and ETP remains byte-identical and unlinked.
+
+Focused source/manifest/API-23/MAH3/modular verification is **49/49** and Phase 0 is **69/69**.
+Historical MAH3 evidence remains bound to the reconstructed pre-extraction source; it was not
+relabeled as evidence for this build. Resume by completing the independent visible-browser
+Planning comparison at the governed widths. Do not roll the other ten modules until that visual
+gate passes. The controlling implementation receipt is:
+
+`verification/audit/PHASE-6C-PLANNING-SOURCE-PROOF-2026-08-24.md`
+
+No APK, device/Firebase action, publication or push occurred.
+
+## Historical resume point — Phase 6C.1 contract frozen; begin Planning proof — 2026-08-24
 
 ### Phase 6C.1 crash checkpoint
 

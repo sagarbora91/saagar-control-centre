@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 10) fail('sharedAssets must contain exactly ten entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 11) fail('sharedAssets must contain exactly eleven entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -183,6 +183,7 @@
       { id: 'module-back-css', file: 'shared/module-back.css' },
       { id: 'module-employee-css', file: 'shared/module-employee.css' }
       ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }
+      ,{ id: 'module-mobile-legacy-css', file: 'shared/module-mobile-legacy.css' }
       ,{ id: 'module-brand-tokens-css', file: 'shared/module-brand-tokens.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
@@ -248,6 +249,13 @@
       "file": "shared/module-mobile-common.css",
       "bytes": 1080,
       "sha256": "3eeee52dcb2070d8e58482040fb855857d5092aad22641a7852ae0af899c2e0b"
+    },
+    {
+      "id": "module-mobile-legacy-css",
+      "version": 1,
+      "file": "shared/module-mobile-legacy.css",
+      "bytes": 24977,
+      "sha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443"
     },
     {
       "id": "module-brand-tokens-css",
@@ -429,8 +437,8 @@
       "file": "modules/planning/index.html",
       "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
       "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
-      "bytes": 39684,
-      "sha256": "8fd35c2046b49034f0bb293b513dbf51a69e76054ebe12a4f0b8915a330aef4c",
+      "bytes": 14760,
+      "sha256": "1e537c757f468a4639d2062489996367dd1a4d703913b5943c089a7e8541ac07",
       "src": "modules/planning/index.html"
     },
     {
