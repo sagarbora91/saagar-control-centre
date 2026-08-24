@@ -25,6 +25,10 @@ import { readModuleManifestSource } from '../scripts/lib/module-manifest-source.
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+const restorePhase6dViewport = (moduleId, source) => moduleId === 'dsr' ? source.replace(
+  'content="width=device-width, initial-scale=1.0"',
+  'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
+) : source;
 const readModule = moduleId => fs.readFileSync(path.join(root, 'www/modules', moduleId, 'index.html'), 'utf8');
 const legacyLink = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
 
@@ -92,7 +96,7 @@ test('the eleven-module rollout is executable and idempotent in an isolated reco
     const staged = fs.readFileSync(moduleFile, 'utf8');
     const migrated = legacyLink + renderLegacyDeltaStyle(moduleId);
     const inline = `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fixtureAsset)}</style>`;
-    fs.writeFileSync(moduleFile, staged.replace(migrated, inline), 'utf8');
+    fs.writeFileSync(moduleFile, restorePhase6dViewport(moduleId, staged.replace(migrated, inline)), 'utf8');
     assert.equal(sha256(fs.readFileSync(moduleFile)), MODULE_BASELINE_SHA256[moduleId], moduleId);
   }
 
@@ -130,8 +134,8 @@ test('all eleven modules use one canonical link and only Service, QMS and Payrol
     const expectedDelta = renderLegacyDeltaStyle(moduleId);
     assert.equal(source.includes('st-v5-mobile-css-delta'), Boolean(expectedDelta), moduleId);
     if (expectedDelta) assert.equal(source.split(expectedDelta).length - 1, 1, moduleId);
-    const reconstructed = source.replace(legacyLink + expectedDelta,
-      `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8'))}</style>`);
+    const reconstructed = restorePhase6dViewport(moduleId, source.replace(legacyLink + expectedDelta,
+      `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8'))}</style>`));
     assert.equal(sha256(reconstructed), MODULE_BASELINE_SHA256[moduleId], moduleId);
   }
   assert.deepEqual(Object.keys(MODULE_DELTAS), ['service', 'qms', 'payroll']);

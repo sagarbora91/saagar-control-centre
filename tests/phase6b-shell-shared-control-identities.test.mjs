@@ -24,7 +24,9 @@ test('shared shell freezes the exact safe identity set for the controls Phase 6 
 });
 
 test('shared shell identity annotations restore the exact baseline bytes', () => {
-  const restored = html.replace(/ data-action="([^"]+)"/g, (attribute, action) => added.includes(action) ? '' : attribute);
+  const restored = html.replace(/ data-action="([^"]+)"/g, (attribute, action) => added.includes(action) ? '' : attribute)
+    .replace('content="width=device-width, initial-scale=1.0, viewport-fit=cover"',
+      'content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"');
   assert.equal(crypto.createHash('sha256').update(restored).digest('hex'), 'b09b5ed9ce37ab090ebafdc302adadd7a594436598c934da1ace6e918427e4bf');
 });
 

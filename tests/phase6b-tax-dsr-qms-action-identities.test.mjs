@@ -49,6 +49,13 @@ function sha256(value) {
   return crypto.createHash('sha256').update(value.replace(/\r\n/g, '\n')).digest('hex');
 }
 
+function restorePhase6dViewport(moduleId, source) {
+  return moduleId === 'dsr' ? source.replace(
+    'content="width=device-width, initial-scale=1.0"',
+    'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
+  ) : source;
+}
+
 for (const fixture of cases) test(`${fixture.module} has exact identity-only static A3 annotations`, () => {
   const file = path.join(root, 'www', 'modules', fixture.module, 'index.html');
   const source = fs.readFileSync(file, 'utf8');
@@ -64,7 +71,7 @@ for (const fixture of cases) test(`${fixture.module} has exact identity-only sta
     assert.equal(withoutAnnotations.split(attribute).length - 1, 1, action);
     withoutAnnotations = withoutAnnotations.replace(attribute, '');
   }
-  assert.equal(sha256(restoreInlineLegacySource(fixture.module, withoutAnnotations)), fixture.baseline,
+  assert.equal(sha256(restoreInlineLegacySource(fixture.module, restorePhase6dViewport(fixture.module, withoutAnnotations))), fixture.baseline,
     'module source changed beyond the approved identity-only annotations');
 });
 

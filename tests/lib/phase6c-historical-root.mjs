@@ -27,26 +27,42 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  const shellPath = path.join(workspaceRoot, 'www/index.html');
+  fs.writeFileSync(shellPath, fs.readFileSync(shellPath, 'utf8')
+    .replace('content="width=device-width, initial-scale=1.0, viewport-fit=cover"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"'), 'utf8');
+  const dsrPath = path.join(workspaceRoot, 'www/modules/dsr/index.html');
+  fs.writeFileSync(dsrPath, fs.readFileSync(dsrPath, 'utf8')
+    .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
-    .replace("input.sharedAssets.length !== 13", "input.sharedAssets.length !== 11")
-    .replace("sharedAssets must contain exactly thirteen entries", "sharedAssets must contain exactly eleven entries");
+    .replace("input.sharedAssets.length !== 16", "input.sharedAssets.length !== 11")
+    .replace("sharedAssets must contain exactly sixteen entries", "sharedAssets must contain exactly eleven entries");
   for (const entry of [
     "      ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }\n",
-    "      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }\n"
+    "      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }\n",
+    "      ,{ id: 'module-table-css', file: 'shared/module-table.css' }\n",
+    "      ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }\n",
+    "      ,{ id: 'module-components-css', file: 'shared/module-components.css' }\n"
   ]) manifestSource = manifestSource.replace(entry, '');
   fs.writeFileSync(manifestPath, manifestSource, 'utf8');
   fs.writeFileSync(path.join(workspaceRoot, 'www/shared/module-brand-tokens.css'), PRE_PHASE6D_BRAND_TOKENS, 'utf8');
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-responsive.css'));
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-ui-runtime.js'));
+  fs.rmSync(path.join(workspaceRoot, 'www/shared/module-table.css'));
+  fs.rmSync(path.join(workspaceRoot, 'www/shared/module-table-runtime.js'));
+  fs.rmSync(path.join(workspaceRoot, 'www/shared/module-components.css'));
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
-    'module-responsive-css', 'module-ui-runtime'
+    'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css'
   ].includes(item.id));
   const brandTokens = snapshot.data.sharedAssets.find(item => item.id === 'module-brand-tokens-css');
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
   brandTokens.bytes = brandBytes.length;
   brandTokens.sha256 = sha256(brandBytes);
+  const dsrModule = snapshot.data.modules.find(item => item.id === 'dsr');
+  const dsrBytes = fs.readFileSync(dsrPath);
+  dsrModule.bytes = dsrBytes.length;
+  dsrModule.sha256 = sha256(dsrBytes);
   fs.writeFileSync(manifestPath, renderModuleManifestSource(snapshot, snapshot.data), 'utf8');
   return workspaceRoot;
 }

@@ -3,7 +3,32 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6D Part 1 complete; begin opt-in table/grid foundation — 2026-08-24
+## RESUME HERE — Phase 6D engineering complete; begin Phase 6E Stock pilot — 2026-08-24
+
+### Phase 6D engineering closure
+
+The opt-in shared UI foundation is complete. The frozen token and responsive-tier assets are now
+joined by gated table/card, priority-column, true-grid and general component contracts. The table
+runtime exposes only closed, fixed builders for its two audited button controls; ordinary values
+remain opaque text, forged control tokens fail closed, and no HTML/navigation/event-handler sink
+is exposed. No module has adopted any Phase 6D asset.
+
+The twelve-module access-context matrix is frozen without blanket enablement: Stock, Service, DSR
+and Expense remain enabled; QMS, Grooming, CRO Audit, Payroll, Leave, Tax, Planning and ETP remain
+disabled. ETP remains 34,473 bytes, SHA-256
+`b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12`,
+`accessContext:false`, and outside the shared UI rollout.
+
+Focused Phase 6D verification is **48/48**. Phase 0, security, modular and complete-offline gates
+are recorded in the controlling closure receipt. Resume at Phase 6E with Stock as the first and
+only pilot; adoption, rendered/device/UAT acceptance and release activity remain future work.
+
+`verification/audit/PHASE-6D-ENGINEERING-CLOSURE-2026-08-24.md`
+
+No APK/build/sign, Firebase/device action, upload, publication, push, billing, module business-logic
+or module access-context change occurred.
+
+## Historical resume point — Phase 6D Part 1 complete; begin opt-in table/grid foundation — 2026-08-24
 
 ### Phase 6D Part 1 crash checkpoint
 

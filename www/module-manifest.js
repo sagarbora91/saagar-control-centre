@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 13) fail('sharedAssets must contain exactly thirteen entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 16) fail('sharedAssets must contain exactly sixteen entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -187,6 +187,9 @@
       ,{ id: 'module-brand-tokens-css', file: 'shared/module-brand-tokens.css' }
       ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }
       ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }
+      ,{ id: 'module-table-css', file: 'shared/module-table.css' }
+      ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }
+      ,{ id: 'module-components-css', file: 'shared/module-components.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
@@ -281,6 +284,27 @@
       "sha256": "d4e5a0618905bf9e1127ea0c68439a477641df34bfdc0fdf4115aa0f4c9c0f30"
     },
     {
+      "id": "module-table-css",
+      "version": 1,
+      "file": "shared/module-table.css",
+      "bytes": 4094,
+      "sha256": "b3004d7d944bdaa06ecdc35d95ff4e35891ae0482a16b4dae4c69130e8091990"
+    },
+    {
+      "id": "module-table-runtime",
+      "version": 1,
+      "file": "shared/module-table-runtime.js",
+      "bytes": 4827,
+      "sha256": "cb8f46ab93b299469bf894179c1482980c59adb4634864d81510148000596e96"
+    },
+    {
+      "id": "module-components-css",
+      "version": 1,
+      "file": "shared/module-components.css",
+      "bytes": 5923,
+      "sha256": "c2e64460d16f6852d82cd3ac74bb597c31c88ae1ac3f3b02fe58044c5ea089b6"
+    },
+    {
       "id": "module-delete-cell-css",
       "version": 1,
       "file": "shared/module-delete-cell.css",
@@ -350,8 +374,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 182029,
-      "sha256": "cfa3724dc5024163c3c149df53096931732de22b22739a0cad20edf1d7d69bc0",
+      "bytes": 181992,
+      "sha256": "a24a0b414552e3cef6891c787cabf44d57f3e6d219480e9d7ed749ce9183dc3a",
       "src": "modules/dsr/index.html"
     },
     {

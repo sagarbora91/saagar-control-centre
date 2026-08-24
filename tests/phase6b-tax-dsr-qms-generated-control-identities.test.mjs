@@ -35,6 +35,13 @@ function stripGeneratedAnnotations(source) {
     .replace(/ data-action-key="[^"]+"/g, '');
 }
 
+function restorePhase6dViewport(moduleId, source) {
+  return moduleId === 'dsr' ? source.replace(
+    'content="width=device-width, initial-scale=1.0"',
+    'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
+  ) : source;
+}
+
 for (const fixture of fixtures) test(`${fixture.module} generated controls have exact bounded definition identities`, () => {
   const file = path.join(root, 'www', 'modules', fixture.module, 'index.html');
   const source = fs.readFileSync(file, 'utf8');
@@ -52,7 +59,7 @@ for (const fixture of fixtures) test(`${fixture.module} generated controls have 
     }
   });
 
-  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource(fixture.module, stripGeneratedAnnotations(source))).digest('hex'), fixture.baseline);
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource(fixture.module, restorePhase6dViewport(fixture.module, stripGeneratedAnnotations(source)))).digest('hex'), fixture.baseline);
 });
 
 test('the generated identity contract covers the inventoried 143 definitions and leaves A3 conflict-free', async () => {
