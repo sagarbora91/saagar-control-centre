@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 11) fail('sharedAssets must contain exactly eleven entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 13) fail('sharedAssets must contain exactly thirteen entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -185,6 +185,8 @@
       ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }
       ,{ id: 'module-mobile-legacy-css', file: 'shared/module-mobile-legacy.css' }
       ,{ id: 'module-brand-tokens-css', file: 'shared/module-brand-tokens.css' }
+      ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }
+      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
@@ -261,8 +263,22 @@
       "id": "module-brand-tokens-css",
       "version": 1,
       "file": "shared/module-brand-tokens.css",
-      "bytes": 675,
-      "sha256": "4043d4f67d83e6ed45a0dc8addfb6d6903fa5df5e1126ac296ffef743b1c951c"
+      "bytes": 1479,
+      "sha256": "89e5bcff9ea1b67ea1063d8caa80123e12367e23a1f9ab575ffa234ed8162f85"
+    },
+    {
+      "id": "module-responsive-css",
+      "version": 1,
+      "file": "shared/module-responsive.css",
+      "bytes": 1692,
+      "sha256": "050413e0a6bd9969610c904775c77166576230d05cac3ab1c1d2bc0051aad05a"
+    },
+    {
+      "id": "module-ui-runtime",
+      "version": 1,
+      "file": "shared/module-ui-runtime.js",
+      "bytes": 2733,
+      "sha256": "d4e5a0618905bf9e1127ea0c68439a477641df34bfdc0fdf4115aa0f4c9c0f30"
     },
     {
       "id": "module-delete-cell-css",

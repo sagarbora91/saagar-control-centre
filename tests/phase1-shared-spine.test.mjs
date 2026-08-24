@@ -86,6 +86,10 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
   assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
     ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
+  for (const optInAsset of ['shared/module-responsive.css','shared/module-ui-runtime.js']) {
+    assert.match(manifestSource, new RegExp(optInAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+    assert.equal(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(optInAsset)).length, 0, optInAsset);
+  }
 });
 
 test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {

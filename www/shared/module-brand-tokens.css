@@ -9,4 +9,16 @@
   --radius:12px; --radius-lg:16px;
   --font-sans:'DM Sans',system-ui,'Segoe UI',Roboto,Arial,sans-serif;
   --font-serif:'DM Serif Display',Georgia,'Times New Roman',serif;
+  --space-0:0; --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:20px; --space-6:24px; --space-8:32px; --space-10:40px; --space-12:48px;
+  --type-xs:12px; --type-sm:14px; --type-md:16px; --type-lg:18px;
+  --type-xl:22px; --type-2xl:28px; --type-floor:16px;
+  --line-tight:1.2; --line-normal:1.45; --line-relaxed:1.6;
+  --control-height:44px; --control-height-compact:36px; --touch-target:44px;
+  --toolbar-height:56px; --nav-height:64px; --card-padding:16px;
+  --sheet-max-width:640px; --modal-max-width:720px; --grid-row-height:44px;
+  --content-max-width:1440px; --measure-reading:72ch;
+  --shadow-1:0 1px 3px rgba(13,35,64,.12); --shadow-2:0 8px 24px rgba(13,35,64,.16);
+  --focus-ring:0 0 0 3px rgba(29,78,216,.28);
+  --z-toolbar:40; --z-nav:50; --z-modal:100; --z-toast:120;
 }

@@ -3,7 +3,34 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6C engineering closed; begin Phase 6D foundation — 2026-08-24
+## RESUME HERE — Phase 6D Part 1 complete; begin opt-in table/grid foundation — 2026-08-24
+
+### Phase 6D Part 1 crash checkpoint
+
+The shared token and width-tier contract is frozen without adopting it into any module screen.
+Existing brand token values are unchanged; spacing, typography, type-floor and component metrics
+are additive. The new responsive asset is fully gated by explicit `data-saagar-ui` opt-in and
+publishes mobile `<640`, compact `640-899`, tablet `900-1199`, desktop `>=1200`, plus explicit
+`auto`. The separate frozen runtime does not autoboot and uses an API-23-safe resize fallback.
+
+Both new assets and the expanded token asset are manifest-bound. Focused Phase 6D checks are
+**29/29**, Phase 0 is **72/72**, and modular is **88/88**. Historical MAH3/MAH4 evidence remains
+bound to reconstructed pre-Phase6C authority, and the Phase 6C current profile is verified against
+its reconstructed boundary rather than silently repinned. ETP remains 34,473 bytes, SHA-256
+`b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12`, `accessContext:false`,
+and unadopted.
+
+The read-only access review retains the current allowlist: Stock, Service, DSR and Expense stay
+enabled; QMS, Grooming, CRO Audit, Payroll, Leave, Tax, Planning and ETP stay disabled. Resume with
+the opt-in table/card, priority-column and true-grid components plus safe static/generated-markup
+helpers. Do not adopt them into Stock or another module before Phase 6E. Controlling checkpoint:
+
+`verification/audit/PHASE-6D-PART-1-TOKEN-TIER-CONTRACT-2026-08-24.md`
+
+No APK, device/Firebase action, publication, push, billing, module business-logic or access-context
+change occurred.
+
+## Historical resume point — Phase 6C engineering closed; begin Phase 6D foundation — 2026-08-24
 
 ### Phase 6C closure checkpoint
 

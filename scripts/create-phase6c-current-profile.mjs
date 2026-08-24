@@ -17,7 +17,7 @@ const receipt = (workspaceRoot, relativePath) => {
   return { path: relativePath, bytes: bytes.length, sha256: sha256(bytes) };
 };
 
-export function buildPhase6cCurrentProfile(workspaceRoot = root) {
+export function buildPhase6cCurrentProfile(workspaceRoot = root, options = {}) {
   const manifest = readModuleManifestSource(workspaceRoot).data;
   const fingerprint = createWwwFingerprint(workspaceRoot);
   const legacyHref = '../../shared/module-mobile-legacy.css';
@@ -37,7 +37,7 @@ export function buildPhase6cCurrentProfile(workspaceRoot = root) {
   return {
     schemaVersion: 1,
     profileId: 'phase6c-current-source-2026-08-24',
-    sourceProductCommit: execFileSync('git', ['log', '-1', '--format=%H', '--', 'www'], { cwd: workspaceRoot, encoding: 'utf8' }).trim(),
+    sourceProductCommit: options.sourceProductCommit || execFileSync('git', ['log', '-1', '--format=%H', '--', 'www'], { cwd: workspaceRoot, encoding: 'utf8' }).trim(),
     sourceFingerprint: {
       algorithm: fingerprint.algorithm,
       fileCount: fingerprint.fileCount,

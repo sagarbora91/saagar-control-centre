@@ -10,12 +10,18 @@ import {
 } from '../scripts/create-phase6c-current-profile.mjs';
 import { validateBaseline } from '../scripts/mah3-visual-review-server.mjs';
 import { validateMah4Profile } from '../scripts/lib/mah4-contract-source.mjs';
+import { createPhase6cBoundaryWorkspace } from './lib/phase6c-historical-root.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 test('Phase 6C current profile exactly binds the extracted source tree without relabeling history', () => {
   const recorded = JSON.parse(fs.readFileSync(path.join(root, PHASE6C_PROFILE_PATH), 'utf8'));
-  assert.deepEqual(recorded, buildPhase6cCurrentProfile(root));
+  const phase6cBoundary = createPhase6cBoundaryWorkspace(root);
+  try {
+    assert.deepEqual(recorded, buildPhase6cCurrentProfile(phase6cBoundary, { sourceProductCommit: recorded.sourceProductCommit }));
+  } finally {
+    fs.rmSync(phase6cBoundary, { recursive: true, force: true });
+  }
   assert.equal(recorded.rollout.importCount, 11);
   assert.deepEqual(recorded.rollout.deltaModules, ['service', 'qms', 'payroll']);
   assert.ok(recorded.rollout.modules.every(module => module.legacyImports === 1));
