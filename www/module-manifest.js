@@ -429,8 +429,8 @@
       "file": "modules/planning/index.html",
       "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
       "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
-      "bytes": 39616,
-      "sha256": "dce595540139160e198ede79f834ad4464de0e24de92991d03345c85f183ae7d",
+      "bytes": 39684,
+      "sha256": "8fd35c2046b49034f0bb293b513dbf51a69e76054ebe12a4f0b8915a330aef4c",
       "src": "modules/planning/index.html"
     },
     {
