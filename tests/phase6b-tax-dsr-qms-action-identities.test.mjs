@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run as auditA3 } from '../scripts/audit/audits/a3.mjs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cases = Object.freeze([
@@ -63,7 +64,7 @@ for (const fixture of cases) test(`${fixture.module} has exact identity-only sta
     assert.equal(withoutAnnotations.split(attribute).length - 1, 1, action);
     withoutAnnotations = withoutAnnotations.replace(attribute, '');
   }
-  assert.equal(sha256(withoutAnnotations), fixture.baseline,
+  assert.equal(sha256(restoreInlineLegacySource(fixture.module, withoutAnnotations)), fixture.baseline,
     'module source changed beyond the approved identity-only annotations');
 });
 

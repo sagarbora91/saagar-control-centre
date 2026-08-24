@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -23,7 +24,7 @@ test('CRO Audit freezes the exact safe identity set for all 24 static actions', 
 
 test('CRO Audit annotations restore the exact baseline bytes when stripped', () => {
   const restored = html.replace(/ data-action="[^"]+"/g, '');
-  assert.equal(crypto.createHash('sha256').update(restored).digest('hex'), '32bc3d5b1cd6843d57e5a3c3d918034c7f2ee93224eb4916a41779f6ed5849aa');
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('cro_audit', restored)).digest('hex'), '32bc3d5b1cd6843d57e5a3c3d918034c7f2ee93224eb4916a41779f6ed5849aa');
 });
 
 test('CRO Audit remains an exact conflict-free A3 action surface', async () => {

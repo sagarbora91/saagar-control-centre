@@ -84,7 +84,8 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   const legacyAsset = 'shared/module-mobile-legacy.css';
   assert.match(manifestSource, new RegExp(legacyAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
-  assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))), ['planning']);
+  assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
+    ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
 });
 
 test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {
@@ -102,7 +103,7 @@ test('Phase 1 audit exit closes owned authority gates and records exact capabili
   assert.equal(capability.metric.capabilities, 687);
   assert.equal(capability.metric.conflictingIds, 0);
   assert.equal(ledger.baseline.capabilities, 655);
-  assert.equal(ledger.summary.capabilityApprovalsRequired, 770);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 769);
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);

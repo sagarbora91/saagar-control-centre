@@ -6,6 +6,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run as auditA3 } from '../scripts/audit/audits/a3.mjs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fixtures = Object.freeze([
@@ -51,7 +52,7 @@ for (const fixture of fixtures) test(`${fixture.module} generated controls have 
     }
   });
 
-  assert.equal(crypto.createHash('sha256').update(stripGeneratedAnnotations(source)).digest('hex'), fixture.baseline);
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource(fixture.module, stripGeneratedAnnotations(source))).digest('hex'), fixture.baseline);
 });
 
 test('the generated identity contract covers the inventoried 143 definitions and leaves A3 conflict-free', async () => {

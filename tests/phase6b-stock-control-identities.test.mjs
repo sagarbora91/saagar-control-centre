@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 
 const html = fs.readFileSync(new URL('../www/modules/stock/index.html', import.meta.url), 'utf8');
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
@@ -27,7 +28,7 @@ test('Stock adds exactly 36 identities without changing existing control semanti
   const withoutNewAnnotations = html.replace(/ data-action="([^"]+)"/g, (attribute, action) =>
     existingActions.has(action) ? attribute : '');
   assert.equal(
-    crypto.createHash('sha256').update(withoutNewAnnotations).digest('hex'),
+    crypto.createHash('sha256').update(restoreInlineLegacySource('stock', withoutNewAnnotations)).digest('hex'),
     originalSha256
   );
 });

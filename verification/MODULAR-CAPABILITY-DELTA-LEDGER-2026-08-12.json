@@ -23,7 +23,7 @@
       "visible-action": 484
     },
     "conflicts": 0,
-    "inventorySha256": "c4dfa96760bce8f9226113d505c94d55be00fc12428574c852d723fec10061c9"
+    "inventorySha256": "2460c609f1080bbf5dcd4b536d2d5130cd650a8214820b3130b538746d91a83f"
   },
   "deltas": [
     {
@@ -19734,38 +19734,6 @@
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
-    },
-    {
-      "baseline": {
-        "category": "failure-posture",
-        "outcome": {
-          "catchBlocks": 3,
-          "explicitFallbackSites": 1,
-          "swallowedCatchBlocks": 1,
-          "throwSites": 0,
-          "userVisibleErrorSites": 20
-        },
-        "surface": "planning"
-      },
-      "baselineOutcomeSha256": "68daa0bd39f097ceabad5ffcccca1de5fc3357ca2a96297b4edab3d26753a0a0",
-      "capabilityId": "planning:failure:posture",
-      "category": "failure-posture",
-      "change": "changed",
-      "current": {
-        "category": "failure-posture",
-        "outcome": {
-          "catchBlocks": 3,
-          "explicitFallbackSites": 1,
-          "swallowedCatchBlocks": 1,
-          "throwSites": 0,
-          "userVisibleErrorSites": 13
-        },
-        "surface": "planning"
-      },
-      "currentOutcomeSha256": "d762e030e8c2724bf338cc371be7565ca1e262d917d51a06010782b1132f9288",
-      "ownerApproval": "pending",
-      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
-      "reviewClass": "failure-posture-source-boundary-change"
     },
     {
       "baseline": {
@@ -41348,11 +41316,11 @@
   "summary": {
     "added": 382,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 770,
-    "changed": 38,
-    "changedFailurePostures": 17,
+    "capabilityApprovalsRequired": 769,
+    "changed": 37,
+    "changedFailurePostures": 16,
     "changedVisibleActions": 21,
-    "comparisonDeltaSha256": "57d97f96ec7fb6fbfbf5ce6a05d00904ccbc829428eecc1771e1278a2ec3052b",
+    "comparisonDeltaSha256": "e50b9d920c32138c751ba313793526698d6fbedce2c5d448c8119206c7af996c",
     "handlerBodyHashOnly": 18,
     "netCapabilities": 32,
     "removed": 350,

@@ -4,6 +4,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { run as auditA3 } from './audit/audits/a3.mjs';
 import { buildContext, compareText, sha256 } from './audit/lib.mjs';
+import {
+  LEGACY_ASSET,
+  LEGACY_MODULE_ALLOWLIST,
+  restoreMigratedLegacySource
+} from './prepare-phase6c-mobile-legacy-css.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASELINE_PATH = 'verification/audit/2026-08-11-113428-b9f04b5/A3-capabilities.json';
@@ -193,7 +198,22 @@ function categoryCounts(inventory) {
 
 export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   const baselineAudit = JSON.parse(fs.readFileSync(path.join(workspaceRoot, BASELINE_PATH), 'utf8'));
-  const currentAudit = await auditA3(buildContext(workspaceRoot));
+  const rawContext = buildContext(workspaceRoot);
+  const authority = rawContext.read(`www/${LEGACY_ASSET}`);
+  const legacyByFile = new Map(LEGACY_MODULE_ALLOWLIST.map(moduleId =>
+    [`www/modules/${moduleId}/index.html`, moduleId]));
+  const normalize = (file, source) => legacyByFile.has(file)
+    ? restoreMigratedLegacySource(legacyByFile.get(file), source, authority)
+    : source;
+  const currentContext = Object.freeze({
+    ...rawContext,
+    modules: rawContext.modules.map(module => Object.freeze({
+      ...module,
+      html: normalize(module.file, module.html)
+    })),
+    read: file => normalize(file, rawContext.read(file))
+  });
+  const currentAudit = await auditA3(currentContext);
   const baselineCheck = check(baselineAudit, 'A3-02');
   const currentCheck = check(currentAudit, 'A3-02');
   const baseline = baselineCheck.metric.inventory;
@@ -240,9 +260,9 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 484, permission: 27, 'persisted-outcome': 86, 'failure-posture': 77 });
   assert.equal(count('added'), 382);
   assert.equal(count('removed'), 350);
-  assert.equal(count('changed'), 38);
+  assert.equal(count('changed'), 37);
   assert.equal(classCount('handler-body-hash-only'), 18);
-  assert.equal(classCount('failure-posture-source-boundary-change'), 16);
+  assert.equal(classCount('failure-posture-source-boundary-change'), 15);
   assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -27,7 +28,7 @@ test('Leave new annotations restore the exact baseline bytes when stripped', () 
   const restored = html
     .replace(/ data-action="([^"]+)"/g, (attribute, action) => added.includes(action) ? '' : attribute)
     .replace(/\b\w+\.dataset\.action = '[^']+'; /g, '');
-  assert.equal(crypto.createHash('sha256').update(restored).digest('hex'), 'b1c11fbee54f66eacbe72734850e3cdb338ec48af7ba987142fcd06d450c4143');
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('leave', restored)).digest('hex'), 'b1c11fbee54f66eacbe72734850e3cdb338ec48af7ba987142fcd06d450c4143');
 });
 
 test('Leave remains an exact conflict-free A3 action surface', async () => {

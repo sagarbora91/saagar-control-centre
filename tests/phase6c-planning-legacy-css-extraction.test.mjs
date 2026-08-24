@@ -12,8 +12,14 @@ import {
   LEGACY_ASSET_BYTES,
   LEGACY_ASSET_SHA256,
   LEGACY_MODULE_ALLOWLIST,
+  LEGACY_ROLLOUT_MODULES,
+  MODULE_BASELINE_SHA256,
+  MODULE_DELTAS,
   PLANNING_BASELINE_SHA256,
-  PLANNING_PROOF_MODULES
+  PLANNING_PROOF_MODULES,
+  prepareLegacyRollout,
+  reconstructLegacyInlineBody,
+  renderLegacyDeltaStyle
 } from '../scripts/prepare-phase6c-mobile-legacy-css.mjs';
 import { readModuleManifestSource } from '../scripts/lib/module-manifest-source.mjs';
 
@@ -50,12 +56,13 @@ function countTopLevelRules(source) {
   return rules;
 }
 
-test('Phase 6C freezes an explicit eleven-module boundary but stages Planning only', () => {
+test('Phase 6C freezes and migrates exactly the explicit eleven-module boundary', () => {
   assert.deepEqual(LEGACY_MODULE_ALLOWLIST, [
     'stock', 'service', 'qms', 'dsr', 'expense', 'grooming',
     'cro_audit', 'payroll', 'leave', 'tax', 'planning'
   ]);
   assert.deepEqual(PLANNING_PROOF_MODULES, ['planning']);
+  assert.deepEqual(LEGACY_ROLLOUT_MODULES, LEGACY_MODULE_ALLOWLIST);
   assert.equal(LEGACY_MODULE_ALLOWLIST.includes('etp'), false);
 });
 
@@ -69,7 +76,7 @@ test('Planning legacy asset is the exact frozen 24,977-byte authority and remain
   assert.match(transformed, /\/\* base layer \(all modules\) \*\//);
 });
 
-test('Planning preparation is executable and idempotent in an isolated reconstructed fixture', async t => {
+test('the eleven-module rollout is executable and idempotent in an isolated reconstructed fixture', t => {
   const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-phase6c-'));
   t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
   fs.mkdirSync(path.join(fixture, 'www'), { recursive: true });
@@ -79,19 +86,24 @@ test('Planning preparation is executable and idempotent in an isolated reconstru
   fs.copyFileSync(path.join(root, 'www/module-manifest.js'), path.join(fixture, 'www/module-manifest.js'));
   fs.copyFileSync(path.join(root, 'verification/module-build-golden-hashes.json'), path.join(fixture, 'verification/module-build-golden-hashes.json'));
 
-  const fixturePlanningPath = path.join(fixture, 'www/modules/planning/index.html');
   const fixtureAsset = fs.readFileSync(path.join(fixture, 'www', LEGACY_ASSET), 'utf8');
-  const staged = fs.readFileSync(fixturePlanningPath, 'utf8');
-  fs.writeFileSync(fixturePlanningPath, staged.replace(legacyLink, `<style id="st-v5-mobile-css">${fixtureAsset}</style>`), 'utf8');
+  for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
+    const moduleFile = path.join(fixture, 'www/modules', moduleId, 'index.html');
+    const staged = fs.readFileSync(moduleFile, 'utf8');
+    const migrated = legacyLink + renderLegacyDeltaStyle(moduleId);
+    const inline = `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fixtureAsset)}</style>`;
+    fs.writeFileSync(moduleFile, staged.replace(migrated, inline), 'utf8');
+    assert.equal(sha256(fs.readFileSync(moduleFile)), MODULE_BASELINE_SHA256[moduleId], moduleId);
+  }
 
-  const { preparePlanningProof } = await import('../scripts/prepare-phase6c-mobile-legacy-css.mjs');
-  const first = preparePlanningProof({ workspaceRoot: fixture });
+  const first = prepareLegacyRollout({ workspaceRoot: fixture });
   const receiptPaths = [
-    'www/modules/planning/index.html', 'www/shared/module-mobile-legacy.css',
+    ...LEGACY_MODULE_ALLOWLIST.map(moduleId => `www/modules/${moduleId}/index.html`),
+    'www/shared/module-mobile-legacy.css',
     'www/module-manifest.js', 'verification/module-build-golden-hashes.json'
   ];
   const firstBytes = new Map(receiptPaths.map(file => [file, fs.readFileSync(path.join(fixture, file))]));
-  const second = preparePlanningProof({ workspaceRoot: fixture });
+  const second = prepareLegacyRollout({ workspaceRoot: fixture });
   assert.deepEqual(second, first);
   for (const [file, bytes] of firstBytes) assert.equal(fs.readFileSync(path.join(fixture, file)).equals(bytes), true, file);
 });
@@ -110,18 +122,28 @@ test('Planning replaces only the inline authority at the exact common -> legacy 
   assert.equal(sha256(reconstructed), PLANNING_BASELINE_SHA256);
 });
 
-test('the other ten legacy modules remain inline and ETP remains byte-identical and unlinked', () => {
-  for (const moduleId of LEGACY_MODULE_ALLOWLIST.filter(id => id !== 'planning')) {
+test('all eleven modules use one canonical link and only Service, QMS and Payroll retain bounded deltas', () => {
+  for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
     const source = readModule(moduleId);
-    assert.match(source, /<style id="st-v5-mobile-css">/, moduleId);
-    assert.equal(source.includes('module-mobile-legacy.css'), false, moduleId);
+    assert.equal(source.split(legacyLink).length - 1, 1, moduleId);
+    assert.doesNotMatch(source, /<style id="st-v5-mobile-css">/, moduleId);
+    const expectedDelta = renderLegacyDeltaStyle(moduleId);
+    assert.equal(source.includes('st-v5-mobile-css-delta'), Boolean(expectedDelta), moduleId);
+    if (expectedDelta) assert.equal(source.split(expectedDelta).length - 1, 1, moduleId);
+    const reconstructed = source.replace(legacyLink + expectedDelta,
+      `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8'))}</style>`);
+    assert.equal(sha256(reconstructed), MODULE_BASELINE_SHA256[moduleId], moduleId);
   }
+  assert.deepEqual(Object.keys(MODULE_DELTAS), ['service', 'qms', 'payroll']);
+});
+
+test('ETP remains byte-identical and unlinked', () => {
   const etp = readModule('etp');
   assert.equal(sha256(etp), ETP_BASELINE_SHA256);
   assert.equal(etp.includes('module-mobile-legacy.css'), false);
 });
 
-test('manifest and Planning golden identity pin the staged product bytes', () => {
+test('manifest and golden identities pin every migrated module byte', () => {
   const manifest = readModuleManifestSource(root).data;
   const legacyIndex = manifest.sharedAssets.findIndex(item => item.id === 'module-mobile-legacy-css');
   const commonIndex = manifest.sharedAssets.findIndex(item => item.id === 'module-mobile-common-css');
@@ -130,11 +152,13 @@ test('manifest and Planning golden identity pin the staged product bytes', () =>
     id: 'module-mobile-legacy-css', version: 1, file: LEGACY_ASSET,
     bytes: LEGACY_ASSET_BYTES, sha256: LEGACY_ASSET_SHA256
   });
-  const planningBytes = fs.readFileSync(path.join(root, 'www/modules/planning/index.html'));
-  const planning = manifest.modules.find(item => item.id === 'planning');
-  assert.equal(planning.bytes, planningBytes.length);
-  assert.equal(planning.sha256, sha256(planningBytes));
   const golden = JSON.parse(fs.readFileSync(path.join(root, 'verification/module-build-golden-hashes.json'), 'utf8'));
-  assert.equal(golden.planning.bytes, planningBytes.length);
-  assert.equal(golden.planning.sha256, sha256(planningBytes));
+  for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
+    const bytes = fs.readFileSync(path.join(root, 'www/modules', moduleId, 'index.html'));
+    const entry = manifest.modules.find(item => item.id === moduleId);
+    assert.equal(entry.bytes, bytes.length, moduleId);
+    assert.equal(entry.sha256, sha256(bytes), moduleId);
+    assert.equal(golden[moduleId].bytes, bytes.length, moduleId);
+    assert.equal(golden[moduleId].sha256, sha256(bytes), moduleId);
+  }
 });

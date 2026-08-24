@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -21,7 +22,7 @@ test('Grooming freezes the exact unique safe identity set for all 12 static acti
 
 test('Grooming annotations preserve every pre-existing business and handler byte', () => {
   const restored = html.replace(/ data-action="[^"]+"/g, '');
-  assert.equal(crypto.createHash('sha256').update(restored).digest('hex'), '140b0a4f5f5c5b7a3f1a9c6ce582073463ecd7e628baf354b0d2dabb0ca074f3');
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('grooming', restored)).digest('hex'), '140b0a4f5f5c5b7a3f1a9c6ce582073463ecd7e628baf354b0d2dabb0ca074f3');
 });
 
 test('Grooming generated controls use deterministic identity definitions without row data', () => {

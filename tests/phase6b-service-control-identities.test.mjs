@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run } from '../scripts/audit/audits/a3.mjs';
+import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(new URL('../www/modules/service/index.html', import.meta.url), 'utf8');
@@ -35,7 +36,7 @@ test('Service freezes the exact unique safe identity set for all 91 static actio
 
 test('Service adds exactly 87 annotations without changing existing control semantics', () => {
   const restored = html.replace(/ data-action="([^"]+)"/g, (attribute, action) => originalActions.has(action) ? attribute : '');
-  assert.equal(crypto.createHash('sha256').update(restored).digest('hex'), '0dae5120fe2db5e1a0db0b37eccb44d2c4f5e68ea3b4a430302ffb56fa47c5ed');
+  assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('service', restored)).digest('hex'), '0dae5120fe2db5e1a0db0b37eccb44d2c4f5e68ea3b4a430302ffb56fa47c5ed');
 });
 
 test('Service generated controls use exact deterministic identities without case or customer data', () => {

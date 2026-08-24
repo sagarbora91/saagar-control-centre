@@ -3,7 +3,27 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6C.2 Planning proof accepted; roll remaining ten — 2026-08-24
+## RESUME HERE — Phase 6C.3 rollout complete; close governed profile receipts — 2026-08-24
+
+### Phase 6C.3 crash checkpoint
+
+All eleven allowlisted legacy modules now import the single canonical legacy mobile asset. The
+eight canonical modules have no residual delta; Service, QMS and Payroll retain only their exact
+bounded post-link deltas. Every module reconstructs its pre-extraction source byte-for-byte. ETP
+remains 34,473 bytes, SHA-256 `b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12`,
+unlinked and byte-identical.
+
+Phase 0 is **70/70**, security is **101/101**, focused rollout/manifest/API-23/capability tests are
+green, and the rollout is idempotent. Modular is **80/86**: its only six failures are preserved
+historical MAH3/MAH4 whole-tree identity receipts made stale by this authorized source relocation.
+They were not silently repinned or relabeled. Resume by recording the governed current Phase 6C
+profile/closure receipt, then rerun the complete offline gate. Controlling rollout record:
+
+`verification/audit/PHASE-6C-LEGACY-ROLLOUT-2026-08-24.md`
+
+No APK, Firebase/device action, publication or push occurred.
+
+## Historical resume point — Phase 6C.2 Planning proof accepted; roll remaining ten — 2026-08-24
 
 ### Phase 6C.2 visual checkpoint
 
