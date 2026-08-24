@@ -1,20 +1,18 @@
-name: Build Saagar Control Centre APK
+name: CI - Build debug test APK
 
-# Builds the offline Android APK on GitHub's servers.
-# Runs automatically on every upload/change, and can be run manually
-# from the Actions tab ("Run workflow"). The finished APK is published
-# both as a downloadable Release and as a build artifact.
-
+# CI-only non-production build. It may create a workflow-run artifact.
+# It must never publish or replace a GitHub Release.
 on:
   push:
-    branches: [ "**" ]
+    branches: ["**"]
+  pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-apk:
+  build-debug-test-apk:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,142 +27,50 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
-          distribution: "temurin"
+          distribution: temurin
           java-version: "17"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install locked dependencies
+        run: npm ci
 
-      - name: Add Android platform
-        run: npx --no-install cap add android
+      - name: Run release-containment policy
+        run: node --test tests/release-workflow-policy.test.mjs
 
-      - name: Patch Android project (V5 build 2.7 — version bump + offline hygiene)
+      - name: Add generated Android platform
+        run: npm run add:android
+
+      - name: Patch Android project for debug compatibility
         run: |
           MF=android/app/src/main/AndroidManifest.xml
-          GR=android/app/build.gradle
-          # Remove unused INTERNET permission (app is fully offline) — BUILD_NOTES step 2
           sed -i '/android.permission.INTERNET/d' "$MF" || true
-          # Disable Android auto-backup so payroll/customer data is never copied out
-          sed -i -E 's/android:allowBackup="true"/android:allowBackup="false"/' "$MF" || true
-          echo "----- allowBackup disabled in $MF -----"
-          # Bump version — BUILD_NOTES step 3
-          sed -i -E 's/versionCode[[:space:]]+[0-9]+/versionCode 12/' "$GR" || true
-          sed -i -E 's/versionName[[:space:]]+"[^"]*"/versionName "2.8"/' "$GR" || true
-          echo "----- AndroidManifest permissions -----"
-          grep -n "uses-permission" "$MF" || echo "(no uses-permission lines — INTERNET removed)"
-          echo "----- versioning -----"
-          grep -nE "versionCode|versionName" "$GR" || true
-          # Disable Android force-dark so WebView cannot invert module text (API 29-32;
-          # API 33+ is handled by CSS color-scheme:light). Patch every values*/styles.xml.
-          for SX in $(find android/app/src/main/res -name styles.xml); do
-            if ! grep -q 'android:forceDarkAllowed' "$SX"; then
-              sed -i -E '0,/<style [^>]*>/s//&\n        <item name="android:forceDarkAllowed">false<\/item>/' "$SX" || true
-            fi
-            echo "----- $SX -----"; grep -n 'forceDarkAllowed' "$SX" || echo "(forceDarkAllowed not set in $SX)"
-          done
 
       - name: Sync web assets into Android project
-        run: npx --no-install cap sync android
+        run: npm run sync
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x android/gradlew
+      - name: Apply tracked Android overrides
+        run: node build-overrides/apply-overrides.js
 
-      - name: Build debug APK
+      - name: Prepare API-23-compatible assets
+        run: npm run prepare:api23
+
+      - name: Build debug test APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Rename APK
+      - name: Rename debug test APK
         run: |
           mkdir -p out
           cp android/app/build/outputs/apk/debug/app-debug.apk \
-             "out/SaagarControlCentre-v5-build2.7-$(date +%Y%m%d).apk"
-          cp android/app/build/outputs/apk/debug/app-debug.apk \
-             out/SaagarControlCentre-latest.apk
+             "out/SaagarControlCentre-DEBUG-TEST-${GITHUB_SHA:0:12}.apk"
           ls -lh out
 
-      - name: Upload APK as build artifact
+      - name: Upload debug test APK as workflow artifact
         uses: actions/upload-artifact@v7
         with:
-          name: SaagarControlCentre-APK
-          path: out/*.apk
-          retention-days: 90
-
-      - name: Publish APK as a downloadable Release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: latest
-          name: "Saagar Control Centre - V5 (build 2.8) - CLEAN (report packs + history)"
-          body: |
-            **New in 2.8 - reliability fixes:**
-            - The phone Back button now moves back within the app instead of closing it.
-            - Report & Payroll PDFs preview and print correctly offline (pdf.js worker fix) — Save now opens the PDF.
-            - Opening and switching modules is much faster (each module is now cached, not rebuilt every time).
-            - Data backup is disabled for privacy (payroll/customer data no longer copied out by Android backup).
-
-            Fully offline Android build - Control Centre **V5 shell, build 2.7 (CLEAN)**.
-
-            This is a **clean, empty production build** - it starts with NO data, ready for your
-            real shop data. The SQLite-primary storage engine is ON (no ~5 MB cap).
-
-            **New in 2.7 - report packs + history (report content unchanged).**
-            - **End-of-day pack / Month-end pack** - one tap builds all that period's reports; Save them all
-              to your phone or Send them together on WhatsApp.
-            - **Report history** - see what you generated/sent and when, and re-open any of them in one tap.
-
-            **New in 2.6 - preview, save & print every report (report content unchanged).**
-            - Tapping a report now opens an exact **preview** of the PDF on screen first.
-            - **Save** writes the PDF to your phone (Documents - SaagarBCC-Reports folder).
-            - **Print** opens the Android print dialog; **Send** shares on WhatsApp as before.
-            - A heads-up appears if the day has no data yet (e.g. cash not closed).
-
-            **New in 2.5 - redesigned Reports (same reports, brand-new screen).** The report list and the
-            in-app report dashboard were rebuilt for one-handed phone use - the report PDFs themselves are
-            unchanged:
-            - The "Generate Report" picker is now a full-screen sheet with big tap rows, grouped by area,
-              a search box, a < date > stepper, and your recently-used reports pinned on top.
-            - The in-app Reports tab gets the same search + period stepper (kept in thumb reach), brand
-              serif numerals on the KPI tiles, and a "PDF" button on every card to send that report.
-            - Nothing about how a report is calculated changed (verified: all 16 reports still generate
-              byte-identical PDFs).
-
-            **Build 2.4 - fixes from the full 1-year function audit:**
-            - Service reports now use the real intake date + credit the delivering technician.
-            - Tax compliance due-dates no longer land one day early (timezone fix).
-            - Cash-in-hand now carries forward across closed-gap days (Sundays/holidays) instead of resetting to 0.
-            - Staff can record both a morning and an afternoon half-day on the same date.
-            - Daily Staff Register counts a sale as a bill only once its amount is entered.
-            - Small Queue safety fixes (no crash if left open past midnight; clearer "recent records" labels).
-            (Payroll PF/ESIC/PT math was reviewed and LEFT AS-IS per your instruction.)
-
-            **New in 2.3 - the app now handles years of data without slowing down or running out
-            of memory.** As the Queue Management list builds up a lot of OLD, already-closed
-            customers (older than ~3 months), the app automatically moves them into a safe archive
-            file kept on the phone. The live screens stay small and fast, even after years of use.
-            - **Nothing is ever deleted.** Archived customers are written to the archive file FIRST
-              (and only then removed from the live list), so a crash can never lose anything.
-            - The archive **rides along in every backup** and comes back on Restore - so moving to a
-              new phone keeps your full history.
-            - Today / this-week / this-month Queue screens, reports and follow-ups are unaffected
-              (they already only look at recent data).
-
-            Also included (performance work for large datasets):
-            - Much faster once a lot of data builds up (large key scans are no longer O(n^2)).
-            - Smoother scrolling in long lists (Expense ledger and CRO Audit history now show the
-              most-recent rows with a "filter to narrow" notice instead of painting thousands at once).
-            - The Home dashboard no longer re-parses the big Queue blob on every refresh.
-            - Backup / Restore of a large dataset no longer freezes (writes apply in one fast bulk pass).
-            - Expense bill photos stored as separate files (kept out of the database).
-
-            **Before you install:** open the app you have now, go to Settings -> Backup and save a
-            backup first. Because these test builds are signed freshly each time, Android may ask you
-            to uninstall the old app before installing this one - so keep that backup safe, then
-            Restore it after installing. To roll back, reinstall a previous build from this release's
-            asset history.
-
-            Download **SaagarControlCentre-latest.apk** below, copy it to the phone, and tap
-            to install (allow "install from unknown sources").
-          files: out/*.apk
-          make_latest: true
+          name: SaagarControlCentre-DEBUG-TEST-${{ github.sha }}
+          path: out/SaagarControlCentre-DEBUG-TEST-*.apk
+          if-no-files-found: error
+          retention-days: 14
