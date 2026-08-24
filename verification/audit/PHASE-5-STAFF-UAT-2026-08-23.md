@@ -25,8 +25,8 @@ the owner cannot infer or substitute for those decisions.
 
 | UAT ID | Role/tester | Store context | Required workflow | Expected result | Actual result | Decision/evidence |
 |---|---|---|---|---|---|---|
-| `UAT-CASHIER-01` | Akash — Cashier/maker | `WLMHW` | Create a representative non-sensitive daily record, save it, edit it, and read it back | Saved values remain accurate after edit and reopen | **OBSERVED PASS** — created synthetic ₹1 Cash / Miscellaneous entry for Titan World (`WLMHW`) as `UAT-AKASH-WLMHW-20260823`; app showed `Saved`; read-back showed `Pending`, ₹1 and the correct store; edit with reason `Akash UAT edit` produced `UAT-AKASH-WLMHW-20260823-EDITED` and `Updated` | Connected-device UI hierarchy and screenshot; zero fatal/ANR signals. Akash decision pending |
-| `UAT-CASHIER-02` | Akash — Cashier/maker | Same as above | Attempt a manager/owner-only action without manager authorization | The privileged action is denied or requires manager reauthentication; no unauthorized change occurs | **OBSERVED PASS** — while role remained `Cashier (maker)`, the Pending row exposed Send/Edit/Void but no Approve action; no unauthorized approval occurred | Connected-device UI hierarchy. Akash decision pending |
+| `UAT-CASHIER-01` | Akash — Cashier/maker | `WLMHW` | Create a representative non-sensitive daily record, save it, edit it, and read it back | Saved values remain accurate after edit and reopen | **PASS** — created synthetic ₹1 Cash / Miscellaneous entry for Titan World (`WLMHW`) as `UAT-AKASH-WLMHW-20260823`; app showed `Saved`; read-back showed `Pending`, ₹1 and the correct store; edit with reason `Akash UAT edit` produced `UAT-AKASH-WLMHW-20260823-EDITED` and `Updated` | Connected-device UI hierarchy and screenshot; zero fatal/ANR signals. Decision received as `Akash — PASS` on 2026-08-24 |
+| `UAT-CASHIER-02` | Akash — Cashier/maker | Same as above | Attempt a manager/owner-only action without manager authorization | The privileged action is denied or requires manager reauthentication; no unauthorized change occurs | **PASS** — while role remained `Cashier (maker)`, the Pending row exposed Send/Edit/Void but no Approve action; no unauthorized approval occurred | Connected-device UI hierarchy. Decision received as `Akash — PASS` on 2026-08-24 |
 | `UAT-MANAGER-01` | Shadul — Manager/checker | `WLMHW` | Review the maker record and complete the applicable checker/approval action | Correct record is shown; authorized review/approval is recorded accurately | **PENDING** | Shadul decision pending |
 | `UAT-MANAGER-02` | Shadul — Manager/checker | Same as above | Review an exception and open/report/export the relevant result using reauthentication where prompted | Exception is understandable; reauthentication is enforced; output matches the visible record | **PENDING** | Shadul decision pending |
 | `UAT-OWNER-01` | Sagar — Owner/admin | Both stores where applicable | Review backup/restore, access/PIN policy, ETP publication state and audit trail | Controls and audit information are understandable and acceptable for use | **PENDING** | Owner decision pending |
@@ -51,7 +51,8 @@ cannot pass with an unresolved P0/P1 defect.
 
 ## Decisions
 
-- Akash cashier/maker decision: **PENDING**
+- Akash cashier/maker decision: **PASS** — received as `Akash — PASS` on
+  2026-08-24 for both recorded cashier rows
 - Shadul manager/checker decision: **PENDING**
 - Sagar owner/admin decision: **PENDING**
 - Staff-UAT portion of `GATE-UAT`: **OPEN**
