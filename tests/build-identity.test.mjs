@@ -11,7 +11,7 @@ const register = fs.readFileSync(new URL('../scripts/release-register.mjs', impo
 
 test('Phase 0 build identity is valid and immutable', () => {
   assert.deepEqual(identity, {
-    packageId: 'com.saagartraders.bcc', appVersion: 'V5.5',
+    packageId: 'com.saagartraders.bcc', appVersion: 'V6',
     versionName: '2.9', versionCode: 209, minSdk: 23
   });
   assert.equal(Object.isFrozen(identity), true);

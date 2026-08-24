@@ -38,6 +38,9 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  const buildIdentityPath = path.join(workspaceRoot, 'www/build-identity.js');
+  fs.writeFileSync(buildIdentityPath,
+    fs.readFileSync(buildIdentityPath, 'utf8').replace("appVersion: 'V6'", "appVersion: 'V5.5'"), 'utf8');
   // Phase 6I removed the production legacy asset after consolidating its bytes
   // into the canonical common sheet. Recreate the earlier boundary explicitly
   // from the test-only frozen authority before applying later reverse migrations.

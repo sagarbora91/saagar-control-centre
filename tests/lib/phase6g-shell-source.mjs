@@ -7,6 +7,8 @@ const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 export function restorePrePhase6gShellAssets(input) {
   let index = String(input.index);
   index = index
+    // Phase 6J release-label approval is newer than the frozen pre-6G shell authority.
+    .replaceAll('V6', 'V5.5')
     .replace('<script src="etp-verified-analytics.js"></script>\n', '')
     .replace('<script src="etp-analytics-consumer.js"></script>\n', '')
     .replace('<script src="etp-cro-reconciliation.js"></script>\n', '')

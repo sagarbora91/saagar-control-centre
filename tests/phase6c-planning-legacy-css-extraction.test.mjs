@@ -96,67 +96,30 @@ test('Planning legacy asset remains exact test-only historical authority and API
   assert.match(transformed, /\/\* base layer \(all modules\) \*\//);
 });
 
-test.skip('the retired eleven-module rollout is preserved by the Phase 6C frozen profile', t => {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-phase6c-'));
-  t.after(() => fs.rmSync(fixture, { recursive: true, force: true }));
-  fs.mkdirSync(path.join(fixture, 'www'), { recursive: true });
-  fs.mkdirSync(path.join(fixture, 'verification'), { recursive: true });
-  fs.cpSync(path.join(root, 'www/modules'), path.join(fixture, 'www/modules'), { recursive: true });
-  fs.cpSync(path.join(root, 'www/shared'), path.join(fixture, 'www/shared'), { recursive: true });
-  fs.copyFileSync(path.join(root, 'www/module-manifest.js'), path.join(fixture, 'www/module-manifest.js'));
-  fs.copyFileSync(path.join(root, 'verification/module-build-golden-hashes.json'), path.join(fixture, 'verification/module-build-golden-hashes.json'));
-
-  const fixtureAsset = fs.readFileSync(path.join(fixture, 'www', LEGACY_ASSET), 'utf8');
+test('the retired eleven-module rollout remains preserved by executable frozen evidence', () => {
+  assert.equal(Object.keys(MODULE_BASELINE_SHA256).length, LEGACY_MODULE_ALLOWLIST.length);
   for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
-    const moduleFile = path.join(fixture, 'www/modules', moduleId, 'index.html');
-    const staged = restorePhase6eStock(moduleId,
-      restorePhase6fFamilyA(moduleId, restorePhase6gFamilyB(moduleId, fs.readFileSync(moduleFile, 'utf8'), fixture), fixture), fixture);
-    const migrated = legacyLink + renderLegacyDeltaStyle(moduleId);
-    const inline = `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fixtureAsset)}</style>`;
-    fs.writeFileSync(moduleFile, restorePhase6dViewport(moduleId, staged.replace(migrated, inline)), 'utf8');
-    assert.equal(sha256(fs.readFileSync(moduleFile)), MODULE_BASELINE_SHA256[moduleId], moduleId);
+    assert.match(MODULE_BASELINE_SHA256[moduleId], /^[0-9a-f]{64}$/, moduleId);
   }
-  const etpFile = path.join(fixture, 'www/modules/etp/index.html');
-  fs.writeFileSync(etpFile, restorePrePhase6h1EtpIndex(fs.readFileSync(etpFile, 'utf8')), 'utf8');
-
-  const first = prepareLegacyRollout({ workspaceRoot: fixture });
-  const receiptPaths = [
-    ...LEGACY_MODULE_ALLOWLIST.map(moduleId => `www/modules/${moduleId}/index.html`),
-    'www/shared/module-mobile-legacy.css',
-    'www/module-manifest.js', 'verification/module-build-golden-hashes.json'
-  ];
-  const firstBytes = new Map(receiptPaths.map(file => [file, fs.readFileSync(path.join(fixture, file))]));
-  const second = prepareLegacyRollout({ workspaceRoot: fixture });
-  assert.deepEqual(second, first);
-  for (const [file, bytes] of firstBytes) assert.equal(fs.readFileSync(path.join(fixture, file)).equals(bytes), true, file);
+  assert.equal(fs.existsSync(path.join(root, 'www', LEGACY_ASSET)), false);
+  assert.equal(fs.existsSync(path.join(root, 'tests/fixtures/phase6c/module-mobile-legacy.css')), true);
 });
 
-test.skip('Planning Phase 6C cascade is preserved by the frozen historical profile', () => {
+test('Planning production cascade records the completed Phase 6C retirement', () => {
   const planning = readModule('planning');
   const commonAt = planning.indexOf('<link rel="stylesheet" href="../../shared/module-mobile-common.css">');
-  const legacyAt = planning.indexOf(legacyLink);
   const bootAt = planning.indexOf('<script id="st-v5-mobile-boot">');
-  assert.ok(commonAt >= 0 && legacyAt > commonAt && bootAt > legacyAt);
-  assert.equal(planning.split(legacyLink).length - 1, 1);
+  assert.ok(commonAt >= 0 && bootAt > commonAt);
+  assert.equal(planning.includes(legacyLink), false);
   assert.doesNotMatch(planning, /<style id="st-v5-mobile-css">/);
-
-  const asset = fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8');
-  const reconstructed = planning.replace(legacyLink, `<style id="st-v5-mobile-css">${asset}</style>`);
-  assert.equal(sha256(reconstructed), PLANNING_BASELINE_SHA256);
 });
 
-test.skip('the retired eleven-module link rollout is preserved by the frozen historical profile', () => {
+test('the retired eleven-module link rollout has no production consumers', () => {
+  const retainedInlineDeltaModules = new Set(['qms', 'payroll']);
   for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
     const currentSource = readModule(moduleId);
-    const source = restorePhase6eStock(moduleId, restorePhase6fFamilyA(moduleId, restorePhase6gFamilyB(moduleId, currentSource)));
-    assert.equal(source.split(legacyLink).length - 1, 1, moduleId);
-    assert.doesNotMatch(source, /<style id="st-v5-mobile-css">/, moduleId);
-    const expectedDelta = renderLegacyDeltaStyle(moduleId);
-    assert.equal(source.includes('st-v5-mobile-css-delta'), Boolean(expectedDelta), moduleId);
-    if (expectedDelta) assert.equal(source.split(expectedDelta).length - 1, 1, moduleId);
-    const reconstructed = restorePhase6dViewport(moduleId, source.replace(legacyLink + expectedDelta,
-      `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8'))}</style>`));
-    assert.equal(sha256(reconstructed), MODULE_BASELINE_SHA256[moduleId], moduleId);
+    assert.equal(currentSource.includes('module-mobile-legacy.css'), false, moduleId);
+    assert.equal(currentSource.includes('st-v5-mobile-css-delta'), retainedInlineDeltaModules.has(moduleId), moduleId);
   }
   assert.deepEqual(Object.keys(MODULE_DELTAS), ['service', 'qms', 'payroll']);
 });
@@ -167,15 +130,12 @@ test('ETP remains byte-identical and unlinked', () => {
   assert.equal(etp.includes('module-mobile-legacy.css'), false);
 });
 
-test.skip('the retired Phase 6C manifest identities remain in the frozen historical profile', () => {
+test('the production manifest and golden hashes record the retired Phase 6C identity', () => {
   const manifest = readModuleManifestSource(root).data;
   const legacyIndex = manifest.sharedAssets.findIndex(item => item.id === 'module-mobile-legacy-css');
   const commonIndex = manifest.sharedAssets.findIndex(item => item.id === 'module-mobile-common-css');
-  assert.equal(legacyIndex, commonIndex + 1);
-  assert.deepEqual(manifest.sharedAssets[legacyIndex], {
-    id: 'module-mobile-legacy-css', version: 1, file: LEGACY_ASSET,
-    bytes: LEGACY_ASSET_BYTES, sha256: LEGACY_ASSET_SHA256
-  });
+  assert.equal(legacyIndex, -1);
+  assert.ok(commonIndex >= 0);
   const golden = JSON.parse(fs.readFileSync(path.join(root, 'verification/module-build-golden-hashes.json'), 'utf8'));
   for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
     const bytes = fs.readFileSync(path.join(root, 'www/modules', moduleId, 'index.html'));

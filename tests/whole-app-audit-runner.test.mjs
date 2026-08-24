@@ -833,7 +833,7 @@ test('A9 rejects fabricated comparison evidence and never consults ambient ignor
 });
 
 test('A9 generated identity receipts reject wrong identity and mismatched build facts', () => {
-  const identity = { packageId: 'com.saagartraders.bcc', appVersion: 'V5.5',
+  const identity = { packageId: 'com.saagartraders.bcc', appVersion: 'V6',
     versionName: '2.9', versionCode: 209, minSdk: 23 };
   const canonicalSourceSha256 = sha256('canonical-build-identity');
   const signing = { captureBuildType: 'debug', releaseDebuggable: false,

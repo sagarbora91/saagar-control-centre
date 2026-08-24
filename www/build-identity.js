@@ -10,7 +10,7 @@
 
   return Object.freeze({
     packageId: 'com.saagartraders.bcc',
-    appVersion: 'V5.5',
+    appVersion: 'V6',
     versionName: '2.9',
     versionCode: 209,
     minSdk: 23
