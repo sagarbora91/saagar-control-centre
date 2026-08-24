@@ -51,7 +51,7 @@
       if (!result.ok) return result;
       return Object.freeze({ ok: true, code: 'RETAIL_XLSX_ACCEPTED', reportId: result.reportId,
         storeCode: result.storeCode, sheetName: String(candidates[0].sheet.sheet || ''),
-        profileVersion: result.profileVersion, signatureKey: result.signatureKey,
+        profileVersion: result.profileVersion, parserVersion: result.parserVersion, signatureKey: result.signatureKey,
         rowCount: result.rowCount, rows: result.rows, container: container, xml: xml });
     }
     return Object.freeze({ load: load });

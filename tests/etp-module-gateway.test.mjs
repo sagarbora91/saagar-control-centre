@@ -9,6 +9,7 @@ const lifecycle = require('../www/etp-store-lifecycle-policy.js');
 const core = require('../www/etp-core-contract.js');
 const foundationStatus = require('../www/etp-foundation-status.js');
 const queryContract = require('../www/etp-query-contract.js');
+const profileAuthority = require('../www/etp-profile-authority.js');
 const gatewaySource = fs.readFileSync(new URL('../www/etp-module-gateway.js', import.meta.url), 'utf8');
 
 const generationA = 'etp_' + 'a'.repeat(32);
@@ -18,13 +19,16 @@ const scopeKey = 'WLMHW|2026-27|2026-04-01..2026-04-30';
 
 function receipt(generationId = generationA, publishedAt = '2026-05-01') {
   const life = lifecycle.create(scope, generationId).lifecycle;
-  const accepted = Object.freeze({ ...life, state: 'ACCEPTED', candidateGenerationId: null, activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe' });
+  const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
+  const accepted = Object.freeze({ ...life, state: 'ACCEPTED', candidateGenerationId: null, activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe',manifest:{authority:authorityBinding} });
   return {
     contractVersion: core.ETP_CORE_VERSION,
     scopeKey,
     storeCode: 'WLMHW',
     activeGenerationId: generationId,
     profileVersion: core.ETP_CORE_VERSION,
+    parserVersion: profileAuthority.PARSER_VERSION,
+    profileAuthority: authorityBinding,
     ruleVersion: core.RECON_RULE.ruleVersion,
     reconciliationStatus: 'PASS',
     enrichments: { R003: { status: 'FAIL', differenceCount: 2 }, R013: { status: 'PASS', differenceCount: 0 }, paymentType25: { status: 'QUARANTINED', rowCount: 9, persisted: false } },
@@ -60,6 +64,7 @@ function fixture(overrides = {}) {
     core: overrides.core || core,
     foundationStatus: overrides.foundationStatus || foundationStatus,
     queryContract: overrides.queryContract || queryContract,
+    profileAuthority: overrides.profileAuthority || profileAuthority,
     storage: overrides.storage || storageWith(),
     statusReader: overrides.statusReader || (async () => ({ ok: true, status: { state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } })),
     authorize: overrides.authorize || (() => true),
@@ -101,6 +106,8 @@ test('run validates exact four-file scope and returns only an opaque confirmatio
   assert.equal((await fx.gateway.run({ scope, files, coverageConfirmed: false })).code, 'ETP_IMPORT_REQUEST_INVALID');
   assert.equal((await fx.gateway.run({ scope, files, coverageDeclaration: { confirmedByRole: 'OWNER' } })).code, 'ETP_IMPORT_REQUEST_INVALID');
 });
+
+test('gateway denies HEMW production before files or runtime can be touched',async()=>{let runtimeCalls=0,fileReads=0;const fx=fixture({runtime:{async run(){runtimeCalls++;},async confirm(){runtimeCalls++;},async readVerified(){runtimeCalls++;}}}),files=core.REPORTS.map(id=>({selectedReportId:id,file:{name:id+'.xlsx',arrayBuffer:async()=>{fileReads++;}}}));const result=await fx.gateway.run({scope:{...scope,storeCode:'HEMW'},files,coverageConfirmed:true});assert.equal(result.code,'ETP_HEMW_PROFILE_AUTHORIZATION_REQUIRED');assert.equal(runtimeCalls,0);assert.equal(fileReads,0);});
 
 test('confirm consumes its opaque token once and never accepts a caller lifecycle', async () => {
   const fx = fixture();

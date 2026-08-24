@@ -87,6 +87,8 @@
     if (!record(value) || !Array.isArray(value.reports)) return { ok: false, errors: Object.freeze(['MANIFEST_REQUIRED']) };
     if (String(value.scopeKey || '') !== lifecycle.scopeKey) errors.push('MANIFEST_SCOPE_MISMATCH');
     if (String(value.generationId || '') !== lifecycle.candidateGenerationId) errors.push('MANIFEST_GENERATION_MISMATCH');
+    var authority = record(value.authority) ? value.authority : null;
+    if (!authority || Object.keys(authority).sort().join('|') !== 'authorityId|contractVersion|evidenceIdentity|parserVersion|profileVersion|purpose|status|storeCode' || authority.contractVersion !== 'ETP_PROFILE_AUTHORITY_V1' || authority.storeCode !== lifecycle.scope.storeCode || authority.storeCode !== 'WLMHW' || authority.status !== 'PRODUCTION_AUTHORIZED' || authority.purpose !== 'PRODUCTION' || !safeToken(authority.authorityId, 96) || !safeToken(authority.evidenceIdentity, 96) || !safeToken(authority.profileVersion, 96) || !safeToken(authority.parserVersion, 96)) errors.push('MANIFEST_AUTHORITY_INVALID');
     value.reports.forEach(function (entry) {
       var id = record(entry) ? String(entry.reportId || '').toUpperCase() : '';
       var hash = record(entry) ? String(entry.sourceSha256 || '').toLowerCase() : '';
@@ -99,11 +101,12 @@
     });
     if (REPORT_IDS.some(function (id) { return !seen[id]; }) || reports.length !== REPORT_IDS.length) errors.push('REPORT_SET_INCOMPLETE');
     reports.sort(function (a, b) { return a.reportId.localeCompare(b.reportId); });
-    return errors.length ? { ok: false, errors: Object.freeze(errors.filter(function (x, i, a) { return a.indexOf(x) === i; })) } : { ok: true, manifest: Object.freeze({ scopeKey: lifecycle.scopeKey, generationId: lifecycle.candidateGenerationId, reports: Object.freeze(reports) }) };
+    return errors.length ? { ok: false, errors: Object.freeze(errors.filter(function (x, i, a) { return a.indexOf(x) === i; })) } : { ok: true, manifest: Object.freeze({ scopeKey: lifecycle.scopeKey, generationId: lifecycle.candidateGenerationId, authority: Object.freeze({ contractVersion: authority.contractVersion, authorityId: authority.authorityId, storeCode: authority.storeCode, status: authority.status, purpose: authority.purpose, profileVersion: authority.profileVersion, parserVersion: authority.parserVersion, evidenceIdentity: authority.evidenceIdentity }), reports: Object.freeze(reports) }) };
   }
   function manifestIdentity(value) {
     if (!record(value) || !Array.isArray(value.reports)) return '';
-    return String(value.scopeKey || '') + '|' + value.reports.slice().sort(function (a, b) { return String(a.reportId).localeCompare(String(b.reportId)); }).map(function (entry) { return String(entry.reportId || '') + ':' + String(entry.sourceSha256 || '').toLowerCase(); }).join('|');
+    var authority = record(value.authority) ? [value.authority.authorityId, value.authority.profileVersion, value.authority.parserVersion, value.authority.evidenceIdentity].join(':') : '';
+    return String(value.scopeKey || '') + '|AUTH:' + authority + '|' + value.reports.slice().sort(function (a, b) { return String(a.reportId).localeCompare(String(b.reportId)); }).map(function (entry) { return String(entry.reportId || '') + ':' + String(entry.sourceSha256 || '').toLowerCase(); }).join('|');
   }
   function attachManifest(lifecycle, manifest) {
     var lifecycleCheck = validateLifecycle(lifecycle); if (!lifecycleCheck.ok) return lifecycleCheck;

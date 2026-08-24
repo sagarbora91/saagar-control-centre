@@ -3,10 +3,12 @@ import test from 'node:test';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const policy = require('../www/etp-store-lifecycle-policy.js');
+const profileAuthority = require('../www/etp-profile-authority.js');
 
 const scope = { storeCode: 'WLMHW', financialYear: '2024-25', periodStart: '2024-09-16', periodEnd: '2025-03-31' };
+const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
 function manifest(generationId = 'gen:001', override = {}) {
-  return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 100 + index })), ...override };
+  return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, authority:authorityBinding, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 100 + index })), ...override };
 }
 function advance(lifecycle, events) { return events.reduce((value, event) => { const result = policy.transition(value, event); assert.equal(result.ok, true); return result.lifecycle; }, lifecycle); }
 
@@ -30,6 +32,7 @@ test('manifest requires exactly four bounded retail reports bound to scope and g
   assert.equal(policy.attachManifest(value, manifest('other')).ok, false);
   assert.equal(policy.attachManifest(value, manifest('gen:001', { reports: manifest().reports.slice(0, 3) })).ok, false);
   const attached = policy.attachManifest(value, manifest()); assert.equal(attached.ok, true); assert.equal(attached.lifecycle.manifest.reports.length, 4);
+  assert.equal(attached.lifecycle.manifest.authority.evidenceIdentity,authorityBinding.evidenceIdentity);
 });
 
 test('atomic publication changes neither active generation nor input before confirmation', () => {
@@ -69,6 +72,10 @@ test('deterministic source-hash identity makes an unchanged reimport a no-op des
   assert.equal(duplicate.changed, false); assert.equal(duplicate.lifecycle.state, 'DUPLICATE_NOOP');
   assert.equal(duplicate.lifecycle.activeGenerationId, 'gen:001'); assert.equal(duplicate.lifecycle.activeManifestIdentity, activeIdentity);
 });
+
+test('authority and evidence identity participate in manifest identity',()=>{const one=manifest('gen:001'),changed=manifest('gen:002',{authority:{...authorityBinding,evidenceIdentity:'WLMHW_PROFILE_EVIDENCE_REBOUND_V2'}});assert.notEqual(policy.manifestIdentity(one),policy.manifestIdentity(changed));});
+
+test('HEMW cannot forge a production authority binding while evidence is pending',()=>{const heScope={...scope,storeCode:'HEMW'},life=advance(policy.create(heScope,'gen:001').lifecycle,['PREFLIGHT_PASS','PARSE_PASS','POLICY_PASS','BEGIN_STAGING','STAGE_COMPLETE']),forged=manifest('gen:001',{scopeKey:'HEMW|2024-25|2024-09-16..2025-03-31',authority:{...authorityBinding,storeCode:'HEMW'}});assert.equal(policy.attachManifest(life,forged).ok,false);});
 
 test('every transition and publication rejects forged lifecycle invariants', () => {
   const valid = policy.create(scope, 'gen:001').lifecycle;

@@ -132,6 +132,6 @@
     return Object.freeze({ ok: true, code: 'REPORT_DETECTED', reportId: detected,
       signature: headerResult.signature, signatureKey: headerResult.signatureKey });
   }
-  return Object.freeze({ ETP_PROFILE_VERSION: ETP_PROFILE_VERSION, STORES: STORES, REPORTS: REPORTS, IDENTIFIER_POLICY: IDENTIFIER_POLICY,
+  return Object.freeze({ VERSION: ETP_PROFILE_VERSION, ETP_PROFILE_VERSION: ETP_PROFILE_VERSION, STORES: STORES, REPORTS: REPORTS, IDENTIFIER_POLICY: IDENTIFIER_POLICY,
     adapters: adapters, signatures: signatures, normalizeFileAlias: normalizeFileAlias, detect: detect });
 });

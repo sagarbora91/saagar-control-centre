@@ -10,6 +10,7 @@
     parserPolicy = parserPolicy || require('./etp-xlsx-parser-policy.js');
     profile = profile || require('./etp-retail-profile.js');
   }
+  var PARSER_VERSION = 'retail-etp-parser-v1';
   function refusal(code, details) { return Object.freeze({ ok: false, code: code, details: details || null }); }
   function isoCompact(value) {
     if (value instanceof Date && Number.isFinite(value.getTime())) return value.toISOString().slice(0, 10).replace(/-/g, '');
@@ -71,9 +72,9 @@
     var expectedStore = String(input.expectedStoreCode || '').trim().toUpperCase();
     if (profile.STORES.indexOf(expectedStore) < 0) return refusal('RETAIL_EXPECTED_STORE_REQUIRED');
     if (stores[0] !== expectedStore) return refusal('RETAIL_STORE_SCOPE_MISMATCH');
-    return Object.freeze({ ok: true, code: 'RETAIL_TABLE_ACCEPTED', profileVersion: profile.VERSION,
+    return Object.freeze({ ok: true, code: 'RETAIL_TABLE_ACCEPTED', profileVersion: profile.VERSION, parserVersion: PARSER_VERSION,
       reportId: detected.reportId, storeCode: stores[0], signatureKey: detected.signatureKey,
       rowCount: rows.length, rows: Object.freeze(rows) });
   }
-  return Object.freeze({ parse: parse });
+  return Object.freeze({ VERSION: PARSER_VERSION, parse: parse });
 });

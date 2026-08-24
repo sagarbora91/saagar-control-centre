@@ -5,11 +5,13 @@ import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const bridge = require('../www/etp-native-store.js');
 const policy = require('../www/etp-store-lifecycle-policy.js');
+const profileAuthority = require('../www/etp-profile-authority.js');
 
 const scope = { storeCode: 'WLMHW', financialYear: '2024-25', periodStart: '2024-09-16', periodEnd: '2025-03-31' };
 const fields = ['transaction_id', 'amount', 'report_date'];
+const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
 function advance(value, events) { return events.reduce((current, event) => policy.transition(current, event).lifecycle, value); }
-function manifest(generationId = 'gen:001') { return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 1 })) }; }
+function manifest(generationId = 'gen:001') { return { scopeKey: 'WLMHW|2024-25|2024-09-16..2025-03-31', generationId, authority:authorityBinding, reports: policy.REPORT_IDS.map((reportId, index) => ({ reportId, sourceSha256: String(index + 1).repeat(64), headerSignatureSha256: String(index + 5).repeat(64), rowCount: 1 })) }; }
 function fake(overrides = {}) { const calls = []; return { calls, plugin: { beginStage: async p => (calls.push(['begin', p]), { ok: true }), appendStageChunk: async p => (calls.push(['chunk', p]), { ok: true }), finishStage: async p => (calls.push(['finish', p]), { ok: true }), publishStage: async p => (calls.push(['publish', p]), { ok: true }), readStatus: async p => (calls.push(['status', p]), { ok: true, state: 'ACCEPTED', activeGenerationId: 'gen:001', restoreFence: false }), readFacts: async p => (calls.push(['read', p]), { ok: true, scopeKey: p.scopeKey, generationId: p.generationId, reportId: p.reportId, rows: [{ transaction_id: '0001', amount: 42 }], hasMore: true, nextChunkIndex: 0, nextRowOffset: 1 }), fenceAfterRestore: async p => (calls.push(['fence', p]), { ok: true, state: 'REIMPORT_REQUIRED' }), resetScope: async p => (calls.push(['reset', p]), { ok: true, state: 'EMPTY' }), resetStore: async p => (calls.push(['reset-store', p]), { ok: true, state: 'EMPTY' }), ...overrides } }; }
 function adapter(state = fake()) { const made = bridge.create({ lifecyclePolicy: policy, plugin: state.plugin, allowedFactFields: fields }); assert.equal(made.ok, true); return { adapter: made.adapter, state }; }
 

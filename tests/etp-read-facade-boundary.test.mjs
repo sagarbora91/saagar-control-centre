@@ -8,6 +8,7 @@ const lifecycle = require('../www/etp-store-lifecycle-policy.js');
 const core = require('../www/etp-core-contract.js');
 const foundationStatus = require('../www/etp-foundation-status.js');
 const queryContract = require('../www/etp-query-contract.js');
+const profileAuthority = require('../www/etp-profile-authority.js');
 
 const generationA = `etp_${'a'.repeat(32)}`;
 const generationB = `etp_${'b'.repeat(32)}`;
@@ -19,12 +20,15 @@ const scopeKey = 'WLMHW|2026-27|2026-04-01..2026-04-30';
 
 function receipt(generationId = generationA) {
   const created = lifecycle.create(scope, generationId).lifecycle;
+  const authorityBinding=profileAuthority.authorize({storeCode:'WLMHW',purpose:'PRODUCTION',profileVersion:profileAuthority.PROFILE_VERSION,parserVersion:profileAuthority.PARSER_VERSION}).binding;
   return {
     contractVersion: core.ETP_CORE_VERSION,
     scopeKey,
     storeCode: scope.storeCode,
     activeGenerationId: generationId,
     profileVersion: core.ETP_CORE_VERSION,
+    parserVersion: profileAuthority.PARSER_VERSION,
+    profileAuthority: authorityBinding,
     ruleVersion: core.RECON_RULE.ruleVersion,
     reconciliationStatus: 'PASS',
     enrichments: {
@@ -38,7 +42,7 @@ function receipt(generationId = generationA) {
     }])),
     publishedAt: '2026-05-01',
     lifecycle: { ...created, state: 'ACCEPTED', candidateGenerationId: null,
-      activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe' }
+      activeGenerationId: generationId, activeManifestIdentity: 'manifest-safe',manifest:{authority:authorityBinding} }
   };
 }
 
@@ -68,7 +72,7 @@ function fixture(overrides = {}) {
     }
   };
   const made = gatewayApi.create({
-    runtime, lifecyclePolicy: lifecycle, core, foundationStatus, queryContract, storage,
+    runtime, lifecyclePolicy: lifecycle, core, foundationStatus, queryContract, profileAuthority, storage,
     statusReader: overrides.statusReader || (async () => {
       calls.status++;
       return { ok: true, status: { state: 'ACCEPTED', activeGenerationId: generationA, restoreFence: false } };
