@@ -1,7 +1,187 @@
 # SAAGAR Control Centre — Safe Android Audit Handoff
 
-**Updated:** 2026-08-23 (Asia/Kolkata)
-**Purpose:** authoritative resume point for the whole-app pre-/post-Modular-HTML audit.
+**Updated:** 2026-08-24 (Asia/Kolkata)
+**Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
+
+## RESUME HERE — Phase 6A locally implemented; checkpoint pending — 2026-08-24
+
+Phase 6A repository work has been implemented and validated locally. The isolated CI
+containment commit is `08c156f` (`fix(ci): contain debug artifacts to read-only runs`). It has
+not been pushed. Normal CI is now read-only, cannot create a GitHub Release, and publishes only
+an immutable debug/test workflow artifact. The controlling evidence is:
+
+`verification/audit/PHASE-6-CI-RELEASE-CONTAINMENT-2026-08-24.md`
+
+The working tree also contains the tracked secret-free clean production recipe, exact signer
+policy, generated Android verifier, API-23 Chrome-44 compatibility correction, scoped multi-FY
+staging correction, focused tests, and governed shell/module identity updates. Relevant results:
+Phase 0 23/23, ETP 183/183, API-23/mobile/shell 19/19, release/API-23 16/16, and manifest/MH1
+16/16. The whole-app audit runner is 77/80; its remaining three failures are the deliberately
+fail-closed historical product-anchor identity, which is not to be rebound mid-build and remains
+scheduled for Phase 6I.
+
+No production APK was built, no external artifact was uploaded or published, and no Firebase,
+billing or GitHub Release action occurred. Preserve `.tmp-etp-synthetic-fixtures-device/`. Finish
+the Phase 6A local commits and Graphify update, then begin Phase 6B. Do not push without treating
+live post-push CI behavior as still-unverified external evidence.
+
+## Historical resume point — Phase 6 consolidated plan ready — 2026-08-24
+
+The owner confirmed the Stock mobile/desktop direction and directed that Phase 6
+be executed as a **build-first programme**, with formal testing, named UAT,
+approvals, production signing and external publication consolidated in the final
+phase. The controlling plan is:
+
+`docs/audit/PHASE-6-CONSOLIDATED-BUILD-PLAN-2026-08-24.md`
+
+At that checkpoint, Phase 6 implementation had **not** started. The plan was created but remained
+uncommitted at this checkpoint. It supersedes older resume instructions only as
+the current running order; the dated Phase-4/Phase-5 sections below remain the
+evidence trail and must not be rewritten as if their then-current facts were
+wrong.
+
+### Current source and worktree checkpoint
+
+| Item | Current fact |
+|---|---|
+| Branch | `agent/modular-phase1-shared-spine-v2` |
+| HEAD | `59d36e768b1ef72050dfc678052a80a53a3df381` |
+| Phase-6 plan | Created at the path above; not committed or pushed |
+| Phase-6 product work | Not started; only the pending Phase-5 API-23 layout and multi-FY import corrections are present in the working tree |
+| Protected fixture directory | `.tmp-etp-synthetic-fixtures-device/` — preserve exactly and do not commit |
+| Graphify | Refreshed after plan creation; the Phase-6 plan and 6A-6J nodes are indexed |
+| External actions in this checkpoint | No APK build/upload, Firebase run, billing change, GitHub Release or production publication |
+
+The current tracked changes include the bounded API-23/multi-FY correction in
+`scripts/prepare-api23-assets.mjs`, its focused tests,
+`www/etp-import-runtime.js`, `www/modules/etp/index.html` and
+`www/shell-core.css`, plus existing user/evidence changes in this handoff and the
+Phase-5 inventory/UAT files. Preserve unrelated changes; do not sweep the dirty
+tree into one Phase-6 commit.
+
+### Critical first action — contain automatic debug publication
+
+`.github/workflows/build-apk.yml` currently:
+
+- runs on a push to any branch;
+- grants `contents: write`;
+- builds `app-debug.apk`; and
+- publishes it as the mutable GitHub `latest` release with stale version labels.
+
+This is a Phase-6 **STOP condition**. Do not push Phase-6 commits while the
+unsafe workflow would be the active pushed workflow. Phase 6A must first:
+
+1. make normal CI read-only;
+2. permit only clearly named debug/test artifacts, never a Release action;
+3. remove push-triggered `latest` publication;
+4. add a workflow-policy test that fails on this unsafe shape; and
+5. add a tracked, secret-free canonical clean release recipe.
+
+The containment change must be isolated from the dirty product/evidence changes
+and verified before the rest of Phase 6 is pushed. Production signing remains a
+local custodian operation unless a separately authorized protected manual
+workflow is designed later.
+
+### Phase-5 gates carried into final Phase-6 acceptance
+
+Phase 5 is **not** relabelled closed by creating the Phase-6 plan. Its banked
+evidence remains valid against the exact Phase-5 identity, while the unresolved
+external gates move forward as explicit inputs to Phase 6J:
+
+| Gate/evidence | Current Phase-5 truth | Phase-6 treatment |
+|---|---|---|
+| Akash/Shadul/Sagar staff UAT | Completed for the exact Phase-5 APK | Banked history only; repeat final-identity UAT in 6J because Phase 6 materially changes UI and ETP |
+| SM-T875/API 33 signed install and synthetic ETP publication | Passed and must not be repeated unnecessarily | Use one exact Phase-6 signed-candidate update/readback and changed-surface smoke in 6J |
+| API-23 emulator | Passed | Engineering evidence only; never substitute for physical OEM |
+| Physical API-23/OEM | Firebase catalog had no API-23 entry | Keep as evidence-backed carried exception unless qualifying hardware later exists; never claim pass |
+| Low-storage/interruption residue | Still open outside banked subsets | Run only the uncovered safe cases in 6J or carry with explicit risk/acceptance |
+| Authorized WLMHW/HEMW production publication | Not passed | Requires untouched authorized sources and explicit custodian/owner authority in 6J |
+| Final approval rebind/audit/release | Not complete | Bind once to the final Phase-6 source/APK identity in 6J |
+
+The Phase-5 production APK
+`V:\Co work\Projects\Retail\SaagarCC-v2.9-production-dfa4ddb.apk`
+(`BC4EA8C17A5688B293E26C3AB18253069555B1744CB87E545878A64996A58BAC`)
+is a verified historical baseline. It is not the future Phase-6 release artifact.
+
+### Phase-6 execution order
+
+Resume in this order:
+
+1. **6A:** contain the release workflow; add the canonical build recipe; isolate,
+   validate and freeze the pending API-23/multi-FY foundation correction.
+2. **6B:** stabilize control identities and freeze bounded ETP domain/query
+   contracts.
+3. **6C-6E:** prove Planning extraction, publish the API-23-safe shared UI
+   foundation, then complete the Stock pilot and freeze the component API.
+4. **6F-6G:** build real ETP paged reports; migrate Family A, Family B and the
+   shell in the controlling plan's serial order.
+5. **6H:** build ETP E2 → E3 → E4 → E6 → E5. Incentive/Payroll remains the last
+   build because it is the money path.
+6. **6I:** stop feature writes; clean up compatibility debt; update architecture,
+   identities and Graphify; freeze one clean source candidate.
+7. **6J only:** production-sign one candidate, run full automated/rendered/device
+   acceptance, resolve or carry physical API-23 and low-storage gates, run
+   authorized production publication, obtain named UAT/approvals, perform the
+   final controlled audit and request release/publication confirmation.
+
+Focused developer tests remain mandatory in build phases, but they are merge
+safeguards, not formal acceptance. No agent may claim Phase-6 closure before 6J.
+
+### Agent deployment rule
+
+Use at most four active agents: the Lead Integrator plus no more than three
+specialists. Simultaneous writers require isolated Git worktrees and disjoint
+file ownership. Only the Lead Integrator owns shell/shared wiring, manifests,
+golden/MAH identities, integration merges and final Graphify refresh. Cross-module
+ETP wiring waits until each consumer module's responsive migration is frozen.
+
+The controlling plan contains the per-phase deploy/stand-down matrix and the
+full stop rules. Do not improvise concurrent shared-CSS, shell, manifest,
+Payroll-money or release/signing writes outside that matrix.
+
+### Authority and non-claims
+
+- Do not create another Firebase project, enable billing or use paid services.
+- Ask immediately before any Firebase upload, GitHub Release, store upload or
+  other external publication.
+- Do not map PAYMENTTYPE25 without a separately approved versioned contract.
+- Do not place production workbooks, rows, filenames, PII, passwords or key
+  material in Git/evidence.
+- Do not reuse Phase-5 UAT, visual approval or release approval as if it names a
+  changed Phase-6 identity.
+- A carried exception is not a passed gate. Phase 6 closes only when every
+  required gate passes or is formally documented and accepted with its risk and
+  reopen condition.
+
+## Firebase API-23 physical-provider checkpoint — 2026-08-24
+
+The existing free Firebase project `saagar-phase-5-test-lab` (Saagar Phase 5
+Test Lab, Spark/no-cost plan) was resumed under Sagar's signed-in account. The
+live Android device catalog was opened and filtered with the exact query
+`API 23`; Firebase returned **No matching devices**. The current catalog
+therefore has no Android 6.0/API-23 entry and no qualifying physical OEM device.
+
+This is an evidence-backed **carried exception, not a gate pass**. The banked
+API-23 emulator result is not substituted. The exact production APK
+`SaagarCC-v2.9-production-dfa4ddb.apk` was locally re-hashed successfully but
+was not uploaded and no Firebase test was run. API-23/OEM physical-provider
+coverage and the separate safe-low-storage/interruption evidence remain open.
+Evidence:
+`verification/audit/PHASE-5-FIREBASE-API23-PHYSICAL-CATALOG-EXCEPTION-2026-08-24.md`.
+
+## Named staff and owner UAT checkpoint — 2026-08-24
+
+Akash's cashier/maker rows remain PASS. Sagar subsequently reported that Shadul
+completed the manager/checker review and that Sagar completed the owner/admin
+review. Both remaining named decisions are recorded as PASS, closing the staff
+UAT portion of `GATE-UAT` for the exact production APK
+`bc4ea8c17a5688b293e26c3ab18253069555b1744cb87e545878a64996a58bac`.
+Evidence: `verification/audit/PHASE-5-STAFF-UAT-2026-08-23.md`.
+
+This does not close authorized production publication. The connected device was
+rechecked and contained only the synthetic W003/W013/W022/W025 files under
+`Saagar-ETP-Synthetic-20260823`; no authorized WLMHW/HEMW production report set
+was present.
 
 ## Production-signed checkpoint — 2026-08-23
 
@@ -27,8 +207,8 @@ back byte-identically and rendered with no `TEST` badge. The first signed hash
 `verification/audit/PHASE-5-PRODUCTION-SIGNED-SM-T875-INSTALL-2026-08-23.md`.
 
 Production signing and SM-T875 exact-hash installation are now complete. Phase 5
-remains open on API-23/OEM coverage, authorized production reports, named staff
-UAT, final identity rebind, release decision and the final controlled audit.
+remains open on the carried API-23/OEM exception, authorized production reports,
+final identity rebind, release decision and the final controlled audit.
 
 ## Resume reconciliation checkpoint — 2026-08-23
 
