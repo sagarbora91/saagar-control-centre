@@ -86,10 +86,17 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
   assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
     ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
-  for (const optInAsset of ['shared/module-responsive.css','shared/module-ui-runtime.js','shared/module-table.css','shared/module-table-runtime.js','shared/module-components.css']) {
+  const phase6eConsumerCounts = new Map([
+    ['shared/module-responsive.css', 1], ['shared/module-ui-runtime.js', 1],
+    ['shared/module-table.css', 1], ['shared/module-table-runtime.js', 0],
+    ['shared/module-components.css', 1]
+  ]);
+  for (const optInAsset of phase6eConsumerCounts.keys()) {
     assert.match(manifestSource, new RegExp(optInAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-    assert.equal(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(optInAsset)).length, 0, optInAsset);
+    assert.equal(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(optInAsset)).length,
+      phase6eConsumerCounts.get(optInAsset), optInAsset);
   }
+  assert.match(manifestSource, /modules\/stock\/stock-ui\.css/);
 });
 
 test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {
@@ -104,10 +111,10 @@ test('Phase 1 audit exit closes owned authority gates and records exact capabili
   assert.ok(a2Checks['A2-02'].metric.similarityEdges < 1997);
   const capability = byId(a3)['A3-02'];
   assert.equal(capability.result, 'pass');
-  assert.equal(capability.metric.capabilities, 688);
+  assert.equal(capability.metric.capabilities, 689);
   assert.equal(capability.metric.conflictingIds, 0);
   assert.equal(ledger.baseline.capabilities, 655);
-  assert.equal(ledger.summary.capabilityApprovalsRequired, 770);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 771);
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);

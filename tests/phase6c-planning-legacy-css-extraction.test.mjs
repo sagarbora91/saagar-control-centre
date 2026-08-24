@@ -22,6 +22,7 @@ import {
   renderLegacyDeltaStyle
 } from '../scripts/prepare-phase6c-mobile-legacy-css.mjs';
 import { readModuleManifestSource } from '../scripts/lib/module-manifest-source.mjs';
+import { restorePhase6dStockSource } from './lib/phase6e-stock-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -30,6 +31,9 @@ const restorePhase6dViewport = (moduleId, source) => moduleId === 'dsr' ? source
   'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'
 ) : source;
 const readModule = moduleId => fs.readFileSync(path.join(root, 'www/modules', moduleId, 'index.html'), 'utf8');
+const restorePhase6eStock = (moduleId, source, workspaceRoot = root) => moduleId === 'stock'
+  ? restorePhase6dStockSource(source, fs.readFileSync(path.join(workspaceRoot, 'www/modules/stock/stock-ui.css'), 'utf8'))
+  : source;
 const legacyLink = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
 
 function countTopLevelRules(source) {
@@ -93,7 +97,7 @@ test('the eleven-module rollout is executable and idempotent in an isolated reco
   const fixtureAsset = fs.readFileSync(path.join(fixture, 'www', LEGACY_ASSET), 'utf8');
   for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
     const moduleFile = path.join(fixture, 'www/modules', moduleId, 'index.html');
-    const staged = fs.readFileSync(moduleFile, 'utf8');
+    const staged = restorePhase6eStock(moduleId, fs.readFileSync(moduleFile, 'utf8'), fixture);
     const migrated = legacyLink + renderLegacyDeltaStyle(moduleId);
     const inline = `<style id="st-v5-mobile-css">${reconstructLegacyInlineBody(moduleId, fixtureAsset)}</style>`;
     fs.writeFileSync(moduleFile, restorePhase6dViewport(moduleId, staged.replace(migrated, inline)), 'utf8');
@@ -128,7 +132,8 @@ test('Planning replaces only the inline authority at the exact common -> legacy 
 
 test('all eleven modules use one canonical link and only Service, QMS and Payroll retain bounded deltas', () => {
   for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
-    const source = readModule(moduleId);
+    const currentSource = readModule(moduleId);
+    const source = restorePhase6eStock(moduleId, currentSource);
     assert.equal(source.split(legacyLink).length - 1, 1, moduleId);
     assert.doesNotMatch(source, /<style id="st-v5-mobile-css">/, moduleId);
     const expectedDelta = renderLegacyDeltaStyle(moduleId);

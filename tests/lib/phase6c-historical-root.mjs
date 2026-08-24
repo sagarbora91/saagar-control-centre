@@ -9,6 +9,7 @@ import {
 } from '../../scripts/prepare-phase6c-mobile-legacy-css.mjs';
 import { readModuleManifestSource, renderModuleManifestSource } from '../../scripts/lib/module-manifest-source.mjs';
 import crypto from 'node:crypto';
+import { restorePhase6dStockSource } from './phase6e-stock-source.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -27,6 +28,12 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  const stockPath = path.join(workspaceRoot, 'www/modules/stock/index.html');
+  const stockCssPath = path.join(workspaceRoot, 'www/modules/stock/stock-ui.css');
+  fs.writeFileSync(stockPath, restorePhase6dStockSource(
+    fs.readFileSync(stockPath, 'utf8'), fs.readFileSync(stockCssPath, 'utf8')
+  ), 'utf8');
+  fs.rmSync(stockCssPath);
   const shellPath = path.join(workspaceRoot, 'www/index.html');
   fs.writeFileSync(shellPath, fs.readFileSync(shellPath, 'utf8')
     .replace('content="width=device-width, initial-scale=1.0, viewport-fit=cover"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"'), 'utf8');
@@ -35,14 +42,15 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
-    .replace("input.sharedAssets.length !== 16", "input.sharedAssets.length !== 11")
-    .replace("sharedAssets must contain exactly sixteen entries", "sharedAssets must contain exactly eleven entries");
+    .replace("input.sharedAssets.length !== 17", "input.sharedAssets.length !== 11")
+    .replace("sharedAssets must contain exactly seventeen entries", "sharedAssets must contain exactly eleven entries");
   for (const entry of [
     "      ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }\n",
     "      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }\n",
     "      ,{ id: 'module-table-css', file: 'shared/module-table.css' }\n",
     "      ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }\n",
     "      ,{ id: 'module-components-css', file: 'shared/module-components.css' }\n"
+    ,"      ,{ id: 'stock-ui-css', file: 'modules/stock/stock-ui.css' }\n"
   ]) manifestSource = manifestSource.replace(entry, '');
   fs.writeFileSync(manifestPath, manifestSource, 'utf8');
   fs.writeFileSync(path.join(workspaceRoot, 'www/shared/module-brand-tokens.css'), PRE_PHASE6D_BRAND_TOKENS, 'utf8');
@@ -53,7 +61,7 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-components.css'));
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
-    'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css'
+    'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css', 'stock-ui-css'
   ].includes(item.id));
   const brandTokens = snapshot.data.sharedAssets.find(item => item.id === 'module-brand-tokens-css');
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
@@ -63,6 +71,10 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const dsrBytes = fs.readFileSync(dsrPath);
   dsrModule.bytes = dsrBytes.length;
   dsrModule.sha256 = sha256(dsrBytes);
+  const stockModule = snapshot.data.modules.find(item => item.id === 'stock');
+  const stockBytes = fs.readFileSync(stockPath);
+  stockModule.bytes = stockBytes.length;
+  stockModule.sha256 = sha256(stockBytes);
   fs.writeFileSync(manifestPath, renderModuleManifestSource(snapshot, snapshot.data), 'utf8');
   return workspaceRoot;
 }

@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 16) fail('sharedAssets must contain exactly sixteen entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 17) fail('sharedAssets must contain exactly seventeen entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -190,6 +190,7 @@
       ,{ id: 'module-table-css', file: 'shared/module-table.css' }
       ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }
       ,{ id: 'module-components-css', file: 'shared/module-components.css' }
+      ,{ id: 'stock-ui-css', file: 'modules/stock/stock-ui.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
@@ -305,6 +306,13 @@
       "sha256": "c2e64460d16f6852d82cd3ac74bb597c31c88ae1ac3f3b02fe58044c5ea089b6"
     },
     {
+      "id": "stock-ui-css",
+      "version": 1,
+      "file": "modules/stock/stock-ui.css",
+      "bytes": 32836,
+      "sha256": "601407bf42d8c49057ac958164b8d4db6bf39f241f946bf184ac85f98a1a39a7"
+    },
+    {
       "id": "module-delete-cell-css",
       "version": 1,
       "file": "shared/module-delete-cell.css",
@@ -330,8 +338,8 @@
       "file": "modules/stock/index.html",
       "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
       "summary": "Inventory movement and variance control for store operations.",
-      "bytes": 196443,
-      "sha256": "f53711784a1e20fab3b599ccb75d5aacda57b3777de525fbf9727fd43cd33d25",
+      "bytes": 167806,
+      "sha256": "22236a84e57f972dfc0b83861408ef1e3a0473b09260d61f1a3acc91ddb206e3",
       "source_title": "Saagar Traders — Daily Stock Register v3",
       "src": "modules/stock/index.html"
     },

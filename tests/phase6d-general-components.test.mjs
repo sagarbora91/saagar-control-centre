@@ -68,10 +68,14 @@ test('API-23 path has explicit layout fallbacks and no modern feature as sole pa
   assert.doesNotMatch(source, /\bgrid-template|display:grid/);
 });
 
-test('no module consumes the general component asset before Phase 6E', () => {
+test('Phase 6E keeps general component adoption bounded to Stock', () => {
   for (const id of fs.readdirSync(moduleRoot)) {
     const file = path.join(moduleRoot, id, 'index.html');
     const html = fs.readFileSync(file, 'utf8');
+    if (id === 'stock') {
+      assert.match(html, /module-components\.css/, file);
+      continue;
+    }
     assert.doesNotMatch(html, /module-components\.css/, file);
     assert.doesNotMatch(html, /saagar-(?:field|button|card|tile|modal|sheet|toolbar|nav|state)\b/, file);
   }

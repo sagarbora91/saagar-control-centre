@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePhase6dStockSource } from './lib/phase6e-stock-source.mjs';
 
-const html = fs.readFileSync(new URL('../www/modules/stock/index.html', import.meta.url), 'utf8');
+const currentHtml = fs.readFileSync(new URL('../www/modules/stock/index.html', import.meta.url), 'utf8');
+const currentCss = fs.readFileSync(new URL('../www/modules/stock/stock-ui.css', import.meta.url), 'utf8');
+const html = restorePhase6dStockSource(currentHtml, currentCss);
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 const originalSha256 = 'b6563b3aa095b7da518979ec22dcb466e473180253cd073955794eb166af796e';
 const existingActions = new Set([

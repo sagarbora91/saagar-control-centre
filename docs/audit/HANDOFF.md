@@ -3,7 +3,29 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6D engineering complete; begin Phase 6E Stock pilot — 2026-08-24
+## RESUME HERE — Phase 6E Stock pilot complete; begin Phase 6F bounded ETP reports and Family A — 2026-08-24
+
+### Phase 6E engineering closure
+
+Stock is the sole adopter of the frozen Phase 6D UI foundation. Its six governed tables now have
+explicit strategies: opening, closing and theft-log workflows use cards; daily and monthly
+summaries use priority columns; movement reconciliation alone retains a true horizontally
+scrollable grid. Stock-only CSS is extracted and integrity-bound, mobile data entry no longer
+requires general sideways scrolling, and explicit Chrome-44/API-23 flex fallbacks remain present.
+
+The pilot preserved calculations, storage schema, business actions, access context, generated
+reports and historical source evidence. Independent review also closed two pre-existing Stock P1
+defects: imported opening/closing timestamps are escaped before HTML rendering, and deterministic
+Unicode code-point row keys prevent punctuation-collision edits. Focused Phase 6E verification is
+**48/48**; the broad final gates are recorded in the controlling receipt:
+
+`verification/audit/PHASE-6E-STOCK-PILOT-CLOSURE-2026-08-24.md`
+
+The component API is frozen at this boundary. Begin Phase 6F with bounded ETP reports and Family-A
+migration; shared API changes must reopen the Stock pilot. No rendered/emulator/device/UAT,
+APK/build/sign, Firebase, upload, publication, billing or release acceptance is claimed.
+
+## Historical resume point — Phase 6D engineering complete; begin Phase 6E Stock pilot — 2026-08-24
 
 ### Phase 6D engineering closure
 

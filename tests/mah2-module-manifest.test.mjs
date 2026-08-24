@@ -54,7 +54,7 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
 });
 
 test('manifest binds both synchronous shared runtimes to local bytes and SHA-256', () => {
-  assert.equal(api.sharedAssets.length, 16);
+  assert.equal(api.sharedAssets.length, 17);
   const bridge = api.sharedAssets[0];
   assert.equal(bridge.id, 'module-bridge');
   assert.equal(bridge.file, 'shared/module-bridge.js');
@@ -67,7 +67,7 @@ test('manifest binds both synchronous shared runtimes to local bytes and SHA-256
   assert.equal(mah4Runtime.id, 'mah4-runtime');
   assert.equal(mah4Runtime.version, 1);
   assert.equal(mah4Runtime.file, 'shared/mah4-runtime.js');
-  assert.deepEqual(api.sharedAssets.slice(3).map(asset => asset.id), ['module-uniform-css','module-back-css','module-employee-css','module-mobile-common-css','module-mobile-legacy-css','module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css','module-delete-cell-css','etp-verified-presentation']);
+  assert.deepEqual(api.sharedAssets.slice(3).map(asset => asset.id), ['module-uniform-css','module-back-css','module-employee-css','module-mobile-common-css','module-mobile-legacy-css','module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css','stock-ui-css','module-delete-cell-css','etp-verified-presentation']);
   assert.equal(api.getShared('mah4-runtime'), mah4Runtime);
   for (const asset of api.sharedAssets) {
     const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
