@@ -3,21 +3,21 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6B active; foundation checkpoint frozen — 2026-08-24
+## RESUME HERE — Phase 6B engineering complete; begin Phase 6C — 2026-08-24
 
-### Phase 6B active checkpoint
+### Phase 6B closure checkpoint
 
-Phase 6B has started and now has three local commits: `71985c4`, `efb521d`, and `8db6224`.
-Planning, ETP, and Stock identity batches are frozen; ETP Foundation-v1 readiness/query
-contracts, parent-owned summary reads, opaque cursor binding, sanitized import history, and the
-versioned tender dictionary are implemented. Current validation is Phase 0 30/30, ETP 212/212,
-and manifest/MH1 16/16. The detailed checkpoint is:
+Phase 6B engineering is complete locally. All module, generated-action and resolved shared-shell
+identity families are frozen; ETP readiness/query/history/tender/profile-authority contracts are
+integrated through the production runtime boundary. HEMW remains evidence-pending and is denied
+before file reads or native staging. Current validation is Phase 0 63/63, ETP 223/223, manifest
+8/8, modular 86/86 and the complete offline command green. The controlling closure record is:
 
-`verification/audit/PHASE-6B-FOUNDATION-CHECKPOINT-2026-08-24.md`
+`verification/audit/PHASE-6B-ENGINEERING-CLOSURE-2026-08-24.md`
 
-Resume 6B with the HEMW build-owned profile authority and remaining module identity families.
-Do not claim 6B complete: history/tender runtime integration, HEMW authority binding, remaining
-identities, adversarial exit, and capability-ledger refresh are still pending.
+Resume with Phase 6C. The refreshed capability ledger remains explicitly pending owner approval,
+as intended by the build-first plan; engineering closure does not authorize APK building,
+production signing, device/Firebase testing, publication or final Phase 6 approval.
 
 Phase 6A repository work has been implemented and validated locally. The isolated CI
 containment commit is `08c156f` (`fix(ci): contain debug artifacts to read-only runs`). It has

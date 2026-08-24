@@ -4,15 +4,15 @@
   "upstream": {
     "mah3ProfilePath": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
     "mah3ProfileBytes": 7452,
-    "mah3ProfileSha256": "8aa18e364f1a3fea71f093090c5420b09bd856f115a7eb1591f690917b30e80b",
-    "mah3TreeSha256": "76d48c01abbbf2d6c82028f2444a4c74a050ed895af71fdd6da53b5e4b21da9b",
-    "currentWwwTreeSha256": "76d48c01abbbf2d6c82028f2444a4c74a050ed895af71fdd6da53b5e4b21da9b",
-    "currentWwwFileCount": 103,
-    "currentWwwTotalBytes": 8066621,
+    "mah3ProfileSha256": "3233df39b36a63dc83d62dbb0f7955f502ff0531d21404f6340dc986b9d7306a",
+    "mah3TreeSha256": "98533df91055a81e3b1da602fe363d220840a21f208fd9923a836e508746dbf8",
+    "currentWwwTreeSha256": "98533df91055a81e3b1da602fe363d220840a21f208fd9923a836e508746dbf8",
+    "currentWwwFileCount": 108,
+    "currentWwwTotalBytes": 8142819,
     "shell": {
       "path": "www/index.html",
-      "bytes": 575994,
-      "sha256": "d4235b29a5934132dbea97edc6f0b8e460259b6c0c115df48f719dd55623260c"
+      "bytes": 577065,
+      "sha256": "bd799c4162808fa9c3f94b915d876fb4f2e0aeabbec025ba0cdc76b7dd48b82a"
     },
     "manifest": {
       "path": "www/module-manifest.js",
@@ -636,7 +636,7 @@
   },
   "scriptDiscovery": {
     "mode": "direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory",
-    "directEntryScriptAssetCount": 58,
+    "directEntryScriptAssetCount": 63,
     "dynamicLocalAssetsInventoried": true,
     "parserLimitations": [
       "entry-template-interpolation-not-classified",
@@ -1093,8 +1093,8 @@
       },
       {
         "path": "www/etp-verified-presentation.js",
-        "bytes": 11861,
-        "sha256": "031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6",
+        "bytes": 8603,
+        "sha256": "31b4d32b1e75aaa293477e37652ce4fbcb2fe8a2c0fe288d6cf7f338e2218376",
         "loadedBy": [
           "etp"
         ]

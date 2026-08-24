@@ -17,7 +17,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   assert.equal(profile.schemaVersion, 3);
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);
-  assert.equal(inventory.upstream.currentWwwFileCount, 103);
+  assert.equal(inventory.upstream.currentWwwFileCount, 108);
   // +1208 bytes on 2026-08-10: 38 inert `data-action` attributes added to
   // disambiguate conflicting A3-02 capability IDs, plus the refreshed module
   // manifest identities. No behaviour change; file count is unchanged.
@@ -52,7 +52,7 @@ test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
   // result construction close the two physical-device defects.
   // -76 bytes on 2026-08-23: the normal shipped SQLite-primary runtime no longer
   // makes a production-signed build display the stale TEST badge.
-  assert.equal(inventory.upstream.currentWwwTotalBytes, 8066621);
+  assert.equal(inventory.upstream.currentWwwTotalBytes, 8142819);
   assert.equal(inventory.upstream.manifest.moduleCount, 12);
   assert.deepEqual(profile.stageAContractOracle.files.map(file => file.path), [
     'scripts/lib/mah4-protocol-contract.mjs',
@@ -126,7 +126,7 @@ test('MAH-4 resolves direct message assets and listener-local trust posture', ()
 test('MAH-4 freezes conditional local loaders and persistent iframe hooks separately', () => {
   const dynamic = inventory.scriptDiscovery.dynamicLocal;
   assert.equal(inventory.scriptDiscovery.mode, 'direct-entry-script-tags-plus-explicit-dynamic-local-loader-inventory');
-  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 58);
+  assert.equal(inventory.scriptDiscovery.directEntryScriptAssetCount, 63);
   assert.equal(inventory.scriptDiscovery.dynamicLocalAssetsInventoried, true);
   assert.equal(dynamic.loaderGroupCount, 5);
   assert.equal(dynamic.scriptRouteCount, 10);
