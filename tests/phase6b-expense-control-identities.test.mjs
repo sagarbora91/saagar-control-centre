@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -24,7 +25,7 @@ test('Expense freezes the exact safe identity set for all 12 static actions', ()
 });
 
 test('Expense annotations restore the exact baseline bytes when stripped', () => {
-  const restored = html.replace(/ data-action="[^"]+"/g, '');
+  const restored = restorePrePhase6gFamilyBSource('expense', html).replace(/ data-action="[^"]+"/g, '');
   assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('expense', restored)).digest('hex'), 'c5cf70a6292f454507e4d5d611c317573a88a903ca11b304358053e4332b7762');
 });
 

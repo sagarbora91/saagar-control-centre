@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run as auditA3 } from '../scripts/audit/audits/a3.mjs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fixtures = Object.freeze([
@@ -44,7 +45,10 @@ function restorePhase6dViewport(moduleId, source) {
 
 for (const fixture of fixtures) test(`${fixture.module} generated controls have exact bounded definition identities`, () => {
   const file = path.join(root, 'www', 'modules', fixture.module, 'index.html');
-  const source = fs.readFileSync(file, 'utf8');
+  const current = fs.readFileSync(file, 'utf8');
+  const cssFile = path.join(root, 'www', 'modules', fixture.module, `${fixture.module}-ui.css`);
+  const source = ['tax', 'dsr', 'qms'].includes(fixture.module)
+    ? restorePrePhase6gFamilyBSource(fixture.module, current, fs.readFileSync(cssFile, 'utf8')) : current;
   const definitions = generatedDefinitions(source);
   assert.equal(definitions.length, fixture.count);
   assert.equal(new Set(definitions.map(item => `${item.action}:${item.key}`)).size, definitions.length);

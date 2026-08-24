@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -25,7 +26,7 @@ test('Leave freezes the exact safe identity set for all 45 static actions', () =
 });
 
 test('Leave new annotations restore the exact baseline bytes when stripped', () => {
-  const restored = html
+  const restored = restorePrePhase6gFamilyBSource('leave', html, fs.readFileSync(new URL('../www/modules/leave/leave-ui.css', import.meta.url), 'utf8'))
     .replace(/ data-action="([^"]+)"/g, (attribute, action) => added.includes(action) ? '' : attribute)
     .replace(/\b\w+\.dataset\.action = '[^']+'; /g, '');
   assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('leave', restored)).digest('hex'), 'b1c11fbee54f66eacbe72734850e3cdb338ec48af7ba987142fcd06d450c4143');

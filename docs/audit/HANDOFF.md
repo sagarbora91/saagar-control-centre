@@ -3,7 +3,30 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6F engineering complete; final checkpoint, then begin Phase 6G — 2026-08-24
+## RESUME HERE — Phase 6G engineering complete; begin Phase 6H ETP E2 analytics — 2026-08-24
+
+### Phase 6G engineering closure
+
+Family-B responsive adoption is complete for Expense, Leave, CRO Audit, Tax, DSR and QMS.
+Expense freezes the safe rendered-component helper; DSR close-day and QMS allocation/persistence
+gates remain green. The responsive shell adds full Auto preference and four physical layout tiers
+without widening the canonical module protocol. All twelve routes restore, actions remain
+reachable, and Reports continues to own ETP while Settings excludes it.
+
+The integrated Phase 6G aggregate is **234/234**. Final broad gates are Phase 0 **72/72**,
+security **101/101**, modular **88/88** and complete offline **275/275**. Exact details and the
+regenerated fail-closed capability ledger are recorded in:
+
+`verification/audit/PHASE-6G-ENGINEERING-CLOSURE-2026-08-24.md`
+
+Begin Phase 6H.1 with ETP E2 verified analytics, then E3, E4, E6 and E5. Preserve honest missing
+coverage, store isolation, reconciliation identity, the shell/module security boundary and
+Reports ownership of ETP.
+
+No rendered-browser, emulator, physical-device, staff-UAT, APK/build/sign, Firebase, upload,
+publication, release or billing acceptance is claimed.
+
+## Historical resume point — Phase 6F engineering complete; begin Phase 6G — 2026-08-24
 
 ### Phase 6F engineering closure
 

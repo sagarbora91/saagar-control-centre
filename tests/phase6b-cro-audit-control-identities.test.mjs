@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -23,7 +24,7 @@ test('CRO Audit freezes the exact safe identity set for all 24 static actions', 
 });
 
 test('CRO Audit annotations restore the exact baseline bytes when stripped', () => {
-  const restored = html.replace(/ data-action="[^"]+"/g, '');
+  const restored = restorePrePhase6gFamilyBSource('cro_audit', html, fs.readFileSync(new URL('../www/modules/cro_audit/cro-audit-ui.css', import.meta.url), 'utf8')).replace(/ data-action="[^"]+"/g, '');
   assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('cro_audit', restored)).digest('hex'), '32bc3d5b1cd6843d57e5a3c3d918034c7f2ee93224eb4916a41779f6ed5849aa');
 });
 

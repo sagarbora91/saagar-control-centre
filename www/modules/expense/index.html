@@ -13,6 +13,31 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Expense Manager — Central Financial Ledger · Saagar Traders</title>
+<link rel="stylesheet" href="../../shared/module-brand-tokens.css">
+<link rel="stylesheet" href="../../shared/module-responsive.css">
+<link rel="stylesheet" href="../../shared/module-components.css">
+<link rel="stylesheet" href="../../shared/module-table.css">
+<script src="../../shared/module-ui-runtime.js"></script>
+<script src="../../shared/module-table-runtime.js"></script>
+<script src="../../shared/module-rendered-components.js"></script>
+<script id="phase6g-expense-render-policy">
+var ExpenseRenderedPolicy=SaagarRenderedComponents.createPolicy({
+  'open-dashboard':{handler:'go',args:1},'open-ledger':{handler:'go',args:1},'open-udhaar':{handler:'go',args:1},'open-cash-statement':{handler:'go',args:1},'open-petty-cash':{handler:'go',args:1},'open-vendors':{handler:'go',args:1},'open-budgets':{handler:'go',args:1},'open-cross-module':{handler:'go',args:1},'open-month-tax':{handler:'go',args:1},'open-audit':{handler:'go',args:1},'st-v5-home-fab':null,
+  'dashboard-open-cash-statement':{handler:'go',args:1},'dashboard-review-cross-module':{handler:'go',args:1},'dashboard-open-month-close':{handler:'go',args:1},'dashboard-open-all-ledger-entries':{handler:'go',args:1},
+  'select-income-entry':{handler:'setET',args:1},'select-expense-entry':{handler:'setET',args:1},'save-ledger-entry':{handler:'addEntry',args:0},'export-ledger-csv':{handler:'exportLedgerCSV',args:0},'view-ledger-photo':{handler:'viewPhoto',args:1,delegated:true},'share-ledger-entry':{handler:'shareEntry',args:1,delegated:true},'approve-ledger-entry':{handler:'approveEntry',args:1,delegated:true},'edit-ledger-entry':{handler:'editEntry',args:1,delegated:true},'void-ledger-entry':{handler:'voidEntry',args:1,delegated:true},
+  'open-ledger-to-post':{handler:'go',args:1},'post-recurring-entry':{handler:'postRecurring',args:1,delegated:true},'edit-recurring-template':{handler:'editRecTpl',args:1,delegated:true},'toggle-recurring-template':{handler:'toggleRecTpl',args:1,delegated:true},'delete-recurring-template':{handler:'delRecTpl',args:1,delegated:true},'add-recurring-template':{handler:'addRecTpl',args:0},
+  'filter-statement-all-stores':{handler:'setSST',args:1,delegated:true},'filter-statement-store':{handler:'setSST',args:1,delegated:true},'print-cash-statement':{handler:'printStmt',args:0},'approve-business-day':{handler:'approveDay',args:0},'reopen-business-day':{handler:'reopenDay',args:0},'close-business-day':{handler:'closeDay',args:0},'print-store-statement':{handler:'printStmt',args:0},'approve-store-day':{handler:'approveStoreDay',args:1,delegated:true},'reopen-store-day':{handler:'reopenStoreDay',args:1,delegated:true},'close-store-day':{handler:'closeStoreDay',args:1,delegated:true},
+  'set-petty-cash-float':{handler:'setFloat',args:0},'record-petty-cash-disbursement':{handler:'pettyOut',args:0},'add-vendor':{handler:'addVendor',args:0},'remove-vendor':{handler:'delVendor',args:1},'copy-previous-month-budgets':{handler:'copyBudgets',args:0},'post-source-items':{handler:'postSrc',args:1,delegated:true},'post-all-source-items':{handler:'postSrc',args:1,delegated:true},'generate-lock-tax-feed':{handler:'genTaxFeed',args:0},'export-month-csv':{handler:'exportMonthCSV',args:0},'export-audit-csv':{handler:'exportAuditCSV',args:0},
+  'add-receivable':{handler:'addReceivable',args:0},'pay-receivable':{handler:'payReceivable',args:1,delegated:true},'remind-receivable':{handler:'remindReceivable',args:1,delegated:true},'void-receivable':{handler:'voidReceivable',args:1,delegated:true},'close-generated-modal':{handler:'closeModal',args:0},'cancel-generated-modal':{handler:'closeModal',args:0},'confirm-generated-modal':null
+},{
+  ledger:{strategy:'grid',reason:'ledger review requires cross-column financial comparison'},
+  'statement-inflows':{strategy:'priority'},'statement-outflows':{strategy:'priority'},'statement-reconciliation':{strategy:'priority'},
+  vendors:{strategy:'cards'},budgets:{strategy:'cards'},
+  'cross-module':{strategy:'grid',reason:'source posting review requires cross-column comparison'},
+  'month-summary':{strategy:'cards'},'firm-profit-loss':{strategy:'cards'},
+  audit:{strategy:'grid',reason:'audit review requires chronological cross-column comparison'},receivables:{strategy:'cards'}
+});
+</script>
 <style>
 :root{
   --navy:#0d2340; --navy-mid:#1a3a5c; --navy-light:#264d7a;
@@ -321,6 +346,14 @@ tbody tr:hover td{background:var(--cream)}
   .sec.active{display:block!important}
   .card{box-shadow:none;border-color:var(--gray-300);break-inside:avoid}
 }
+html.saagar-legacy-webview .kgrid,
+html.saagar-legacy-webview .fgrid,
+html.saagar-legacy-webview .st-grid,
+html.saagar-legacy-webview .deno{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+html.saagar-legacy-webview .kgrid>*{width:24%}
+html.saagar-legacy-webview .fgrid>*,
+html.saagar-legacy-webview .st-grid>*,
+html.saagar-legacy-webview .deno>*{width:48%;-webkit-flex:1 1 280px;flex:1 1 280px}
 </style>
 <style id="st-v5-hide-css">#vn,[onclick="addVendor()"]{display:none !important}</style>
 
@@ -331,7 +364,8 @@ tbody tr:hover td{background:var(--cream)}
 <link rel="stylesheet" href="../../mobile-layout.css">
 <script src="../../app-i18n.js"></script>
 </head>
-<body>
+<body data-saagar-ui data-saagar-width="auto">
+<script id="phase6g-expense-ui-boot">SaagarUiFoundation.configure(document.body,{mode:'auto'});SaagarRenderedComponents.observe(document.body,ExpenseRenderedPolicy);</script>
 
 <header class="hdr">
   <div class="logo">₹</div>
@@ -423,7 +457,12 @@ function ym(s){ return (s||todayStr()).slice(0,7); }
 function uid(pfx){ return (pfx||'e')+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
 function nINR(n){ if(n==null||isNaN(n))return '₹0'; return '₹'+Math.round(n).toLocaleString('en-IN'); }
 function num(v){ var n=parseFloat(v); return isNaN(n)?0:n; }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function badgeToken(s){ var v=String(s==null?'':s).toLowerCase(); return /^(cash|bank|upi|card|auto)$/.test(v)?v:'auto'; }
+/* JavaScript-source encoder for a value placed inside a single-quoted inline
+   handler argument. This is deliberately separate from HTML text escaping. */
+function jsq(s){ if(s!=null&&typeof s!=='string'&&typeof s!=='number'&&typeof s!=='boolean')throw new TypeError('inline argument must be primitive'); var v=String(s==null?'':s); if(v.length>512)throw new RangeError('inline argument too long'); return v.replace(/[\\'"&<>\u0000-\u001f\u007f\u2028\u2029]/g,function(c){var n=c.charCodeAt(0),h=n.toString(16);while(h.length<(n<=255?2:4))h='0'+h;return n<=255?'\\x'+h:'\\u'+h;}); }
+function jargs(v){ if(v!=null&&typeof v!=='string'&&typeof v!=='number'&&typeof v!=='boolean')throw new TypeError('delegated argument must be primitive'); if(typeof v==='string'&&v.length>512)throw new RangeError('delegated argument too long'); return encodeURIComponent(JSON.stringify([v])); }
 /* P1-17: soft format check — Indian GSTIN is 15 chars (2-digit state + 13 alnum). NEVER blocks. */
 function gstinLooksOk(g){ return !g || /^[0-9]{2}[A-Z0-9]{13}$/.test(g); }
 function prevDay(s){ var d=new Date(s+'T00:00:00'); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
@@ -801,7 +840,7 @@ function applyLF(){
 }
 function val(id){ var e=document.getElementById(id); return e?e.value:''; }
 function ledgerTable(rows,compact){
-  return '<div class="twrap"><table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Mode</th><th>Vendor</th><th>Description</th><th class="num">Amount</th><th>Src</th>'+(compact?'':'<th></th>')+'</tr></thead><tbody>'+
+  return '<div class="twrap"><table data-saagar-table-strategy="grid" data-saagar-table-workflow="ledger" data-saagar-grid-reason="ledger review requires cross-column financial comparison"><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Mode</th><th>Vendor</th><th>Description</th><th class="num">Amount</th><th>Src</th>'+(compact?'':'<th></th>')+'</tr></thead><tbody>'+
    rows.map(function(e){
      var dayLocked=getStmt(e.date).closed;
      // #19: status badge — Pending / Approved. Missing status = legacy entry → no badge.
@@ -815,12 +854,12 @@ function ledgerTable(rows,compact){
       '<td>'+esc(e.category)+'</td>'+
       '<td><span class="bdg '+e.mode.toLowerCase()+'">'+e.mode+'</span></td>'+
       '<td>'+esc(e.vendor||'—')+'</td>'+
-      '<td>'+esc(e.description||'—')+statusBdg+(e.void?' <span class="bdg void">void</span>':'')+(e.billPhoto?' <button data-action="view-ledger-photo" class="btn xs" title="View bill photo" onclick="viewPhoto(\''+e.id+'\')">📎</button>':'')+'</td>'+
+      '<td>'+esc(e.description||'—')+statusBdg+(e.void?' <span class="bdg void">void</span>':'')+(e.billPhoto?' <button data-action="view-ledger-photo" data-saagar-args="'+jargs(e.id)+'" class="btn xs" title="View bill photo">📎</button>':'')+'</td>'+
       '<td class="num">'+nINR(e.amount)+'</td>'+
-      '<td>'+(e.source?'<span class="bdg src">'+e.source+'</span>':'<span class="muted small">manual</span>')+'</td>'+
-      (compact?'':'<td class="num"><button data-action="share-ledger-entry" class="btn xs" title="Send on WhatsApp" onclick="shareEntry(\''+e.id+'\')">↗ Send</button> '+
-        (isSuperAdmin()&&!e.void&&e.status==='pending'&&!isPast()?'<button data-action="approve-ledger-entry" class="btn xs green" onclick="approveEntry(\''+e.id+'\')">Approve</button> ':'')+
-        (e.void?'':apprLocked?'<span class="bdg locked" title="approved — locked">🔒</span>':((isPast()||dayLocked)?'<span class="bdg locked" title="'+(isPast()?'historical view':'day locked')+'">🔒</span>':'<button data-action="edit-ledger-entry" class="btn xs" onclick="editEntry(\''+e.id+'\')">Edit</button> <button data-action="void-ledger-entry" class="btn xs red" onclick="voidEntry(\''+e.id+'\')">Void</button>'))+'</td>')+
+      '<td>'+(e.source?'<span class="bdg src">'+esc(e.source)+'</span>':'<span class="muted small">manual</span>')+'</td>'+
+      (compact?'':'<td class="num"><button data-action="share-ledger-entry" data-saagar-args="'+jargs(e.id)+'" class="btn xs" title="Send on WhatsApp">↗ Send</button> '+
+        (isSuperAdmin()&&!e.void&&e.status==='pending'&&!isPast()?'<button data-action="approve-ledger-entry" data-saagar-args="'+jargs(e.id)+'" class="btn xs green">Approve</button> ':'')+
+        (e.void?'':apprLocked?'<span class="bdg locked" title="approved — locked">🔒</span>':((isPast()||dayLocked)?'<span class="bdg locked" title="'+(isPast()?'historical view':'day locked')+'">🔒</span>':'<button data-action="edit-ledger-entry" data-saagar-args="'+jargs(e.id)+'" class="btn xs">Edit</button> <button data-action="void-ledger-entry" data-saagar-args="'+jargs(e.id)+'" class="btn xs red">Void</button>'))+'</td>')+
      '</tr>';
    }).join('')+'</tbody></table></div>';
 }
@@ -1124,10 +1163,10 @@ function recurringCard(){
       :got?'<span class="bdg ok">posted'+(got>1?' ×'+got:'')+'</span>'
       :(dNow>=eff?'<span class="bdg warn">due — not posted</span>'
                  :'<span class="muted small">upcoming · day '+eff+'</span>');
-    var btns=past?'':((t.active?'<button data-action="post-recurring-entry" class="btn xs green" onclick="postRecurring(\''+t.id+'\')">'+(got?'Post again':'Post now')+'</button>':'')+
-      (manage?' <button data-action="edit-recurring-template" class="btn xs" onclick="editRecTpl(\''+t.id+'\')">Edit</button>'+
-              ' <button data-action="toggle-recurring-template" class="btn xs" onclick="toggleRecTpl(\''+t.id+'\')">'+(t.active?'Deactivate':'Activate')+'</button>'+
-              ' <button data-action="delete-recurring-template" class="btn xs red" onclick="delRecTpl(\''+t.id+'\')">✕</button>':''));
+    var btns=past?'':((t.active?'<button data-action="post-recurring-entry" data-saagar-args="'+jargs(t.id)+'" class="btn xs green">'+(got?'Post again':'Post now')+'</button>':'')+
+      (manage?' <button data-action="edit-recurring-template" data-saagar-args="'+jargs(t.id)+'" class="btn xs">Edit</button>'+
+              ' <button data-action="toggle-recurring-template" data-saagar-args="'+jargs(t.id)+'" class="btn xs">'+(t.active?'Deactivate':'Activate')+'</button>'+
+              ' <button data-action="delete-recurring-template" data-saagar-args="'+jargs(t.id)+'" class="btn xs red">✕</button>':''));
     return '<div class="fitem"><div class="ic">🔁</div>'+
       '<div><b>'+esc(t.name)+'</b> <span class="muted small">'+esc(t.category)+' · '+esc(t.mode)+
         (t.vendor?' · '+esc(t.vendor):'')+(t.firm?' · '+esc(t.firm):'')+(t.store?' · '+esc(storeName(t.store)):'')+
@@ -1274,8 +1313,8 @@ var SST='';
 function setSST(s){ SST=s; renderStmt(); }
 /* Wave-5: segmented scope control [ All (business) | store… ] shown atop the tab. */
 function stScopeBar(){
-  var btns='<button data-action="filter-statement-all-stores" class="'+(SST===''?'on inc':'')+'" onclick="setSST(\'\')">All (business)</button>'+
-    orgStores().map(function(s){ return '<button data-action="filter-statement-store" class="'+(SST===s.code?'on inc':'')+'" onclick="setSST(\''+esc(s.code)+'\')">'+esc(s.name)+'</button>'; }).join('');
+  var btns='<button data-action="filter-statement-all-stores" data-saagar-args="'+jargs('')+'" class="'+(SST===''?'on inc':'')+'">All (business)</button>'+
+    orgStores().map(function(s){ return '<button data-action="filter-statement-store" data-saagar-args="'+jargs(s.code)+'" class="'+(SST===s.code?'on inc':'')+'">'+esc(s.name)+'</button>'; }).join('');
   return '<div class="seg" style="margin-bottom:14px">'+btns+'</div>';
 }
 /* Wave-5: compact both-drawer status strip for the All (business) view. */
@@ -1379,9 +1418,9 @@ function renderStmtStore(store){
      (pastDay
        ? '<span class="small muted">Historical view — close, approve and reopen are available only for today.</span>'
        : (locked
-         ? (can('approve') && !sub.approved ? '<button data-action="approve-store-day" class="btn green" onclick="approveStoreDay(\''+esc(store)+'\')">✔ Approve drawer (checker)</button> ' : '')+
-           (can('reopen') ? '<button data-action="reopen-store-day" class="btn red" onclick="reopenStoreDay(\''+esc(store)+'\')">↺ Reopen (owner)</button>' : '')
-         : (can('close') ? '<button data-action="close-store-day" class="btn p" onclick="closeStoreDay(\''+esc(store)+'\')">🔒 Close &amp; lock drawer</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
+         ? (can('approve') && !sub.approved ? '<button data-action="approve-store-day" data-saagar-args="'+jargs(store)+'" class="btn green">✔ Approve drawer (checker)</button> ' : '')+
+           (can('reopen') ? '<button data-action="reopen-store-day" data-saagar-args="'+jargs(store)+'" class="btn red">↺ Reopen (owner)</button>' : '')
+         : (can('close') ? '<button data-action="close-store-day" data-saagar-args="'+jargs(store)+'" class="btn p">🔒 Close &amp; lock drawer</button>' : '<span class="small muted">Your role cannot close the day</span>')))+
    '</div>'+
    '<div class="small muted" style="margin-top:8px">Carry-forward to next day = counted cash − bank deposit = <b>'+nINR(Math.max(counted-bankDep,0))+'</b></div>'+
   '</div>';
@@ -1426,7 +1465,7 @@ function printStmt(){
   } else {
     body+=''+
     '<div class="stp-sec"><div class="stp-sec-t">Receipts (cash in)</div>'+
-      '<table class="stp-table"><thead><tr><th>Particulars</th><th class="stp-c stp-r">Amount</th></tr></thead>'+
+      '<table class="stp-table" data-saagar-print-table-strategy="priority" data-saagar-table-workflow="statement-inflows"><thead><tr><th>Particulars</th><th class="stp-c stp-r">Amount</th></tr></thead>'+
       '<tbody>'+
         '<tr><td>Opening balance (carry-forward)</td><td class="stp-c stp-r">'+stEsc(nINR(d.opening))+'</td></tr>'+
         rowsHtml(inflows,'— none —')+
@@ -1434,7 +1473,7 @@ function printStmt(){
       '<tfoot><tr class="stp-tot"><td>Total cash available</td><td class="stp-c stp-r">'+stEsc(nINR(d.opening+d.cashIn))+'</td></tr></tfoot>'+
       '</table></div>'+
     '<div class="stp-sec"><div class="stp-sec-t">Payments (cash out)</div>'+
-      '<table class="stp-table"><thead><tr><th>Particulars</th><th class="stp-c stp-r">Amount</th></tr></thead>'+
+      '<table class="stp-table" data-saagar-print-table-strategy="priority" data-saagar-table-workflow="statement-outflows"><thead><tr><th>Particulars</th><th class="stp-c stp-r">Amount</th></tr></thead>'+
       '<tbody>'+rowsHtml(outflows,'— none —')+'</tbody>'+
       '<tfoot>'+
         '<tr class="stp-tot"><td>Total cash paid</td><td class="stp-c stp-r">'+stEsc(nINR(d.cashOut))+'</td></tr>'+
@@ -1442,7 +1481,7 @@ function printStmt(){
       '</tfoot>'+
       '</table></div>'+
     '<div class="stp-sec"><div class="stp-sec-t">Reconciliation</div>'+
-      '<table class="stp-table"><tbody>'+
+      '<table class="stp-table" data-saagar-print-table-strategy="priority" data-saagar-table-workflow="statement-reconciliation"><tbody>'+
         '<tr><td>Physical cash counted</td><td class="stp-c stp-r">'+stEsc(nINR(counted))+'</td></tr>'+
         '<tr><td>Of which deposited to bank</td><td class="stp-c stp-r">'+stEsc(nINR(bankDep))+'</td></tr>'+
         '<tr><td>Non-cash today (Bank in / out)</td><td class="stp-c stp-r stp-mut">'+stEsc(nINR(d.bankIn))+' / '+stEsc(nINR(d.bankOut))+'</td></tr>'+
@@ -1458,7 +1497,7 @@ function strow(label,amt,cls){ return '<div class="st-row '+(cls||'')+'"><span c
 function cashRows(rows,type){
   var r=rows.filter(function(e){return e.type===type && e.mode==='Cash';});
   if(!r.length) return '<div class="st-row"><span class="d muted">— none —</span><span>₹0</span></div>';
-  return r.map(function(e){ return '<div class="st-row"><span class="d">'+esc(e.description||e.category)+(e.source?' <span class="bdg auto">'+e.source+'</span>':'')+'</span><span>'+nINR(e.amount)+'</span></div>'; }).join('');
+  return r.map(function(e){ return '<div class="st-row"><span class="d">'+esc(e.description||e.category)+(e.source?' <span class="bdg auto">'+esc(e.source)+'</span>':'')+'</span><span>'+nINR(e.amount)+'</span></div>'; }).join('');
 }
 function denoBox(title,kind,data,locked){
   return '<div class="st-box"><div class="st-th">'+title+'</div><div style="padding:12px"><div class="deno">'+
@@ -1634,7 +1673,7 @@ function renderVendors(){
   (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Vendor list is read-only in historical view.</div></div>':'')+
   '<div class="card"><div class="card-h"><div><h3>Vendors / payees</h3><p>Used for entry auto-complete and spend reports.</p></div></div>'+
    '<div class="row"><input id="vn" placeholder="vendor name"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;flex:1"><input id="vgst" placeholder="GSTIN (optional)"'+(past?' disabled':'')+' style="padding:9px 11px;border:1px solid var(--gray-300);border-radius:8px;width:170px;text-transform:uppercase"><button data-action="add-vendor" class="btn p" onclick="addVendor()"'+(past?' disabled':'')+'>Add</button></div>'+
-   '<div class="twrap" style="margin-top:14px"><table class="gm-tbl-vendors"><thead><tr><th>Vendor</th><th>GSTIN</th><th class="num">Total spend</th><th class="num">Entries</th><th></th></tr></thead><tbody>'+
+   '<div class="twrap" style="margin-top:14px"><table class="gm-tbl-vendors" data-saagar-table-strategy="cards" data-saagar-table-workflow="vendors"><thead><tr><th>Vendor</th><th>GSTIN</th><th class="num">Total spend</th><th class="num">Entries</th><th></th></tr></thead><tbody>'+
     (vs.length?vs.map(function(v,vi){
       var cnt=led.filter(function(e){return e.vendor===v.name;}).length;
       return '<tr><td class="name-cell" data-label="Vendor">'+esc(v.name)+'</td><td data-label="GSTIN"><input value="'+esc(v.gstin||'')+'" placeholder="—"'+(past?' disabled':'')+' style="width:150px;max-width:100%;padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px;text-transform:uppercase" onchange="setVendGstin('+vi+',this.value)"></td><td class="num" data-label="Total spend">'+nINR(spend[v.name]||0)+'</td><td class="num" data-label="Entries">'+cnt+'</td><td class="num gm-del-cell" data-label="">'+(past?'':'<button data-action="remove-vendor" class="btn xs red" onclick="delVendor('+vi+')">Remove</button>')+'</td></tr>';
@@ -1661,11 +1700,11 @@ function renderBudget(){
   (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Budgets for '+m+' are read-only in historical view.</div></div>':'')+
   '<div class="card"><div class="card-h"><div><h3>Monthly budgets — '+m+'</h3><p>Set a cap per expense head; actuals tracked live from the ledger.</p></div>'+
    '<div class="actions">'+(past?'':'<button data-action="copy-previous-month-budgets" class="btn sm" onclick="copyBudgets()">⇩ Copy last month’s budgets</button>')+'</div></div>'+
-   '<div class="twrap"><table class="gm-tbl-budget"><thead><tr><th>Category</th><th class="num">Budget</th><th class="num">Actual</th><th class="num">Used</th><th>Status</th></tr></thead><tbody>'+
+   '<div class="twrap"><table class="gm-tbl-budget" data-saagar-table-strategy="cards" data-saagar-table-workflow="budgets"><thead><tr><th>Category</th><th class="num">Budget</th><th class="num">Actual</th><th class="num">Used</th><th>Status</th></tr></thead><tbody>'+
     EXP_CATS.map(function(c){
       var bg=num(bm[c]), ac=act[c]||0, pct=bg?Math.round(ac/bg*100):0;
       return '<tr><td class="name-cell" data-label="Category">'+c+'</td>'+
-       '<td class="num" data-label="Budget"><input type="number" min="0" value="'+(bm[c]||'')+'"'+(past?' disabled':'')+' style="width:100px;padding:5px;border:1px solid var(--gray-300);border-radius:6px;text-align:right" onchange="setBudget(\''+c+'\',this.value)"></td>'+
+       '<td class="num" data-label="Budget"><input type="number" min="0" value="'+(bm[c]||'')+'"'+(past?' disabled':'')+' style="width:100px;padding:5px;border:1px solid var(--gray-300);border-radius:6px;text-align:right" onchange="setBudget(\''+jsq(c)+'\',this.value)"></td>'+
        '<td class="num" data-label="Actual">'+nINR(ac)+'</td>'+
        '<td class="num" data-label="Used">'+(bg?pct+'%':'—')+'<div class="gauge"><div class="f '+(pct>100?'over':'')+'" style="width:'+Math.min(pct,100)+'%"></div></div></td>'+
        '<td data-label="Status">'+(!bg?'<span class="muted small">no budget</span>':pct>100?'<span class="bdg exp">over '+nINR(ac-bg)+'</span>':pct>=85?'<span class="bdg warn">near limit</span>':'<span class="bdg ok">ok</span>')+'</td></tr>';
@@ -1757,16 +1796,16 @@ function renderSync(){
   function block(src,title,note){
     var arr=bySrc[src], pend=arr.filter(function(i){return !i.posted;});
     return '<div class="card"><div class="card-h"><div><h3>'+title+'</h3><p>'+note+'</p></div>'+
-      '<div class="actions">'+(pend.length&&!past?'<button data-action="post-source-items" class="btn sm green" onclick="postSrc(\''+src+'\')">Post '+pend.length+' to ledger</button>':'')+'</div></div>'+
-      (arr.length?'<div class="twrap"><table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th><th>Mode</th><th>State</th></tr></thead><tbody>'+
-        arr.slice(0,40).map(function(i){return '<tr><td>'+i.date+'</td><td><span class="bdg '+(i.type==='income'?'inc':'exp')+'">'+i.type+'</span></td><td>'+esc(i.desc)+'</td><td class="num">'+nINR(i.amount)+'</td><td><span class="bdg '+i.mode.toLowerCase()+'">'+i.mode+'</span></td><td>'+(i.posted?'<span class="bdg ok">posted</span>':'<span class="bdg warn">pending</span>')+'</td></tr>';}).join('')+
+      '<div class="actions">'+(pend.length&&!past?'<button data-action="post-source-items" data-saagar-args="'+jargs(src)+'" class="btn sm green">Post '+pend.length+' to ledger</button>':'')+'</div></div>'+
+      (arr.length?'<div class="twrap"><table data-saagar-table-strategy="grid" data-saagar-table-workflow="cross-module" data-saagar-grid-reason="source posting review requires cross-column comparison"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th><th>Mode</th><th>State</th></tr></thead><tbody>'+
+        arr.slice(0,40).map(function(i){return '<tr><td>'+i.date+'</td><td><span class="bdg '+(i.type==='income'?'inc':'exp')+'">'+i.type+'</span></td><td>'+esc(i.desc)+'</td><td class="num">'+nINR(i.amount)+'</td><td><span class="bdg '+badgeToken(i.mode)+'">'+esc(i.mode)+'</span></td><td>'+(i.posted?'<span class="bdg ok">posted</span>':'<span class="bdg warn">pending</span>')+'</td></tr>';}).join('')+
         '</tbody></table></div>':'<div class="empty">No '+src.toUpperCase()+' data found in this device. '+(src==='qms'?'QMS is not part of this 7-module build — this feed activates automatically if QMS data ever exists here.':'Use the '+src.toUpperCase()+' module first.')+'</div>')+
     '</div>';
   }
   document.getElementById('syncC').innerHTML=
    (past?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). Posting cross-module items to the ledger is disabled in historical view.</div></div>':'')+
    '<div class="banner info">⤢ <div>Expense Manager is the central ledger. It reads other modules in this app and posts their money movements here once — de-duplicated by source reference. <b>'+pending.length+'</b> item(s) pending.</div></div>'+
-   (pending.length&&!past?'<div class="card"><button data-action="post-all-source-items" class="btn p" onclick="postSrc(\'all\')">Post all '+pending.length+' pending items to ledger</button></div>':'')+
+   (pending.length&&!past?'<div class="card"><button data-action="post-all-source-items" data-saagar-args="'+jargs('all')+'" class="btn p">Post all '+pending.length+' pending items to ledger</button></div>':'')+
    block('wsc','Watch Service Centre → Income','Closed/delivered service cases become service income.')+
    block('payroll','Payroll Suite → Expense','Monthly gross per firm becomes a salary expense.')+
    block('stock','Daily Stock Register → Expense','GRN (goods received) value becomes an inventory cost.')+
@@ -1828,14 +1867,14 @@ function renderClose(){
     window.__gstCats.map(function(c,i){ return '<div class="fld"><label>Rate — '+esc(c)+' (%)</label><input type="number" min="0" step="0.01" data-i="'+i+'" value="'+(Object.prototype.hasOwnProperty.call(rates,c)?num(rates[c]):'')+'" placeholder="default '+gst+'"'+(canRates?'':' disabled')+' onchange="saveGstCat(this)"></div>'; }).join('')+
    '</div>'+
    (canRates?'':(isPast()?'':'<div class="small muted" style="margin:-6px 0 8px">Only Owner can change GST rates.</div>'))+
-   '<div class="twrap" style="margin-top:6px"><table class="gm-tbl-monthsum"><thead><tr><th>Head</th><th class="num">Amount</th></tr></thead><tbody>'+
+   '<div class="twrap" style="margin-top:6px"><table class="gm-tbl-monthsum" data-saagar-table-strategy="cards" data-saagar-table-workflow="month-summary"><thead><tr><th>Head</th><th class="num">Amount</th></tr></thead><tbody>'+
      Object.keys(byCat).sort().map(function(k){return '<tr><td class="name-cell" data-label="Head">'+esc(k)+'</td><td class="num" data-label="Amount">'+nINR(byCat[k])+'</td></tr>';}).join('')+
      Object.keys(incByCat).sort().map(function(c){ var r=rateFor(c); return '<tr><td class="name-cell" data-label="Head">Est. GST — '+esc(c)+' ('+r+'%)</td><td class="num" data-label="Amount">'+nINR(incByCat[c]*r/100)+'</td></tr>'; }).join('')+
      '<tr><td class="name-cell" data-label="Head"><b>Estimated GST on income (per-category rates)</b></td><td class="num" data-label="Amount"><b>'+nINR(gstEst)+'</b></td></tr>'+
      '<tr><td class="name-cell" data-label="Head"><b>GST paid on purchases (from entries — input-credit hint)</b></td><td class="num" data-label="Amount"><b>'+nINR(gstPaid)+'</b></td></tr>'+
    '</tbody></table></div>'+
    '<div class="small muted" style="margin-top:6px">Estimates from your own configured rates — not tax advice. Verify with your CA before filing.</div>'+
-   (function(){ var bf={}; led.forEach(function(e){ var f=e.firm||'Unassigned'; bf[f]=bf[f]||{i:0,x:0}; if(e.type==='income')bf[f].i+=e.amount; else bf[f].x+=e.amount; }); var ks=Object.keys(bf).sort(); if(!ks.length) return ''; return '<h3 style="margin:16px 0 6px">Per-firm P&L — '+CM+'</h3><div class="twrap"><table class="gm-tbl-firmpl"><thead><tr><th>Firm</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th></tr></thead><tbody>'+ks.map(function(k){ var n=bf[k].i-bf[k].x; return '<tr><td class="name-cell" data-label="Firm">'+esc(k)+'</td><td class="num" data-label="Income">'+nINR(bf[k].i)+'</td><td class="num" data-label="Expense">'+nINR(bf[k].x)+'</td><td class="num" data-label="Net" style="color:'+(n<0?'var(--red)':'var(--green)')+'">'+nINR(n)+'</td></tr>'; }).join('')+'</tbody></table></div>'; })()+
+   (function(){ var bf={}; led.forEach(function(e){ var f=e.firm||'Unassigned'; bf[f]=bf[f]||{i:0,x:0}; if(e.type==='income')bf[f].i+=e.amount; else bf[f].x+=e.amount; }); var ks=Object.keys(bf).sort(); if(!ks.length) return ''; return '<h3 style="margin:16px 0 6px">Per-firm P&L — '+CM+'</h3><div class="twrap"><table class="gm-tbl-firmpl" data-saagar-table-strategy="cards" data-saagar-table-workflow="firm-profit-loss"><thead><tr><th>Firm</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th></tr></thead><tbody>'+ks.map(function(k){ var n=bf[k].i-bf[k].x; return '<tr><td class="name-cell" data-label="Firm">'+esc(k)+'</td><td class="num" data-label="Income">'+nINR(bf[k].i)+'</td><td class="num" data-label="Expense">'+nINR(bf[k].x)+'</td><td class="num" data-label="Net" style="color:'+(n<0?'var(--red)':'var(--green)')+'">'+nINR(n)+'</td></tr>'; }).join('')+'</tbody></table></div>'; })()+
    '<div class="row" style="margin-top:14px">'+
      (isPast()?'<span class="small muted">Historical view — month-lock / tax-feed generation is available only when viewing today.</span>':(can('monthlock')?'<button data-action="generate-lock-tax-feed" class="btn p" onclick="genTaxFeed()">Generate &amp; lock Tax feed for '+CM+'</button>':'<span class="small muted">Only Owner can lock the month / generate the tax feed.</span>'))+
      '<button data-action="export-month-csv" class="btn sm" onclick="exportMonthCSV()">⇩ Month CSV</button></div>'+
@@ -1920,7 +1959,7 @@ function renderAudit(){
   document.getElementById('auditC').innerHTML=
   '<div class="card"><div class="card-h"><div><h3>Audit trail</h3><p>'+a.length+' event(s). Every create / edit / void / close / reopen / sync / month-lock.</p></div>'+
    '<div class="actions"><button data-action="export-audit-csv" class="btn sm" onclick="exportAuditCSV()">⇩ CSV</button></div></div>'+
-   (a.length?'<div class="twrap"><table><thead><tr><th>When</th><th>Role</th><th>Action</th><th>Detail</th></tr></thead><tbody>'+
+   (a.length?'<div class="twrap"><table data-saagar-table-strategy="grid" data-saagar-table-workflow="audit" data-saagar-grid-reason="audit review requires chronological cross-column comparison"><thead><tr><th>When</th><th>Role</th><th>Action</th><th>Detail</th></tr></thead><tbody>'+
      a.slice(0,300).map(function(x){return '<tr><td class="small">'+(x.at||'').slice(0,16).replace('T',' ')+'</td><td><span class="bdg src">'+esc(x.by)+'</span></td><td>'+esc(x.action)+'</td><td class="small">'+esc(x.detail)+'</td></tr>';}).join('')+
      '</tbody></table></div>':'<div class="empty">No audit events yet.</div>')+
   '</div>';
@@ -2020,7 +2059,7 @@ function renderUdhaar(){
     '</div></div>';
   var list = open.length
     ? '<div class="card"><div class="card-h"><div><h3>Who owes you</h3><p>Oldest first · '+open.length+' open</p></div></div>'+
-      '<div class="twrap"><table><thead><tr><th>Customer</th><th>Since</th><th>Due</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Outstanding</th><th></th></tr></thead><tbody>'+
+      '<div class="twrap"><table data-saagar-table-strategy="cards" data-saagar-table-workflow="receivables"><thead><tr><th>Customer</th><th>Since</th><th>Due</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Outstanding</th><th></th></tr></thead><tbody>'+
       open.map(function(r){ return '<tr>'+
         '<td><b>'+esc(r.name)+'</b>'+(r.mobile?'<br><span class="muted small">'+esc(r.mobile)+'</span>':'')+(r.note?'<br><span class="muted small">'+esc(r.note)+'</span>':'')+'</td>'+
         '<td>'+esc(r.date)+'</td>'+
@@ -2028,7 +2067,7 @@ function renderUdhaar(){
         '<td class="num">'+nINR(r.amount)+'</td>'+
         '<td class="num">'+nINR(udPaid(r))+'</td>'+
         '<td class="num"><b>'+nINR(udOut(r))+'</b></td>'+
-        '<td class="num">'+(isPast()?'<span class="bdg locked">🔒</span>':'<button data-action="pay-receivable" class="btn xs p" onclick="payReceivable(\''+r.id+'\')">Pay</button> <button data-action="remind-receivable" class="btn xs" onclick="remindReceivable(\''+r.id+'\')">Remind</button> <button data-action="void-receivable" class="btn xs red" onclick="voidReceivable(\''+r.id+'\')">✕</button>')+'</td>'+
+        '<td class="num">'+(isPast()?'<span class="bdg locked">🔒</span>':'<button data-action="pay-receivable" data-saagar-args="'+jargs(r.id)+'" class="btn xs p">Pay</button> <button data-action="remind-receivable" data-saagar-args="'+jargs(r.id)+'" class="btn xs">Remind</button> <button data-action="void-receivable" data-saagar-args="'+jargs(r.id)+'" class="btn xs red">✕</button>')+'</td>'+
         '</tr>'; }).join('')+'</tbody></table></div></div>'
     : '<div class="card"><div class="empty">No outstanding credit. Everyone has paid up. 🎉</div></div>';
   document.getElementById('udhaarC').innerHTML = form+summary+list;
@@ -2048,6 +2087,13 @@ migrateOnce();
 // asOf() already reflects window.__stAsOf (seeded before this script runs);
 // SD/CM were initialised from it above — re-assert here for clarity/safety.
 SD=asOf(); CM=ym(asOf());
+var ExpenseDelegatedHandlers=Object.freeze({
+  viewPhoto:viewPhoto,shareEntry:shareEntry,approveEntry:approveEntry,editEntry:editEntry,voidEntry:voidEntry,
+  postRecurring:postRecurring,editRecTpl:editRecTpl,toggleRecTpl:toggleRecTpl,delRecTpl:delRecTpl,
+  setSST:setSST,approveStoreDay:approveStoreDay,reopenStoreDay:reopenStoreDay,closeStoreDay:closeStoreDay,
+  postSrc:postSrc,payReceivable:payReceivable,remindReceivable:remindReceivable,voidReceivable:voidReceivable
+});
+if(typeof SaagarRenderedComponents!=='undefined')SaagarRenderedComponents.connect(document.body,ExpenseRenderedPolicy,ExpenseDelegatedHandlers);
 render();
 window.addEventListener('storage',function(){ render(); });
 // VIEW-DATE RAIL: the shell broadcasts the day the user wants to view.

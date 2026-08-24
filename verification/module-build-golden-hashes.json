@@ -8,36 +8,36 @@
     "sha256": "c65a428779f69c9a10ee80d38630c95cd0e3f3112b62cb4bbccd39c9ab66e78f"
   },
   "qms": {
-    "bytes": 172406,
-    "sha256": "6416be67e9d5589dd491b6d2c500459a8d5fd5cd25b87304d558318d53e49166"
+    "bytes": 149742,
+    "sha256": "6301b74b5ed95845b7ce9a16f813125f1bd357c932823b2e34f5aa105682e73e"
   },
   "dsr": {
-    "bytes": 181992,
-    "sha256": "a24a0b414552e3cef6891c787cabf44d57f3e6d219480e9d7ed749ce9183dc3a"
+    "bytes": 141346,
+    "sha256": "ded7f41e395789a928749d8fad15c1eb289869eb91f821df4a74ec76aac99e14"
   },
   "expense": {
-    "bytes": 161135,
-    "sha256": "c55bbcafc7b38b935145cdaf6e618e8991c96f578352644789693c8edf7fc334"
+    "bytes": 168791,
+    "sha256": "32e476baf51eea87b1c73ebf41e3675513725a2b99c43ee5745c9c1b96a52390"
   },
   "grooming": {
     "bytes": 64868,
     "sha256": "adc4ee87799df62379728ac9b7ab1693042bec80e035c6a22edc5a3b125f342d"
   },
   "cro_audit": {
-    "bytes": 137222,
-    "sha256": "f92861c06c46befda9e97b0511424cbf01b804c7fbe25dead0ad0b06767c0355"
+    "bytes": 109344,
+    "sha256": "065dd04b43e949e941c8828c2bfd8a5177fffc46939e0d32d78c30c3144f3361"
   },
   "payroll": {
     "bytes": 219574,
     "sha256": "7a6f36be6ed1d67a5a107e635158d12c18534c0adb9351afbbb0c5438505db49"
   },
   "leave": {
-    "bytes": 163963,
-    "sha256": "f4fb54c9e300878f75186db74925d63f2adf31078c4b8385a0808ccded39a744"
+    "bytes": 136635,
+    "sha256": "279673f7221ad2ca168b213a1fc1f0b6158bdeca5fc3f01ee7a31c883a1f0b5c"
   },
   "tax": {
-    "bytes": 229176,
-    "sha256": "faf4b01df0b460791d349093a294e173e5f1007c5739c092f9f5eef87bb9fbcd"
+    "bytes": 191153,
+    "sha256": "324e15dd283c2ab76fe07638dd8651825d8866feed04b548e748268ff6157e03"
   },
   "planning": {
     "bytes": 14760,

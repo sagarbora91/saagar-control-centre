@@ -21,9 +21,9 @@ test('governed shell and module viewports permit user scaling', () => {
   }
 });
 
-test('all Phase 6D shared assets are pinned and adoption is bounded to Stock plus Family A', () => {
-  const ids = ['module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css'];
-  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
+test('all shared UI assets are pinned and adoption is bounded through Phase 6G Family B', () => {
+  const ids = ['module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css','module-rendered-components'];
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service', 'expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']);
   for (const id of ids) {
     const asset = manifest.getShared(id);
     assert.ok(asset, id);

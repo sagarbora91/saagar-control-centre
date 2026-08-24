@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 20) fail('sharedAssets must contain exactly twenty entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 27) fail('sharedAssets must contain exactly twenty-seven entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -190,10 +190,17 @@
       ,{ id: 'module-table-css', file: 'shared/module-table.css' }
       ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }
       ,{ id: 'module-components-css', file: 'shared/module-components.css' }
+      ,{ id: 'module-rendered-components', file: 'shared/module-rendered-components.js' }
       ,{ id: 'stock-ui-css', file: 'modules/stock/stock-ui.css' }
       ,{ id: 'payroll-ui-css', file: 'modules/payroll/payroll-ui.css' }
       ,{ id: 'grooming-ui-css', file: 'modules/grooming/grooming-ui.css' }
       ,{ id: 'service-ui-css', file: 'modules/service/service-ui.css' }
+      ,{ id: 'leave-ui-css', file: 'modules/leave/leave-ui.css' }
+      ,{ id: 'cro-audit-ui-css', file: 'modules/cro_audit/cro-audit-ui.css' }
+      ,{ id: 'tax-ui-css', file: 'modules/tax/tax-ui.css' }
+      ,{ id: 'dsr-ui-css', file: 'modules/dsr/dsr-ui.css' }
+      ,{ id: 'qms-view', file: 'modules/qms/qms-view.js' }
+      ,{ id: 'qms-ui-css', file: 'modules/qms/qms-ui.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
@@ -309,6 +316,13 @@
       "sha256": "c2e64460d16f6852d82cd3ac74bb597c31c88ae1ac3f3b02fe58044c5ea089b6"
     },
     {
+      "id": "module-rendered-components",
+      "version": 1,
+      "file": "shared/module-rendered-components.js",
+      "bytes": 11387,
+      "sha256": "22e393c60d0e656cf1aade9cfaf8108944aa2aedc87c074ebf9f9be5f07649ab"
+    },
+    {
       "id": "stock-ui-css",
       "version": 1,
       "file": "modules/stock/stock-ui.css",
@@ -335,6 +349,48 @@
       "file": "modules/service/service-ui.css",
       "bytes": 47179,
       "sha256": "c1cf45a29c22092eeba40386eeb93587237bbd12f247a94a009bab9e6b1c80d7"
+    },
+    {
+      "id": "leave-ui-css",
+      "version": 1,
+      "file": "modules/leave/leave-ui.css",
+      "bytes": 33229,
+      "sha256": "31fa4e17341ca1648680deb0f6b574c2cbfa8ac2083b820e9030f5f6d468535c"
+    },
+    {
+      "id": "cro-audit-ui-css",
+      "version": 1,
+      "file": "modules/cro_audit/cro-audit-ui.css",
+      "bytes": 30980,
+      "sha256": "fee92fd1f3c3f0cfc4c0ef13f7ced5772fa305a6a61b383e45a33600b8c8b42a"
+    },
+    {
+      "id": "tax-ui-css",
+      "version": 1,
+      "file": "modules/tax/tax-ui.css",
+      "bytes": 43063,
+      "sha256": "92e629fa1a124b0d908a9cab1dd1072c448ac56c9f047d4cefb48f102dbc077a"
+    },
+    {
+      "id": "dsr-ui-css",
+      "version": 1,
+      "file": "modules/dsr/dsr-ui.css",
+      "bytes": 46746,
+      "sha256": "8bfac7f0a267de951263432cde32f4adbdd9554f5b3b365bc36679ba63ef4206"
+    },
+    {
+      "id": "qms-view",
+      "version": 1,
+      "file": "modules/qms/qms-view.js",
+      "bytes": 4711,
+      "sha256": "ef3f136937c3674980996b3da6fb67b6f27d008c0be7627c4e7c490185d25a6b"
+    },
+    {
+      "id": "qms-ui-css",
+      "version": 1,
+      "file": "modules/qms/qms-ui.css",
+      "bytes": 24920,
+      "sha256": "d775c662072958c3697a7b2a36ec45fd27cfb011cb5dae8dc0d0edc817ac73c4"
     },
     {
       "id": "module-delete-cell-css",
@@ -392,8 +448,8 @@
       "file": "modules/qms/index.html",
       "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
       "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
-      "bytes": 172406,
-      "sha256": "6416be67e9d5589dd491b6d2c500459a8d5fd5cd25b87304d558318d53e49166",
+      "bytes": 149742,
+      "sha256": "6301b74b5ed95845b7ce9a16f813125f1bd357c932823b2e34f5aa105682e73e",
       "src": "modules/qms/index.html"
     },
     {
@@ -406,8 +462,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 181992,
-      "sha256": "a24a0b414552e3cef6891c787cabf44d57f3e6d219480e9d7ed749ce9183dc3a",
+      "bytes": 141346,
+      "sha256": "ded7f41e395789a928749d8fad15c1eb289869eb91f821df4a74ec76aac99e14",
       "src": "modules/dsr/index.html"
     },
     {
@@ -420,8 +476,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 161135,
-      "sha256": "c55bbcafc7b38b935145cdaf6e618e8991c96f578352644789693c8edf7fc334",
+      "bytes": 168791,
+      "sha256": "32e476baf51eea87b1c73ebf41e3675513725a2b99c43ee5745c9c1b96a52390",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -450,8 +506,8 @@
       "file": "modules/cro_audit/index.html",
       "subtitle": "10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.",
       "summary": "Daily 10-point CRO scoring; pulls grooming score; trend dashboard.",
-      "bytes": 137222,
-      "sha256": "f92861c06c46befda9e97b0511424cbf01b804c7fbe25dead0ad0b06767c0355",
+      "bytes": 109344,
+      "sha256": "065dd04b43e949e941c8828c2bfd8a5177fffc46939e0d32d78c30c3144f3361",
       "src": "modules/cro_audit/index.html"
     },
     {
@@ -479,8 +535,8 @@
       "file": "modules/leave/index.html",
       "subtitle": "Leave planning, holiday visibility and staff availability calendar.",
       "summary": "Team leave management and availability control.",
-      "bytes": 163963,
-      "sha256": "f4fb54c9e300878f75186db74925d63f2adf31078c4b8385a0808ccded39a744",
+      "bytes": 136635,
+      "sha256": "279673f7221ad2ca168b213a1fc1f0b6158bdeca5fc3f01ee7a31c883a1f0b5c",
       "source_title": "Staff Leave Manager",
       "src": "modules/leave/index.html"
     },
@@ -494,8 +550,8 @@
       "file": "modules/tax/index.html",
       "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
       "summary": "Indian statutory deadline tracker with compliance status controls.",
-      "bytes": 229176,
-      "sha256": "faf4b01df0b460791d349093a294e173e5f1007c5739c092f9f5eef87bb9fbcd",
+      "bytes": 191153,
+      "sha256": "324e15dd283c2ab76fe07638dd8651825d8866feed04b548e748268ff6157e03",
       "source_title": "Compliance Operating System — Indian Firms v2",
       "src": "modules/tax/index.html"
     },

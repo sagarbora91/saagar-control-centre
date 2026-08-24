@@ -255,13 +255,13 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 689);
+  assert.equal(current.length, 690);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 484, permission: 27, 'persisted-outcome': 86, 'failure-posture': 79 });
-  assert.equal(count('added'), 384);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 485, permission: 27, 'persisted-outcome': 86, 'failure-posture': 79 });
+  assert.equal(count('added'), 385);
   assert.equal(count('removed'), 350);
-  assert.equal(count('changed'), 37);
-  assert.equal(classCount('handler-body-hash-only'), 18);
+  assert.equal(count('changed'), 39);
+  assert.equal(classCount('handler-body-hash-only'), 20);
   assert.equal(classCount('failure-posture-source-boundary-change'), 15);
   assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);

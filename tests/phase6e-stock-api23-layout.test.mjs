@@ -82,9 +82,9 @@ test('API-23 preparation resolves Stock CSS variables and Stock supplies non-gri
   assert.doesNotMatch(tableCss, /display\s*:\s*grid|:has\(|:is\(|:where\(/);
 });
 
-test('current adoption remains bounded to Stock plus Family A', () => {
+test('current adoption remains bounded through Phase 6G Family B', () => {
   const moduleRoot = path.join(root, 'www/modules');
-  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service', 'expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']);
   for (const entry of fs.readdirSync(moduleRoot, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const file = path.join(moduleRoot, entry.name, 'index.html');

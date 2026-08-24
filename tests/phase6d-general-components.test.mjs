@@ -68,8 +68,8 @@ test('API-23 path has explicit layout fallbacks and no modern feature as sole pa
   assert.doesNotMatch(source, /\bgrid-template|display:grid/);
 });
 
-test('general component adoption is bounded to Stock plus Family A', () => {
-  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
+test('general component adoption is bounded through Phase 6G Family B', () => {
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service', 'expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']);
   for (const id of fs.readdirSync(moduleRoot)) {
     const file = path.join(moduleRoot, id, 'index.html');
     const html = fs.readFileSync(file, 'utf8');

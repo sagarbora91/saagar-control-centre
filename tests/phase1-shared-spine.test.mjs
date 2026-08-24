@@ -86,20 +86,27 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
   assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
     ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
-  const phase6fConsumerCounts = new Map([
-    ['shared/module-responsive.css', 4], ['shared/module-ui-runtime.js', 4],
-    ['shared/module-table.css', 4], ['shared/module-table-runtime.js', 0],
-    ['shared/module-components.css', 4]
+  const phase6gConsumerCounts = new Map([
+    ['shared/module-responsive.css', 10], ['shared/module-ui-runtime.js', 10],
+    ['shared/module-table.css', 10], ['shared/module-table-runtime.js', 6],
+    ['shared/module-components.css', 10], ['shared/module-rendered-components.js', 6]
   ]);
-  for (const optInAsset of phase6fConsumerCounts.keys()) {
+  for (const optInAsset of phase6gConsumerCounts.keys()) {
     assert.match(manifestSource, new RegExp(optInAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     assert.equal(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(optInAsset)).length,
-      phase6fConsumerCounts.get(optInAsset), optInAsset);
+      phase6gConsumerCounts.get(optInAsset), optInAsset);
   }
   assert.match(manifestSource, /modules\/stock\/stock-ui\.css/);
   for (const moduleId of ['payroll', 'grooming', 'service']) {
     assert.match(manifestSource, new RegExp(`modules/${moduleId}/${moduleId}-ui\\.css`));
   }
+  for (const [moduleId, fileName] of [
+    ['leave', 'leave-ui.css'], ['cro_audit', 'cro-audit-ui.css'],
+    ['tax', 'tax-ui.css'], ['dsr', 'dsr-ui.css'], ['qms', 'qms-ui.css']
+  ]) {
+    assert.match(manifestSource, new RegExp(`modules/${moduleId}/${fileName.replace('.', '\\.').replace('-', '\\-')}`));
+  }
+  assert.match(manifestSource, /modules\/qms\/qms-view\.js/);
 });
 
 test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {
@@ -114,10 +121,10 @@ test('Phase 1 audit exit closes owned authority gates and records exact capabili
   assert.ok(a2Checks['A2-02'].metric.similarityEdges < 1997);
   const capability = byId(a3)['A3-02'];
   assert.equal(capability.result, 'pass');
-  assert.equal(capability.metric.capabilities, 689);
+  assert.equal(capability.metric.capabilities, 690);
   assert.equal(capability.metric.conflictingIds, 0);
   assert.equal(ledger.baseline.capabilities, 655);
-  assert.equal(ledger.summary.capabilityApprovalsRequired, 771);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 774);
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);

@@ -24,6 +24,12 @@ test('MH1 architecture inventory is complete, reproducible, and payload-free', (
   }
   assert.equal(inventory.modules.find(module => module.id === 'grooming').inlineStyles, 0,
     'Grooming intentionally extracts its complete Phase 6F cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'cro_audit').inlineStyles, 0,
+    'CRO Audit intentionally extracts its complete Phase 6G cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'tax').inlineStyles, 0,
+    'Tax intentionally extracts its complete Phase 6G cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'qms').inlineStyles, 2,
+    'QMS retains only its two governed inline deltas after Phase 6G extraction');
 });
 
 test('MH1 inventory pins shared-control and live-access differences', () => {

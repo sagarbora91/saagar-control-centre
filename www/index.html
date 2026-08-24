@@ -17,7 +17,7 @@
 <style>:root{color-scheme:light only}</style>
 <link rel="stylesheet" href="shell-core.css">
 <!-- Mobile mode: set the flag BEFORE first paint (default 'mobile') so there is no Desktop→Mobile flash -->
-<script>try{var __nativeAuthority=localStorage.getItem('saagar_native_store_migrated_v1')==='1';var __m=__nativeAuthority?null:localStorage.getItem('saagar_ui_mode');var __mob=(__m==='mobile')||(__m!=='desktop'&&(window.innerWidth||document.documentElement.clientWidth||0)<900);if(__mob)document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>
+<script>try{var __nativeAuthority=localStorage.getItem('saagar_native_store_migrated_v1')==='1';var __m=__nativeAuthority?null:localStorage.getItem('saagar_ui_mode');var __w=window.innerWidth||document.documentElement.clientWidth||360;var __pref=(__m==='mobile'||__m==='desktop'||__m==='auto')?__m:'auto';var __resolved=__pref==='auto'?(__w<900?'mobile':'desktop'):__pref;var __tier=__w<640?'mobile':(__w<900?'compact':(__w<1200?'tablet':'desktop'));document.documentElement.setAttribute('data-shell-tier',__tier);document.documentElement.setAttribute('data-shell-ui-preference',__pref);document.documentElement.setAttribute('data-shell-ui-mode',__resolved);if(__resolved==='mobile')document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>
 <link rel="stylesheet" href="shell-mobile.css">
 <!-- sql.js (WASM) — defines initSqlJs. Loaded in <head> BEFORE storage-core so its async
      boot (DOM-ready) can find it. When the flag is OFF, storage-core early-returns and this is
@@ -107,6 +107,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 <link rel="stylesheet" href="shell-redesign.css">
 <link rel="stylesheet" href="shell-features.css">
 <link rel="stylesheet" href="mobile-shell.css">
+<link rel="stylesheet" href="shell-responsive.css">
 <link rel="stylesheet" href="settings-navigation.css">
 <script src="app-i18n.js"></script>
 </head>
@@ -444,6 +445,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
         <h4><span class="em">📱</span> Display mode</h4>
         <p>How this device shows the app. Saved on this device — your store tablet and a phone can each keep their own.</p>
         <div class="seg" id="uiModeSeg">
+          <button type="button" class="seg-btn" data-mode="auto" onclick="setUiMode('auto')"><span>↔</span> Auto</button>
           <button type="button" class="seg-btn" data-mode="mobile" onclick="setUiMode('mobile')"><span>📱</span> Mobile</button>
           <button type="button" class="seg-btn" data-mode="desktop" onclick="setUiMode('desktop')"><span>🖥</span> Desktop</button>
         </div>
@@ -943,6 +945,7 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 <script src="shared/module-runtime.js"></script>
 <script src="shared/mah4-runtime.js"></script>
 <script src="shell-asset-manifest.js"></script>
+<script src="shared/shell-responsive-runtime.js"></script>
 <script src="shared/shell-module-frame-controller.js"></script>
 <script>
 /* Module metadata is validated synchronously by module-manifest.js. Keep this
@@ -7554,7 +7557,8 @@ function installHardwareBack(){
    self-applies from localStorage via its injected boot script + storage events).
    Desktop = no class = the exact layout we shipped. */
 const UI_MODE_KEY='saagar_ui_mode';
-function getUiMode(){ try{ var m=safeGet(UI_MODE_KEY); if(m==='desktop'||m==='mobile') return m; }catch(e){} try{ return (window.innerWidth||document.documentElement.clientWidth||0) < 900 ? 'mobile' : 'desktop'; }catch(e){ return 'mobile'; } }
+function getUiModePreference(){ try{ var m=safeGet(UI_MODE_KEY); if(m==='desktop'||m==='mobile'||m==='auto') return m; }catch(e){} return 'auto'; }
+function getUiMode(){ try{ if(window.SaagarShellResponsive) return window.SaagarShellResponsive.resolvedMode(getUiModePreference(),window.innerWidth||document.documentElement.clientWidth||360); }catch(e){} try{ var m=getUiModePreference(); if(m==='desktop'||m==='mobile') return m; return (window.innerWidth||document.documentElement.clientWidth||0) < 900 ? 'mobile' : 'desktop'; }catch(e){ return 'mobile'; } }
 function applyUiModeToFrame(){
   try{ var f=$('moduleFrame'); var d=f&&f.contentDocument;
     if(d&&d.documentElement) d.documentElement.classList.toggle('bcc-mobile', getUiMode()==='mobile');
@@ -7566,14 +7570,14 @@ function applyUiModeToFrame(){
 function applyDateToFrame(){
   try{ var f=$('moduleFrame'); if(f&&f.contentWindow) f.contentWindow.postMessage({type:'ST_SET_DATE',date:viewDate()},SaagarModuleRuntime.targetOrigin); }catch(e){}
 }
-function reflectUiModeUI(){ var m=getUiMode();
+function reflectUiModeUI(){ var m=getUiMode(),pref=getUiModePreference();
   try{ document.documentElement.classList.toggle('bcc-mobile', m==='mobile'); }catch(e){}
-  try{ var ic=$('uiModeIcon'); if(ic) ic.textContent=(m==='mobile'?'📱':'🖥'); var b=$('uiModeBtn'); if(b) b.title='Layout: '+(m==='mobile'?'Mobile':'Desktop')+' — tap to switch'; }catch(e){}
-  try{ var mic=$('moduleUiModeIcon'); if(mic) mic.textContent=(m==='mobile'?'📱':'🖥'); var mb=$('moduleUiModeBtn'); if(mb) mb.title='Layout: '+(m==='mobile'?'Mobile':'Desktop')+' — tap to switch'; }catch(e){}
-  try{ var segs=document.querySelectorAll('#uiModeSeg .seg-btn'); for(var i=0;i<segs.length;i++){ segs[i].classList.toggle('active', segs[i].getAttribute('data-mode')===m); } }catch(e){}
+  try{ var ic=$('uiModeIcon'); if(ic) ic.textContent=(pref==='auto'?'↔':(m==='mobile'?'📱':'🖥')); var b=$('uiModeBtn'); if(b) b.title='Layout: '+(pref==='auto'?'Auto · '+(m==='mobile'?'Mobile':'Desktop'):(m==='mobile'?'Mobile':'Desktop'))+' — tap to switch'; }catch(e){}
+  try{ var mic=$('moduleUiModeIcon'); if(mic) mic.textContent=(pref==='auto'?'↔':(m==='mobile'?'📱':'🖥')); var mb=$('moduleUiModeBtn'); if(mb) mb.title='Layout: '+(pref==='auto'?'Auto · '+(m==='mobile'?'Mobile':'Desktop'):(m==='mobile'?'Mobile':'Desktop'))+' — tap to switch'; }catch(e){}
+  try{ var segs=document.querySelectorAll('#uiModeSeg .seg-btn'); for(var i=0;i<segs.length;i++){ segs[i].classList.toggle('active', segs[i].getAttribute('data-mode')===pref); } }catch(e){}
 }
-function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop') return; try{ safeSet(UI_MODE_KEY, mode); }catch(e){} reflectUiModeUI(); applyUiModeToFrame(); try{ if(activeView==='config') switchConfigTab(activeConfigTab||'appearance'); else syncSettingsLayoutClass(); }catch(e){} try{ toast((mode==='mobile'?'📱 Mobile':'🖥 Desktop')+' layout'); }catch(e){} }
-function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
+function setUiMode(mode){ if(mode!=='mobile'&&mode!=='desktop'&&mode!=='auto') return; try{ safeSet(UI_MODE_KEY, mode); }catch(e){} try{ if(window.SaagarShellResponsive) window.SaagarShellResponsive.setPreference(mode); }catch(e){} reflectUiModeUI(); applyUiModeToFrame(); try{ if(activeView==='config') switchConfigTab(activeConfigTab||'appearance'); else syncSettingsLayoutClass(); }catch(e){} try{ toast((mode==='auto'?'↔ Auto':(mode==='mobile'?'📱 Mobile':'🖥 Desktop'))+' layout'); }catch(e){} }
+function toggleUiMode(){ var pref=getUiModePreference(); setUiMode(pref==='auto'?(getUiMode()==='mobile'?'desktop':'mobile'):(pref==='mobile'?'desktop':'auto')); }
 /* Wave-13 P1-39: Text size (Normal / Large) — device-local, mirrors the setUiMode trio. Toggles
    html.st-textsize-large which zooms #mainContent (chrome scroller) only; nav/topbar/iframe untouched. */
 const TEXT_SIZE_KEY='saagar_text_size';
@@ -7608,6 +7612,7 @@ function reflectBuildBadge(){
 }
 
 (function init(){
+  try{ if(window.SaagarShellResponsive){ window.SaagarShellResponsive.onChange(function(){ reflectUiModeUI(); applyUiModeToFrame(); }); window.SaagarShellResponsive.setPreference(getUiModePreference()); window.SaagarShellResponsive.start(); } }catch(e){}
   // Restore admin mode from session — kept SYNCHRONOUS (before the whenReady gate) so the
   // shell chrome paints immediately under the boot splash. safeGet reads MEM in C-mode (already
   // hydrated from native at Step 0) or native localStorage in the OFF/fallback path.

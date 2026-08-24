@@ -12,6 +12,8 @@ import crypto from 'node:crypto';
 import { restorePhase6dStockSource } from './phase6e-stock-source.mjs';
 import { restorePhase6eEtpGatewaySource, restorePhase6eEtpPresentationSource } from './phase6f-family-a-source.mjs';
 import { restorePhase6eFamilyASource } from './phase6f-family-a-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './phase6g-family-b-source.mjs';
+import { restorePrePhase6gShellAssets } from './phase6g-shell-source.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -30,6 +32,26 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  const phase6gShellPath = path.join(workspaceRoot, 'www/index.html');
+  const phase6gShellManifestPath = path.join(workspaceRoot, 'www/shell-asset-manifest.js');
+  const phase6gShell = restorePrePhase6gShellAssets({
+    index: fs.readFileSync(phase6gShellPath, 'utf8'),
+    manifest: fs.readFileSync(phase6gShellManifestPath, 'utf8')
+  });
+  fs.writeFileSync(phase6gShellPath, phase6gShell.index, 'utf8');
+  fs.writeFileSync(phase6gShellManifestPath, phase6gShell.manifest, 'utf8');
+  fs.rmSync(path.join(workspaceRoot, 'www/shell-responsive.css'));
+  fs.rmSync(path.join(workspaceRoot, 'www/shared/shell-responsive-runtime.js'));
+  for (const moduleId of ['expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']) {
+    const modulePath = path.join(workspaceRoot, `www/modules/${moduleId}/index.html`);
+    const cssName = `${moduleId.replace('_', '-')}-ui.css`;
+    const cssPath = path.join(workspaceRoot, `www/modules/${moduleId}/${cssName}`);
+    fs.writeFileSync(modulePath, restorePrePhase6gFamilyBSource(
+      moduleId, fs.readFileSync(modulePath, 'utf8'), fs.existsSync(cssPath) ? fs.readFileSync(cssPath, 'utf8') : ''
+    ), 'utf8');
+    if (fs.existsSync(cssPath)) fs.rmSync(cssPath);
+  }
+  fs.rmSync(path.join(workspaceRoot, 'www/modules/qms/qms-view.js'));
   for (const moduleId of ['payroll', 'grooming', 'service']) {
     const modulePath = path.join(workspaceRoot, `www/modules/${moduleId}/index.html`);
     const cssPath = path.join(workspaceRoot, `www/modules/${moduleId}/${moduleId}-ui.css`);
@@ -52,9 +74,20 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
+    .replace("input.sharedAssets.length !== 27", "input.sharedAssets.length !== 25")
+    .replace("sharedAssets must contain exactly twenty-seven entries", "sharedAssets must contain exactly twenty-five entries")
+    .replace("input.sharedAssets.length !== 25", "input.sharedAssets.length !== 20")
+    .replace("sharedAssets must contain exactly twenty-five entries", "sharedAssets must contain exactly twenty entries")
     .replace("input.sharedAssets.length !== 20", "input.sharedAssets.length !== 11")
     .replace("sharedAssets must contain exactly twenty entries", "sharedAssets must contain exactly eleven entries");
   for (const entry of [
+    "      ,{ id: 'module-rendered-components', file: 'shared/module-rendered-components.js' }\n",
+    "      ,{ id: 'leave-ui-css', file: 'modules/leave/leave-ui.css' }\n",
+    "      ,{ id: 'cro-audit-ui-css', file: 'modules/cro_audit/cro-audit-ui.css' }\n",
+    "      ,{ id: 'tax-ui-css', file: 'modules/tax/tax-ui.css' }\n",
+    "      ,{ id: 'dsr-ui-css', file: 'modules/dsr/dsr-ui.css' }\n",
+    "      ,{ id: 'qms-view', file: 'modules/qms/qms-view.js' }\n",
+    "      ,{ id: 'qms-ui-css', file: 'modules/qms/qms-ui.css' }\n",
     "      ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }\n",
     "      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }\n",
     "      ,{ id: 'module-table-css', file: 'shared/module-table.css' }\n",
@@ -72,11 +105,19 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-table.css'));
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-table-runtime.js'));
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-components.css'));
+  fs.rmSync(path.join(workspaceRoot, 'www/shared/module-rendered-components.js'));
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
+    'module-rendered-components', 'leave-ui-css', 'cro-audit-ui-css', 'tax-ui-css', 'dsr-ui-css', 'qms-view', 'qms-ui-css',
     'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css',
     'stock-ui-css', 'payroll-ui-css', 'grooming-ui-css', 'service-ui-css'
   ].includes(item.id));
+  for (const moduleId of ['expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']) {
+    const module = snapshot.data.modules.find(item => item.id === moduleId);
+    const bytes = fs.readFileSync(path.join(workspaceRoot, 'www', module.file));
+    module.bytes = bytes.length;
+    module.sha256 = sha256(bytes);
+  }
   const brandTokens = snapshot.data.sharedAssets.find(item => item.id === 'module-brand-tokens-css');
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
   brandTokens.bytes = brandBytes.length;

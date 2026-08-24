@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run as auditA3 } from '../scripts/audit/audits/a3.mjs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cases = Object.freeze([
@@ -58,7 +59,10 @@ function restorePhase6dViewport(moduleId, source) {
 
 for (const fixture of cases) test(`${fixture.module} has exact identity-only static A3 annotations`, () => {
   const file = path.join(root, 'www', 'modules', fixture.module, 'index.html');
-  const source = fs.readFileSync(file, 'utf8');
+  const current = fs.readFileSync(file, 'utf8');
+  const cssFile = path.join(root, 'www', 'modules', fixture.module, `${fixture.module}-ui.css`);
+  const source = ['tax', 'dsr', 'qms'].includes(fixture.module)
+    ? restorePrePhase6gFamilyBSource(fixture.module, current, fs.readFileSync(cssFile, 'utf8')) : current;
   const actions = visibleStaticActions(source);
   assert.deepEqual(actions, fixture.exact);
   assert.equal(new Set(actions).size, actions.length, 'data-action identities must be unique');
