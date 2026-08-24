@@ -9,8 +9,8 @@ export const AUDIT_VERSION = 'saagar-whole-app-audit-v1.0.0';
    pre-migration product snapshot and the tooling/baseline gates require an exact
    product-fingerprint match, so every product change forces an explicit
    re-anchor rather than silent drift. Current anchor is the SEC-08 fail-closed
-   fix; 88ba118 and f4da822 are superseded as comparison baselines. */
-export const PRODUCT_BASELINE_SHA = '8f96480ec6ddfc99016af43a7369f57a06cb9fd6';
+   fix; older anchors remain immutable history but are superseded for final Phase 6 acceptance. */
+export const PRODUCT_BASELINE_SHA = '9e3d9386a42b794afc4a17b9b647e02f8d22ec3d';
 
 export function posix(value) {
   return String(value).replaceAll('\\', '/');
