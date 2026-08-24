@@ -1136,3 +1136,7 @@ html.bcc-mobile .accordion-header::after {
   display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .02em;
   color: var(--muted, #9aa0a6); margin-left: 6px; white-space: nowrap;
 }
+
+/* Phase 6H.1: read-only, sanitized ETP MTD panel. */
+.dsr-etp-e2{margin:0 0 16px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--white)}
+.dsr-etp-e2>label{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}.dsr-etp-e2 select{min-height:44px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:0 10px}.etp-e2-heading{font-weight:800}.etp-e2-note{margin:5px 0;color:var(--muted);font-size:12px}.etp-e2-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:7px}.etp-e2-metric{-webkit-flex:1 1 88px;flex:1 1 88px;min-width:0;border:1px solid var(--line);border-radius:8px;padding:7px}.etp-e2-metric span,.etp-e2-metric strong{display:block}.etp-e2-metric span{font-size:10px;color:var(--muted)}

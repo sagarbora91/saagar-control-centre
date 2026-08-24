@@ -3,7 +3,25 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6G engineering complete; begin Phase 6H ETP E2 analytics — 2026-08-24
+## RESUME HERE — Phase 6H.1 ETP E2 engineering complete; begin Phase 6H.2 E3 — 2026-08-24
+
+### Phase 6H.1 engineering closure
+
+ETP now exposes deeply immutable DAY, MTD, YTD and isolated same-store LY analytics only through
+the governed sanitized read facade. Verified-through and partial/missing coverage stay explicit;
+REC-002, ambiguous scopes and cross-store results fail closed. Brand, CRO and tender mixes,
+returns/manual-discount/PAYMENTTYPE25 exceptions, and the permanent store-net reconciliation
+identity are covered. Reports-owned ETP, Home and DSR consume the projection read-only using
+text-only DOM sinks and receive no raw, native, persistence or export authority.
+
+The Phase 6H.1 aggregate is **304/304**. Exact boundaries and gates are recorded in:
+
+`verification/audit/PHASE-6H1-ENGINEERING-CLOSURE-2026-08-24.md`
+
+Begin Phase 6H.2 E3 CRO reconciliation. No rendered-browser, emulator, physical-device,
+staff-UAT, APK/build/sign, Firebase, upload, publication, release or billing acceptance is claimed.
+
+## Historical resume point — Phase 6G engineering complete; begin Phase 6H ETP E2 analytics — 2026-08-24
 
 ### Phase 6G engineering closure
 

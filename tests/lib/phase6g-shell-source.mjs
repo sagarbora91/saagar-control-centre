@@ -7,6 +7,11 @@ const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 export function restorePrePhase6gShellAssets(input) {
   let index = String(input.index);
   index = index
+    .replace('<script src="etp-verified-analytics.js"></script>\n', '')
+    .replace('<script src="etp-analytics-consumer.js"></script>\n', '')
+    .replace(/\n      <!-- Phase 6H\.1: sanitized, read-only ETP E2 summary; never a declaration\. -->\n      <div class="card card-pad etp-e2-home" id="etpAnalyticsHome" aria-live="polite"><\/div>\n/, '')
+    .replace('  try{ renderEtpAnalyticsHome(); }catch(e){} // Phase 6H.1: verified ETP only; never declaration totals.\n', '')
+    .replace(/var __etpHomeAnalyticsSeq=0;\nasync function renderEtpAnalyticsHome\(\)\{[\s\S]*?\n\}\n(?=\/\* TODAY DETAIL)/, '')
     .replace(/<script>try\{var __nativeAuthority[\s\S]*?<\/script>/,
       "<script>try{var __nativeAuthority=localStorage.getItem('saagar_native_store_migrated_v1')==='1';var __m=__nativeAuthority?null:localStorage.getItem('saagar_ui_mode');var __mob=(__m==='mobile')||(__m!=='desktop'&&(window.innerWidth||document.documentElement.clientWidth||0)<900);if(__mob)document.documentElement.classList.add('bcc-mobile');}catch(e){}</script>")
     .replace(/<link rel="stylesheet" href="shell-responsive\.css">\r?\n/, '')

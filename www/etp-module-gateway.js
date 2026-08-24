@@ -26,11 +26,17 @@
   var SUMMARY_MAX_ROWS = 20000;
   var SUMMARY_MAX_GROUPS = 100;
   var REPORT_PAGE_LIMIT = 100;
+  var ANALYTICS_PAGE_LIMIT = 200;
+  var ANALYTICS_MAX_PAGES = 250;
   var PROJECTIONS = Object.freeze({
     R003: Object.freeze(['transaction_type_raw', 'net_amount', 'scheme_discount', 'user_discount']),
     R013: Object.freeze(['transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
     R022: Object.freeze(['transaction_type_raw', 'invoice_quantity', 'net_value', 'cash_amount', 'card_amount', 'bhim_upi_amount', 'phonepe_amount', 'paytm_amount', 'razorpay_amount', 'bharatpe_amount', 'cheque_amount', 'others_amount', 'payment_type24_amount']),
     R025: Object.freeze(['invoice_number', 'transaction_type_raw', 'quantity', 'net_amount', 'brand', 'cluster', 'gender', 'scheme_discount', 'user_discount', 'tax_amount'])
+  });
+  var ANALYTICS_PROJECTIONS = Object.freeze({
+    R003: Object.freeze(['invoice_date'].concat(PROJECTIONS.R003)), R013: Object.freeze(['invoice_date'].concat(PROJECTIONS.R013)),
+    R022: Object.freeze(['invoice_date', 'invoice_number'].concat(PROJECTIONS.R022)), R025: Object.freeze(['invoice_date'].concat(PROJECTIONS.R025))
   });
   var FORBIDDEN_FIELD = /(?:^|_)(?:workbook|worksheet|filename|file_label|file_path|source_name|source_bytes|blob|base64|customer|consumer|mobile|phone|email|address|name|aadhaar|pan|dob)(?:$|_)/i;
   var BLOCKED_KEYS = Object.freeze(['__proto__', 'prototype', 'constructor']);
@@ -210,7 +216,7 @@
 
   function create(options) {
     options = options || {};
-    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core, foundationStatus = options.foundationStatus, queryContract = options.queryContract, profileAuthority = options.profileAuthority, historyApi = options.importHistoryApi, tenderApi = options.tenderDictionaryApi;
+    var runtime = options.runtime, lifecycle = options.lifecyclePolicy, core = options.core, foundationStatus = options.foundationStatus, queryContract = options.queryContract, analyticsApi = options.analyticsApi, profileAuthority = options.profileAuthority, historyApi = options.importHistoryApi, tenderApi = options.tenderDictionaryApi;
     var storage = options.storage, statusReader = options.statusReader, tokenFactory = options.tokenFactory, authorize = options.authorize;
     if (!requireMethod(runtime, 'run') || !requireMethod(runtime, 'confirm') || !requireMethod(runtime, 'readVerified') ||
         !requireMethod(lifecycle, 'validateScope') || !requireMethod(core, 'validateReceipt') || !requireMethod(foundationStatus, 'evaluate') || !requireMethod(queryContract, 'canonicalize') || !requireMethod(queryContract, 'validateCursorBinding') || !requireMethod(queryContract, 'cursorBindingMatches') || !requireMethod(profileAuthority, 'authorize') || !historyApi || typeof historyApi.create !== 'function' || !tenderApi || typeof tenderApi.validate !== 'function' || !tenderApi.validate(tenderApi.BUILD_DICTIONARY).ok ||
@@ -372,7 +378,7 @@
       if (!exact(request, ['reportId', 'fields', 'cursor', 'limit'])) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
       var reportId = String(request.reportId || '').toUpperCase(), fields = request.fields;
       if (REPORTS.indexOf(reportId) < 0 || !Array.isArray(fields) || !fields.length || fields.length > 64 || !Number.isSafeInteger(request.limit) || request.limit < 1 || request.limit > GATEWAY_MAX_READ_ROWS) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
-      var seen = Object.create(null), projected = [], allowed = PROJECTIONS[reportId];
+      var seen = Object.create(null), projected = [], allowed = ANALYTICS_PROJECTIONS[reportId];
       for (var i = 0; i < fields.length; i++) {
         var field = String(fields[i]);
         if (!/^[a-z][a-z0-9_]{0,63}$/.test(field) || FORBIDDEN_FIELD.test(field) || allowed.indexOf(field) < 0 || seen[field]) return failure('ETP_VERIFIED_PROJECTION_INVALID', 'READ');
@@ -444,9 +450,47 @@
       return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, history: inspected.history, importHistory: inspected.importHistory, summaries: freeze(summaries), pages: pages, rowCount: totalRows });
     }
 
+    async function analyticsRows(sourceScope) {
+      var rows = {}, pages = 0;
+      for (var r = 0; r < REPORTS.length; r++) {
+        var reportId = REPORTS[r], cursor = null, more = true, collected = [];
+        while (more) {
+          if (pages >= ANALYTICS_MAX_PAGES || collected.length >= (analyticsApi && analyticsApi.MAX_ROWS || 50000)) return failure('ETP_ANALYTICS_REFRESH_LIMIT_EXCEEDED', 'ANALYTICS');
+          var result = await readVerified(sourceScope, { reportId: reportId, fields: ANALYTICS_PROJECTIONS[reportId].slice(), cursor: cursor, limit: ANALYTICS_PAGE_LIMIT });
+          if (!result.ok || !result.page || !Array.isArray(result.page.rows)) return failure(result.code || 'ETP_ANALYTICS_READ_FAILED', 'ANALYTICS');
+          pages++; collected = collected.concat(result.page.rows.map(function (row) { return Object.assign({ store_code: sourceScope.storeCode }, row); }));
+          more = result.page.hasMore === true; cursor = more ? result.page.nextCursor : null;
+        }
+        rows[reportId] = freeze(collected);
+      }
+      return freeze({ ok: true, rows: freeze(rows) });
+    }
+
+    async function loadAnalytics(scope, request) {
+      if (!analyticsApi || typeof analyticsApi.build !== 'function') return failure('ETP_ANALYTICS_UNAVAILABLE', 'ANALYTICS');
+      if (!exact(request, ['view', 'asOfDate']) || analyticsApi.VIEWS.indexOf(request.view) < 0 || !/^\d{4}-\d{2}-\d{2}$/.test(request.asOfDate)) return failure('ETP_ANALYTICS_REQUEST_INVALID', 'ANALYTICS');
+      var inspected = await inspectScope(scope, { historyLimit: 0 }); if (!inspected.ok) return inspected;
+      if (inspected.status.showValues !== true || inspected.currentReceipt.reconciliationStatus !== 'PASS') return failure('ETP_ANALYTICS_NOT_READY', 'ANALYTICS');
+      var sourceScope = inspected.scope, comparisonScope = null;
+      if (request.view === 'LY') {
+        var startYear = Number(sourceScope.financialYear.slice(0, 4)) - 1, comparisonFy = String(startYear) + '-' + String(startYear + 1).slice(-2);
+        var comparisonStart = new Date(Date.parse(sourceScope.periodStart + 'T00:00:00Z')); comparisonStart.setUTCFullYear(comparisonStart.getUTCFullYear() - 1);
+        var comparisonEnd = new Date(Date.parse(sourceScope.periodEnd + 'T00:00:00Z')); comparisonEnd.setUTCFullYear(comparisonEnd.getUTCFullYear() - 1);
+        var expectedKey = sourceScope.storeCode + '|' + comparisonFy + '|' + comparisonStart.toISOString().slice(0, 10) + '..' + comparisonEnd.toISOString().slice(0, 10), registry = loadRegistry(storage), item = registry[expectedKey];
+        var checked = item && checkedScope(item.current && item.current.lifecycle && item.current.lifecycle.scope);
+        if (checked && checked.scope.scopeKey === expectedKey) { var prior = await inspectScope(checked.scope, { historyLimit: 0 }); if (prior.ok && prior.status.showValues === true && prior.currentReceipt.reconciliationStatus === 'PASS') comparisonScope = prior.scope; }
+        if (!comparisonScope) return analyticsApi.build({ scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, asOfDate: request.asOfDate, view: request.view });
+        sourceScope = comparisonScope;
+      }
+      var loaded = await analyticsRows(sourceScope); if (!loaded.ok) return loaded;
+      var built = analyticsApi.build({ scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, asOfDate: request.asOfDate, view: request.view, rows: request.view === 'LY' ? undefined : loaded.rows, comparisonScope: comparisonScope, comparisonRows: request.view === 'LY' ? loaded.rows : undefined });
+      return built && built.ok === true ? freeze({ ok: true, analytics: built.analytics }) : failure(built && built.code || 'ETP_ANALYTICS_FAILED', 'ANALYTICS');
+    }
+
     /* Phase-6D baseline was: readFacade = freeze({ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary }) */
     var readFacade = { listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary };
     Object.defineProperty(readFacade, 'queryReport', { value: queryReport, enumerable: false, writable: false, configurable: false });
+    Object.defineProperty(readFacade, 'loadAnalytics', { value: loadAnalytics, enumerable: false, writable: false, configurable: false });
     readFacade = freeze(readFacade);
     var importFacade = freeze({ run: run, confirm: confirm });
     return { ok: true, gateway: freeze({ version: GATEWAY_VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes, loadSummary: loadSummary, readFacade: readFacade, importFacade: importFacade }) };
@@ -486,7 +530,7 @@
   function bootstrap() {
     try {
       var lifecycle = root && root.SaagarEtpStoreLifecyclePolicy;
-      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, foundationStatus: root && root.SaagarEtpFoundationStatus, queryContract: root && root.SaagarEtpQueryContract, profileAuthority: root && root.SaagarEtpProfileAuthority, importHistoryApi: root && root.SaagarEtpImportHistory, tenderDictionaryApi: root && root.SaagarEtpTenderDictionary, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
+      return create({ runtime: root && root.SaagarEtpImportRuntime, lifecyclePolicy: lifecycle, core: root && root.SaagarEtpCoreContract, foundationStatus: root && root.SaagarEtpFoundationStatus, queryContract: root && root.SaagarEtpQueryContract, analyticsApi: root && root.SaagarEtpVerifiedAnalytics, profileAuthority: root && root.SaagarEtpProfileAuthority, importHistoryApi: root && root.SaagarEtpImportHistory, tenderDictionaryApi: root && root.SaagarEtpTenderDictionary, storage: root && root.localStorage, statusReader: lifecycle ? browserStatusReader(root, lifecycle) : null, authorize: browserAuthorization(root), crypto: root && root.crypto });
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 

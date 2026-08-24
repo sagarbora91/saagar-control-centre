@@ -8,7 +8,10 @@ const require = createRequire(import.meta.url);
 const renderedApi = require('../www/shared/module-rendered-components.js');
 const html = fs.readFileSync(new URL('../www/modules/dsr/index.html', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../www/modules/dsr/dsr-ui.css', import.meta.url), 'utf8');
-const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]);
+const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]
+  .replace(/    <section class="dsr-etp-e2"[\s\S]*?    <\/section>\n/, '')
+  .replace('  renderDsrEtpAnalytics();\n', '')
+  .replace(/var dsrEtpAnalyticsSeq=0;\nasync function renderDsrEtpAnalytics\(\)\{[\s\S]*?\n\}\n/, ''));
 const application = scripts.reduce((longest, source) => source.length > longest.length ? source : longest, '');
 
 test('DSR adopts the frozen shared UI, table and rendered-component foundations', () => {

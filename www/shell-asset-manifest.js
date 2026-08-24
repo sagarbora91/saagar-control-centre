@@ -15,7 +15,7 @@
     Object.freeze({ id: 'shell-mobile-css', version: 2, file: 'shell-mobile.css', bytes: 1383, sha256: 'a63c3386a9551d8017b9e49110c04b45ab6b75d229a5d3e78c327da42cd18b2d' }),
     Object.freeze({ id: 'shell-redesign-css', version: 2, file: 'shell-redesign.css', bytes: 13247, sha256: '587e8ae7a5bf86aff7e53bc6dd82558cd7c564519af37307ddfdc1a4f5d1521b' }),
     Object.freeze({ id: 'shell-report-css', version: 1, file: 'shell-report.css', bytes: 8160, sha256: '31f430a062760841768ccccf2ca8771ff88cbe1534d01d8eeb5de504453e9757' }),
-    Object.freeze({ id: 'shell-responsive-css', version: 1, file: 'shell-responsive.css', bytes: 4249, sha256: 'a73c3795760e8acfbc5e81a687519dec1a5cccd04d86ffa6da3b75f9e83caa55' }),
+    Object.freeze({ id: 'shell-responsive-css', version: 1, file: 'shell-responsive.css', bytes: 4943, sha256: '9906c79c47c48c0da63e71eb9323d824b17ac2cf09532dac546077bc16be1f21' }),
     Object.freeze({ id: 'shell-responsive-runtime', version: 1, file: 'shared/shell-responsive-runtime.js', bytes: 2826, sha256: '81696184c0e31d9af9895dd92ad2064039a5937d54e44559054f42dbba8f5e8f' })
   ]);
   var api = Object.freeze({

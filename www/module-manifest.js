@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 27) fail('sharedAssets must contain exactly twenty-seven entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 29) fail('sharedAssets must contain exactly twenty-nine entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -203,6 +203,8 @@
       ,{ id: 'qms-ui-css', file: 'modules/qms/qms-ui.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
+      ,{ id: 'etp-verified-analytics', file: 'etp-verified-analytics.js' }
+      ,{ id: 'etp-analytics-consumer', file: 'etp-analytics-consumer.js' }
     ];
     var frozenShared = input.sharedAssets.map(function(shared, index){
       var label='sharedAssets['+index+']', expected=expectedShared[index];
@@ -375,8 +377,8 @@
       "id": "dsr-ui-css",
       "version": 1,
       "file": "modules/dsr/dsr-ui.css",
-      "bytes": 46746,
-      "sha256": "8bfac7f0a267de951263432cde32f4adbdd9554f5b3b365bc36679ba63ef4206"
+      "bytes": 47602,
+      "sha256": "701dbfcad1c431bbaf60b9159d7fc85433bd1825b048149db37e83b39574b747"
     },
     {
       "id": "qms-view",
@@ -403,8 +405,22 @@
       "id": "etp-verified-presentation",
       "version": 1,
       "file": "etp-verified-presentation.js",
-      "bytes": 19865,
-      "sha256": "f1af020f9ae7a452c5f8c7d74778ff19c040dc64e6dfd6f6d0f9f893016de920"
+      "bytes": 24310,
+      "sha256": "d7ad933716c4a85b2b4ac5f94f0c4aa5cc769dca3e4c0b2e2d154ca344572b5d"
+    },
+    {
+      "id": "etp-verified-analytics",
+      "version": 1,
+      "file": "etp-verified-analytics.js",
+      "bytes": 11412,
+      "sha256": "5fb9eda540b062a4209c00186f9dbbe91637ad8f47b35a0846686a48c2eca1ce"
+    },
+    {
+      "id": "etp-analytics-consumer",
+      "version": 1,
+      "file": "etp-analytics-consumer.js",
+      "bytes": 4850,
+      "sha256": "a069996397f4720aeeb392544f35232939039dde6e69f61572df9a3223ef48a0"
     }
   ],
   "modules": [
@@ -462,8 +478,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 141346,
-      "sha256": "ded7f41e395789a928749d8fad15c1eb289869eb91f821df4a74ec76aac99e14",
+      "bytes": 142215,
+      "sha256": "32d4b1db57e637f4ed2d60acba48ddddbea994cab27a0a463e27efd3ffbbe3a3",
       "src": "modules/dsr/index.html"
     },
     {
@@ -579,8 +595,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 34473,
-      "sha256": "b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12",
+      "bytes": 35223,
+      "sha256": "a7c67cbef3079188f10c9af490efa890e2132742bfa4fda6d251a463a3d5b50d",
       "src": "modules/etp/index.html"
     }
   ]

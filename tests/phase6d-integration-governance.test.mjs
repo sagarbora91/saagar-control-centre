@@ -61,7 +61,10 @@ test('Phase 6D JavaScript and governed CSS have API-23 generated paths', () => {
 });
 
 test('ETP stays at its shell-owned authorization boundary and Phase 6C exclusion bytes', () => {
-  const source = fs.readFileSync(path.join(root, 'www/modules/etp/index.html'), 'utf8');
+  const current = fs.readFileSync(path.join(root, 'www/modules/etp/index.html'), 'utf8');
+  const source = current
+    .replace("    .etp-e2-views{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}.etp-e2-views .action[aria-pressed=\"true\"]{border-color:var(--navy);background:var(--navy);color:#fff}.etp-e2-banner{border-left:5px solid #247a52}.etp-e2-banner h3{color:#1d6946}\n", '')
+    .replace(/      <div class="etp-e2-views"[^\n]+\n/, '');
   const bytes = Buffer.from(source);
   assert.equal(bytes.length, 34473);
   assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'), 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12');

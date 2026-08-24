@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { restorePrePhase6h1EtpIndex } from './lib/phase6h1-etp-source.mjs';
 
-const html = fs.readFileSync(new URL('../www/modules/etp/index.html', import.meta.url), 'utf8');
+const html = restorePrePhase6h1EtpIndex(fs.readFileSync(new URL('../www/modules/etp/index.html', import.meta.url), 'utf8'));
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 // Phase-6B facade wiring is part of the authorized module baseline; removing only
 // identity annotations must reproduce every other byte of that baseline.

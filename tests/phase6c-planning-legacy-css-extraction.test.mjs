@@ -23,6 +23,7 @@ import {
 } from '../scripts/prepare-phase6c-mobile-legacy-css.mjs';
 import { readModuleManifestSource } from '../scripts/lib/module-manifest-source.mjs';
 import { restorePhase6dStockSource } from './lib/phase6e-stock-source.mjs';
+import { restorePrePhase6h1EtpIndex } from './lib/phase6h1-etp-source.mjs';
 import { restorePhase6eFamilyASource } from './lib/phase6f-family-a-source.mjs';
 import { restorePrePhase6gFamilyBSource } from './lib/phase6g-family-b-source.mjs';
 
@@ -115,6 +116,8 @@ test('the eleven-module rollout is executable and idempotent in an isolated reco
     fs.writeFileSync(moduleFile, restorePhase6dViewport(moduleId, staged.replace(migrated, inline)), 'utf8');
     assert.equal(sha256(fs.readFileSync(moduleFile)), MODULE_BASELINE_SHA256[moduleId], moduleId);
   }
+  const etpFile = path.join(fixture, 'www/modules/etp/index.html');
+  fs.writeFileSync(etpFile, restorePrePhase6h1EtpIndex(fs.readFileSync(etpFile, 'utf8')), 'utf8');
 
   const first = prepareLegacyRollout({ workspaceRoot: fixture });
   const receiptPaths = [
@@ -159,7 +162,7 @@ test('all eleven modules use one canonical link and only Service, QMS and Payrol
 });
 
 test('ETP remains byte-identical and unlinked', () => {
-  const etp = readModule('etp');
+  const etp = restorePrePhase6h1EtpIndex(readModule('etp'));
   assert.equal(sha256(etp), ETP_BASELINE_SHA256);
   assert.equal(etp.includes('module-mobile-legacy.css'), false);
 });

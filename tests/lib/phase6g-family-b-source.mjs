@@ -179,7 +179,13 @@ function restoreTax(source, css) {
 }
 
 function restoreDsr(source, css) {
-  const legacyCss = css.replace(/\n\n\/\* Phase 6G: only reviewed comparison tables[\s\S]*?html\.saagar-legacy-webview \.sgrid > \* \{[^\n]+\}\n/, '\n');
+  const legacyCss = css.replace(/\n\/\* Phase 6H\.1: read-only, sanitized ETP MTD panel\. \*\/[\s\S]*$/, '')
+    .replace(/\n\n\/\* Phase 6G: only reviewed comparison tables[\s\S]*?html\.saagar-legacy-webview \.sgrid > \* \{[^\n]+\}\n/, '\n');
+  source = source
+    .replace('<script src="../../etp-analytics-consumer.js"></script>\n', '')
+    .replace(/    <section class="dsr-etp-e2"[\s\S]*?    <\/section>\n/, '')
+    .replace('  renderDsrEtpAnalytics();\n', '')
+    .replace(/var dsrEtpAnalyticsSeq=0;\nasync function renderDsrEtpAnalytics\(\)\{[\s\S]*?\n\}\n/, '');
   return restoreExtractedCss(stripPolicy(source, 'dsr'), 'dsr', legacyCss)
     .replace('<body data-saagar-ui data-saagar-width="auto" data-saagar-width-resolved="mobile">\n<script id="dsr-phase6g-ui-boot">SaagarUiFoundation.configure(document.body,{mode:\'auto\'});SaagarRenderedComponents.observe(document.body,DsrRenderedPolicy);</script>', '<body>')
     .replace(/ class="var-tbl saagar-table saagar-table--grid"([^>]*) data-saagar-table-strategy="grid" data-saagar-table-workflow="stock-variance" data-saagar-grid-reason="[^"]+"/, ' class="var-tbl"$1')

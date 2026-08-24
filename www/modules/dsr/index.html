@@ -10,6 +10,7 @@
 <script src="../../shared/module-ui-runtime.js"></script>
 <script src="../../shared/module-table-runtime.js"></script>
 <script src="../../shared/module-rendered-components.js"></script>
+<script src="../../etp-analytics-consumer.js"></script>
 <script id="phase6g-dsr-render-policy">
 var DsrRenderedPolicy=SaagarRenderedComponents.createPolicy({
   'dsr-login-role-staff':{handler:'setLoginRole',args:1},'dsr-login-role-manager':{handler:'setLoginRole',args:1},
@@ -2098,6 +2099,10 @@ function renderDashboard() {
   });
 
   el('stsec-dashboard').innerHTML = `
+    <section class="dsr-etp-e2" aria-label="ETP verified analytics">
+      <label>Verified store <select data-action="dsr-etp-store" id="dsr-etp-store" onchange="renderDsrEtpAnalytics()"><option value="WLMHW">WLMHW</option><option value="HEMW">HEMW</option></select></label>
+      <div id="dsr-etp-analytics" aria-live="polite"></div>
+    </section>
     <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Last 30 Days</div>
     <div class="dash-kpi-grid">
       <div class="dkpi"><div class="dkpi-val">${recs.length}</div><div class="dkpi-lbl">Submitted</div></div>
@@ -2127,6 +2132,15 @@ function renderDashboard() {
       <button data-action="exportallcsv" data-action-key="definition-01" class="btn btn-outline btn-sm" onclick="exportAllCSV()">Export 30-Day CSV</button>
       <button data-action="export-today-csv" data-action-key="definition-02" class="btn btn-outline btn-sm" onclick="exportTodayCSV()">Export Today</button>
     </div>`;
+  renderDsrEtpAnalytics();
+}
+var dsrEtpAnalyticsSeq=0;
+async function renderDsrEtpAnalytics(){
+  var host=el('dsr-etp-analytics'),select=el('dsr-etp-store'),consumer=window.SaagarEtpAnalyticsConsumer,bridge=window.SaagarModuleBridge,seq=++dsrEtpAnalyticsSeq;
+  if(!host||!select||!consumer)return;
+  var result=await consumer.load(bridge&&bridge.etpReadGateway,select.value,todayStr(),'MTD');
+  if(seq!==dsrEtpAnalyticsSeq)return;
+  consumer.render(host,result);
 }
 /* P1-15: one-tap end-of-day DSR summary → WhatsApp (offline wa.me; no phone =
    contact picker). Self-contained: no shell dependency. Mirrors downloadCSV's

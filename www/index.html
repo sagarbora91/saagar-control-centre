@@ -77,7 +77,9 @@
 <script src="etp-worker-client.js"></script>
 <script src="etp-import-coordinator.js"></script>
 <script src="etp-import-runtime.js"></script>
+<script src="etp-verified-analytics.js"></script>
 <script src="etp-module-gateway.js"></script>
+<script src="etp-analytics-consumer.js"></script>
 <!-- R1 LEG-01..10: purpose register, collection notices, separate promotional
      consent, global suppression, rights register and human-gate evidence. -->
 <script src="legal-control.js"></script>
@@ -245,6 +247,9 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
 
       <!-- W2-6: Close-the-day (EOD wizard) entry card — rendered by renderEodCard() -->
       <div id="eodHost"></div>
+
+      <!-- Phase 6H.1: sanitized, read-only ETP E2 summary; never a declaration. -->
+      <div class="card card-pad etp-e2-home" id="etpAnalyticsHome" aria-live="polite"></div>
 
       <!-- Needs attention -->
       <div class="section-head" id="attentionHead">
@@ -3453,6 +3458,16 @@ function renderHome(brief){
   const bd=$('homeBellDot'); if(bd) bd.classList.toggle('on', __active.length>0);
   try{ renderGreetings(); }catch(e){}   // P1-54: birthday/anniversary greetings card (hidden when no matches)
   try{ renderEodCard(b); }catch(e){}   // W2-6: Close-the-day card (host #eodHost, below the hero)
+  try{ renderEtpAnalyticsHome(); }catch(e){} // Phase 6H.1: verified ETP only; never declaration totals.
+}
+var __etpHomeAnalyticsSeq=0;
+async function renderEtpAnalyticsHome(){
+  var host=$('etpAnalyticsHome'),consumer=window.SaagarEtpAnalyticsConsumer,gateway=window.SaagarEtpModuleGateway,seq=++__etpHomeAnalyticsSeq;
+  if(!host||!consumer)return;
+  var selected=currentStoreSelection(),facade=gateway&&gateway.readFacade;
+  var result=await consumer.load(facade,selected&&selected.isAll?'':selected.code,viewDate(),'DAY');
+  if(seq!==__etpHomeAnalyticsSeq)return;
+  consumer.render(host,result,{onOpen:function(){navigateToModule('etp');}});
 }
 /* TODAY DETAIL — hosts the FULL brief, Today's-run checklist and recent activity that
    used to stack on Home. Same data sources + viewDate(); just rendered here instead. */
