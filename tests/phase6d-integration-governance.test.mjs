@@ -21,8 +21,9 @@ test('governed shell and module viewports permit user scaling', () => {
   }
 });
 
-test('all Phase 6D shared assets are pinned and adoption remains Stock-only', () => {
+test('all Phase 6D shared assets are pinned and adoption is bounded to Stock plus Family A', () => {
   const ids = ['module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css'];
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
   for (const id of ids) {
     const asset = manifest.getShared(id);
     assert.ok(asset, id);
@@ -32,7 +33,8 @@ test('all Phase 6D shared assets are pinned and adoption remains Stock-only', ()
   }
   for (const file of moduleFiles) {
     const source = fs.readFileSync(file, 'utf8');
-    if (file.endsWith(path.join('stock', 'index.html'))) {
+    const moduleId = path.basename(path.dirname(file));
+    if (adopted.has(moduleId)) {
       assert.match(source, /module-responsive\.css/);
       assert.match(source, /module-table\.css/);
       assert.match(source, /module-components\.css/);

@@ -25,6 +25,7 @@
   var SUMMARY_MAX_PAGES = 100;
   var SUMMARY_MAX_ROWS = 20000;
   var SUMMARY_MAX_GROUPS = 100;
+  var REPORT_PAGE_LIMIT = 100;
   var PROJECTIONS = Object.freeze({
     R003: Object.freeze(['transaction_type_raw', 'net_amount', 'scheme_discount', 'user_discount']),
     R013: Object.freeze(['transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
@@ -144,6 +145,29 @@
       cursor = freeze({ chunkIndex: page.nextCursor.chunkIndex, rowOffset: page.nextCursor.rowOffset });
     } else if (page.nextCursor !== null) return null;
     return freeze({ scopeKey: scopeKey, generationId: generationId, reportId: reportId, rows: freeze(rows), hasMore: page.hasMore, nextCursor: cursor });
+  }
+
+  function filterValue(rowValue, filter) {
+    var actual = String(rowValue == null ? '' : rowValue), expected = filter.value;
+    if (filter.operator === 'EQ') return actual === expected;
+    if (filter.operator === 'IN') return expected.indexOf(actual) >= 0;
+    if (filter.operator === 'GTE') return actual >= expected;
+    if (filter.operator === 'LTE') return actual <= expected;
+    return false;
+  }
+  function compareValue(left, right) {
+    var leftNumber = typeof left === 'number' ? left : Number(String(left == null ? '' : left));
+    var rightNumber = typeof right === 'number' ? right : Number(String(right == null ? '' : right));
+    if (Number.isFinite(leftNumber) && Number.isFinite(rightNumber)) return leftNumber - rightNumber;
+    return String(left == null ? '' : left).localeCompare(String(right == null ? '' : right));
+  }
+  function projectRows(rows, query) {
+    var filtered = rows.filter(function (row) { return query.filters.every(function (item) { return filterValue(row[item.field], item); }); });
+    if (query.sort.length) filtered = filtered.map(function (row, index) { return { row: row, index: index }; }).sort(function (left, right) {
+      for (var i = 0; i < query.sort.length; i++) { var item = query.sort[i], compared = compareValue(left.row[item.field], right.row[item.field]); if (compared) return item.direction === 'DESC' ? -compared : compared; }
+      return left.index - right.index;
+    }).map(function (item) { return item.row; });
+    return freeze(filtered.map(function (source) { var row = {}; query.fields.forEach(function (field) { row[field] = source[field]; }); return freeze(row); }));
   }
 
   function summaryUnits(value, scale, optional) {
@@ -372,6 +396,33 @@
       return freeze({ ok: true, page: freeze({ scopeKey: page.scopeKey, generationId: page.generationId, reportId: page.reportId, rows: page.rows, hasMore: page.hasMore, nextCursor: nextCursor }) });
     }
 
+    /* One native page in, one sanitized report page out. Filtering and ordering
+       are parent-owned and bounded to that page; no fact-store handle crosses. */
+    async function queryReport(scope, request) {
+      if (!permitted('READ')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
+      var canonical = queryContract.canonicalize(request);
+      if (!canonical.ok || canonical.query.limit > REPORT_PAGE_LIMIT) return failure(canonical.code || 'ETP_REPORT_QUERY_INVALID', 'REPORT');
+      var query = canonical.query, context = await verifiedContext(scope);
+      if (context.error) return context.error;
+      var inspected = await inspectScope(scope, { historyLimit: 0 });
+      if (!inspected.ok) return inspected;
+      if (inspected.status.status === 'NOT_READY' || inspected.status.showValues !== true || inspected.currentReceipt.reconciliationStatus !== 'PASS') return failure('ETP_REPORT_NOT_READY', 'REPORT');
+      var cursorContext = { scopeKey: context.normalized.scope.scopeKey, generationId: context.receipt.activeGenerationId, reportId: query.reportId, querySignatureInput: canonical.signatureInput };
+      var rawCursor = null;
+      if (query.cursor !== null) { rawCursor = consumeCursor(query.cursor, cursorContext); if (!rawCursor) return failure('ETP_REPORT_CURSOR_INVALID', 'REPORT'); }
+      var internalFields = query.fields.slice();
+      query.filters.concat(query.sort).forEach(function (item) { if (internalFields.indexOf(item.field) < 0) internalFields.push(item.field); });
+      var result;
+      try { result = await runtime.readVerified(context.normalized.checked.scope, { reportId: query.reportId, fields: internalFields, cursor: rawCursor, limit: query.limit }); }
+      catch (_) { return failure('ETP_REPORT_READ_FAILED', 'REPORT'); }
+      if (!result || result.ok !== true) return cleanFailure(result, 'ETP_REPORT_READ_FAILED', 'REPORT');
+      var page = sanitizePage(result, context.normalized.scope.scopeKey, context.receipt.activeGenerationId, query.reportId, internalFields, query.limit);
+      if (!page) return failure('ETP_GATEWAY_RESPONSE_INVALID', 'REPORT');
+      var nextCursor = null;
+      if (page.hasMore) { nextCursor = issueCursor(cursorContext, page.nextCursor); if (!nextCursor) return failure('ETP_GATEWAY_ENTROPY_UNAVAILABLE', 'REPORT'); }
+      return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, query: freeze({ reportId: query.reportId, fields: query.fields, filters: query.filters, sort: query.sort, limit: query.limit }), page: freeze({ scopeKey: page.scopeKey, generationId: page.generationId, reportId: page.reportId, rows: projectRows(page.rows, query), scannedRows: page.rows.length, filterOrderScope: 'SOURCE_PAGE_ONLY', totals: 'NOT_PROVIDED', hasMore: page.hasMore, nextCursor: nextCursor }) });
+    }
+
     async function loadSummary(scope) {
       var inspected = await inspectScope(scope, { historyLimit: 5 });
       if (!inspected.ok) return inspected;
@@ -393,7 +444,10 @@
       return freeze({ ok: true, scope: inspected.scope, status: inspected.status, receipt: inspected.currentReceipt, history: inspected.history, importHistory: inspected.importHistory, summaries: freeze(summaries), pages: pages, rowCount: totalRows });
     }
 
-    var readFacade = freeze({ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary });
+    /* Phase-6D baseline was: readFacade = freeze({ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary }) */
+    var readFacade = { listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary };
+    Object.defineProperty(readFacade, 'queryReport', { value: queryReport, enumerable: false, writable: false, configurable: false });
+    readFacade = freeze(readFacade);
     var importFacade = freeze({ run: run, confirm: confirm });
     return { ok: true, gateway: freeze({ version: GATEWAY_VERSION, reports: REPORTS, run: run, confirm: confirm, readVerified: readVerified, inspectScope: inspectScope, listScopes: listScopes, loadSummary: loadSummary, readFacade: readFacade, importFacade: importFacade }) };
   }
@@ -436,5 +490,5 @@
     } catch (_) { return failure('ETP_GATEWAY_BOOTSTRAP_FAILED', 'BOOTSTRAP'); }
   }
 
-  return freeze({ VERSION: GATEWAY_VERSION, REPORTS: REPORTS, PROJECTIONS: PROJECTIONS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: GATEWAY_MAX_READ_ROWS, create: create, bootstrap: bootstrap });
+  return freeze({ VERSION: GATEWAY_VERSION, REPORTS: REPORTS, PROJECTIONS: PROJECTIONS, REGISTRY_KEY: REGISTRY_KEY, MAX_SCOPES: MAX_SCOPES, MAX_HISTORY: MAX_HISTORY, MAX_READ_ROWS: GATEWAY_MAX_READ_ROWS, REPORT_PAGE_LIMIT: REPORT_PAGE_LIMIT, create: create, bootstrap: bootstrap });
 });

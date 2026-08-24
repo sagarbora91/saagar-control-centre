@@ -86,17 +86,20 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
   const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
   assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
     ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
-  const phase6eConsumerCounts = new Map([
-    ['shared/module-responsive.css', 1], ['shared/module-ui-runtime.js', 1],
-    ['shared/module-table.css', 1], ['shared/module-table-runtime.js', 0],
-    ['shared/module-components.css', 1]
+  const phase6fConsumerCounts = new Map([
+    ['shared/module-responsive.css', 4], ['shared/module-ui-runtime.js', 4],
+    ['shared/module-table.css', 4], ['shared/module-table-runtime.js', 0],
+    ['shared/module-components.css', 4]
   ]);
-  for (const optInAsset of phase6eConsumerCounts.keys()) {
+  for (const optInAsset of phase6fConsumerCounts.keys()) {
     assert.match(manifestSource, new RegExp(optInAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     assert.equal(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(optInAsset)).length,
-      phase6eConsumerCounts.get(optInAsset), optInAsset);
+      phase6fConsumerCounts.get(optInAsset), optInAsset);
   }
   assert.match(manifestSource, /modules\/stock\/stock-ui\.css/);
+  for (const moduleId of ['payroll', 'grooming', 'service']) {
+    assert.match(manifestSource, new RegExp(`modules/${moduleId}/${moduleId}-ui\\.css`));
+  }
 });
 
 test('Phase 1 audit exit closes owned authority gates and records exact capability review', async () => {

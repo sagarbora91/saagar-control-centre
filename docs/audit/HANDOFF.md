@@ -3,7 +3,39 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6E Stock pilot complete; begin Phase 6F bounded ETP reports and Family A — 2026-08-24
+## RESUME HERE — Phase 6F engineering complete; final checkpoint, then begin Phase 6G — 2026-08-24
+
+### Phase 6F engineering closure
+
+The bounded ETP report path now provides parent-owned allowlisted, page-local filtering and
+ordering with opaque scope/generation/query-bound cursors. The pure-DOM iframe presentation
+renders paged R022 Revenue/Tender, R025 Sales Detail, R013 CRO Attribution and R003 Discount views
+without raw/native access or export. REC-002 failure suppresses values; no totals are claimed;
+R003/R013 remain non-revenue; coverage, readiness, reconciliation and PAYMENTTYPE25 quarantine
+remain explicit.
+
+Payroll, Grooming and Service now adopt the frozen shared UI foundation in the controlling order,
+with integrity-bound module stylesheets, reviewed table strategies and explicit API-23 fallbacks.
+Payroll financial source and goldens, Grooming scoring/storage identities, and Service
+photo/evidence/custody workflows remain unchanged. Historical identities continue to validate
+against reconstructed authority rather than being silently repinned.
+
+Known pre-checkpoint evidence is ETP **242/242**, the ETP adversarial slice **23/23**, Family-A
+focused **17/17**, and the selected Service D3 regression slice **18/18**. The Lead Integrator must
+append the exact final integrated broad-gate and capability-ledger results to the controlling
+receipt before starting Phase 6G:
+
+`verification/audit/PHASE-6F-ENGINEERING-CLOSURE-2026-08-24.md`
+
+Phase 6G begins with Expense as the JS-rendered helper proof, then integrates Leave, CRO Audit,
+Tax, DSR and QMS in the controlling serial order. Shell responsiveness follows only after every
+module freezes. Preserve calculations, persistence, DSR close-day behavior, QMS allocation, the
+shell/module message protocol and Reports ownership of ETP.
+
+No rendered-browser, emulator, physical-device, staff-UAT, APK/build/sign, Firebase, upload,
+publication, release or billing acceptance is claimed.
+
+## Historical resume point — Phase 6E Stock pilot complete; begin Phase 6F bounded ETP reports and Family A — 2026-08-24
 
 ### Phase 6E engineering closure
 

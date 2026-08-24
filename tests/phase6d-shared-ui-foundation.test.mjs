@@ -90,11 +90,13 @@ test('explicit mode needs no viewport listener and invalid modes fail closed', (
   assert.throws(() => fx.api.configure({}, { mode: 'auto' }), /root must be an element/);
 });
 
-test('Phase 6E keeps responsive foundation adoption bounded to Stock', () => {
+test('responsive foundation adoption is bounded to Stock plus Family A', () => {
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
   const files = fs.readdirSync(moduleRoot).map(id => path.join(moduleRoot, id, 'index.html'));
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
-    if (file.endsWith(path.join('stock', 'index.html'))) {
+    const moduleId = path.basename(path.dirname(file));
+    if (adopted.has(moduleId)) {
       assert.match(source, /module-responsive\.css/);
       assert.match(source, /module-ui-runtime\.js/);
       continue;

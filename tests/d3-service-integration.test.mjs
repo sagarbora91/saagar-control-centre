@@ -15,6 +15,7 @@ const repoDir = path.resolve(here, '..');
 const indexSource = fs.readFileSync(path.join(repoDir, 'www', 'index.html'), 'utf8');
 const serviceModule = loadModuleBundle().find(module => module.id === 'service');
 const service = serviceModule?.html || '';
+const serviceCss = fs.readFileSync(path.join(repoDir, 'www/modules/service/service-ui.css'), 'utf8');
 
 function functionSource(name, source = service) {
   const token = `function ${name}(`;
@@ -114,10 +115,10 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
   assert.equal(serviceModule.bytes, Buffer.byteLength(service, 'utf8'));
   assert.equal((service.match(/D3-SERVICE-RUNTIME-2026-07-30/g) || []).length, 1);
   assert.equal((service.match(/D3-SERVICE-HTML-2026-07-30/g) || []).length, 1);
-  assert.equal((service.match(/D3-SERVICE-CSS-2026-07-30/g) || []).length, 1);
+  assert.equal((serviceCss.match(/D3-SERVICE-CSS-2026-07-30/g) || []).length, 1);
   assert.ok(
-    service.indexOf('D3-SERVICE-CSS-2026-07-30') < service.indexOf('<script>'),
-    'D3 CSS must remain in the document stylesheet, not an inline JavaScript string'
+    service.indexOf('href="service-ui.css"') < service.indexOf('<script>'),
+    'the pinned Service stylesheet must load before application JavaScript'
   );
   const policyAt = indexSource.indexOf('<script src="service-workboard-policy.js"></script>');
   const persistenceAt = indexSource.indexOf('<script src="service-persistence.js"></script>');
@@ -125,7 +126,7 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
   assert.ok(policyAt >= 0 && persistenceAt > policyAt && modulesAt > persistenceAt);
   assert.match(service, /id="f-stage" disabled/);
   assert.match(service, /Combined \/ untagged Service data/);
-  assert.match(service, /@media\(max-width:720px\)/);
+  assert.match(serviceCss, /@media\(max-width:720px\)/);
   inlineModuleScripts(service).forEach((source, index) => {
     assert.doesNotThrow(() => new vm.Script(source, { filename: `d3-service-.js` }));
   });

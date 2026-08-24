@@ -5,13 +5,13 @@
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
     "fileCount": 109,
-    "totalBytes": 7894147,
-    "treeSha256": "3c770415f93967b1c0531b8159058585f38d40e4eefd55e3476f6ba14dd67830"
+    "totalBytes": 7910272,
+    "treeSha256": "244504bbf98f34fd91a47fac0f94a7da3add61eec3a58a24a2312b596fe363bc"
   },
   "manifest": {
     "path": "www/module-manifest.js",
-    "bytes": 18737,
-    "sha256": "6d62eb26e530202dc323052fdc0c8aab7ac775c86b7aa054ba0bfb4086246850"
+    "bytes": 18738,
+    "sha256": "80bf4233dd18da5fcc569ca74f85419d728467cbd8f6fc14fac02bd2ac9a5824"
   },
   "legacyAsset": {
     "file": "www/shared/module-mobile-legacy.css",

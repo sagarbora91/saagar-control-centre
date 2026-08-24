@@ -82,12 +82,21 @@ test('API-23 preparation resolves Stock CSS variables and Stock supplies non-gri
   assert.doesNotMatch(tableCss, /display\s*:\s*grid|:has\(|:is\(|:where\(/);
 });
 
-test('Phase 6E adoption remains Stock-only', () => {
+test('current adoption remains bounded to Stock plus Family A', () => {
   const moduleRoot = path.join(root, 'www/modules');
+  const adopted = new Set(['stock', 'payroll', 'grooming', 'service']);
   for (const entry of fs.readdirSync(moduleRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory() || entry.name === 'stock') continue;
+    if (!entry.isDirectory()) continue;
     const file = path.join(moduleRoot, entry.name, 'index.html');
     const html = fs.readFileSync(file, 'utf8');
+    if (adopted.has(entry.name)) {
+      assert.match(html, /module-responsive\.css/);
+      assert.match(html, /module-components\.css/);
+      assert.match(html, /module-table\.css/);
+      assert.match(html, /module-ui-runtime\.js/);
+      assert.match(html, /data-saagar-ui/);
+      continue;
+    }
     assert.doesNotMatch(html, /module-(?:responsive|components|table)\.css|module-ui-runtime\.js|data-saagar-ui|saagar-table--/, entry.name);
   }
 });

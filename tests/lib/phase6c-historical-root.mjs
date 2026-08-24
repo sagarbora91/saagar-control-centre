@@ -10,6 +10,8 @@ import {
 import { readModuleManifestSource, renderModuleManifestSource } from '../../scripts/lib/module-manifest-source.mjs';
 import crypto from 'node:crypto';
 import { restorePhase6dStockSource } from './phase6e-stock-source.mjs';
+import { restorePhase6eEtpGatewaySource, restorePhase6eEtpPresentationSource } from './phase6f-family-a-source.mjs';
+import { restorePhase6eFamilyASource } from './phase6f-family-a-source.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -28,6 +30,14 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  for (const moduleId of ['payroll', 'grooming', 'service']) {
+    const modulePath = path.join(workspaceRoot, `www/modules/${moduleId}/index.html`);
+    const cssPath = path.join(workspaceRoot, `www/modules/${moduleId}/${moduleId}-ui.css`);
+    fs.writeFileSync(modulePath, restorePhase6eFamilyASource(
+      moduleId, fs.readFileSync(modulePath, 'utf8'), fs.readFileSync(cssPath, 'utf8')
+    ), 'utf8');
+    fs.rmSync(cssPath);
+  }
   const stockPath = path.join(workspaceRoot, 'www/modules/stock/index.html');
   const stockCssPath = path.join(workspaceRoot, 'www/modules/stock/stock-ui.css');
   fs.writeFileSync(stockPath, restorePhase6dStockSource(
@@ -42,8 +52,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
-    .replace("input.sharedAssets.length !== 17", "input.sharedAssets.length !== 11")
-    .replace("sharedAssets must contain exactly seventeen entries", "sharedAssets must contain exactly eleven entries");
+    .replace("input.sharedAssets.length !== 20", "input.sharedAssets.length !== 11")
+    .replace("sharedAssets must contain exactly twenty entries", "sharedAssets must contain exactly eleven entries");
   for (const entry of [
     "      ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }\n",
     "      ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }\n",
@@ -51,6 +61,9 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     "      ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }\n",
     "      ,{ id: 'module-components-css', file: 'shared/module-components.css' }\n"
     ,"      ,{ id: 'stock-ui-css', file: 'modules/stock/stock-ui.css' }\n"
+    ,"      ,{ id: 'payroll-ui-css', file: 'modules/payroll/payroll-ui.css' }\n"
+    ,"      ,{ id: 'grooming-ui-css', file: 'modules/grooming/grooming-ui.css' }\n"
+    ,"      ,{ id: 'service-ui-css', file: 'modules/service/service-ui.css' }\n"
   ]) manifestSource = manifestSource.replace(entry, '');
   fs.writeFileSync(manifestPath, manifestSource, 'utf8');
   fs.writeFileSync(path.join(workspaceRoot, 'www/shared/module-brand-tokens.css'), PRE_PHASE6D_BRAND_TOKENS, 'utf8');
@@ -61,7 +74,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/module-components.css'));
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
-    'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css', 'stock-ui-css'
+    'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css',
+    'stock-ui-css', 'payroll-ui-css', 'grooming-ui-css', 'service-ui-css'
   ].includes(item.id));
   const brandTokens = snapshot.data.sharedAssets.find(item => item.id === 'module-brand-tokens-css');
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
@@ -75,12 +89,22 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const stockBytes = fs.readFileSync(stockPath);
   stockModule.bytes = stockBytes.length;
   stockModule.sha256 = sha256(stockBytes);
+  for (const moduleId of ['payroll', 'grooming', 'service']) {
+    const module = snapshot.data.modules.find(item => item.id === moduleId);
+    const bytes = fs.readFileSync(path.join(workspaceRoot, 'www', module.file));
+    module.bytes = bytes.length;
+    module.sha256 = sha256(bytes);
+  }
   fs.writeFileSync(manifestPath, renderModuleManifestSource(snapshot, snapshot.data), 'utf8');
   return workspaceRoot;
 }
 
 export function reconstructPrePhase6cWww(workspaceRoot) {
   reconstructPhase6cBoundaryWww(workspaceRoot);
+  const gatewayPath = path.join(workspaceRoot, 'www/etp-module-gateway.js');
+  fs.writeFileSync(gatewayPath, restorePhase6eEtpGatewaySource(fs.readFileSync(gatewayPath, 'utf8')), 'utf8');
+  const presentationPath = path.join(workspaceRoot, 'www/etp-verified-presentation.js');
+  fs.writeFileSync(presentationPath, restorePhase6eEtpPresentationSource(fs.readFileSync(presentationPath, 'utf8')), 'utf8');
   const etpPath = path.join(workspaceRoot, 'www/modules/etp/index.html');
   const etpBefore = fs.readFileSync(etpPath);
   if (sha256(etpBefore) !== ETP_SHA256 || etpBefore.includes(Buffer.from('module-mobile-legacy.css'))) {
@@ -106,6 +130,10 @@ export function reconstructPrePhase6cWww(workspaceRoot) {
   fs.writeFileSync(manifestPath, manifestSource, 'utf8');
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => item.id !== 'module-mobile-legacy-css');
+  const presentationAsset = snapshot.data.sharedAssets.find(item => item.id === 'etp-verified-presentation');
+  const presentationBytes = fs.readFileSync(presentationPath);
+  presentationAsset.bytes = presentationBytes.length;
+  presentationAsset.sha256 = sha256(presentationBytes);
   for (const module of snapshot.data.modules) {
     if (!LEGACY_MODULE_ALLOWLIST.includes(module.id)) continue;
     const bytes = fs.readFileSync(path.join(workspaceRoot, 'www', module.file));

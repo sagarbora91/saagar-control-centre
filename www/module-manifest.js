@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 17) fail('sharedAssets must contain exactly seventeen entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 20) fail('sharedAssets must contain exactly twenty entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -191,6 +191,9 @@
       ,{ id: 'module-table-runtime', file: 'shared/module-table-runtime.js' }
       ,{ id: 'module-components-css', file: 'shared/module-components.css' }
       ,{ id: 'stock-ui-css', file: 'modules/stock/stock-ui.css' }
+      ,{ id: 'payroll-ui-css', file: 'modules/payroll/payroll-ui.css' }
+      ,{ id: 'grooming-ui-css', file: 'modules/grooming/grooming-ui.css' }
+      ,{ id: 'service-ui-css', file: 'modules/service/service-ui.css' }
       ,{ id: 'module-delete-cell-css', file: 'shared/module-delete-cell.css' }
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
     ];
@@ -313,6 +316,27 @@
       "sha256": "601407bf42d8c49057ac958164b8d4db6bf39f241f946bf184ac85f98a1a39a7"
     },
     {
+      "id": "payroll-ui-css",
+      "version": 1,
+      "file": "modules/payroll/payroll-ui.css",
+      "bytes": 50034,
+      "sha256": "d176d60aad12d1ef0cdf77bae645a848b189a7d1a18397aabaaf650a12474fd3"
+    },
+    {
+      "id": "grooming-ui-css",
+      "version": 1,
+      "file": "modules/grooming/grooming-ui.css",
+      "bytes": 20736,
+      "sha256": "65a211ec63c7f383f18414a2edd145dfae98d13d3ae1b8540f226ea3df8b8201"
+    },
+    {
+      "id": "service-ui-css",
+      "version": 1,
+      "file": "modules/service/service-ui.css",
+      "bytes": 47179,
+      "sha256": "c1cf45a29c22092eeba40386eeb93587237bbd12f247a94a009bab9e6b1c80d7"
+    },
+    {
       "id": "module-delete-cell-css",
       "version": 1,
       "file": "shared/module-delete-cell.css",
@@ -323,8 +347,8 @@
       "id": "etp-verified-presentation",
       "version": 1,
       "file": "etp-verified-presentation.js",
-      "bytes": 8603,
-      "sha256": "31b4d32b1e75aaa293477e37652ce4fbcb2fe8a2c0fe288d6cf7f338e2218376"
+      "bytes": 19865,
+      "sha256": "f1af020f9ae7a452c5f8c7d74778ff19c040dc64e6dfd6f6d0f9f893016de920"
     }
   ],
   "modules": [
@@ -353,8 +377,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 236732,
-      "sha256": "01d903631e3955071a2126775f8235d89b9ec96b300ad5abdbb4d24e51273330",
+      "bytes": 192968,
+      "sha256": "c65a428779f69c9a10ee80d38630c95cd0e3f3112b62cb4bbccd39c9ab66e78f",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },
@@ -411,8 +435,8 @@
       "file": "modules/grooming/index.html",
       "subtitle": "Daily staff presentation checklist, scoring and monthly records.",
       "summary": "Readiness and staff grooming compliance tracker.",
-      "bytes": 84723,
-      "sha256": "1fd55b9a16a9b70614a82e3c300f780b77c9a4da55cde5785587039639840ea2",
+      "bytes": 64868,
+      "sha256": "adc4ee87799df62379728ac9b7ab1693042bec80e035c6a22edc5a3b125f342d",
       "source_title": "Saagar Traders — Grooming Checklist",
       "src": "modules/grooming/index.html"
     },
@@ -440,8 +464,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 265726,
-      "sha256": "be31e33114e11d611d9e3ab60ef80ca7717f35a857611f357aba9384ea49e1e4",
+      "bytes": 219574,
+      "sha256": "7a6f36be6ed1d67a5a107e635158d12c18534c0adb9351afbbb0c5438505db49",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },

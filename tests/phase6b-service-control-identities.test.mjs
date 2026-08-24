@@ -7,9 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
 import { run } from '../scripts/audit/audits/a3.mjs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePhase6eFamilyASource } from './lib/phase6f-family-a-source.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(new URL('../www/modules/service/index.html', import.meta.url), 'utf8');
+const phase6eHtml = restorePhase6eFamilyASource('service', html, fs.readFileSync(new URL('../www/modules/service/service-ui.css', import.meta.url), 'utf8'));
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 const originalActions = new Set(['watch-photo-camera','watch-photo-upload','watch-photo-after-camera','watch-photo-after-upload']);
 const expected = [
@@ -35,7 +37,7 @@ test('Service freezes the exact unique safe identity set for all 91 static actio
 });
 
 test('Service adds exactly 87 annotations without changing existing control semantics', () => {
-  const restored = html.replace(/ data-action="([^"]+)"/g, (attribute, action) => originalActions.has(action) ? attribute : '');
+  const restored = phase6eHtml.replace(/ data-action="([^"]+)"/g, (attribute, action) => originalActions.has(action) ? attribute : '');
   assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('service', restored)).digest('hex'), '0dae5120fe2db5e1a0db0b37eccb44d2c4f5e68ea3b4a430302ffb56fa47c5ed');
 });
 

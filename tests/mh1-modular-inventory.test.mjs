@@ -19,9 +19,11 @@ test('MH1 architecture inventory is complete, reproducible, and payload-free', (
     assert.ok(module.assets.includes('../../mobile-layout.css'), `${module.id} mobile layout`);
     assert.ok(module.assets.includes('../../app-i18n.js'), `${module.id} language runtime`);
     assert.ok(module.inlineScripts > 0, `${module.id} inline script inventory`);
-    assert.ok(module.inlineStyles > 0, `${module.id} inline style inventory`);
+    assert.ok(module.inlineStyles >= 0, `${module.id} inline style inventory`);
     assert.equal(Object.hasOwn(module, 'html'), false, `${module.id} must not duplicate source payload`);
   }
+  assert.equal(inventory.modules.find(module => module.id === 'grooming').inlineStyles, 0,
+    'Grooming intentionally extracts its complete Phase 6F cascade');
 });
 
 test('MH1 inventory pins shared-control and live-access differences', () => {

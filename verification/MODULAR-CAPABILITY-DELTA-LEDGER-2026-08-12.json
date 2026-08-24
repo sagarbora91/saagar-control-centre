@@ -23,7 +23,7 @@
       "visible-action": 484
     },
     "conflicts": 0,
-    "inventorySha256": "cde1c344642aa3ad28c43904c06b07790403137954af2d16e3ad4035c8a5b3a3"
+    "inventorySha256": "d5be28a169e03488be7bd484be758332dd9dc204aac54152365a2f9f8cdc6d62"
   },
   "deltas": [
     {
@@ -9110,11 +9110,11 @@
           "explicitFallbackSites": 8,
           "swallowedCatchBlocks": 16,
           "throwSites": 1,
-          "userVisibleErrorSites": 16
+          "userVisibleErrorSites": 11
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "daefb6d0373dd85a6b7d8bab775025d27d73579e550f1ba913b696d2bcbfa098",
+      "currentOutcomeSha256": "570054d4c37a1eaf3f329b1fd3a0b029cd136f1ea3ad658c39719991a4ea9773",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -19124,11 +19124,11 @@
           "explicitFallbackSites": 18,
           "swallowedCatchBlocks": 5,
           "throwSites": 1,
-          "userVisibleErrorSites": 71
+          "userVisibleErrorSites": 66
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "99e7c9c6fe1b072b3d2db3ead6ab128151eaa5734659171733d4b66f8fad3d32",
+      "currentOutcomeSha256": "15f888fbae332520a96ed561bf777c0cd167be96126d93bba5bae5667ba8f148",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -21602,15 +21602,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 14,
-          "explicitFallbackSites": 31,
+          "catchBlocks": 15,
+          "explicitFallbackSites": 32,
           "swallowedCatchBlocks": 0,
           "throwSites": 0,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-module-gateway"
       },
-      "currentOutcomeSha256": "db0b44f64c787bf142bb3097f05a9dddf5d781f462f7b3fdc339a5f27c8f07a5",
+      "currentOutcomeSha256": "164bd92e68e11f63b9b88b6e96f3ec06362db16f1d65ab8e5ab8031c23a32bea",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21722,15 +21722,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 3,
-          "explicitFallbackSites": 9,
+          "catchBlocks": 4,
+          "explicitFallbackSites": 21,
           "swallowedCatchBlocks": 0,
           "throwSites": 0,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-verified-presentation"
       },
-      "currentOutcomeSha256": "9cd4c865839e8df70d22e8b1e0789dda3cca7203afdf4317bc120114611e0dd6",
+      "currentOutcomeSha256": "7b60ea6e4232a72685d66b8584c4003bf351381f3c32d4cd7c8630223941b95b",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -31170,11 +31170,11 @@
           "explicitFallbackSites": 19,
           "swallowedCatchBlocks": 17,
           "throwSites": 1,
-          "userVisibleErrorSites": 70
+          "userVisibleErrorSites": 59
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "1d376d05dbf11baed1873c40a38751ee9579b640b2dc8e8e1f3eb84d681a2890",
+      "currentOutcomeSha256": "507a12ef349891490ed7016ba98cbb6ed3c8f4970d7f52932387396ca4dbeb82",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"

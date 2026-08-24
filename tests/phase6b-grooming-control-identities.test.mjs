@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { restoreInlineLegacySource } from './lib/phase6c-legacy-source.mjs';
+import { restorePhase6eFamilyASource } from './lib/phase6f-family-a-source.mjs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildContext } from '../scripts/audit/lib.mjs';
@@ -10,6 +11,7 @@ import { run } from '../scripts/audit/audits/a3.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(new URL('../www/modules/grooming/index.html', import.meta.url), 'utf8');
+const phase6eHtml = restorePhase6eFamilyASource('grooming', html, fs.readFileSync(new URL('../www/modules/grooming/grooming-ui.css', import.meta.url), 'utf8'));
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 const expected = ['change-cro','clear-day-s-data','cro-inp','day-picker','export-csv','grm-float-save','grm-store-daily','grm-store-monthly','month-picker','save','st-v5-home-fab','startbtn'];
 
@@ -21,7 +23,7 @@ test('Grooming freezes the exact unique safe identity set for all 12 static acti
 });
 
 test('Grooming annotations preserve every pre-existing business and handler byte', () => {
-  const restored = html.replace(/ data-action="[^"]+"/g, '');
+  const restored = phase6eHtml.replace(/ data-action="[^"]+"/g, '');
   assert.equal(crypto.createHash('sha256').update(restoreInlineLegacySource('grooming', restored)).digest('hex'), '140b0a4f5f5c5b7a3f1a9c6ce582073463ecd7e628baf354b0d2dabb0ca074f3');
 });
 
