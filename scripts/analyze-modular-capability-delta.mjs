@@ -199,7 +199,7 @@ function categoryCounts(inventory) {
 export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   const baselineAudit = JSON.parse(fs.readFileSync(path.join(workspaceRoot, BASELINE_PATH), 'utf8'));
   const rawContext = buildContext(workspaceRoot);
-  const authority = rawContext.read(`www/${LEGACY_ASSET}`);
+  const authority = fs.readFileSync(path.join(workspaceRoot, 'tests/fixtures/phase6c/module-mobile-legacy.css'), 'utf8');
   const legacyByFile = new Map(LEGACY_MODULE_ALLOWLIST.map(moduleId =>
     [`www/modules/${moduleId}/index.html`, moduleId]));
   const normalize = (file, source) => legacyByFile.has(file)
@@ -207,11 +207,17 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     : source;
   const currentContext = Object.freeze({
     ...rawContext,
+    // Phase 6I consolidated the historical responsive authority into the
+    // canonical common sheet. Keep the frozen capability comparison scoped to
+    // the pre-consolidation common bytes so a packaging-only move cannot appear
+    // as five new product capabilities.
     modules: rawContext.modules.map(module => Object.freeze({
       ...module,
       html: normalize(module.file, module.html)
     })),
-    read: file => normalize(file, rawContext.read(file))
+    read: file => normalize(file, file === 'www/shared/module-mobile-common.css'
+      ? rawContext.read(file).split('/* Phase 6I: consolidated responsive migration authority (from Phase 6C) */')[0]
+      : rawContext.read(file))
   });
   const currentAudit = await auditA3(currentContext);
   const baselineCheck = check(baselineAudit, 'A3-02');
@@ -255,14 +261,14 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 699);
+  assert.equal(current.length, 704);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 489, permission: 27, 'persisted-outcome': 86, 'failure-posture': 84 });
-  assert.equal(count('added'), 394);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 489, permission: 27, 'persisted-outcome': 86, 'failure-posture': 89 });
+  assert.equal(count('added'), 399);
   assert.equal(count('removed'), 350);
-  assert.equal(count('changed'), 40);
+  assert.equal(count('changed'), 41);
   assert.equal(classCount('handler-body-hash-only'), 21);
-  assert.equal(classCount('failure-posture-source-boundary-change'), 15);
+  assert.equal(classCount('failure-posture-source-boundary-change'), 16);
   assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);

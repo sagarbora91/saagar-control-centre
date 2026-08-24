@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   LEGACY_ASSET,
   LEGACY_MODULE_ALLOWLIST,
@@ -18,6 +19,10 @@ import { restorePrePhase6h1EtpIndex, restorePrePhase6h1GatewaySource, restorePre
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
+const PHASE6I_MOBILE_MARKER = '/* Phase 6I: consolidated responsive migration authority (from Phase 6C) */';
+const PHASE6C_MOBILE_AUTHORITY = fs.readFileSync(path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)), '../fixtures/phase6c/module-mobile-legacy.css'
+));
 const PRE_PHASE6D_BRAND_TOKENS = `:root{
   --navy:#0d2340; --navy-mid:#1a3a5c; --navy-light:#264d7a;
   --gold:#b8922a; --gold-light:#d4a843; --gold-pale:#fdf6e3;
@@ -33,6 +38,33 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  // Phase 6I removed the production legacy asset after consolidating its bytes
+  // into the canonical common sheet. Recreate the earlier boundary explicitly
+  // from the test-only frozen authority before applying later reverse migrations.
+  const commonPath = path.join(workspaceRoot, 'www/shared/module-mobile-common.css');
+  const commonSource = fs.readFileSync(commonPath, 'utf8');
+  if (commonSource.includes(PHASE6I_MOBILE_MARKER)) {
+    const authority = PHASE6C_MOBILE_AUTHORITY;
+    fs.writeFileSync(commonPath, `${commonSource.split(PHASE6I_MOBILE_MARKER)[0].trimEnd()}\n`, 'utf8');
+    fs.writeFileSync(path.join(workspaceRoot, 'www/shared/module-mobile-legacy.css'), authority);
+    const commonLink = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">';
+    const legacyLink = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
+    for (const moduleId of LEGACY_MODULE_ALLOWLIST) {
+      const moduleFile = path.join(workspaceRoot, `www/modules/${moduleId}/index.html`);
+      const source = fs.readFileSync(moduleFile, 'utf8');
+      if (!source.includes(commonLink + '\n') || source.includes(legacyLink)) throw new Error(`${moduleId} Phase 6I cleanup boundary drift`);
+      fs.writeFileSync(moduleFile, source.replace(commonLink + '\n', commonLink + '\n' + legacyLink), 'utf8');
+    }
+    const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
+    let manifest = fs.readFileSync(manifestPath, 'utf8')
+      .replace('input.sharedAssets.length !== 33', 'input.sharedAssets.length !== 34')
+      .replace('sharedAssets must contain exactly thirty-three entries', 'sharedAssets must contain exactly thirty-four entries')
+      .replace("      ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }\n",
+        "      ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }\n      ,{ id: 'module-mobile-legacy-css', file: 'shared/module-mobile-legacy.css' }\n");
+    const legacyEntry = `    {\n      "id": "module-mobile-legacy-css",\n      "version": 1,\n      "file": "shared/module-mobile-legacy.css",\n      "bytes": ${authority.length},\n      "sha256": "${sha256(authority)}"\n    }`;
+    manifest = manifest.replace(/(    \{\n      "id": "module-mobile-common-css",[\s\S]*?\n    \}),/, `$1,\n${legacyEntry},`);
+    fs.writeFileSync(manifestPath, manifest, 'utf8');
+  }
   const phase6gShellPath = path.join(workspaceRoot, 'www/index.html');
   const phase6gShellManifestPath = path.join(workspaceRoot, 'www/shell-asset-manifest.js');
   const phase6gShell = restorePrePhase6gShellAssets({
@@ -142,6 +174,10 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
   brandTokens.bytes = brandBytes.length;
   brandTokens.sha256 = sha256(brandBytes);
+  const mobileCommon = snapshot.data.sharedAssets.find(item => item.id === 'module-mobile-common-css');
+  const mobileCommonBytes = fs.readFileSync(commonPath);
+  mobileCommon.bytes = mobileCommonBytes.length;
+  mobileCommon.sha256 = sha256(mobileCommonBytes);
   const dsrModule = snapshot.data.modules.find(item => item.id === 'dsr');
   const dsrBytes = fs.readFileSync(dsrPath);
   dsrModule.bytes = dsrBytes.length;

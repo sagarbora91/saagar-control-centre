@@ -64,7 +64,7 @@ test('extracted Stock contains no remote asset reference', () => {
 test('extracted Stock contains the complete current shell injection chain', () => {
   const html = stock.toString('utf8');
   [
-    'st-v5-iframe-shim', 'st-v5-safety-net', 'st-v5-mobile-css',
+    'st-v5-iframe-shim', 'st-v5-safety-net', 'st-v5-mobile-boot',
     'st-v5-module-access-bridge', 'st-v5-module-audit-bridge',
     'st-v5-emp-assist-script', 'st-v5-hide-css', 'st-v5-home-fab'
   ].forEach(marker => {

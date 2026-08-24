@@ -103,5 +103,7 @@ function restoreService(html, css) {
 export function restorePhase6eFamilyASource(moduleId, html, css, validateHash = true) {
   const restore = { payroll: restorePayroll, grooming: restoreGrooming, service: restoreService }[moduleId];
   if (!restore) throw new Error(`Unsupported Phase 6F Family-A module: ${moduleId}`);
-  return validate(moduleId, restore(html, css), validateHash);
+  const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';
+  const legacy = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
+  return validate(moduleId, restore(html.includes(legacy) ? html : html.replace(common, common + legacy), css), validateHash);
 }

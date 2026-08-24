@@ -26,6 +26,9 @@ export function restorePhase6dStockCss(css) {
 }
 
 export function restorePhase6dStockSource(html, css, validate = true) {
+  const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';
+  const legacy = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
+  if (!html.includes(legacy)) html = html.replace(common, common + legacy);
   let restored = html
     .replace(`<link rel="stylesheet" href="../../shared/module-brand-tokens.css">
 <link rel="stylesheet" href="../../shared/module-responsive.css">

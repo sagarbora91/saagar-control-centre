@@ -46,7 +46,11 @@ export function trackedFiles(root) {
   const output = execFileSync('git', ['-C', root, 'ls-files', '-z'], {
     encoding: 'buffer', windowsHide: true, maxBuffer: 64 * 1024 * 1024
   });
-  return output.toString('utf8').split('\0').filter(Boolean).map(posix).sort();
+  // `git ls-files` retains an index entry for a staged deletion until commit.
+  // Worktree audits must model the candidate that actually exists, not attempt
+  // to read the removed path and abort before reporting product drift.
+  return output.toString('utf8').split('\0').filter(Boolean).map(posix)
+    .filter(file => fs.existsSync(path.join(root, file))).sort();
 }
 
 export const AUDIT_PROGRAM_FILE = 'docs/audit/AUDIT-PROGRAM-v1.md';

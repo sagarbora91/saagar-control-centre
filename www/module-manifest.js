@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 34) fail('sharedAssets must contain exactly thirty-four entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 33) fail('sharedAssets must contain exactly thirty-three entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -183,7 +183,6 @@
       { id: 'module-back-css', file: 'shared/module-back.css' },
       { id: 'module-employee-css', file: 'shared/module-employee.css' }
       ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }
-      ,{ id: 'module-mobile-legacy-css', file: 'shared/module-mobile-legacy.css' }
       ,{ id: 'module-brand-tokens-css', file: 'shared/module-brand-tokens.css' }
       ,{ id: 'module-responsive-css', file: 'shared/module-responsive.css' }
       ,{ id: 'module-ui-runtime', file: 'shared/module-ui-runtime.js' }
@@ -270,15 +269,8 @@
       "id": "module-mobile-common-css",
       "version": 1,
       "file": "shared/module-mobile-common.css",
-      "bytes": 1080,
-      "sha256": "3eeee52dcb2070d8e58482040fb855857d5092aad22641a7852ae0af899c2e0b"
-    },
-    {
-      "id": "module-mobile-legacy-css",
-      "version": 1,
-      "file": "shared/module-mobile-legacy.css",
-      "bytes": 24977,
-      "sha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443"
+      "bytes": 26137,
+      "sha256": "b8ae67010cb906861df2e858079106a1d76a122ccc6f2748b9090a843d7f67f2"
     },
     {
       "id": "module-brand-tokens-css",
@@ -474,8 +466,8 @@
       "file": "modules/stock/index.html",
       "subtitle": "Daily opening, inward, sale, transfer, return, physical and closing stock control.",
       "summary": "Inventory movement and variance control for store operations.",
-      "bytes": 167806,
-      "sha256": "22236a84e57f972dfc0b83861408ef1e3a0473b09260d61f1a3acc91ddb206e3",
+      "bytes": 167716,
+      "sha256": "548d1f4f5e1b1b4b9b04f14ec73c73537fb7ca470094055afb34379ff229392d",
       "source_title": "Saagar Traders — Daily Stock Register v3",
       "src": "modules/stock/index.html"
     },
@@ -489,8 +481,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 192968,
-      "sha256": "c65a428779f69c9a10ee80d38630c95cd0e3f3112b62cb4bbccd39c9ab66e78f",
+      "bytes": 192878,
+      "sha256": "492689a8d982e3bfc648cb12e9cb60c189f2034675bf3c11742bdef3d199c56c",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },
@@ -504,8 +496,8 @@
       "file": "modules/qms/index.html",
       "subtitle": "Walk-in capture, CRO rotation, lead closure (sale / service / non-purchase) and follow-ups.",
       "summary": "Front-desk queue + CRO rotation. Closures auto-fill the Daily Staff Register.",
-      "bytes": 149742,
-      "sha256": "6301b74b5ed95845b7ce9a16f813125f1bd357c932823b2e34f5aa105682e73e",
+      "bytes": 149652,
+      "sha256": "927790da02217cc920c87573cd1cd7494736342655949acd2e55b8bc2e6eb6aa",
       "src": "modules/qms/index.html"
     },
     {
@@ -518,8 +510,8 @@
       "file": "modules/dsr/index.html",
       "subtitle": "Per-CRO daily log: opening, in/out, sales, non-purchase, tasks, marketing, cleaning (photo), closing, SM audit.",
       "summary": "CRO daily accountability hub; receives QMS auto-fill; rolls counts up to Stock.",
-      "bytes": 142215,
-      "sha256": "32d4b1db57e637f4ed2d60acba48ddddbea994cab27a0a463e27efd3ffbbe3a3",
+      "bytes": 142125,
+      "sha256": "f692513e0ae4ca2c23f3d81d1c255e8a292a74b2d67280e0c0b93421f767e9f9",
       "src": "modules/dsr/index.html"
     },
     {
@@ -532,8 +524,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 168791,
-      "sha256": "32e476baf51eea87b1c73ebf41e3675513725a2b99c43ee5745c9c1b96a52390",
+      "bytes": 168701,
+      "sha256": "414e8849bdedbef7b05fe6f60a1677e24108a4ff9864cdbba13a6a2b31473529",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -547,8 +539,8 @@
       "file": "modules/grooming/index.html",
       "subtitle": "Daily staff presentation checklist, scoring and monthly records.",
       "summary": "Readiness and staff grooming compliance tracker.",
-      "bytes": 64868,
-      "sha256": "adc4ee87799df62379728ac9b7ab1693042bec80e035c6a22edc5a3b125f342d",
+      "bytes": 64778,
+      "sha256": "6ae521a672e18bc85fb89649b7928b2bb94b6c3a380e4cb9ffe651d2cdd4d396",
       "source_title": "Saagar Traders — Grooming Checklist",
       "src": "modules/grooming/index.html"
     },
@@ -562,8 +554,8 @@
       "file": "modules/cro_audit/index.html",
       "subtitle": "10-task daily CRO performance rubric with store/CRO/SM selectors, dashboard trends and targets.",
       "summary": "Daily 10-point CRO scoring; pulls grooming score; trend dashboard.",
-      "bytes": 109344,
-      "sha256": "065dd04b43e949e941c8828c2bfd8a5177fffc46939e0d32d78c30c3144f3361",
+      "bytes": 109254,
+      "sha256": "e2ee0550b4019b43af08ecce96d9fd32a5c820b8268b5889944904ceb2749db2",
       "src": "modules/cro_audit/index.html"
     },
     {
@@ -576,8 +568,8 @@
       "file": "modules/payroll/index.html",
       "subtitle": "Saagar Traders Payroll Suite — attendance, salary days, deductions, statutory, PDF/Excel payslips. Data key unchanged.",
       "summary": "Latest Saagar Traders payroll (single-file, offline). Same payroll_suite_v1_2026 data as before.",
-      "bytes": 219574,
-      "sha256": "7a6f36be6ed1d67a5a107e635158d12c18534c0adb9351afbbb0c5438505db49",
+      "bytes": 219484,
+      "sha256": "4f2fe1c64fc6262e510d37db15ab24f1ec0e9f57a3d9a56d1f038863a409102f",
       "source_title": "Gold Mart Group — Payroll Suite",
       "src": "modules/payroll/index.html"
     },
@@ -591,8 +583,8 @@
       "file": "modules/leave/index.html",
       "subtitle": "Leave planning, holiday visibility and staff availability calendar.",
       "summary": "Team leave management and availability control.",
-      "bytes": 136635,
-      "sha256": "279673f7221ad2ca168b213a1fc1f0b6158bdeca5fc3f01ee7a31c883a1f0b5c",
+      "bytes": 136545,
+      "sha256": "2a5e6cea877d8bbbf233f72f096fd3b2d591614efb7cf90b4150f48fadd19e90",
       "source_title": "Staff Leave Manager",
       "src": "modules/leave/index.html"
     },
@@ -606,8 +598,8 @@
       "file": "modules/tax/index.html",
       "subtitle": "GST, TDS and statutory compliance due-date operating calendar.",
       "summary": "Indian statutory deadline tracker with compliance status controls.",
-      "bytes": 191153,
-      "sha256": "324e15dd283c2ab76fe07638dd8651825d8866feed04b548e748268ff6157e03",
+      "bytes": 191063,
+      "sha256": "9da8a3b4107342d99efbed44395c5372f03d7594da342115d2d27d8ac4ffa8a1",
       "source_title": "Compliance Operating System — Indian Firms v2",
       "src": "modules/tax/index.html"
     },
@@ -621,8 +613,8 @@
       "file": "modules/planning/index.html",
       "subtitle": "Festival targets, pre-season prep checklists and staff leave-blackout windows.",
       "summary": "Plan peak seasons — targets vs QMS actuals, prep checklists and leave-freeze dates.",
-      "bytes": 14760,
-      "sha256": "1e537c757f468a4639d2062489996367dd1a4d703913b5943c089a7e8541ac07",
+      "bytes": 14670,
+      "sha256": "dad7b6707f30cb5c8d94cddab3d218779118b817d896bc2d668a77e753a6bffb",
       "src": "modules/planning/index.html"
     },
     {

@@ -8,10 +8,13 @@ import {
 } from '../../scripts/prepare-phase6c-mobile-legacy-css.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const authority = fs.readFileSync(path.join(root, 'www', LEGACY_ASSET), 'utf8');
+const authority = fs.readFileSync(path.join(root, 'tests/fixtures/phase6c/module-mobile-legacy.css'), 'utf8');
+const commonLink = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';
+const legacyLink = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
 
 export function restoreInlineLegacySource(moduleId, source) {
-  const restored = restoreMigratedLegacySource(moduleId, source, authority);
+  const linked = source.includes(legacyLink) ? source : source.replace(commonLink, commonLink + legacyLink);
+  const restored = restoreMigratedLegacySource(moduleId, linked, authority);
   assert.notEqual(restored, source, `${moduleId} Phase 6C migrated source`);
   return restored;
 }

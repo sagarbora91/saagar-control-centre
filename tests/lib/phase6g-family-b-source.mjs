@@ -234,7 +234,9 @@ function restoreQms(source, css) {
 export function restorePrePhase6gFamilyBSource(moduleId, html, css = '', validateHash = true) {
   const restore = { expense: restoreExpense, leave: restoreLeave, cro_audit: restoreCroAudit, tax: restoreTax, dsr: restoreDsr, qms: restoreQms }[moduleId];
   if (!restore) throw new Error(`Unsupported Phase 6G Family-B module: ${moduleId}`);
-  const restored = restore(html, css);
+  const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';
+  const legacy = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
+  const restored = restore(html.includes(legacy) ? html : html.replace(common, common + legacy), css);
   if (validateHash && sha256(restored) !== PRE_PHASE6G_FAMILY_B_SHA256[moduleId]) {
     throw new Error(`${moduleId} did not reconstruct to its pre-Phase6G authority (${Buffer.byteLength(restored)} bytes, ${sha256(restored)})`);
   }

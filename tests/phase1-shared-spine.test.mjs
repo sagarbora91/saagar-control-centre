@@ -81,11 +81,9 @@ test('Phase 1 freezes the shared CSS assets in the manifest and module graph', (
     const href = `../../${asset}`;
     assert.ok(moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(href)).length >= 2, asset);
   }
-  const legacyAsset = 'shared/module-mobile-legacy.css';
-  assert.match(manifestSource, new RegExp(legacyAsset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  const legacyConsumers = moduleFiles.filter(file => fs.readFileSync(file, 'utf8').includes(`../../${legacyAsset}`));
-  assert.deepEqual(legacyConsumers.map(file => path.basename(path.dirname(file))).sort(),
-    ['cro_audit','dsr','expense','grooming','leave','payroll','planning','qms','service','stock','tax']);
+  assert.doesNotMatch(manifestSource, /module-mobile-legacy/);
+  assert.equal(moduleFiles.some(file => fs.readFileSync(file, 'utf8').includes('module-mobile-legacy.css')), false);
+  assert.equal(fs.existsSync(path.join(root, 'www/shared/module-mobile-legacy.css')), false);
   const phase6gConsumerCounts = new Map([
     ['shared/module-responsive.css', 10], ['shared/module-ui-runtime.js', 10],
     ['shared/module-table.css', 10], ['shared/module-table-runtime.js', 6],
@@ -121,10 +119,10 @@ test('Phase 1 audit exit closes owned authority gates and records exact capabili
   assert.ok(a2Checks['A2-02'].metric.similarityEdges < 1997);
   const capability = byId(a3)['A3-02'];
   assert.equal(capability.result, 'pass');
-  assert.equal(capability.metric.capabilities, 699);
+  assert.equal(capability.metric.capabilities, 704);
   assert.equal(capability.metric.conflictingIds, 0);
   assert.equal(ledger.baseline.capabilities, 655);
-  assert.equal(ledger.summary.capabilityApprovalsRequired, 784);
+  assert.equal(ledger.summary.capabilityApprovalsRequired, 790);
   assert.equal(ledger.approvalStatus, 'pending-owner-approval');
   const remote = byId(a8)['A8-05'];
   assert.equal(remote.metric.unapprovedRemoteCalls, 0);

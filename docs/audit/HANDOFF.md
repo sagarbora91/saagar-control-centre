@@ -3,7 +3,19 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6H engineering complete; begin Phase 6I cleanup/source freeze — 2026-08-24
+## RESUME HERE — Phase 6I source frozen; begin Phase 6J release gates — 2026-08-24
+
+Phase 6I freezes twelve external iframe routes and the ETP parent-gateway/sealed-store
+hybrid. The temporary Phase 6C mobile legacy asset has zero production consumers and was
+removed after consolidation into `shared/module-mobile-common.css`; its exact bytes remain
+test-only historical evidence. The machine receipt is
+`verification/audit/PHASE-6I-SOURCE-FREEZE-2026-08-24.json`.
+
+Resume with Phase 6J.0: verify the clean commit and WWW hash, obtain owner-approved version
+and versionCode, and keep formal approval, signing and release closed until their explicit
+gates are satisfied. E7 remains deferred.
+
+## Prior handoff — Phase 6H engineering closure
 
 ### Phase 6H engineering closure
 

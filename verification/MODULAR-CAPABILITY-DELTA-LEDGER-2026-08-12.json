@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 699,
+    "capabilities": 704,
     "categories": {
-      "failure-posture": 84,
+      "failure-posture": 89,
       "permission": 27,
       "persisted-outcome": 86,
       "route": 13,
       "visible-action": 489
     },
     "conflicts": 0,
-    "inventorySha256": "1c92eb4491562389e8cbb78f7b7a1d205c4e2558479b85862eeb5492983172ef"
+    "inventorySha256": "00c3e7e87fe09f45185c36243ac99d8e78b75a12c77d685ca2ae2a556bcbe150"
   },
   "deltas": [
     {
@@ -2745,11 +2745,11 @@
           "explicitFallbackSites": 10,
           "swallowedCatchBlocks": 4,
           "throwSites": 0,
-          "userVisibleErrorSites": 10
+          "userVisibleErrorSites": 3
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "012bb5f74b27cb83c836bcc024fa668f742d477302c658424191608a638a3f69",
+      "currentOutcomeSha256": "be0d74a97b2376a43efdff29c6c0cdfa397fd2a31efb526c04620c2523625854",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -5095,11 +5095,11 @@
           "explicitFallbackSites": 11,
           "swallowedCatchBlocks": 22,
           "throwSites": 0,
-          "userVisibleErrorSites": 52
+          "userVisibleErrorSites": 45
         },
         "surface": "dsr"
       },
-      "currentOutcomeSha256": "ed8f785c5b013808bd4f8b34833e02ab68bfd3b19271e1de69ea6329c8563a0b",
+      "currentOutcomeSha256": "2a2e728bac63b34cd1086d24eb8828bb19df2171b1e5ff96e5a851429230e38f",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -7662,11 +7662,11 @@
           "explicitFallbackSites": 30,
           "swallowedCatchBlocks": 9,
           "throwSites": 5,
-          "userVisibleErrorSites": 153
+          "userVisibleErrorSites": 146
         },
         "surface": "expense"
       },
-      "currentOutcomeSha256": "47e0695dc623de8bfae26b80a26b46b783459ad34c9774925f80853a2e20725a",
+      "currentOutcomeSha256": "c26bb541471055908403f9ba31df9e54dabbd8ae43e940602167de4dc971dfab",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -9212,11 +9212,11 @@
           "explicitFallbackSites": 8,
           "swallowedCatchBlocks": 16,
           "throwSites": 1,
-          "userVisibleErrorSites": 11
+          "userVisibleErrorSites": 4
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "570054d4c37a1eaf3f329b1fd3a0b029cd136f1ea3ad658c39719991a4ea9773",
+      "currentOutcomeSha256": "f37694353b24317917c86b8645ba4e0cdcb4d4e7b6b7104aac64edec80d9b48b",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -12963,11 +12963,11 @@
           "explicitFallbackSites": 11,
           "swallowedCatchBlocks": 10,
           "throwSites": 3,
-          "userVisibleErrorSites": 10
+          "userVisibleErrorSites": 3
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "0181fb2c8e60cf94d4d4121ab23a216bf5db0b86d02c4b438f5d409f7e93eb60",
+      "currentOutcomeSha256": "d0f9fd85f5e59cf82069d42fe20d380a4dfbc08e8249c43efe1d60c064f8ce7f",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -19225,11 +19225,11 @@
           "explicitFallbackSites": 18,
           "swallowedCatchBlocks": 5,
           "throwSites": 1,
-          "userVisibleErrorSites": 66
+          "userVisibleErrorSites": 59
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "15f888fbae332520a96ed561bf777c0cd167be96126d93bba5bae5667ba8f148",
+      "currentOutcomeSha256": "d13df2089592aa511a7964e054d1e872cee2740ee1dfe37d113ed72c1a99ad80",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -19835,6 +19835,38 @@
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 3,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 0,
+          "userVisibleErrorSites": 20
+        },
+        "surface": "planning"
+      },
+      "baselineOutcomeSha256": "68daa0bd39f097ceabad5ffcccca1de5fc3357ca2a96297b4edab3d26753a0a0",
+      "capabilityId": "planning:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 3,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 0,
+          "userVisibleErrorSites": 13
+        },
+        "surface": "planning"
+      },
+      "currentOutcomeSha256": "d762e030e8c2724bf338cc371be7565ca1e262d917d51a06010782b1132f9288",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
     },
     {
       "baseline": {
@@ -21577,11 +21609,11 @@
           "explicitFallbackSites": 28,
           "swallowedCatchBlocks": 3,
           "throwSites": 4,
-          "userVisibleErrorSites": 115
+          "userVisibleErrorSites": 108
         },
         "surface": "qms"
       },
-      "currentOutcomeSha256": "dd158f974f19f301c45a4f77f10ae94205d33f3746a4494b347c8d6303fe5dd9",
+      "currentOutcomeSha256": "f1d7f79c8ea4c002f37a23b72a66dc26712b60c317c8fd8e171cd064a8411558",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -21604,6 +21636,50 @@
         "surface": "script-etp-analytics-consumer"
       },
       "currentOutcomeSha256": "bad0f1ef997fe5015b086c69ec1d454e6978b2b47a305eba7cbf1fc494985b5c",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-cro-reconciliation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 2,
+          "explicitFallbackSites": 7,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-cro-reconciliation"
+      },
+      "currentOutcomeSha256": "9fa280e678cf37ac70783578977970848095927be1cd5166f76faf7e81bcd5e1",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-exception-monitor:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 8,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 8,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-exception-monitor"
+      },
+      "currentOutcomeSha256": "9cb6f049eaf54e88a69cf119e91b71b31bc5c4793f8a7d3f61d32366bf060e76",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21719,6 +21795,28 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-incentive-control:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 3,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-incentive-control"
+      },
+      "currentOutcomeSha256": "61b267017ce38a790f6cd698f17db501a260c38ce1969e80abed87fe18a8190e",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
       "capabilityId": "script-etp-module-gateway:failure:posture",
       "category": "failure-posture",
       "change": "added",
@@ -21773,6 +21871,28 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operations-consumer:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operations-consumer"
+      },
+      "currentOutcomeSha256": "620219d7f363a7fcfab463197447085426623fa583eee468cfad32824fa9d2b9",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
       "capabilityId": "script-etp-profile-authority:failure:posture",
       "category": "failure-posture",
       "change": "added",
@@ -21810,6 +21930,28 @@
         "surface": "script-etp-query-contract"
       },
       "currentOutcomeSha256": "9e320f580e6ff31d352749e7f13425ff4f52dd7823fa71a939d62bb54c4736d3",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-target-planning:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 17,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-target-planning"
+      },
+      "currentOutcomeSha256": "a3b6dd515f66d9571823c782415f665dd8ff9bc5920f7c0713b9e1b2cb0937dd",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -40029,11 +40171,11 @@
           "explicitFallbackSites": 16,
           "swallowedCatchBlocks": 15,
           "throwSites": 0,
-          "userVisibleErrorSites": 54
+          "userVisibleErrorSites": 47
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "219d80281818e5fdd397eac30985a02d51c29a41520c97819fe62b2c26893679",
+      "currentOutcomeSha256": "e05a5c11ec7a1240798d683ba8da7e957b685e379497edcd7092da5fbd6cb210",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -41813,11 +41955,11 @@
           "explicitFallbackSites": 30,
           "swallowedCatchBlocks": 15,
           "throwSites": 3,
-          "userVisibleErrorSites": 33
+          "userVisibleErrorSites": 26
         },
         "surface": "tax"
       },
-      "currentOutcomeSha256": "9ef9173fd2bb4aa449403f126b0d8280020a1fea9047934b1ad1fd45ef74e726",
+      "currentOutcomeSha256": "4d9249c8b342238cf694f58036ce17102723f3207d4531865f87080c360c3eef",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -41846,15 +41988,15 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 394,
+    "added": 399,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 784,
-    "changed": 40,
-    "changedFailurePostures": 16,
+    "capabilityApprovalsRequired": 790,
+    "changed": 41,
+    "changedFailurePostures": 17,
     "changedVisibleActions": 24,
-    "comparisonDeltaSha256": "3a3c7c4e48674653ff50f6c7f1316937ecc8ce21b0e940aba37fc5ca323f490a",
+    "comparisonDeltaSha256": "bdf0fc07e97c272151928d45f14c96bd82396f29b275feac44299337fcb99e55",
     "handlerBodyHashOnly": 21,
-    "netCapabilities": 44,
+    "netCapabilities": 49,
     "removed": 350,
     "reportPresentationFallbacks": 1
   }
