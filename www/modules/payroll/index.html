@@ -976,24 +976,24 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   </div>
   <div class="hd-right">
     <span class="status-chip" id="save-status">Ready</span>
-    <button class="btn-hd" onclick="saveState(true)">💾 Save</button>
-    <button class="btn-hd" onclick="downloadSnapshot()">↓ Snapshot</button>
-    <button class="btn-hd" onclick="downloadJSON()">↓ JSON</button>
-    <button class="btn-hd gold" onclick="stPrintRegister()">🖨 Print</button>
+    <button data-action="save" class="btn-hd" onclick="saveState(true)">💾 Save</button>
+    <button data-action="snapshot" class="btn-hd" onclick="downloadSnapshot()">↓ Snapshot</button>
+    <button data-action="json" class="btn-hd" onclick="downloadJSON()">↓ JSON</button>
+    <button data-action="print" class="btn-hd gold" onclick="stPrintRegister()">🖨 Print</button>
   </div>
 </header>
 
 <!-- TAB NAVIGATION -->
 <nav class="tab-nav" id="tab-nav">
-  <button class="tab-btn active" onclick="switchTab('att')" id="tab-att"><span class="tab-icon">📋</span> Attendance <span class="tab-badge" id="badge-att">0</span></button>
-  <button class="tab-btn" onclick="switchTab('master')" id="tab-master"><span class="tab-icon">👥</span> Employee Master <span class="tab-badge" id="badge-master">0</span></button>
-  <button class="tab-btn" onclick="switchTab('adv')" id="tab-adv"><span class="tab-icon">💵</span> Advances <span class="tab-badge" id="badge-adv">0</span></button>
-  <button class="tab-btn" onclick="switchTab('gm')" id="tab-gm"><span class="tab-icon">⚜</span> Saagar Traders <span class="tab-badge" id="badge-gm">0</span></button>
-  <button class="tab-btn" onclick="switchTab('approval')" id="tab-approval"><span class="tab-icon">🔒</span> Approval <span class="tab-badge" id="badge-approval">—</span></button>
-  <button class="tab-btn" onclick="switchTab('slips')" id="tab-slips"><span class="tab-icon">🧾</span> Salary Slips <span class="tab-badge" id="badge-slips">0</span></button>
-  <button class="tab-btn" onclick="switchTab('hr')" id="tab-hr"><span class="tab-icon">📜</span> HR Letters <span class="tab-badge" id="badge-hr">0</span></button>
-  <button class="tab-btn" onclick="switchTab('reports')" id="tab-reports"><span class="tab-icon">📊</span> Reports <span class="tab-badge" id="badge-reports">0</span></button>
-  <button class="tab-btn" onclick="switchTab('settings')" id="tab-settings"><span class="tab-icon">⚙️</span> Settings</button>
+  <button data-action="tab-att" class="tab-btn active" onclick="switchTab('att')" id="tab-att"><span class="tab-icon">📋</span> Attendance <span class="tab-badge" id="badge-att">0</span></button>
+  <button data-action="tab-master" class="tab-btn" onclick="switchTab('master')" id="tab-master"><span class="tab-icon">👥</span> Employee Master <span class="tab-badge" id="badge-master">0</span></button>
+  <button data-action="tab-adv" class="tab-btn" onclick="switchTab('adv')" id="tab-adv"><span class="tab-icon">💵</span> Advances <span class="tab-badge" id="badge-adv">0</span></button>
+  <button data-action="tab-gm" class="tab-btn" onclick="switchTab('gm')" id="tab-gm"><span class="tab-icon">⚜</span> Saagar Traders <span class="tab-badge" id="badge-gm">0</span></button>
+  <button data-action="tab-approval" class="tab-btn" onclick="switchTab('approval')" id="tab-approval"><span class="tab-icon">🔒</span> Approval <span class="tab-badge" id="badge-approval">—</span></button>
+  <button data-action="tab-slips" class="tab-btn" onclick="switchTab('slips')" id="tab-slips"><span class="tab-icon">🧾</span> Salary Slips <span class="tab-badge" id="badge-slips">0</span></button>
+  <button data-action="tab-hr" class="tab-btn" onclick="switchTab('hr')" id="tab-hr"><span class="tab-icon">📜</span> HR Letters <span class="tab-badge" id="badge-hr">0</span></button>
+  <button data-action="tab-reports" class="tab-btn" onclick="switchTab('reports')" id="tab-reports"><span class="tab-icon">📊</span> Reports <span class="tab-badge" id="badge-reports">0</span></button>
+  <button data-action="tab-settings" class="tab-btn" onclick="switchTab('settings')" id="tab-settings"><span class="tab-icon">⚙️</span> Settings</button>
 </nav>
 
 <div class="wp">
@@ -1041,14 +1041,14 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   <div class="sheet-actions">
     <div class="left-actions">
       <button data-action="add-employee" class="btn primary" onclick="addEmployee()">+ Add Employee</button>
-      <button class="btn" onclick="dupLastRow()">Duplicate Last</button>
-      <button class="btn" onclick="openHelp()">Formula Help</button>
-      <button class="btn" onclick="openAttImport()" id="btn-att-import">⇄ Import Attendance</button>
+      <button data-action="duplicate-last" class="btn" onclick="dupLastRow()">Duplicate Last</button>
+      <button data-action="formula-help" class="btn" onclick="openHelp()">Formula Help</button>
+      <button data-action="btn-att-import" class="btn" onclick="openAttImport()" id="btn-att-import">⇄ Import Attendance</button>
     </div>
     <div class="right-actions">
-      <button class="btn" onclick="document.getElementById('json-import').click()">Import JSON</button>
-      <input id="json-import" class="file-input" type="file" accept="application/json" onchange="importJSON(event)">
-      <button class="btn danger" onclick="resetAll()">Reset All</button>
+      <button data-action="import-json" class="btn" onclick="document.getElementById('json-import').click()">Import JSON</button>
+      <input data-action="json-import" id="json-import" class="file-input" type="file" accept="application/json" onchange="importJSON(event)">
+      <button data-action="reset-all" class="btn danger" onclick="resetAll()">Reset All</button>
     </div>
   </div>
 
@@ -1134,8 +1134,8 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   </section>
   <section class="summary" id="gm-summary"></section>
   <div class="sheet-actions">
-    <div class="left-actions"><button class="btn primary" onclick="addGMEmployee()">+ Add GM Employee</button></div>
-    <div class="right-actions"><button class="btn" onclick="recalcAll()">↺ Recalculate</button></div>
+    <div class="left-actions"><button data-action="add-gm-employee" class="btn primary" onclick="addGMEmployee()">+ Add GM Employee</button></div>
+    <div class="right-actions"><button data-action="recalculate" class="btn" onclick="recalcAll()">↺ Recalculate</button></div>
   </div>
   <div class="print-only" style="margin-bottom:6px;text-align:center">
     <div style="font-weight:700;font-size:12pt;text-transform:uppercase" id="gm-print-title"></div>
@@ -1218,7 +1218,7 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   <section class="summary" id="ms-summary"></section>
   <div class="sheet-actions">
     <div class="left-actions"><button data-action="add-master-employee" class="btn primary" onclick="addMasterEmployee()">+ Add Employee</button></div>
-    <div class="right-actions"><button class="btn" onclick="recalcAll()">↺ Refresh</button></div>
+    <div class="right-actions"><button data-action="refresh" class="btn" onclick="recalcAll()">↺ Refresh</button></div>
   </div>
   <section class="table-wrap">
     <div class="table-scroll">
@@ -1301,7 +1301,7 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
       <div style="grid-column:1/-1"><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Reason / Remark</label>
         <input id="advReason" type="text" placeholder="e.g. Medical, Festival advance" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px"></div>
     </div>
-    <div style="margin-top:14px"><button class="btn primary" onclick="createAdvance()">+ Create Voucher</button></div>
+    <div style="margin-top:14px"><button data-action="create-voucher" class="btn primary" onclick="createAdvance()">+ Create Voucher</button></div>
   </section>
   <section class="table-wrap"><div class="table-scroll">
     <table id="adv-table" style="min-width:1120px">
@@ -1338,9 +1338,9 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   <section class="table-wrap" style="padding:16px;background:var(--paper);border-radius:14px;margin-bottom:14px">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end">
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Employee</label>
-        <select id="hrEmp" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="hrPrefill()"></select></div>
+        <select data-action="hremp" id="hrEmp" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="hrPrefill()"></select></div>
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Letter Type</label>
-        <select id="hrType" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="hrPrefill()"></select></div>
+        <select data-action="hrtype" id="hrType" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="hrPrefill()"></select></div>
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Letter Date</label>
         <input id="hrDate" type="date" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px"></div>
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Designation</label>
@@ -1353,9 +1353,9 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
         <textarea id="hrExtra" rows="2" placeholder="Any additional sentence to include in the letter body" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px;resize:vertical"></textarea></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" onclick="hrPreview()">👁 Preview</button>
-      <button class="btn primary" onclick="hrExportPdf()">📄 Export PDF</button>
-      <button class="btn gold" onclick="hrWhatsApp()">🟢 Send via WhatsApp</button>
+      <button data-action="preview" class="btn" onclick="hrPreview()">👁 Preview</button>
+      <button data-action="export-pdf" class="btn primary" onclick="hrExportPdf()">📄 Export PDF</button>
+      <button data-action="send-via-whatsapp" class="btn gold" onclick="hrWhatsApp()">🟢 Send via WhatsApp</button>
     </div>
   </section>
   <!-- Audit fix payroll-L03: flex-start alignment so the 210mm letter scrolls from its LEFT edge (center-justify clips the unreachable start edge on narrow screens) -->
@@ -1366,16 +1366,16 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
     <p style="font-size:12px;color:var(--g600);margin:0 0 12px">Assembles the final month's salary (current period: <span id="fnfPeriod"></span>), overtime, statutory deductions and the FULL advance outstanding for a retiring / retired employee. Generates a printable F&amp;F sheet and saves it for re-print. Does not change salary or advance data.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end">
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Employee</label>
-        <select id="fnfEmp" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="renderFnfPreview()"></select></div>
+        <select data-action="fnfemp" id="fnfEmp" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px" onchange="renderFnfPreview()"></select></div>
       <div><label style="font-size:11px;font-weight:700;color:var(--g600);display:block;margin-bottom:4px">Last working day</label>
         <input id="fnfLastDay" type="date" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px"></div>
     </div>
     <div id="fnfWarn"></div>
     <div id="fnfAutoRows" style="margin-top:10px"></div>            <!-- read-only assembled lines -->
     <div id="fnfManualRows"></div>                                  <!-- up to 4 manual rows -->
-    <button class="btn" id="fnfAddRow" onclick="fnfAddManual()" style="margin-top:10px">+ Adjustment row</button>
+    <button data-action="fnfaddrow" class="btn" id="fnfAddRow" onclick="fnfAddManual()" style="margin-top:10px">+ Adjustment row</button>
     <div id="fnfNet" style="margin-top:10px;font-size:13px;font-weight:800;color:var(--navy)"></div>
-    <div style="margin-top:12px"><button class="btn gold" onclick="fnfGenerate()">📄 Generate F&amp;F PDF</button></div>
+    <div style="margin-top:12px"><button data-action="generate-f-amp-f-pdf" class="btn gold" onclick="fnfGenerate()">📄 Generate F&amp;F PDF</button></div>
     <div id="fnf-history" style="margin-top:12px"></div>            <!-- saved records, re-print buttons -->
   </section>
 </div>
@@ -1396,7 +1396,7 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   <section class="table-wrap" style="padding:14px 18px;background:var(--paper);border-radius:14px;margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <label for="ap-archive-sel" style="font-size:11px;font-weight:700;color:var(--g600)">View month</label>
-      <select id="ap-archive-sel" class="select" style="min-width:220px" onchange="onArchiveSelect(this.value)"></select>
+      <select data-action="ap-archive-sel" id="ap-archive-sel" class="select" style="min-width:220px" onchange="onArchiveSelect(this.value)"></select>
       <span class="mini-note" id="ap-archive-hint" style="font-size:11px;color:var(--g600)"></span>
     </div>
   </section>
@@ -1414,11 +1414,11 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
         <input id="apApproved" type="text" placeholder="Owner name" style="width:100%;padding:9px;border:1.5px solid var(--g300);border-radius:8px"></div>
     </div>
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" id="apBtnReview" onclick="setRunStatus('reviewed')">Mark Reviewed</button>
-      <button class="btn primary" id="apBtnApprove" onclick="setRunStatus('approved')">Mark Approved</button>
-      <button class="btn gold" id="apBtnLock" onclick="lockRun()">🔒 Lock Pay-run</button>
-      <button class="btn danger" id="apBtnUnlock" onclick="unlockRun()">🔓 Unlock</button>
-      <button class="btn" id="apBtnClose" onclick="closeMonth()">📅 Close Month &amp; Carry Forward</button>
+      <button data-action="apbtnreview" class="btn" id="apBtnReview" onclick="setRunStatus('reviewed')">Mark Reviewed</button>
+      <button data-action="apbtnapprove" class="btn primary" id="apBtnApprove" onclick="setRunStatus('approved')">Mark Approved</button>
+      <button data-action="apbtnlock" class="btn gold" id="apBtnLock" onclick="lockRun()">🔒 Lock Pay-run</button>
+      <button data-action="apbtnunlock" class="btn danger" id="apBtnUnlock" onclick="unlockRun()">🔓 Unlock</button>
+      <button data-action="apbtnclose" class="btn" id="apBtnClose" onclick="closeMonth()">📅 Close Month &amp; Carry Forward</button>
     </div>
     <div style="font-size:11px;color:var(--g600);margin-top:12px;line-height:1.7">
       <b>Lock</b> freezes Attendance, Employee Master &amp; Advances for this month and records the salary + advance-recovery snapshot.
@@ -1450,21 +1450,21 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
     <div class="table-wrap" style="padding:18px;background:var(--paper);border-radius:14px">
       <h3 style="margin:0 0 6px;color:var(--navy);font-size:14px">Payroll Register</h3>
       <p style="font-size:12px;color:var(--g600);margin:0 0 12px">All employees with gross, deductions &amp; net + totals — A4 PDF.</p>
-      <button class="btn primary" onclick="reportRegisterPdf()">📄 Export Register PDF</button>
+      <button data-action="export-register-pdf" class="btn primary" onclick="reportRegisterPdf()">📄 Export Register PDF</button>
     </div>
     <div class="table-wrap" style="padding:18px;background:var(--paper);border-radius:14px">
       <h3 style="margin:0 0 6px;color:var(--navy);font-size:14px">Bank Disbursement</h3>
       <p style="font-size:12px;color:var(--g600);margin:0 0 12px">Name, A/C no, IFSC, net amount — CSV for bulk transfer (from Employee Master bank fields).</p>
-      <button class="btn primary" onclick="reportBankCsv()">📥 Export Bank CSV</button>
+      <button data-action="export-bank-csv" class="btn primary" onclick="reportBankCsv()">📥 Export Bank CSV</button>
     </div>
     <div class="table-wrap" style="padding:18px;background:var(--paper);border-radius:14px">
       <h3 style="margin:0 0 6px;color:var(--navy);font-size:14px">Statutory — Summary &amp; Register</h3>
       <p style="font-size:12px;color:var(--g600);margin:0 0 12px">Totals for remittance, plus a member-wise register (UAN, PF, ESIC IP, PT per employee) for PF ECR &amp; ESIC monthly uploads.</p>
-      <button class="btn primary" onclick="reportStatutoryPdf()">📄 Summary PDF</button>
-      <button class="btn" style="margin-left:8px" onclick="reportStatutoryCsv()">Summary CSV</button>
+      <button data-action="summary-pdf" class="btn primary" onclick="reportStatutoryPdf()">📄 Summary PDF</button>
+      <button data-action="summary-csv" class="btn" style="margin-left:8px" onclick="reportStatutoryCsv()">Summary CSV</button>
       <div style="margin-top:8px">
-        <button class="btn primary" onclick="reportStatutoryMemberPdf()">📄 Member-wise PDF</button>
-        <button class="btn" style="margin-left:8px" onclick="reportStatutoryMemberCsv()">Member-wise CSV</button>
+        <button data-action="member-wise-pdf" class="btn primary" onclick="reportStatutoryMemberPdf()">📄 Member-wise PDF</button>
+        <button data-action="member-wise-csv" class="btn" style="margin-left:8px" onclick="reportStatutoryMemberCsv()">Member-wise CSV</button>
       </div>
     </div>
   </section>
@@ -1521,8 +1521,8 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
     </div>
   </section>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button class="btn primary" onclick="saveSettings()">💾 Save Settings</button>
-    <button class="btn" onclick="resetSettingsDefaults()">↺ Restore Defaults</button>
+    <button data-action="save-settings" class="btn primary" onclick="saveSettings()">💾 Save Settings</button>
+    <button data-action="restore-defaults" class="btn" onclick="resetSettingsDefaults()">↺ Restore Defaults</button>
   </div>
   <div style="font-size:11px;color:var(--orange);margin-top:12px;background:var(--orange-bg);padding:10px;border-radius:8px">
     <b>Important:</b> these statutory figures are software defaults and must be verified with your accountant / compliance consultant before final salary disbursement.
@@ -1555,29 +1555,29 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
   <div class="slip-card">
     <h3>Authorised Signatory</h3>
     <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">Prints under the "For SAAGAR TRADERS" block on every slip. Leave blank to print "Authorised Signatory".</div>
-    <input id="slipApprovedBy" type="text" placeholder="e.g. Sagar Bora, Proprietor"
+    <input data-action="slipapprovedby" id="slipApprovedBy" type="text" placeholder="e.g. Sagar Bora, Proprietor"
       style="padding:7px 10px;border:1.5px solid var(--g300);border-radius:7px;font-size:12px;width:100%;max-width:360px">
   </div>
 
   <div class="slip-card">
     <h3>Employees <span class="cnt" id="slip-emp-cnt"></span></h3>
     <div class="sbar">
-      <input id="slipSearch" type="text" placeholder="Search name or ID…">
+      <input data-action="slipsearch" id="slipSearch" type="text" placeholder="Search name or ID…">
       <div class="schip" id="slipStatusChips">
-        <button data-v="all" class="on">All</button>
-        <button data-v="ok">Clean</button>
-        <button data-v="warn">Warning</button>
+        <button data-action="all" data-v="all" class="on">All</button>
+        <button data-action="clean" data-v="ok">Clean</button>
+        <button data-action="warning" data-v="warn">Warning</button>
       </div>
-      <select id="slipGender"><option value="all">All genders</option><option value="M">Male</option><option value="F">Female</option></select>
-      <button class="sbtn gh" id="slipSelAll">Select All Visible</button>
-      <button class="sbtn gh" id="slipSelNone">Clear</button>
+      <select data-action="slipgender" id="slipGender"><option value="all">All genders</option><option value="M">Male</option><option value="F">Female</option></select>
+      <button data-action="slipselall" class="sbtn gh" id="slipSelAll">Select All Visible</button>
+      <button data-action="slipselnone" class="sbtn gh" id="slipSelNone">Clear</button>
       <span style="flex:1"></span>
       <span id="slipSelSum" style="font-size:12px;color:#444"></span>
     </div>
     <div class="stbl-wrap">
       <table class="stbl" id="slipTbl">
         <thead><tr>
-          <th style="width:30px"><input type="checkbox" id="slipSelToggle"></th>
+          <th style="width:30px"><input data-action="slipseltoggle" type="checkbox" id="slipSelToggle"></th>
           <th style="width:34px">Sr</th><th>Employee</th><th style="width:70px">Status</th>
           <th class="n" style="width:90px">Gross Pay</th><th class="n" style="width:80px">Earnings</th>
           <th class="n" style="width:90px">Deductions</th><th class="n" style="width:80px">Final Pay</th>
@@ -1591,14 +1591,14 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
     <h3>Generate &amp; Export</h3>
     <div class="sactions">
       <div class="info" id="slipInfo">Select employees above, then export.</div>
-      <button class="sbtn gh" id="slipPreview" disabled>Preview Slips</button>
-      <button class="sbtn pri" id="slipZip" disabled>Export ZIP of Individual PDFs</button>
-      <button class="sbtn gh" id="slipCombined" disabled>Export Single Combined PDF</button>
+      <button data-action="slippreview" class="sbtn gh" id="slipPreview" disabled>Preview Slips</button>
+      <button data-action="slipzip" class="sbtn pri" id="slipZip" disabled>Export ZIP of Individual PDFs</button>
+      <button data-action="slipcombined" class="sbtn gh" id="slipCombined" disabled>Export Single Combined PDF</button>
     </div>
     <div class="slip-preview" id="slipPreviewWrap"></div>
     <div id="slipPreviewBar" style="display:none;text-align:center;margin-top:10px">
-      <button class="sbtn pri" id="slipPreviewZip">Export These as ZIP</button>
-      <button class="sbtn gh" id="slipPreviewClose">Close Preview</button>
+      <button data-action="slippreviewzip" class="sbtn pri" id="slipPreviewZip">Export These as ZIP</button>
+      <button data-action="slippreviewclose" class="sbtn gh" id="slipPreviewClose">Close Preview</button>
     </div>
   </div>
 </div>
@@ -1652,7 +1652,7 @@ td.net-sal-cell{background:var(--green-pale)!important;color:var(--green);font-w
       <div class="pm-bar"><div id="slipProgFill"></div></div>
       <div class="pm-meta"><span id="slipProgNow">0 / 0</span><span id="slipProgPct">0%</span></div>
     </div>
-    <div class="pm-f"><button id="slipProgClose">Cancel</button></div>
+    <div class="pm-f"><button data-action="slipprogclose" id="slipProgClose">Cancel</button></div>
   </div>
 </div>
 <div id="slipStage"></div>
@@ -3903,7 +3903,7 @@ document.addEventListener("DOMContentLoaded",init);
 <nav class="bottom-nav" id="bottom-nav"></nav>
 
 <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">
-<button id="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
+<button id="st-v5-home-fab" data-action="st-v5-home-fab" type="button" title="Back to Home (Esc)"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></button>
 <div id="st-v5-next-chips"></div>
 <script id="st-v5-back-script">SaagarModuleRuntime.run('back',{schemaVersion:1,moduleId:'payroll',nextSteps:[],customerSelectors:[],accessContext:false});</script>
 
