@@ -37,6 +37,29 @@ const MAIN_ACTIVITY = path.join(ANDROID_PKG_DIR, 'MainActivity.java');
 const BUILD_GRADLE = path.join(__dirname, '..', 'android', 'app', 'build.gradle');
 const ANDROID_VARIABLES = path.join(__dirname, '..', 'android', 'variables.gradle');
 
+const signing = `
+    // SAAGAR_RELEASE_SIGNING_BEGIN — release builds fail closed unless the production key is supplied.
+    signingConfigs {
+        release {
+            def ks = System.getenv("SAAGAR_KEYSTORE_FILE")
+            def ksp = System.getenv("SAAGAR_KEYSTORE_PASSWORD")
+            def ka = System.getenv("SAAGAR_KEY_ALIAS")
+            def kap = System.getenv("SAAGAR_KEY_PASSWORD")
+            def wantsRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }
+            if (wantsRelease && (!ks || !ksp || !ka || !kap)) {
+                throw new GradleException("Signed release blocked: set SAAGAR_KEYSTORE_FILE, SAAGAR_KEYSTORE_PASSWORD, SAAGAR_KEY_ALIAS and SAAGAR_KEY_PASSWORD")
+            }
+            if (ks && ksp && ka && kap) {
+                storeFile file(ks)
+                storePassword ksp
+                keyAlias ka
+                keyPassword kap
+            }
+        }
+    }
+    // SAAGAR_RELEASE_SIGNING_END
+`;
+
 /* The exact MainActivity form that registers the in-app plugin (Capacitor 6: registerPlugin BEFORE super.onCreate). */
 const MAIN_ACTIVITY_REGISTERED =
 `package com.saagartraders.bcc;
@@ -110,29 +133,19 @@ function applyReleaseHardening() {
   gradle = gradle.replace(/versionCode\s+\d+/, 'versionCode ' + BUILD_IDENTITY.versionCode);
   gradle = gradle.replace(/versionName\s+"[^"]*"/, 'versionName "' + BUILD_IDENTITY.versionName + '"');
 
-  if (gradle.indexOf('SAAGAR_RELEASE_SIGNING_BEGIN') === -1) {
-    const signing = `
-    // SAAGAR_RELEASE_SIGNING_BEGIN — release builds fail closed unless the production key is supplied.
-    signingConfigs {
-        release {
-            def ks = System.getenv("SAAGAR_KEYSTORE_FILE")
-            def ksp = System.getenv("SAAGAR_KEYSTORE_PASSWORD")
-            def ka = System.getenv("SAAGAR_KEY_ALIAS")
-            def kap = System.getenv("SAAGAR_KEY_PASSWORD")
-            def wantsRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains("release") }
-            if (wantsRelease && (!ks || !ksp || !ka || !kap)) {
-                throw new GradleException("Signed release blocked: set SAAGAR_KEYSTORE_FILE, SAAGAR_KEYSTORE_PASSWORD, SAAGAR_KEY_ALIAS and SAAGAR_KEY_PASSWORD")
-            }
-            if (ks && ksp && ka && kap) {
-                storeFile file(ks)
-                storePassword ksp
-                keyAlias ka
-                keyPassword kap
-            }
-        }
+  const signingBlock = /\s*\/\/ SAAGAR_RELEASE_SIGNING_BEGIN[^\n]*[\s\S]*?\/\/ SAAGAR_RELEASE_SIGNING_END\s*/g;
+  const signingMatches = gradle.match(signingBlock) || [];
+  if (signingMatches.length > 1) {
+    console.error('[apply-overrides] FATAL: duplicate release-signing authority blocks found');
+    process.exit(1);
+  }
+  if (signingMatches.length === 1) {
+    gradle = gradle.replace(signingBlock, '\n' + signing);
+  } else {
+    if (/signingConfigs\s*\{[\s\S]*?release\s*\{/.test(gradle)) {
+      console.error('[apply-overrides] FATAL: ungoverned release signing configuration found');
+      process.exit(1);
     }
-    // SAAGAR_RELEASE_SIGNING_END
-`;
     gradle = gradle.replace(/android\s*\{/, match => match + signing);
   }
   /* Repair the pre-R1 matcher if it ever put build-type properties inside
