@@ -1,6 +1,6 @@
 # Phase 6C Planning source proof — 2026-08-24
 
-**Status:** source proof complete; independent visible-browser gate pending.
+**Status:** Planning source and visible-browser proof accepted.
 
 ## Implemented boundary
 
@@ -32,8 +32,12 @@ rewrite that receipt to imply the new external-asset build has been visually rev
 - preparation rerun: byte-identical/idempotent
 - `git diff --check`: clean
 
-## Remaining gate
+## Visible-browser receipt
 
-Complete an independent visible-browser Planning before/after comparison at 360x800, 412x915,
-800x600 and 1365x768, with the Phase 6 boundary widths where applicable. Until that passes, do
-not migrate the remaining ten legacy modules and do not claim Phase 6C closure.
+The external-asset build and reconstructed inline baseline produced byte-identical viewport PNGs
+and identical document dimensions at 360x800, 412x915, 800x600 and 1365x768. The same exact match
+passed at 639/640, 899/900 and 1199/1200. Every page reached `readyState=complete`, loaded the
+expected common/legacy cascade, and retained `bcc-mobile` mode.
+
+Planning is accepted as the Phase 6C canary. The remaining gate is the mechanical rollout and
+equivalence proof for the other ten allowlisted legacy modules.

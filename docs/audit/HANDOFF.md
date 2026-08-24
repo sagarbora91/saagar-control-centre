@@ -3,7 +3,21 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6C.2 Planning source proof built; visual gate pending — 2026-08-24
+## RESUME HERE — Phase 6C.2 Planning proof accepted; roll remaining ten — 2026-08-24
+
+### Phase 6C.2 visual checkpoint
+
+The independent visible-browser comparison is complete. The extracted Planning build and its
+byte-exact reconstructed inline baseline produced identical viewport PNG bytes and identical
+layout dimensions at 360x800, 412x915, 800x600 and 1365x768. Boundary comparisons at 639/640,
+899/900 and 1199/1200 also matched exactly. The temporary comparison server is tracked at
+`scripts/phase6c-planning-visual-server.mjs` so the proof can be repeated.
+
+Planning is therefore accepted as the Phase 6C canary. Resume by mechanically migrating only
+the remaining ten allowlisted legacy modules, preserving Service, QMS and Payroll deltas after
+the legacy import and keeping ETP unlinked and byte-identical.
+
+## Historical resume point — Phase 6C.2 Planning source proof built; visual gate pending — 2026-08-24
 
 ### Phase 6C.2 crash checkpoint
 
