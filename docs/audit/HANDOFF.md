@@ -3,7 +3,21 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6A locally implemented; checkpoint pending — 2026-08-24
+## RESUME HERE — Phase 6B active; foundation checkpoint frozen — 2026-08-24
+
+### Phase 6B active checkpoint
+
+Phase 6B has started and now has three local commits: `71985c4`, `efb521d`, and `8db6224`.
+Planning, ETP, and Stock identity batches are frozen; ETP Foundation-v1 readiness/query
+contracts, parent-owned summary reads, opaque cursor binding, sanitized import history, and the
+versioned tender dictionary are implemented. Current validation is Phase 0 30/30, ETP 212/212,
+and manifest/MH1 16/16. The detailed checkpoint is:
+
+`verification/audit/PHASE-6B-FOUNDATION-CHECKPOINT-2026-08-24.md`
+
+Resume 6B with the HEMW build-owned profile authority and remaining module identity families.
+Do not claim 6B complete: history/tender runtime integration, HEMW authority binding, remaining
+identities, adversarial exit, and capability-ledger refresh are still pending.
 
 Phase 6A repository work has been implemented and validated locally. The isolated CI
 containment commit is `08c156f` (`fix(ci): contain debug artifacts to read-only runs`). It has
