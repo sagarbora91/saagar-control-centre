@@ -1,6 +1,6 @@
 # Phase 6C legacy mobile rollout — 2026-08-24
 
-**Status:** eleven-module source rollout complete; governed current-profile closure pending.
+**Status:** Phase 6C engineering closure complete; current and historical profiles are separately governed.
 
 ## Result
 
@@ -30,8 +30,15 @@ The six modular failures are historical MAH3 whole-www/Planning canary and MAH4 
 fingerprint receipts. Phase 6C legitimately changes the source tree, so those receipts are stale.
 They remain preserved as historical evidence and were not modified to imply current review.
 
-## Next crash-safe action
+## Governed closure
 
-Create a distinct governed Phase 6C current-profile receipt for the extracted tree, retain links
-to the historical receipts, rerun the complete offline gate, refresh Graphify, and only then mark
-Phase 6C engineering closed.
+The distinct current receipt is
+`verification/audit/PHASE-6C-CURRENT-SOURCE-PROFILE-2026-08-24.json`. It binds the current WWW
+fingerprint, manifest, eleven imports, three deltas, ETP exclusion and the machine-readable
+Planning visual receipt. The historical MAH3/MAH4 validators explicitly reject the current tree
+and pass only against byte-exact reconstructed pre-Phase6C authority; their evidence files remain
+unchanged.
+
+Registered modular tests pass **88/88**. The complete offline gate passes, including its final
+**275/275** test group, and Phase 0 passes **72/72**. No APK, signing, device, Firebase,
+publication or push action occurred during Phase 6C closure.

@@ -8,12 +8,18 @@ import {
   SHELL_TO_MODULE_TYPES,
   validateMah4Profile
 } from '../scripts/lib/mah4-contract-source.mjs';
+import fs from 'node:fs';
+import { createPrePhase6cWorkspace } from './lib/phase6c-historical-root.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const inventory = createMah4Inventory(root);
+const historicalRoot = createPrePhase6cWorkspace(root);
+const inventory = createMah4Inventory(historicalRoot);
+process.on('exit', () => fs.rmSync(historicalRoot, { recursive: true, force: true }));
 
-test('MAH-4 frozen inventory matches the exact Stage B product tree', () => {
-  const profile = validateMah4Profile(root);
+test('historical MAH-4 frozen inventory matches reconstructed pre-Phase6C product authority', () => {
+  assert.throws(() => validateMah4Profile(root), /does not match current source/,
+    'historical MAH-4 evidence must reject the current Phase 6C tree');
+  const profile = validateMah4Profile(historicalRoot);
   assert.equal(profile.schemaVersion, 3);
   assert.equal(profile.profileId, inventory.profileId);
   assert.equal(profile.upstream.currentWwwTreeSha256, inventory.upstream.currentWwwTreeSha256);

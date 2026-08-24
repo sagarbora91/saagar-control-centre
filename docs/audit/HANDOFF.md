@@ -3,9 +3,9 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6C.3 rollout complete; close governed profile receipts — 2026-08-24
+## RESUME HERE — Phase 6C engineering closed; begin Phase 6D foundation — 2026-08-24
 
-### Phase 6C.3 crash checkpoint
+### Phase 6C closure checkpoint
 
 All eleven allowlisted legacy modules now import the single canonical legacy mobile asset. The
 eight canonical modules have no residual delta; Service, QMS and Payroll retain only their exact
@@ -13,11 +13,12 @@ bounded post-link deltas. Every module reconstructs its pre-extraction source by
 remains 34,473 bytes, SHA-256 `b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12`,
 unlinked and byte-identical.
 
-Phase 0 is **70/70**, security is **101/101**, focused rollout/manifest/API-23/capability tests are
-green, and the rollout is idempotent. Modular is **80/86**: its only six failures are preserved
-historical MAH3/MAH4 whole-tree identity receipts made stale by this authorized source relocation.
-They were not silently repinned or relabeled. Resume by recording the governed current Phase 6C
-profile/closure receipt, then rerun the complete offline gate. Controlling rollout record:
+Phase 0 is **72/72**, modular is **88/88**, focused rollout/manifest/API-23/capability tests are
+green, and the complete offline gate passes, including its final **275/275** group. Historical
+MAH3/MAH4 evidence remains unchanged: its validators reject the current tree and pass only against
+reconstructed pre-Phase6C authority. The separate current source and Planning visual receipts bind
+the extracted tree without relabeling history. Resume at Phase 6D's opt-in shared UI foundation.
+Controlling rollout record:
 
 `verification/audit/PHASE-6C-LEGACY-ROLLOUT-2026-08-24.md`
 

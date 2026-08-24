@@ -13,6 +13,7 @@ import {
   createWwwFingerprint,
   validateBaseline
 } from '../scripts/mah3-visual-review-server.mjs';
+import { createPrePhase6cWorkspace } from './lib/phase6c-historical-root.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const profilePath = path.join(root, 'verification', 'MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json');
@@ -22,6 +23,9 @@ const mh1 = JSON.parse(fs.readFileSync(mh1Path, 'utf8'));
 const reviewScript = fs.readFileSync(path.join(root, 'verification', 'mah3-visual-review', 'review-controller.js'), 'utf8');
 const reviewHtml = fs.readFileSync(path.join(root, 'verification', 'mah3-visual-review', 'index.html'), 'utf8');
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+const historicalRoot = createPrePhase6cWorkspace(root);
+const historicalProfilePath = path.join(historicalRoot, 'verification', 'MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json');
+process.on('exit', () => fs.rmSync(historicalRoot, { recursive: true, force: true }));
 
 function inlineBlock(html, id) {
   const expression = new RegExp(`<script\\b[^>]*id=["']${id}["'][^>]*>([\\s\\S]*?)<\\/script>`, 'i');
@@ -30,9 +34,11 @@ function inlineBlock(html, id) {
   return match[1];
 }
 
-test('MAH-3 baseline is bound to the exact dirty www tree and critical files', () => {
-  const verified = validateBaseline(root, profilePath);
-  const actual = createWwwFingerprint(root);
+test('historical MAH-3 baseline remains bound to the reconstructed pre-Phase6C tree', () => {
+  assert.throws(() => validateBaseline(root, profilePath), /source fingerprint mismatch/,
+    'historical MAH-3 evidence must reject the current Phase 6C tree');
+  const verified = validateBaseline(historicalRoot, historicalProfilePath);
+  const actual = createWwwFingerprint(historicalRoot);
   assert.equal(verified.profile.profileId, 'mah3-shared-runtime-baseline-2026-08-06');
   assert.deepEqual(verified.fingerprint, {
     algorithm: actual.algorithm,
@@ -60,8 +66,8 @@ test('MAH-3 evidence runner covers the MAH-1 180-case matrix', () => {
   assert.ok(cases.every(item => !/(?:[a-z]+:)?\/\//i.test(item.src)));
 });
 
-test('MAH-3 Planning canary pins the extracted runtime and preserves parser order', () => {
-  const planningPath = path.join(root, 'www', 'modules', 'planning', 'index.html');
+test('historical MAH-3 Planning canary pins reconstructed inline source and preserves parser order', () => {
+  const planningPath = path.join(historicalRoot, 'www', 'modules', 'planning', 'index.html');
   const planningBytes = fs.readFileSync(planningPath);
   const planning = planningBytes.toString('utf8');
   const candidate = profile.sharedRuntimeCandidates.planning;
@@ -117,7 +123,7 @@ test('MAH-3 server refuses a stale source profile before listening', () => {
   stale.sourceFingerprint.treeSha256 = '0'.repeat(64);
   fs.writeFileSync(stalePath, JSON.stringify(stale));
   assert.throws(
-    () => createReviewServer({ root, profilePath: stalePath }),
+    () => createReviewServer({ root: historicalRoot, profilePath: stalePath }),
     /source fingerprint mismatch: treeSha256/
   );
 });
