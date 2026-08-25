@@ -87,6 +87,7 @@ export function createV6EtpGate0Freeze() {
         rolePolicy: {
           declarationRoles: ['STAFF', 'STORE_MANAGER', 'OWNER'],
           checkerCloseImportRoles: ['STORE_MANAGER', 'OWNER'],
+          reconciliationRoles: ['STORE_MANAGER', 'OWNER'],
           correctionWindowHours: 24,
           correctionWindowRoles: ['STORE_MANAGER', 'OWNER'],
           postWindowCorrectionRoles: ['OWNER'],

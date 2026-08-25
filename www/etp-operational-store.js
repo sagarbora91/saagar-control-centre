@@ -23,7 +23,7 @@
     if(!foundation||typeof foundation.createOverlay!=='function'||typeof foundation.createPortableBackup!=='function'||typeof foundation.restorePortableBackup!=='function'||typeof foundation.rebindVerifiedScope!=='function'||typeof foundation.canReadVerifiedScope!=='function')return fail('ETP_STORE_FOUNDATION_REQUIRED');
     var items={},audit=[],restored=null;
     function key(v){return v.storeCode+'|'+v.financialYear+'|'+v.scopeKey+'|'+v.domain+'|'+v.overlayId;}
-    function event(type,item,revision,at){return freeze({sequence:audit.length+1,type:type,key:key(item),domain:item.domain,storeCode:item.storeCode,financialYear:item.financialYear,scopeKey:item.scopeKey,overlayId:item.overlayId,revision:revision,at:at});}
+    function event(type,item,revision,at,sequence){return freeze({sequence:sequence||audit.length+1,type:type,key:key(item),domain:item.domain,storeCode:item.storeCode,financialYear:item.financialYear,scopeKey:item.scopeKey,overlayId:item.overlayId,revision:revision,at:at});}
     function put(value,expectedRevision){
       var clean=input(value),prior,k,foundationOverlay;if(!clean)return fail('ETP_STORE_OVERLAY_INVALID');k=key(clean);prior=items[k]||null;
       if(!Number.isSafeInteger(expectedRevision)||expectedRevision<0)return fail('ETP_STORE_REVISION_INVALID');
@@ -42,9 +42,18 @@
       if(!exact(filter,['domain','storeCode','financialYear','scopeKey'])||DOMAINS.indexOf(filter.domain)<0)return fail('ETP_STORE_QUERY_INVALID');var s=scope(filter.scopeKey);if(!s||s.storeCode!==filter.storeCode||s.financialYear!==filter.financialYear)return fail('ETP_STORE_QUERY_INVALID');
       var out=Object.keys(items).map(function(k){return items[k];}).filter(function(x){var o=x.overlay;return o.domain===filter.domain&&o.storeCode===filter.storeCode&&x.financialYear===filter.financialYear&&o.scopeKey===filter.scopeKey;}).sort(function(a,b){return a.overlay.overlayId.localeCompare(b.overlay.overlayId);}).map(function(x){return freeze({revision:x.revision,overlay:x.overlay});});return freeze({ok:true,items:out});
     }
-    function exportPortable(createdAt){var overlays=Object.keys(items).sort().map(function(k){return items[k].overlay;});return overlays.length?foundation.createPortableBackup(overlays,createdAt):fail('ETP_STORE_EMPTY');}
+    function portableE3(overlay){var payload=clone(overlay.payload),record=payload&&payload.record,parsed,day,assignments={},audit;
+      if(!payload||payload.kind!=='E3_ORCHESTRATOR_STATE'||!record||typeof record.day!=='string')return overlay;
+      try{parsed=JSON.parse(record.day);}catch(_){return null;}day=parsed&&parsed.day;
+      if(!rec(parsed)||parsed.schemaVersion!==1||parsed.version!=='ETP_CRO_RECONCILIATION_V1'||!rec(day)||!Array.isArray(day.declarations)||!Array.isArray(day.audit)||!Array.isArray(day.dispositions))return null;
+      day.declarations.forEach(function(x){if(rec(x)&&typeof x.invoiceId==='string'&&typeof x.croId==='string')assignments[x.invoiceId]=x.croId;});
+      audit=day.audit.filter(function(x){return rec(x)&&['INVOICE_DECLARED','STATE_TRANSITION','ATTRIBUTION_CORRECTED','VARIANCE_DISPOSED'].indexOf(x.event)>=0;}).map(function(x,i){var clean=clone(x);clean.sequence=i+1;if(clean.event==='ATTRIBUTION_CORRECTED'){clean.before=null;if(rec(clean.after)&&typeof clean.after.invoiceId==='string'&&typeof clean.after.croId==='string')assignments[clean.after.invoiceId]=clean.after.croId;}return clean;});
+      day.sourceFacts=[];day.assignments=assignments;day.outcomes=[];day.unassignedQueue=[];day.audit=audit;record.day=JSON.stringify(parsed);
+      return foundation.createOverlay({domain:overlay.domain,storeCode:overlay.storeCode,scopeKey:overlay.scopeKey,overlayId:overlay.overlayId,updatedAt:overlay.updatedAt,payload:payload}).overlay||null;
+    }
+    function exportPortable(createdAt){var overlays=Object.keys(items).sort().map(function(k){var overlay=items[k].overlay;return overlay.domain==='E3'?portableE3(overlay):overlay;});if(overlays.some(function(x){return !x;}))return fail('ETP_STORE_PORTABLE_INVALID');return overlays.length?foundation.createPortableBackup(overlays,createdAt):fail('ETP_STORE_EMPTY');}
     function ingest(backup,restoredAt){var result=foundation.restorePortableBackup(backup,restoredAt);if(!result||result.ok!==true)return fail('ETP_STORE_RESTORE_INVALID');var staged={},stagedAudit=[];
-      for(var i=0;i<result.restored.overlays.length;i++){var o=result.restored.overlays[i],s=scope(o.scopeKey),clean=input({domain:o.domain,storeCode:o.storeCode,financialYear:s&&s.financialYear,scopeKey:o.scopeKey,overlayId:o.overlayId,updatedAt:o.updatedAt,payload:o.payload});if(!clean)return fail('ETP_STORE_RESTORE_INVALID');staged[key(clean)]={revision:1,overlay:o,financialYear:clean.financialYear};stagedAudit.push(event('RESTORED',clean,1,time(restoredAt)));}
+      for(var i=0;i<result.restored.overlays.length;i++){var o=result.restored.overlays[i],s=scope(o.scopeKey),clean=input({domain:o.domain,storeCode:o.storeCode,financialYear:s&&s.financialYear,scopeKey:o.scopeKey,overlayId:o.overlayId,updatedAt:o.updatedAt,payload:o.payload});if(!clean)return fail('ETP_STORE_RESTORE_INVALID');staged[key(clean)]={revision:1,overlay:o,financialYear:clean.financialYear};stagedAudit.push(event('RESTORED',clean,1,time(restoredAt),stagedAudit.length+1));}
       items=staged;audit=stagedAudit;restored=result.restored;return freeze({ok:true,count:Object.keys(items).length,scopes:restored.scopes});
     }
     function rebind(binding){if(!restored)return fail('ETP_STORE_NOT_RESTORED');var result=foundation.rebindVerifiedScope(restored,binding);if(!result||result.ok!==true)return result||fail('ETP_STORE_REBIND_INVALID');restored=result.restored;return freeze({ok:true,scopes:restored.scopes});}

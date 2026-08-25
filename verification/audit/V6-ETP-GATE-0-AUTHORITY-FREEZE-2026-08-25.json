@@ -36,13 +36,13 @@
   "contractBaselines": {
     "OPERATIONAL_FOUNDATION": {
       "path": "www/etp-operational-foundation.js",
-      "bytes": 8879,
-      "sha256": "2b7a36cd6d180d01398471d583abdb9395fa9f61d4592e40a17b003ff24bda58"
+      "bytes": 8927,
+      "sha256": "cc03dbfc31454b5dfa3b8ccef554c14909bdb20db0b668552d752e07ba775c68"
     },
     "OPERATIONAL_STORE": {
       "path": "www/etp-operational-store.js",
-      "bytes": 10548,
-      "sha256": "53c6d619369c18762836a7ba3a15aaf529cc9c559fbfeb454defb20f5e29c719"
+      "bytes": 12228,
+      "sha256": "1628d9ce9a21318b497c9ece638775c3d6a8b565698e9aabd94883e60997edc4"
     },
     "OPERATIONAL_ADAPTERS": {
       "path": "www/etp-operational-adapters.js",
@@ -66,13 +66,13 @@
     },
     "E3_ORCHESTRATOR": {
       "path": "www/etp-e3-orchestrator.js",
-      "bytes": 9829,
-      "sha256": "6eb3361e17aba7c81c66b611a67e389523389477a68dcabd6bcb67dc7b9fc037"
+      "bytes": 9899,
+      "sha256": "415ac766b9bbc85dea12f37fd1ec9e200415dbf0c9b3b4fd281fb5779a3173c5"
     },
     "E3_PRESENTATION": {
       "path": "www/etp-e3-presentation.js",
-      "bytes": 12257,
-      "sha256": "667e6304579c0285c8333ea62ea89184dd11227b174e75b1ec15a134406ed3e7"
+      "bytes": 12671,
+      "sha256": "a72eaf8a85719814d3965e9901099f26aea7f19ef8d1ce8a955bf5b2de4974bd"
     },
     "E4": {
       "path": "www/etp-target-planning.js",
@@ -106,8 +106,8 @@
     },
     "OPERATIONAL_BOOTSTRAP": {
       "path": "www/etp-operational-bootstrap.js",
-      "bytes": 9029,
-      "sha256": "8010200fbea985fbd103979d492a1d1f64d712c2e65070db83cd780148e0e89d"
+      "bytes": 9541,
+      "sha256": "0a653bbaecd78634295b88bb0f97a5931fe5eea37058a71a05a06dcfbcfbec59"
     },
     "OPERATIONAL_SHELL_COMPOSER": {
       "path": "www/etp-operational-shell-composer.js",
@@ -162,6 +162,10 @@
           "OWNER"
         ],
         "checkerCloseImportRoles": [
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "reconciliationRoles": [
           "STORE_MANAGER",
           "OWNER"
         ],

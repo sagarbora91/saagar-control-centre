@@ -3,13 +3,13 @@
   'use strict';
   var VERSION='ETP_OPERATIONAL_FOUNDATION_V1',DOMAINS=Object.freeze(['E3','E4','E6','E5','E7']),ROLES=Object.freeze(['Owner','Store Manager','Staff']),MAX_OVERLAYS=500,MAX_PAYLOAD_BYTES=65536,FRESH_MS=5*60*1000;
   var ACTIONS=Object.freeze({
-    E3:Object.freeze({DECLARE:['Staff','Store Manager','Owner'],CLOSE:['Store Manager','Owner'],IMPORT:['Store Manager','Owner'],CORRECT:['Store Manager','Owner'],CORRECT_AFTER_FREEZE:['Owner'],DISPOSE:['Store Manager','Owner'],LOCK:['Store Manager','Owner']}),
+    E3:Object.freeze({DECLARE:['Staff','Store Manager','Owner'],CLOSE:['Store Manager','Owner'],IMPORT:['Store Manager','Owner'],RECONCILE:['Store Manager','Owner'],CORRECT:['Store Manager','Owner'],CORRECT_AFTER_FREEZE:['Owner'],DISPOSE:['Store Manager','Owner'],LOCK:['Store Manager','Owner']}),
     E4:Object.freeze({PUBLISH:['Owner'],REVISE:['Owner'],REALLOCATE:['Owner']}),
     E6:Object.freeze({ACKNOWLEDGE:['Store Manager','Owner'],REASSIGN:['Owner'],CLOSE:['Store Manager','Owner']}),
     E5:Object.freeze({ACTIVATE_SCHEME:['Owner'],FINALIZE:['Owner'],PAYROLL_PRELOCK:['Owner']}),
     E7:Object.freeze({ACTIVATE_PROFILE:['Owner'],VERIFY:['Store Manager','Owner']})
   });
-  var PRIVILEGED=Object.freeze(['CLOSE','IMPORT','CORRECT','CORRECT_AFTER_FREEZE','DISPOSE','LOCK','PUBLISH','REVISE','REALLOCATE','ACKNOWLEDGE','REASSIGN','ACTIVATE_SCHEME','FINALIZE','PAYROLL_PRELOCK','ACTIVATE_PROFILE','VERIFY']);
+  var PRIVILEGED=Object.freeze(['CLOSE','IMPORT','RECONCILE','CORRECT','CORRECT_AFTER_FREEZE','DISPOSE','LOCK','PUBLISH','REVISE','REALLOCATE','ACKNOWLEDGE','REASSIGN','ACTIVATE_SCHEME','FINALIZE','PAYROLL_PRELOCK','ACTIVATE_PROFILE','VERIFY']);
   var FORBIDDEN=Object.freeze(['sourceFacts','rows','rawRows','workbook','customer','customerName','customerMobile','phone','email','address','aadhaar','pan']);
   function freeze(v){if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.keys(v).forEach(function(k){freeze(v[k]);});Object.freeze(v);}return v;}
   function fail(code){return freeze({ok:false,code:code});}
