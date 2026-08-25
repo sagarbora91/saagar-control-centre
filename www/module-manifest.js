@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 33) fail('sharedAssets must contain exactly thirty-three entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 34) fail('sharedAssets must contain exactly thirty-four entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -204,6 +204,7 @@
       ,{ id: 'etp-verified-presentation', file: 'etp-verified-presentation.js' }
       ,{ id: 'etp-verified-analytics', file: 'etp-verified-analytics.js' }
       ,{ id: 'etp-analytics-consumer', file: 'etp-analytics-consumer.js' }
+      ,{ id: 'etp-operational-foundation', file: 'etp-operational-foundation.js' }
       ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }
       ,{ id: 'etp-target-planning', file: 'etp-target-planning.js' }
       ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }
@@ -418,6 +419,13 @@
       "file": "etp-analytics-consumer.js",
       "bytes": 4850,
       "sha256": "a069996397f4720aeeb392544f35232939039dde6e69f61572df9a3223ef48a0"
+    },
+    {
+      "id": "etp-operational-foundation",
+      "version": 1,
+      "file": "etp-operational-foundation.js",
+      "bytes": 8879,
+      "sha256": "2b7a36cd6d180d01398471d583abdb9395fa9f61d4592e40a17b003ff24bda58"
     },
     {
       "id": "etp-cro-reconciliation",

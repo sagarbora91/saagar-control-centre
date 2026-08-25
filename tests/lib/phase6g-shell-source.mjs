@@ -12,6 +12,7 @@ export function restorePrePhase6gShellAssets(input) {
     .replace('<script src="etp-verified-analytics.js"></script>\n', '')
     .replace('<script src="etp-analytics-consumer.js"></script>\n', '')
     .replace('<script src="etp-cro-reconciliation.js"></script>\n', '')
+    .replace('<script src="etp-operational-foundation.js"></script>\n', '')
     .replace('<script src="etp-target-planning.js"></script>\n', '')
     .replace('<script src="etp-exception-monitor.js"></script>\n', '')
     .replace('<script src="etp-incentive-control.js"></script>\n', '')
