@@ -11,11 +11,15 @@ import {
   createRunnerFingerprint,
   validateBaseline
 } from '../scripts/mah3-visual-review-server.mjs';
+import { createPrePhase6cWorkspace, reconstructPrePhase6cWww } from './lib/phase6c-historical-root.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const profilePath = path.join(root, 'verification', 'MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json');
 const profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
+const historicalRoot = createPrePhase6cWorkspace(root);
+const historicalProfilePath = path.join(historicalRoot, 'verification', 'MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json');
+process.on('exit', () => fs.rmSync(historicalRoot, { recursive: true, force: true }));
 
 function copyFile(source, destination) {
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -31,6 +35,7 @@ function copyHarness(tempRoot) {
     'verification/mah3-visual-review/review.css',
     'verification/mah3-visual-review/review-controller.js'
   ]) copyFile(path.join(root, relative), path.join(tempRoot, relative));
+  reconstructPrePhase6cWww(tempRoot);
 }
 
 function rawRequest(port, requestPath, method = 'GET') {
@@ -49,8 +54,8 @@ function rawRequest(port, requestPath, method = 'GET') {
   });
 }
 
-test('MAH-3 profile hash, runner hash, and exact matrix reject drift', () => {
-  const verified = validateBaseline(root, profilePath);
+test('historical MAH-3 profile, runner and matrix validate against reconstructed pre-Phase6C authority', () => {
+  const verified = validateBaseline(historicalRoot, historicalProfilePath);
   assert.equal(verified.profileSha256, sha256(fs.readFileSync(profilePath)));
   assert.deepEqual(verified.runnerFingerprint, createRunnerFingerprint(root));
   assert.deepEqual(
@@ -69,7 +74,7 @@ test('MAH-3 profile hash, runner hash, and exact matrix reject drift', () => {
     const malformed = structuredClone(profile);
     malformed.matrix.languages = ['en', 'hi', 'mr'];
     fs.writeFileSync(malformedPath, JSON.stringify(malformed));
-    assert.throws(() => validateBaseline(root, malformedPath), /exact 168-case contract/);
+    assert.throws(() => validateBaseline(historicalRoot, malformedPath), /exact 180-case contract/);
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }

@@ -140,6 +140,12 @@ function evaluateModule(id, options) {
   });
   assert.ok(source, `${id} calculation script must exist`);
   const context = browserContext(options);
+  vm.runInContext(fs.readFileSync(path.join(rootDir, 'www/shared/module-bridge.js'), 'utf8'), context, {
+    filename: 'shared/module-bridge.js'
+  });
+  vm.runInContext(fs.readFileSync(path.join(rootDir, 'www/shared/module-runtime.js'), 'utf8'), context, {
+    filename: 'shared/module-runtime.js'
+  });
   vm.runInContext(source, context, { filename: `${id}.embedded.html` });
   return context;
 }

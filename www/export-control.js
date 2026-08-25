@@ -114,9 +114,9 @@
     try { return typeof root.hasAdminPin === 'function' && !!root.hasAdminPin(); }
     catch (_) { return false; }
   }
-  function reauth(reason) {
+  async function reauth(reason) {
     try {
-      return typeof root.SaagarReauth === 'function' && !!root.SaagarReauth(reason);
+      return typeof root.SaagarReauth === 'function' && (await root.SaagarReauth(reason)) === true;
     } catch (_) {
       return false; // export control is intentionally fail-closed
     }
@@ -177,7 +177,7 @@
     });
     return false;
   }
-  function authorize(meta) {
+  async function authorize(meta) {
     var detail = safeMeta(meta);
     try {
       if (root.SaagarDeviceSecurity && typeof root.SaagarDeviceSecurity.allowSensitive === 'function' &&
@@ -202,7 +202,7 @@
       notify('Set an Admin PIN before enabling or using exports.');
       return deny('admin-pin-required', detail);
     }
-    if (!reauth('Approve export: ' + detail.scopeLabel + (detail.rowCount ? ' (' + detail.rowCount + ' rows/files)' : ''))) {
+    if (!await reauth('Approve export: ' + detail.scopeLabel + (detail.rowCount ? ' (' + detail.rowCount + ' rows/files)' : ''))) {
       notify('Export cancelled — owner approval was not completed.');
       return deny('owner-approval-denied', detail);
     }
@@ -247,14 +247,14 @@
       return false;
     }
   }
-  function approveScheduled(meta) {
+  async function approveScheduled(meta) {
     var detail = safeMeta(meta), destinationId = cleanCode(meta && meta.destinationId, '', 80);
     if (!destinationId) { notify('Choose a verified off-device backup folder first.'); return false; }
     if (!postureAllowsScheduled()) return false;
     var policy = readPolicy();
     if (policy.damaged || !policy.enabled) { notify('Enable file and bulk-data exports before setting up automatic backup.'); return false; }
     if (!hasPin()) { notify('Set an Admin PIN before setting up automatic backup.'); return false; }
-    if (!reauth('Approve automatic encrypted backup to the selected off-device folder')) return false;
+    if (!await reauth('Approve automatic encrypted backup to the selected off-device folder')) return false;
     var grant = {
       enabled: true,
       destinationId: destinationId,
@@ -282,9 +282,9 @@
     audit('export.schedule.authorized', { exportId: saved.token, scopeId: detail.scopeId, module: detail.module, rowCount: detail.rowCount });
     return saved.token;
   }
-  function revokeScheduled() {
+  async function revokeScheduled() {
     if (!hasPin()) { notify('Set an Admin PIN before changing automatic backup.'); return false; }
-    if (!reauth('Disable automatic encrypted off-device backup')) return false;
+    if (!await reauth('Disable automatic encrypted off-device backup')) return false;
     if (!removeRaw(SCHEDULE_KEY)) { notify('Automatic-backup approval could not be removed.'); return false; }
     audit('export.schedule.revoked', { updatedBy: ownerActor() });
     return true;
@@ -315,13 +315,13 @@
     if (ok) audit('export.delivery.started', { exportId: token });
     return ok;
   }
-  function setEnabled(enabled) {
+  async function setEnabled(enabled) {
     enabled = enabled === true;
     if (!hasPin()) {
       notify('Set an Admin PIN before changing export control.');
       return false;
     }
-    if (!reauth((enabled ? 'Enable' : 'Disable') + ' file and bulk-data exports')) return false;
+    if (!await reauth((enabled ? 'Enable' : 'Disable') + ' file and bulk-data exports')) return false;
     var policy = { enabled: enabled, updatedAt: nowIso(), updatedBy: ownerActor() };
     if (!setRaw(POLICY_KEY, JSON.stringify(policy))) {
       notify('Export policy could not be saved.');

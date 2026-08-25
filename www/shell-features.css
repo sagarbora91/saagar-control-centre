@@ -1,0 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   ADDITIVE SHELL FEATURES — build badge, universal feature-search results,
+   module-load error affordance. Tokens only (navy/gold/grays/radius/fonts).
+   Nothing here overrides a redesign rule; all selectors are new ids/classes.
+   ═══════════════════════════════════════════════════════════════════════ */
+/* Build badge (topbar corner) */
+.build-badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;
+  font:800 10px/1 var(--font-sans);letter-spacing:.07em;text-transform:uppercase;flex:none;
+  border:1px solid transparent;box-shadow:var(--shadow-sm);user-select:none}
+.build-badge[hidden]{display:none}
+.build-badge.demo{background:var(--gold-pale);color:var(--gold);border-color:#efe2b8}
+.build-badge.test{background:var(--navy);color:var(--gold-light);border-color:var(--navy)}
+.build-badge.prod{background:var(--gray-100);color:var(--gray-600);border-color:var(--gray-200)}
+@media(max-width:380px){.build-badge{display:none}}   /* keep tiny phones uncluttered */
+
+/* Universal feature-search results — grouped, beneath the module tiles */
+.feat-group{margin-top:6px}
+.feat-group .feat-count{display:inline-block;margin-left:6px;font:800 11px var(--font-sans);color:var(--gold);
+  background:var(--gold-pale);border:1px solid #efe2b8;border-radius:999px;padding:1px 7px;vertical-align:middle}
+.feat-modgrp{margin:0 0 10px}
+.feat-modgrp-h{font:800 11px/1 var(--font-sans);letter-spacing:.05em;text-transform:uppercase;
+  color:var(--gray-500);margin:8px 2px 6px}
+.feat-row{display:flex;align-items:center;gap:11px;width:100%;text-align:left;min-height:48px;
+  padding:9px 12px;margin-bottom:7px;background:var(--paper);border:1px solid var(--gray-200);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);color:var(--navy);font:inherit;cursor:pointer;
+  transition:transform .12s,border-color .12s}
+.feat-row:hover{border-color:var(--gold)}
+.feat-row:active{transform:scale(.99);background:var(--gray-50)}
+.feat-row .feat-ic{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;
+  font-size:16px;background:var(--gold-pale);border:1px solid #efe2b8}
+.feat-row .feat-lbl{flex:1;min-width:0;font:600 14px var(--font-sans);line-height:1.25}
+.feat-row .feat-go{flex:none;color:var(--gold);font-size:18px;line-height:1}
+
+/* Module-load error affordance — overlays the frame exactly where the loader sat */
+.mod-load-error{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;gap:12px;
+  align-items:center;justify-content:center;width:100%;height:100%;
+  background:var(--cream);border:0;cursor:pointer;font:inherit;color:var(--navy);padding:24px;text-align:center}
+.mod-load-error.on{display:flex}
+.mod-load-error .mle-ic{font-size:34px;line-height:1}
+.mod-load-error .mle-txt{font:700 15px var(--font-sans);color:var(--navy)}
+.mod-load-error::after{content:'Tap anywhere to try again';font:600 12px var(--font-sans);color:var(--gray-500)}

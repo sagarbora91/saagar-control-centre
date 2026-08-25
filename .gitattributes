@@ -12,6 +12,11 @@
 www/** text eol=lf
 verification/** text eol=lf
 
+# Evidence images under verification must remain binary after the recursive rule.
+verification/**/*.png binary
+verification/**/*.jpg binary
+verification/**/*.jpeg binary
+
 # Reassert binary handling after the recursive source rules above.
 www/**/*.wasm binary
 www/**/*.apk binary

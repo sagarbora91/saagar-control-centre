@@ -1,0 +1,483 @@
+{
+  "auditId": "A8",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "PII_FLOW_STATIC_ANALYSIS_INCOMPLETE"
+        }
+      ],
+      "id": "A8-01",
+      "mandatory": true,
+      "metric": {
+        "highConfidenceFlows": 0,
+        "runtimeFiles": 94,
+        "staticAbsenceIsProof": false
+      },
+      "notes": "A definite static flow fails. Regex absence cannot prove end-to-end non-flow and remains unmeasured; evidence never includes values or call text.",
+      "result": "unmeasured",
+      "rule": "A PII-bearing identifier must not reach console, network or direct share sinks outside an export-controlled delivery function.",
+      "severity": "P0",
+      "title": "PII flow to unapproved sinks"
+    },
+    {
+      "evidence": [
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "onsuccess",
+          "line": 5276,
+          "path": "www/index.html",
+          "sink": "POPUP"
+        },
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "sendPrint",
+          "line": 4272,
+          "path": "www/modules/service/index.html",
+          "sink": "PRINT"
+        }
+      ],
+      "id": "A8-02",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 4,
+        "bypasses": 2,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedPaths": 6
+      },
+      "notes": "Names such as token, SaagarExportControl or beginDelivery do not authorize a sink unless the control is invoked and denial returns or throws before delivery.",
+      "result": "fail",
+      "rule": "Every reachable download, print, popup, browser share or native share delivery must have a structural fail-closed begin-delivery guard, or be a helper whose every call site has that guard.",
+      "severity": "P0",
+      "title": "Export policy bypass"
+    },
+    {
+      "evidence": [
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "runBackupInner",
+          "line": 438,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "authorizePublication",
+          "line": 74,
+          "path": "www/etp-import-runtime.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "promptVerifyOnlyResult",
+          "line": 1690,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 1720,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2306,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2465,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2531,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2941,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "authorizeMessage",
+          "line": 562,
+          "path": "www/legal-control.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "applyCroLeaveFilter",
+          "line": 2506,
+          "path": "www/modules/cro_audit/index.html"
+        }
+      ],
+      "id": "A8-03",
+      "mandatory": true,
+      "metric": {
+        "affectedFunctions": 81,
+        "failOpenPaths": 10,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedPaths": 237
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "An authentication, authorization or PIN control must deny when its required control is absent or throws.",
+      "severity": "P0",
+      "title": "Fail-open authentication and PIN controls"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_INCOMPLETE"
+        }
+      ],
+      "id": "A8-04",
+      "mandatory": true,
+      "metric": {
+        "binaryFilesSkipped": 3,
+        "scannedBytes": 18306287,
+        "scannedTextFiles": 431,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "trackedFiles": 434,
+        "unresolvedFiles": 0,
+        "verifiedSecretPatterns": 0
+      },
+      "notes": "The report emits only rule identifier, file, line and one-way fingerprint; suspected values are never emitted.",
+      "result": "unmeasured",
+      "rule": "Every tracked nonbinary text file must be bounded-scanned for private keys, secret-bearing files and high-confidence credential formats.",
+      "severity": "P0",
+      "title": "Tracked secret scan"
+    },
+    {
+      "evidence": [
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ba691ba042bcedd9a61a",
+          "kind": "XHR",
+          "line": 30,
+          "path": "www/etp-import-ui.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ba691ba042bcedd9a61a",
+          "kind": "MESSAGE",
+          "line": 15,
+          "path": "www/etp-import-worker.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "27f576cafbb263ed44be",
+          "kind": "MESSAGE",
+          "line": 6,
+          "path": "www/etp-worker-client.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2015,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2071,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 5084,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "01bededb9826580faddb",
+          "kind": "NAVIGATION",
+          "line": 5153,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "6b86b273ff34fce19d6b",
+          "kind": "XHR",
+          "line": 5234,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "28e5ebabd9d8f6e237df",
+          "kind": "NAVIGATION",
+          "line": 5276,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "6c9c3621fad39d62493a",
+          "kind": "NAVIGATION",
+          "line": 5459,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "d74ff0ee8da3b9806b18",
+          "kind": "XHR",
+          "line": 6097,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "d74ff0ee8da3b9806b18",
+          "kind": "XHR",
+          "line": 6434,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "839f7564e59ff692e004",
+          "kind": "NAVIGATION",
+          "line": 6990,
+          "path": "www/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "25a6634263c1b1f6fc46",
+          "kind": "NAVIGATION",
+          "line": 154,
+          "path": "www/module-manifest.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 1283,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 1298,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "3262cc0000b67a32a5ed",
+          "kind": "NAVIGATION",
+          "line": 2023,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 1777,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2453,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2478,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2554,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2863,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 2990,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 3134,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 3249,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 4265,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 4528,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 4683,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "181fdd46fc4a7246b9f4",
+          "kind": "MESSAGE",
+          "line": 21,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "181fdd46fc4a7246b9f4",
+          "kind": "MESSAGE",
+          "line": 22,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "181fdd46fc4a7246b9f4",
+          "kind": "MESSAGE",
+          "line": 24,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "181fdd46fc4a7246b9f4",
+          "kind": "MESSAGE",
+          "line": 30,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "7a80cbfea314913c8a70",
+          "kind": "NAVIGATION",
+          "line": 31,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "181fdd46fc4a7246b9f4",
+          "kind": "MESSAGE",
+          "line": 33,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "aed17df939aa2729f296",
+          "kind": "MESSAGE",
+          "line": 17,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "726f1c6f9665a680beaf",
+          "kind": "MESSAGE",
+          "line": 31,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "4d634a7a7c2695b16a5f",
+          "kind": "NAVIGATION",
+          "line": 92,
+          "path": "www/shared/shell-module-frame-controller.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "3e23e8160039594a3389",
+          "kind": "FETCH",
+          "line": 100,
+          "path": "www/sql-wasm.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ba691ba042bcedd9a61a",
+          "kind": "XHR",
+          "line": 129,
+          "path": "www/sql-wasm.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ca978112ca1bbdcafac2",
+          "kind": "XHR",
+          "line": 96,
+          "path": "www/sql-wasm.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ca978112ca1bbdcafac2",
+          "kind": "FETCH",
+          "line": 97,
+          "path": "www/sql-wasm.js"
+        },
+        {
+          "code": "DYNAMIC_REMOTE_TARGET_UNRESOLVED",
+          "expressionFingerprint": "ca978112ca1bbdcafac2",
+          "kind": "XHR",
+          "line": 97,
+          "path": "www/sql-wasm.js"
+        }
+      ],
+      "id": "A8-05",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 13,
+        "allowedLiteralPrefixes": 4,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unapprovedRemoteCalls": 0,
+        "unresolvedDynamicTargets": 42
+      },
+      "notes": "At least one dynamic network, navigation or message target could not be resolved statically.",
+      "result": "unmeasured",
+      "rule": "Shipped runtime must not contain a reachable literal external request, remote asset, navigation or message target outside approved contexts; dynamic targets must be resolved before pass.",
+      "severity": "P0",
+      "title": "Unapproved remote runtime behavior"
+    }
+  ],
+  "metrics": {
+    "authFailOpenPaths": 10,
+    "authUnresolvedPaths": 237,
+    "exportBypasses": 2,
+    "exportUnresolvedPaths": 6,
+    "piiFlowFindings": 0,
+    "remoteFindings": 0,
+    "remoteUnresolved": 42,
+    "secretFindings": 0,
+    "secretScanUnresolved": 0
+  },
+  "title": "Security and privacy"
+}

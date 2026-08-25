@@ -21,7 +21,8 @@
     'payroll',
     'leave',
     'tax',
-    'planning'
+    'planning',
+    'etp'
   ]);
 
   function emptyModules() {

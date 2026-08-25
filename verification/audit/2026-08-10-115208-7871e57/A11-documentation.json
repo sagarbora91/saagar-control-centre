@@ -1,0 +1,204 @@
+{
+  "auditId": "A11",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/AUDIT-PROGRAM-v1.md",
+          "line": 235,
+          "path": "android/**"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 94,
+          "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md",
+          "line": 49,
+          "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 21,
+          "path": "scripts/audit/**/*.mjs"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/HANDOFF.md",
+          "line": 24,
+          "path": "scripts/audit/final-*.patch"
+        }
+      ],
+      "id": "A11-01",
+      "mandatory": true,
+      "metric": {
+        "authorityDocuments": 7,
+        "citedRepositoryPaths": 48,
+        "missingAuthorityDocuments": 0,
+        "unresolvedPaths": 5
+      },
+      "notes": "External absolute paths and template placeholders are not treated as repository-path claims; explicitly historical sections are excluded.",
+      "result": "fail",
+      "rule": "Every repository path cited by a current-authority scope must resolve in the audited snapshot.",
+      "severity": "P1",
+      "title": "Current-authority cited paths resolve"
+    },
+    {
+      "evidence": [],
+      "id": "A11-02",
+      "mandatory": true,
+      "metric": {
+        "citedCommitOccurrences": 17,
+        "missingCommits": 0,
+        "uniqueCommits": 5
+      },
+      "notes": "SHA-256 evidence hashes and explicitly historical tail sections are not interpreted as Git commit claims.",
+      "result": "pass",
+      "rule": "Every Git commit SHA cited by current-authority scope must resolve as a commit in the repository.",
+      "severity": "P1",
+      "title": "Current-authority cited commits exist"
+    },
+    {
+      "evidence": [
+        {
+          "claimedPassed": 54,
+          "claimedTotal": 54,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 110,
+          "measuredPassed": 492,
+          "measuredTotal": 492,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md"
+        },
+        {
+          "claimedPassed": 54,
+          "claimedTotal": 54,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 18,
+          "measuredPassed": 492,
+          "measuredTotal": 492,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md"
+        }
+      ],
+      "id": "A11-03",
+      "mandatory": true,
+      "metric": {
+        "claims": 15,
+        "measuredCancelled": 0,
+        "measuredCounts": {
+          "c1": 12,
+          "completeOffline": 492,
+          "etp": 128,
+          "language": 4,
+          "mainOffline": 262,
+          "mobile": 6,
+          "modular": 72,
+          "settings": 8
+        },
+        "measuredFailures": 0,
+        "measuredPassed": 492,
+        "measuredSkipped": 0,
+        "measuredSuites": 7,
+        "measuredTodo": 0,
+        "measuredTotal": 492,
+        "mismatches": 2,
+        "requiredCurrentCounts": {
+          "completeOffline": 492,
+          "etp": 128,
+          "mainOffline": 262,
+          "modular": 72
+        },
+        "supportedClaims": 11,
+        "unsupportedClaims": 4
+      },
+      "notes": "At least one current claim belongs to an external/focused suite not measured by this audit invocation.",
+      "result": "fail",
+      "rule": "Current-authority test-count claims must equal the identity-bound measured suite counts, including 492 complete offline, 128 ETP, 72 modular and 262 main-offline tests with zero failures.",
+      "severity": "P1",
+      "title": "Current-authority test counts match measured counts"
+    },
+    {
+      "evidence": [],
+      "id": "A11-04",
+      "mandatory": true,
+      "metric": {
+        "declarations": 3,
+        "mismatches": 0,
+        "requestedProductBaselineSha": "88ba11842613f29173f436a39ca60f12b33e5085",
+        "runnerProductBaselineSha": "88ba11842613f29173f436a39ca60f12b33e5085"
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "The audit program, current handoff, runner constant and requested baseline must declare the exact same 40-character product anchor.",
+      "severity": "P1",
+      "title": "Controlling product baseline identity"
+    },
+    {
+      "evidence": [
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 106,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 17,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 11,
+          "path": "docs/audit/AUDIT-PROGRAM-v1.md",
+          "value": "88ba11842613f29173f436a39ca60f12b33e5085"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 19,
+          "path": "docs/audit/HANDOFF.md",
+          "value": "88ba11842613f29173f436a39ca60f12b33e5085"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 74,
+          "path": "docs/audit/HANDOFF.md",
+          "value": "88ba11842613f29173f436a39ca60f12b33e5085"
+        }
+      ],
+      "id": "A11-05",
+      "mandatory": true,
+      "metric": {
+        "claimFamilies": 5,
+        "claimSetSha256": "e1065a0643b0be13c5e284fcdb14dce4d112488ef3d7487be498fa1221d4af6a",
+        "conflictingClaims": 5,
+        "conflictingFamilies": 1,
+        "typedClaims": 11
+      },
+      "notes": "Starting SHAs, superseded decision-register sections, prior APK evidence and explicitly historical sections are excluded from present-state comparison.",
+      "result": "fail",
+      "rule": "Typed present-state claims among current-authority scopes must not assign different values to the same fact.",
+      "severity": "P1",
+      "title": "Current-authority contradictions"
+    }
+  ],
+  "metrics": {
+    "authorityDocuments": 7,
+    "contradictionFamilies": 1,
+    "missingCommits": 0,
+    "testCountMismatches": 2,
+    "unresolvedPaths": 5
+  },
+  "title": "Documentation currency"
+}

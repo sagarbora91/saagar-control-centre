@@ -144,31 +144,34 @@ test('runtime flush writes only changed records in bounded native batches', asyn
     poll();
   });
 
-  localStorage.setItem('alpha', '{"value":1}');
-  assert.equal(await window.SaagarStore.flush(), true);
-  assert.equal(batches.length, 1);
-  assert.equal(batches[0].ops.length, 1);
-  assert.equal(batches[0].ops[0].type, 'set');
-  assert.match(batches[0].ops[0].keyId, /^[a-f0-9]{64}$/);
-  assert.match(batches[0].ops[0].payload, /^SBKV1:/);
+  try {
+    localStorage.setItem('alpha', '{"value":1}');
+    assert.equal(await window.SaagarStore.flush(), true);
+    assert.equal(batches.length, 1);
+    assert.equal(batches[0].ops.length, 1);
+    assert.equal(batches[0].ops[0].type, 'set');
+    assert.match(batches[0].ops[0].keyId, /^[a-f0-9]{64}$/);
+    assert.match(batches[0].ops[0].payload, /^SBKV1:/);
 
-  for (let index = 0; index < 70; index++) {
-    localStorage.setItem(`bulk-${index}`, `value-${index}`);
+    for (let index = 0; index < 70; index++) {
+      localStorage.setItem(`bulk-${index}`, `value-${index}`);
+    }
+    assert.equal(await window.SaagarStore.flush(), true);
+    assert.equal(batches.slice(1).reduce((sum, batch) => sum + batch.ops.length, 0), 70);
+    assert.ok(batches.slice(1).every(batch => batch.ops.length <= 32));
+
+    const beforeBulk = batches.length;
+    assert.equal(await window.SaagarStore.bulk(() => {
+      localStorage.setItem('atomic-a', 'A');
+      localStorage.setItem('atomic-b', 'B');
+    }), true);
+    const staged = batches.slice(beforeBulk);
+    assert.equal(beginCount, 1);
+    assert.equal(finishCount, 1);
+    assert.ok(staged.length >= 3);
+    assert.ok(staged.every(batch => batch.stage === true));
+    assert.equal(staged.reduce((sum, batch) => sum + batch.ops.length, 0), 73);
+  } finally {
+    await window.SaagarStore._reset();
   }
-  assert.equal(await window.SaagarStore.flush(), true);
-  assert.equal(batches.slice(1).reduce((sum, batch) => sum + batch.ops.length, 0), 70);
-  assert.ok(batches.slice(1).every(batch => batch.ops.length <= 32));
-
-  const beforeBulk = batches.length;
-  assert.equal(await window.SaagarStore.bulk(() => {
-    localStorage.setItem('atomic-a', 'A');
-    localStorage.setItem('atomic-b', 'B');
-  }), true);
-  const staged = batches.slice(beforeBulk);
-  assert.equal(beginCount, 1);
-  assert.equal(finishCount, 1);
-  assert.ok(staged.length >= 3);
-  assert.ok(staged.every(batch => batch.stage === true));
-  assert.equal(staged.reduce((sum, batch) => sum + batch.ops.length, 0), 73);
-  await window.SaagarStore._reset();
 });

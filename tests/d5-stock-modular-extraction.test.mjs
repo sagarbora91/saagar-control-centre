@@ -15,13 +15,13 @@ const modules = loadModuleBundle();
 const metadata = modules.find(module => module.id === 'stock');
 
 test('C1 externalizes every module with byte-verified metadata', () => {
-  assert.equal(modules.length, 11);
+  assert.equal(modules.length, 12);
   assert.ok(metadata);
   assert.equal(metadata.src, 'modules/stock/index.html');
   assert.equal(metadata.html_b64, undefined);
   assert.equal(metadata.bytes, stock.length);
   assert.equal(metadata.sha256, crypto.createHash('sha256').update(stock).digest('hex'));
-  assert.equal(modules.filter(module => module.src && !module.html_b64).length, 11);
+  assert.equal(modules.filter(module => module.src && !module.html_b64).length, 12);
   for (const module of modules) {
     const bytes = fs.readFileSync(path.join(repoDir, 'www', module.src));
     assert.equal(module.bytes, bytes.length, module.id);
@@ -29,21 +29,23 @@ test('C1 externalizes every module with byte-verified metadata', () => {
   }
 });
 
-test('C1 shell uses relative iframe sources for external modules', () => {
-  assert.match(index, /if\(mod\.src\)\{/);
-  assert.match(index, /__f\.src = mod\.src/);
-  assert.match(index, /else\{[\s\S]*?__f\.srcdoc = buildModuleSrc\(mod\)/);
+test('C1 shell delegates relative iframe sources to the external frame controller', () => {
+  const controller = fs.readFileSync(path.join(repoDir, 'www/shared/shell-module-frame-controller.js'), 'utf8');
+  assert.match(index, /SaagarShellModuleFrameController\.open\(id,/);
+  assert.match(controller, /frame\.src = mod\.src/);
+  assert.doesNotMatch(index, /buildModuleSrc|openModuleLegacy|injectModuleHideCSS/);
+  assert.doesNotMatch(controller, /buildModuleSrc|loadExternalModuleHtml/);
   assert.doesNotMatch(metadata.src, /^(?:[a-z]+:)?\/\//i);
   modules.forEach(module => assert.doesNotMatch(module.src, /^(?:[a-z]+:)?\/\//i));
 });
 
-test('D5-M1 golden profile covers every module and pins injection drift', () => {
+test('D5-M1 golden profile covers every canonical module source', () => {
   const golden = JSON.parse(fs.readFileSync(
     path.join(repoDir, 'verification', 'module-build-golden-hashes.json'), 'utf8'
   ));
   assert.equal(golden._profile.uiMode, 'mobile');
   assert.equal(golden._profile.offlineAssetsOnly, true);
-  assert.match(golden._profile.injectionSourceSha256, /^[a-f0-9]{64}$/);
+  assert.equal(golden._profile.allModulesExternal, true);
   assert.deepEqual(
     Object.keys(golden).filter(key => !key.startsWith('_')).sort(),
     modules.map(module => module.id).sort()
@@ -62,7 +64,7 @@ test('extracted Stock contains no remote asset reference', () => {
 test('extracted Stock contains the complete current shell injection chain', () => {
   const html = stock.toString('utf8');
   [
-    'st-v5-iframe-shim', 'st-v5-safety-net', 'st-v5-mobile-css',
+    'st-v5-iframe-shim', 'st-v5-safety-net', 'st-v5-mobile-boot',
     'st-v5-module-access-bridge', 'st-v5-module-audit-bridge',
     'st-v5-emp-assist-script', 'st-v5-hide-css', 'st-v5-home-fab'
   ].forEach(marker => {

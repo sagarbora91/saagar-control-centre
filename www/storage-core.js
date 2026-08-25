@@ -64,7 +64,7 @@
     var WAL_KEY = 'saagar_storage_wal';   /* §13.1 synchronous native-LS journal */
     var MIGRATED_KEY = 'saagar_storage_migrated';  /* §13.3 one-way marker: DB is authoritative */
     var NATIVE_MIGRATED_KEY = 'saagar_native_store_migrated_v1';  /* fail closed instead of opening a stale legacy snapshot */
-    var LOG_KEY = 'saagar_sqlite_log';
+    var STORAGE_LOG_KEY = 'saagar_sqlite_log';
     var DAT02_KEY = 'saagar_dat02_acceptance_v1';
     var INTERNAL = { 'saagar_storage_wal': 1, 'saagar_storage_migrated': 1, 'saagar_native_store_migrated_v1': 1, 'saagar_sqlite_log': 1, 'saagar_dat02_acceptance_v1': 1 };
     var RecoveryPolicy = window.SaagarStorageRecoveryPolicy || null;
@@ -152,11 +152,55 @@
       }, function () { return null; });
     }
     var SAVE_DEBOUNCE = 6000;           /* whole-file export is heavy */
-    var BOOT_TIMEOUT_MS = 6000;         /* §13.6 hard timeout — generous so a SLOW device loads the real DB
-                                           before falling back (was 1800; the flag-ON audit found a slow-boot
-                                           stale-data race). Healthy devices boot ~0.3s, so this only raises the
-                                           worst-case splash, never the normal one. Test override below. */
-    try { if (typeof window !== 'undefined' && window.__BOOT_TIMEOUT_MS) BOOT_TIMEOUT_MS = window.__BOOT_TIMEOUT_MS; } catch (e) {}
+    var BOOT_TIMEOUT_MS = 6000;         /* fast status/probe deadline */
+    var NATIVE_READ_MIN_TIMEOUT_MS = 120000;
+    var NATIVE_READ_MAX_TIMEOUT_MS = 300000;
+    var NATIVE_READ_ROW_BUDGET_MS = 25;
+    var NATIVE_READ_STALL_TIMEOUT_MS = 15000;
+    try {
+      if (typeof window !== 'undefined' && window.__BOOT_TIMEOUT_MS) BOOT_TIMEOUT_MS = Number(window.__BOOT_TIMEOUT_MS);
+      if (typeof window !== 'undefined' && window.__NATIVE_READ_TIMEOUT_MS) {
+        var nativeReadOverride = Number(window.__NATIVE_READ_TIMEOUT_MS);
+        if (Number.isFinite(nativeReadOverride) && nativeReadOverride > 0) {
+          NATIVE_READ_MIN_TIMEOUT_MS = nativeReadOverride;
+          NATIVE_READ_MAX_TIMEOUT_MS = nativeReadOverride;
+        }
+      }
+      if (typeof window !== 'undefined' && window.__NATIVE_READ_STALL_TIMEOUT_MS) {
+        var nativeStallOverride = Number(window.__NATIVE_READ_STALL_TIMEOUT_MS);
+        if (Number.isFinite(nativeStallOverride) && nativeStallOverride > 0) NATIVE_READ_STALL_TIMEOUT_MS = nativeStallOverride;
+      }
+    } catch (e) {}
+    function nativeReadTimeoutMs(rows) {
+      var count = Number(rows);
+      if (!Number.isFinite(count) || count < 0) count = 0;
+      return Math.min(NATIVE_READ_MAX_TIMEOUT_MS, Math.max(NATIVE_READ_MIN_TIMEOUT_MS, Math.ceil(count) * NATIVE_READ_ROW_BUDGET_MS));
+    }
+    function armBootTimer(delay) {
+      clearTimeout(_bootTimer);
+      _bootTimer = setTimeout(bootTimeoutFallback, delay);
+    }
+    function nativeReadCall(factory) {
+      return new Promise(function (resolve, reject) {
+        var settled = false;
+        var timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          reject(recoveryError('STORE_TIMEOUT'));
+        }, NATIVE_READ_STALL_TIMEOUT_MS);
+        Promise.resolve().then(factory).then(function (value) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          resolve(value);
+        }, function (error) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+    }
     var WAL_BIG = 50000;                /* §13.1 'set' values larger than this are journaled as a pointer (forces a prompt persist) */
     var WAL_MAX = 512000;               /* §13.1 byte cap on the WAL JSON so it can never approach the native-LS quota */
 
@@ -178,7 +222,7 @@
     function dataDir() { return 'DATA'; }
 
     function log(m) {
-      try { var a = JSON.parse(nGet.call(ls, LOG_KEY) || '[]'); if (!Array.isArray(a)) a = []; a.unshift({ at: new Date().toISOString(), m: '[core] ' + String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet.call(ls, LOG_KEY, JSON.stringify(a)); } catch (e) {}
+      try { var a = JSON.parse(nGet.call(ls, STORAGE_LOG_KEY) || '[]'); if (!Array.isArray(a)) a = []; a.unshift({ at: new Date().toISOString(), m: '[core] ' + String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet.call(ls, STORAGE_LOG_KEY, JSON.stringify(a)); } catch (e) {}
       try { console.log('[storage-core] ' + m); } catch (e) {}
     }
 
@@ -564,11 +608,17 @@
       var samples = [];
       function oneSample() {
         return new Promise(function (resolve) {
-          window.requestAnimationFrame(function (frameStart) {
-            var beforeId = _persistCounter, totalStart = perfNow();
+          window.requestAnimationFrame(function () {
+            /* Some Android WebViews expose a requestAnimationFrame timestamp from
+               a different clock domain while their window/surface is being
+               replaced. DAT-02 must compare one monotonic clock throughout the
+               sample or a fast save can be reported with a multi-second frame
+               gap. */
+            var frameStart = perfNow(), beforeId = _persistCounter, totalStart = frameStart;
             _dirty = true;
             var save = flush();
-            window.requestAnimationFrame(function (frameEnd) {
+            window.requestAnimationFrame(function () {
+              var frameEnd = perfNow();
               Promise.resolve(save).then(function (ok) {
                 var perf = null;
                 for (var i = 0; i < _persistPerf.length; i++) if (_persistPerf[i].id > beforeId) { perf = _persistPerf[i]; break; }
@@ -704,30 +754,103 @@
       var inspected = inspectNativeStatus(status, true);
       if (!inspected.ok) return Promise.reject(recoveryError(inspected.code));
       var expected = inspected.rows, loaded = 0, after = '';
+      var MAX_NATIVE_RECORD_CHARS = 16 * 1024 * 1024;
+      var MAX_INLINE_NATIVE_RECORD_CHARS = 512 * 1024;
+      var RECORD_CHUNK_CHARS = 256 * 1024;
+      var DECRYPT_BATCH_SIZE = 8;
       _recovery.stage = 'native-read'; _recovery.expectedRows = expected; _recovery.loadedRows = 0;
       MEM.clear(); _keysCache = null; db = null; dirtyKeys.clear();
+      function finiteInteger(value) {
+        var number = Number(value);
+        return Number.isFinite(number) && number >= 0 && number <= 9007199254740991 && Math.floor(number) === number ? number : null;
+      }
       return getDEK(false).then(function (dek) {
         if (!dek) throw recoveryError('KEY_UNAVAILABLE');
+        function commitRecord(record) {
+          if (!INTERNAL[record.key]) MEM.set(record.key, record.value);
+          loaded++; _recovery.loadedRows = loaded;
+        }
+        function decodePageRows(rows) {
+          var at = 0;
+          function nextBatch() {
+            if (at >= rows.length) return Promise.resolve();
+            var batch = rows.slice(at, at + DECRYPT_BATCH_SIZE);
+            at += batch.length;
+            return Promise.all(batch.map(function (row) { return decodeNativeRecord(row, dek); })).then(function (records) {
+              records.forEach(commitRecord);
+              return nextBatch();
+            });
+          }
+          return nextBatch();
+        }
+        function readOversizedRecord(meta) {
+          var keyId = String(meta && meta.keyId || '');
+          var total = finiteInteger(meta && meta.chars);
+          var sequence = finiteInteger(meta && meta.seq);
+          if (!/^[a-f0-9]{64}$/.test(keyId) || keyId <= after || total === null || total <= MAX_INLINE_NATIVE_RECORD_CHARS || total > MAX_NATIVE_RECORD_CHARS || sequence === null || typeof plugin.readRecordChunk !== 'function') {
+            throw recoveryError('ROW_FORMAT_INVALID');
+          }
+          var offset = 0, chunks = [];
+          function nextChunk() {
+            return nativeReadCall(function () {
+              return plugin.readRecordChunk({ keyId: keyId, offset: offset, limit: RECORD_CHUNK_CHARS });
+            }).catch(function (error) {
+              throw recoveryError(recoveryCode(error, 'DB_READ_FAILED'));
+            }).then(function (part) {
+              if (!part || typeof part !== 'object' || String(part.keyId || '') !== keyId) throw recoveryError('PAGE_CURSOR_INVALID');
+              var partOffset = finiteInteger(part.offset);
+              var nextOffset = finiteInteger(part.nextOffset);
+              var partTotal = finiteInteger(part.totalChars);
+              var partSequence = finiteInteger(part.seq);
+              if (partOffset !== offset || partTotal !== total || partSequence !== sequence || nextOffset === null || nextOffset <= offset || nextOffset > total) {
+                throw recoveryError('PAGE_CURSOR_INVALID');
+              }
+              if (typeof part.chunk !== 'string' || part.chunk.length < 1 || part.chunk.length > RECORD_CHUNK_CHARS || nextOffset !== offset + part.chunk.length) {
+                throw recoveryError('ROW_FORMAT_INVALID');
+              }
+              var finished = nextOffset === total;
+              if (part.done !== finished) throw recoveryError('PAGE_CURSOR_INVALID');
+              chunks.push(part.chunk);
+              offset = nextOffset;
+              if (!finished) return nextChunk();
+              var payload = chunks.join('');
+              chunks.length = 0;
+              if (payload.length !== total) throw recoveryError('ROW_FORMAT_INVALID');
+              return decodeNativeRecord({ keyId: keyId, payload: payload, seq: sequence }, dek);
+            });
+          }
+          return nextChunk();
+        }
         function page() {
-          return Promise.resolve().then(function () {
+          return nativeReadCall(function () {
             return plugin.readPage({ afterKeyId: after, limit: 32, maxBytes: 2 * 1024 * 1024 });
           }).catch(function (error) {
             throw recoveryError(recoveryCode(error, 'DB_READ_FAILED'));
           }).then(function (result) {
-            var rows = result && Array.isArray(result.rows) ? result.rows : [];
-            var chain = Promise.resolve();
+            if (!result || typeof result !== 'object' || !Array.isArray(result.rows)) throw recoveryError('ROW_FORMAT_INVALID');
+            var rows = result.rows;
+            var pageCursor = after;
             rows.forEach(function (row) {
-              chain = chain.then(function () { return decodeNativeRecord(row, dek); }).then(function (record) {
-                if (!INTERNAL[record.key]) MEM.set(record.key, record.value);
-                loaded++; _recovery.loadedRows = loaded;
-              });
+              var keyId = String(row && row.keyId || '');
+              if (!/^[a-f0-9]{64}$/.test(keyId) || keyId <= pageCursor) throw recoveryError('PAGE_CURSOR_INVALID');
+              pageCursor = keyId;
             });
-            return chain.then(function () {
-              if (result && result.done === false) {
-                var next = String(result.afterKeyId || '');
-                if (!next || next === after) throw recoveryError('PAGE_CURSOR_INVALID');
-                after = next; return page();
+            if (result.oversized !== undefined && result.oversized !== null) {
+              if (rows.length !== 0 || result.done !== false || String(result.afterKeyId || '') !== after) throw recoveryError('PAGE_CURSOR_INVALID');
+              return readOversizedRecord(result.oversized).then(function (record) {
+                commitRecord(record);
+                after = String(result.oversized.keyId || '');
+                return page();
+              });
+            }
+            return decodePageRows(rows).then(function () {
+              var returnedCursor = String(result.afterKeyId || '');
+              if (result.done === false) {
+                if (!rows.length || returnedCursor !== pageCursor || returnedCursor <= after) throw recoveryError('PAGE_CURSOR_INVALID');
+                after = returnedCursor;
+                return page();
               }
+              if (result.done !== true || returnedCursor !== pageCursor) throw recoveryError('PAGE_CURSOR_INVALID');
             });
           });
         }
@@ -862,6 +985,12 @@
       log('boot timeout - native-LS fallback (MEM already hydrated at Step 0)'); setReady();
     }
     function bootLegacy(migrationPlugin) {
+      /* Android 6's factory WebView (Chrome 44) has no WebAssembly. Calling the
+         wasm sql.js loader there both rejects and leaves an uncaught internal
+         promise behind. A Capacitor build takes the native-first path in boot()
+         below; browser-only previews retain native localStorage without ever
+         invoking the unsupported loader. */
+      if (typeof WebAssembly !== 'object') { _nativeBooting = false; log('WebAssembly absent - native-LS fallback'); setReady(); return Promise.resolve(false); }
       if (typeof initSqlJs !== 'function') { _nativeBooting = false; log('sql.js absent - native-LS fallback'); setReady(); return Promise.resolve(false); }
       return initSqlJs({ locateFile: function (f) { return f; } }).then(function (_SQL) {
         if (_ready) return;
@@ -930,7 +1059,7 @@
     }
     function boot() {
       var attempt = ++_bootAttempt; _activeBootAttempt = attempt;
-      _bootTimer = setTimeout(bootTimeoutFallback, BOOT_TIMEOUT_MS);
+      armBootTimer(BOOT_TIMEOUT_MS);
       var plugin = nativeStorePlugin(), wasNative = nativeMarkerSet();
       _recovery.attempt = attempt; _recovery.nativeMarker = wasNative; _recovery.pluginPresent = !!plugin; _recovery.stage = 'native-status';
       if (!plugin) { if (wasNative) blockNativeStore('PLUGIN_MISSING', 'native-status'); else bootLegacy(null); return; }
@@ -945,6 +1074,7 @@
         var inspected = inspectNativeStatus(status, nativeAuthoritative);
         if (inspected.ok && status.migrated === true) {
           _recovery.expectedRows = inspected.rows;
+          armBootTimer(nativeReadTimeoutMs(inspected.rows));
           return loadNativeRows(plugin, status).catch(function (e) {
             if (attempt !== _activeBootAttempt || _storageBlocked) return false;
             _nativeMode = false;
@@ -954,6 +1084,25 @@
           });
         }
         if (wasNative) { blockNativeStore(inspected.code, 'native-status'); return false; }
+        /* Fresh API-23 installs must not depend on sql-wasm: migrate the Step-0
+           localStorage snapshot directly into the encrypted native incremental
+           store. This also makes the demo seed guard durable on its first write,
+           so a restart cannot reseed the two-year dataset. */
+        if (typeof WebAssembly !== 'object') {
+          _recovery.stage = 'native-migration';
+          return migrateToNative(plugin).then(function () {
+            if (attempt !== _activeBootAttempt || _storageBlocked) return false;
+            _authorityPending = false; _storageBlocked = false;
+            _recovery.state = 'ready'; _recovery.code = ''; _recovery.stage = 'ready';
+            setReady();
+            log('native-first migration active without WebAssembly');
+            return true;
+          }, function (e) {
+            if (attempt !== _activeBootAttempt) return false;
+            blockNativeStore(recoveryCode(e, 'STORE_UNAVAILABLE'), 'native-migration');
+            return false;
+          });
+        }
         return bootLegacy(plugin);
       }, function (e) {
         if (attempt !== _activeBootAttempt || _storageBlocked) return false;

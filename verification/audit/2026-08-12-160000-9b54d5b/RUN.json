@@ -1,0 +1,942 @@
+{
+  "auditArtifacts": [
+    {
+      "bytes": 32750,
+      "file": "A1-architecture.json",
+      "sha256": "8889753ef20dd36494c9bf7aec23f31b900bb51e746669f80e7647ce01ac3f3e"
+    },
+    {
+      "bytes": 25698,
+      "file": "A2-duplication.json",
+      "sha256": "7339a5f1d219f4974cf68274d02a9180a8ddb0304c8e9f2f5425d92aeb4a8086"
+    },
+    {
+      "bytes": 1478529,
+      "file": "A3-capabilities.json",
+      "sha256": "96005eefd58d40d6be870c7c6f06716db0e1ec0fa94751d00623badf467cae5d"
+    },
+    {
+      "bytes": 101699,
+      "file": "A4-storage.json",
+      "sha256": "82773332d3f65c6bea7d1e4b69947baae4c88b381caad6326ce2a91c38c9e3d1"
+    },
+    {
+      "bytes": 25313,
+      "file": "A5-tests.json",
+      "sha256": "1cbdf5c7f03d2bd70ebe94fbbd1b7f835b942bf12d8de7138aa1b24f024c84f2"
+    },
+    {
+      "bytes": 55446,
+      "file": "A6-ui.json",
+      "sha256": "39b67d8daf052944134fb1d11a0edeca188961282ff0f712b9219e3c96ebe3b0"
+    },
+    {
+      "bytes": 51593,
+      "file": "A7-protocol.json",
+      "sha256": "83fa150b83da25435ec2cabf983e7ebb2a6c676d994d651f5e6c3e4134ab5a94"
+    },
+    {
+      "bytes": 6278,
+      "file": "A8-security.json",
+      "sha256": "b5a8b63ed10be9a96ae39c044e1e883d06058a3c23cdb10938ea2780f5d39f61"
+    },
+    {
+      "bytes": 3501,
+      "file": "A9-build.json",
+      "sha256": "83e4fc6391b99fd4221406d82029c5e3eefa133e45f4c461ee1ca33bfb1b8a7a"
+    },
+    {
+      "bytes": 9434,
+      "file": "A10-performance.json",
+      "sha256": "8e97da0399df2443ac794a00904bfe48d9481fbf96d1dff708f5b1747ad8b75e"
+    },
+    {
+      "bytes": 5096,
+      "file": "A11-documentation.json",
+      "sha256": "378cc9c59e891821e0588ae339dcf5570300311a65de115e9468074034878977"
+    }
+  ],
+  "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+  "auditToolingFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 28,
+    "totalBytes": 659864,
+    "treeSha256": "5955be2ba28be3bf6a06d1e2e649fb5fd022e8cbdeca86d597530402eea8c66b"
+  },
+  "auditToolingSha": "937542f8b81099eed48ba8c4d21d1cd6382f5ad3",
+  "audits": [
+    {
+      "auditId": "A1",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 7,
+        "unmeasured": 0
+      },
+      "title": "Architecture and coupling"
+    },
+    {
+      "auditId": "A2",
+      "counts": {
+        "fail": 1,
+        "na": 0,
+        "pass": 4,
+        "unmeasured": 0
+      },
+      "title": "Duplication and ownership"
+    },
+    {
+      "auditId": "A3",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 4,
+        "unmeasured": 1
+      },
+      "title": "Semantic capability inventory"
+    },
+    {
+      "auditId": "A4",
+      "counts": {
+        "fail": 1,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Data and storage integrity"
+    },
+    {
+      "auditId": "A5",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 4,
+        "unmeasured": 1
+      },
+      "title": "Tests and guard rails"
+    },
+    {
+      "auditId": "A6",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 2
+      },
+      "title": "UI, responsive behavior, i18n and accessibility"
+    },
+    {
+      "auditId": "A7",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 2,
+        "unmeasured": 1
+      },
+      "title": "Protocol stability"
+    },
+    {
+      "auditId": "A8",
+      "counts": {
+        "fail": 3,
+        "na": 0,
+        "pass": 0,
+        "unmeasured": 2
+      },
+      "title": "Security and privacy"
+    },
+    {
+      "auditId": "A9",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 2,
+        "unmeasured": 3
+      },
+      "title": "Build and release reproducibility"
+    },
+    {
+      "auditId": "A10",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 4
+      },
+      "title": "Performance and resources"
+    },
+    {
+      "auditId": "A11",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 3,
+        "unmeasured": 0
+      },
+      "title": "Documentation currency"
+    }
+  ],
+  "baselineProductFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 296,
+    "totalBytes": 10525650,
+    "treeSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7"
+  },
+  "comparison": {
+    "approval": {
+      "envelopeSha256": "e8acd5900922b23d16b38216d76beceb5f967b57622fc7fb65135de69abccdd4",
+      "identityBound": true,
+      "provided": true
+    },
+    "failed": [
+      "C-04",
+      "C-07"
+    ],
+    "gates": [
+      {
+        "evidence": [],
+        "id": "C-01",
+        "mandatory": true,
+        "metric": {
+          "lostMeasurements": 0
+        },
+        "result": "pass",
+        "title": "Mandatory measurement continuity"
+      },
+      {
+        "evidence": [],
+        "id": "C-02",
+        "mandatory": true,
+        "metric": {
+          "approved": 106,
+          "deltaSha256": "0c2a1b2aabdf56b56b55b90fe466d1065def73a0b9233d26ec4aa4572ef1146a",
+          "deltas": 106,
+          "envelopeErrors": 0,
+          "invalidApprovals": 0,
+          "staleApprovals": 0,
+          "unapproved": 0
+        },
+        "result": "pass",
+        "title": "Semantic capability equivalence"
+      },
+      {
+        "evidence": [],
+        "id": "C-03",
+        "mandatory": true,
+        "metric": {
+          "approvalIdentityBound": true,
+          "baselineP0P1": 14,
+          "currentP0P1": 9,
+          "inMigrationScope": 0,
+          "invalidWaivers": 0,
+          "newP0P1": 0,
+          "outsideMigrationScope": 9,
+          "persistentP0P1": 9,
+          "regressions": 0,
+          "staleWaivers": 0,
+          "unwaivedRegressions": 0,
+          "waived": 0
+        },
+        "result": "pass",
+        "title": "No new or unapproved migration-scope P0/P1 findings"
+      },
+      {
+        "evidence": [
+          {
+            "artifactId": "local-storage:$",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:${EMP_MASTER_KEY}",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:${MK_CUSTOMERS}",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:className",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-0184ed865cb9",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-03128135045a",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-0ff2a18ad6e2",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-1cc3b4183d9d",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-1dca44cc5cf8",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-23e76cd8d504",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-254870e3b244",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-27b634ebbbbd",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-2ec26f19b0ce",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-352c3af4e6fd",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-3620f4ff654a",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-376af56a908d",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-3c26c13da490",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-3e03f1bf91bb",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-3fbcd32024c7",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-47aa7345abe6",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-4a724ffc3627",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-4d298c1e852d",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-5210a9e3190b",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-523c48c1d828",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-55b85cae3463",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-55d560d930a8",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-560c43e041e1",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-583f56458c26",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-5879786699bf",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-5a293968b781",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-600e8113bb58",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-61ed4d0d8608",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-6fb7a2fc860a",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-77ec7a7374e4",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-790ba55f4ef9",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-79a5a7522f5b",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-87beb772bcea",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-8fcb3796d9db",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-91bd23990908",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-94a4a1fed536",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-99cdc16475c9",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-a41049403ee4",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-a4a80adf7672",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-b73a53136bfa",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-bbbe7d385b4f",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-bf9eca79d886",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-c8192e184a27",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-c8b2d1fd2f82",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-cc6e84d0433c",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-ce5342510e0e",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-cf58d7fb0377",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-d94b5255aff3",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-e06ec182c590",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-e1499f56f49a",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-e371bd8e9ee8",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-e4000f406f4a",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-f113d50ba206",
+            "change": "added",
+            "code": "STORAGE_ARTIFACT_ADDED"
+          },
+          {
+            "artifactId": "local-storage:computed-f950cbc47b92",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:computed-fa62047ca659",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:saagar_master_customers",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "artifactId": "local-storage:textContent",
+            "change": "removed",
+            "code": "STORAGE_ARTIFACT_REMOVED"
+          },
+          {
+            "checkId": "A4-02",
+            "code": "STORAGE_CLASSIFICATION_NOT_CLOSED"
+          }
+        ],
+        "id": "C-04",
+        "mandatory": true,
+        "metric": {
+          "baselineArtifacts": 187,
+          "currentArtifacts": 172,
+          "currentClassification": "fail",
+          "deltas": 61,
+          "unclassifiedArtifacts": 59
+        },
+        "result": "fail",
+        "title": "Storage artifact contract equivalence"
+      },
+      {
+        "evidence": [],
+        "id": "C-05",
+        "mandatory": true,
+        "metric": {
+          "baseline": "pass",
+          "current": "pass"
+        },
+        "result": "pass",
+        "title": "Critical behavioral coverage continuity"
+      },
+      {
+        "evidence": [],
+        "id": "C-06",
+        "mandatory": true,
+        "metric": {
+          "baselineGroups": 94,
+          "currentGroups": 23
+        },
+        "result": "pass",
+        "title": "Duplication decreases"
+      },
+      {
+        "evidence": [
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "message:ST_ACCESS_CONTEXT"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_BACK_HOME"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_OPEN_FEATURE"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_OPEN_MODULE"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_PRINT"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_SET_DATE"
+          },
+          {
+            "change": "changed",
+            "code": "MESSAGE_CONTRACT_CHANGED",
+            "contractId": "message:ST_UI_MODE"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:084d45c8b1504a6d205d1989526f0e0af8be2ecb0afe7586f4119a28d651ffd0:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:14248cb7ffe9d4ba5ae7dc4f1f51431f183d02ec64baa7418fb9887c0cf0aa04:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:30b4dba51431ee6b218d0e602a0bd3637af0b12d3bca1ddcf4ffacf7828d77e2:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:626a6758d828fe860d9c336be32af6dc388ecc565183b3ff162e6a0f76a90412:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:7f1d5038c42668eb4c2743692469cdfde41ce701f972edf189606998e5462c9b:1"
+          },
+          {
+            "change": "added",
+            "code": "MESSAGE_CONTRACT_ADDED",
+            "contractId": "unresolved:8cc9a1e0310b45f536e426aaedfbdff7993f63c6722fa3e7d9620ab2a9e9ea7d:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:b781f93706994d2f91a171ddc8b6e1da5c145ff61d10495b52ce609a3e6c6b9f:1"
+          },
+          {
+            "change": "removed",
+            "code": "MESSAGE_CONTRACT_REMOVED",
+            "contractId": "unresolved:cecf3dc5708f37c58358893516dc3db0810e483a39f8d51f1078f53116a77cb9:1"
+          }
+        ],
+        "id": "C-07",
+        "mandatory": true,
+        "metric": {
+          "baseline": [
+            59,
+            0,
+            1
+          ],
+          "baselineMessageTypes": 54,
+          "current": [
+            0,
+            0,
+            0
+          ],
+          "currentMessageTypes": 47,
+          "messageContractDeltas": 15,
+          "regressions": 0
+        },
+        "result": "fail",
+        "title": "Coupling, blast radius and message contracts do not regress"
+      },
+      {
+        "evidence": [],
+        "id": "C-08",
+        "mandatory": true,
+        "metric": {
+          "failures": 0,
+          "lostMeasurements": 0
+        },
+        "result": "pass",
+        "title": "Performance comparison gates"
+      },
+      {
+        "evidence": [],
+        "id": "C-09",
+        "mandatory": true,
+        "metric": {
+          "baselineGates": 10,
+          "currentGates": 10
+        },
+        "result": "pass",
+        "title": "External acceptance gates remain explicit"
+      }
+    ],
+    "mandatoryUnmeasured": [],
+    "schemaVersion": 1,
+    "status": "comparison-failed-or-unmeasured"
+  },
+  "elapsedMs": 83420,
+  "endedAt": "2026-08-12T01:06:45.909Z",
+  "findingCount": 11,
+  "format": "SAAGAR_WHOLE_APP_AUDIT_RUN",
+  "invocation": {
+    "command": "node scripts/audit/run.mjs",
+    "options": {
+      "auditToolingSha": "937542f8b81099eed48ba8c4d21d1cd6382f5ad3",
+      "baselineEvidence": {
+        "committed": true,
+        "manifestBytes": 2918,
+        "manifestSha256": "8837522e88d04ff060205886cc3ec131b0bf7248e6b0af6e3151224612782bc1",
+        "provided": true,
+        "runBytes": 10182,
+        "runSha256": "d399e628d8e9522f92f46930a49be58277bd5087f33b64503b4553e4486e892c"
+      },
+      "comparisonApproval": {
+        "bytes": 31136,
+        "provided": true,
+        "sha256": "3106a9246eef04fc6c5f8da0acb56ce71f5b48c146126654ca71530f5ac93595"
+      },
+      "controlledBuildProbe": {
+        "artifact": "A9-BUILD-COMPARISON.json",
+        "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE",
+        "source": "runner-controlled",
+        "status": "unmeasured"
+      },
+      "controlledMutationProbe": {
+        "artifact": "A5-MUTATIONS.json",
+        "reason": "",
+        "source": "runner-controlled",
+        "status": "measured"
+      },
+      "mode": "comparison",
+      "output": "<OUTPUT>",
+      "performanceEvidence": {
+        "provided": false
+      },
+      "productBaseline": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+      "root": "<TARGET>",
+      "runTests": true,
+      "targetSha": "9b54d5bd003672434a7dac8be81efadd6b67f947",
+      "uiEvidence": {
+        "provided": false
+      }
+    }
+  },
+  "mandatoryUnmeasured": [
+    "A10-04",
+    "A10-05",
+    "A3-05",
+    "A5-05",
+    "A6-04",
+    "A6-05",
+    "A7-03",
+    "A8-01",
+    "A8-04",
+    "A9-01",
+    "A9-02",
+    "A9-05"
+  ],
+  "manifest": {
+    "moduleCount": 11,
+    "path": "www/module-manifest.js",
+    "sha256": "f3ac83f00b94d4472f9d72a138ff4a2edb3b9bbc186e456875f972dfa1b1052a",
+    "sharedAssetCount": 9
+  },
+  "mode": "comparison",
+  "openGateCount": 10,
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "productFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 338,
+    "totalBytes": 10717710,
+    "treeSha256": "c4f15b902d21a70ca71a1c8fecf5cc8085b45131c7c301853876104bd7f0cb25"
+  },
+  "runner": {
+    "bytes": 26118,
+    "path": "scripts/audit/run.mjs",
+    "sha256": "f9dad0971213e72e2a732cacb2fd0bdd013de899ba930463e9ec8c4b0eb2b094"
+  },
+  "schemaVersion": 1,
+  "startedAt": "2026-08-12T01:05:22.489Z",
+  "status": "complete-with-findings-or-gaps",
+  "supportingArtifacts": {
+    "buildProbe": {
+      "bytes": 387,
+      "file": "A9-BUILD-COMPARISON.json",
+      "sha256": "452259ef9b9856544ecdd427b9ef82a07b7fde10915e29c1b77730fdcb507a17"
+    },
+    "mutationProbe": {
+      "bytes": 4182,
+      "file": "A5-MUTATIONS.json",
+      "sha256": "9c4938ebc3d5d200636a03230a45f99af79779e3129a74b5d3593abbe02a2cb8"
+    },
+    "openGates": {
+      "bytes": 1611,
+      "file": "OPEN-GATES.json",
+      "sha256": "4552f35bb0c3062c0ac6f0f533584e0e7dd85abe3005714dded63fcaf12940e4"
+    }
+  },
+  "target": {
+    "cleanAfter": true,
+    "cleanBefore": true,
+    "detachedHead": true,
+    "linkedWorktree": true,
+    "repositoryRootVerified": true,
+    "rootKind": "detached-linked-worktree"
+  },
+  "targetSha": "9b54d5bd003672434a7dac8be81efadd6b67f947",
+  "tests": {
+    "command": "npm run test:offline",
+    "counts": {
+      "c1": 12,
+      "cancelled": 0,
+      "completeOffline": 506,
+      "etp": 128,
+      "fail": 0,
+      "language": 4,
+      "mainOffline": 262,
+      "mobile": 6,
+      "modular": 86,
+      "pass": 506,
+      "settings": 8,
+      "skipped": 0,
+      "todo": 0
+    },
+    "elapsedMs": 20229,
+    "exitCode": 0,
+    "outputSha256": "92894cfb888f2c59f04660c437c567d27ccbbc0c9487759a829363a1d9f2f0e2",
+    "passed": true,
+    "passedCount": 506,
+    "suites": {
+      "test:c1": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 12,
+        "skipped": 0,
+        "tests": 12,
+        "todo": 0
+      },
+      "test:etp": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 128,
+        "skipped": 0,
+        "tests": 128,
+        "todo": 0
+      },
+      "test:language": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 4,
+        "skipped": 0,
+        "tests": 4,
+        "todo": 0
+      },
+      "test:mobile": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 6,
+        "skipped": 0,
+        "tests": 6,
+        "todo": 0
+      },
+      "test:modular": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 86,
+        "skipped": 0,
+        "tests": 86,
+        "todo": 0
+      },
+      "test:offline": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 262,
+        "skipped": 0,
+        "tests": 262,
+        "todo": 0
+      },
+      "test:settings": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 8,
+        "skipped": 0,
+        "tests": 8,
+        "todo": 0
+      }
+    },
+    "totalCount": 506
+  },
+  "toolchain": {
+    "arch": "x64",
+    "browserEvidenceProvided": false,
+    "buildProbeStatus": "unmeasured",
+    "gradle": {
+      "available": false,
+      "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE"
+    },
+    "java": {
+      "available": false,
+      "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE"
+    },
+    "mutationProbeStatus": "measured",
+    "node": "v25.9.0",
+    "npm": {
+      "available": true,
+      "exitCode": 0,
+      "version": "11.12.1"
+    },
+    "osRelease": "10.0.19045",
+    "performanceEvidenceProvided": false,
+    "platform": "win32"
+  },
+  "trackedFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 490,
+    "totalBytes": 25968316,
+    "treeSha256": "b20c41c9b5335da6a80276976bc4d812c0027c73c2eccd4330037fe923244b4d"
+  },
+  "worktreeFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n):worktree",
+    "fileCount": 490,
+    "totalBytes": 25984111,
+    "treeSha256": "ea9a2d2bb4d9100cb55b7f5d0dd76928e538bdeafb0fcb09ecf7a7ec1a431089"
+  }
+}

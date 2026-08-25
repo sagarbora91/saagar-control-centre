@@ -1,0 +1,548 @@
+{
+  "auditArtifacts": [
+    {
+      "bytes": 32877,
+      "file": "A1-architecture.json",
+      "sha256": "414a94a36df95a12393ede4c947504ba0aac773e1904c35a344fc884930be491"
+    },
+    {
+      "bytes": 3426,
+      "file": "A2-duplication.json",
+      "sha256": "a7fda3304f527c19a7c709eb82ad1077c399efd9a790d8b8a98d726c48c66101"
+    },
+    {
+      "bytes": 1478927,
+      "file": "A3-capabilities.json",
+      "sha256": "e26ac74dc786d7e388742ab390e39d173a62696767f4c258a392e4f55f3bcf2e"
+    },
+    {
+      "bytes": 68996,
+      "file": "A4-storage.json",
+      "sha256": "18119768b4c7c8e0a652d9c40601bc92f5da6b59f557f8c3a974e1e9d1a6e2d4"
+    },
+    {
+      "bytes": 25996,
+      "file": "A5-tests.json",
+      "sha256": "70cda7db3162994202f042deff82e460d127bc7b230a9835d54daad73ce48fd3"
+    },
+    {
+      "bytes": 67918,
+      "file": "A6-ui.json",
+      "sha256": "01bd3000453cc442b3f631beabdffb17c2f2865dec208211ad52be4f5b28c3fc"
+    },
+    {
+      "bytes": 61176,
+      "file": "A7-protocol.json",
+      "sha256": "91438aaf3db8ec7e5c289eabd5821a55976334f9906fa15f2316c39c1d1bae33"
+    },
+    {
+      "bytes": 4751,
+      "file": "A8-security.json",
+      "sha256": "b1b7203f2e1a584740d8a613d8fd61dff1569c4653c451c4b4b6e4e45b5fc764"
+    },
+    {
+      "bytes": 3764,
+      "file": "A9-build.json",
+      "sha256": "9d4c15479d64607c626e27e56d2b2c5788f48cc8e3c063aeeea74200d150e526"
+    },
+    {
+      "bytes": 9436,
+      "file": "A10-performance.json",
+      "sha256": "c360e20cf49dbae211e4a185ff7e028d31c8fb8ff206ca51313b5e02feb18eaf"
+    },
+    {
+      "bytes": 3769,
+      "file": "A11-documentation.json",
+      "sha256": "ad9b01b53f10a1b6d057e373dccd1656ea01cbe4809cf4bc1ca745f35fd92b11"
+    }
+  ],
+  "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+  "auditToolingFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 29,
+    "totalBytes": 746932,
+    "treeSha256": "56c49417692d13d8afcbc3b7432a812d893e00d6d415579be9903668f02c5d28"
+  },
+  "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308",
+  "audits": [
+    {
+      "auditId": "A1",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 7,
+        "unmeasured": 0
+      },
+      "title": "Architecture and coupling"
+    },
+    {
+      "auditId": "A2",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Duplication and ownership"
+    },
+    {
+      "auditId": "A3",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Semantic capability inventory"
+    },
+    {
+      "auditId": "A4",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 6,
+        "unmeasured": 0
+      },
+      "title": "Data and storage integrity"
+    },
+    {
+      "auditId": "A5",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Tests and guard rails"
+    },
+    {
+      "auditId": "A6",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "UI, responsive behavior, i18n and accessibility"
+    },
+    {
+      "auditId": "A7",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Protocol stability"
+    },
+    {
+      "auditId": "A8",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Security and privacy"
+    },
+    {
+      "auditId": "A9",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Build and release reproducibility"
+    },
+    {
+      "auditId": "A10",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 4
+      },
+      "title": "Performance and resources"
+    },
+    {
+      "auditId": "A11",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Documentation currency"
+    }
+  ],
+  "baselineProductFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 296,
+    "totalBytes": 10525650,
+    "treeSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7"
+  },
+  "comparison": {
+    "approval": {
+      "envelopeSha256": "719ea606107443a8d9c7375b6231b6f090ecc0ca3431a419ac08839edc391884",
+      "identityBound": true,
+      "provided": true
+    },
+    "failed": [],
+    "gates": [
+      {
+        "evidence": [],
+        "id": "C-01",
+        "mandatory": true,
+        "metric": {
+          "lostMeasurements": 0
+        },
+        "result": "pass",
+        "title": "Mandatory measurement continuity"
+      },
+      {
+        "evidence": [],
+        "id": "C-02",
+        "mandatory": true,
+        "metric": {
+          "approved": 107,
+          "deltaSha256": "6179252efa5110d96c46be8544f275c46dfb5f14f8d46f4b46a194fc6f2a6420",
+          "deltas": 107,
+          "envelopeErrors": 0,
+          "invalidApprovals": 0,
+          "staleApprovals": 0,
+          "unapproved": 0
+        },
+        "result": "pass",
+        "title": "Semantic capability equivalence"
+      },
+      {
+        "evidence": [],
+        "id": "C-03",
+        "mandatory": true,
+        "metric": {
+          "approvalIdentityBound": true,
+          "baselineP0P1": 13,
+          "currentP0P1": 0,
+          "inMigrationScope": 0,
+          "invalidWaivers": 0,
+          "newP0P1": 0,
+          "outsideMigrationScope": 0,
+          "persistentP0P1": 0,
+          "regressions": 0,
+          "staleWaivers": 0,
+          "unwaivedRegressions": 0,
+          "waived": 0
+        },
+        "result": "pass",
+        "title": "No new or unapproved migration-scope P0/P1 findings"
+      },
+      {
+        "evidence": [],
+        "id": "C-04",
+        "mandatory": true,
+        "metric": {
+          "baselineArtifacts": 127,
+          "currentArtifacts": 127,
+          "currentClassification": "pass",
+          "deltas": 0,
+          "unclassifiedArtifacts": 0
+        },
+        "result": "pass",
+        "title": "Storage artifact contract equivalence"
+      },
+      {
+        "evidence": [],
+        "id": "C-05",
+        "mandatory": true,
+        "metric": {
+          "baseline": "pass",
+          "current": "pass"
+        },
+        "result": "pass",
+        "title": "Critical behavioral coverage continuity"
+      },
+      {
+        "evidence": [],
+        "id": "C-06",
+        "mandatory": true,
+        "metric": {
+          "baselineGroups": 65,
+          "currentGroups": 0
+        },
+        "result": "pass",
+        "title": "Duplication decreases"
+      },
+      {
+        "evidence": [],
+        "id": "C-07",
+        "mandatory": true,
+        "metric": {
+          "baseline": [
+            59,
+            0,
+            1
+          ],
+          "baselineMessageTypes": 68,
+          "current": [
+            0,
+            0,
+            0
+          ],
+          "currentMessageTypes": 57,
+          "messageContractDeltas": 0,
+          "regressions": 0
+        },
+        "result": "pass",
+        "title": "Coupling, blast radius and message contracts do not regress"
+      },
+      {
+        "evidence": [],
+        "id": "C-08",
+        "mandatory": true,
+        "metric": {
+          "failures": 0,
+          "lostMeasurements": 0
+        },
+        "result": "pass",
+        "title": "Performance comparison gates"
+      },
+      {
+        "evidence": [],
+        "id": "C-09",
+        "mandatory": true,
+        "metric": {
+          "baselineGates": 10,
+          "currentGates": 10
+        },
+        "result": "pass",
+        "title": "External acceptance gates remain explicit"
+      }
+    ],
+    "mandatoryUnmeasured": [],
+    "schemaVersion": 1,
+    "status": "comparison-pass"
+  },
+  "elapsedMs": 623526,
+  "endedAt": "2026-08-15T23:56:42.278Z",
+  "findingCount": 0,
+  "format": "SAAGAR_WHOLE_APP_AUDIT_RUN",
+  "invocation": {
+    "command": "node scripts/audit/run.mjs",
+    "options": {
+      "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308",
+      "baselineEvidence": {
+        "committed": true,
+        "manifestBytes": 2918,
+        "manifestSha256": "b878f01cf7c54f1cad935ae092c6ac042ce88bed8aad6f23c5e2d12051b78468",
+        "provided": true,
+        "runBytes": 10129,
+        "runSha256": "ff4e10a15e7de095c53a2f0f72924c4f0952ee0d2de752e65d8af99ff2e213a2"
+      },
+      "comparisonApproval": {
+        "bytes": 31507,
+        "provided": true,
+        "sha256": "4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858"
+      },
+      "controlledBuildProbe": {
+        "artifact": "A9-BUILD-COMPARISON.json",
+        "reason": "",
+        "source": "runner-controlled",
+        "status": "measured"
+      },
+      "controlledMutationProbe": {
+        "artifact": "A5-MUTATIONS.json",
+        "reason": "",
+        "source": "runner-controlled",
+        "status": "measured"
+      },
+      "mode": "comparison",
+      "output": "<OUTPUT>",
+      "performanceEvidence": {
+        "provided": false
+      },
+      "productBaseline": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+      "root": "<TARGET>",
+      "runTests": true,
+      "targetSha": "3f8a37cebf998cf6dd006e3a33de95600d3808f3",
+      "uiEvidence": {
+        "bytes": 1554111,
+        "provided": true,
+        "sha256": "947ed7f68ac0f7d9e7e262b9c5a45765fcc90d8d26b233b98d09a05c92e0fdd1"
+      }
+    }
+  },
+  "mandatoryUnmeasured": [
+    "A10-04",
+    "A10-05"
+  ],
+  "manifest": {
+    "moduleCount": 11,
+    "path": "www/module-manifest.js",
+    "sha256": "95496cb598ed707fa34b2e68a0ff8f384144b5a4717d13cc6f974ad3ebbcbbdd",
+    "sharedAssetCount": 9
+  },
+  "mode": "comparison",
+  "openGateCount": 10,
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "productFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 339,
+    "totalBytes": 10976869,
+    "treeSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06"
+  },
+  "runner": {
+    "bytes": 26438,
+    "path": "scripts/audit/run.mjs",
+    "sha256": "11d09b248809ed200532cf8b23b62853aee49e0d933271716be3f0d900402440"
+  },
+  "schemaVersion": 1,
+  "startedAt": "2026-08-15T23:46:18.752Z",
+  "status": "complete-with-findings-or-gaps",
+  "supportingArtifacts": {
+    "buildProbe": {
+      "bytes": 8553,
+      "file": "A9-BUILD-COMPARISON.json",
+      "sha256": "0fb1452db662432426fa98d351fd64ad102054a32297a9cfa6204d3548fecec6"
+    },
+    "mutationProbe": {
+      "bytes": 6222,
+      "file": "A5-MUTATIONS.json",
+      "sha256": "1165684d6a16cb001e5412b2fbba284ce908ec4014cfa55c1421ebd00884fd91"
+    },
+    "openGates": {
+      "bytes": 1611,
+      "file": "OPEN-GATES.json",
+      "sha256": "210659b383b0cb133733cfd716462a6de4fb5e64222df82c5cf9e63336710dee"
+    }
+  },
+  "target": {
+    "cleanAfter": true,
+    "cleanBefore": true,
+    "detachedHead": true,
+    "linkedWorktree": true,
+    "repositoryRootVerified": true,
+    "rootKind": "detached-linked-worktree"
+  },
+  "targetSha": "3f8a37cebf998cf6dd006e3a33de95600d3808f3",
+  "tests": {
+    "command": "npm run test:offline",
+    "counts": {
+      "c1": 12,
+      "cancelled": 0,
+      "completeOffline": 510,
+      "etp": 129,
+      "fail": 0,
+      "language": 7,
+      "mainOffline": 262,
+      "mobile": 6,
+      "modular": 86,
+      "pass": 510,
+      "settings": 8,
+      "skipped": 0,
+      "todo": 0
+    },
+    "elapsedMs": 13342,
+    "exitCode": 0,
+    "outputSha256": "69fea9b24adc39c99bb2ea22b896d849077829c11b5b2a7e8d2e0fa4ade4a83f",
+    "passed": true,
+    "passedCount": 510,
+    "suites": {
+      "test:c1": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 12,
+        "skipped": 0,
+        "tests": 12,
+        "todo": 0
+      },
+      "test:etp": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 129,
+        "skipped": 0,
+        "tests": 129,
+        "todo": 0
+      },
+      "test:language": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 7,
+        "skipped": 0,
+        "tests": 7,
+        "todo": 0
+      },
+      "test:mobile": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 6,
+        "skipped": 0,
+        "tests": 6,
+        "todo": 0
+      },
+      "test:modular": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 86,
+        "skipped": 0,
+        "tests": 86,
+        "todo": 0
+      },
+      "test:offline": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 262,
+        "skipped": 0,
+        "tests": 262,
+        "todo": 0
+      },
+      "test:settings": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 8,
+        "skipped": 0,
+        "tests": 8,
+        "todo": 0
+      }
+    },
+    "totalCount": 510
+  },
+  "toolchain": {
+    "arch": "x64",
+    "browserEvidenceProvided": true,
+    "buildProbeStatus": "measured",
+    "gradle": {
+      "available": true,
+      "daemonJvmMatchesJavaHome": true,
+      "reportedJvmForm": "JVM",
+      "version": "8.2.1"
+    },
+    "java": {
+      "available": true,
+      "source": "JAVA_HOME",
+      "version": "openjdk version \"17.0.19\" 2026-04-21"
+    },
+    "mutationProbeStatus": "measured",
+    "node": "v25.9.0",
+    "npm": {
+      "available": true,
+      "exitCode": 0,
+      "version": "11.12.1"
+    },
+    "osRelease": "10.0.19045",
+    "performanceEvidenceProvided": false,
+    "platform": "win32"
+  },
+  "trackedFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 644,
+    "totalBytes": 46144516,
+    "treeSha256": "9f52006e45cb9126d66375d30129cc57b837440df0feb0b6bf08de9b2317f3ae"
+  },
+  "worktreeFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n):worktree",
+    "fileCount": 644,
+    "totalBytes": 46161117,
+    "treeSha256": "e072fdf60f0b12795dad1b3018de161ccedac24dd53246677f5f5e5fb2619b8e"
+  }
+}

@@ -10,7 +10,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  var CONTRACT_VERSION = 1;
+  var CAPACITY_CONTRACT_VERSION = 1;
   var MAX_SAFE_BYTES = Number.MAX_SAFE_INTEGER || 9007199254740991;
   var UNIT_BYTES = 1024;
   var UNITS = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -109,7 +109,7 @@
   }
 
   return {
-    CONTRACT_VERSION: CONTRACT_VERSION,
+    CONTRACT_VERSION: CAPACITY_CONTRACT_VERSION,
     deriveCapacity: deriveCapacity,
     displayModel: displayModel,
     finiteBytes: finiteBytes,

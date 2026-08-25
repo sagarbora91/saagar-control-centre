@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "profileId": "phase6c-current-source-2026-08-24",
+  "sourceProductCommit": "332bf3e62f125238bd85761631edeaee05611a3e",
+  "sourceFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 109,
+    "totalBytes": 7910272,
+    "treeSha256": "244504bbf98f34fd91a47fac0f94a7da3add61eec3a58a24a2312b596fe363bc"
+  },
+  "manifest": {
+    "path": "www/module-manifest.js",
+    "bytes": 18738,
+    "sha256": "80bf4233dd18da5fcc569ca74f85419d728467cbd8f6fc14fac02bd2ac9a5824"
+  },
+  "legacyAsset": {
+    "file": "www/shared/module-mobile-legacy.css",
+    "bytes": 24977,
+    "sha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443",
+    "topLevelRules": 191
+  },
+  "rollout": {
+    "allowlist": [
+      "stock",
+      "service",
+      "qms",
+      "dsr",
+      "expense",
+      "grooming",
+      "cro_audit",
+      "payroll",
+      "leave",
+      "tax",
+      "planning"
+    ],
+    "importCount": 11,
+    "deltaModules": [
+      "service",
+      "qms",
+      "payroll"
+    ],
+    "modules": [
+      {
+        "moduleId": "stock",
+        "file": "www/modules/stock/index.html",
+        "bytes": 196443,
+        "sha256": "f53711784a1e20fab3b599ccb75d5aacda57b3777de525fbf9727fd43cd33d25",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "service",
+        "file": "www/modules/service/index.html",
+        "bytes": 236732,
+        "sha256": "01d903631e3955071a2126775f8235d89b9ec96b300ad5abdbb4d24e51273330",
+        "legacyImports": 1,
+        "deltaStyle": true,
+        "expectedDelta": true
+      },
+      {
+        "moduleId": "qms",
+        "file": "www/modules/qms/index.html",
+        "bytes": 172406,
+        "sha256": "6416be67e9d5589dd491b6d2c500459a8d5fd5cd25b87304d558318d53e49166",
+        "legacyImports": 1,
+        "deltaStyle": true,
+        "expectedDelta": true
+      },
+      {
+        "moduleId": "dsr",
+        "file": "www/modules/dsr/index.html",
+        "bytes": 182029,
+        "sha256": "cfa3724dc5024163c3c149df53096931732de22b22739a0cad20edf1d7d69bc0",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "expense",
+        "file": "www/modules/expense/index.html",
+        "bytes": 161135,
+        "sha256": "c55bbcafc7b38b935145cdaf6e618e8991c96f578352644789693c8edf7fc334",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "grooming",
+        "file": "www/modules/grooming/index.html",
+        "bytes": 84723,
+        "sha256": "1fd55b9a16a9b70614a82e3c300f780b77c9a4da55cde5785587039639840ea2",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "cro_audit",
+        "file": "www/modules/cro_audit/index.html",
+        "bytes": 137222,
+        "sha256": "f92861c06c46befda9e97b0511424cbf01b804c7fbe25dead0ad0b06767c0355",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "payroll",
+        "file": "www/modules/payroll/index.html",
+        "bytes": 265726,
+        "sha256": "be31e33114e11d611d9e3ab60ef80ca7717f35a857611f357aba9384ea49e1e4",
+        "legacyImports": 1,
+        "deltaStyle": true,
+        "expectedDelta": true
+      },
+      {
+        "moduleId": "leave",
+        "file": "www/modules/leave/index.html",
+        "bytes": 163963,
+        "sha256": "f4fb54c9e300878f75186db74925d63f2adf31078c4b8385a0808ccded39a744",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "tax",
+        "file": "www/modules/tax/index.html",
+        "bytes": 229176,
+        "sha256": "faf4b01df0b460791d349093a294e173e5f1007c5739c092f9f5eef87bb9fbcd",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      },
+      {
+        "moduleId": "planning",
+        "file": "www/modules/planning/index.html",
+        "bytes": 14760,
+        "sha256": "1e537c757f468a4639d2062489996367dd1a4d703913b5943c089a7e8541ac07",
+        "legacyImports": 1,
+        "deltaStyle": false,
+        "expectedDelta": false
+      }
+    ]
+  },
+  "etp": {
+    "file": "www/modules/etp/index.html",
+    "bytes": 34473,
+    "sha256": "b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12",
+    "expectedSha256": "b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12",
+    "legacyImports": 0
+  },
+  "planningVisualReceipt": {
+    "path": "verification/audit/PHASE-6C-PLANNING-VISUAL-RECEIPT-2026-08-24.json",
+    "bytes": 3625,
+    "sha256": "e0819699593fd2bf8e882ad7fd720598d2857fb04530dd170a513481dd3ec913"
+  },
+  "rolloutReceipt": {
+    "path": "verification/audit/PHASE-6C-LEGACY-ROLLOUT-2026-08-24.md",
+    "bytes": 2227,
+    "sha256": "fd0c616c272e7f998c0e63dcd5ed945f159edb208b51ecae218d3619fba81e88"
+  },
+  "historicalEvidence": [
+    {
+      "path": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
+      "bytes": 7452,
+      "sha256": "3233df39b36a63dc83d62dbb0f7955f502ff0531d21404f6340dc986b9d7306a"
+    },
+    {
+      "path": "verification/MAH4-MESSAGE-LIFECYCLE-BASELINE-PROFILE.json",
+      "bytes": 36078,
+      "sha256": "f143ecbc7012e9cb8f142bb003441a5152aaae20a64abe06d587b0fa7312870a"
+    }
+  ],
+  "historicalValidationBoundary": "reconstruct-pre-phase6c-authority",
+  "currentProfileDoesNotRelabelHistoricalEvidence": true,
+  "manifestModuleCount": 12
+}

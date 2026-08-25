@@ -62,6 +62,7 @@
   html.bcc-mobile .stage-chips,
   html.bcc-mobile .view-tabs,
   html.bcc-mobile .q-tabs,
+  html.bcc-mobile .etp-tabs,
   html.bcc-mobile .mnav,
   html.bcc-mobile .cat-tabs {
     display: flex !important;
@@ -83,6 +84,7 @@
   html.bcc-mobile .stage-chips::-webkit-scrollbar,
   html.bcc-mobile .view-tabs::-webkit-scrollbar,
   html.bcc-mobile .q-tabs::-webkit-scrollbar,
+  html.bcc-mobile .etp-tabs::-webkit-scrollbar,
   html.bcc-mobile .mnav::-webkit-scrollbar,
   html.bcc-mobile .cat-tabs::-webkit-scrollbar { display: none; }
 
@@ -92,6 +94,7 @@
   html.bcc-mobile .stage-chips > *,
   html.bcc-mobile .view-tabs > *,
   html.bcc-mobile .q-tabs > *,
+  html.bcc-mobile .etp-tabs > *,
   html.bcc-mobile .mnav > *,
   html.bcc-mobile .cat-tabs > * {
     flex: 0 0 auto !important;
@@ -126,17 +129,22 @@
   html.bcc-mobile[data-mod="stock"] .rtbl select,
   html.bcc-mobile[data-mod="stock"] .rtbl textarea { min-height: 44px !important; }
 
-  /* Service: stage rail stays one line and exposes a gold scroll affordance. */
+  /* Service: every stage remains visible without a sideways gesture. */
   html.bcc-mobile[data-mod="service"] .stage-chips {
-    padding: 2px 30px 8px 2px !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 2px 2px 8px !important;
     margin-right: 0 !important;
   }
 
   /* Expense: contain the 760px ledger tables and keep the active tab visible. */
   html.bcc-mobile[data-mod="expense"] .tabs {
     width: 100%;
-    padding-right: 30px !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 4px 8px !important;
   }
+  html.bcc-mobile[data-mod="expense"] .tabs > * { flex: 1 1 auto !important; }
   html.bcc-mobile[data-mod="expense"] .twrap table { max-width: none !important; }
 
   /* Payroll: expose every primary destination without a horizontal scrollbar.
@@ -165,8 +173,7 @@
     bottom: calc(116px + var(--mobile-safe-bottom)) !important;
   }
 
-  /* Leave: the large utility toolbar becomes an explicit rail, while calendar
-     and staff timelines remain locally scrollable. */
+  /* Leave: utility actions wrap so every destination is visible. */
   html.bcc-mobile[data-mod="leave"] header {
     position: static !important;
     display: block !important;
@@ -174,24 +181,21 @@
   }
   html.bcc-mobile[data-mod="leave"] .header-actions {
     display: flex !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     width: 100% !important;
     max-width: 100% !important;
-    overflow-x: auto !important;
-    padding: 8px 28px 3px 0 !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+    overflow-x: hidden !important;
+    padding: 8px 0 3px !important;
+    -webkit-mask-image: none;
   }
   html.bcc-mobile[data-mod="leave"] .header-actions::-webkit-scrollbar { display: none; }
-  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 0 0 auto !important; }
+  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 1 1 auto !important; }
   html.bcc-mobile[data-mod="leave"] #c1-desk-btn { right: 14px !important; }
   html.bcc-mobile[data-mod="leave"] .staff-week,
   html.bcc-mobile[data-mod="leave"] .staff-grid,
   html.bcc-mobile[data-mod="leave"] [class*="staff-day"] { scroll-snap-align: start; }
 
-  /* Tax: the 283px sticky stack becomes normal document flow. Controls remain
-     accessible in two compact horizontal rails. */
+  /* Tax: the sticky stack becomes normal flow and controls wrap in place. */
   html.bcc-mobile[data-mod="tax"] .hd {
     position: static !important;
     display: block !important;
@@ -199,16 +203,14 @@
   }
   html.bcc-mobile[data-mod="tax"] .hd-right {
     display: flex !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     max-width: 100% !important;
-    overflow-x: auto !important;
-    padding: 8px 28px 2px 0 !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+    overflow-x: hidden !important;
+    padding: 8px 0 2px !important;
+    -webkit-mask-image: none;
   }
   html.bcc-mobile[data-mod="tax"] .hd-right::-webkit-scrollbar { display: none; }
-  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 0 0 auto !important; }
+  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 1 1 180px !important; min-width: 0 !important; }
   html.bcc-mobile[data-mod="tax"] .view-tabs,
   html.bcc-mobile[data-mod="tax"] .mnav { position: static !important; }
 
@@ -279,6 +281,17 @@
   html.bcc-mobile[data-mod="payroll"] #c1-desk-btn {
     bottom: calc(70px + var(--mobile-safe-bottom)) !important;
   }
+  html.bcc-mobile[data-mod="expense"] .tabs {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 4px 8px !important;
+  }
+  html.bcc-mobile[data-mod="expense"] .tabs > * { flex: 1 1 auto !important; }
+  html.bcc-mobile[data-mod="service"] .stage-chips {
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+  }
   html.bcc-mobile[data-mod="tax"] .hd,
   html.bcc-mobile[data-mod="leave"] header {
     position: static !important;
@@ -288,16 +301,14 @@
   html.bcc-mobile[data-mod="tax"] .hd-right,
   html.bcc-mobile[data-mod="leave"] .header-actions {
     display: flex !important;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap !important;
     max-width: 100% !important;
-    overflow-x: auto !important;
-    padding: 8px 28px 2px 0 !important;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+    overflow-x: hidden !important;
+    padding: 8px 0 2px !important;
+    -webkit-mask-image: none;
   }
-  html.bcc-mobile[data-mod="tax"] .hd-right > *,
-  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 0 0 auto !important; }
+  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 1 1 180px !important; min-width: 0 !important; }
+  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 1 1 auto !important; }
   html.bcc-mobile[data-mod="cro_audit"] .ph,
   html.bcc-mobile[data-mod="cro_audit"] .score-banner,
   html.bcc-mobile[data-mod="cro_audit"] .submit-dk { position: static !important; }

@@ -25,7 +25,8 @@ const MODULE_IDS = [
   'payroll',
   'leave',
   'tax',
-  'planning'
+  'planning',
+  'etp'
 ];
 
 function escapeRegExp(value) {
@@ -156,55 +157,12 @@ function decodedModule(id) {
 }
 
 function calledInjectionNames() {
-  const build = extractFunction('buildModuleSrc');
-  return [...build.matchAll(/\b(inject[A-Z][A-Za-z0-9_$]*)\s*\(/g)]
-    .map(match => match[1])
-    .filter((name, position, all) => all.indexOf(name) === position);
+  return [];
 }
 
 function applyOwnerCompatibilityTransforms(html, moduleId) {
-  const candidates = calledInjectionNames().map(name => ({
-    name,
-    source: extractFunction(name)
-  })).filter(item =>
-    /SaagarOwnerSession|SaagarAdminPinCheck|st_v2_admin_mode|["']Gold["']/.test(item.source)
-  );
-
-  assert.ok(
-    candidates.length > 0,
-    'buildModuleSrc must call an Owner/PIN compatibility transform'
-  );
-
-  let output = html;
-  for (const candidate of candidates) {
-    const context = vm.createContext({
-      ADMIN_MODE_KEY: 'st_v2_admin_mode',
-      JSON,
-      String,
-      escapeHtml: value => String(value),
-      getUiMode: () => 'mobile',
-      input: output,
-      moduleId,
-      result: null,
-      __injBeforeBodyEnd(source, fragment) {
-        const at = source.toLowerCase().lastIndexOf('</body>');
-        return at >= 0
-          ? source.slice(0, at) + fragment + '\n' + source.slice(at)
-          : source + fragment;
-      }
-    });
-
-    assert.doesNotThrow(() => {
-      vm.runInContext(
-        `${candidate.source}\nresult = ${candidate.name}(input, moduleId);`,
-        context,
-        { filename: `${candidate.name}.integration.js` }
-      );
-    }, `${candidate.name} must remain a deterministic source transform`);
-    assert.equal(typeof context.result, 'string', `${candidate.name} must return HTML`);
-    output = context.result;
-  }
-  return output;
+  assert.ok(MODULE_IDS.includes(moduleId));
+  return html;
 }
 
 test('module PIN policy loads before the main shell and defaults all modules off', () => {
@@ -354,17 +312,20 @@ test('embedded Owner bridge recognises token-backed Owner sessions', () => {
     /(?:currentRole|managerContext)\s*[:=]/
   );
 
+  const runtime = fs.readFileSync(path.join(root, 'www/shared/module-runtime.js'), 'utf8');
+  assert.match(runtime, /SaagarOwnerSession/);
+  assert.match(runtime, /isOwner===true/);
   for (const moduleId of ['service', 'expense']) {
-    const transformed = applyOwnerCompatibilityTransforms(decodedModule(moduleId), moduleId);
+    const canonical = decodedModule(moduleId);
     assert.doesNotMatch(
-      transformed,
+      canonical,
       /localStorage\.getItem\(\s*["']st_v2_admin_mode["']\s*\)\s*===?\s*["']true["']/,
       `${moduleId} must not compare the token-backed Owner marker to literal true`
     );
     assert.match(
-      transformed,
-      /SaagarOwnerSession[\s\S]{0,300}isOwnerActive\s*\(/,
-      `${moduleId} must use the read-only Owner-session bridge`
+      canonical,
+      /SaagarModuleRuntime\.run\('access'/,
+      `${moduleId} must use the shared read-only access-context runtime`
     );
   }
 });
@@ -377,7 +338,7 @@ test('runtime Stock/DSR authentication has no literal Gold password fallback', (
 
   const literalGoldPassword = /(?:\b(?:pw|password)\b\s*={2,3}\s*["']Gold["']|["']Gold["']\s*={2,3}\s*\b(?:pw|password)\b)/i;
   for (const moduleId of ['stock', 'dsr']) {
-    const transformed = applyOwnerCompatibilityTransforms(decodedModule(moduleId), moduleId);
+    const transformed = decodedModule(moduleId);
     assert.doesNotMatch(
       transformed,
       literalGoldPassword,
@@ -385,8 +346,8 @@ test('runtime Stock/DSR authentication has no literal Gold password fallback', (
     );
     assert.match(
       transformed,
-      /SaagarAdminPinCheck|SaagarOwnerSession/,
-      `${moduleId} must use a shell-owned authentication bridge`
+      /SaagarModuleRuntime\.run\('access'/,
+      `${moduleId} must use the shell-owned shared access runtime`
     );
   }
 });

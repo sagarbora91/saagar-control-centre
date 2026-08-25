@@ -1,5 +1,6 @@
 package com.saagartraders.bcc;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -56,6 +57,7 @@ public class SaagarOffDevicePlugin extends Plugin {
     }
 
     @ActivityCallback
+    @SuppressLint("WrongConstant") // Flags are masked to the two persisted URI-grant bits below.
     private void folderResult(PluginCall call, ActivityResult result) {
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
             call.reject("Folder selection cancelled", "E_CANCELLED");
@@ -142,7 +144,7 @@ public class SaagarOffDevicePlugin extends Plugin {
         Date date = parseDate(dateText);
         Calendar cal = Calendar.getInstance(); cal.setTime(date); cal.setFirstDayOfWeek(Calendar.MONDAY); cal.setMinimalDaysInFirstWeek(4);
         String daily = "backup-" + dateText + ".sccbak";
-        String weekly = String.format(Locale.US, "week-%04d-W%02d.sccbak", cal.getWeekYear(), cal.get(Calendar.WEEK_OF_YEAR));
+        String weekly = String.format(Locale.US, "week-%04d-W%02d.sccbak", isoWeekYear(cal), cal.get(Calendar.WEEK_OF_YEAR));
         String monthly = "month-" + dateText.substring(0, 7) + ".sccbak";
         String expected = sha256File(source);
         String actual = writeVerified(folder, daily, source, expected);
@@ -160,6 +162,15 @@ public class SaagarOffDevicePlugin extends Plugin {
         out.put("destinationId", prefs().getString(ID_KEY, ""));
         out.put("label", prefs().getString(LABEL_KEY, "Off-device folder"));
         return out;
+    }
+
+    private static int isoWeekYear(Calendar cal) {
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int week = cal.get(Calendar.WEEK_OF_YEAR);
+        if (month == Calendar.JANUARY && week >= 52) return year - 1;
+        if (month == Calendar.DECEMBER && week == 1) return year + 1;
+        return year;
     }
     private String writeVerified(Uri folder, String name, File source, String expected) throws Exception {
         ContentResolver cr = getContext().getContentResolver();

@@ -1,0 +1,123 @@
+# Engineering measurement — A2 and A6 code-quality and UI
+
+> **NUMBERING CORRECTION (2026-08-12).** This record was originally filed under
+> the P4.x numbering in `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`.
+> That numbering is **superseded**. The authority is
+> `docs/audit/PHASE-4-MICRO-CHECKPOINTS-2026-08-12.md`, where P4.2 is *Final
+> target freeze*, P4.3 *Unapproved controlled comparison*, P4.4 *Capability
+> approval closure* and P4.5 *Localization and trusted UI closure*.
+>
+> This document is **engineering measurement only**. It closes no micro-checkpoint
+> and must not be read as one. The current mini-phase is **P4.2 — final target
+> freeze**, blocked on the A9-02 generated identity-hash contract.
+
+
+**Date:** 2026-08-12 (Asia/Kolkata)
+**Branch:** `agent/modular-phase1-shared-spine-v2`
+**Phase authority:** `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`
+**Status:** **PARTIALLY COMPLETE.** Two of five items are closed. The remaining
+three are real work, not analyser artefacts, and one of them carries a sequencing
+constraint that can invalidate the owner's capability approval if it is done in
+the wrong order (§4).
+
+---
+
+## 1. Item status at branch HEAD
+
+| Item | Phase-doc target | Now | Verdict |
+|---|---|---|---|
+| **A2-02** near-copy groups | 23 groups / 1,075 similarity edges | **0 groups / 3 edges** | **closed — pass** |
+| **A6-01** design tokens | 15 divergent definitions | **0 divergences**, 16 canonical tokens over 100 definitions | **closed — pass** |
+| **A6-03** localization bypass | 1,307 high-confidence | **1,226** | **open — fail** |
+| **A6-04** rendered target size/contrast | capture required | **unmeasured** — `evidenceProvided:false`, `identityBound:false` | **open** |
+| **A6-05** rendered matrix | 72 cells required | **unmeasured** — 0 of 72 cells | **open** |
+
+All three open items are **P1 and mandatory**. The exit criterion's escape hatch —
+"any retained non-blocking P2 item has an explicit owner disposition" — therefore
+**does not apply to any of them**. They must genuinely pass or remain open gates.
+
+## 2. A6-03 is a real finding, not an analyser artefact
+
+This matters because the preceding work packages (A4-02/C-04, A7/C-07, A8-02)
+were dominated by analyser defects, and it would be easy to assume the same here.
+It is not the same.
+
+Sampling the flagged strings by kind (`script-message` 120, `element:button` 18,
+`element:summary` 18, `element:th` 12, `element:label` 8, `attribute:placeholder`
+6, `attribute:title` 5, plus options, links, headings and one `aria-label` in the
+exposed 200-row window):
+
+```
+script-message      "Admin PIN required to switch to a higher-access role"
+                    "Storage full — export a backup (Settings → Data & backup) …"
+                    "Too many wrong PINs — try again in"
+element:button      "OK"  "Send owner digest"  "Copy text"  "Open Register"
+element:label       "Acting as"  "Full name *"  "Recipient"
+attribute:placeholder "Find a report — cash, queue, leave"
+```
+
+These are genuine user-facing English strings that bypass the shared dictionary.
+The app ships en/mr/hi. A small minority are legitimately excludable as business
+data or proper names (`EMP001`, `HDFC0001234`, `HDFC / SBI`), and a few are
+analyser noise (`"· % · check s"`), but the bulk are real.
+
+**Closing A6-03 means routing on the order of 1,200 strings through the shared
+dictionary and supplying Marathi and Hindi entries for them.** That is product
+work across the entire UI surface, and it is bounded by an external gate that no
+code change can close: `GATE-NATIVE-LANGUAGE`, fluent Marathi/Hindi review.
+
+## 3. A6-04 and A6-05 need a real capture, not analysis
+
+Both consume the runner's `--ui-evidence` input, and both currently report
+`evidenceProvided:false` / `identityBound:false` with 0 of 72 required cells.
+
+The matrix is fixed by A6-02, which passes: **12 surfaces × 2 viewports ×
+3 languages = 72 cells**. The evidence must bind browser, tooling and product
+identity, so it cannot be hand-authored — it has to come from an actual
+instrumented browser run against this exact product.
+
+This is the same class of work as P4.6's timing probes and belongs with them, on
+the same machine, in the same sitting.
+
+## 4. Sequencing constraint — A6-03 will move the capability inventory
+
+**This is the load-bearing finding of this document.**
+
+A3-02 capability identity is derived from
+`id || name || data-action || href || aria-label || title || text`. For a control
+with none of the first four, **the capability key is its visible text**.
+
+Most of the controls flagged by A6-03 are exactly that: buttons, links, labels and
+options whose only identity is their English text. Replacing that static text with
+a dictionary lookup changes the key, which changes the capability ID.
+
+Consequences if A6-03 is remediated as-is:
+
+- the A3-02 capability inventory moves;
+- the owner's **106-delta approval is bound to an exact capability ledger**
+  (`deltaSha256 0c2a1b2a…`) and would no longer describe the product;
+- C-02 would need a fresh, larger capability review — the one gate that has so far
+  passed cleanly through every iteration of this migration.
+
+**Recommended order:** give every A6-03-affected control a stable `data-action`
+first — as was done for the 38 controls that closed the A3-02 conflicts — so its
+capability ID stops depending on its text. *Then* localize. Done that way the
+inventory is unaffected and the existing approval survives.
+
+Done in the other order, localization silently churns the acceptance oracle.
+
+## 5. What was verified, and how
+
+- A2 and A6 run at branch HEAD with the discovery authorities `run.mjs` supplies.
+- A6-03's flagged strings were read from source rather than inferred from
+  fingerprints, by instrumenting a scratch copy of `a6.mjs` to expose the matched
+  value. No product or tooling file was modified to obtain this.
+- The capability-key derivation in §4 was read from `a3.mjs`, not assumed.
+
+## 6. Non-claims
+
+- Nothing in P4.5 was closed by this document. A2-02 and A6-01 were already
+  passing at HEAD; this records that fact and its evidence.
+- The 1,226 figure is the analyser's high-confidence count. The exposed evidence
+  window is 200 rows, so the per-kind breakdown in §2 is a sample, not a census.
+- No rendered-UI evidence exists, and none is claimed.

@@ -122,6 +122,16 @@
     localStorage.setItem('saagar_lang', item.language);
     localStorage.setItem('saagar_selected_date', model.profile.matrix.selectedDate);
     localStorage.setItem('saagar_text_size', model.profile.matrix.textSize);
+    /* MAH-3 harness-only session seed. The shell gained an owner-claim and role
+       gate after this harness was written; with no session it stops on a blocking
+       overlay, the blocking-shell-overlays readiness check fails, and no case can
+       ever reach geometry. These keys are written ONLY on the dedicated loopback
+       review origin, which is cleared at the top of this function before every
+       case. Nothing here ships: the shipped product never sets them. The role is
+       deliberately the least-privilege one that can open a module. */
+    localStorage.setItem('st_v2_owner_setup_v1', JSON.stringify({ v: 1, at: '2026-08-21T00:00:00.000Z', by: 'mah3-review-harness' }));
+    localStorage.setItem('st_v5_owner_name', 'MAH-3 review harness');
+    localStorage.setItem('saagar_current_role_v1', 'Store Manager');
     if (item.surface === 'planning') {
       var fixture = planningFixture();
       localStorage.setItem('saagar_festival_calendar_v1', JSON.stringify(fixture.calendar));
@@ -677,7 +687,7 @@
     if (!response.ok) throw new Error('Baseline profile request failed: ' + response.status);
     model = await response.json();
     cases = model.cases;
-    if (!Array.isArray(cases) || cases.length !== 168) throw new Error('Evidence matrix is incomplete');
+    if (!Array.isArray(cases) || cases.length !== 180) throw new Error('Evidence matrix is incomplete');
     byId('identity').textContent = model.profile.profileId + ' · profile ' + model.profileSha256.slice(0, 12) + '… · www ' + model.fingerprint.treeSha256.slice(0, 12) + '… · runner ' + model.runnerFingerprint.treeSha256.slice(0, 12) + '…';
     cases.forEach(function (item, index) {
       var option = document.createElement('option');

@@ -15,12 +15,14 @@ const repoDir = path.resolve(here, '..');
 const indexSource = fs.readFileSync(path.join(repoDir, 'www', 'index.html'), 'utf8');
 const serviceModule = loadModuleBundle().find(module => module.id === 'service');
 const service = serviceModule?.html || '';
+const serviceCss = fs.readFileSync(path.join(repoDir, 'www/modules/service/service-ui.css'), 'utf8');
 
 function functionSource(name, source = service) {
   const token = `function ${name}(`;
-  const start = source.indexOf(token);
+  const functionStart = source.indexOf(token);
+  const start = source.slice(Math.max(0, functionStart - 6), functionStart) === 'async ' ? functionStart - 6 : functionStart;
   assert.notEqual(start, -1, `${name} must exist in embedded Service`);
-  assert.equal(start, source.lastIndexOf(token), `${name} must be unique in embedded Service`);
+  assert.equal(functionStart, source.lastIndexOf(token), `${name} must be unique in embedded Service`);
   const end = source.indexOf('\nfunction ', start + token.length);
   assert.notEqual(end, -1, `${name} must have a following function boundary`);
   return source.slice(start, end);
@@ -78,10 +80,16 @@ function transitionContext({
       SaagarServiceWorkboardPolicy: policy,
       SaagarServicePersistence: persistence,
       SaagarReauth: reauth,
+      SaagarModuleBridge: {
+        serviceWorkboardPolicy: policy,
+        servicePersistence: persistence,
+        reauth
+      },
       __svcD3TransitionContext: { caseId: record.id, targetStage }
     }
   };
   context.window.parent = context.window;
+  context.SaagarModuleBridge = context.window.SaagarModuleBridge;
   vm.createContext(context);
   vm.runInContext(
     `var DB = ${JSON.stringify([record])};
@@ -92,6 +100,7 @@ function transitionContext({
      ${functionSource('svcD3RestorePersistedDb')}
      ${functionSource('svcD3CommitCases')}
      ${functionSource('svcD3Reauth')}
+     ${functionSource('svcD3CloseTransition')}
      ${functionSource('svcD3ConfirmTransition')}
      this.readDb = () => DB;`,
     context
@@ -106,10 +115,10 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
   assert.equal(serviceModule.bytes, Buffer.byteLength(service, 'utf8'));
   assert.equal((service.match(/D3-SERVICE-RUNTIME-2026-07-30/g) || []).length, 1);
   assert.equal((service.match(/D3-SERVICE-HTML-2026-07-30/g) || []).length, 1);
-  assert.equal((service.match(/D3-SERVICE-CSS-2026-07-30/g) || []).length, 1);
+  assert.equal((serviceCss.match(/D3-SERVICE-CSS-2026-07-30/g) || []).length, 1);
   assert.ok(
-    service.indexOf('D3-SERVICE-CSS-2026-07-30') < service.indexOf('<script>'),
-    'D3 CSS must remain in the document stylesheet, not an inline JavaScript string'
+    service.indexOf('href="service-ui.css"') < service.indexOf('<script>'),
+    'the pinned Service stylesheet must load before application JavaScript'
   );
   const policyAt = indexSource.indexOf('<script src="service-workboard-policy.js"></script>');
   const persistenceAt = indexSource.indexOf('<script src="service-persistence.js"></script>');
@@ -117,7 +126,7 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
   assert.ok(policyAt >= 0 && persistenceAt > policyAt && modulesAt > persistenceAt);
   assert.match(service, /id="f-stage" disabled/);
   assert.match(service, /Combined \/ untagged Service data/);
-  assert.match(service, /@media\(max-width:720px\)/);
+  assert.match(serviceCss, /@media\(max-width:720px\)/);
   inlineModuleScripts(service).forEach((source, index) => {
     assert.doesNotThrow(() => new vm.Script(source, { filename: `d3-service-.js` }));
   });
@@ -134,6 +143,7 @@ test('D3 workboard render excludes customer PII and escapes operational labels',
   const context = {
     window: {
       SaagarServiceWorkboardPolicy: policy,
+      SaagarModuleBridge: { serviceWorkboardPolicy: policy },
       __svcD3BoardCaseIds: []
     },
     document: { getElementById: id => id === 'svc-d3-workboard' ? host : null },
@@ -157,6 +167,7 @@ test('D3 workboard render excludes customer PII and escapes operational labels',
     }[char]))
   };
   context.window.parent = context.window;
+  context.SaagarModuleBridge = context.window.SaagarModuleBridge;
   vm.createContext(context);
   vm.runInContext(
     `${functionSource('svcD3PolicyApi')}
@@ -172,7 +183,7 @@ test('D3 workboard render excludes customer PII and escapes operational labels',
   assert.doesNotMatch(host.innerHTML, /<script>|<img/);
 });
 
-test('D3 ready transition commits exactly once with readiness and audit', () => {
+test('D3 ready transition commits exactly once with readiness and audit', async () => {
   const operations = [];
   const storage = {
     getItem: () => null,
@@ -183,7 +194,7 @@ test('D3 ready transition commits exactly once with readiness and audit', () => 
     targetStage: 'ready',
     storage
   });
-  vm.runInContext('svcD3ConfirmTransition()', fixture.context);
+  await vm.runInContext('svcD3ConfirmTransition()', fixture.context);
   assert.equal(operations.length, 1);
   const saved = JSON.parse(operations[0].value)[0];
   assert.equal(saved.stage, 'ready');
@@ -197,7 +208,7 @@ test('D3 ready transition commits exactly once with readiness and audit', () => 
   assert.ok(fixture.toasts.some(message => message.includes('Ready for Pickup')));
 });
 
-test('D3 storage failure restores persisted cases and emits no success', () => {
+test('D3 storage failure restores persisted cases and emits no success', async () => {
   const persisted = [{ id: 'WS-1', status: 'open', stage: 'repair', expDel: '2026-08-01' }];
   let writes = 0;
   const storage = {
@@ -209,7 +220,7 @@ test('D3 storage failure restores persisted cases and emits no success', () => {
     targetStage: 'ready',
     storage
   });
-  vm.runInContext('svcD3ConfirmTransition()', fixture.context);
+  await vm.runInContext('svcD3ConfirmTransition()', fixture.context);
   assert.equal(writes, 1);
   assert.equal(fixture.context.readDb()[0].stage, 'repair');
   assert.notEqual(fixture.context.window.__svcD3TransitionContext, null);
@@ -218,7 +229,7 @@ test('D3 storage failure restores persisted cases and emits no success', () => {
   assert.equal(fixture.renders(), 1);
 });
 
-test('D3 backward transition denies without reauth and audits an approved override', () => {
+test('D3 backward transition denies without reauth and audits an approved override', async () => {
   const record = {
     id: 'WS-1',
     status: 'open',
@@ -241,7 +252,7 @@ test('D3 backward transition denies without reauth and audits an approved overri
     reauth: () => false,
     overrides: { 'svc-d3-reason': { value: 'Customer reports repeat issue' } }
   });
-  vm.runInContext('svcD3ConfirmTransition()', denied.context);
+  await vm.runInContext('svcD3ConfirmTransition()', denied.context);
   assert.equal(deniedWrites, 0);
   assert.equal(denied.context.readDb()[0].stage, 'ready');
   assert.ok(denied.toasts.some(message => message.includes('approval denied')));
@@ -258,7 +269,7 @@ test('D3 backward transition denies without reauth and audits an approved overri
     reauth: () => { approvals += 1; return true; },
     overrides: { 'svc-d3-reason': { value: 'Customer reports repeat issue' } }
   });
-  vm.runInContext('svcD3ConfirmTransition()', approved.context);
+  await vm.runInContext('svcD3ConfirmTransition()', approved.context);
   assert.equal(approvals, 1);
   assert.equal(operations.length, 1);
   const saved = JSON.parse(operations[0].value)[0];

@@ -1,0 +1,3903 @@
+{
+  "auditId": "A2",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 280,
+          "normalizedChars": 218,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 280,
+          "normalizedChars": 641,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 280,
+          "normalizedChars": 391,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 280,
+          "normalizedChars": 293,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 280,
+          "normalizedChars": 1041,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 280,
+          "normalizedChars": 1207,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 280,
+          "normalizedChars": 193,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 280,
+          "normalizedChars": 545,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 280,
+          "normalizedChars": 658,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-124",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 2826,
+          "normalizedChars": 190,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 2826,
+          "normalizedChars": 544,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 2826,
+          "normalizedChars": 460,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-128",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 2826,
+          "normalizedChars": 221,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-121",
+          "groupSha256": "ccccc763e841c6c53a1046bdab58b67eb9f035dc48efdc8ac5f4c7730ec08581",
+          "line": 2826,
+          "normalizedChars": 2267,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-144",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 2828,
+          "normalizedChars": 342,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-133",
+          "groupSha256": "30f5e6b85104ab19852a3165d5526051c9fda146cd0d4e53aa8063e7285b9973",
+          "line": 2828,
+          "normalizedChars": 3080,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 2828,
+          "normalizedChars": 213,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-145",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 2828,
+          "normalizedChars": 290,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 2828,
+          "normalizedChars": 202,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-146",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 2828,
+          "normalizedChars": 176,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 2828,
+          "normalizedChars": 1930,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 2830,
+          "normalizedChars": 168,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 2830,
+          "normalizedChars": 170,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-152",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 2830,
+          "normalizedChars": 744,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "stReauth",
+          "groupSha256": "89c7ba366f6f467e1a60e2446e98248e7aca1237d9b81a5c9a049372dbc0d969",
+          "line": 1729,
+          "normalizedChars": 516,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "readContext",
+          "groupSha256": "256bff997a2713179e179c62d1eacca3b37d0b9a184d8c8215716af49490d63d",
+          "line": 3805,
+          "normalizedChars": 316,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "accessMessage",
+          "groupSha256": "c0d046137aac3a74b75229fe57ec5a909dca09a0484864c9ac9b3aceac663ed8",
+          "line": 3815,
+          "normalizedChars": 216,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "refreshOwnerControls",
+          "groupSha256": "e0d212b476ae6b91dedaef292bbc7e977fc21b6019b2f7bddc6c60a9e8790ce4",
+          "line": 3819,
+          "normalizedChars": 160,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "revokeManagerIfNeeded",
+          "groupSha256": "3a931655c03019cc3379141bbca18a307a8a3d8654f9b9bc56b4ca3ccc1ff5e8",
+          "line": 3825,
+          "normalizedChars": 283,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "syncContext",
+          "groupSha256": "2ce4a0438d0a93fa74033e8f66b89d57ca20782dd44f7dad0b4887f3818477a4",
+          "line": 3831,
+          "normalizedChars": 165,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setup",
+          "groupSha256": "6f6030c666f2acbd930dfb0bc5c9a80a42fbd968569664901dc354cbf837c324",
+          "line": 3837,
+          "normalizedChars": 2381,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setMode",
+          "groupSha256": "51998c4c7eb1144701b34b2308ce90ef9f6210575189badcd8d0029ba7f452ad",
+          "line": 3841,
+          "normalizedChars": 374,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "goTab",
+          "groupSha256": "c0750fc905d0b3876e9402404cf918eeb2e41dde1b032f3c1452421b34a035bd",
+          "line": 3849,
+          "normalizedChars": 316,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setLoginRole",
+          "groupSha256": "53c7fae0d997d906952a346193ffc381fea69c644d9a4bb531338f8ffb7aeabe",
+          "line": 3859,
+          "normalizedChars": 480,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "loginSM",
+          "groupSha256": "2f1fb29ba1d20b4bf7549d466783a773bd69db7ca519e8d168ef9af59f85dd87",
+          "line": 3867,
+          "normalizedChars": 315,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-288",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 2459,
+          "normalizedChars": 190,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 2459,
+          "normalizedChars": 544,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 2459,
+          "normalizedChars": 460,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-292",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 2459,
+          "normalizedChars": 221,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-308",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 2461,
+          "normalizedChars": 342,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-297",
+          "groupSha256": "30f5e6b85104ab19852a3165d5526051c9fda146cd0d4e53aa8063e7285b9973",
+          "line": 2461,
+          "normalizedChars": 3080,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 2461,
+          "normalizedChars": 213,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-309",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 2461,
+          "normalizedChars": 290,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 2461,
+          "normalizedChars": 202,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-310",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 2461,
+          "normalizedChars": 176,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 2461,
+          "normalizedChars": 1930,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 2463,
+          "normalizedChars": 168,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 2463,
+          "normalizedChars": 170,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-316",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 2463,
+          "normalizedChars": 744,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "readContext",
+          "groupSha256": "256bff997a2713179e179c62d1eacca3b37d0b9a184d8c8215716af49490d63d",
+          "line": 2467,
+          "normalizedChars": 316,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "accessMessage",
+          "groupSha256": "c0d046137aac3a74b75229fe57ec5a909dca09a0484864c9ac9b3aceac663ed8",
+          "line": 2477,
+          "normalizedChars": 216,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "refreshOwnerControls",
+          "groupSha256": "e0d212b476ae6b91dedaef292bbc7e977fc21b6019b2f7bddc6c60a9e8790ce4",
+          "line": 2481,
+          "normalizedChars": 160,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "revokeManagerIfNeeded",
+          "groupSha256": "3a931655c03019cc3379141bbca18a307a8a3d8654f9b9bc56b4ca3ccc1ff5e8",
+          "line": 2487,
+          "normalizedChars": 283,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "syncContext",
+          "groupSha256": "2ce4a0438d0a93fa74033e8f66b89d57ca20782dd44f7dad0b4887f3818477a4",
+          "line": 2493,
+          "normalizedChars": 165,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setup",
+          "groupSha256": "6f6030c666f2acbd930dfb0bc5c9a80a42fbd968569664901dc354cbf837c324",
+          "line": 2499,
+          "normalizedChars": 2381,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setMode",
+          "groupSha256": "51998c4c7eb1144701b34b2308ce90ef9f6210575189badcd8d0029ba7f452ad",
+          "line": 2503,
+          "normalizedChars": 374,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "goTab",
+          "groupSha256": "c0750fc905d0b3876e9402404cf918eeb2e41dde1b032f3c1452421b34a035bd",
+          "line": 2511,
+          "normalizedChars": 316,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setLoginRole",
+          "groupSha256": "53c7fae0d997d906952a346193ffc381fea69c644d9a4bb531338f8ffb7aeabe",
+          "line": 2521,
+          "normalizedChars": 480,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "loginSM",
+          "groupSha256": "2f1fb29ba1d20b4bf7549d466783a773bd69db7ca519e8d168ef9af59f85dd87",
+          "line": 2529,
+          "normalizedChars": 315,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 280,
+          "normalizedChars": 218,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 280,
+          "normalizedChars": 641,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 280,
+          "normalizedChars": 391,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 280,
+          "normalizedChars": 293,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 280,
+          "normalizedChars": 1041,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 280,
+          "normalizedChars": 1207,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 280,
+          "normalizedChars": 193,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 280,
+          "normalizedChars": 545,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 280,
+          "normalizedChars": 658,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "stReauth",
+          "groupSha256": "89c7ba366f6f467e1a60e2446e98248e7aca1237d9b81a5c9a049372dbc0d969",
+          "line": 766,
+          "normalizedChars": 516,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-93",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 1691,
+          "normalizedChars": 190,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 1691,
+          "normalizedChars": 544,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 1691,
+          "normalizedChars": 460,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-97",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 1691,
+          "normalizedChars": 221,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-113",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 1693,
+          "normalizedChars": 342,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-102",
+          "groupSha256": "30f5e6b85104ab19852a3165d5526051c9fda146cd0d4e53aa8063e7285b9973",
+          "line": 1693,
+          "normalizedChars": 3080,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 1693,
+          "normalizedChars": 213,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-114",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 1693,
+          "normalizedChars": 290,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 1693,
+          "normalizedChars": 202,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-115",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 1693,
+          "normalizedChars": 176,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 1693,
+          "normalizedChars": 1930,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 1695,
+          "normalizedChars": 168,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 1695,
+          "normalizedChars": 170,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-121",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 1695,
+          "normalizedChars": 744,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 280,
+          "normalizedChars": 218,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 280,
+          "normalizedChars": 641,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 280,
+          "normalizedChars": 391,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 280,
+          "normalizedChars": 293,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 280,
+          "normalizedChars": 1041,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 280,
+          "normalizedChars": 1207,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 280,
+          "normalizedChars": 193,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 280,
+          "normalizedChars": 545,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 280,
+          "normalizedChars": 658,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 280,
+          "normalizedChars": 218,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 280,
+          "normalizedChars": 641,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 280,
+          "normalizedChars": 391,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 280,
+          "normalizedChars": 293,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 280,
+          "normalizedChars": 1041,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 280,
+          "normalizedChars": 1207,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 280,
+          "normalizedChars": 193,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 280,
+          "normalizedChars": 545,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 280,
+          "normalizedChars": 658,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-184",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 3516,
+          "normalizedChars": 190,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 3516,
+          "normalizedChars": 544,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 3516,
+          "normalizedChars": 460,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-188",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 3516,
+          "normalizedChars": 221,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-181",
+          "groupSha256": "ccccc763e841c6c53a1046bdab58b67eb9f035dc48efdc8ac5f4c7730ec08581",
+          "line": 3516,
+          "normalizedChars": 2267,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-204",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 3518,
+          "normalizedChars": 342,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-193",
+          "groupSha256": "30f5e6b85104ab19852a3165d5526051c9fda146cd0d4e53aa8063e7285b9973",
+          "line": 3518,
+          "normalizedChars": 3080,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 3518,
+          "normalizedChars": 213,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-205",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 3518,
+          "normalizedChars": 290,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 3518,
+          "normalizedChars": 202,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-206",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 3518,
+          "normalizedChars": 176,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 3518,
+          "normalizedChars": 1930,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 3520,
+          "normalizedChars": 168,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 3520,
+          "normalizedChars": 170,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-212",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 3520,
+          "normalizedChars": 744,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "stReauth",
+          "groupSha256": "89c7ba366f6f467e1a60e2446e98248e7aca1237d9b81a5c9a049372dbc0d969",
+          "line": 1835,
+          "normalizedChars": 516,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 285,
+          "normalizedChars": 218,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 285,
+          "normalizedChars": 641,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 285,
+          "normalizedChars": 391,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 285,
+          "normalizedChars": 293,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 285,
+          "normalizedChars": 1041,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 285,
+          "normalizedChars": 1207,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 285,
+          "normalizedChars": 193,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 285,
+          "normalizedChars": 545,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 285,
+          "normalizedChars": 658,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-189",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 4053,
+          "normalizedChars": 190,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 4053,
+          "normalizedChars": 544,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 4053,
+          "normalizedChars": 460,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-193",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 4053,
+          "normalizedChars": 221,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-186",
+          "groupSha256": "ccccc763e841c6c53a1046bdab58b67eb9f035dc48efdc8ac5f4c7730ec08581",
+          "line": 4053,
+          "normalizedChars": 2267,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-209",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 4055,
+          "normalizedChars": 342,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-198",
+          "groupSha256": "30f5e6b85104ab19852a3165d5526051c9fda146cd0d4e53aa8063e7285b9973",
+          "line": 4055,
+          "normalizedChars": 3080,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 4055,
+          "normalizedChars": 213,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-210",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 4055,
+          "normalizedChars": 290,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 4055,
+          "normalizedChars": 202,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-211",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 4055,
+          "normalizedChars": 176,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 4055,
+          "normalizedChars": 1930,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 4057,
+          "normalizedChars": 168,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 4057,
+          "normalizedChars": 170,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-217",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 4057,
+          "normalizedChars": 744,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 281,
+          "normalizedChars": 218,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "mk",
+          "groupSha256": "928898531b4cd2b3d53bc94328002222f916b9c2bd3cc8bfcbc51802ecf8bbea",
+          "line": 281,
+          "normalizedChars": 641,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "95fe2faee1daa8a83c1b4533d1258e88738b14b06b87a4f856b3eab591b63b83",
+          "line": 281,
+          "normalizedChars": 391,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "chipCenter",
+          "groupSha256": "b34fd9a727037c3c1976b91325084eeeed64bc4ecfe5b4fc3a80943f0433b29e",
+          "line": 281,
+          "normalizedChars": 293,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "e54a99ab8212945224159b4360480cbd1b9f555f6e4cebbbe3b16103fbc4ad5f",
+          "line": 281,
+          "normalizedChars": 1041,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "e9a617b8ed079672f2af3ec9435150bf9368531f29a4b756e5b3d443b898f993",
+          "line": 281,
+          "normalizedChars": 1207,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "qClose",
+          "groupSha256": "f77d0843e426c4a6d2de7b43b845fb9bb429de802521721111278853fcc8de93",
+          "line": 281,
+          "normalizedChars": 193,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "f793e1a7e2a43490f67402762dfffb918001fe16a058d6789359cf0a4d7eba39",
+          "line": 281,
+          "normalizedChars": 545,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "f89ae1a20e54ce3ac3968e74aadd8dbcba321c5d311171505a284ab1b3abd5c3",
+          "line": 281,
+          "normalizedChars": 658,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-105",
+          "groupSha256": "13e3f00122c3671daca194d7159ec75081f4263236aeab978717973729a5bb1b",
+          "line": 4929,
+          "normalizedChars": 190,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "pad",
+          "groupSha256": "857d6b420a6f7f1e7b6f99e836a29aee2e31312fd38be3c80f04a1f6fa2c06eb",
+          "line": 4929,
+          "normalizedChars": 544,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "915bc278385386f151a755bfb06711ce298428b061062aa6fa525133fe268c7c",
+          "line": 4929,
+          "normalizedChars": 460,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-109",
+          "groupSha256": "b264d4156a179056beb3b981e389f50eb43e586b324f24155cfe7b740056b131",
+          "line": 4929,
+          "normalizedChars": 221,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-125",
+          "groupSha256": "2dc180e0979e83603d557bf8e3a34c5c9e6e1375521d4d26fbd0d7fc63748330",
+          "line": 4931,
+          "normalizedChars": 342,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "read",
+          "groupSha256": "60f342aa819e24d5ba96832b236d89e41baafc46e7ecbe29dd4c243483486b4d",
+          "line": 4931,
+          "normalizedChars": 213,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-126",
+          "groupSha256": "7d7605c31c57a8c754c909b03f728bcba0960e7344e3b15d7939fd60a7ef66cc",
+          "line": 4931,
+          "normalizedChars": 290,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "unav",
+          "groupSha256": "c8a890e7f585036bb06ba81e7bc6a89fa5dda8c9025070130314d894a1612f35",
+          "line": 4931,
+          "normalizedChars": 202,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-127",
+          "groupSha256": "e1694749e3a3f9a453937d0ef8f9daf634307bdc2bba85a24f3f86924955a6ec",
+          "line": 4931,
+          "normalizedChars": 176,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "apply",
+          "groupSha256": "fb38e3885260a3cfd7eca6dfe72e9cbfe9e44ee6316b8f05fb83775a610fd391",
+          "line": 4931,
+          "normalizedChars": 1930,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setItem",
+          "groupSha256": "b69644eb89d27ca8237424a659cebbd17cd11c7576903b52e636bccb61a5bb58",
+          "line": 4933,
+          "normalizedChars": 168,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "emit",
+          "groupSha256": "d32db3891f773e490f874e4a4d252de9bd803699361ec4e287fe2a7cb43a2301",
+          "line": 4933,
+          "normalizedChars": 170,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-133",
+          "groupSha256": "dfed5551aa913cd67a46958f4622f83ecfddac688f1c53143813f8a518381838",
+          "line": 4933,
+          "normalizedChars": 744,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "readContext",
+          "groupSha256": "256bff997a2713179e179c62d1eacca3b37d0b9a184d8c8215716af49490d63d",
+          "line": 4937,
+          "normalizedChars": 316,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "accessMessage",
+          "groupSha256": "c0d046137aac3a74b75229fe57ec5a909dca09a0484864c9ac9b3aceac663ed8",
+          "line": 4947,
+          "normalizedChars": 216,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "refreshOwnerControls",
+          "groupSha256": "e0d212b476ae6b91dedaef292bbc7e977fc21b6019b2f7bddc6c60a9e8790ce4",
+          "line": 4951,
+          "normalizedChars": 160,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "revokeManagerIfNeeded",
+          "groupSha256": "3a931655c03019cc3379141bbca18a307a8a3d8654f9b9bc56b4ca3ccc1ff5e8",
+          "line": 4957,
+          "normalizedChars": 283,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "syncContext",
+          "groupSha256": "2ce4a0438d0a93fa74033e8f66b89d57ca20782dd44f7dad0b4887f3818477a4",
+          "line": 4963,
+          "normalizedChars": 165,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setup",
+          "groupSha256": "6f6030c666f2acbd930dfb0bc5c9a80a42fbd968569664901dc354cbf837c324",
+          "line": 4969,
+          "normalizedChars": 2381,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setMode",
+          "groupSha256": "51998c4c7eb1144701b34b2308ce90ef9f6210575189badcd8d0029ba7f452ad",
+          "line": 4973,
+          "normalizedChars": 374,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "goTab",
+          "groupSha256": "c0750fc905d0b3876e9402404cf918eeb2e41dde1b032f3c1452421b34a035bd",
+          "line": 4981,
+          "normalizedChars": 316,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "setLoginRole",
+          "groupSha256": "53c7fae0d997d906952a346193ffc381fea69c644d9a4bb531338f8ffb7aeabe",
+          "line": 4991,
+          "normalizedChars": 480,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "loginSM",
+          "groupSha256": "2f1fb29ba1d20b4bf7549d466783a773bd69db7ca519e8d168ef9af59f85dd87",
+          "line": 4999,
+          "normalizedChars": 315,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "d01e1ee7a2a7a6134a79363091ea30a1f528822d0425e7237ee25b51a6f388b5",
+          "line": 6,
+          "normalizedChars": 1198,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "5d247864f9522bb44760d4db59aba7bb3566cb1739a814a58b4d2c150c92dc94",
+          "line": 7,
+          "normalizedChars": 1190,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "e13dde1cc067352e9429b71706d82a397764aeaead848e347179729d9d849846",
+          "line": 9,
+          "normalizedChars": 676,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "stReauth",
+          "groupSha256": "89c7ba366f6f467e1a60e2446e98248e7aca1237d9b81a5c9a049372dbc0d969",
+          "line": 1444,
+          "normalizedChars": 516,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "anonymous-21",
+          "groupSha256": "5db45cb73a7a502c87e0a5c407132156f09498fc455f0ea96118f044954bbc5c",
+          "line": 21,
+          "normalizedChars": 279,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "BYTE_IDENTICAL_FUNCTION",
+          "functionName": "onclick",
+          "groupSha256": "6fd25c165a8a8d39976f3612a4218c3717fdcfb225b6b0eb105a1c06a3b452ed",
+          "line": 280,
+          "normalizedChars": 218,
+          "path": "www/modules/stock/index.html"
+        }
+      ],
+      "id": "A2-01",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 10,
+        "duplicateGroups": 39,
+        "eligibleFunctions": 2196,
+        "functions": 4628
+      },
+      "notes": "Bodies are line-ending-normalized and trimmed; names and parameter lists are intentionally outside the body comparison.",
+      "result": "fail",
+      "rule": "A function body of at least 160 LF-normalized characters must not be byte-identical across three or more product files.",
+      "severity": "P2",
+      "title": "Byte-identical repeated function bodies"
+    },
+    {
+      "evidence": [
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "ap",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 8998,
+          "normalizedChars": 4412,
+          "path": "www/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1066,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1252,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-121",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 2826,
+          "normalizedChars": 2408,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 2826,
+          "normalizedChars": 482,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-144",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 2828,
+          "normalizedChars": 366,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-145",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 2828,
+          "normalizedChars": 317,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-91",
+          "groupSha256": "749acb790aca99acc83fb31812095753eee41baa22d59747b4dd63055c485f5a",
+          "line": 3803,
+          "normalizedChars": 3131,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-285",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 2459,
+          "normalizedChars": 2450,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 2459,
+          "normalizedChars": 482,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-308",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 2461,
+          "normalizedChars": 366,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-309",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 2461,
+          "normalizedChars": 317,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-320",
+          "groupSha256": "749acb790aca99acc83fb31812095753eee41baa22d59747b4dd63055c485f5a",
+          "line": 2465,
+          "normalizedChars": 3131,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1066,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1252,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "stPrintDoc",
+          "groupSha256": "6d41115ff93809e16914ddc83bf174903d9f65db70dc98fc610e72be654199e6",
+          "line": 794,
+          "normalizedChars": 362,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-90",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 1691,
+          "normalizedChars": 2450,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 1691,
+          "normalizedChars": 482,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-113",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 1693,
+          "normalizedChars": 366,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-114",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 1693,
+          "normalizedChars": 317,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1066,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1252,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1066,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 280,
+          "normalizedChars": 1252,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-181",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 3516,
+          "normalizedChars": 2408,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 3516,
+          "normalizedChars": 482,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-204",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 3518,
+          "normalizedChars": 366,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-205",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 3518,
+          "normalizedChars": 317,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "stPrintDoc",
+          "groupSha256": "6d41115ff93809e16914ddc83bf174903d9f65db70dc98fc610e72be654199e6",
+          "line": 1869,
+          "normalizedChars": 352,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 285,
+          "normalizedChars": 422,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 285,
+          "normalizedChars": 660,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 285,
+          "normalizedChars": 1066,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 285,
+          "normalizedChars": 1252,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 285,
+          "normalizedChars": 532,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 285,
+          "normalizedChars": 4562,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-186",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 4053,
+          "normalizedChars": 2408,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 4053,
+          "normalizedChars": 482,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-209",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 4055,
+          "normalizedChars": 366,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-210",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 4055,
+          "normalizedChars": 317,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "stPrintDoc",
+          "groupSha256": "6d41115ff93809e16914ddc83bf174903d9f65db70dc98fc610e72be654199e6",
+          "line": 746,
+          "normalizedChars": 362,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 281,
+          "normalizedChars": 422,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 281,
+          "normalizedChars": 660,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 281,
+          "normalizedChars": 1066,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "buildCards",
+          "groupSha256": "41d24ea70f24803879c44855c5e0d9942e603305653fd6ed0034d60d02d6ac56",
+          "line": 281,
+          "normalizedChars": 1252,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 281,
+          "normalizedChars": 532,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 281,
+          "normalizedChars": 4562,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-102",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 4929,
+          "normalizedChars": 2450,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 4929,
+          "normalizedChars": 482,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-125",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 4931,
+          "normalizedChars": 366,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-126",
+          "groupSha256": "0dc2ed355472b5f733ecbf32fa4eb5d2ea4f3885cdd473604897446e1fe24cf4",
+          "line": 4931,
+          "normalizedChars": 317,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-137",
+          "groupSha256": "749acb790aca99acc83fb31812095753eee41baa22d59747b4dd63055c485f5a",
+          "line": 4935,
+          "normalizedChars": 3131,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-152",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 3873,
+          "normalizedChars": 2408,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 3873,
+          "normalizedChars": 482,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-187",
+          "groupSha256": "749acb790aca99acc83fb31812095753eee41baa22d59747b4dd63055c485f5a",
+          "line": 3879,
+          "normalizedChars": 3131,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "stPrintDoc",
+          "groupSha256": "6d41115ff93809e16914ddc83bf174903d9f65db70dc98fc610e72be654199e6",
+          "line": 1272,
+          "normalizedChars": 352,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 280,
+          "normalizedChars": 422,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bindDelegates",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 280,
+          "normalizedChars": 660,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 280,
+          "normalizedChars": 532,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "acbb350bb6f6e1b2ca0d2ed1d8e4e2f197c784efcd0859ede3979be0e6093ab7",
+          "line": 280,
+          "normalizedChars": 4562,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-153",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 3775,
+          "normalizedChars": 2408,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 3775,
+          "normalizedChars": 482,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 6,
+          "normalizedChars": 1486,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-18",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 7,
+          "normalizedChars": 709,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 9,
+          "normalizedChars": 339,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-7",
+          "groupSha256": "3381c947902a2ae600e821fbbcb7175bf49f46d6ad1fea1e782e6b118c210026",
+          "line": 15,
+          "normalizedChars": 1482,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-24",
+          "groupSha256": "305be0545a7bc39340812d425d34f26fb9fd8b7e4f1cfa5f3aa5cc479d9082c7",
+          "line": 16,
+          "normalizedChars": 689,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "hint",
+          "groupSha256": "d9111c7280eeef48aef09a40a1644b996a5f644142d63b5fb7d659a2fd3f48e8",
+          "line": 16,
+          "normalizedChars": 319,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-33",
+          "groupSha256": "081201cd26c394076d1eb193d810971d97fc9cc67e9dc76cba6a3b4b1e1cbd07",
+          "line": 17,
+          "normalizedChars": 422,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "boot",
+          "groupSha256": "1e0a19c7b40a0922aee3cefc1682e46d18599b17767a18651d67cc073867d58e",
+          "line": 17,
+          "normalizedChars": 649,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-45",
+          "groupSha256": "89d9431be0d13a9806dd609c325a32456aa7957a0497d8039fa120fd6e0b551a",
+          "line": 17,
+          "normalizedChars": 532,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-46",
+          "groupSha256": "a2b32feecc0aaeed40c24c6b38391914c4987c9b432f904ae4ff9ca48023d0f3",
+          "line": 18,
+          "normalizedChars": 2387,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "modalUp",
+          "groupSha256": "f0562b25bac273e85ba8853eee9374fafcb1c08818449620a48b615e4b8f3e77",
+          "line": 18,
+          "normalizedChars": 484,
+          "path": "www/shared/module-runtime.js"
+        }
+      ],
+      "id": "A2-02",
+      "mandatory": true,
+      "metric": {
+        "candidateFunctions": 1611,
+        "candidateLimit": 5000,
+        "nearCopyGroups": 13,
+        "shingleSize": 5,
+        "similarityEdges": 849,
+        "similarityThreshold": 0.9
+      },
+      "notes": "Similarity is multiset Dice similarity over ordered five-token shingles, preserving local control-flow order while normalizing identifiers and literals; SHA-256 identities are emitted for each cluster.",
+      "result": "fail",
+      "rule": "After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% ordered five-token-shingle similarity must not span three or more product files.",
+      "severity": "P2",
+      "title": "Near-copy function bodies"
+    },
+    {
+      "evidence": [
+        {
+          "blockSha256": "19d438880fb79800de51aab79849363c58c4dd839b8a5f1f54f7bf6464facebb",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 29,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": ":root"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/cro_audit/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "19d438880fb79800de51aab79849363c58c4dd839b8a5f1f54f7bf6464facebb",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 29,
+          "path": "www/modules/dsr/index.html",
+          "selector": ":root"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/dsr/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/dsr/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/dsr/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/dsr/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/dsr/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/dsr/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": ".gm-tbl-budget td.gm-del-cell"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": ".gm-tbl-firmpl td.gm-del-cell"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": ".gm-tbl-monthsum td.gm-del-cell"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": ".gm-tbl-vendors td.gm-del-cell"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/expense/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/expense/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/expense/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/expense/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/grooming/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/grooming/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/grooming/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/grooming/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/grooming/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/grooming/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "19d438880fb79800de51aab79849363c58c4dd839b8a5f1f54f7bf6464facebb",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 29,
+          "path": "www/modules/leave/index.html",
+          "selector": ":root"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/leave/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/leave/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/leave/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/leave/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/leave/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/leave/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/payroll/index.html",
+          "selector": "#gm-table td.gm-del-cell"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/payroll/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/payroll/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/payroll/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/payroll/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/payroll/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/payroll/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/planning/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/planning/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/planning/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/planning/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/planning/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/planning/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "006e2bfb609d3962a59d5469e7c4c08bab229862e9e6b79cd789ead69c0d18a7",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/qms/index.html",
+          "selector": "#croMasterTbl td.gm-del-cell"
+        },
+        {
+          "blockSha256": "19d438880fb79800de51aab79849363c58c4dd839b8a5f1f54f7bf6464facebb",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 29,
+          "path": "www/modules/qms/index.html",
+          "selector": ":root"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/qms/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/qms/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/qms/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/qms/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/qms/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/qms/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/service/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/service/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/service/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/service/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/service/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/service/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/stock/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/stock/index.html",
+          "selector": ")(); </script> <style id=\"st-v5-back-style\"> #st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/stock/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/stock/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/stock/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/stock/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        },
+        {
+          "blockSha256": "42291bc9ee34631febcbdc78c7e75bdc6a0d5f2ec5c94d299b6a9d0515bfaef6",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 15,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile[data-mod=\"qms\"] #st-v5-qms-menu"
+        },
+        {
+          "blockSha256": "44ec627f26738dbab25fafd2a1a505dd81236db0bdf6fd5bbff0e0adde1a4893",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile .accordion-header"
+        },
+        {
+          "blockSha256": "73880044568d40e617c6795b88c492bc08145a66c3e1a0dc50871eb7a1474189",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 11,
+          "path": "www/modules/tax/index.html",
+          "selector": ".st-v5-emp-chip"
+        },
+        {
+          "blockSha256": "8523310d2afed9e75dcf388b6e08e5029411770a445fc43235b25bdc2bf24246",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 18,
+          "path": "www/modules/tax/index.html",
+          "selector": "#st-v5-home-fab"
+        },
+        {
+          "blockSha256": "98c2ca06a199fb9b93980a117e618a488b719a5c7be6845c4655ce7672a55692",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile .sticky-actionbar"
+        },
+        {
+          "blockSha256": "9da331b4033d9fd635aacc1cae6b84299d7b0f678d6efb48431b6ea09382508b",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile .bcc-card-row"
+        },
+        {
+          "blockSha256": "9e5f0f8d245420217c81c40cad9bafc54e1dc1b10c0acec0e9af1424f39e3772",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/tax/index.html",
+          "selector": "#st-v5-next-chips button"
+        },
+        {
+          "blockSha256": "9eb9ad8982105884e5d4bdd3028be616a47919cc2e1ba3226a98e0e3d17819b1",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 6,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile .tab-chips"
+        },
+        {
+          "blockSha256": "a67a84c0a0166d00989bc0d2d5e25138e2b1bffe7d6f23dcbd4b21434ec0fb2c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/tax/index.html",
+          "selector": "#st-v5-home-fab svg"
+        },
+        {
+          "blockSha256": "bba50f8d0549099cd1c48cb5f95a47f4dafbf805d9a917185f883dc2f007fb9a",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 8,
+          "path": "www/modules/tax/index.html",
+          "selector": "#st-v5-next-chips"
+        },
+        {
+          "blockSha256": "feefd617d3b61a3b4883ccca6c5e455fd5b355b347fa3f5113ed2a266d03af9c",
+          "code": "DUPLICATE_CSS_DECLARATIONS",
+          "declarations": 7,
+          "path": "www/modules/tax/index.html",
+          "selector": "html.bcc-mobile .bcc-card"
+        }
+      ],
+      "id": "A2-03",
+      "mandatory": true,
+      "metric": {
+        "affectedModules": 11,
+        "duplicateGroups": 13,
+        "eligibleBlocks": 753
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "An identical CSS declaration block containing at least six declarations must not appear in three or more module files.",
+      "severity": "P2",
+      "title": "Repeated CSS declaration blocks"
+    },
+    {
+      "evidence": [
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "VERSION",
+          "line": 5,
+          "path": "www/etp-core-contract.js",
+          "valueKind": "string",
+          "valueLength": 18,
+          "valueSha256": "9e11db9f2aa5051acfabf14e14b1049bbb10fe4cdf0fa3855ff95126e7570ed0"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CONTRACT_VERSION",
+          "line": 10,
+          "path": "www/etp-recovery-integration.js",
+          "valueKind": "number",
+          "valueLength": 1,
+          "valueSha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "VERSION",
+          "line": 9,
+          "path": "www/etp-retail-profile.js",
+          "valueKind": "string",
+          "valueLength": 18,
+          "valueSha256": "9e11db9f2aa5051acfabf14e14b1049bbb10fe4cdf0fa3855ff95126e7570ed0"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "ADMIN_MODE_KEY",
+          "line": 2327,
+          "path": "www/index.html",
+          "valueKind": "string",
+          "valueLength": 16,
+          "valueSha256": "a0ef62b1a7a51284abe32e65e3c605b61a7aaa23ab61ab37f306a46f74903529"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 2828,
+          "path": "www/modules/cro_audit/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 2828,
+          "path": "www/modules/cro_audit/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 2461,
+          "path": "www/modules/expense/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 2461,
+          "path": "www/modules/expense/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "ADMIN_MODE_KEY",
+          "line": 838,
+          "path": "www/modules/expense/index.html",
+          "valueKind": "string",
+          "valueLength": 16,
+          "valueSha256": "a0ef62b1a7a51284abe32e65e3c605b61a7aaa23ab61ab37f306a46f74903529"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 1693,
+          "path": "www/modules/grooming/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 1693,
+          "path": "www/modules/grooming/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 3518,
+          "path": "www/modules/leave/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 3518,
+          "path": "www/modules/leave/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 4055,
+          "path": "www/modules/payroll/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 4055,
+          "path": "www/modules/payroll/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 4931,
+          "path": "www/modules/service/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 4931,
+          "path": "www/modules/service/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 3875,
+          "path": "www/modules/stock/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 3875,
+          "path": "www/modules/stock/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CKEY",
+          "line": 3777,
+          "path": "www/modules/tax/index.html",
+          "valueKind": "string",
+          "valueLength": 23,
+          "valueSha256": "c96682ec7540d3bda26ce77a8d5050052d462025f01479c9153f10422ebd9b40"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 3777,
+          "path": "www/modules/tax/index.html",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "KEY",
+          "line": 19,
+          "path": "www/shared/module-runtime.js",
+          "valueKind": "string",
+          "valueLength": 25,
+          "valueSha256": "349fd5f9956e3ee28b70e8bb4c6fee8d5c1c17d54e33937073aea18ac7699406"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "LOG_KEY",
+          "line": 33,
+          "path": "www/sqlite-store.js",
+          "valueKind": "string",
+          "valueLength": 17,
+          "valueSha256": "1303f468af600808d91587d94c16eb17e2ddd9b7e3e050bf55d16ab8137ebcef"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CONTRACT_VERSION",
+          "line": 13,
+          "path": "www/storage-capacity-policy.js",
+          "valueKind": "number",
+          "valueLength": 1,
+          "valueSha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "LOG_KEY",
+          "line": 67,
+          "path": "www/storage-core.js",
+          "valueKind": "string",
+          "valueLength": 17,
+          "valueSha256": "1303f468af600808d91587d94c16eb17e2ddd9b7e3e050bf55d16ab8137ebcef"
+        },
+        {
+          "code": "DUPLICATE_DOMAIN_CONSTANT_AUTHORITY",
+          "constant": "CONTRACT_VERSION",
+          "line": 12,
+          "path": "www/storage-recovery-policy.js",
+          "valueKind": "number",
+          "valueLength": 1,
+          "valueSha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+        }
+      ],
+      "id": "A2-04",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 17,
+        "authorityCandidates": 110,
+        "duplicatedConstants": 6
+      },
+      "notes": "Literal values are fingerprinted rather than emitted. Ordinary use sites are excluded; only uppercase domain-definition sites are counted.",
+      "result": "fail",
+      "rule": "The same named domain constant and literal value must not be defined as an authority in two or more product files.",
+      "severity": "P1",
+      "title": "Duplicated approved domain constants"
+    },
+    {
+      "evidence": [
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:0ef26e74483af1fcce1c",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:13d41850df2c92414d97",
+          "consumerCount": 2,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:1cfdd0c3f1287f953619",
+          "consumerCount": 4,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:1e25289eba1c01cc6c79",
+          "consumerCount": 10,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:373d44c633bb649ec08a",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:4b1e30ce66530f5bf2f1",
+          "consumerCount": 4,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:b23c6a74a5ef905a1c64",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:b616a23d53920f7a2c7b",
+          "consumerCount": 9,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:d64c38eccf4e29c3aee1",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:e29853ce294f21c22a5c",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:e7c0aed76e0e318c6fd9",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:f5ecda5daf094beceb50",
+          "consumerCount": 2,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 0,
+          "authoritySites": [],
+          "code": "MISSING_SHARED_CONCEPT_AUTHORITY",
+          "conceptId": "storage:fd726913a39ceed79df8",
+          "consumerCount": 2,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 10,
+          "authoritySites": [
+            "www/index.html:2344:EMP_MASTER_KEY",
+            "www/modules/cro_audit/index.html:2828:KEY",
+            "www/modules/expense/index.html:2461:KEY",
+            "www/modules/grooming/index.html:1693:KEY",
+            "www/modules/leave/index.html:3518:KEY",
+            "www/modules/payroll/index.html:4055:KEY",
+            "www/modules/service/index.html:4931:KEY",
+            "www/modules/stock/index.html:3875:KEY",
+            "www/modules/tax/index.html:3777:KEY",
+            "www/shared/module-runtime.js:19:KEY"
+          ],
+          "code": "MULTIPLE_SHARED_CONCEPT_AUTHORITIES",
+          "conceptId": "storage:349fd5f9956e3ee28b70",
+          "consumerCount": 10,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 2,
+          "authoritySites": [
+            "www/index.html:2327:ADMIN_MODE_KEY",
+            "www/modules/expense/index.html:838:ADMIN_MODE_KEY"
+          ],
+          "code": "MULTIPLE_SHARED_CONCEPT_AUTHORITIES",
+          "conceptId": "storage:a0ef62b1a7a51284abe3",
+          "consumerCount": 2,
+          "kind": "persistent-key"
+        },
+        {
+          "authorityCount": 8,
+          "authoritySites": [
+            "www/modules/cro_audit/index.html:2828:CKEY",
+            "www/modules/expense/index.html:2461:CKEY",
+            "www/modules/grooming/index.html:1693:CKEY",
+            "www/modules/leave/index.html:3518:CKEY",
+            "www/modules/payroll/index.html:4055:CKEY",
+            "www/modules/service/index.html:4931:CKEY",
+            "www/modules/stock/index.html:3875:CKEY",
+            "www/modules/tax/index.html:3777:CKEY"
+          ],
+          "code": "MULTIPLE_SHARED_CONCEPT_AUTHORITIES",
+          "conceptId": "storage:c96682ec7540d3bda26c",
+          "consumerCount": 8,
+          "kind": "persistent-key"
+        }
+      ],
+      "id": "A2-05",
+      "mandatory": true,
+      "metric": {
+        "authorityGaps": 16,
+        "conceptRegistrySha256": "10f6d015142d1e38c04c69f62f881a8e8f97efacd9bd8d2b5d7f9e974da7cdc7",
+        "multipleAuthorities": 3,
+        "sharedConcepts": 24,
+        "zeroAuthorities": 13
+      },
+      "notes": "Persistent key names are represented by one-way concept IDs; manifest shared assets use the module manifest as their declared authority.",
+      "result": "fail",
+      "rule": "Each application-owned asset or persistent-key concept shared by at least two modules must have exactly one declared product authority.",
+      "severity": "P1",
+      "title": "Single authority for shared concepts"
+    }
+  ],
+  "metrics": {
+    "constantAuthorityCandidateCount": 110,
+    "cssBlockCount": 753,
+    "functionCount": 4628
+  },
+  "title": "Duplication and ownership"
+}

@@ -1,0 +1,71 @@
+{
+  "format": "SAAGAR_EXPENSE_MEMORY_PHYSICAL_DIAGNOSTIC",
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-22T21:35:00+05:30",
+  "capturedBy": "assistant through adb dumpsys meminfo on the owner's connected device",
+  "device": {
+    "model": "SM-T875",
+    "serial": "R52N807PTTE",
+    "androidRelease": "13",
+    "apiLevel": 33,
+    "type": "physical-android"
+  },
+  "artifact": {
+    "sha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
+    "package": "com.saagartraders.bcc",
+    "productCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9",
+    "signingClass": "debug-signed seeded test candidate, not a production release"
+  },
+  "method": {
+    "description": "Record package TOTAL PSS on the module grid, open Expense and settle, return to the module grid, request Android foreground memory trim once, settle, and repeat the complete open/close sequence once.",
+    "source": "adb shell dumpsys meminfo com.saagartraders.bcc",
+    "collectionCycles": 2,
+    "compatibleGovernedInstrumentation": false,
+    "limitation": "This is an external ADB diagnostic. It is not the signed, source-bound SAAGAR_A10_DEVICE_RUNTIME_ACCEPTANCE producer required by the audit runner."
+  },
+  "measurements": {
+    "preOpen": {
+      "pssKb": 210791,
+      "pssBytes": 215849984,
+      "rssKb": 309348
+    },
+    "cycle1": {
+      "openPssKb": 201222,
+      "openPssBytes": 206051328,
+      "postClosePssKb": 193990,
+      "postClosePssBytes": 198645760,
+      "openScreenshotSha256": "2cc16af49d9d92aaff140c0321086efc55f0bf4896cfa3153ac8db8b4c95e0c9",
+      "closedScreenshotSha256": "d1a70962453b06779aa7968516f03045e8a8d4cfe3cfb56ff7c24f91a949a902"
+    },
+    "cycle2": {
+      "openPssKb": 196450,
+      "openPssBytes": 201164800,
+      "postClosePssKb": 194751,
+      "postClosePssBytes": 199425024,
+      "openScreenshotSha256": "43a774c23e76b28277ba297b01f182f19b36a788213a36097ff9a9bc62de6721",
+      "closedScreenshotSha256": "d1a70962453b06779aa7968516f03045e8a8d4cfe3cfb56ff7c24f91a949a902"
+    },
+    "finalRetainedDeltaKb": -16040,
+    "finalRetainedDeltaBytes": -16424960,
+    "finalRetainedDeltaPercent": -7.61,
+    "maximumAllowedIncreasePercent": 10,
+    "maximumAllowedIncreaseBytes": 21584998
+  },
+  "stability": {
+    "fatalExceptions": 0,
+    "anrs": 0,
+    "expenseOpenedSuccessfullyBothCycles": true,
+    "returnedToModuleGridBothCycles": true
+  },
+  "result": "diagnostic-pass-no-retained-growth-observed",
+  "auditCheckStatus": {
+    "id": "A10-05",
+    "status": "unmeasured-carried-exception",
+    "reason": "The diagnostic is healthy, but external ADB readings cannot satisfy the audit runner's compatible-instrumentation, APK-binding and owner-acceptance envelope."
+  },
+  "nonClaims": [
+    "Does not close governed A10-05.",
+    "Does not substitute for staff UAT, production signing or release approval.",
+    "Does not prove behavior on an API-23-class/OEM device."
+  ]
+}

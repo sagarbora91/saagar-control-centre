@@ -1,0 +1,44 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "GATE-NATIVE-LANGUAGE",
+  "decision": "approve",
+  "state": "closed",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "fluent-marathi-hindi-reviewer"
+  },
+  "receivedAt": "2026-08-17T21:24:58.7284094+05:30",
+  "productCommit": "ad2d643dfa371c05779aafc52e0c2ecf618c1a42",
+  "productFingerprintSha256": "08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e",
+  "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a",
+  "renderedEvidenceCommit": "cc9a117c5245f352922da5c9f699daa16226bbf3",
+  "renderedEvidenceRecord": "verification/audit/attested/rendered-ui/phase4c1-a6-rendered-ad2d643-667ab0d-20260817.json",
+  "renderedEvidenceFileSha256": "56261e39fbc34482966b586b29029c4dcd205c8c98b84fbba0247f2d0b08d8f5",
+  "renderedEvidenceSha256": "60fd8194776a932badf8b6f565c041f49646f18101acac329d578c7a15275b1e",
+  "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+  "matrix": {
+    "cells": 72,
+    "marathiHindiCells": 48,
+    "measuredTargets": 2394,
+    "measuredContrastSamples": 6105,
+    "targetViolations": 0,
+    "contrastViolations": 0,
+    "browserErrors": 0,
+    "a6_04": "pass",
+    "a6_05": "pass"
+  },
+  "approvalText": "I, Sagar (sagarbora91), reviewed all 72 rendered UI matrix cells, including all 48 Marathi/Hindi cells, for product commit ad2d643dfa371c05779aafc52e0c2ecf618c1a42, product fingerprint SHA-256 08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e, audit tooling 667ab0d2bc83f8f6347976548f30f5a1ccf6b12a, rendered-evidence SHA-256 60fd8194776a932badf8b6f565c041f49646f18101acac329d578c7a15275b1e, evidence-file SHA-256 56261e39fbc34482966b586b29029c4dcd205c8c98b84fbba0247f2d0b08d8f5, and matrix SHA-256 db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff. I confirm the Marathi and Hindi wording renders legibly and retains the intended meaning, with no unresolved mistranslation, clipping, overlap, or truncation, and I approve closure of GATE-NATIVE-LANGUAGE for this exact identity. This does not close A10-01, physical-device, UAT, production-signing, or release approval.",
+  "scope": {
+    "closes": ["GATE-NATIVE-LANGUAGE"],
+    "doesNotClose": [
+      "A10-01",
+      "physical-device-acceptance",
+      "staff-uat",
+      "production-signing",
+      "release-approval"
+    ]
+  },
+  "registryNote": "The frozen audit-v1 OPEN_GATES registry remains unchanged. This exact identity-bound owner record closes only GATE-NATIVE-LANGUAGE for Phase 4C.1."
+}
