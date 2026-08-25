@@ -37,5 +37,15 @@
       operations:function(){return getOperations().map(function(x){return clone(x.operation);});}
     };return freeze({ok:true,adapter:freeze(adapter)});
   }
-  return freeze({VERSION:VERSION,createE3:createE3,createE4:createE4});
+  function createE6(options){
+    if(!exact(options,['operationalStore','scopeKey','now'])||!repository(options.operationalStore)||!scope(options.scopeKey)||typeof options.now!=='function')return fail('ETP_E6_ADAPTER_INVALID');var repo=options.operationalStore,s=scope(options.scopeKey),overlayId='E6-STATE';
+    function query(){return {domain:'E6',storeCode:s.storeCode,financialYear:s.financialYear,scopeKey:s.scopeKey,overlayId:overlayId};}
+    function checkedBinding(v){return rec(v)&&v.source==='ETP_VERIFIED'&&v.scopeKey===s.scopeKey&&/^etp_[a-f0-9]{32}$/.test(v.generationId||'')&&id(v.receiptId)?{source:'ETP_VERIFIED',scopeKey:v.scopeKey,generationId:v.generationId,receiptId:v.receiptId}:null;}
+    function checkedPolicy(v){return rec(v)&&id(v.approvalId)&&/^[a-f0-9]{64}$/.test(v.sourceSha256||'')?{approvalId:v.approvalId,sourceSha256:v.sourceSha256}:null;}
+    function checkedState(v){var b=rec(v)&&checkedBinding(v.binding),p=rec(v)&&checkedPolicy(v.policy),items=rec(v)&&v.exceptions;if(!exact(v,['contractVersion','binding','policy','exceptions','updatedAt'])||v.contractVersion!=='ETP_E6_OPERATIONAL_STATE_V1'||!b||!p||!Array.isArray(items)||items.length>500||typeof v.updatedAt!=='string'||isNaN(Date.parse(v.updatedAt)))return null;for(var i=0;i<items.length;i++){var x=items[i];if(!rec(x)||x.scopeKey!==s.scopeKey||typeof x.id!=='string'||x.id.length<3||x.id.length>320||['OPEN','ACKNOWLEDGED','CLOSED'].indexOf(x.status)<0)return null;}return {contractVersion:'ETP_E6_OPERATIONAL_STATE_V1',binding:b,policy:p,exceptions:clone(items),updatedAt:new Date(Date.parse(v.updatedAt)).toISOString()};}
+    function load(){var out=repo.get(query()),payload,state;if(!out||out.ok!==true)throw new Error('ETP_E6_ADAPTER_READ_FAILED');if(!out.found)return null;payload=out.overlay.payload;if(!exact(payload,['kind','state'])||payload.kind!=='E6_OPERATIONAL_STATE'||!(state=checkedState(payload.state)))throw new Error('ETP_E6_ADAPTER_RECORD_INVALID');return clone(state);}
+    function save(value){var state=checkedState(value),prior,out;if(!state)throw new Error('ETP_E6_ADAPTER_RECORD_INVALID');prior=repo.get(query());if(!prior||prior.ok!==true)throw new Error('ETP_E6_ADAPTER_READ_FAILED');out=repo.put({domain:'E6',storeCode:s.storeCode,financialYear:s.financialYear,scopeKey:s.scopeKey,overlayId:overlayId,updatedAt:options.now(),payload:{kind:'E6_OPERATIONAL_STATE',state:state}},prior.revision);if(!out||out.ok!==true)throw new Error(out&&out.code==='ETP_STORE_REVISION_CONFLICT'?'ETP_ADAPTER_CONCURRENCY_CONFLICT':'ETP_E6_ADAPTER_WRITE_FAILED');return clone(state);}
+    return freeze({ok:true,adapter:freeze({load:load,save:save,canReadVerifiedScope:function(binding){return repo.canReadVerifiedScope(s.scopeKey,binding);}})});
+  }
+  return freeze({VERSION:VERSION,createE3:createE3,createE4:createE4,createE6:createE6});
 });

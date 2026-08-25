@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 51) fail('sharedAssets must contain exactly fifty-one entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 54) fail('sharedAssets must contain exactly fifty-four entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -209,6 +209,7 @@
       ,{ id: 'etp-operational-adapters', file: 'etp-operational-adapters.js' }
       ,{ id: 'etp-operational-runtime', file: 'etp-operational-runtime.js' }
       ,{ id: 'etp-e4-authority-intake', file: 'etp-e4-authority-intake.js' }
+      ,{ id: 'etp-e6-authority-intake', file: 'etp-e6-authority-intake.js' }
       ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }
       ,{ id: 'etp-e3-orchestrator', file: 'etp-e3-orchestrator.js' }
       ,{ id: 'etp-e3-presentation', file: 'etp-e3-presentation.js' }
@@ -217,6 +218,8 @@
       ,{ id: 'etp-e4-orchestrator', file: 'etp-e4-orchestrator.js' }
       ,{ id: 'etp-e4-presentation', file: 'etp-e4-presentation.js' }
       ,{ id: 'etp-e4-presentation-css', file: 'etp-e4-presentation.css' }
+      ,{ id: 'etp-e6-presentation', file: 'etp-e6-presentation.js' }
+      ,{ id: 'etp-e6-presentation-css', file: 'etp-e6-presentation.css' }
       ,{ id: 'etp-operational-gateway', file: 'etp-operational-gateway.js' }
       ,{ id: 'etp-operational-mount', file: 'etp-operational-mount.js' }
       ,{ id: 'etp-e3-verified-join', file: 'etp-e3-verified-join.js' }
@@ -455,8 +458,8 @@
       "id": "etp-operational-adapters",
       "version": 1,
       "file": "etp-operational-adapters.js",
-      "bytes": 7379,
-      "sha256": "f8134aa0e4926217ff85b7cdf4a24af061545e56552e85f4252375f76a7639eb"
+      "bytes": 10152,
+      "sha256": "b3f7e908edecb8ffde2f52c5fbabfd91997bfec8ff58619c95564f97c82d49d6"
     },
     {
       "id": "etp-operational-runtime",
@@ -471,6 +474,13 @@
       "file": "etp-e4-authority-intake.js",
       "bytes": 11007,
       "sha256": "b63238a928804ee967251161548317dc7445c51f6d8970983080a5544331fbd9"
+    },
+    {
+      "id": "etp-e6-authority-intake",
+      "version": 1,
+      "file": "etp-e6-authority-intake.js",
+      "bytes": 8054,
+      "sha256": "2d233055212ff5772ee05f436a63d656f5c708035aba59baf757c4ec99048a9d"
     },
     {
       "id": "etp-cro-reconciliation",
@@ -529,18 +539,32 @@
       "sha256": "e053628978a5e9ee95f2f5f13e31dae1603cdc23ed36082e8aa44a86a021cc5b"
     },
     {
+      "id": "etp-e6-presentation",
+      "version": 1,
+      "file": "etp-e6-presentation.js",
+      "bytes": 16561,
+      "sha256": "b4f833974dd260a3c3290323125044e44e1cee105e6047c1074515715c068e85"
+    },
+    {
+      "id": "etp-e6-presentation-css",
+      "version": 1,
+      "file": "etp-e6-presentation.css",
+      "bytes": 2240,
+      "sha256": "0b398ac5f73fe145221787defd9cb1c5e4aff96feca59f4fec093b6d2b37c130"
+    },
+    {
       "id": "etp-operational-gateway",
       "version": 1,
       "file": "etp-operational-gateway.js",
-      "bytes": 6853,
-      "sha256": "88f23525e6ce282d8644f09412bb56ba1509b369111238cc4863a66e10fb8e5d"
+      "bytes": 13293,
+      "sha256": "e45ad9bbcd064187ad8db41238d945f83dce1a75755dc82082a9a70c32eeb0b8"
     },
     {
       "id": "etp-operational-mount",
       "version": 1,
       "file": "etp-operational-mount.js",
-      "bytes": 5867,
-      "sha256": "202598454b39ae4bd8e3133c21bb7349126728d35c76b0047ee0a4395630d913"
+      "bytes": 6823,
+      "sha256": "46afc4a8a1cdb8c0c353a3540d5210b12207c4d9b58753af892ec012b55f1ee1"
     },
     {
       "id": "etp-e3-verified-join",
@@ -553,22 +577,22 @@
       "id": "etp-operational-bootstrap",
       "version": 1,
       "file": "etp-operational-bootstrap.js",
-      "bytes": 10348,
-      "sha256": "8a9d8a2439831397ea26866e5c14cc63cf6c9e88dfb075e2fd8d207412493506"
+      "bytes": 14718,
+      "sha256": "c22f360ec2d6f58b8f63e493bae0430a674bb7eb3c4db6383271f0b75ca1eec8"
     },
     {
       "id": "etp-operational-shell-composer",
       "version": 1,
       "file": "etp-operational-shell-composer.js",
-      "bytes": 7352,
-      "sha256": "6f2fe1d7773b12d023d22c4538b96c93a81b38cb782f8fb429b19b08388a370f"
+      "bytes": 7504,
+      "sha256": "89e56f88eaf813cacddd78108ef794b32fb325c6b736844f9acf00efbe60a2b2"
     },
     {
       "id": "etp-operational-module-host",
       "version": 1,
       "file": "etp-operational-module-host.js",
-      "bytes": 5145,
-      "sha256": "2b40d1e2389e3524a4c8147d079eaca18560023e92861fb4585a84d472d810ed"
+      "bytes": 5796,
+      "sha256": "34bfcbb068cf305112a2a31cafa45095efdc2b90716a446ed63cb893719f90ef"
     },
     {
       "id": "etp-operational-frame-bridge",
@@ -581,8 +605,8 @@
       "id": "etp-exception-monitor",
       "version": 1,
       "file": "etp-exception-monitor.js",
-      "bytes": 15570,
-      "sha256": "a51e2b4f9c47e4c79ea2ae27d3d9fe1f01bc9e26bf9eed5979605ee4c9984b8e"
+      "bytes": 24312,
+      "sha256": "2e32a0a3a1491c95ddd2e474118e27b3adeb35d952f89dc70b3dbcfaeadf76a0"
     },
     {
       "id": "etp-incentive-control",
@@ -771,8 +795,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 38454,
-      "sha256": "cfe4ef521cd775081b62a6b985445ccc2307c0da43066ab92738e03c63b92d69",
+      "bytes": 38604,
+      "sha256": "b6d7e88c565383bdc87cd077ef23bfe90ebb22489b4883b5b1366b77c63dad12",
       "src": "modules/etp/index.html"
     }
   ]
