@@ -27,6 +27,7 @@
     "test:phase6i": "node --test tests/phase6i-source-freeze.test.mjs",
     "test:v6-gate0": "node --test tests/v6-etp-gate0-authority-freeze.test.mjs",
     "test:v6-foundation": "node --test tests/v6-etp-operational-foundation.test.mjs",
+    "test:v6-etp-wave1": "node --test tests/v6-etp-operational-store.test.mjs tests/v6-etp-e3-orchestrator.test.mjs tests/v6-etp-e4-orchestrator.test.mjs",
     "test:c1": "node --test tests/c1-operations-policy.test.mjs tests/c1-controls-integration.test.mjs",
     "test:mobile": "node --test tests/mobile-layout-remediation.test.mjs",
     "test:settings": "node --test tests/settings-navigation-architecture.test.mjs",
