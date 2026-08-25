@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 47) fail('sharedAssets must contain exactly forty-seven entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 50) fail('sharedAssets must contain exactly fifty entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -220,6 +220,9 @@
       ,{ id: 'etp-operational-mount', file: 'etp-operational-mount.js' }
       ,{ id: 'etp-e3-verified-join', file: 'etp-e3-verified-join.js' }
       ,{ id: 'etp-operational-bootstrap', file: 'etp-operational-bootstrap.js' }
+      ,{ id: 'etp-operational-shell-composer', file: 'etp-operational-shell-composer.js' }
+      ,{ id: 'etp-operational-module-host', file: 'etp-operational-module-host.js' }
+      ,{ id: 'etp-operational-frame-bridge', file: 'etp-operational-frame-bridge.js' }
       ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }
       ,{ id: 'etp-incentive-control', file: 'etp-incentive-control.js' }
       ,{ id: 'etp-operations-consumer', file: 'etp-operations-consumer.js' }
@@ -546,6 +549,27 @@
       "sha256": "8010200fbea985fbd103979d492a1d1f64d712c2e65070db83cd780148e0e89d"
     },
     {
+      "id": "etp-operational-shell-composer",
+      "version": 1,
+      "file": "etp-operational-shell-composer.js",
+      "bytes": 7352,
+      "sha256": "6f2fe1d7773b12d023d22c4538b96c93a81b38cb782f8fb429b19b08388a370f"
+    },
+    {
+      "id": "etp-operational-module-host",
+      "version": 1,
+      "file": "etp-operational-module-host.js",
+      "bytes": 5145,
+      "sha256": "2b40d1e2389e3524a4c8147d079eaca18560023e92861fb4585a84d472d810ed"
+    },
+    {
+      "id": "etp-operational-frame-bridge",
+      "version": 1,
+      "file": "etp-operational-frame-bridge.js",
+      "bytes": 869,
+      "sha256": "9d873fac0f72818eb5104cad07ffbd00258cd61ebce3bf02f75421c96734c05d"
+    },
+    {
       "id": "etp-exception-monitor",
       "version": 1,
       "file": "etp-exception-monitor.js",
@@ -739,8 +763,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 37489,
-      "sha256": "c7a19c4e33c934f8fb93246c7939836e8f8b9a6d1b7b3e1401c905c8c5d60b2f",
+      "bytes": 38454,
+      "sha256": "cfe4ef521cd775081b62a6b985445ccc2307c0da43066ab92738e03c63b92d69",
       "src": "modules/etp/index.html"
     }
   ]

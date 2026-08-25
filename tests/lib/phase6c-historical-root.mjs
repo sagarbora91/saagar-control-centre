@@ -126,8 +126,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     }
     const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
     let manifest = fs.readFileSync(manifestPath, 'utf8')
-      .replace('input.sharedAssets.length !== 47', 'input.sharedAssets.length !== 48')
-      .replace('sharedAssets must contain exactly forty-seven entries', 'sharedAssets must contain exactly forty-eight entries')
+      .replace('input.sharedAssets.length !== 50', 'input.sharedAssets.length !== 51')
+      .replace('sharedAssets must contain exactly fifty entries', 'sharedAssets must contain exactly fifty-one entries')
       .replace("      ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }\n",
         "      ,{ id: 'module-mobile-common-css', file: 'shared/module-mobile-common.css' }\n      ,{ id: 'module-mobile-legacy-css', file: 'shared/module-mobile-legacy.css' }\n");
     const legacyEntry = `    {\n      "id": "module-mobile-legacy-css",\n      "version": 1,\n      "file": "shared/module-mobile-legacy.css",\n      "bytes": ${authority.length},\n      "sha256": "${sha256(authority)}"\n    }`;
@@ -146,7 +146,7 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/shell-responsive-runtime.js'));
   const etpPhase6hPath = path.join(workspaceRoot, 'www/modules/etp/index.html');
   fs.writeFileSync(etpPhase6hPath, restorePrePhase6h1EtpIndex(fs.readFileSync(etpPhase6hPath, 'utf8')), 'utf8');
-  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js', 'etp-operational-foundation.js', 'etp-operational-store.js', 'etp-operational-adapters.js', 'etp-operational-runtime.js', 'etp-cro-reconciliation.js', 'etp-e3-orchestrator.js', 'etp-e3-presentation.js', 'etp-e3-presentation.css', 'etp-target-planning.js', 'etp-e4-orchestrator.js', 'etp-e4-presentation.js', 'etp-e4-presentation.css', 'etp-operational-gateway.js', 'etp-operational-mount.js', 'etp-e3-verified-join.js', 'etp-operational-bootstrap.js', 'etp-exception-monitor.js', 'etp-incentive-control.js', 'etp-operations-consumer.js']) {
+  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js', 'etp-operational-foundation.js', 'etp-operational-store.js', 'etp-operational-adapters.js', 'etp-operational-runtime.js', 'etp-cro-reconciliation.js', 'etp-e3-orchestrator.js', 'etp-e3-presentation.js', 'etp-e3-presentation.css', 'etp-target-planning.js', 'etp-e4-orchestrator.js', 'etp-e4-presentation.js', 'etp-e4-presentation.css', 'etp-operational-gateway.js', 'etp-operational-mount.js', 'etp-e3-verified-join.js', 'etp-operational-bootstrap.js', 'etp-operational-shell-composer.js', 'etp-operational-module-host.js', 'etp-operational-frame-bridge.js', 'etp-exception-monitor.js', 'etp-incentive-control.js', 'etp-operations-consumer.js']) {
     const assetPath = path.join(workspaceRoot, 'www', asset); if (fs.existsSync(assetPath)) fs.rmSync(assetPath);
   }
   const phase6hGatewayPath = path.join(workspaceRoot, 'www/etp-module-gateway.js');
@@ -191,8 +191,8 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     .replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"'), 'utf8');
   const manifestPath = path.join(workspaceRoot, 'www/module-manifest.js');
   let manifestSource = fs.readFileSync(manifestPath, 'utf8')
-    .replace("input.sharedAssets.length !== 48", "input.sharedAssets.length !== 27")
-    .replace("sharedAssets must contain exactly forty-eight entries", "sharedAssets must contain exactly twenty-seven entries")
+    .replace("input.sharedAssets.length !== 51", "input.sharedAssets.length !== 27")
+    .replace("sharedAssets must contain exactly fifty-one entries", "sharedAssets must contain exactly twenty-seven entries")
     .replace("input.sharedAssets.length !== 27", "input.sharedAssets.length !== 25")
     .replace("sharedAssets must contain exactly twenty-seven entries", "sharedAssets must contain exactly twenty-five entries")
     .replace("input.sharedAssets.length !== 25", "input.sharedAssets.length !== 20")
@@ -218,6 +218,9 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
     "      ,{ id: 'etp-operational-mount', file: 'etp-operational-mount.js' }\n",
     "      ,{ id: 'etp-e3-verified-join', file: 'etp-e3-verified-join.js' }\n",
     "      ,{ id: 'etp-operational-bootstrap', file: 'etp-operational-bootstrap.js' }\n",
+    "      ,{ id: 'etp-operational-shell-composer', file: 'etp-operational-shell-composer.js' }\n",
+    "      ,{ id: 'etp-operational-module-host', file: 'etp-operational-module-host.js' }\n",
+    "      ,{ id: 'etp-operational-frame-bridge', file: 'etp-operational-frame-bridge.js' }\n",
     "      ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }\n",
     "      ,{ id: 'etp-incentive-control', file: 'etp-incentive-control.js' }\n",
     "      ,{ id: 'etp-operations-consumer', file: 'etp-operations-consumer.js' }\n",

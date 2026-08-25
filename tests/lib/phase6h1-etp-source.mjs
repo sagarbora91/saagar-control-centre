@@ -1,6 +1,11 @@
 /* Deterministic reversal of the additive Phase 6H.1 ETP analytics wiring. */
 export function restorePrePhase6h1EtpIndex(source) {
   return String(source)
+    .replace('  <script src="../../etp-operational-module-host.js"></script>\n', '')
+    .replace('  <script src="../../etp-operational-frame-bridge.js"></script>\n', '')
+    .replace('      var presentationController = null, operationalController = null, operationalSequence = 0;', '      var presentationController = null;')
+    .replace('        refreshOperational();\n', '')
+    .replace(/      async function refreshOperational\(\) \{[\s\S]*?^      \}\n/m, '')
     .replace('Select one or more R003, R013, R022 and R025 exports. Monthly exports are combined locally;', 'Select the exact R003, R013, R022 and R025 reports. A workbook may span multiple financial years;')
     .replace('<select data-field="financial-year" data-etp-scope="financialYear" id="etpFinancialYear"><option value="">Select financial year</option></select>', '<input data-field="financial-year" data-etp-scope="financialYear" inputmode="numeric" maxlength="7" placeholder="2026-27" autocomplete="off">')
     .replaceAll(' type="file" multiple accept=', ' type="file" accept=')

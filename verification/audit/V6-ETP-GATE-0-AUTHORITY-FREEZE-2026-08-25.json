@@ -109,6 +109,21 @@
       "bytes": 9029,
       "sha256": "8010200fbea985fbd103979d492a1d1f64d712c2e65070db83cd780148e0e89d"
     },
+    "OPERATIONAL_SHELL_COMPOSER": {
+      "path": "www/etp-operational-shell-composer.js",
+      "bytes": 7352,
+      "sha256": "6f2fe1d7773b12d023d22c4538b96c93a81b38cb782f8fb429b19b08388a370f"
+    },
+    "OPERATIONAL_MODULE_HOST": {
+      "path": "www/etp-operational-module-host.js",
+      "bytes": 5145,
+      "sha256": "2b40d1e2389e3524a4c8147d079eaca18560023e92861fb4585a84d472d810ed"
+    },
+    "OPERATIONAL_FRAME_BRIDGE": {
+      "path": "www/etp-operational-frame-bridge.js",
+      "bytes": 869,
+      "sha256": "9d873fac0f72818eb5104cad07ffbd00258cd61ebce3bf02f75421c96734c05d"
+    },
     "E6": {
       "path": "www/etp-exception-monitor.js",
       "bytes": 15570,

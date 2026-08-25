@@ -66,6 +66,9 @@ export function createV6EtpGate0Freeze() {
       OPERATIONAL_MOUNT: source('www/etp-operational-mount.js'),
       E3_VERIFIED_JOIN: source('www/etp-e3-verified-join.js'),
       OPERATIONAL_BOOTSTRAP: source('www/etp-operational-bootstrap.js'),
+      OPERATIONAL_SHELL_COMPOSER: source('www/etp-operational-shell-composer.js'),
+      OPERATIONAL_MODULE_HOST: source('www/etp-operational-module-host.js'),
+      OPERATIONAL_FRAME_BRIDGE: source('www/etp-operational-frame-bridge.js'),
       E6: source('www/etp-exception-monitor.js'),
       E5: source('www/etp-incentive-control.js'),
       E7_OPERATIONAL_SERVICE_ONLY: source('www/service-workboard-policy.js')
