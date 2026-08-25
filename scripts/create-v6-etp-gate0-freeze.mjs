@@ -53,11 +53,14 @@ export function createV6EtpGate0Freeze() {
     contractBaselines: {
       OPERATIONAL_FOUNDATION: source('www/etp-operational-foundation.js'),
       OPERATIONAL_STORE: source('www/etp-operational-store.js'),
+      OPERATIONAL_ADAPTERS: source('www/etp-operational-adapters.js'),
       E3_OWNER_AUTHORITY: source('docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md'),
       E3: source('www/etp-cro-reconciliation.js'),
       E3_ORCHESTRATOR: source('www/etp-e3-orchestrator.js'),
+      E3_PRESENTATION: source('www/etp-e3-presentation.js'),
       E4: source('www/etp-target-planning.js'),
       E4_ORCHESTRATOR: source('www/etp-e4-orchestrator.js'),
+      E4_PRESENTATION: source('www/etp-e4-presentation.js'),
       E6: source('www/etp-exception-monitor.js'),
       E5: source('www/etp-incentive-control.js'),
       E7_OPERATIONAL_SERVICE_ONLY: source('www/service-workboard-policy.js')

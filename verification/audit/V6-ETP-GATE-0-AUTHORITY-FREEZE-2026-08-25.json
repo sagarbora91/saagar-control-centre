@@ -44,6 +44,11 @@
       "bytes": 10548,
       "sha256": "53c6d619369c18762836a7ba3a15aaf529cc9c559fbfeb454defb20f5e29c719"
     },
+    "OPERATIONAL_ADAPTERS": {
+      "path": "www/etp-operational-adapters.js",
+      "bytes": 7073,
+      "sha256": "9fa99499b56fc405706e0e99fdb2cee9c32ca4ec72bbd5e42dbce45f8df608ce"
+    },
     "E3_OWNER_AUTHORITY": {
       "path": "docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md",
       "bytes": 1210,
@@ -59,6 +64,11 @@
       "bytes": 9829,
       "sha256": "6eb3361e17aba7c81c66b611a67e389523389477a68dcabd6bcb67dc7b9fc037"
     },
+    "E3_PRESENTATION": {
+      "path": "www/etp-e3-presentation.js",
+      "bytes": 12257,
+      "sha256": "667e6304579c0285c8333ea62ea89184dd11227b174e75b1ec15a134406ed3e7"
+    },
     "E4": {
       "path": "www/etp-target-planning.js",
       "bytes": 15967,
@@ -68,6 +78,11 @@
       "path": "www/etp-e4-orchestrator.js",
       "bytes": 8725,
       "sha256": "f3345b5f5c88e6cc9942af9e91b3a9497018130b8a62d3ddedb4e791f9b6911d"
+    },
+    "E4_PRESENTATION": {
+      "path": "www/etp-e4-presentation.js",
+      "bytes": 12822,
+      "sha256": "5c05e1b3e0325643ecac188fdd6251356652b13ff190d458664bb80b0a1afbcd"
     },
     "E6": {
       "path": "www/etp-exception-monitor.js",
