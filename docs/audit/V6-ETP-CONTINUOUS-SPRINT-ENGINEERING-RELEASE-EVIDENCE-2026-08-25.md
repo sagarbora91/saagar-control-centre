@@ -81,3 +81,9 @@ Production publication remains blocked by all of the following:
 ## Engineering conclusion
 
 The V6 code candidate passes the final automated engineering gates and produces a verifiable V6 debug APK. It is ready for a connected-device debug review after the tablet reappears in ADB. It is not suitable for publication until the clean-commit, production-signing, independent authority, physical-device and human-UAT gates above are completed.
+
+## Post-build physical-device addendum
+
+The tablet subsequently reappeared in ADB and the exact debug APK recorded in this receipt was installed as an in-place upgrade from `2.9-debug` to `6-debug`. Cold launch, native encrypted-storage recovery, ETP portrait/landscape reflow, Marathi/Hindi layout rendering and process-stop recovery passed without an application crash. Instrumented WebView measurements found no document-level horizontal overflow in either orientation. See [V6 ETP physical-device debug acceptance](../../verification/audit/V6-ETP-PHYSICAL-DEVICE-DEBUG-ACCEPTANCE-2026-08-25.md).
+
+This addendum closes the available physical debug-engineering checks. It does not change the production-signing, approved-authority, native-language, human-UAT or Owner-publication blockers above.
