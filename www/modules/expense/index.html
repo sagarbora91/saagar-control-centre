@@ -215,13 +215,17 @@ tbody tr:hover td{background:var(--cream)}
   .deno{grid-template-columns:1fr}
   .wrap{padding:14px 10px 50px}
 }
-/* ───────── MOBILE RESPONSIVE LAYER (phones ≤640px) ─────────
+/* ────── MOBILE / COMPACT RESPONSIVE LAYER (≤899px) ──────
    Additive only. Wide-screen layout above is unchanged.
    Goals: no horizontal overflow, wide tables scroll inside their
    .twrap wrapper, grids collapse to 1 column (KPI tiles stay 2),
    form controls ≥16px (no iOS focus-zoom), tap targets ≥44px. */
-@media(max-width:640px){
+@media(max-width:899px){
   html,body{max-width:100%;overflow-x:hidden}
+
+  /* Keep every destination visible without a sideways tab gesture. */
+  .tabs{flex-wrap:wrap;overflow-x:hidden;padding:4px 8px}
+  .tab{flex:1 1 auto;text-align:center;padding:10px 12px}
 
   /* keep multi-column form/statement grids single-column */
   .fgrid,.st-grid,.deno{grid-template-columns:1fr}
@@ -275,7 +279,7 @@ tbody tr:hover td{background:var(--cream)}
   .modal{max-width:100%}
   .toast{left:10px;right:10px;transform:none;max-width:none;text-align:center}
 
-  /* ───────── LIST/RECORD TABLES → CARDS (phones ≤640px) ─────────
+  /* ─────── LIST/RECORD TABLES → CARDS (compact ≤899px) ───────
      Only the small list tables are reflowed into stacked cards. The dense
      multi-column LOGS (Ledger/Recent ledgerTable, Sync feed, Audit trail)
      are intentionally LEFT as horizontal-scroll inside .twrap (sticky first

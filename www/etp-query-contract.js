@@ -9,10 +9,10 @@
   function freeze(v){return Object.freeze(v);}function plain(v){if(!v||typeof v!=='object'||Array.isArray(v))return false;var p=Object.getPrototypeOf(v);return p===Object.prototype||p===null;}function exact(v,keys){if(!plain(v))return false;var a=Object.keys(v).sort(),e=keys.slice().sort();return a.length===e.length&&a.every(function(k,i){return k===e[i]&&BLOCKED.indexOf(k)<0;});}
   function list(values){return freeze(values.slice());}
   var PROJECTIONS=freeze({
-    R003:list(['transaction_type_raw','net_amount','scheme_discount','user_discount']),
-    R013:list(['transaction_type_raw','quantity','net_amount','cro_number']),
-    R022:list(['transaction_type_raw','invoice_quantity','net_value','cash_amount','card_amount','bhim_upi_amount','phonepe_amount','paytm_amount','razorpay_amount','bharatpe_amount','cheque_amount','others_amount','payment_type24_amount']),
-    R025:list(['invoice_number','transaction_type_raw','quantity','net_amount','brand','cluster','gender','scheme_discount','user_discount','tax_amount'])
+    R003:list(['invoice_date','transaction_type_raw','net_amount','scheme_discount','user_discount']),
+    R013:list(['invoice_date','transaction_type_raw','quantity','net_amount','cro_number']),
+    R022:list(['invoice_date','invoice_number','transaction_type_raw','invoice_quantity','net_value','cash_amount','card_amount','bhim_upi_amount','phonepe_amount','paytm_amount','razorpay_amount','bharatpe_amount','cheque_amount','others_amount','payment_type24_amount']),
+    R025:list(['invoice_date','invoice_number','transaction_type_raw','quantity','net_amount','brand','cluster','gender','scheme_discount','user_discount','tax_amount'])
   });
   function filters(definition){var out={};Object.keys(definition).forEach(function(field){out[field]=list(definition[field]);});return freeze(out);}
   var FILTERS=freeze({

@@ -1,7 +1,7 @@
 /* Shared Retail ETP browser runtime facade. Offline-only; no network capability. */
 (function(root,factory){var api=factory(root);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpImportRuntimeFactory=api;})(typeof globalThis!=='undefined'?globalThis:this,function(root){
   'use strict';
-  var REPORTS=['R003','R013','R022','R025'],CHUNK_ROWS=500;
+  var REPORTS=['R003','R013','R022','R025'],CHUNK_ROWS=500,CHUNK_FACT_BYTES=480*1024,MAX_FILES_PER_REPORT=13,MAX_IMPORT_FILES=52;
   function failure(code,stage,detail){return {ok:false,code:code,stage:stage||'RUNTIME',detail:detail||null};}
   function snake(value){return String(value).replace(/([a-z0-9])([A-Z])/g,'$1_$2').toLowerCase();}
   function bytesOf(value){return value instanceof Uint8Array?value:new Uint8Array(value);}
@@ -13,6 +13,7 @@
   function hex(buffer){var out='',view=new Uint8Array(buffer);for(var i=0;i<view.length;i++){var h=view[i].toString(16);out+=h.length<2?'0'+h:h;}return out;}
   function digest(cryptoApi,bytes){if(!cryptoApi||!cryptoApi.subtle||typeof cryptoApi.subtle.digest!=='function')return Promise.reject(new Error('ETP_DIGEST_UNAVAILABLE'));return cryptoApi.subtle.digest('SHA-256',bytes).then(hex);}
   function utf8(value){if(typeof root.TextEncoder==='function')return new root.TextEncoder().encode(String(value));var text=unescape(encodeURIComponent(String(value))),bytes=new Uint8Array(text.length);for(var i=0;i<text.length;i++)bytes[i]=text.charCodeAt(i);return bytes;}
+  function appendFactChunks(chunks,reportId,rows){var index=0,part=[];for(var i=0;i<rows.length;i++){var next=part.concat([rows[i]]);if(utf8(JSON.stringify(next)).length>CHUNK_FACT_BYTES){if(!part.length)return false;chunks.push({reportId:reportId,chunkIndex:index++,rows:part});part=[rows[i]];if(utf8(JSON.stringify(part)).length>CHUNK_FACT_BYTES)return false;}else part=next;if(part.length===CHUNK_ROWS){chunks.push({reportId:reportId,chunkIndex:index++,rows:part});part=[];}}if(part.length)chunks.push({reportId:reportId,chunkIndex:index,rows:part});return true;}
   function generationId(cryptoApi){if(!cryptoApi||typeof cryptoApi.getRandomValues!=='function')return '';var bytes=new Uint8Array(16);cryptoApi.getRandomValues(bytes);return 'etp_'+hex(bytes);}
   function exactZero(value){return /^[-+]?0+(?:\.0+)?$/.test(String(value==null?'':value).trim());}
   function allAllowedFields(profile){var seen={},forbidden=/(?:^|_)(?:workbook|worksheet|filename|file_label|file_path|source_name|source_bytes|blob|base64|customer|consumer|mobile|phone|email|address|name|aadhaar|pan|dob)(?:$|_)/i;Object.keys(profile.REPORTS).forEach(function(id){Object.keys(profile.REPORTS[id].fields).forEach(function(raw){var field=snake(profile.REPORTS[id].fields[raw]);if(!forbidden.test(field)&&field!=='payment_type25_amount')seen[field]=true;});});return Object.keys(seen).sort();}
@@ -30,28 +31,32 @@
     function appendHistory(outcome){if(!historyContext)return;var value={contractVersion:historyApi.VERSION,eventId:historyContext.generationId+':'+outcome,scopeKey:historyContext.scopeKey,storeCode:historyContext.scope.storeCode,financialYear:historyContext.scope.financialYear,periodStart:historyContext.scope.periodStart,periodEnd:historyContext.scope.periodEnd,outcome:outcome,warningCodes:historyContext.warningCodes,counts:historyContext.counts,actorId:'BUILD_AUTHORIZED_OWNER',occurredAt:new Date().toISOString(),digestRefs:historyContext.digestRefs};historyMade.history.append(value);}
     var pipeline={
       preflight:async function(value){
-        if(!value||!Array.isArray(value.files)||value.files.length!==4)return failure('ETP_FOUR_REPORTS_REQUIRED','PREFLIGHT');
-        var seen={},items=[];
+        if(!value||!Array.isArray(value.files)||value.files.length<REPORTS.length||value.files.length>MAX_IMPORT_FILES)return failure('ETP_FOUR_REPORTS_REQUIRED','PREFLIGHT');
+        var counts={},items=[];
         for(var i=0;i<value.files.length;i++){
           var selected=String(value.files[i]&&value.files[i].selectedReportId||'').toUpperCase();
-          if(REPORTS.indexOf(selected)<0||seen[selected]||!value.files[i].file)return failure('ETP_REPORT_SELECTION_INVALID','PREFLIGHT');
-          seen[selected]=true;var bytes;try{bytes=await readFile(value.files[i].file);}catch(error){return failure(String(error&&error.message||'ETP_FILE_READ_FAILED'),'PREFLIGHT');}
+          counts[selected]=(counts[selected]||0)+1;
+          if(REPORTS.indexOf(selected)<0||counts[selected]>MAX_FILES_PER_REPORT||!value.files[i].file)return failure('ETP_REPORT_SELECTION_INVALID','PREFLIGHT');
+          var bytes;try{bytes=await readFile(value.files[i].file);}catch(error){return failure(String(error&&error.message||'ETP_FILE_READ_FAILED'),'PREFLIGHT');}
           items.push({selectedReportId:selected,fileLabel:String(value.files[i].file.name||selected+'.xlsx'),bytes:bytes});
         }
+        if(!REPORTS.every(function(id){return counts[id]>0;}))return failure('ETP_FOUR_REPORTS_REQUIRED','PREFLIGHT');
         preparedFiles=items;return {ok:true,items:items};
       },
       parse:async function(value){
         if(!preparedFiles)return failure('ETP_PREFLIGHT_STATE_MISSING','PARSE');
         if(workerParser){var worked=await workerParser.parse({items:preparedFiles,scope:value.scope,datePolicy:options.datePolicy});if(!worked||!worked.ok)return worked||failure('ETP_WORKER_FAILED','PARSE');parsedReports=worked.reports;return {ok:true,reports:worked.reports};}
-        var reports={};
+        var reports={},sourceHashes={};
         for(var i=0;i<preparedFiles.length;i++){
           var item=preparedFiles[i],loaded=await loader.load({bytes:item.bytes,fileLabel:item.fileLabel,selectedReportId:item.selectedReportId,expectedStoreCode:value.scope.storeCode,datePolicy:options.datePolicy});
           if(!loaded.ok)return loaded;
-          loaded.sourceSha256=await digest(cryptoApi,item.bytes);
-          loaded.headerSignatureSha256=await digest(cryptoApi,utf8(loaded.signatureKey));
-          reports[loaded.reportId]=loaded;
+          var prior=reports[loaded.reportId];
+          if(prior&&(prior.signatureKey!==loaded.signatureKey||prior.profileVersion!==loaded.profileVersion||prior.parserVersion!==loaded.parserVersion||prior.storeCode!==loaded.storeCode))return failure('ETP_REPORT_BATCH_MISMATCH','PARSE',{reportId:loaded.reportId});
+          sourceHashes[loaded.reportId]=sourceHashes[loaded.reportId]||[];sourceHashes[loaded.reportId].push(await digest(cryptoApi,item.bytes));
+          reports[loaded.reportId]=Object.assign({},loaded,{rows:(prior?prior.rows:[]).concat(loaded.rows)});
         }
         if(!REPORTS.every(function(id){return !!reports[id];}))return failure('ETP_FOUR_REPORTS_REQUIRED','PARSE');
+        for(var r=0;r<REPORTS.length;r++){var id=REPORTS[r],report=reports[id];report.sourceSha256=await digest(cryptoApi,utf8(sourceHashes[id].slice().sort().join('|')));report.headerSignatureSha256=await digest(cryptoApi,utf8(report.signatureKey));}
         parsedReports=reports;return {ok:true,reports:reports};
       },
       validate:async function(value){
@@ -70,7 +75,7 @@
           var excluded=loaded.rows.length-selectedRows.length;scopeSelection.sourceRows+=loaded.rows.length;scopeSelection.selectedRows+=selectedRows.length;scopeSelection.excludedRows+=excluded;scopeSelection.reports[id]={sourceRows:loaded.rows.length,selectedRows:selectedRows.length,excludedRows:excluded};
           scopedReports[id]=Object.assign({},loaded,{rows:selectedRows,rowCount:selectedRows.length});
           manifest.reports.push({reportId:id,sourceSha256:loaded.sourceSha256,headerSignatureSha256:loaded.headerSignatureSha256,rowCount:factRows.length});
-          for(var at=0;at<factRows.length;at+=CHUNK_ROWS)chunks.push({reportId:id,chunkIndex:Math.floor(at/CHUNK_ROWS),rows:factRows.slice(at,at+CHUNK_ROWS)});
+          if(!appendFactChunks(chunks,id,factRows))return failure('ETP_FACT_ROW_BYTES_EXCEEDED','VALIDATE',{reportId:id});
         }
         manifest.authority=authorityBinding;manifest.tenderDictionary=tenderIdentity;
         historyContext={generationId:manifest.generationId,scopeKey:manifest.scopeKey,scope:value.scope,warningCodes:quarantines.paymentType25Rows?['PAYMENTTYPE25_QUARANTINED']:[],counts:{sourceCount:scopeSelection.sourceRows,selectedCount:scopeSelection.selectedRows,excludedCount:scopeSelection.excludedRows},digestRefs:manifest.reports.map(function(entry){return 'sha256:'+entry.sourceSha256;})};

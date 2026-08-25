@@ -13,7 +13,7 @@
   'use strict';
 
   var GATEWAY_VERSION = 1;
-  var REPORTS = Object.freeze(['R003', 'R013', 'R022', 'R025']);
+  var REPORTS = Object.freeze(['R003', 'R013', 'R022', 'R025']), MAX_FILES_PER_REPORT = 13, MAX_IMPORT_FILES = REPORTS.length * MAX_FILES_PER_REPORT;
   var REGISTRY_KEY = 'saagar_etp_control_registry_v1';
   var MAX_SCOPES = 20;
   var MAX_HISTORY = 10;
@@ -127,6 +127,14 @@
       (typeof value === 'number' && Number.isFinite(value)) || typeof value === 'boolean';
   }
 
+  function canonicalInvoiceDate(value) {
+    var raw = String(value === null || value === undefined ? '' : value).trim(), match = /^(\d{4})(?:-?)(\d{2})(?:-?)(\d{2})$/.exec(raw), date;
+    if (!match) return '';
+    date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+    if (date.getUTCFullYear() !== Number(match[1]) || date.getUTCMonth() !== Number(match[2]) - 1 || date.getUTCDate() !== Number(match[3])) return '';
+    return match[1] + '-' + match[2] + '-' + match[3];
+  }
+
   function sanitizePage(value, scopeKey, generationId, reportId, fields, limit) {
     var page = value && value.page;
     if (!value || value.ok !== true || !exact(page, ['scopeKey', 'generationId', 'reportId', 'rows', 'hasMore', 'nextCursor'])) return null;
@@ -141,7 +149,11 @@
       for (var n = 0; n < keys.length; n++) {
         var key = keys[n];
         if (!allowed[key] || FORBIDDEN_FIELD.test(key) || BLOCKED_KEYS.indexOf(key) >= 0 || !safePrimitive(source[key])) return null;
-        row[key] = source[key];
+        if (key === 'invoice_date') {
+          var normalizedDate = canonicalInvoiceDate(source[key]);
+          if (!normalizedDate) return null;
+          row[key] = normalizedDate;
+        } else row[key] = source[key];
       }
       rows.push(freeze(row));
     }
@@ -298,17 +310,19 @@
 
     async function run(request) {
       if (!await permittedAsync('IMPORT')) return failure('ETP_ACCESS_DENIED', 'AUTHORIZE');
-      if (!exact(request, ['scope', 'files', 'coverageConfirmed']) || request.coverageConfirmed !== true || !Array.isArray(request.files) || request.files.length !== 4) return failure('ETP_IMPORT_REQUEST_INVALID', 'SELECT');
+      if (!exact(request, ['scope', 'files', 'coverageConfirmed']) || request.coverageConfirmed !== true || !Array.isArray(request.files) || request.files.length < REPORTS.length || request.files.length > MAX_IMPORT_FILES) return failure('ETP_IMPORT_REQUEST_INVALID', 'SELECT');
       var normalized = checkedScope(request.scope);
       if (!normalized) return failure('ETP_SCOPE_INVALID', 'SELECT');
       var profileDecision = profileAuthority.authorize({ storeCode: normalized.scope.storeCode, purpose: 'PRODUCTION', profileVersion: profileAuthority.PROFILE_VERSION, parserVersion: profileAuthority.PARSER_VERSION });
       if (!profileDecision || profileDecision.ok !== true) return failure(profileDecision && profileDecision.code || 'ETP_PROFILE_AUTHORIZATION_REQUIRED', 'SELECT');
-      var seen = Object.create(null), files = [];
+      var counts = Object.create(null), files = [];
       for (var i = 0; i < request.files.length; i++) {
         var item = request.files[i], id = String(item && item.selectedReportId || '').toUpperCase();
-        if (!exact(item, ['selectedReportId', 'file']) || REPORTS.indexOf(id) < 0 || seen[id] || !item.file) return failure('ETP_REPORT_SELECTION_INVALID', 'SELECT');
-        seen[id] = true; files.push({ selectedReportId: id, file: item.file });
+        counts[id] = (counts[id] || 0) + 1;
+        if (!exact(item, ['selectedReportId', 'file']) || REPORTS.indexOf(id) < 0 || counts[id] > MAX_FILES_PER_REPORT || !item.file) return failure('ETP_REPORT_SELECTION_INVALID', 'SELECT');
+        files.push({ selectedReportId: id, file: item.file });
       }
+      if (!REPORTS.every(function (id) { return counts[id] > 0; })) return failure('ETP_REPORT_SELECTION_INVALID', 'SELECT');
       var result;
       try { result = await runtime.run({ scope: normalized.checked.scope, files: files, coverageDeclaration: ownerCoverageDeclaration() }); }
       catch (_) { return failure('ETP_IMPORT_FAILED', 'IMPORT'); }

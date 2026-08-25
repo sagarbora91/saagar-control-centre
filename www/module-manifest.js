@@ -325,15 +325,15 @@
       "id": "stock-ui-css",
       "version": 1,
       "file": "modules/stock/stock-ui.css",
-      "bytes": 32836,
-      "sha256": "601407bf42d8c49057ac958164b8d4db6bf39f241f946bf184ac85f98a1a39a7"
+      "bytes": 32833,
+      "sha256": "0c661d393cef898f5e3d30bb55f21d575e52ec34640ffecea80a5f43b5828a4a"
     },
     {
       "id": "payroll-ui-css",
       "version": 1,
       "file": "modules/payroll/payroll-ui.css",
-      "bytes": 50034,
-      "sha256": "d176d60aad12d1ef0cdf77bae645a848b189a7d1a18397aabaaf650a12474fd3"
+      "bytes": 50046,
+      "sha256": "771aef10af6c75e176c1be930555992d99d6251ba9663062620f47b031f462c2"
     },
     {
       "id": "grooming-ui-css",
@@ -346,15 +346,15 @@
       "id": "service-ui-css",
       "version": 1,
       "file": "modules/service/service-ui.css",
-      "bytes": 47179,
-      "sha256": "c1cf45a29c22092eeba40386eeb93587237bbd12f247a94a009bab9e6b1c80d7"
+      "bytes": 47207,
+      "sha256": "3204554d562a4ef78df74dd4ab02dc288247acd6e8da0db8406c69cead8832dc"
     },
     {
       "id": "leave-ui-css",
       "version": 1,
       "file": "modules/leave/leave-ui.css",
-      "bytes": 33229,
-      "sha256": "31fa4e17341ca1648680deb0f6b574c2cbfa8ac2083b820e9030f5f6d468535c"
+      "bytes": 33346,
+      "sha256": "bcf60690b54f04464195c8a5ab5229bc24860a97e711f4b407cbfa11b4f52828"
     },
     {
       "id": "cro-audit-ui-css",
@@ -367,8 +367,8 @@
       "id": "tax-ui-css",
       "version": 1,
       "file": "modules/tax/tax-ui.css",
-      "bytes": 43063,
-      "sha256": "92e629fa1a124b0d908a9cab1dd1072c448ac56c9f047d4cefb48f102dbc077a"
+      "bytes": 43128,
+      "sha256": "acd9a5fa82f71c7e864fc27333f3f668aef65b7cb83a0c8f4ac55c71cdf9a352"
     },
     {
       "id": "dsr-ui-css",
@@ -524,8 +524,8 @@
       "file": "modules/expense/index.html",
       "subtitle": "Central financial ledger: income/expense, auto-locked daily cash statement, cross-module feeds, maker-checker.",
       "summary": "Single master ledger with auto cash reconciliation and WSC/Payroll/Stock/QMS integration.",
-      "bytes": 168701,
-      "sha256": "414e8849bdedbef7b05fe6f60a1677e24108a4ff9864cdbba13a6a2b31473529",
+      "bytes": 168863,
+      "sha256": "d668b8381edf654c54467ac39e1832de2e5b440186d037a9efbe981b2419b99c",
       "source_title": "Tanishq Gold Mart · Expense Manager",
       "src": "modules/expense/index.html"
     },
@@ -627,8 +627,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 36361,
-      "sha256": "eeec42e09c2c6c209d0f15fb8a81e79874de71fa7befe4b943bd577d897d4cae",
+      "bytes": 37489,
+      "sha256": "c7a19c4e33c934f8fb93246c7939836e8f8b9a6d1b7b3e1401c905c8c5d60b2f",
       "src": "modules/etp/index.html"
     }
   ]

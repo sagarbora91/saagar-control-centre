@@ -49,9 +49,16 @@ test('sideways scrolling is confined to justified comparison ledgers', () => {
     'statutory payroll reporting requires cross-column comparison'
   ]);
   assert.equal((html.match(/saagar-table-region--grid/g) || []).length, 3);
-  assert.match(css, /@media\(max-width:520px\)\{[\s\S]*\[data-saagar-ui\] \.table-scroll\{overflow-x:hidden;\}/);
+  assert.match(css, /@media\(max-width:899px\)\{[\s\S]*\[data-saagar-ui\] \.table-scroll\{overflow-x:hidden;\}/);
   assert.match(css, /\.saagar-table-region--grid > \.table-scroll\{overflow-x:auto;\}/);
   assert.match(css, /#pane-slips \.stbl-wrap\{overflow-x:hidden;\}/);
+});
+
+test('Payroll compact tablet reflow ends before the desktop contract begins', () => {
+  assert.match(css, /MOBILE \/ COMPACT RESPONSIVE LAYER\s+\(≤899px\)[\s\S]*?@media \(max-width:899px\)\{/);
+  assert.equal((css.match(/@media \(max-width:899px\)\{/g) || []).length, 3);
+  assert.match(css, /@media\(max-width:899px\)\{[\s\S]*?\.saagar-table--cards\{min-width:0!important;white-space:normal;\}/);
+  assert.doesNotMatch(css, /@media\s*\(min-width:\s*900px\)/, 'desktop styles stay on the original base cascade');
 });
 
 test('Payroll supplies explicit API-23 flex fallbacks without redefining shared APIs', () => {

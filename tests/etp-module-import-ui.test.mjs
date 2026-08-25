@@ -9,7 +9,7 @@ import { inlineModuleScripts } from './lib/module-bundle.mjs';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const html = fs.readFileSync(path.join(root, 'www/modules/etp/index.html'), 'utf8');
 
-test('ETP-2 module scripts parse and expose exact scope and four-file controls', () => {
+test('ETP module exposes an FY dropdown and four bounded multi-file report controls', () => {
   inlineModuleScripts(html).forEach((source, index) => assert.doesNotThrow(() => new vm.Script(source, { filename: `etp-ui-${index}.js` })));
   for (const field of ['storeCode', 'financialYear', 'periodStart', 'periodEnd']) {
     assert.match(html, new RegExp(`data-etp-scope="${field}"`));
@@ -18,12 +18,15 @@ test('ETP-2 module scripts parse and expose exact scope and four-file controls',
     assert.match(html, new RegExp(`data-etp-file="${report}"`));
   }
   assert.equal((html.match(/type="file"/g) || []).length, 4);
+  assert.equal((html.match(/type="file" multiple/g) || []).length, 4);
+  assert.match(html, /id="etpFinancialYear"/);
+  assert.match(html, /function populateFinancialYears\(\)/);
   assert.match(html, /accept="\.xlsx,application\/vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet"/);
 });
 
 test('validation sends only scope and files while trusted gateway owns coverage authority', () => {
-  assert.match(html, /api\.run\(\{\s*scope: selectedScope,\s*files: REPORTS\.map/);
-  assert.match(html, /return \{ selectedReportId: id, file: state\.files\[id\] \}/);
+  assert.match(html, /api\.run\(\{\s*scope: selectedScope,\s*files: selectedFiles\(\)/);
+  assert.match(html, /result\.push\(\{ selectedReportId: id, file: file \}\)/);
   assert.match(html, /coverageConfirmed: true/);
   assert.doesNotMatch(html, /confirmedByRole|coverageDeclaration: declaration/);
   assert.match(html, /if \(!filesReady\(\)\)/);
@@ -32,7 +35,7 @@ test('validation sends only scope and files while trusted gateway owns coverage 
 
 test('terminal success releases selected workbooks and coverage state', () => {
   assert.match(html, /function resetImportFiles\(\)/);
-  assert.match(html, /state\.files\[id\] = null/);
+  assert.match(html, /state\.files\[id\] = \[\]/);
   assert.match(html, /input\.value = ''/);
   assert.match(html, /etpCoverageConfirmed'\)\.checked = false/);
   assert.ok((html.match(/resetImportFiles\(\);/g) || []).length >= 2);
@@ -46,8 +49,8 @@ test('scope validation checks a real consecutive financial year and period membe
   assert.match(html, /fy\(start\) === value\.financialYear && fy\(end\) === value\.financialYear/);
 });
 
-test('multi-year source exports are explicitly bounded to the selected publication scope', () => {
-  assert.match(html, /A workbook may span multiple financial years/);
+test('monthly source exports are combined but bounded to the selected publication scope', () => {
+  assert.match(html, /Monthly exports are combined locally/);
   assert.match(html, /only rows inside the explicitly selected one-year scope are reconciled and published/);
   assert.match(html, /Rows outside this scope remain unpublished/);
 });

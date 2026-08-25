@@ -110,6 +110,14 @@ test('run validates exact four-file scope and returns only an opaque confirmatio
   assert.equal((await fx.gateway.run({ scope, files, coverageDeclaration: { confirmedByRole: 'OWNER' } })).code, 'ETP_IMPORT_REQUEST_INVALID');
 });
 
+test('gateway accepts up to thirteen monthly exports per required report',async()=>{
+  const fx=fixture(),files=core.REPORTS.flatMap(id=>[1,2].map(part=>({selectedReportId:id,file:{name:id+'-'+part+'.xlsx'}})));
+  const result=await fx.gateway.run({scope,files,coverageConfirmed:true});
+  assert.equal(result.ok,true,JSON.stringify(result));
+  const tooMany=core.REPORTS.flatMap(id=>Array.from({length:id==='R003'?14:1},(_,part)=>({selectedReportId:id,file:{name:id+'-'+part+'.xlsx'}})));
+  assert.equal((await fx.gateway.run({scope,files:tooMany,coverageConfirmed:true})).code,'ETP_REPORT_SELECTION_INVALID');
+});
+
 test('gateway denies HEMW production before files or runtime can be touched',async()=>{let runtimeCalls=0,fileReads=0;const fx=fixture({runtime:{async run(){runtimeCalls++;},async confirm(){runtimeCalls++;},async readVerified(){runtimeCalls++;}}}),files=core.REPORTS.map(id=>({selectedReportId:id,file:{name:id+'.xlsx',arrayBuffer:async()=>{fileReads++;}}}));const result=await fx.gateway.run({scope:{...scope,storeCode:'HEMW'},files,coverageConfirmed:true});assert.equal(result.code,'ETP_HEMW_PROFILE_AUTHORIZATION_REQUIRED');assert.equal(runtimeCalls,0);assert.equal(fileReads,0);});
 
 test('confirm consumes its opaque token once and never accepts a caller lifecycle', async () => {

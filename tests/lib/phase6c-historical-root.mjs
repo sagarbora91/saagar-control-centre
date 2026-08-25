@@ -15,7 +15,7 @@ import { restorePhase6eEtpGatewaySource, restorePhase6eEtpPresentationSource } f
 import { restorePhase6eFamilyASource } from './phase6f-family-a-source.mjs';
 import { restorePrePhase6gFamilyBSource } from './phase6g-family-b-source.mjs';
 import { restorePrePhase6gShellAssets } from './phase6g-shell-source.mjs';
-import { restorePrePhase6h1EtpIndex, restorePrePhase6h1GatewaySource, restorePrePhase6h1PresentationSource } from './phase6h1-etp-source.mjs';
+import { restorePrePhase6h1EtpIndex, restorePrePhase6h1GatewaySource, restorePrePhase6h1PresentationSource, restorePreEtpBatchRuntime, restorePreEtpBatchWorker, restorePreEtpBatchWorkerClient } from './phase6h1-etp-source.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -38,6 +38,72 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 `;
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  const mobileLayoutPath = path.join(workspaceRoot, 'www/mobile-layout.css');
+  fs.writeFileSync(mobileLayoutPath, fs.readFileSync(mobileLayoutPath, 'utf8')
+    .replace('  /* Service: every stage remains visible without a sideways gesture. */', '  /* Service: stage rail stays one line and exposes a gold scroll affordance. */')
+    .replace(`    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 2px 2px 8px !important;`, '    padding: 2px 30px 8px 2px !important;')
+    .replace(`    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 4px 8px !important;
+  }
+  html.bcc-mobile[data-mod="expense"] .tabs > * { flex: 1 1 auto !important; }`, `    padding-right: 30px !important;
+  }`)
+    .replace('  /* Leave: utility actions wrap so every destination is visible. */', '  /* Leave: the large utility toolbar becomes an explicit rail, while calendar\n     and staff timelines remain locally scrollable. */')
+    .replace(`    flex-wrap: wrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding: 8px 0 3px !important;
+    -webkit-mask-image: none;`, `    flex-wrap: nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    padding: 8px 28px 3px 0 !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);`)
+    .replace('  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 1 1 auto !important; }', '  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 0 0 auto !important; }')
+    .replace('  /* Tax: the sticky stack becomes normal flow and controls wrap in place. */', '  /* Tax: the 283px sticky stack becomes normal document flow. Controls remain\n     accessible in two compact horizontal rails. */')
+    .replace(`    flex-wrap: wrap !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding: 8px 0 2px !important;
+    -webkit-mask-image: none;`, `    flex-wrap: nowrap !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    padding: 8px 28px 2px 0 !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);`)
+    .replace('  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 1 1 180px !important; min-width: 0 !important; }', '  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 0 0 auto !important; }')
+    .replace(`  html.bcc-mobile[data-mod="expense"] .tabs {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+    padding: 4px 8px !important;
+  }
+  html.bcc-mobile[data-mod="expense"] .tabs > * { flex: 1 1 auto !important; }
+  html.bcc-mobile[data-mod="service"] .stage-chips {
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+  }
+`, '')
+    .replace(`    flex-wrap: wrap !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding: 8px 0 2px !important;
+    -webkit-mask-image: none;`, `    flex-wrap: nowrap !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    padding: 8px 28px 2px 0 !important;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);`)
+    .replace(`  html.bcc-mobile[data-mod="tax"] .hd-right > * { flex: 1 1 180px !important; min-width: 0 !important; }
+  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 1 1 auto !important; }`, `  html.bcc-mobile[data-mod="tax"] .hd-right > *,
+  html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 0 0 auto !important; }`), 'utf8');
   const buildIdentityPath = path.join(workspaceRoot, 'www/build-identity.js');
   fs.writeFileSync(buildIdentityPath,
     fs.readFileSync(buildIdentityPath, 'utf8').replace("appVersion: 'V6'", "appVersion: 'V5.5'"), 'utf8');
@@ -87,6 +153,12 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const phase6hPresentationPath = path.join(workspaceRoot, 'www/etp-verified-presentation.js');
   fs.writeFileSync(phase6hGatewayPath, restorePrePhase6h1GatewaySource(fs.readFileSync(phase6hGatewayPath, 'utf8')), 'utf8');
   fs.writeFileSync(phase6hPresentationPath, restorePrePhase6h1PresentationSource(fs.readFileSync(phase6hPresentationPath, 'utf8')), 'utf8');
+  const batchAssets = [
+    ['etp-import-runtime.js', restorePreEtpBatchRuntime],
+    ['etp-import-worker.js', restorePreEtpBatchWorker],
+    ['etp-worker-client.js', restorePreEtpBatchWorkerClient]
+  ];
+  batchAssets.forEach(function (entry) { const assetPath = path.join(workspaceRoot, 'www', entry[0]); fs.writeFileSync(assetPath, entry[1](fs.readFileSync(assetPath, 'utf8')), 'utf8'); });
   for (const moduleId of ['expense', 'leave', 'cro_audit', 'tax', 'dsr', 'qms']) {
     const modulePath = path.join(workspaceRoot, `www/modules/${moduleId}/index.html`);
     const cssName = `${moduleId.replace('_', '-')}-ui.css`;

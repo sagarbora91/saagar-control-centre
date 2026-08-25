@@ -33,6 +33,15 @@ function restoreExtractedCss(source, moduleId, css) {
 }
 
 function restoreExpense(source) {
+  source = source
+    .replace('/* ────── MOBILE / COMPACT RESPONSIVE LAYER (≤899px) ──────', '/* ───────── MOBILE RESPONSIVE LAYER (phones ≤640px) ─────────')
+    .replace('@media(max-width:899px){', '@media(max-width:640px){')
+    .replace(`
+  /* Keep every destination visible without a sideways tab gesture. */
+  .tabs{flex-wrap:wrap;overflow-x:hidden;padding:4px 8px}
+  .tab{flex:1 1 auto;text-align:center;padding:10px 12px}
+`, '')
+    .replace('  /* ─────── LIST/RECORD TABLES → CARDS (compact ≤899px) ───────', '  /* ───────── LIST/RECORD TABLES → CARDS (phones ≤640px) ─────────');
   let restored = stripPolicy(source, 'expense')
     .replace('<link rel="stylesheet" href="../../shared/module-brand-tokens.css">\n', '')
     .replace('<body data-saagar-ui data-saagar-width="auto">\n<script id="phase6g-expense-ui-boot">SaagarUiFoundation.configure(document.body,{mode:\'auto\'});SaagarRenderedComponents.observe(document.body,ExpenseRenderedPolicy);</script>', '<body>')
@@ -71,6 +80,19 @@ function restoreExpense(source) {
 }
 
 function restoreLeave(source, css) {
+  css = css
+    .replace('/* ── MOBILE / COMPACT LAYER. Desktop screens (≥900px) unchanged. ── */', '/* ── MOBILE LAYER (phones ~360px). Wide screens (>640px) unchanged. ── */')
+    .replace('@media (max-width: 899px) {', '@media (max-width: 640px) {')
+    .replace(`    overflow-x: hidden;
+    flex-wrap: wrap;`, `    overflow-x: auto;            /* horizontal scroll instead of squashing */
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;`)
+    .replace('  .header-actions .btn { flex: 1 1 auto; justify-content: center; }', '  .header-actions .btn { flex: 0 0 auto; }')
+    .replace(`
+  /* Seven staffing days wrap in-place; no hidden sixth/seventh card. */
+  .staff-strip { flex-wrap: wrap; overflow-x: hidden; }
+  .staff-day { min-width: 0; flex: 1 1 calc(25% - 8px); }
+`, '');
   const legacyCss = css.replace(/\n\/\* Phase 6G: the monthly employee report[\s\S]*$/, '');
   let restored = restoreExtractedCss(stripPolicy(source, 'leave'), 'leave', legacyCss)
     .replace('<body data-saagar-ui data-saagar-width="auto" data-saagar-width-resolved="mobile">\n<script id="leave-phase6g-ui-boot">SaagarUiFoundation.configure(document.body,{mode:\'auto\'});SaagarRenderedComponents.observe(document.body,LeaveRenderedPolicy);</script>', '<body>')
@@ -135,6 +157,13 @@ function restoreCroAudit(source, css) {
 }
 
 function restoreTax(source, css) {
+  css = css
+    .replace('@media(max-width:899px){', '@media(max-width:600px){')
+    .replace('  .mnav{padding:4px 8px;flex-wrap:wrap;overflow-x:hidden;}', '  .mnav{padding:0 8px;}')
+    .replace('  .mt{padding:9px 10px;font-size:10.5px;flex:1 1 25%;text-align:center;}', '  .mt{padding:9px 10px;font-size:10.5px;}')
+    .replace('   MOBILE / COMPACT RESPONSIVE LAYER (≤899px)', '   MOBILE RESPONSIVE LAYER (phones ≤640px / ~360px)')
+    .replace('   Additive only. Desktop screens (≥900px) are byte-unchanged.', '   Additive only. Wide screens (>640px) are byte-unchanged.')
+    .replaceAll('@media(max-width:899px){', '@media(max-width:640px){');
   let legacyCss = css.replace(/\.ac-row-action\{[^\n]+\}\n\n\/\* Phase 6G:[\s\S]*$/, '');
   const split = legacyCss.indexOf('\n\n.ac-badge{');
   const first = legacyCss.slice(0, split);

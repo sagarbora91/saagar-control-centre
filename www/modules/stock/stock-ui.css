@@ -349,12 +349,12 @@ html.saagar-legacy-webview .clk-triage .wide { -webkit-flex-basis: 100%; flex-ba
 }
 
 /* ══════════════════════════════════════
-   MOBILE — phones ≤640px (≈360px target)
-   Additive layer only. Wide screens (>640px) stay byte-unchanged.
+   MOBILE / COMPACT — widths ≤899px
+   Additive layer only. Desktop screens (≥900px) stay byte-unchanged.
    Wide .rtbl tables keep their existing .tbl-wrap (overflow-x:auto)
    wrapper and SCROLL horizontally instead of squashing.
 ══════════════════════════════════════ */
-@media (max-width: 640px) {
+@media (max-width: 899px) {
   /* Layout shell */
   .main { padding: 10px; }
   .hdr { padding: 9px 11px; gap: 8px; }

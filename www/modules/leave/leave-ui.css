@@ -377,8 +377,8 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
   .report-table { font-size: 11px; }
 }
 
-/* ── MOBILE LAYER (phones ~360px). Wide screens (>640px) unchanged. ── */
-@media (max-width: 640px) {
+/* ── MOBILE / COMPACT LAYER. Desktop screens (≥900px) unchanged. ── */
+@media (max-width: 899px) {
   /* Never allow the page to scroll sideways */
   html, body { max-width: 100%; overflow-x: hidden; }
 
@@ -391,12 +391,15 @@ main { position: relative; z-index: 5; padding: 22px 24px; max-width: 1340px; ma
     width: 100%;
     gap: 6px;
     justify-content: flex-start;
-    overflow-x: auto;            /* horizontal scroll instead of squashing */
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
+    overflow-x: hidden;
+    flex-wrap: wrap;
     padding-bottom: 2px;
   }
-  .header-actions .btn { flex: 0 0 auto; }
+  .header-actions .btn { flex: 1 1 auto; justify-content: center; }
+
+  /* Seven staffing days wrap in-place; no hidden sixth/seventh card. */
+  .staff-strip { flex-wrap: wrap; overflow-x: hidden; }
+  .staff-day { min-width: 0; flex: 1 1 calc(25% - 8px); }
 
   /* Touch-friendly tap targets */
   .btn { min-height: 44px; padding: 9px 13px; font-size: 13px; }

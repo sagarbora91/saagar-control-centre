@@ -333,7 +333,7 @@ body{font-family:var(--font-sans);background:radial-gradient(circle at top,#fbf7
   .cc{page-break-inside:avoid;margin-bottom:7px;box-shadow:none!important;border:0.5px solid #ccc!important;}
   .mhd-title{font-size:18pt;}
 }
-@media(max-width:600px){
+@media(max-width:899px){
   .ng{grid-template-columns:1fr;}
   .dash-stats{grid-template-columns:repeat(2,1fr);gap:8px;}
   .mb-row{grid-template-columns:80px 1fr 60px 60px;}
@@ -350,8 +350,8 @@ body{font-family:var(--font-sans);background:radial-gradient(circle at top,#fbf7
   .btn-hd{width:100%;padding:7px 8px;font-size:10px;text-align:center;}
   .view-tabs{overflow-x:auto;white-space:nowrap;}
   .vt{padding:10px 12px;font-size:11px;}
-  .mnav{padding:0 8px;}
-  .mt{padding:9px 10px;font-size:10.5px;}
+  .mnav{padding:4px 8px;flex-wrap:wrap;overflow-x:hidden;}
+  .mt{padding:9px 10px;font-size:10.5px;flex:1 1 25%;text-align:center;}
   .wp,.dash-wrap{padding:12px 8px 52px;}
   .cos-banner{padding:14px 12px;}
   .cos-banner-title{font-size:20px;line-height:1.15;}
@@ -441,13 +441,13 @@ body{font-family:var(--font-sans);background:radial-gradient(circle at top,#fbf7
 }
 
 /* ──────────────────────────────────────
-   MOBILE RESPONSIVE LAYER (phones ≤640px / ~360px)
-   Additive only. Wide screens (>640px) are byte-unchanged.
+   MOBILE / COMPACT RESPONSIVE LAYER (≤899px)
+   Additive only. Desktop screens (≥900px) are byte-unchanged.
    Collapses multi-column grids, removes horizontal overflow,
    raises form-control font to 16px (stops iOS focus-zoom),
    and enlarges primary tap targets to ~44px.
 ────────────────────────────────────── */
-@media(max-width:640px){
+@media(max-width:899px){
   /* Never allow the page to scroll sideways */
   html,body{max-width:100%;overflow-x:hidden;}
   .wp,.dash-wrap{width:100%;}
@@ -581,7 +581,7 @@ html:not(.bcc-mobile) .cc-notes .tax-acc-h{cursor:default;}
 
 /* ── Narrow-width floor: re-raise elements the mobile block shrinks to 8–10px
    back to ≥11px, without lowering their (already ≥11px) desktop sizes ── */
-@media(max-width:640px){
+@media(max-width:899px){
   .hd-sub,.mhd-fy,.cc-form,.cc-filed,.exp-btn,.mt,.cos-badge,
   .done-capture label,.btn-hd{font-size:11px;}
 }

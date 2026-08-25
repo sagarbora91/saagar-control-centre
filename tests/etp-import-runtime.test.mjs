@@ -47,6 +47,28 @@ test('browser facade completes four-report parse, validation, reconciliation, st
   assert.doesNotMatch(JSON.stringify(history),/filename|fileLabel|workbook|rows|customer|mobile|privateBytes/i);
 });
 
+test('monthly workbooks merge into one bounded report generation',async()=>{
+  const h=harness(),value=request();
+  value.files=value.files.flatMap(item=>[item,{selectedReportId:item.selectedReportId,file:{name:item.selectedReportId+'-02.xlsx',arrayBuffer:async()=>new TextEncoder().encode(item.selectedReportId+'-02').buffer}}]);
+  const checked=await h.runtime.run(value);
+  assert.equal(checked.ok,true,JSON.stringify(checked));
+  assert.equal(checked.reconciliation.scopeSelection.sourceRows,8);
+  assert.equal(checked.reconciliation.scopeSelection.selectedRows,8);
+  assert.equal(h.stagedChunks.length,4);
+  assert.equal(h.stagedChunks.every(chunk=>chunk.rows.length===2),true);
+});
+
+test('large real-world rows split below the native encrypted chunk byte ceiling',async()=>{
+  const h=harness({load:async input=>{const value=loaded(input.selectedReportId),rows=[];for(let i=0;i<500;i++){const row=structuredClone(value.rows[0]);row.fields.invoiceNumber='INV-'+i;row.fields.activationDetails='x'.repeat(2000);rows.push(row);}value.rows=rows;return value;}});
+  const checked=await h.runtime.run(request());
+  assert.equal(checked.ok,true,JSON.stringify(checked));
+  assert.ok(h.stagedChunks.length>4);
+  for(const chunk of h.stagedChunks){
+    assert.ok(chunk.rows.length<=500);
+    assert.ok(Buffer.byteLength(JSON.stringify(chunk.rows),'utf8')<=480*1024);
+  }
+});
+
 test('precise numeric identifier refusal is surfaced without native staging',async()=>{
   const h=harness({load:async()=>({ok:false,code:'XLSX_IDENTIFIER_NUMERIC_UNVERIFIED'})});
   const result=await h.runtime.run(request());

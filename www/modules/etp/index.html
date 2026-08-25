@@ -56,23 +56,23 @@
 
     <section class="etp-panel" id="panel-import" role="tabpanel" aria-labelledby="tab-import" data-panel="import">
       <h2>Import &amp; Validate</h2>
-      <p class="lead">Select the exact R003, R013, R022 and R025 reports. A workbook may span multiple financial years; only rows inside the explicitly selected one-year scope are reconciled and published after Owner approval.</p>
+      <p class="lead">Select one or more R003, R013, R022 and R025 exports. Monthly exports are combined locally; only rows inside the explicitly selected one-year scope are reconciled and published after Owner approval.</p>
       <form data-action="etp-import-form" class="card" id="etpImportForm" novalidate>
         <h3>Store and complete period</h3>
         <div class="form-grid">
           <label class="field">Store<select data-field="store-code" data-etp-scope="storeCode"><option value="WLMHW">WLMHW</option><option value="HEMW">HEMW</option></select></label>
-          <label class="field">Financial year<input data-field="financial-year" data-etp-scope="financialYear" inputmode="numeric" maxlength="7" placeholder="2026-27" autocomplete="off"></label>
+          <label class="field">Financial year<select data-field="financial-year" data-etp-scope="financialYear" id="etpFinancialYear"><option value="">Select financial year</option></select></label>
           <label class="field">From<input data-field="period-start" data-etp-scope="periodStart" type="date"></label>
           <label class="field">To<input data-field="period-end" data-etp-scope="periodEnd" type="date"></label>
         </div>
         <div class="file-grid" aria-label="Required Retail ETP reports">
-          <label class="file-field"><strong>R003</strong><span data-etp-file-name="R003">Choose All Discount Type XLSX</span><input data-field="report-r003" data-etp-file="R003" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R013</strong><span data-etp-file-name="R013">Choose CRO Wise Sales XLSX</span><input data-field="report-r013" data-etp-file="R013" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R022</strong><span data-etp-file-name="R022">Choose Revenue Report XLSX</span><input data-field="report-r022" data-etp-file="R022" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
-          <label class="file-field"><strong>R025</strong><span data-etp-file-name="R025">Choose SDB Variantwise Sales XLSX</span><input data-field="report-r025" data-etp-file="R025" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R003</strong><span data-etp-file-name="R003">Choose one or more All Discount Type XLSX exports</span><input data-field="report-r003" data-etp-file="R003" type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R013</strong><span data-etp-file-name="R013">Choose one or more CRO Wise Sales XLSX exports</span><input data-field="report-r013" data-etp-file="R013" type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R022</strong><span data-etp-file-name="R022">Choose one or more Revenue Report XLSX exports</span><input data-field="report-r022" data-etp-file="R022" type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+          <label class="file-field"><strong>R025</strong><span data-etp-file-name="R025">Choose one or more SDB Variantwise Sales XLSX exports</span><input data-field="report-r025" data-etp-file="R025" type="file" multiple accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
         </div>
-        <label class="coverage-check"><input data-action="etp-coverage-confirmed" id="etpCoverageConfirmed" type="checkbox"> <span>I confirm all four exports cover the complete selected period. Rows outside this scope remain unpublished. Publication requires fresh Owner approval.</span></label>
-        <div class="notice" id="etpImportNotice" role="status" aria-live="polite">Select an exact scope and all four reports. Nothing is published during validation.</div>
+        <label class="coverage-check"><input data-action="etp-coverage-confirmed" id="etpCoverageConfirmed" type="checkbox"> <span>I confirm the selected exports collectively cover the complete period for all four reports without missing or overlapping date ranges. Rows outside this scope remain unpublished. Publication requires fresh Owner approval.</span></label>
+        <div class="notice" id="etpImportNotice" role="status" aria-live="polite">Select an exact scope and at least one export for each report. Nothing is published during validation.</div>
         <div class="actions"><button data-action="etp-validate" class="action" id="etpValidate" type="submit">Validate reports</button><button data-action="etp-confirm" class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
       </form>
       <p class="privacy">Selected workbook bytes are used only for validation and are released after a terminal success. Raw rows and customer information are never rendered here.</p>
@@ -122,6 +122,7 @@
       'use strict';
       var VIEWS = ['import', 'verified', 'coverage', 'reconciliation'];
       var REPORTS = ['R003', 'R013', 'R022', 'R025'];
+      var MAX_FILES_PER_REPORT = 13;
       var state = { busy: false, confirmationToken: '', files: Object.create(null), activeScope: null };
       var presentationController = null;
       function importGateway() {
@@ -156,7 +157,12 @@
         function fy(date) { var year = date.getUTCFullYear(), begins = date.getUTCMonth() >= 3 ? year : year - 1; return String(begins) + '-' + String((begins + 1) % 100).padStart(2, '0'); }
         return fy(start) === value.financialYear && fy(end) === value.financialYear;
       }
-      function filesReady() { return REPORTS.every(function (id) { return !!state.files[id]; }); }
+      function populateFinancialYears() {
+        var select = document.getElementById('etpFinancialYear'), now = new Date(), current = now.getUTCMonth() >= 3 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+        for (var year = current; year >= 2024; year--) { var option = document.createElement('option'); option.value = String(year) + '-' + String((year + 1) % 100).padStart(2, '0'); option.textContent = option.value; select.appendChild(option); }
+      }
+      function filesReady() { return REPORTS.every(function (id) { return Array.isArray(state.files[id]) && state.files[id].length > 0 && state.files[id].length <= MAX_FILES_PER_REPORT; }); }
+      function selectedFiles() { var result = []; REPORTS.forEach(function (id) { state.files[id].forEach(function (file) { result.push({ selectedReportId: id, file: file }); }); }); return result; }
       function sameScope(left, right) { return !!left && !!right && left.storeCode === right.storeCode && left.financialYear === right.financialYear && left.periodStart === right.periodStart && left.periodEnd === right.periodEnd; }
       function setActiveScope(value, refreshVisible) {
         state.activeScope = value ? { storeCode: String(value.storeCode), financialYear: String(value.financialYear), periodStart: String(value.periodStart), periodEnd: String(value.periodEnd) } : null;
@@ -174,10 +180,10 @@
       }
       function resetImportFiles() {
         REPORTS.forEach(function (id) {
-          state.files[id] = null;
+          state.files[id] = [];
           var input = document.querySelector('[data-etp-file="' + id + '"]');
           if (input) input.value = '';
-          text(document.querySelector('[data-etp-file-name="' + id + '"]'), 'Choose ' + id + ' XLSX export');
+          text(document.querySelector('[data-etp-file-name="' + id + '"]'), 'Choose one or more ' + id + ' XLSX exports');
         });
         document.getElementById('etpCoverageConfirmed').checked = false;
         state.confirmationToken = '';
@@ -187,15 +193,15 @@
         if (state.busy) return;
         var api = importGateway(), selectedScope = scope();
         if (!api || typeof api.run !== 'function' || typeof api.confirm !== 'function') { setNotice('Secure ETP gateway unavailable. Nothing was changed.', 'error'); return; }
-        if (!completeScope(selectedScope)) { setNotice('Enter a valid store, financial year and complete date period.', 'error'); return; }
-        if (!filesReady()) { setNotice('Select one exact XLSX export for each of R003, R013, R022 and R025.', 'error'); return; }
-        if (!document.getElementById('etpCoverageConfirmed').checked) { setNotice('Confirm that all four exports cover the complete selected period.', 'error'); return; }
+        if (!completeScope(selectedScope)) { setNotice('Select a valid store, financial year and complete date period.', 'error'); return; }
+        if (!filesReady()) { setNotice('Select 1–13 XLSX exports for each of R003, R013, R022 and R025.', 'error'); return; }
+        if (!document.getElementById('etpCoverageConfirmed').checked) { setNotice('Confirm that the selected exports collectively cover the complete period.', 'error'); return; }
         state.confirmationToken = '';
-        setBusy(true); setNotice('Validating four reports securely. Nothing is published yet.', '');
+        setBusy(true); setNotice('Combining and validating the selected report exports securely. Nothing is published yet.', '');
         try {
           var result = await api.run({
             scope: selectedScope,
-            files: REPORTS.map(function (id) { return { selectedReportId: id, file: state.files[id] }; }),
+            files: selectedFiles(),
             coverageConfirmed: true
           });
           if (result && result.ok === true && result.state === 'AWAITING_CONFIRMATION' && /^confirm_[a-f0-9]{32}_\d+$/.test(String(result.confirmationToken || ''))) {
@@ -319,8 +325,8 @@
       document.querySelectorAll('[data-etp-scope-picker]').forEach(function (button) { button.addEventListener('click', function () { select('coverage', true); }); });
       document.querySelectorAll('[data-etp-file]').forEach(function (input) {
         input.addEventListener('change', function () {
-          var id = input.getAttribute('data-etp-file'), file = input.files && input.files[0]; state.files[id] = file || null;
-          text(document.querySelector('[data-etp-file-name="' + id + '"]'), file ? file.name : 'Choose ' + id + ' XLSX export');
+          var id = input.getAttribute('data-etp-file'), files = Array.prototype.slice.call(input.files || [], 0, MAX_FILES_PER_REPORT); state.files[id] = files;
+          text(document.querySelector('[data-etp-file-name="' + id + '"]'), files.length ? files.length + ' export' + (files.length === 1 ? '' : 's') + ' selected' : 'Choose one or more ' + id + ' XLSX exports');
           state.confirmationToken = ''; setBusy(false);
         });
       });
@@ -331,6 +337,7 @@
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
       var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
       if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),readGateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
+      populateFinancialYears();
       select('import', false);
       refreshScopes();
     })();

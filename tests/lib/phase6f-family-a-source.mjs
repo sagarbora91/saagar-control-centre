@@ -63,7 +63,16 @@ function validate(moduleId, restored, validateHash) {
 }
 
 function restorePayroll(html, css) {
-  const legacyCss = css.replace(/\n\/\* Phase 6F Payroll adoption boundary\.[\s\S]*$/, '');
+  const legacyCss = css
+    .replace('   MOBILE / COMPACT RESPONSIVE LAYER  (≤899px)', '   MOBILE RESPONSIVE LAYER  (≤640px)')
+    .replace('   Added on top of the existing desktop layout. Wide screens (≥900px)', '   Added on top of the existing desktop layout. Wide screens (>640px)')
+    .replace('@media (max-width:899px){', '@media (max-width:640px){')
+    .replace('   GM SALARY SHEET — CARD-PER-EMPLOYEE REFLOW (≤899px)', '   GM SALARY SHEET — CARD-PER-EMPLOYEE REFLOW (≤520px)')
+    .replace('   899px each row becomes', '   520px each row becomes')
+    .replace('   REFLOW (≤899px). Same recipe as the #gm-table block above: below 900px', '   REFLOW (≤520px). Same recipe as the #gm-table block above: below 520px')
+    .replaceAll('@media (max-width:899px){', '@media (max-width:520px){')
+    .replace('@media(max-width:899px){', '@media(max-width:520px){')
+    .replace(/\n\/\* Phase 6F Payroll adoption boundary\.[\s\S]*$/, '');
   return stripFoundation(html, 'payroll')
     .replace('<link id="phase6f-payroll-ui-css" rel="stylesheet" href="payroll-ui.css">\n', '')
     .replace('\n\n<style id="st-v5-hide-css">', `\n\n<style>\n${legacyCss}</style>\n<style id="st-v5-hide-css">`)
@@ -87,6 +96,12 @@ function restoreGrooming(html, css) {
 }
 
 function restoreService(html, css) {
+  css = css
+    .replace('@media (max-width: 899px) { .fu-addform { grid-template-columns: 1fr; } }', '@media (max-width: 640px) { .fu-addform { grid-template-columns: 1fr; } }')
+    .replace('/* ═══════════ MOBILE / COMPACT (≤899px) ═══════════ */', '/* ═══════════════ MOBILE (≤640px) ═══════════════ */')
+    .replace('@media (max-width: 899px) {', '@media (max-width: 640px) {')
+    .replace('@media(max-width:899px){.d3-workboard-host{padding:12px}.d3-head{display:block}.d3-context{margin-top:8px}.d3-board{grid-template-columns:1fr;overflow-x:hidden}.d3-lane{min-width:0}.d3-ex-list{grid-template-columns:1fr}.stage-chips{flex-wrap:wrap;overflow-x:hidden;padding-bottom:4px}.stage-chip{flex:1 1 auto}}', '@media(max-width:720px){.d3-workboard-host{padding:12px}.d3-head{display:block}.d3-context{margin-top:8px}.d3-ex-list{grid-template-columns:1fr}.stage-chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}.stage-chip{flex:0 0 auto}}')
+    .replace('@media (max-width: 899px) {', '@media (max-width: 640px) {');
   const [delta, , ...mainParts] = css.split('\n');
   const main = mainParts.join('\n')
     .replace(':root{\n', `:root{\n${TOKENS_10PX}\n`)

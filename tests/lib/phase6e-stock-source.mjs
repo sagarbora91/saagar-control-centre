@@ -6,6 +6,10 @@ const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 
 export function restorePhase6dStockCss(css) {
   let restored = css
+    .replace(`   MOBILE / COMPACT — widths ≤899px
+   Additive layer only. Desktop screens (≥900px) stay byte-unchanged.`, `   MOBILE — phones ≤640px (≈360px target)
+   Additive layer only. Wide screens (>640px) stay byte-unchanged.`)
+    .replace('@media (max-width: 899px) {', '@media (max-width: 640px) {')
     .replace('#brand-inp,[onclick="addBrand()"] { display: none !important; }\n', '')
     .replace(`[data-stock-table-region="opening-counts"],
 [data-stock-table-region="closing-counts"],
