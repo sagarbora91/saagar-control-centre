@@ -1,5 +1,5 @@
 /*
- * Build a clearly identified two-year synthetic-data debug APK without ever
+ * Build a clearly identified full V6 synthetic-data debug APK without ever
  * enabling demo seeding in www/index.html. Only the generated Android asset is
  * changed, then restored after Gradle has packaged the APK.
  */
@@ -47,7 +47,7 @@ const builtApkPath = path.join(
 const outputApkPath = path.resolve(
   repoDir,
   '..',
-  'SaagarCC-C1-DemoData-2Years-v6.apk'
+  'SaagarCC-V6-ETP-Full-Demo.apk'
 );
 
 const PROFILE = Object.freeze({
@@ -55,6 +55,7 @@ const PROFILE = Object.freeze({
   daysBack: 730,
   walkInsPerWorkingDay: 25,
   syntheticOnly: true,
+  etpSyntheticOperational: true,
   stores: ['WLMHW', 'HEMW']
 });
 

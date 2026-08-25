@@ -12,7 +12,9 @@
   function actor(r,scope){var snapshot;try{snapshot=r.SaagarOwnerSession.read();}catch(_){return null;}if(!rec(snapshot)||snapshot.version!==1||snapshot.isOwner!==true)return null;return freeze({actorId:'OWNER_SESSION',role:'Owner',actorRole:'Owner',storeCode:scope.storeCode});}
   function binding(inspected,scope){var receipt=inspected&&inspected.currentReceipt,generation=receipt&&receipt.activeGenerationId;if(!inspected||inspected.ok!==true||!receipt||receipt.scopeKey!==scope.scopeKey||receipt.storeCode!=='WLMHW'||receipt.reconciliationStatus!=='PASS'||!/^etp_[a-f0-9]{32}$/.test(generation||''))return null;return freeze({scopeKey:scope.scopeKey,generationId:generation,receiptId:'receipt-'+generation.slice(4)});}
   async function compose(options){
-    var r=rec(options)&&dependencies(options.root),scope=r&&typeof options.getScope==='function'?cleanScope(options.getScope()):null,roots=options&&options.roots;
+    var suppliedRoot=rec(options)&&options.root,demo=suppliedRoot&&suppliedRoot.SaagarEtpDemoOperational;
+    if(demo&&demo.syntheticOnly===true&&typeof demo.composeRetail==='function')return demo.composeRetail({root:suppliedRoot,roots:options.roots,getScope:options.getScope});
+    var r=dependencies(suppliedRoot),scope=r&&typeof options.getScope==='function'?cleanScope(options.getScope()):null,roots=options&&options.roots;
     if(!r)return fail('ETP_SHELL_DEPENDENCY_UNAVAILABLE');
     if(!scope||!rec(roots)||!roots.e3||!roots.e4||!roots.e6||!roots.e5)return fail('ETP_SHELL_SCOPE_UNAVAILABLE');
     if(!actor(r,scope))return fail('ETP_SHELL_OWNER_SESSION_REQUIRED');

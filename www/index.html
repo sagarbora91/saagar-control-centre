@@ -127,6 +127,9 @@ try{ if(window.__FORCE_DEMO_SEED === true) DEMO_SEED_ENABLED = true; }catch(e){}
 var __DEMO_SEED_ACTIVE = (DEMO_SEED_ENABLED === true);
 try{ window.__DEMO_SEED_ACTIVE = __DEMO_SEED_ACTIVE; }catch(e){}   /* read-only marker for the in-app build badge / About (additive) */
 if(!__DEMO_SEED_ACTIVE) return;   /* clean / production build: no dummy data is ever loaded — the ONLY path that continues is flag===true */
+/* The operational ETP demo layer is parser-loaded only after the strict boolean
+   seed guard. Clean builds cannot construct synthetic authority or service facades. */
+document.write('<scr'+'ipt src="etp-demo-operational.js"><\/scr'+'ipt>');
 try{ if(!window.__SEED_DAYS) window.__SEED_DAYS = 365; if(!window.__SEED_WALK) window.__SEED_WALK = 50; }catch(e){}   /* generated seeded builds replace only these defaults */
 try{window.__SAAGAR_DEMO_PROFILE=Object.freeze({id:(window.__SEED_DAYS>=700?'two-year-review-v1':'large-review-v1'),daysBack:Number(window.__SEED_DAYS)||365,walkInsPerWorkingDay:Number(window.__SEED_WALK)||50,syntheticOnly:true,stores:['WLMHW','HEMW']});}catch(e){}
 try{document.addEventListener('DOMContentLoaded',function(){if(document.getElementById('__saagar-demo-banner'))return;var p=window.__SAAGAR_DEMO_PROFILE||{};var b=document.createElement('div');b.id='__saagar-demo-banner';b.setAttribute('role','status');b.setAttribute('data-no-i18n','true');b.style.cssText='position:fixed;right:10px;bottom:76px;pointer-events:none;z-index:2147483645;background:#0d2340;color:#fff;border:2px solid #b8922a;border-radius:10px;padding:8px 11px;font:600 11px/1.35 DM Sans,Arial,sans-serif;box-shadow:0 2px 12px rgba(13,35,64,.28);max-width:260px';b.textContent='SYNTHETIC DEMO DATA · '+((Number(p.daysBack)||0)+1)+' DAYS · WLMHW + HEMW · DO NOT CONTACT';document.body.appendChild(b);});}catch(e){}

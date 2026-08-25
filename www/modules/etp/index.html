@@ -381,6 +381,13 @@
       document.getElementById('etpConfirm').addEventListener('click', confirmImport);
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
       document.getElementById('etpE7Refresh').addEventListener('click', refreshServiceVerification);
+      var demoService=serviceBridge();
+      if(demoService&&demoService.demoSynthetic===true&&demoService.defaultScope){
+        document.getElementById('etpE7ServiceUnit').value=demoService.defaultScope.serviceUnitId;
+        document.getElementById('etpE7PeriodId').value=demoService.defaultScope.periodId;
+        document.getElementById('etpE7PeriodStart').value=demoService.defaultScope.periodStart;
+        document.getElementById('etpE7PeriodEnd').value=demoService.defaultScope.periodEnd;
+      }
       var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
       if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),readGateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
       populateFinancialYears();
