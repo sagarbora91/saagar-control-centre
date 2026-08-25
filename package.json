@@ -33,6 +33,7 @@
     "test:v6-etp-wave4": "node --test tests/etp-query-contract.test.mjs tests/etp-module-gateway.test.mjs tests/etp-module-gateway-adversarial.test.mjs tests/v6-etp-e3-verified-join.test.mjs tests/v6-etp-operational-bootstrap.test.mjs",
     "test:v6-etp-wave5": "node --test tests/v6-etp-operational-shell-composer.test.mjs tests/v6-etp-operational-module-host.test.mjs tests/v6-etp-operational-frame-bridge.test.mjs tests/v6-etp-wave5-host-boundary-adversarial.test.mjs",
     "test:v6-etp-wave6": "node --test tests/v6-etp-e3-lifecycle-acceptance.test.mjs tests/v6-etp-wave6-durability-restatement.test.mjs tests/v6-etp-wave6-portable-privacy.test.mjs tests/v6-etp-wave6-mounted-ui-acceptance.test.mjs tests/v6-etp-wave6-mounted-security-adversarial.test.mjs",
+    "test:v6-etp-wave7": "node --test tests/v6-etp-e4-authority-intake.test.mjs tests/v6-etp-wave7-e4-full-chain-acceptance.test.mjs tests/v6-etp-e4-presentation.test.mjs",
     "test:c1": "node --test tests/c1-operations-policy.test.mjs tests/c1-controls-integration.test.mjs",
     "test:mobile": "node --test tests/mobile-layout-remediation.test.mjs",
     "test:settings": "node --test tests/settings-navigation-architecture.test.mjs",

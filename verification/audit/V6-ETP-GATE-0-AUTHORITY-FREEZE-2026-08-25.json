@@ -46,13 +46,18 @@
     },
     "OPERATIONAL_ADAPTERS": {
       "path": "www/etp-operational-adapters.js",
-      "bytes": 7073,
-      "sha256": "9fa99499b56fc405706e0e99fdb2cee9c32ca4ec72bbd5e42dbce45f8df608ce"
+      "bytes": 7379,
+      "sha256": "f8134aa0e4926217ff85b7cdf4a24af061545e56552e85f4252375f76a7639eb"
     },
     "OPERATIONAL_RUNTIME": {
       "path": "www/etp-operational-runtime.js",
       "bytes": 6449,
       "sha256": "75352426907335e7aba9da89267f2cb28e106b2efbc2eab76042d6a8c4f0e8e1"
+    },
+    "E4_AUTHORITY_INTAKE": {
+      "path": "www/etp-e4-authority-intake.js",
+      "bytes": 11007,
+      "sha256": "b63238a928804ee967251161548317dc7445c51f6d8970983080a5544331fbd9"
     },
     "E3_OWNER_AUTHORITY": {
       "path": "docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md",
@@ -76,23 +81,23 @@
     },
     "E4": {
       "path": "www/etp-target-planning.js",
-      "bytes": 15967,
-      "sha256": "87d4c98e685063ed1a8ddf541a7da53c5469d324588ec72513333c8df3dd5ede"
+      "bytes": 15940,
+      "sha256": "fceb678978631812a096469750b371516de0364795777b963b6ffb3166ae667d"
     },
     "E4_ORCHESTRATOR": {
       "path": "www/etp-e4-orchestrator.js",
-      "bytes": 8725,
-      "sha256": "f3345b5f5c88e6cc9942af9e91b3a9497018130b8a62d3ddedb4e791f9b6911d"
+      "bytes": 9942,
+      "sha256": "fc8e69eaf9f7c9b6a131d777786e67dc5ecc234040b383229c5ac615653a900a"
     },
     "E4_PRESENTATION": {
       "path": "www/etp-e4-presentation.js",
-      "bytes": 12822,
-      "sha256": "5c05e1b3e0325643ecac188fdd6251356652b13ff190d458664bb80b0a1afbcd"
+      "bytes": 14689,
+      "sha256": "d90c6157cea71eb19e3414c2c656a429a10c7bc0d2f07f957fd03b55e431e413"
     },
     "OPERATIONAL_GATEWAY": {
       "path": "www/etp-operational-gateway.js",
-      "bytes": 6810,
-      "sha256": "dcd67caba3a8bf49f837f56451777ca725c54efa1a655b16313c2a870952950d"
+      "bytes": 6853,
+      "sha256": "88f23525e6ce282d8644f09412bb56ba1509b369111238cc4863a66e10fb8e5d"
     },
     "OPERATIONAL_MOUNT": {
       "path": "www/etp-operational-mount.js",
@@ -106,8 +111,8 @@
     },
     "OPERATIONAL_BOOTSTRAP": {
       "path": "www/etp-operational-bootstrap.js",
-      "bytes": 9541,
-      "sha256": "0a653bbaecd78634295b88bb0f97a5931fe5eea37058a71a05a06dcfbcfbec59"
+      "bytes": 10348,
+      "sha256": "8a9d8a2439831397ea26866e5c14cc63cf6c9e88dfb075e2fd8d207412493506"
     },
     "OPERATIONAL_SHELL_COMPOSER": {
       "path": "www/etp-operational-shell-composer.js",

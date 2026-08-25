@@ -16,6 +16,7 @@ export function restorePrePhase6gShellAssets(input) {
     .replace('<script src="etp-operational-store.js"></script>\n', '')
     .replace('<script src="etp-operational-adapters.js"></script>\n', '')
     .replace('<script src="etp-operational-runtime.js"></script>\n', '')
+    .replace('<script src="etp-e4-authority-intake.js"></script>\n', '')
     .replace('<script src="etp-target-planning.js"></script>\n', '')
     .replace('<script src="etp-e3-orchestrator.js"></script>\n', '')
     .replace('<script src="etp-e3-presentation.js"></script>\n', '')

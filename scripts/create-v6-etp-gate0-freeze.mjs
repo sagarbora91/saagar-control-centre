@@ -55,6 +55,7 @@ export function createV6EtpGate0Freeze() {
       OPERATIONAL_STORE: source('www/etp-operational-store.js'),
       OPERATIONAL_ADAPTERS: source('www/etp-operational-adapters.js'),
       OPERATIONAL_RUNTIME: source('www/etp-operational-runtime.js'),
+      E4_AUTHORITY_INTAKE: source('www/etp-e4-authority-intake.js'),
       E3_OWNER_AUTHORITY: source('docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md'),
       E3: source('www/etp-cro-reconciliation.js'),
       E3_ORCHESTRATOR: source('www/etp-e3-orchestrator.js'),

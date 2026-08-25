@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 50) fail('sharedAssets must contain exactly fifty entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 51) fail('sharedAssets must contain exactly fifty-one entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -208,6 +208,7 @@
       ,{ id: 'etp-operational-store', file: 'etp-operational-store.js' }
       ,{ id: 'etp-operational-adapters', file: 'etp-operational-adapters.js' }
       ,{ id: 'etp-operational-runtime', file: 'etp-operational-runtime.js' }
+      ,{ id: 'etp-e4-authority-intake', file: 'etp-e4-authority-intake.js' }
       ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }
       ,{ id: 'etp-e3-orchestrator', file: 'etp-e3-orchestrator.js' }
       ,{ id: 'etp-e3-presentation', file: 'etp-e3-presentation.js' }
@@ -454,8 +455,8 @@
       "id": "etp-operational-adapters",
       "version": 1,
       "file": "etp-operational-adapters.js",
-      "bytes": 7073,
-      "sha256": "9fa99499b56fc405706e0e99fdb2cee9c32ca4ec72bbd5e42dbce45f8df608ce"
+      "bytes": 7379,
+      "sha256": "f8134aa0e4926217ff85b7cdf4a24af061545e56552e85f4252375f76a7639eb"
     },
     {
       "id": "etp-operational-runtime",
@@ -463,6 +464,13 @@
       "file": "etp-operational-runtime.js",
       "bytes": 6449,
       "sha256": "75352426907335e7aba9da89267f2cb28e106b2efbc2eab76042d6a8c4f0e8e1"
+    },
+    {
+      "id": "etp-e4-authority-intake",
+      "version": 1,
+      "file": "etp-e4-authority-intake.js",
+      "bytes": 11007,
+      "sha256": "b63238a928804ee967251161548317dc7445c51f6d8970983080a5544331fbd9"
     },
     {
       "id": "etp-cro-reconciliation",
@@ -496,36 +504,36 @@
       "id": "etp-target-planning",
       "version": 1,
       "file": "etp-target-planning.js",
-      "bytes": 15967,
-      "sha256": "87d4c98e685063ed1a8ddf541a7da53c5469d324588ec72513333c8df3dd5ede"
+      "bytes": 15940,
+      "sha256": "fceb678978631812a096469750b371516de0364795777b963b6ffb3166ae667d"
     },
     {
       "id": "etp-e4-orchestrator",
       "version": 1,
       "file": "etp-e4-orchestrator.js",
-      "bytes": 8725,
-      "sha256": "f3345b5f5c88e6cc9942af9e91b3a9497018130b8a62d3ddedb4e791f9b6911d"
+      "bytes": 9942,
+      "sha256": "fc8e69eaf9f7c9b6a131d777786e67dc5ecc234040b383229c5ac615653a900a"
     },
     {
       "id": "etp-e4-presentation",
       "version": 1,
       "file": "etp-e4-presentation.js",
-      "bytes": 12822,
-      "sha256": "5c05e1b3e0325643ecac188fdd6251356652b13ff190d458664bb80b0a1afbcd"
+      "bytes": 14689,
+      "sha256": "d90c6157cea71eb19e3414c2c656a429a10c7bc0d2f07f957fd03b55e431e413"
     },
     {
       "id": "etp-e4-presentation-css",
       "version": 1,
       "file": "etp-e4-presentation.css",
-      "bytes": 1571,
-      "sha256": "871265f42e7ce8a8e522f7fd157bb691e9f20f09e1832801629eb5f3c0bef80f"
+      "bytes": 1684,
+      "sha256": "e053628978a5e9ee95f2f5f13e31dae1603cdc23ed36082e8aa44a86a021cc5b"
     },
     {
       "id": "etp-operational-gateway",
       "version": 1,
       "file": "etp-operational-gateway.js",
-      "bytes": 6810,
-      "sha256": "dcd67caba3a8bf49f837f56451777ca725c54efa1a655b16313c2a870952950d"
+      "bytes": 6853,
+      "sha256": "88f23525e6ce282d8644f09412bb56ba1509b369111238cc4863a66e10fb8e5d"
     },
     {
       "id": "etp-operational-mount",
@@ -545,8 +553,8 @@
       "id": "etp-operational-bootstrap",
       "version": 1,
       "file": "etp-operational-bootstrap.js",
-      "bytes": 9541,
-      "sha256": "0a653bbaecd78634295b88bb0f97a5931fe5eea37058a71a05a06dcfbcfbec59"
+      "bytes": 10348,
+      "sha256": "8a9d8a2439831397ea26866e5c14cc63cf6c9e88dfb075e2fd8d207412493506"
     },
     {
       "id": "etp-operational-shell-composer",

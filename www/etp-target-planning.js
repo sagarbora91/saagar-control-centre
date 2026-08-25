@@ -63,7 +63,7 @@
     return out;
   }
   function validVersion(value) {
-    if (!record(value) || !Object.isFrozen(value) || value.contractVersion !== VERSION || !id(value.storeCode) || value.versionId !== value.storeCode + '|' + value.periodStart + '..' + value.periodEnd + '|v' + value.version ||
+    if (!record(value) || value.contractVersion !== VERSION || !id(value.storeCode) || value.versionId !== value.storeCode + '|' + value.periodStart + '..' + value.periodEnd + '|v' + value.version ||
         !iso(value.periodStart) || !iso(value.periodEnd) || value.periodStart > value.periodEnd || !Number.isSafeInteger(value.version) || value.version < 1 ||
         money(value.storeTargetPaise) === null || !source(value.source) || !approval(value.approval) || value.allocationLockDate !== value.periodStart ||
         !Array.isArray(value.allocations) || !value.allocations.length || !record(value.allocationIdentity) || !record(value.curve) ||

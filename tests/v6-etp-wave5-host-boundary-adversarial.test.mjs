@@ -60,9 +60,9 @@ test('each operation rebinds receipt and generation and fails closed when bindin
   await api.E3.importVerified({scopeKey,businessDate:'2026-08-25'});
   h.setBinding(null);
   const denied=await api.E3.importVerified({scopeKey,businessDate:'2026-08-25'});
-  assert.deepEqual(h.calls.map(x=>x.request.binding.receiptId),['receipt-live','receipt-restated']);
+  assert.deepEqual(h.calls.map(x=>x.request.binding.receiptId),['receipt-live','receipt-live','receipt-restated','receipt-restated']);
   assert.equal(denied.code,'ETP_OPERATIONAL_CONTEXT_UNAVAILABLE');
-  assert.equal(h.calls.length,2);
+  assert.equal(h.calls.length,4);
 });
 
 test('stale reauthentication remains rejectable downstream and private rejection detail is not returned',async()=>{
