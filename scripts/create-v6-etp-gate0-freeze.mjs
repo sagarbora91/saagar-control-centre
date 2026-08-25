@@ -58,6 +58,7 @@ export function createV6EtpGate0Freeze() {
       E4_AUTHORITY_INTAKE: source('www/etp-e4-authority-intake.js'),
       E6_AUTHORITY_INTAKE: source('www/etp-e6-authority-intake.js'),
       E5_AUTHORITY_INTAKE: source('www/etp-e5-authority-intake.js'),
+      E7_AUTHORITY_INTAKE: source('www/etp-e7-authority-intake.js'),
       E3_OWNER_AUTHORITY: source('docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md'),
       E3: source('www/etp-cro-reconciliation.js'),
       E3_ORCHESTRATOR: source('www/etp-e3-orchestrator.js'),
@@ -78,6 +79,10 @@ export function createV6EtpGate0Freeze() {
       E5_PRESENTATION: source('www/etp-e5-presentation.js'),
       E5_PAYROLL_BRIDGE: source('www/etp-e5-payroll-bridge.js'),
       E7_OPERATIONAL_SERVICE_ONLY: source('www/service-workboard-policy.js')
+      ,E7_SERVICE_VERIFIER: source('www/etp-e7-service-verifier.js')
+      ,E7_SERVICE_OPERATIONAL: source('www/etp-e7-service-operational.js')
+      ,E7_PRESENTATION: source('www/etp-e7-presentation.js')
+      ,E7_MODULE_HOST: source('www/etp-e7-module-host.js')
     },
     capabilities: {
       E3: {

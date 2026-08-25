@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="../../etp-e4-presentation.css">
   <link rel="stylesheet" href="../../etp-e6-presentation.css">
   <link rel="stylesheet" href="../../etp-e5-presentation.css">
+  <link rel="stylesheet" href="../../etp-e7-presentation.css">
   <script src="../../app-i18n.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -117,11 +118,25 @@
         <article class="card placeholder" data-etp-operational-e6><h3>E6 · Exception monitoring</h3><p>Versioned thresholds, explicit ownership and evidence-backed closure feed sanitized Home summaries.</p><span class="tag">No silent closure</span></article>
         <article class="card placeholder" data-etp-operational-e5><h3>E5 · Incentive &amp; Payroll</h3><p>Money remains disabled without an approved active scheme. Final values use verified ETP only and become a controlled Payroll line.</p><span class="tag">Scheme required · money last</span></article>
       </div>
+      <section class="card" aria-labelledby="etpE7Heading">
+        <h3 id="etpE7Heading">E7 · Service-centre ETP verification</h3>
+        <p>Service verification uses a separate <strong>SERVICE_ETP_V1</strong> boundary. Retail ETP facts, authority and receipts are never borrowed.</p>
+        <div class="form-grid" data-etp-e7-scope>
+          <label class="field">Service unit ID<input id="etpE7ServiceUnit" type="text" maxlength="32" autocomplete="off" placeholder="Approved service unit"></label>
+          <label class="field">Period ID<input id="etpE7PeriodId" type="text" maxlength="20" autocomplete="off" placeholder="Approved period ID"></label>
+          <label class="field">Period start<input id="etpE7PeriodStart" type="date"></label>
+          <label class="field">Period end<input id="etpE7PeriodEnd" type="date"></label>
+        </div>
+        <div class="actions"><button id="etpE7Refresh" class="action" type="button">Check Service ETP readiness</button></div>
+        <div data-etp-operational-e7 aria-live="polite"><section class="etp-e7-state etp-e7-state--blocked" role="status"><h2>E7 Service verification BLOCKED / deferred</h2><p>Separate Owner-approved service authority and a verified Service ETP source are required.</p></section></div>
+      </section>
     </section>
   </main>
   <script src="../../etp-verified-presentation.js"></script>
   <script src="../../etp-operational-module-host.js"></script>
   <script src="../../etp-operational-frame-bridge.js"></script>
+  <script src="../../etp-e7-presentation.js"></script>
+  <script src="../../etp-e7-module-host.js"></script>
   <script>
     (function () {
       'use strict';
@@ -129,7 +144,7 @@
       var REPORTS = ['R003', 'R013', 'R022', 'R025'];
       var MAX_FILES_PER_REPORT = 13;
       var state = { busy: false, confirmationToken: '', files: Object.create(null), activeScope: null };
-      var presentationController = null, operationalController = null, operationalSequence = 0;
+      var presentationController = null, operationalController = null, operationalSequence = 0, serviceController = null;
       function importGateway() {
         var bridge = window.SaagarModuleBridge;
         return bridge && bridge.etpImportGateway && typeof bridge.etpImportGateway.run === 'function' && typeof bridge.etpImportGateway.confirm === 'function' ? bridge.etpImportGateway : null;
@@ -184,6 +199,19 @@
         var made=await host.compose({document:document,composer:composer,getScope:function(){return state.activeScope;}});
         if(sequence!==operationalSequence){if(made&&made.controller&&typeof made.controller.destroy==='function')made.controller.destroy();return;}
         if(made&&made.ok===true)operationalController=made.controller;
+      }
+      function serviceScope() {
+        var unit=String(document.getElementById('etpE7ServiceUnit').value||'').trim(),period=String(document.getElementById('etpE7PeriodId').value||'').trim(),start=String(document.getElementById('etpE7PeriodStart').value||''),end=String(document.getElementById('etpE7PeriodEnd').value||'');
+        if(!/^[A-Za-z0-9][A-Za-z0-9._-]{1,31}$/.test(unit)||!/^.{3,20}$/.test(period)||period.indexOf('|')>=0||!/^\d{4}-\d{2}-\d{2}$/.test(start)||!/^\d{4}-\d{2}-\d{2}$/.test(end)||start>end)return null;
+        return {scopeKey:'SERVICE_ETP_V1|'+unit+'|'+period+'|'+start+'..'+end};
+      }
+      function serviceBridge() { var bridge=window.SaagarModuleBridge;return bridge&&bridge.e7ServiceVerification&&typeof bridge.e7ServiceVerification.load==='function'?bridge.e7ServiceVerification:null; }
+      function serviceActor() { var bridge=window.SaagarModuleBridge;try{return bridge&&typeof bridge.e7ServiceActor==='function'?bridge.e7ServiceActor():null;}catch(_){return null;} }
+      async function refreshServiceVerification() {
+        if(serviceController&&typeof serviceController.destroy==='function')serviceController.destroy();serviceController=null;
+        var host=window.SaagarEtpE7ModuleHost,presentation=window.SaagarEtpE7Presentation;if(!host||typeof host.mount!=='function')return;
+        var made=host.mount({document:document,facade:serviceBridge(),presentation:presentation,getScope:serviceScope,getActor:serviceActor,getActionInput:function(name,id,runId){var bridge=window.SaagarModuleBridge;try{return bridge&&typeof bridge.getE7ServiceActionInput==='function'?bridge.getE7ServiceActionInput(name,id,runId,serviceScope()):null;}catch(_){return null;}}});
+        if(made&&made.ok===true&&made.controller){serviceController=made.controller;await made.controller.refresh();}
       }
       function setBusy(value) {
         state.busy = value === true;
@@ -349,11 +377,13 @@
       document.getElementById('etpImportForm').addEventListener('submit', validateImport);
       document.getElementById('etpConfirm').addEventListener('click', confirmImport);
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
+      document.getElementById('etpE7Refresh').addEventListener('click', refreshServiceVerification);
       var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
       if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),readGateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
       populateFinancialYears();
       select('import', false);
       refreshScopes();
+      refreshServiceVerification();
     })();
   </script>
 

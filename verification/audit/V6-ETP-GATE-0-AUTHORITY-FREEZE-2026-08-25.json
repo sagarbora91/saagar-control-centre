@@ -69,6 +69,11 @@
       "bytes": 11051,
       "sha256": "ebef537bcd465c702950170074603e143e48442689bd2dbf555b6e3826f556b3"
     },
+    "E7_AUTHORITY_INTAKE": {
+      "path": "www/etp-e7-authority-intake.js",
+      "bytes": 10955,
+      "sha256": "dbd0c845c6b5ca90e108e6ffdd061847fe6720a81a7940747028dd5bbdcf1977"
+    },
     "E3_OWNER_AUTHORITY": {
       "path": "docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md",
       "bytes": 1210,
@@ -168,6 +173,26 @@
       "path": "www/service-workboard-policy.js",
       "bytes": 16205,
       "sha256": "72b0769cd8dadbb3371bafd5f1159b61219e28e3d0b5a4d00c606462662c747d"
+    },
+    "E7_SERVICE_VERIFIER": {
+      "path": "www/etp-e7-service-verifier.js",
+      "bytes": 9009,
+      "sha256": "1a5d2e94b0a0e36fac4a8b856fcc44122a44f8481d6f49742a529d0cd807f13f"
+    },
+    "E7_SERVICE_OPERATIONAL": {
+      "path": "www/etp-e7-service-operational.js",
+      "bytes": 22922,
+      "sha256": "4de2f124d25286187e07ec661cfd972bd975f1a1684c23c8326a354bc181d1bc"
+    },
+    "E7_PRESENTATION": {
+      "path": "www/etp-e7-presentation.js",
+      "bytes": 16782,
+      "sha256": "a40d1f3ffa7ce63bc69ba2f88d2bc441e8fd0fd407087c469de3e55a00720f69"
+    },
+    "E7_MODULE_HOST": {
+      "path": "www/etp-e7-module-host.js",
+      "bytes": 2672,
+      "sha256": "e9ab91e040377c7bdff5b08293c0ddaddf372dc64c7e733898a01b92094ec247"
     }
   },
   "capabilities": {

@@ -54,7 +54,7 @@ test('MAH-2 manifest has exact ordered modules and immutable browser data', () =
 });
 
 test('manifest binds both synchronous shared runtimes to local bytes and SHA-256', () => {
-  assert.equal(api.sharedAssets.length, 58);
+  assert.equal(api.sharedAssets.length, 64);
   const bridge = api.sharedAssets[0];
   assert.equal(bridge.id, 'module-bridge');
   assert.equal(bridge.file, 'shared/module-bridge.js');
@@ -67,7 +67,7 @@ test('manifest binds both synchronous shared runtimes to local bytes and SHA-256
   assert.equal(mah4Runtime.id, 'mah4-runtime');
   assert.equal(mah4Runtime.version, 1);
   assert.equal(mah4Runtime.file, 'shared/mah4-runtime.js');
-  assert.deepEqual(api.sharedAssets.slice(3).map(asset => asset.id), ['module-uniform-css','module-back-css','module-employee-css','module-mobile-common-css','module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css','module-rendered-components','stock-ui-css','payroll-ui-css','grooming-ui-css','service-ui-css','leave-ui-css','cro-audit-ui-css','tax-ui-css','dsr-ui-css','qms-view','qms-ui-css','module-delete-cell-css','etp-verified-presentation','etp-verified-analytics','etp-analytics-consumer','etp-operational-foundation','etp-operational-store','etp-operational-adapters','etp-operational-runtime','etp-e4-authority-intake','etp-e6-authority-intake','etp-e5-authority-intake','etp-cro-reconciliation','etp-e3-orchestrator','etp-e3-presentation','etp-e3-presentation-css','etp-target-planning','etp-e4-orchestrator','etp-e4-presentation','etp-e4-presentation-css','etp-e6-presentation','etp-e6-presentation-css','etp-e5-presentation','etp-e5-presentation-css','etp-e5-payroll-bridge','etp-operational-gateway','etp-operational-mount','etp-e3-verified-join','etp-operational-bootstrap','etp-operational-shell-composer','etp-operational-module-host','etp-operational-frame-bridge','etp-exception-monitor','etp-incentive-control','etp-operations-consumer']);
+  assert.deepEqual(api.sharedAssets.slice(3).map(asset => asset.id), ['module-uniform-css','module-back-css','module-employee-css','module-mobile-common-css','module-brand-tokens-css','module-responsive-css','module-ui-runtime','module-table-css','module-table-runtime','module-components-css','module-rendered-components','stock-ui-css','payroll-ui-css','grooming-ui-css','service-ui-css','leave-ui-css','cro-audit-ui-css','tax-ui-css','dsr-ui-css','qms-view','qms-ui-css','module-delete-cell-css','etp-verified-presentation','etp-verified-analytics','etp-analytics-consumer','etp-operational-foundation','etp-operational-store','etp-operational-adapters','etp-operational-runtime','etp-e4-authority-intake','etp-e6-authority-intake','etp-e5-authority-intake','etp-e7-authority-intake','etp-e7-service-verifier','etp-e7-service-operational','etp-cro-reconciliation','etp-e3-orchestrator','etp-e3-presentation','etp-e3-presentation-css','etp-target-planning','etp-e4-orchestrator','etp-e4-presentation','etp-e4-presentation-css','etp-e6-presentation','etp-e6-presentation-css','etp-e5-presentation','etp-e5-presentation-css','etp-e5-payroll-bridge','etp-e7-presentation','etp-e7-presentation-css','etp-e7-module-host','etp-operational-gateway','etp-operational-mount','etp-e3-verified-join','etp-operational-bootstrap','etp-operational-shell-composer','etp-operational-module-host','etp-operational-frame-bridge','etp-exception-monitor','etp-incentive-control','etp-operations-consumer']);
   assert.equal(api.getShared('mah4-runtime'), mah4Runtime);
   for (const asset of api.sharedAssets) {
     const bytes = fs.readFileSync(path.join(root, 'www', asset.file));
@@ -79,7 +79,7 @@ test('manifest binds both synchronous shared runtimes to local bytes and SHA-256
 test('module bridge is a versioned local boundary for shell-owned capabilities', () => {
   const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
   assert.match(bridge, /var MODULE_BRIDGE_VERSION = 1;/);
-  for (const name of ['adminPinCheck', 'ownerSession', 'sharedStorage', 'evidence', 'legal', 'reauth', 'report', 'qmsPolicy', 'photo', 'ensureJsZip']) {
+  for (const name of ['adminPinCheck', 'ownerSession', 'sharedStorage', 'evidence', 'legal', 'reauth', 'report', 'qmsPolicy', 'photo', 'ensureJsZip', 'e7ServiceVerification', 'e7ServiceActor', 'getE7ServiceActionInput']) {
     assert.match(bridge, new RegExp(`\\b${name}: getter`), name);
   }
   for (const module of api.modules) {

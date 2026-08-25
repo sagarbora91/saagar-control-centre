@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 58) fail('sharedAssets must contain exactly fifty-eight entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 64) fail('sharedAssets must contain exactly sixty-four entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -211,6 +211,9 @@
       ,{ id: 'etp-e4-authority-intake', file: 'etp-e4-authority-intake.js' }
       ,{ id: 'etp-e6-authority-intake', file: 'etp-e6-authority-intake.js' }
       ,{ id: 'etp-e5-authority-intake', file: 'etp-e5-authority-intake.js' }
+      ,{ id: 'etp-e7-authority-intake', file: 'etp-e7-authority-intake.js' }
+      ,{ id: 'etp-e7-service-verifier', file: 'etp-e7-service-verifier.js' }
+      ,{ id: 'etp-e7-service-operational', file: 'etp-e7-service-operational.js' }
       ,{ id: 'etp-cro-reconciliation', file: 'etp-cro-reconciliation.js' }
       ,{ id: 'etp-e3-orchestrator', file: 'etp-e3-orchestrator.js' }
       ,{ id: 'etp-e3-presentation', file: 'etp-e3-presentation.js' }
@@ -224,6 +227,9 @@
       ,{ id: 'etp-e5-presentation', file: 'etp-e5-presentation.js' }
       ,{ id: 'etp-e5-presentation-css', file: 'etp-e5-presentation.css' }
       ,{ id: 'etp-e5-payroll-bridge', file: 'etp-e5-payroll-bridge.js' }
+      ,{ id: 'etp-e7-presentation', file: 'etp-e7-presentation.js' }
+      ,{ id: 'etp-e7-presentation-css', file: 'etp-e7-presentation.css' }
+      ,{ id: 'etp-e7-module-host', file: 'etp-e7-module-host.js' }
       ,{ id: 'etp-operational-gateway', file: 'etp-operational-gateway.js' }
       ,{ id: 'etp-operational-mount', file: 'etp-operational-mount.js' }
       ,{ id: 'etp-e3-verified-join', file: 'etp-e3-verified-join.js' }
@@ -252,8 +258,8 @@
       "id": "module-bridge",
       "version": 1,
       "file": "shared/module-bridge.js",
-      "bytes": 2656,
-      "sha256": "768a25b0ea4bdd76c826b72a9ea99d78a16bf08aa0d47ec170d827d3b9114c43"
+      "bytes": 2959,
+      "sha256": "67a2866a4aa8920a4dbc7079ee9802a991b7e704a5cceea68ca71d5ac602467d"
     },
     {
       "id": "module-runtime",
@@ -494,6 +500,27 @@
       "sha256": "ebef537bcd465c702950170074603e143e48442689bd2dbf555b6e3826f556b3"
     },
     {
+      "id": "etp-e7-authority-intake",
+      "version": 1,
+      "file": "etp-e7-authority-intake.js",
+      "bytes": 10955,
+      "sha256": "dbd0c845c6b5ca90e108e6ffdd061847fe6720a81a7940747028dd5bbdcf1977"
+    },
+    {
+      "id": "etp-e7-service-verifier",
+      "version": 1,
+      "file": "etp-e7-service-verifier.js",
+      "bytes": 9009,
+      "sha256": "1a5d2e94b0a0e36fac4a8b856fcc44122a44f8481d6f49742a529d0cd807f13f"
+    },
+    {
+      "id": "etp-e7-service-operational",
+      "version": 1,
+      "file": "etp-e7-service-operational.js",
+      "bytes": 22922,
+      "sha256": "4de2f124d25286187e07ec661cfd972bd975f1a1684c23c8326a354bc181d1bc"
+    },
+    {
       "id": "etp-cro-reconciliation",
       "version": 1,
       "file": "etp-cro-reconciliation.js",
@@ -583,6 +610,27 @@
       "file": "etp-e5-payroll-bridge.js",
       "bytes": 2846,
       "sha256": "c1bf788f9cc41a11bffd9fe07637cc726856e72d93f3bc2de12fe90d4e4d1e83"
+    },
+    {
+      "id": "etp-e7-presentation",
+      "version": 1,
+      "file": "etp-e7-presentation.js",
+      "bytes": 16782,
+      "sha256": "a40d1f3ffa7ce63bc69ba2f88d2bc441e8fd0fd407087c469de3e55a00720f69"
+    },
+    {
+      "id": "etp-e7-presentation-css",
+      "version": 1,
+      "file": "etp-e7-presentation.css",
+      "bytes": 1815,
+      "sha256": "e5a3c9b9cae605f1dadcd91067c5397ff9d18d1943b6993c9d913538d7f62ce6"
+    },
+    {
+      "id": "etp-e7-module-host",
+      "version": 1,
+      "file": "etp-e7-module-host.js",
+      "bytes": 2672,
+      "sha256": "e9ab91e040377c7bdff5b08293c0ddaddf372dc64c7e733898a01b92094ec247"
     },
     {
       "id": "etp-operational-gateway",
@@ -827,8 +875,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 38691,
-      "sha256": "c6882331ae592d9f0e55fc2be3f032d6d0ab4a572807271570d1d11b057c9b77",
+      "bytes": 42143,
+      "sha256": "4e62d5a9422d339ac6bb2f8f2e6aecb7ce9f1f8ca1387c3efaa83b47eea2cef8",
       "src": "modules/etp/index.html"
     }
   ]
