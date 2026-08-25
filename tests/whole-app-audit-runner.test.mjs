@@ -174,8 +174,8 @@ function buildRecord(apkFile, toolchainTag = 'same', closureTag = 'same') {
         'android/app/capacitor.build.gradle', 'android/gradle.properties'].includes(item.file));
       return { files: recipeFiles, filesSha256: canonicalSha256(recipeFiles) };
     })(),
-    configuration: { packageId: 'com.saagartraders.bcc', versionCode: 209,
-      versionName: '2.9', minSdk: 23, signing }
+    configuration: { packageId: 'com.saagartraders.bcc', versionCode: 600,
+      versionName: '6', minSdk: 23, signing }
   };
   const gradle = { version: '8.11.1', javaHomeVersion: javaVersion, reportedJvmForm: 'Launcher JVM',
     javaHomeJvmVersion: '21.0.7', actualJvmVersion: '21.0.7',
@@ -834,7 +834,7 @@ test('A9 rejects fabricated comparison evidence and never consults ambient ignor
 
 test('A9 generated identity receipts reject wrong identity and mismatched build facts', () => {
   const identity = { packageId: 'com.saagartraders.bcc', appVersion: 'V6',
-    versionName: '2.9', versionCode: 209, minSdk: 23 };
+    versionName: '6', versionCode: 600, minSdk: 23 };
   const canonicalSourceSha256 = sha256('canonical-build-identity');
   const signing = { captureBuildType: 'debug', releaseDebuggable: false,
     releaseConfigDeclared: true, releaseBuildUsesReleaseConfig: true, releaseFailClosed: true,
@@ -1014,8 +1014,8 @@ test('APK normalization validates STORE, DEFLATE/data-descriptor, CRC, ZIP64 and
     assert.equal(bound.differenceClass, 'metadata-or-signing-only');
     assert.ok(!JSON.stringify(bound).includes('CERT.RSA'));
     assert.equal(bound.first.build.androidConfiguration.packageId, 'com.saagartraders.bcc');
-    assert.equal(bound.first.build.androidConfiguration.versionCode, 209);
-    assert.equal(bound.first.build.androidConfiguration.versionName, '2.9');
+    assert.equal(bound.first.build.androidConfiguration.versionCode, 600);
+    assert.equal(bound.first.build.androidConfiguration.versionName, '6');
     assert.equal(bound.first.build.androidConfiguration.minSdk, 23);
     assert.match(bound.first.build.gradleWrapperJarSha256, /^[a-f0-9]{64}$/);
     assert.match(bound.first.build.gradleWrapperPropertiesSha256, /^[a-f0-9]{64}$/);

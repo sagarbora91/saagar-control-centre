@@ -8,7 +8,7 @@ const html = restorePrePhase6h1EtpIndex(fs.readFileSync(new URL('../www/modules/
 const staticMarkup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 // Phase-6B facade wiring is part of the authorized module baseline; removing only
 // identity annotations must reproduce every other byte of that baseline.
-const originalSha256 = '4dff4465f3ac315a9e423cdd540fe15568850788f74f38d4fc92d8fc2bfb5c35';
+const originalSha256 = 'ca3e7b09da0cbc86f389b3472aba5ed3bb5050991be671063a39842de41651b6';
 
 function values(attribute) {
   return [...staticMarkup.matchAll(new RegExp(`\\b${attribute}="([^"]+)"`, 'g'))].map(match => match[1]);

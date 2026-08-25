@@ -6,3 +6,4 @@
 .etp-e6-action-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:8px;margin:10px 0}.etp-e6-input{box-sizing:border-box;width:100%;min-width:0;min-height:44px;max-width:100%;padding:8px 10px;border:1px solid #94a3b8;border-radius:9px;background:#fff;color:#172033}
 @media(max-width:480px){.etp-e6-state,.etp-e6-card{padding:11px}.etp-e6-facts,.etp-e6-actions,.etp-e6-action-inputs{grid-template-columns:1fr}}
 @media(min-width:900px){.etp-e6-card{padding:18px}.etp-e6-summary{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.saagar-legacy-webview .etp-e6-summary,.saagar-legacy-webview .etp-e6-facts,.saagar-legacy-webview .etp-e6-actions,.saagar-legacy-webview .etp-e6-action-inputs{display:block}.saagar-legacy-webview .etp-e6-summary-item,.saagar-legacy-webview .etp-e6-facts dt,.saagar-legacy-webview .etp-e6-facts dd,.saagar-legacy-webview .etp-e6-action,.saagar-legacy-webview .etp-e6-input{display:block;width:100%;margin-bottom:8px}

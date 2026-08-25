@@ -37,6 +37,7 @@
     "test:v6-etp-wave8": "node --test tests/v6-etp-e6-authority-lifecycle.test.mjs tests/v6-etp-wave8-e6-full-chain-acceptance.test.mjs tests/v6-etp-e6-presentation.test.mjs",
     "test:v6-etp-wave9": "node --test tests/v6-etp-e5-authority-and-money-goldens.test.mjs tests/v6-etp-e5-payroll-bridge.test.mjs tests/v6-etp-e5-presentation.test.mjs tests/v6-etp-wave9-e5-full-chain-acceptance.test.mjs tests/v6-etp-wave9-e5-mounted-ui-acceptance.test.mjs",
     "test:v6-etp-wave10": "node --test tests/v6-etp-e7-authority-intake.test.mjs tests/v6-etp-e7-service-verifier.test.mjs tests/v6-etp-e7-service-operational.test.mjs tests/v6-etp-e7-presentation.test.mjs tests/v6-etp-e7-module-host.test.mjs tests/v6-etp-e7-privacy-isolation-adversarial.test.mjs",
+    "test:v6-etp-final-uat": "node --test tests/v6-etp-operational-i18n.test.mjs tests/v6-etp-synthetic-staff-uat.test.mjs tests/language-localization.test.mjs tests/mobile-layout-remediation.test.mjs",
     "test:c1": "node --test tests/c1-operations-policy.test.mjs tests/c1-controls-integration.test.mjs",
     "test:mobile": "node --test tests/mobile-layout-remediation.test.mjs",
     "test:settings": "node --test tests/settings-navigation-architecture.test.mjs",

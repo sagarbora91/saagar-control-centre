@@ -9,6 +9,7 @@ export function restorePrePhase6gShellAssets(input) {
   index = index
     // Phase 6J release-label approval is newer than the frozen pre-6G shell authority.
     .replaceAll('V6', 'V5.5')
+    .replace('<span id="aboutBuild">6</span>', '<span id="aboutBuild">2.9</span>')
     .replace('<script src="etp-verified-analytics.js"></script>\n', '')
     .replace('<script src="etp-analytics-consumer.js"></script>\n', '')
     .replace('<script src="etp-cro-reconciliation.js"></script>\n', '')
@@ -29,6 +30,7 @@ export function restorePrePhase6gShellAssets(input) {
     .replace('<script src="etp-e4-presentation.js"></script>\n', '')
     .replace('<script src="etp-e6-presentation.js"></script>\n', '')
     .replace('<script src="etp-e5-presentation.js"></script>\n', '')
+    .replace('<script src="etp-operational-i18n.js"></script>\n', '')
     .replace('<script src="etp-e5-payroll-bridge.js"></script>\n', '')
     .replace('<script src="etp-operational-gateway.js"></script>\n', '')
     .replace('<script src="etp-operational-mount.js"></script>\n', '')

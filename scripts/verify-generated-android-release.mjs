@@ -28,7 +28,7 @@ export function verifyGeneratedAndroidRelease(base = root) {
   }
   assert.match(gradle, /wantsRelease\s*&&\s*\(!ks\s*\|\|\s*!ksp\s*\|\|\s*!ka\s*\|\|\s*!kap\)/);
   assert.match(gradle, /buildTypes\s*\{[\s\S]*?release\s*\{[\s\S]*?debuggable\s+false[\s\S]*?signingConfig\s+signingConfigs\.release/);
-  assert.doesNotMatch(gradle, /debug\s*\{[\s\S]*?signingConfig\s+signingConfigs\.release/);
+  assert.doesNotMatch(gradle, /debug\s*\{[^{}]*signingConfig\s+signingConfigs\.release/);
   assert.match(gradle, new RegExp(`applicationId\\s+["']${identity.packageId.replace(/\./g, '\\.')}["']`));
   assert.match(gradle, new RegExp(`versionCode\\s+${identity.versionCode}\\b`));
   assert.match(gradle, new RegExp(`versionName\\s+["']${identity.versionName.replace(/\./g, '\\.')}["']`));

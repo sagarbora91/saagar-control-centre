@@ -47,7 +47,7 @@ const builtApkPath = path.join(
 const outputApkPath = path.resolve(
   repoDir,
   '..',
-  'SaagarCC-C1-DemoData-2Years-v2.9.apk'
+  'SaagarCC-C1-DemoData-2Years-v6.apk'
 );
 
 const PROFILE = Object.freeze({

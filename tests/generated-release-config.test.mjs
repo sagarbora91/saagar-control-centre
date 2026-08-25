@@ -21,8 +21,11 @@ function fixture(change = value => value) {
       if (wantsRelease && (!ks || !ksp || !ka || !kap)) { throw new GradleException("blocked") }
     } }
     // SAAGAR_RELEASE_SIGNING_END
-    defaultConfig { applicationId "com.saagartraders.bcc" versionCode 209 versionName "2.9" }
-    buildTypes { release { debuggable false signingConfig signingConfigs.release } }
+    defaultConfig { applicationId "com.saagartraders.bcc" versionCode 600 versionName "6" }
+    buildTypes {
+      debug { applicationIdSuffix ".debug" versionNameSuffix "-debug" }
+      release { debuggable false signingConfig signingConfigs.release }
+    }
   }`);
   fs.writeFileSync(path.join(app, 'build.gradle'), gradle);
   fs.writeFileSync(path.join(root, 'android', 'variables.gradle'), 'ext { minSdkVersion = 23 }');
