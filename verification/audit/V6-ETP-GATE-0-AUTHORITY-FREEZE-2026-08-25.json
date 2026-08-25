@@ -99,6 +99,16 @@
       "bytes": 5867,
       "sha256": "202598454b39ae4bd8e3133c21bb7349126728d35c76b0047ee0a4395630d913"
     },
+    "E3_VERIFIED_JOIN": {
+      "path": "www/etp-e3-verified-join.js",
+      "bytes": 5396,
+      "sha256": "e81e9669e8ad74978531fe861c1259c1174217f67ad231692c33899fd4747c5a"
+    },
+    "OPERATIONAL_BOOTSTRAP": {
+      "path": "www/etp-operational-bootstrap.js",
+      "bytes": 9029,
+      "sha256": "8010200fbea985fbd103979d492a1d1f64d712c2e65070db83cd780148e0e89d"
+    },
     "E6": {
       "path": "www/etp-exception-monitor.js",
       "bytes": 15570,

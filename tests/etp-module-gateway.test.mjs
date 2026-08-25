@@ -184,6 +184,29 @@ test('verified reads require an accepted unfenced generation matching the valid 
   assert.equal((await fixture({ storage: storageWith(null) }).gateway.readVerified(scope, request)).code, 'ETP_RECEIPT_NOT_FOUND');
 });
 
+test('R013 exposes bounded invoice identity without widening fields or leaking PII', async () => {
+  const requested = [];
+  const fx = fixture({ runtime: {
+    async run() {}, async confirm() {},
+    async readVerified(_scope, request) {
+      requested.push(request);
+      return { ok: true, page: { scopeKey, generationId: generationA, reportId: request.reportId,
+        rows: [{ invoice_number: 'INV-013-1', cro_number: 'CRO-1' }], hasMore: true,
+        nextCursor: { chunkIndex: 3, rowOffset: 7 } } };
+    }
+  } });
+  const first = await fx.gateway.readVerified(scope, { reportId: 'R013', fields: ['invoice_number', 'cro_number'], cursor: null, limit: 1 });
+  assert.equal(first.ok, true);
+  assert.deepEqual(first.page.rows, [{ invoice_number: 'INV-013-1', cro_number: 'CRO-1' }]);
+  assert.match(first.page.nextCursor, /^cur_[a-f0-9]{32}_1$/);
+  assert.deepEqual(requested[0].fields, ['invoice_number', 'cro_number']);
+  const second = await fx.gateway.readVerified(scope, { reportId: 'R013', fields: ['invoice_number', 'cro_number'], cursor: first.page.nextCursor, limit: 1 });
+  assert.equal(second.ok, true);
+  assert.deepEqual(requested[1].cursor, { chunkIndex: 3, rowOffset: 7 });
+  assert.equal((await fx.gateway.readVerified(scope, { reportId: 'R013', fields: ['invoice_number', 'customer_name'], cursor: null, limit: 1 })).code, 'ETP_VERIFIED_PROJECTION_INVALID');
+  assert.equal(requested.length, 2);
+});
+
 test('verified projections and returned rows fail closed on PII or out-of-contract fields', async () => {
   assert.equal((await fixture().gateway.readVerified(scope, { reportId: 'R025', fields: ['customer_name'], cursor: null, limit: 10 })).code, 'ETP_VERIFIED_PROJECTION_INVALID');
   const leaking = fixture({ runtime: {

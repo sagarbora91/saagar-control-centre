@@ -30,6 +30,7 @@
     "test:v6-etp-wave1": "node --test tests/v6-etp-operational-store.test.mjs tests/v6-etp-e3-orchestrator.test.mjs tests/v6-etp-e4-orchestrator.test.mjs",
     "test:v6-etp-wave2": "node --test tests/v6-etp-operational-adapters.test.mjs tests/v6-etp-e3-presentation.test.mjs tests/v6-etp-e4-presentation.test.mjs",
     "test:v6-etp-wave3": "node --test tests/v6-etp-operational-runtime.test.mjs tests/v6-etp-operational-gateway.test.mjs tests/v6-etp-operational-mount.test.mjs",
+    "test:v6-etp-wave4": "node --test tests/etp-query-contract.test.mjs tests/etp-module-gateway.test.mjs tests/etp-module-gateway-adversarial.test.mjs tests/v6-etp-e3-verified-join.test.mjs tests/v6-etp-operational-bootstrap.test.mjs",
     "test:c1": "node --test tests/c1-operations-policy.test.mjs tests/c1-controls-integration.test.mjs",
     "test:mobile": "node --test tests/mobile-layout-remediation.test.mjs",
     "test:settings": "node --test tests/settings-navigation-architecture.test.mjs",

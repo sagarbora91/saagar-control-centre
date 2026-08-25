@@ -30,7 +30,7 @@
   var ANALYTICS_MAX_PAGES = 250;
   var PROJECTIONS = Object.freeze({
     R003: Object.freeze(['transaction_type_raw', 'net_amount', 'scheme_discount', 'user_discount']),
-    R013: Object.freeze(['transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
+    R013: Object.freeze(['invoice_number', 'transaction_type_raw', 'quantity', 'net_amount', 'cro_number']),
     R022: Object.freeze(['transaction_type_raw', 'invoice_quantity', 'net_value', 'cash_amount', 'card_amount', 'bhim_upi_amount', 'phonepe_amount', 'paytm_amount', 'razorpay_amount', 'bharatpe_amount', 'cheque_amount', 'others_amount', 'payment_type24_amount']),
     R025: Object.freeze(['invoice_number', 'transaction_type_raw', 'quantity', 'net_amount', 'brand', 'cluster', 'gender', 'scheme_discount', 'user_discount', 'tax_amount'])
   });

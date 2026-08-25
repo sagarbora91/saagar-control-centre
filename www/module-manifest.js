@@ -160,7 +160,7 @@
     assertObject(input, 'manifest');
     assertExactKeys(input, ['schemaVersion', 'sharedAssets', 'modules'], ['schemaVersion', 'sharedAssets', 'modules'], 'manifest');
     if (input.schemaVersion !== 2) fail('schemaVersion must be 2');
-    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 45) fail('sharedAssets must contain exactly forty-five entries');
+    if (!Array.isArray(input.sharedAssets) || input.sharedAssets.length !== 47) fail('sharedAssets must contain exactly forty-seven entries');
     if (!Array.isArray(input.modules)) fail('modules must be an array');
     if (input.modules.length !== EXPECTED_IDS.length) {
       fail('modules must contain exactly ' + EXPECTED_IDS.length + ' entries');
@@ -218,6 +218,8 @@
       ,{ id: 'etp-e4-presentation-css', file: 'etp-e4-presentation.css' }
       ,{ id: 'etp-operational-gateway', file: 'etp-operational-gateway.js' }
       ,{ id: 'etp-operational-mount', file: 'etp-operational-mount.js' }
+      ,{ id: 'etp-e3-verified-join', file: 'etp-e3-verified-join.js' }
+      ,{ id: 'etp-operational-bootstrap', file: 'etp-operational-bootstrap.js' }
       ,{ id: 'etp-exception-monitor', file: 'etp-exception-monitor.js' }
       ,{ id: 'etp-incentive-control', file: 'etp-incentive-control.js' }
       ,{ id: 'etp-operations-consumer', file: 'etp-operations-consumer.js' }
@@ -528,6 +530,20 @@
       "file": "etp-operational-mount.js",
       "bytes": 5867,
       "sha256": "202598454b39ae4bd8e3133c21bb7349126728d35c76b0047ee0a4395630d913"
+    },
+    {
+      "id": "etp-e3-verified-join",
+      "version": 1,
+      "file": "etp-e3-verified-join.js",
+      "bytes": 5396,
+      "sha256": "e81e9669e8ad74978531fe861c1259c1174217f67ad231692c33899fd4747c5a"
+    },
+    {
+      "id": "etp-operational-bootstrap",
+      "version": 1,
+      "file": "etp-operational-bootstrap.js",
+      "bytes": 9029,
+      "sha256": "8010200fbea985fbd103979d492a1d1f64d712c2e65070db83cd780148e0e89d"
     },
     {
       "id": "etp-exception-monitor",

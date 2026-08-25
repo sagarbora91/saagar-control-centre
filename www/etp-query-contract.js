@@ -10,7 +10,7 @@
   function list(values){return freeze(values.slice());}
   var PROJECTIONS=freeze({
     R003:list(['invoice_date','transaction_type_raw','net_amount','scheme_discount','user_discount']),
-    R013:list(['invoice_date','transaction_type_raw','quantity','net_amount','cro_number']),
+    R013:list(['invoice_date','invoice_number','transaction_type_raw','quantity','net_amount','cro_number']),
     R022:list(['invoice_date','invoice_number','transaction_type_raw','invoice_quantity','net_value','cash_amount','card_amount','bhim_upi_amount','phonepe_amount','paytm_amount','razorpay_amount','bharatpe_amount','cheque_amount','others_amount','payment_type24_amount']),
     R025:list(['invoice_date','invoice_number','transaction_type_raw','quantity','net_amount','brand','cluster','gender','scheme_discount','user_discount','tax_amount'])
   });
@@ -23,7 +23,7 @@
   });
   var SORTS=freeze({
     R003:list(['invoice_date','transaction_type_raw','net_amount']),
-    R013:list(['invoice_date','cro_number','transaction_type_raw','net_amount','quantity']),
+    R013:list(['invoice_date','invoice_number','cro_number','transaction_type_raw','net_amount','quantity']),
     R022:list(['invoice_date','transaction_type_raw','net_value','invoice_quantity']),
     R025:list(['invoice_date','invoice_number','brand','cluster','gender','transaction_type_raw','net_amount','quantity'])
   });

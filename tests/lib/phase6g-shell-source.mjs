@@ -23,6 +23,8 @@ export function restorePrePhase6gShellAssets(input) {
     .replace('<script src="etp-e4-presentation.js"></script>\n', '')
     .replace('<script src="etp-operational-gateway.js"></script>\n', '')
     .replace('<script src="etp-operational-mount.js"></script>\n', '')
+    .replace('<script src="etp-e3-verified-join.js"></script>\n', '')
+    .replace('<script src="etp-operational-bootstrap.js"></script>\n', '')
     .replace('<script src="etp-exception-monitor.js"></script>\n', '')
     .replace('<script src="etp-incentive-control.js"></script>\n', '')
     .replace('<script src="etp-operations-consumer.js"></script>\n', '')
