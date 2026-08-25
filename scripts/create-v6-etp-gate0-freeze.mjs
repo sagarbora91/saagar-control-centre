@@ -52,6 +52,7 @@ export function createV6EtpGate0Freeze() {
     },
     contractBaselines: {
       OPERATIONAL_FOUNDATION: source('www/etp-operational-foundation.js'),
+      E3_OWNER_AUTHORITY: source('docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md'),
       E3: source('www/etp-cro-reconciliation.js'),
       E4: source('www/etp-target-planning.js'),
       E6: source('www/etp-exception-monitor.js'),
@@ -60,12 +61,31 @@ export function createV6EtpGate0Freeze() {
     },
     capabilities: {
       E3: {
-        activationStatus: 'PENDING_OWNER_APPROVAL',
+        activationStatus: 'OWNER_POLICY_APPROVED_ENGINEERING_ACTIVE',
+        authority: {
+          approvalId: 'E3-OWNER-2026-08-25-V1',
+          approvedBy: 'Sagar',
+          approvedByRole: 'Owner',
+          approvedAt: '2026-08-25',
+          policyVersion: 'ETP_E3_OWNER_POLICY_2026_08_25_V1',
+          source: source('docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md')
+        },
+        rolePolicy: {
+          declarationRoles: ['STAFF', 'STORE_MANAGER', 'OWNER'],
+          checkerCloseImportRoles: ['STORE_MANAGER', 'OWNER'],
+          correctionWindowHours: 24,
+          correctionWindowRoles: ['STORE_MANAGER', 'OWNER'],
+          postWindowCorrectionRoles: ['OWNER'],
+          varianceDispositionRoles: ['STORE_MANAGER', 'OWNER'],
+          lockRoles: ['STORE_MANAGER', 'OWNER'],
+          ownerCorrectionBoundary: 'ANY_TIME_BEFORE_LOCK',
+          lockedChangePath: 'VERIFIED_SOURCE_RESTATEMENT_NEW_RECONCILIATION'
+        },
         stateMachine: ['OPEN', 'CLOSED', 'IMPORTED', 'RECONCILED', 'VARIANCE', 'LOCKED'],
         outcomes: ['MATCHED', 'MISATTRIBUTED', 'UNCLAIMED', 'PHANTOM'],
         correctionReasonCodes: ['MISATTRIBUTED_CRO', 'UNCLAIMED_INVOICE', 'PHANTOM_DECLARATION', 'SOURCE_RESTATEMENT', 'OTHER_REVIEWED'],
         dispositionReasonCodes: ['CORRECTED_ATTRIBUTION', 'ACCEPTED_UNASSIGNED', 'DECLARATION_WITHDRAWN', 'SOURCE_REIMPORT_REQUIRED', 'ESCALATED_OWNER'],
-        pendingDecisions: ['DECLARATION_ROLES', 'CHECKER_ROLES', 'CORRECTION_WINDOW_AUTHORITY', 'DAY_CLOSE_AUTHORITY', 'LOCK_AUTHORITY']
+        pendingDecisions: []
       },
       E4: {
         activationStatus: 'BLOCKED_TARGET_AUTHORITY_REQUIRED',

@@ -41,8 +41,9 @@ the required source artifacts are supplied, hashed and approved.
 
 ### E3
 
-- declaration/checker role decisions;
-- correction-window, day-close and lock authority.
+Owner authority was confirmed on 2026-08-25 and is frozen in
+`docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md`. E3 engineering may proceed through the
+fail-closed operational foundation. This does not activate any later capability.
 
 ### E4
 

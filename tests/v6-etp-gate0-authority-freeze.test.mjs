@@ -39,6 +39,17 @@ test('all external authorities are hash-empty and approval-empty until real sour
   assert.match(value.capabilities.E7.activationStatus, /^DEFERRED_/);
 });
 
+test('E3 owner authority is source-bound and has no remaining role or timing decision', () => {
+  const value = createV6EtpGate0Freeze();
+  assert.equal(value.capabilities.E3.activationStatus, 'OWNER_POLICY_APPROVED_ENGINEERING_ACTIVE');
+  assert.deepEqual(value.capabilities.E3.pendingDecisions, []);
+  assert.equal(value.capabilities.E3.authority.approvedByRole, 'Owner');
+  assert.match(value.capabilities.E3.authority.source.sha256, /^[a-f0-9]{64}$/);
+  assert.equal(value.capabilities.E3.rolePolicy.correctionWindowHours, 24);
+  assert.equal(value.capabilities.E3.rolePolicy.ownerCorrectionBoundary, 'ANY_TIME_BEFORE_LOCK');
+  assert.equal(value.capabilities.E3.rolePolicy.lockedChangePath, 'VERIFIED_SOURCE_RESTATEMENT_NEW_RECONCILIATION');
+});
+
 test('controlled reason and status catalogues are unique safe machine identities', () => {
   const value = createV6EtpGate0Freeze();
   const catalogues = [

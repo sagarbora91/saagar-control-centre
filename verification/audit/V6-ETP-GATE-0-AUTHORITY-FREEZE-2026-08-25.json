@@ -39,10 +39,15 @@
       "bytes": 8879,
       "sha256": "2b7a36cd6d180d01398471d583abdb9395fa9f61d4592e40a17b003ff24bda58"
     },
+    "E3_OWNER_AUTHORITY": {
+      "path": "docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md",
+      "bytes": 1210,
+      "sha256": "e111e348b2d9795ca818707185187f7bd7fbc10ace85e3c229d8e38ee2c2d241"
+    },
     "E3": {
       "path": "www/etp-cro-reconciliation.js",
-      "bytes": 12226,
-      "sha256": "a0c057dbc972915db0d403f8fab90f76935f21253c38a5f366003f7b5d953cd4"
+      "bytes": 13492,
+      "sha256": "da659932f4674b0c5392ed0b55bf1523e406c46ca307261b7f6ee491d17eb33c"
     },
     "E4": {
       "path": "www/etp-target-planning.js",
@@ -67,7 +72,48 @@
   },
   "capabilities": {
     "E3": {
-      "activationStatus": "PENDING_OWNER_APPROVAL",
+      "activationStatus": "OWNER_POLICY_APPROVED_ENGINEERING_ACTIVE",
+      "authority": {
+        "approvalId": "E3-OWNER-2026-08-25-V1",
+        "approvedBy": "Sagar",
+        "approvedByRole": "Owner",
+        "approvedAt": "2026-08-25",
+        "policyVersion": "ETP_E3_OWNER_POLICY_2026_08_25_V1",
+        "source": {
+          "path": "docs/audit/V6-ETP-E3-OWNER-AUTHORITY-2026-08-25.md",
+          "bytes": 1210,
+          "sha256": "e111e348b2d9795ca818707185187f7bd7fbc10ace85e3c229d8e38ee2c2d241"
+        }
+      },
+      "rolePolicy": {
+        "declarationRoles": [
+          "STAFF",
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "checkerCloseImportRoles": [
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "correctionWindowHours": 24,
+        "correctionWindowRoles": [
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "postWindowCorrectionRoles": [
+          "OWNER"
+        ],
+        "varianceDispositionRoles": [
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "lockRoles": [
+          "STORE_MANAGER",
+          "OWNER"
+        ],
+        "ownerCorrectionBoundary": "ANY_TIME_BEFORE_LOCK",
+        "lockedChangePath": "VERIFIED_SOURCE_RESTATEMENT_NEW_RECONCILIATION"
+      },
       "stateMachine": [
         "OPEN",
         "CLOSED",
@@ -96,13 +142,7 @@
         "SOURCE_REIMPORT_REQUIRED",
         "ESCALATED_OWNER"
       ],
-      "pendingDecisions": [
-        "DECLARATION_ROLES",
-        "CHECKER_ROLES",
-        "CORRECTION_WINDOW_AUTHORITY",
-        "DAY_CLOSE_AUTHORITY",
-        "LOCK_AUTHORITY"
-      ]
+      "pendingDecisions": []
     },
     "E4": {
       "activationStatus": "BLOCKED_TARGET_AUTHORITY_REQUIRED",
