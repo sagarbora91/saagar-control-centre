@@ -1,5 +1,5 @@
 /* V6 E4: exact, hash-bound candidate intake. Validation never creates business approval. */
-(function(root,factory){'use strict';var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE4AuthorityIntake=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){'use strict';var api=factory(root&&root.SaagarEtpOperationalFoundation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE4AuthorityIntake=api;})(typeof globalThis!=='undefined'?globalThis:this,function(foundation){
   'use strict';
   var VERSION='ETP_E4_AUTHORITY_INTAKE_V1';
   var TYPES=Object.freeze(['TITAN_TARGET','FESTIVE_CALENDAR','CRO_IDENTITY_MAP','E4_POLICY_AUTHORITY']);
@@ -16,10 +16,10 @@
   function record(v){return!!v&&typeof v==='object'&&!Array.isArray(v);}
   function exact(v,keys){return record(v)&&Object.keys(v).sort().join('|')===keys.slice().sort().join('|');}
   function safe(v,re,max){return typeof v==='string'&&v.length>0&&v.length<=max&&re.test(v)?v:'';}
-  function date(v){var m=typeof v==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(v),d;if(!m)return'';d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3]?v:'';}
+  if(!foundation&&typeof require==='function')foundation=require('./etp-operational-foundation.js');if(!foundation||typeof foundation.date!=='function'||typeof foundation.canonical!=='function')throw new Error('ETP_OPERATIONAL_FOUNDATION_REQUIRED');var date=foundation.date;
   function instant(v){var n=Date.parse(v);return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(v)&&isFinite(n)?new Date(n).toISOString():'';}
   function scope(v){var m=typeof v==='string'&&/^(WLMHW|HEMW)\|([^|]{3,20})\|(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/.exec(v);return m&&date(m[3])&&date(m[4])&&m[3]<=m[4]?{scopeKey:v,storeCode:m[1],periodId:m[2],periodStart:m[3],periodEnd:m[4]}:null;}
-  function canonical(v){if(Array.isArray(v))return'['+v.map(canonical).join(',')+']';if(record(v))return'{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+canonical(v[k]);}).join(',')+'}';return JSON.stringify(v);}
+  var canonical=foundation.canonical;
   function id(v){return safe(v,/^[A-Za-z0-9][A-Za-z0-9._:-]*$/,96);}
   function label(v,max){return safe(v,/^[^\u0000-\u001f\u007f]+$/,max);}
   function positiveMoney(v){return Number.isSafeInteger(v)&&v>0&&v<=9000000000?v:null;}

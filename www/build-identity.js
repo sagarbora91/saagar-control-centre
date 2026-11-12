@@ -8,9 +8,9 @@
 
   return Object.freeze({
     packageId: 'com.saagartraders.bcc',
-    appVersion: 'V6',
-    versionName: '6',
-    versionCode: 600,
-    minSdk: 23
+    appVersion: 'V 1.601',
+    versionName: '1.601',
+    versionCode: 601,
+    minSdk: 33
   });
 });

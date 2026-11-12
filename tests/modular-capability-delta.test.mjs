@@ -12,11 +12,11 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   const recorded = JSON.parse(fs.readFileSync(path.join(root, LEDGER_PATH), 'utf8'));
   assert.deepEqual(recorded, expected);
   assert.equal(recorded.baseline.capabilities, 655);
-  assert.equal(recorded.current.capabilities, 704);
-  assert.equal(recorded.summary.added, 399);
+  assert.equal(recorded.current.capabilities, 740);
+  assert.equal(recorded.summary.added, 435);
   assert.equal(recorded.summary.removed, 350);
   assert.equal(recorded.summary.changed, 41);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 790);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 826);
   assert.equal(recorded.summary.handlerBodyHashOnly, 21);
   assert.equal(recorded.summary.bindingStructureChanged, 3);
   assert.equal(recorded.summary.changedFailurePostures, 17);

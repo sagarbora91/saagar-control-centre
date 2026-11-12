@@ -1,5 +1,5 @@
 /* V6 E6: exact, hash-bound policy intake. Validation never creates business approval. */
-(function(root,factory){'use strict';var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE6AuthorityIntake=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){'use strict';var api=factory(root&&root.SaagarEtpOperationalFoundation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE6AuthorityIntake=api;})(typeof globalThis!=='undefined'?globalThis:this,function(foundation){
   'use strict';
   var VERSION='ETP_E6_AUTHORITY_INTAKE_V1',POLICY_VERSION='ETP_E6_GOVERNED_POLICY_V1',SOURCE_TYPE='E6_POLICY_AUTHORITY';
   var TYPES=Object.freeze(['LATE_ATTRIBUTION','UNASSIGNED_TREND','NEAR_TARGET_FINAL_WEEK','FINAL_48H_CONCENTRATION','EARLY_NEXT_MONTH_MOVEMENT','DECLARED_ACTUAL_VARIANCE','RESTATED_PERIOD']);
@@ -14,10 +14,10 @@
   function fail(code,requirements){var out={ok:false,code:code};if(requirements)out.requirements=requirements;return freeze(out);}
   function safe(v,re,max){return typeof v==='string'&&v.length>0&&v.length<=max&&re.test(v)?v:'';}
   function id(v){return safe(v,/^[A-Za-z0-9][A-Za-z0-9._:-]*$/,96);}
-  function date(v){var m=typeof v==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(v),d;if(!m)return'';d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3]?v:'';}
+  if(!foundation&&typeof require==='function')foundation=require('./etp-operational-foundation.js');if(!foundation||typeof foundation.date!=='function'||typeof foundation.canonical!=='function')throw new Error('ETP_OPERATIONAL_FOUNDATION_REQUIRED');var date=foundation.date;
   function instant(v){var n=Date.parse(v);return typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(v)&&isFinite(n)?new Date(n).toISOString():'';}
   function scope(v){var m=typeof v==='string'&&/^(WLMHW|HEMW)\|([^|]{3,20})\|(\d{4}-\d{2}-\d{2})\.\.(\d{4}-\d{2}-\d{2})$/.exec(v);return m&&date(m[3])&&date(m[4])&&m[3]<=m[4]?freeze({scopeKey:v,storeCode:m[1],periodId:m[2],periodStart:m[3],periodEnd:m[4]}):null;}
-  function canonical(v){if(Array.isArray(v))return'['+v.map(canonical).join(',')+']';if(record(v))return'{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+canonical(v[k]);}).join(',')+'}';return JSON.stringify(v);}
+  var canonical=foundation.canonical;
   function thresholds(v){if(!exact(v,THRESHOLD_KEYS)||v.contractVersion!=='ETP_E6_THRESHOLDS_V1'||!safe(v.versionId,/^e6-thresholds-[a-z0-9-]{6,64}$/,96)||!instant(v.effectiveAt))return null;var keys=THRESHOLD_KEYS.slice(3);for(var i=0;i<keys.length;i++)if(!Number.isSafeInteger(v[keys[i]])||v[keys[i]]<0||v[keys[i]]>10000)return null;return freeze(Object.assign({},v));}
   function typeMap(v,validator){if(!exact(v,TYPES))return null;var out={};for(var i=0;i<TYPES.length;i++){var type=TYPES[i],value=validator(v[type]);if(value===null)return null;out[type]=value;}return freeze(out);}
   function roles(v){if(!Array.isArray(v)||!v.length||v.length>ROLES.length)return null;var seen={},out=[];for(var i=0;i<v.length;i++){if(ROLES.indexOf(v[i])<0||seen[v[i]])return null;seen[v[i]]=true;out.push(v[i]);}return freeze(out.sort());}

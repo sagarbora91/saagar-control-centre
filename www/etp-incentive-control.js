@@ -1,5 +1,5 @@
 /* Phase 6H.5 E5: pure fail-closed incentive and controlled Payroll-line policy. */
-(function(root,factory){'use strict';var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpIncentiveControl=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){'use strict';var api=factory(root&&root.SaagarEtpOperationalFoundation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpIncentiveControl=api;})(typeof globalThis!=='undefined'?globalThis:this,function(foundation){
   'use strict';
   var VERSION='ETP_E5_INCENTIVE_V1',AUTHORITY_VERSION='ETP_E5_GOVERNED_AUTHORITY_V1',MAX_MONEY=900000000000;
   function freeze(v){if(v&&typeof v==='object'&&!Object.isFrozen(v)){Object.keys(v).forEach(function(k){freeze(v[k]);});Object.freeze(v);}return v;}
@@ -10,7 +10,7 @@
   function canonical(v){if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';if(rec(v))return '{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+canonical(v[k]);}).join(',')+'}';return JSON.stringify(v);}
   function hash(s){var h=2166136261,i;for(i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
   function keys(v,expected){return rec(v)&&Object.keys(v).sort().join('|')===expected.slice().sort().join('|');}
-  function date(v){var m=typeof v==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(v),d;if(!m)return'';d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3]?v:'';}
+  if(!foundation&&typeof require==='function')foundation=require('./etp-operational-foundation.js');if(!foundation||typeof foundation.date!=='function')throw new Error('ETP_OPERATIONAL_FOUNDATION_REQUIRED');var date=foundation.date;
   function approved(v,type,scopeKey,hashValue){return rec(v)&&v.sourceType===type&&v.status==='APPROVED'&&v.sourceSha256===hashValue&&v.scopeKey===scopeKey&&v.approvedByRole==='Owner'&&!!text(v.approvalId,/^[A-Z0-9][A-Z0-9._-]{2,63}$/)&&!!text(v.approvedAt,/^\d{4}-\d{2}-\d{2}T/)&&!!text(v.approvedBy,/^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$/);}
   function scheme(input){var id,source,bands,last=-1;
     if(!rec(input)||input.approved!==true||input.active!==true||!keys(input.authority,['approvalId','approvedAt','approvedByRole','sourceSha256'])||input.authority.approvedByRole!=='Owner'||!text(input.authority.approvalId,/^[A-Z0-9][A-Z0-9._-]{2,63}$/)||!text(input.authority.approvedAt,/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/)||!text(input.authority.sourceSha256,/^[a-f0-9]{64}$/))return fail('E5_SCHEME_NOT_APPROVED');

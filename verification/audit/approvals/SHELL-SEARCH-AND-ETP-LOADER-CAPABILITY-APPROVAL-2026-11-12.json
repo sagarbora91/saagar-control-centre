@@ -1,0 +1,158 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "SHELL-SEARCH-V1-ETP-ON-DEMAND-CAPABILITY-DELTA",
+  "decision": "approve",
+  "state": "approved-for-itemised-additions; owner-reconfirmation-pending-for-exact-inventory-binding",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-12",
+  "approvalEvidence": "owner decision given in chat, 2026-11-12",
+  "recordedBy": "Claude Code agent, Wave 5 step W5, transcribing owner chat decisions. This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "priorRecord": {
+    "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+    "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+    "boundInventorySha256": "ddb8732f369143dca14b2a29b82ad2b42b68915dea308b2d0b1ab35eb2f0ebb5",
+    "treatment": "left unchanged; this record extends it. Its sourceBinding is now historical."
+  },
+  "sourceBinding": {
+    "sourceCommit": "605002ff6b9319d287f3f06d0761b5ecb2cf0797",
+    "includesUncommittedWave5Changes": true,
+    "ledgerPath": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+    "currentInventorySha256": "6007ec8aa8778a3940e93bd2c37f7c07ef3fd7e16c36b24a829efb44b9e147fc"
+  },
+  "inventory": {
+    "baselineCapabilities": 655,
+    "currentCapabilities": 735,
+    "netNew": 80,
+    "previousRecordCurrentCapabilities": 734,
+    "ledgerSummary": {
+      "added": 430,
+      "removed": 350,
+      "changed": 41,
+      "capabilityApprovalsRequired": 821
+    },
+    "categoriesAfter": {
+      "failure-posture": 116,
+      "permission": 29,
+      "persisted-outcome": 86,
+      "route": 13,
+      "visible-action": 491
+    }
+  },
+  "ownerDecisionsGivenInChat20261112": {
+    "evidence": "owner decision given in chat, 2026-11-12",
+    "wave5Decisions": {
+      "E-A": "Fix the six failing tests.",
+      "E-B": "Load the ETP scripts only when ETP is needed, to bring startup within the A10-01 limit.",
+      "E-C": "Check android.permission.INTERNET; remove it only if nothing needs it and the built app is proven to still load.",
+      "E-D": "Tidy-ups: three unlisted test files and the Wave 1 old-path fixes.",
+      "E-E": "Search v1 only, design questions O1-O10 approved as recommended.",
+      "E-F": "Everything stays uncommitted."
+    },
+    "searchDesignQuestions": {
+      "O1": "v1 searches places only (modules, screens, reports, settings, quick actions). Records later.",
+      "O2": "Button in the top bar of the main screens only in v1.",
+      "O3": "Match English, Hindi, Marathi plus romanised Hindi/Marathi, whatever the app language.",
+      "O4": "PIN-protected modules shown with a lock; PIN asked on open.",
+      "O5": "Governance cost approved (one top-bar button, one new shell file, about +340 bytes in www/index.html), on the condition that it is built together with the startup-speed work so the byte rule (index.html strictly below 580,636 bytes) still passes.",
+      "O6": "Search words are not saved and nothing new is logged; recent places in memory only.",
+      "O7": "Customer 360 role check: fix before record search (v2). Not part of v1.",
+      "O8": "v2 record field list approved as listed. Not built in v1.",
+      "O9": "Deep links to exact tabs: after v1 is in use. Not built in v1.",
+      "O10": "ETP: names only in search until the report-engine bridge exists."
+    }
+  },
+  "addedToInventory": {
+    "visibleActions": [
+      {
+        "capabilityId": "shell:action:open-global-search:0c573f26c9",
+        "category": "visible-action",
+        "surface": "shell",
+        "reviewClass": "shell-global-search-v1-entry-button",
+        "reason": "Search v1 entry button in the shell top bar (O5/O2); owner decision given in chat, 2026-11-12."
+      }
+    ]
+  },
+  "outcomeChangedEntries": [
+    {
+      "capabilityId": "script-etp-operational-frame-bridge:failure:posture",
+      "reason": "ETP operational frame bridge now awaits the on-demand ETP chain loader before loading the operational module and fails closed if the chain cannot be loaded (E-B). Catch blocks 2 to 4; swallowed catch blocks stay 1; throw sites, user-visible error sites and fallback sites stay 0.",
+      "previousOutcome": {
+        "catchBlocks": 2,
+        "explicitFallbackSites": 0,
+        "swallowedCatchBlocks": 1,
+        "throwSites": 0,
+        "userVisibleErrorSites": 0
+      },
+      "currentOutcome": {
+        "catchBlocks": 4,
+        "explicitFallbackSites": 0,
+        "swallowedCatchBlocks": 1,
+        "throwSites": 0,
+        "userVisibleErrorSites": 0
+      },
+      "previousOutcomeSha256": "3cfc463af696f36a83b48ec524b592f8f114cbcca2d4d003441f0a549c5caae5",
+      "currentOutcomeSha256": "e934338230cb3b0c64e365aad62b167d4e0c66011e09e8f7435df97aab8dd541",
+      "change": "added",
+      "reviewClass": "extracted-first-party-failure-surface"
+    }
+  ],
+  "removedFromInventory": [],
+  "filesNotVisibleToAnalyser": {
+    "note": "The analyser reads git ls-files only. These new files are untracked, so the ledger counts above exclude them. The ids below are the ones they get once the files are tracked (measured in a scratch git copy outside the repository, which gave 737 capabilities, failure-posture 118, added 432, approvals 823). The ledger, the analyser constants and the two count tests must be regenerated once at commit time.",
+    "files": [
+      {
+        "path": "www/shared/shell-search.js",
+        "bytes": 29583,
+        "sha256": "ddacd3023ace157bc9a7eac712fc851aa920b64fa80e98cbae3f3625f08b9bfb",
+        "futureCapabilityId": "script-shared-shell-search:failure:posture",
+        "role": "Search v1 (places only), deferred shell script, frozen window.SaagarShellSearch"
+      },
+      {
+        "path": "www/etp-chain-loader.js",
+        "bytes": 2924,
+        "sha256": "0dea92de889e29f6d2d06b8218a0dc9eea38dbbd23af778525dc010dd5343987",
+        "futureCapabilityId": "script-etp-chain-loader:failure:posture",
+        "role": "On-demand loader for the 25-file Retail ETP operational script chain (E-B)"
+      }
+    ],
+    "expectedCountsOnceTracked": {
+      "currentCapabilities": 737,
+      "failurePosture": 118,
+      "added": 432,
+      "capabilityApprovalsRequired": 823
+    }
+  },
+  "otherAuditedChanges": {
+    "note": "Changes made by this wave that are not capability-ledger entries but that the owner should know about.",
+    "mah4Inventory": "scripts/lib/mah4-contract-source.mjs gets one dynamic-loader group (shell-etp-chain, owner etp-chain-loader.js, 25 core files) that exists only while www/etp-chain-loader.js exists. Current tree: loader groups 6 (historical 5), script routes 35 (historical 10), script literal references 37 (historical 12). The createElement, document.write and import() pins are unchanged.",
+    "newSameOriginExport": "window.__SaagarPdfLibs.injectEtp: accepts only flat names matching ^etp-[a-z0-9-]+\\.js$ and delegates to the existing injectOne. Security-relevant; owner attention needed.",
+    "androidInternetPermission": "android.permission.INTERNET removal is a build-configuration change (E-C) and is not a capability-ledger entry."
+  },
+  "scope": {
+    "authorizes": [
+      "the capability analyser count constants",
+      "the capability analyser exact-id classification branch for the search button",
+      "regeneration of the capability ledger",
+      "regeneration of the module manifest, gate-0 receipt and count tests for the files this wave changed"
+    ],
+    "doesNotClose": [
+      "production signing",
+      "release approval",
+      "physical-device acceptance",
+      "staff UAT",
+      "legal approval",
+      "search v2 (records, deep links, Customer 360 role fix, O7-O9)",
+      "A10-01 startup acceptance",
+      "any capability added after this inventory hash"
+    ]
+  },
+  "ownerReconfirmation": "Not yet given. The exact inventory figures, ids and hashes above were not itemised to the owner in chat before this record was written.",
+  "registryNote": "The ledger remains pending-owner-approval and every delta keeps ownerApproval \"pending\"."
+}

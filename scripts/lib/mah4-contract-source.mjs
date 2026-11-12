@@ -70,6 +70,51 @@ const DYNAMIC_LOADER_GROUPS = Object.freeze([
   }
 ]);
 
+// On-demand ETP operational chain (owner decision given in chat, 2026-11-12). The chain files are loaded
+// one at a time by www/etp-chain-loader.js through the shell's PDF-libraries injectOne (index.html), so no
+// new createElement('script') site exists. The group applies only when the loader file exists, which keeps
+// every historical workspace (where the loader is absent) byte-identical to its frozen inventory.
+const ETP_CHAIN_LOADER_OWNER = 'etp-chain-loader.js';
+const ETP_CHAIN_LOADER_GROUP = Object.freeze({
+  id: 'shell-etp-chain', owner: ETP_CHAIN_LOADER_OWNER, trigger: 'on-demand-etp-verified-scope',
+  mechanisms: ['create-element-script'],
+  coreAssetPaths: Object.freeze([
+    'etp-operational-foundation.js',
+    'etp-operational-store.js',
+    'etp-operational-adapters.js',
+    'etp-operational-runtime.js',
+    'etp-e4-authority-intake.js',
+    'etp-e6-authority-intake.js',
+    'etp-e5-authority-intake.js',
+    'etp-e7-authority-intake.js',
+    'etp-e7-service-verifier.js',
+    'etp-e7-service-operational.js',
+    'etp-cro-reconciliation.js',
+    'etp-e3-orchestrator.js',
+    'etp-e3-presentation.js',
+    'etp-target-planning.js',
+    'etp-e4-orchestrator.js',
+    'etp-e4-presentation.js',
+    'etp-e6-presentation.js',
+    'etp-e5-presentation.js',
+    'etp-e5-payroll-bridge.js',
+    'etp-operational-gateway.js',
+    'etp-operational-mount.js',
+    'etp-e3-verified-join.js',
+    'etp-operational-bootstrap.js',
+    'etp-operational-shell-composer.js',
+    'etp-incentive-control.js'
+  ]),
+  optionalAssetPaths: Object.freeze([])
+});
+const BASE_SCRIPT_LITERAL_REFERENCE_COUNT = 12;
+
+function dynamicLoaderGroups(root) {
+  return fs.existsSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER))
+    ? [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP]
+    : DYNAMIC_LOADER_GROUPS;
+}
+
 const DYNAMIC_WORKER_BINDINGS = Object.freeze([
   { id: 'shell-pdf-worker', owner: 'index.html', assetPath: 'pdf.worker.min.js' }
 ]);
@@ -634,12 +679,22 @@ function exactSiteCounts(rows) {
 }
 
 function createDynamicLocalInventory(root, shell, loadedAssets) {
+  const loaderGroupConfigs = dynamicLoaderGroups(root);
+  const etpChainLoaderPresent = loaderGroupConfigs.includes(ETP_CHAIN_LOADER_GROUP);
   const ownerSources = new Map([
     ['index.html', shell.active],
     ['saagar-report.js', fs.readFileSync(path.join(root, 'www', 'saagar-report.js'), 'utf8')]
   ]);
+  if (etpChainLoaderPresent) {
+    ownerSources.set(ETP_CHAIN_LOADER_OWNER, fs.readFileSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER), 'utf8'));
+    // The loader injects only through the shell's existing injectOne; it must not own a script sink.
+    if (count(shell.active, /\binjectEtp\s*:\s*function\s*\(\s*src\s*\)/g) !== 1
+      || count(ownerSources.get(ETP_CHAIN_LOADER_OWNER), /\bcreateElement\s*\(|\bdocument\.write\s*\(|\bimport\s*\(/g) !== 0) {
+      throw new Error('MAH-4 ETP chain loader injector drift');
+    }
+  }
   let scriptLiteralReferenceCount = 0;
-  const loaderGroups = DYNAMIC_LOADER_GROUPS.map(group => {
+  const loaderGroups = loaderGroupConfigs.map(group => {
     const source = ownerSources.get(group.owner);
     if (source === undefined) throw new Error(`MAH-4 dynamic loader owner is not inventoried: ${group.owner}`);
     const assetPaths = [...group.coreAssetPaths, ...group.optionalAssetPaths];
@@ -674,7 +729,8 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
       ]))
     };
   });
-  if (scriptLiteralReferenceCount !== 12) {
+  if (scriptLiteralReferenceCount !== BASE_SCRIPT_LITERAL_REFERENCE_COUNT
+    + (etpChainLoaderPresent ? ETP_CHAIN_LOADER_GROUP.coreAssetPaths.length : 0)) {
     throw new Error('MAH-4 dynamic script literal count drift');
   }
 
@@ -715,7 +771,7 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
   }
 
   const resourceLoaders = new Map();
-  for (const group of DYNAMIC_LOADER_GROUPS) {
+  for (const group of loaderGroupConfigs) {
     for (const assetPath of [...group.coreAssetPaths, ...group.optionalAssetPaths]) {
       if (!resourceLoaders.has(assetPath)) resourceLoaders.set(assetPath, new Set());
       resourceLoaders.get(assetPath).add(group.id);

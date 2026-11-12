@@ -126,7 +126,7 @@ test('D3 Service bundle metadata, runtime ordering and UI controls are intact', 
   assert.ok(policyAt >= 0 && persistenceAt > policyAt && modulesAt > persistenceAt);
   assert.match(service, /id="f-stage" disabled/);
   assert.match(service, /Combined \/ untagged Service data/);
-  assert.match(serviceCss, /@media\(max-width:720px\)/);
+  assert.match(serviceCss, /@media\(max-width:899px\)/);
   inlineModuleScripts(service).forEach((source, index) => {
     assert.doesNotThrow(() => new vm.Script(source, { filename: `d3-service-.js` }));
   });

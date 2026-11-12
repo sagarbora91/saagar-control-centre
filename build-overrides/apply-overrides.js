@@ -191,9 +191,19 @@ function main() {
     xml = xml.replace(/<application\b/, '<application\n        android:allowBackup="false"');
   }
 
+  // android.permission.INTERNET must be absent (offline app; owner decision given in chat, 2026-11-12).
+  // Drop the Capacitor template declaration and keep ONE tools:node="remove" guard so a later library
+  // manifest cannot bring it back. Idempotent.
+  if (!/xmlns:tools\s*=/.test(xml)) {
+    xml = xml.replace(/<manifest\b/, '<manifest xmlns:tools="http://schemas.android.com/tools"');
+  }
+  xml = xml.replace(/[ \t]*<uses-permission\b(?![^>]*tools:node)[^>]*android\.permission\.INTERNET[^>]*\/>[ \t]*\r?\n?/g, '');
+  if (!/<uses-permission\b(?=[^>]*android\.permission\.INTERNET)(?=[^>]*tools:node\s*=\s*"remove")[^>]*>/.test(xml)) {
+    xml = xml.replace(/<\/manifest>/, '    <uses-permission android:name="android.permission.INTERNET" tools:node="remove" />\n</manifest>');
+  }
   if (xml !== before) {
     fs.writeFileSync(MANIFEST, xml);
-    console.log('[apply-overrides] set android:allowBackup="false"');
+    console.log('[apply-overrides] set android:allowBackup="false", INTERNET removed');
   } else {
     console.log('[apply-overrides] android:allowBackup already "false" — no change');
   }

@@ -260,8 +260,8 @@
       "id": "module-bridge",
       "version": 1,
       "file": "shared/module-bridge.js",
-      "bytes": 3084,
-      "sha256": "ab237e01c10c480dd8cd49f0f9ea6cdaccf6781240292ae72549b7391cb71b9c"
+      "bytes": 3051,
+      "sha256": "e26f724c4a3a8af1970d76c54f6cff1a60a0d580cd34aec87ad396d554c0c68c"
     },
     {
       "id": "module-runtime",
@@ -456,8 +456,8 @@
       "id": "etp-operational-foundation",
       "version": 1,
       "file": "etp-operational-foundation.js",
-      "bytes": 8927,
-      "sha256": "cc03dbfc31454b5dfa3b8ccef554c14909bdb20db0b668552d752e07ba775c68"
+      "bytes": 9190,
+      "sha256": "36927c93b5b1c36e75b1c55f05f949cce435113cd60173be6de27783a04a82a6"
     },
     {
       "id": "etp-operational-store",
@@ -484,36 +484,36 @@
       "id": "etp-e4-authority-intake",
       "version": 1,
       "file": "etp-e4-authority-intake.js",
-      "bytes": 11007,
-      "sha256": "b63238a928804ee967251161548317dc7445c51f6d8970983080a5544331fbd9"
+      "bytes": 10903,
+      "sha256": "7ca10722e683e1861ff358fd324b24f9230c9ee08125f913ea8e3e65a87f5957"
     },
     {
       "id": "etp-e6-authority-intake",
       "version": 1,
       "file": "etp-e6-authority-intake.js",
-      "bytes": 8054,
-      "sha256": "2d233055212ff5772ee05f436a63d656f5c708035aba59baf757c4ec99048a9d"
+      "bytes": 7950,
+      "sha256": "19d72f301b1ba8ba2aba0fc814c256f0ac4ac1abc0c310f6fe628af073b9a1c4"
     },
     {
       "id": "etp-e5-authority-intake",
       "version": 1,
       "file": "etp-e5-authority-intake.js",
-      "bytes": 11051,
-      "sha256": "ebef537bcd465c702950170074603e143e48442689bd2dbf555b6e3826f556b3"
+      "bytes": 10947,
+      "sha256": "8da24e4072e6a0893af2b100d5f7e9e3cd0a12595175c85d0dde6db49f4561f3"
     },
     {
       "id": "etp-e7-authority-intake",
       "version": 1,
       "file": "etp-e7-authority-intake.js",
-      "bytes": 10955,
-      "sha256": "dbd0c845c6b5ca90e108e6ffdd061847fe6720a81a7940747028dd5bbdcf1977"
+      "bytes": 10851,
+      "sha256": "ba1b8f5af65f71ca8a498a6336ab10a1a7044a9b095dbc472f1a072cd7f306cf"
     },
     {
       "id": "etp-e7-service-verifier",
       "version": 1,
       "file": "etp-e7-service-verifier.js",
-      "bytes": 9009,
-      "sha256": "1a5d2e94b0a0e36fac4a8b856fcc44122a44f8481d6f49742a529d0cd807f13f"
+      "bytes": 9060,
+      "sha256": "66d99ec2cb32daaa6ae2b2f1b41184039e55128bfb59a98a511a75c5ffd1073c"
     },
     {
       "id": "etp-e7-service-operational",
@@ -680,22 +680,22 @@
       "id": "etp-operational-shell-composer",
       "version": 1,
       "file": "etp-operational-shell-composer.js",
-      "bytes": 7999,
-      "sha256": "b42469d1ea1bed0a017896994473565e814af99aa63576db36ec013f4c5991da"
+      "bytes": 7734,
+      "sha256": "37a85a92e1758cb7d7d320752200839e837984f3cc079b80d02592835992e871"
     },
     {
       "id": "etp-operational-module-host",
       "version": 1,
       "file": "etp-operational-module-host.js",
-      "bytes": 6515,
-      "sha256": "2ea4123c3e593e3625cfc3edb4878cd3f812cb979eccda3cfb80796e90741f98"
+      "bytes": 6804,
+      "sha256": "6f2636e93f366acfe523c3a72d2a5c9b6518cda762f311ef23fc5eed3418fac5"
     },
     {
       "id": "etp-operational-frame-bridge",
       "version": 1,
       "file": "etp-operational-frame-bridge.js",
-      "bytes": 869,
-      "sha256": "9d873fac0f72818eb5104cad07ffbd00258cd61ebce3bf02f75421c96734c05d"
+      "bytes": 1444,
+      "sha256": "c40a2806e5602b9594ae0b7c857cdccb3dd1cc355284bb590149cc17c3dcd7f7"
     },
     {
       "id": "etp-exception-monitor",
@@ -708,8 +708,8 @@
       "id": "etp-incentive-control",
       "version": 1,
       "file": "etp-incentive-control.js",
-      "bytes": 15264,
-      "sha256": "fefb9bc2537ca9f7cddb48692e0bfb80b055ea0d2dcbf9a1cd688f479b3c9898"
+      "bytes": 15315,
+      "sha256": "c7d918ad2d3ce937a3a5255e7e3ca1c353e2070d5dbbf20dc14d18b7aba3f9b3"
     },
     {
       "id": "etp-operations-consumer",
@@ -891,8 +891,8 @@
       "file": "modules/etp/index.html",
       "subtitle": "Secure Retail ETP import, verified reports, coverage history and reconciliation controls.",
       "summary": "Reports-owned shell for governed R003, R013, R022 and R025 workflows.",
-      "bytes": 42832,
-      "sha256": "c28a721121dfa3fa6799d1eeb782fa364f54ad5189152d89748a812dddb5f12a",
+      "bytes": 136961,
+      "sha256": "ea818122c5c00bd8a11dc7470134409c0ed393374cdf14909a6fa5df5b4824c1",
       "src": "modules/etp/index.html"
     }
   ]

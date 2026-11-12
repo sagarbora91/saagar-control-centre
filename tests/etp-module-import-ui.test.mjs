@@ -17,7 +17,8 @@ test('ETP module exposes an FY dropdown and four bounded multi-file report contr
   for (const report of ['R003', 'R013', 'R022', 'R025']) {
     assert.match(html, new RegExp(`data-etp-file="${report}"`));
   }
-  assert.equal((html.match(/type="file"/g) || []).length, 4);
+  // four XLSX report inputs plus the one engine-pack input of the bridge screen (it has no multiple and no accept attribute)
+  assert.equal((html.match(/type="file"/g) || []).length, 5);
   assert.equal((html.match(/type="file" multiple/g) || []).length, 4);
   assert.match(html, /id="etpFinancialYear"/);
   assert.match(html, /function populateFinancialYears\(\)/);

@@ -36,6 +36,7 @@
     .etp-v-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}.etp-v-metric{border:1px solid var(--line);border-radius:8px;padding:9px;background:#f8fafc}.etp-v-metric span,.etp-v-metric strong{display:block}.etp-v-metric span{color:var(--muted);font-size:12px}.etp-v-groups{display:grid;gap:5px;margin:12px 0 0;padding:0;list-style:none}.etp-v-groups li{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:6px}.etp-v-error{border:1px solid #efb6af;border-radius:9px;background:#fff1f0;color:#9c2a1c;padding:12px}.etp-v-quarantine{border-left:5px solid var(--amber)}
     .etp-e2-views{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}.etp-e2-views .action[aria-pressed="true"]{border-color:var(--navy);background:var(--navy);color:#fff}.etp-e2-banner{border-left:5px solid #247a52}.etp-e2-banner h3{color:#1d6946}
     .form-grid,.file-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:grid;gap:5px;color:var(--ink);font-weight:700}.field input,.field select{width:100%;min-height:44px;border:1px solid #aeb8c5;border-radius:9px;background:#fff;padding:8px 10px;color:var(--ink);font:inherit}.file-grid{margin-top:14px}.file-field{position:relative;display:grid;gap:3px;min-height:72px;border:1px dashed #8b9bad;border-radius:10px;padding:12px}.file-field input{position:absolute;inset:0;opacity:0;cursor:pointer}.file-field span{color:var(--muted);font-size:12px;overflow-wrap:anywhere}.coverage-check{display:flex;align-items:flex-start;gap:9px;margin-top:14px;color:var(--ink);font-weight:650}.coverage-check input{flex:0 0 auto;width:44px;height:44px;margin:0}.actions{display:flex;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:16px}.action{min-height:44px;border:1px solid #aab4c0;border-radius:9px;background:#fff;color:var(--navy);padding:0 15px;font-weight:800;cursor:pointer}.action.primary{border-color:#7a5a00;background:#7a5a00;color:#fff}.action:disabled{cursor:not-allowed;opacity:.48}.action.primary:disabled{border-color:#667085;background:#667085;color:#fff;opacity:1}.notice{margin-top:12px;border-radius:9px;padding:10px 12px;background:#f5f7fa;color:#475467}.notice.error{background:#fff1f0;color:#9c2a1c}.notice.success{background:#eef9f2;color:#21633f}.scope-list{display:grid;gap:9px;margin-top:12px}.scope-row{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;min-height:58px;border:1px solid var(--line);border-radius:9px;background:#fff;padding:10px 12px;text-align:left;color:var(--ink);cursor:pointer}.scope-row small{display:block;color:var(--muted)}.history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.metric{border:1px solid var(--line);border-radius:9px;padding:10px}.metric small{display:block;color:var(--muted)}.coverage-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}.coverage-item{border-radius:8px;background:#f4f6f8;padding:8px;text-align:center}.coverage-item strong,.coverage-item small{display:block}.history-items{margin:10px 0 0;padding-left:20px;color:var(--muted)}
+    #panel-bridge,#panel-bridge *{min-width:0;max-width:100%;overflow-wrap:anywhere}#panel-bridge [hidden]{display:none}#panel-bridge .file-field:focus-within{outline:3px solid var(--navy);outline-offset:2px}#panel-bridge .etp-b-off{opacity:.55}#panel-bridge code{font-size:12px}.etp-b-block{margin-top:14px;padding-left:10px}.etp-b-block h4{margin:0 0 6px;font-size:15px}.etp-b-block h5{margin:10px 0 4px;font-size:13px}.etp-b-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px solid var(--line)}.etp-b-head{font-size:12px;font-weight:800;color:var(--muted)}.etp-b-num{text-align:right;font-variant-numeric:tabular-nums}.etp-b-diff{border-left:5px solid var(--amber)}.etp-b-ok{border-left:5px solid #247a52}.etp-b-outcome{margin:10px 0;font-size:15px}@media(max-width:680px){.etp-b-row{grid-template-columns:minmax(0,1fr)}.etp-b-head{display:none}.etp-b-num{text-align:left}.etp-b-num::before{content:attr(data-label) ": ";font-weight:700}}html.saagar-legacy-webview .etp-b-row{display:block}
     html.saagar-legacy-webview .placeholder-grid,html.saagar-legacy-webview .form-grid,html.saagar-legacy-webview .file-grid,html.saagar-legacy-webview .history-grid,html.saagar-legacy-webview .coverage-list,html.saagar-legacy-webview .etp-v-metrics,html.saagar-legacy-webview .etp-v-groups{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
     html.saagar-legacy-webview .placeholder-grid>*,html.saagar-legacy-webview .form-grid>*,html.saagar-legacy-webview .file-grid>*,html.saagar-legacy-webview .history-grid>*,html.saagar-legacy-webview .coverage-list>*,html.saagar-legacy-webview .etp-v-metrics>*,html.saagar-legacy-webview .etp-v-groups>*{-webkit-flex:1 1 100%;flex:1 1 100%;width:100%;min-width:0;margin:6px 0}
     html.saagar-legacy-webview .field,html.saagar-legacy-webview .file-field,html.saagar-legacy-webview .file-field strong,html.saagar-legacy-webview .file-field span{display:block}
@@ -51,6 +52,7 @@
   </header>
   <nav class="etp-tabs" role="tablist" aria-label="Retail ETP sections">
     <button data-action="tab-import" class="etp-tab" id="tab-import" role="tab" aria-controls="panel-import" aria-selected="true" data-view="import">Import</button>
+    <button data-action="tab-bridge" class="etp-tab" id="tab-bridge" role="tab" aria-controls="panel-bridge" aria-selected="false" data-view="bridge" data-no-i18n data-etp-b="tab"></button>
     <button data-action="tab-verified" class="etp-tab" id="tab-verified" role="tab" aria-controls="panel-verified" aria-selected="false" data-view="verified" data-etp-view-tab="verified">Verified Reports</button>
     <button data-action="tab-coverage" class="etp-tab" id="tab-coverage" role="tab" aria-controls="panel-coverage" aria-selected="false" data-view="coverage">Coverage &amp; History</button>
     <button data-action="tab-reconciliation" class="etp-tab" id="tab-reconciliation" role="tab" aria-controls="panel-reconciliation" aria-selected="false" data-view="reconciliation" data-etp-view-tab="exceptions">Reconciliation &amp; Exceptions</button>
@@ -83,6 +85,34 @@
         <div class="actions"><button data-action="etp-validate" class="action" id="etpValidate" type="submit">Validate reports</button><button data-action="etp-confirm" class="action primary" id="etpConfirm" type="button" disabled>Confirm and publish</button></div>
       </form>
       <p class="privacy">Selected workbook bytes are used only for validation and are released after a terminal success. Raw rows and customer information are never rendered here.</p>
+    </section>
+
+    <section class="etp-panel" id="panel-bridge" role="tabpanel" aria-labelledby="tab-bridge" data-panel="bridge" data-no-i18n hidden>
+      <h2 id="etpBridgeHeading" tabindex="-1" data-etp-b="heading"></h2>
+      <p class="lead" data-etp-b="lead"></p>
+      <div class="card status" id="etpBridgeGate" role="status" aria-live="polite" hidden>
+        <span class="status-mark" aria-hidden="true">!</span>
+        <div><h3 id="etpBridgeGateTitle"></h3><p id="etpBridgeGateText"></p><p><code lang="en" id="etpBridgeGateCode"></code></p></div>
+      </div>
+      <form data-action="etp-bridge-form" class="card" id="etpBridgeForm" novalidate>
+        <h3 data-etp-b="pickTitle"></h3>
+        <label class="file-field" id="etpBridgeFileField"><strong data-etp-b="pickLabel"></strong><span id="etpBridgeFileName"></span><input data-field="bridge-pack" id="etpBridgeFile" type="file" disabled></label>
+        <div class="notice" id="etpBridgeNotice" tabindex="-1" role="status" aria-live="polite"></div>
+        <div class="actions"><button data-action="etp-bridge-check" class="action primary" id="etpBridgeCheck" type="submit" data-etp-b="btnCheck" disabled></button></div>
+      </form>
+      <div class="card" id="etpBridgeStaged" hidden>
+        <h3 id="etpBridgeStagedTitle" tabindex="-1" data-etp-b="stagedTitle"></h3>
+        <div class="history-grid" id="etpBridgeFacts"></div>
+        <div class="coverage-list" id="etpBridgeRows"></div>
+        <ul class="etp-v-groups" id="etpBridgeChecks"></ul>
+        <div class="actions"><button data-action="etp-bridge-compare" class="action primary" id="etpBridgeCompareBtn" type="button" data-etp-b="btnCompare" disabled></button><button data-action="etp-bridge-discard" class="action" id="etpBridgeDiscard" type="button" data-etp-b="btnDiscard" disabled></button></div>
+      </div>
+      <div class="card" id="etpBridgeResult" hidden>
+        <h3 id="etpBridgeResultTitle" tabindex="-1" data-etp-b="cmpTitle"></h3>
+        <div id="etpBridgeResultBody"></div>
+      </div>
+      <p class="privacy" data-etp-b="xlsxNote"></p>
+      <p class="privacy" data-etp-b="privacy"></p>
     </section>
 
     <section class="etp-panel" id="panel-verified" role="tabpanel" aria-labelledby="tab-verified" data-panel="verified" hidden>
@@ -143,7 +173,7 @@
   <script>
     (function () {
       'use strict';
-      var VIEWS = ['import', 'verified', 'coverage', 'reconciliation'];
+      var VIEWS = ['import', 'bridge', 'verified', 'coverage', 'reconciliation'];
       var REPORTS = ['R003', 'R013', 'R022', 'R025'];
       var MAX_FILES_PER_REPORT = 13;
       var state = { busy: false, confirmationToken: '', files: Object.create(null), activeScope: null };
@@ -197,7 +227,7 @@
       }
       async function refreshOperational() {
         var sequence=++operationalSequence,host=window.SaagarEtpOperationalModuleHost,composer=window.SaagarEtpOperationalFrameBridge;
-        if(operationalController&&typeof operationalController.destroy==='function'){try{operationalController.destroy();}catch(_){}}operationalController=null;
+        if(operationalController&&typeof operationalController.destroy==='function'){var closed=null;try{closed=operationalController.destroy();}catch(_){closed=null;}if(!closed||closed.ok!==true)setNotice('Operational panels were rebuilt after a failed close ('+safeCode(closed&&closed.code,'ETP_OPERATIONAL_DESTROY_FAILED')+').','error');}operationalController=null;
         if(!host||typeof host.compose!=='function')return;
         var made=await host.compose({document:document,composer:composer,getScope:function(){return state.activeScope;}});
         if(sequence!==operationalSequence){if(made&&made.controller&&typeof made.controller.destroy==='function')made.controller.destroy();return;}
@@ -381,13 +411,6 @@
       document.getElementById('etpConfirm').addEventListener('click', confirmImport);
       document.getElementById('etpHistoryRefresh').addEventListener('click', refreshScopes);
       document.getElementById('etpE7Refresh').addEventListener('click', refreshServiceVerification);
-      var demoService=serviceBridge();
-      if(demoService&&demoService.demoSynthetic===true&&demoService.defaultScope){
-        document.getElementById('etpE7ServiceUnit').value=demoService.defaultScope.serviceUnitId;
-        document.getElementById('etpE7PeriodId').value=demoService.defaultScope.periodId;
-        document.getElementById('etpE7PeriodStart').value=demoService.defaultScope.periodStart;
-        document.getElementById('etpE7PeriodEnd').value=demoService.defaultScope.periodEnd;
-      }
       var verifiedPresentation=window.SaagarEtpVerifiedPresentation;
       if(verifiedPresentation&&typeof verifiedPresentation.mount==='function'){var mounted=verifiedPresentation.mount(document.querySelector('[data-etp-verified-root]'),readGateway(),{getScope:function(){return state.activeScope;}});if(mounted&&mounted.ok===true&&typeof mounted.refresh==='function')presentationController=mounted;}
       populateFinancialYears();
@@ -395,6 +418,879 @@
       refreshScopes();
       refreshServiceVerification();
     })();
+  </script>
+  <script id="etp-bridge-screen">
+  (function () {
+    'use strict';
+    /* Engine pack screen. It talks only to the parent facade reached through SaagarModuleBridge.etpBridgeGateway (status, stage, compare,
+       discard). It never reads the pack bytes: the chosen File goes to the facade unread. Every value shown is set as text, never as markup.
+       Nothing is stored here and nothing is published. All Marathi and Hindi text is new and not yet approved by a native speaker. */
+    var CATALOG_STATUS = 'TEST_ONLY_UNAPPROVED';
+    var LANGS = ['en', 'mr', 'hi'];
+    var REPORTS = ['R003', 'R013', 'R022', 'R025'];
+    var OUTCOMES = ['MATCH', 'DIFFERENCES', 'CANNOT_COMPARE'];
+    var FIGURE_STATUSES = ['MATCH', 'BUSINESS_RULE_DIFFERENCE', 'ROW_DIFFERENCE_PRESENT', 'NOT_COMPARABLE'];
+    var MAX_BYTES = 33554432, MAX_DIFFERENCES = 20, MAX_NAME_SHOWN = 80;
+    var SUFFIX = /\.scc-etp$/i;
+    var RE = {
+      code: /^ETP_[A-Z0-9_]{1,80}$/, token: /^bridge_[a-f0-9]{32}_[0-9]{1,9}$/, date: /^\d{4}-\d{2}-\d{2}$/, fy: /^\d{4}-\d{2}$/,
+      store: /^[A-Z0-9]{2,12}$/, stamp: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/, version: /^\d{1,3}\.\d{1,3}\.\d{1,4}$/, key16: /^[a-f0-9]{16}$/,
+      id8: /^[a-f0-9]{8}$/, name: /^[A-Za-z][A-Za-z0-9_]{0,40}$/, number: /^-?\d{1,18}(?:\.\d{2,3})?$/, whole: /^-?\d{1,18}$/,
+      figure: /^[A-Z0-9][A-Z0-9_.]{0,47}$/, field: /^[A-Za-z0-9_.]{1,80}$/, hidden: /[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g
+    };
+    var RESPONSE_INVALID = 'ETP_BRIDGE_RESPONSE_INVALID', VERIFY_FAILED = 'ETP_BRIDGE_VERIFY_FAILED', UNAVAILABLE = 'ETP_BRIDGE_UNAVAILABLE';
+    var FILE_INVALID = 'ETP_BRIDGE_FILE_INVALID', FILE_TOO_LARGE = 'ETP_BRIDGE_FILE_TOO_LARGE', NO_GENERATION = 'ETP_BRIDGE_COMPARE_NO_TABLET_GENERATION';
+    /* Refusals after which the facade no longer holds the staged pack: the screen drops its own card too. */
+    var DROPS_STAGE = ['ETP_BRIDGE_STAGE_INVALID', 'ETP_BRIDGE_TRUST_GATE_CLOSED', 'ETP_BRIDGE_TRUST_ANCHOR_INVALID', 'ETP_BRIDGE_ROLE_REFUSED', 'ETP_BRIDGE_SESSION_INVALID'];
+
+    /* ---- words: one table, three languages ------------------------------------------------------------------------------------ */
+    var STR = { en: {}, mr: {}, hi: {} };
+    var CODE_MSG = {};
+    function def(key, en, mr, hi) { STR.en[key] = en; STR.mr[key] = mr; STR.hi[key] = hi; }
+    function msg(id, codes, en, mr, hi) {
+      def(id, en, mr, hi);
+      for (var i = 0; i < codes.length; i += 1) CODE_MSG[codes[i].indexOf('ETP_') === 0 ? codes[i] : 'ETP_BRIDGE_' + codes[i]] = id;
+    }
+    def('tab', 'Engine pack', 'इंजन पॅक', 'इंजन पैक');
+    def('heading', 'Engine pack check', 'इंजन पॅक तपासणी', 'इंजन पैक की जाँच');
+    def('lead', 'Check a signed report pack from the ETP Reporting Engine and compare it with your XLSX import. Nothing is published from this screen.',
+      'ETP Reporting Engine कडून आलेला सही केलेला अहवाल पॅक तपासा आणि तो तुमच्या XLSX आयातीशी जुळवून पहा. या स्क्रीनवरून काहीही प्रकाशित होत नाही.',
+      'ETP Reporting Engine से आया हस्ताक्षरित रिपोर्ट पैक जाँचें और उसे अपने XLSX आयात से मिलाकर देखें। इस स्क्रीन से कुछ भी प्रकाशित नहीं होता।');
+    def('gateTitle', 'Engine packs are switched off', 'इंजन पॅक बंद आहेत', 'इंजन पैक बंद हैं');
+    def('gateWhy', 'The trust gate is closed. No trusted Owner key is installed on this device, so no engine pack can be accepted. The Owner creates that key himself in a later step. Until then nothing from an engine pack is read or published, and the XLSX import on the Import tab stays the only source.',
+      'विश्वास द्वार बंद आहे. या उपकरणावर मालकाची विश्वासार्ह चावी बसवलेली नाही, म्हणून कोणताही इंजन पॅक स्वीकारता येत नाही. ही चावी मालक नंतरच्या टप्प्यात स्वतः तयार करतो. तोपर्यंत इंजन पॅकमधील काहीही वाचले किंवा प्रकाशित केले जात नाही, आणि आयात टॅबवरील XLSX आयात हाच एकमेव स्रोत राहतो.',
+      'विश्वास द्वार बंद है। इस डिवाइस पर मालिक की भरोसेमंद कुंजी स्थापित नहीं है, इसलिए कोई इंजन पैक स्वीकार नहीं किया जा सकता। यह कुंजी मालिक आगे के चरण में स्वयं बनाएँगे। तब तक इंजन पैक से कुछ भी पढ़ा या प्रकाशित नहीं किया जाता, और आयात टैब का XLSX आयात ही एकमात्र स्रोत रहता है।');
+    def('deniedTitle', 'Not available for this role', 'या भूमिकेसाठी उपलब्ध नाही', 'इस भूमिका के लिए उपलब्ध नहीं');
+    def('deniedText', 'Only the Owner, or the Store Manager with Owner approval, can check an engine pack.',
+      'इंजन पॅक फक्त मालक, किंवा मालकाच्या मंजुरीसह दुकान व्यवस्थापक, तपासू शकतो.',
+      'इंजन पैक केवल मालिक, या मालिक की मंज़ूरी के साथ स्टोर मैनेजर, जाँच सकता है।');
+    def('unavailTitle', 'Secure gateway unavailable', 'सुरक्षित गेटवे अनुपलब्ध', 'सुरक्षित गेटवे अनुपलब्ध');
+    def('pickTitle', 'Pack file', 'पॅक फाइल', 'पैक फ़ाइल');
+    def('pickLabel', 'Engine pack', 'इंजन पॅक', 'इंजन पैक');
+    def('pickHint', 'Choose one .scc-etp pack file (up to 32 MB)', 'एक .scc-etp पॅक फाइल निवडा (जास्तीत जास्त 32 MB)', 'एक .scc-etp पैक फ़ाइल चुनें (अधिकतम 32 MB)');
+    def('picked', 'Selected: {name} ({size})', 'निवडले: {name} ({size})', 'चुनी गई: {name} ({size})');
+    def('btnCheck', 'Check pack', 'पॅक तपासा', 'पैक जाँचें');
+    def('btnCompare', 'Compare with XLSX import', 'XLSX आयातीशी तुलना करा', 'XLSX आयात से तुलना करें');
+    def('btnDiscard', 'Discard pack', 'पॅक रद्द करा', 'पैक हटाएँ');
+    def('nStatus', 'Checking whether engine packs are available on this device...', 'या उपकरणावर इंजन पॅक उपलब्ध आहेत का ते तपासत आहे...', 'इस डिवाइस पर इंजन पैक उपलब्ध हैं या नहीं, यह जाँचा जा रहा है...');
+    def('nOff', 'The file picker is switched off. Nothing is read and nothing is changed.', 'फाइल निवड बंद आहे. काहीही वाचले किंवा बदलले जात नाही.', 'फ़ाइल चयन बंद है। कुछ भी पढ़ा या बदला नहीं जाता।');
+    def('nIdle', 'Choose a pack file, then press Check pack. Nothing is published.', 'पॅक फाइल निवडा, मग "पॅक तपासा" दाबा. काहीही प्रकाशित होत नाही.', 'पैक फ़ाइल चुनें, फिर "पैक जाँचें" दबाएँ। कुछ भी प्रकाशित नहीं होता।');
+    def('nReauth', 'Owner approval may be asked on the screen. Enter the Owner PIN to continue.', 'स्क्रीनवर मालकाची मंजुरी मागितली जाऊ शकते. पुढे जाण्यासाठी मालकाचा पिन टाका.', 'स्क्रीन पर मालिक की मंज़ूरी माँगी जा सकती है। आगे बढ़ने के लिए मालिक का पिन डालें।');
+    def('nChecking', 'Checking signature, files, rows and totals. Nothing is published.', 'सही, फाइल्स, ओळी आणि एकूण तपासत आहे. काहीही प्रकाशित होत नाही.', 'हस्ताक्षर, फ़ाइलें, पंक्तियाँ और कुल जाँचे जा रहे हैं। कुछ भी प्रकाशित नहीं होता।');
+    def('nStaged', 'Pack checked. It is held in memory only and nothing is published.', 'पॅक तपासला. तो फक्त स्मृतीत आहे आणि काहीही प्रकाशित झालेले नाही.', 'पैक जाँचा गया। वह केवल स्मृति में है और कुछ भी प्रकाशित नहीं हुआ।');
+    def('nComparing', 'Comparing with the XLSX import...', 'XLSX आयातीशी तुलना सुरू आहे...', 'XLSX आयात से तुलना हो रही है...');
+    def('nCompared', 'Comparison finished. It is for information only.', 'तुलना पूर्ण झाली. ती फक्त माहितीसाठी आहे.', 'तुलना पूरी हुई। वह केवल जानकारी के लिए है।');
+    def('nDiscarding', 'Discarding the pack...', 'पॅक रद्द करत आहे...', 'पैक हटाया जा रहा है...');
+    def('nDiscarded', 'Pack discarded. Nothing was kept.', 'पॅक रद्द केला. काहीही ठेवले नाही.', 'पैक हटाया गया। कुछ भी नहीं रखा गया।');
+    def('where', 'Where:', 'कुठे:', 'कहाँ:');
+    def('whereLine', 'line', 'ओळ', 'पंक्ति');
+    def('stagedTitle', 'Checked pack', 'तपासलेला पॅक', 'जाँचा गया पैक');
+    def('fStore', 'Store', 'स्टोअर', 'स्टोर');
+    def('fFy', 'Financial year', 'आर्थिक वर्ष', 'वित्तीय वर्ष');
+    def('fPeriod', 'Period', 'कालावधी', 'अवधि');
+    def('fGen', 'Engine generation', 'इंजन पिढी', 'इंजन पीढ़ी');
+    def('fCreated', 'Created (UTC)', 'तयार केले (UTC)', 'बनाया गया (UTC)');
+    def('fVersion', 'Engine version', 'इंजन आवृत्ती', 'इंजन संस्करण');
+    def('fThrough', 'Finalised through', 'येथपर्यंत अंतिम', 'यहाँ तक अंतिम');
+    def('fKey', 'Signing key ID', 'सही करणाऱ्या चावीचा ID', 'हस्ताक्षर कुंजी ID');
+    def('fExport', 'Export ID', 'निर्यात ID', 'निर्यात ID');
+    def('rowsN', '{n} rows', '{n} ओळी', '{n} पंक्तियाँ');
+    def('cSig', 'Signature valid', 'सही वैध', 'हस्ताक्षर मान्य');
+    def('cHash', 'File fingerprints match', 'फाइल हॅश जुळतात', 'फ़ाइल हैश मेल खाते हैं');
+    def('cTotals', 'Row totals equal engine totals', 'ओळींची बेरीज इंजनच्या एकूणाशी जुळते', 'पंक्तियों का जोड़ इंजन के कुल से मेल खाता है');
+    def('cStore', 'Store accepted', 'स्टोअर स्वीकारले', 'स्टोर स्वीकार');
+    def('cPeriod', 'Period complete', 'कालावधी पूर्ण', 'अवधि पूर्ण');
+    def('cDict', 'Payment-type list matches', 'पेमेंट-प्रकार यादी जुळते', 'भुगतान-प्रकार सूची मेल खाती है');
+    def('ok', 'OK', 'ठीक', 'ठीक');
+    def('cmpTitle', 'Comparison with the XLSX import', 'XLSX आयातीशी तुलना', 'XLSX आयात से तुलना');
+    def('cmpBase', 'Compared with the XLSX import, generation {id}.', 'XLSX आयातीशी तुलना केली, पिढी {id}.', 'XLSX आयात से तुलना की गई, पीढ़ी {id}।');
+    def('cmpInfo', 'Differences are information only. Nothing is published and no Control Centre figure has changed.', 'फरक फक्त माहितीसाठी आहेत. काहीही प्रकाशित होत नाही आणि Control Centre मधील कोणताही आकडा बदललेला नाही.', 'अंतर केवल जानकारी के लिए हैं। कुछ भी प्रकाशित नहीं होता और Control Centre का कोई आँकड़ा नहीं बदला।');
+    def('outMatch', 'All four reports match.', 'चारही अहवाल जुळतात.', 'चारों रिपोर्ट मेल खाती हैं।');
+    def('outDiff', '{n} of 4 reports differ.', '4 पैकी {n} अहवालांत फरक आहे.', '4 में से {n} रिपोर्ट में अंतर है।');
+    def('outCannot', 'The reports could not be compared.', 'अहवालांची तुलना करता आली नाही.', 'रिपोर्टों की तुलना नहीं हो सकी।');
+    def('stMatch', 'MATCH', 'जुळते', 'मेल खाता है');
+    def('stDiff', 'Differences found', 'फरक आढळले', 'अंतर मिले');
+    def('stCannot', 'Cannot compare', 'तुलना करता येत नाही', 'तुलना नहीं हो सकती');
+    def('colMeasure', 'Measure', 'मोजमाप', 'माप');
+    def('colPack', 'Engine pack', 'इंजन पॅक', 'इंजन पैक');
+    def('colXlsx', 'XLSX import', 'XLSX आयात', 'XLSX आयात');
+    def('daysDiffer', '{n} days differ', '{n} दिवसांत फरक आहे', '{n} दिनों में अंतर है');
+    def('diffTitle', 'Differences by day', 'दिवसानुसार फरक', 'दिन के अनुसार अंतर');
+    def('diffLine', '{date} - {measure} - engine pack {a} - XLSX import {b}', '{date} - {measure} - इंजन पॅक {a} - XLSX आयात {b}', '{date} - {measure} - इंजन पैक {a} - XLSX आयात {b}');
+    def('diffMore', 'Only the first 20 differences are listed. {n} days differ in total.', 'फक्त पहिले 20 फरक दाखवले आहेत. एकूण {n} दिवसांत फरक आहे.', 'केवल पहले 20 अंतर दिखाए गए हैं। कुल {n} दिनों में अंतर है।');
+    def('reasonsTitle', 'Why it could not be compared', 'तुलना का करता आली नाही', 'तुलना क्यों नहीं हो सकी');
+    def('notesTitle', 'Notes', 'टिपा', 'टिप्पणियाँ');
+    def('figTitle', 'Figures per ETP Reporting Engine', 'ETP Reporting Engine नुसार आकडे', 'ETP Reporting Engine के अनुसार आँकड़े');
+    def('figNote', 'Shown for comparison only. No Control Centre figure, incentive or payroll amount has changed.', 'फक्त तुलनेसाठी. Control Centre मधील कोणताही आकडा, प्रोत्साहन किंवा पगाराची रक्कम बदललेली नाही.', 'केवल तुलना के लिए। Control Centre का कोई आँकड़ा, प्रोत्साहन या वेतन राशि नहीं बदली।');
+    def('figWhole', 'whole period', 'संपूर्ण कालावधी', 'पूरी अवधि');
+    def('figLine', 'engine pack {a} - XLSX import {b}', 'इंजन पॅक {a} - XLSX आयात {b}', 'इंजन पैक {a} - XLSX आयात {b}');
+    def('fsMatch', 'same', 'सारखे', 'समान');
+    def('fsRule', 'business-rule difference (shown only)', 'व्यवसाय-नियमातील फरक (फक्त दाखवला)', 'व्यापार-नियम का अंतर (केवल दिखाया गया)');
+    def('fsRow', 'not comparable because the rows differ', 'ओळी वेगळ्या असल्याने तुलना होत नाही', 'पंक्तियाँ अलग होने से तुलना नहीं होती');
+    def('fsNot', 'not comparable', 'तुलना होत नाही', 'तुलना नहीं होती');
+    def('fgUnknown', 'Engine figure', 'इंजन आकडा', 'इंजन आँकड़ा');
+    def('fg_R022_INVOICE_COUNT', 'Invoice count (proposed rule: same-day cancelled bills left out)', 'इनव्हॉइस संख्या (प्रस्तावित नियम: त्याच दिवशी रद्द झालेली बिले वगळून)', 'इनवॉइस संख्या (प्रस्तावित नियम: उसी दिन रद्द बिल छोड़कर)');
+    def('xlsxNote', 'Publishing still uses the four-report XLSX import on the Import tab. One source is used for each store and period.', 'प्रकाशन अजूनही आयात टॅबवरील चार-अहवाल XLSX आयातीनेच होते. प्रत्येक स्टोअर आणि कालावधीसाठी एकच स्रोत वापरला जातो.', 'प्रकाशन अब भी आयात टैब पर चार-रिपोर्ट XLSX आयात से ही होता है। हर स्टोर और अवधि के लिए एक ही स्रोत उपयोग होता है।');
+    def('privacy', 'The pack holds no customer details. Its data is used only for checking and is released when you discard it or leave this screen.', 'पॅकमध्ये ग्राहकाचा कोणताही तपशील नसतो. त्यातील माहिती फक्त तपासणीसाठी वापरली जाते आणि रद्द केल्यावर किंवा ही स्क्रीन सोडल्यावर सोडून दिली जाते.', 'पैक में ग्राहक का कोई विवरण नहीं होता। उसकी जानकारी केवल जाँच के लिए उपयोग होती है और हटाने या इस स्क्रीन से निकलने पर छोड़ दी जाती है।');
+    /* measure labels: Latin product names stay Latin */
+    def('ms_rowCount', 'Rows', 'ओळी', 'पंक्तियाँ');
+    def('ms_net_amount', 'Net amount', 'निव्वळ रक्कम', 'शुद्ध राशि');
+    def('ms_net_value', 'Net value', 'निव्वळ मूल्य', 'शुद्ध मूल्य');
+    def('ms_quantity', 'Quantity', 'प्रमाण', 'मात्रा');
+    def('ms_invoice_quantity', 'Invoice quantity', 'इनव्हॉइस प्रमाण', 'इनवॉइस मात्रा');
+    def('ms_scheme_discount', 'Scheme discount', 'योजना सूट', 'योजना छूट');
+    def('ms_user_discount', 'Manual discount', 'मॅन्युअल सूट', 'मैनुअल छूट');
+    def('ms_tax_amount', 'Tax', 'कर', 'कर');
+    def('ms_cash_amount', 'Cash', 'रोख', 'नकद');
+    def('ms_card_amount', 'Card', 'कार्ड', 'कार्ड');
+    def('ms_bhim_upi_amount', 'UPI (BHIM)', 'UPI (BHIM)', 'UPI (BHIM)');
+    def('ms_phonepe_amount', 'PhonePe', 'PhonePe', 'PhonePe');
+    def('ms_paytm_amount', 'Paytm', 'Paytm', 'Paytm');
+    def('ms_razorpay_amount', 'Razorpay', 'Razorpay', 'Razorpay');
+    def('ms_bharatpe_amount', 'BharatPe', 'BharatPe', 'BharatPe');
+    def('ms_cheque_amount', 'Cheque', 'धनादेश', 'चेक');
+    def('ms_others_amount', 'Others', 'इतर', 'अन्य');
+    def('ms_payment_type24_amount', 'Payment type 24', 'पेमेंट प्रकार 24', 'भुगतान प्रकार 24');
+
+    /* ---- one plain reason for every refusal code (the code itself is appended by the screen and never translated) ---------------- */
+    msg('m_gate', ['TRUST_GATE_CLOSED'],
+      'Engine packs are switched off on this device. No trusted Owner key is installed, so no pack can be accepted. Use the XLSX import.',
+      'या उपकरणावर इंजन पॅक बंद आहेत. मालकाची विश्वासार्ह चावी बसवलेली नाही, म्हणून कोणताही पॅक स्वीकारता येत नाही. XLSX आयात वापरा.',
+      'इस डिवाइस पर इंजन पैक बंद हैं। मालिक की भरोसेमंद कुंजी स्थापित नहीं है, इसलिए कोई पैक स्वीकार नहीं किया जा सकता। XLSX आयात का उपयोग करें।');
+    msg('m_anchor', ['TRUST_ANCHOR_INVALID'],
+      'The trusted key list on this device is damaged, so engine packs stay switched off. Nothing was read. Tell the Owner.',
+      'या उपकरणावरील विश्वासार्ह चाव्यांची यादी खराब आहे, म्हणून इंजन पॅक बंदच राहतात. काहीही वाचले गेले नाही. मालकाला कळवा.',
+      'इस डिवाइस की भरोसेमंद कुंजियों की सूची ख़राब है, इसलिए इंजन पैक बंद ही रहते हैं। कुछ भी पढ़ा नहीं गया। मालिक को बताएँ।');
+    msg('m_crypto', ['CRYPTO_UNAVAILABLE', 'CRYPTO_FAILED'],
+      'This device could not check the pack signature, so the pack was not accepted. Nothing was kept. Tell the Owner.',
+      'हे उपकरण पॅकची सही तपासू शकले नाही, म्हणून पॅक स्वीकारला नाही. काहीही ठेवले नाही. मालकाला कळवा.',
+      'यह डिवाइस पैक का हस्ताक्षर नहीं जाँच सका, इसलिए पैक स्वीकार नहीं किया गया। कुछ भी नहीं रखा गया। मालिक को बताएँ।');
+    msg('m_damaged', ['INPUT_INVALID', 'FRAME_INVALID', 'MAGIC_INVALID'],
+      'This is not a valid engine pack, or the file is damaged. It was refused and nothing was kept. Copy it again, or export a new pack.',
+      'ही वैध इंजन पॅक फाइल नाही किंवा फाइल खराब आहे. ती नाकारली आणि काहीही ठेवले नाही. पुन्हा कॉपी करा किंवा नवीन पॅक तयार करा.',
+      'यह वैध इंजन पैक फ़ाइल नहीं है या फ़ाइल ख़राब है। उसे अस्वीकार किया गया और कुछ भी नहीं रखा गया। दोबारा कॉपी करें या नया पैक बनाएँ।');
+    msg('m_toolarge', ['FILE_TOO_LARGE'],
+      'The file is larger than the 32 MB limit for a pack and was not read. Export the pack again for one store and one period.',
+      'फाइल पॅकसाठीच्या 32 MB मर्यादेपेक्षा मोठी आहे आणि वाचली नाही. इंजनमधून एका स्टोअरसाठी आणि एका कालावधीसाठी पॅक पुन्हा तयार करा.',
+      'फ़ाइल पैक की 32 MB सीमा से बड़ी है और पढ़ी नहीं गई। इंजन से एक स्टोर और एक अवधि का पैक फिर से बनाएँ।');
+    msg('m_fileinvalid', ['FILE_INVALID'],
+      'This is not a usable pack file. Choose one .scc-etp pack file that has finished copying and is not empty.',
+      'ही वापरण्यायोग्य पॅक फाइल नाही. कॉपी पूर्ण झालेली, रिकामी नसलेली एकच .scc-etp पॅक फाइल निवडा.',
+      'यह उपयोग के लायक पैक फ़ाइल नहीं है। पूरी कॉपी हो चुकी, खाली न हो ऐसी एक .scc-etp पैक फ़ाइल चुनें।');
+    msg('m_algo', ['SIGNATURE_ALGORITHM_UNSUPPORTED'],
+      'The pack uses a signature method this app does not support. It was refused. Export it again with the current engine.',
+      'पॅक अशा सही पद्धतीचा वापर करतो जी हे ॲप समर्थित करत नाही. तो नाकारला. चालू इंजनने पुन्हा तयार करा.',
+      'पैक ऐसी हस्ताक्षर विधि का उपयोग करता है जिसे यह ऐप समर्थन नहीं देता। उसे अस्वीकार किया गया। मौजूदा इंजन से फिर बनाएँ।');
+    msg('m_keyunknown', ['KEY_UNKNOWN', 'KEY_ID_MISMATCH'],
+      'The pack is signed with a key this app does not trust. It was refused. Ask the Owner to confirm the pack came from the Owner engine.',
+      'पॅकवर अशा चावीने सही केली आहे जिच्यावर हे ॲप विश्वास ठेवत नाही. तो नाकारला. पॅक मालकाच्या इंजनमधूनच आला आहे का ते मालकाकडून तपासून घ्या.',
+      'पैक पर ऐसी कुंजी से हस्ताक्षर हैं जिस पर यह ऐप भरोसा नहीं करता। उसे अस्वीकार किया गया। मालिक से पूछें कि पैक मालिक के इंजन से ही आया है या नहीं।');
+    msg('m_sig', ['SIGNATURE_INVALID'],
+      'The signature does not match the pack, so it may have been changed after it was made. The pack was refused. Do not use this file; export a new one.',
+      'सही पॅकशी जुळत नाही, त्यामुळे तो तयार झाल्यानंतर बदलला गेला असू शकतो. पॅक नाकारला. ही फाइल वापरू नका; नवीन तयार करा.',
+      'हस्ताक्षर पैक से मेल नहीं खाता, इसलिए हो सकता है बनने के बाद उसमें बदलाव हुआ हो। पैक अस्वीकार किया गया। इस फ़ाइल का उपयोग न करें; नई बनाएँ।');
+    msg('m_format', ['MANIFEST_INVALID', 'CONTRACT_UNSUPPORTED', 'VERSION_UNSUPPORTED', 'SCHEMA_INVALID'],
+      'The pack description is missing, not in the expected format, or from a version this app does not know. The pack was refused. Export it again with the current engine.',
+      'पॅकचे वर्णन नाही, अपेक्षित स्वरूपात नाही किंवा या ॲपला माहीत नसलेल्या आवृत्तीचे आहे. पॅक नाकारला. चालू इंजनने पुन्हा तयार करा.',
+      'पैक का विवरण नहीं है, अपेक्षित रूप में नहीं है या ऐसे संस्करण का है जिसे यह ऐप नहीं जानता। पैक अस्वीकार किया गया। मौजूदा इंजन से फिर बनाएँ।');
+    msg('m_rowlimit', ['ROW_LIMIT_EXCEEDED'],
+      'The pack has more rows than the allowed limit. It was refused and nothing was kept. Export a shorter period.',
+      'पॅकमध्ये परवानगी असलेल्या मर्यादेपेक्षा जास्त ओळी आहेत. तो नाकारला आणि काहीही ठेवले नाही. कमी कालावधीचा पॅक तयार करा.',
+      'पैक में अनुमत सीमा से अधिक पंक्तियाँ हैं। उसे अस्वीकार किया गया और कुछ भी नहीं रखा गया। छोटी अवधि का पैक बनाएँ।');
+    msg('m_forbidden', ['FIELD_FORBIDDEN'],
+      'The pack contains a column that is not allowed, such as customer details. It was refused and nothing was kept. Tell the Owner; the engine export needs fixing.',
+      'पॅकमध्ये परवानगी नसलेला स्तंभ आहे, उदा. ग्राहकाचा तपशील. तो नाकारला आणि काहीही ठेवले नाही. मालकाला कळवा; इंजनची निर्यात दुरुस्त करावी लागेल.',
+      'पैक में ऐसा कॉलम है जिसकी अनुमति नहीं है, जैसे ग्राहक का विवरण। उसे अस्वीकार किया गया और कुछ भी नहीं रखा गया। मालिक को बताएँ; इंजन के निर्यात को ठीक करना होगा।');
+    msg('m_columns', ['COLUMNS_MISMATCH'],
+      'The columns in the pack are not the ones expected for this report. The pack was refused. Export it again with the current engine.',
+      'पॅकमधील स्तंभ या अहवालासाठी अपेक्षित स्तंभांसारखे नाहीत. पॅक नाकारला. चालू इंजनने पुन्हा तयार करा.',
+      'पैक के कॉलम इस रिपोर्ट के अपेक्षित कॉलम जैसे नहीं हैं। पैक अस्वीकार किया गया। मौजूदा इंजन से फिर बनाएँ।');
+    msg('m_exportrole', ['EXPORT_ROLE_REFUSED'],
+      'This pack was not exported by the Owner. Only packs exported by the Owner are accepted. Nothing was kept.',
+      'हा पॅक मालकाने तयार केलेला नाही. फक्त मालकाने तयार केलेले पॅक स्वीकारले जातात. काहीही ठेवले नाही.',
+      'यह पैक मालिक ने नहीं बनाया है। केवल मालिक द्वारा बनाए पैक स्वीकार होते हैं। कुछ भी नहीं रखा गया।');
+    msg('m_hemw', ['STORE_HEMW_BLOCKED', 'ETP_HEMW_PROFILE_AUTHORIZATION_REQUIRED'],
+      'HEMW packs are not approved yet. HEMW stays blocked until the Owner approves it. Nothing was kept.',
+      'HEMW चे पॅक अजून मंजूर नाहीत. मालकाने मंजुरी देईपर्यंत HEMW बंद राहील. काहीही ठेवले नाही.',
+      'HEMW के पैक अभी मंज़ूर नहीं हैं। मालिक की मंज़ूरी मिलने तक HEMW बंद रहेगा। कुछ भी नहीं रखा गया।');
+    msg('m_store', ['STORE_REFUSED', 'COMPARE_STORE_REFUSED'],
+      'This pack is for a store that Retail ETP does not accept. Only WLMHW packs can be checked at present.',
+      'हा पॅक रिटेल ETP स्वीकारत नसलेल्या स्टोअरचा आहे. सध्या फक्त WLMHW चे पॅक तपासता येतात.',
+      'यह पैक ऐसे स्टोर का है जिसे Retail ETP स्वीकार नहीं करता। अभी केवल WLMHW के पैक जाँचे जा सकते हैं।');
+    msg('m_period', ['PERIOD_INVALID'],
+      'The dates in the pack are not valid for this app: a pack must lie inside one financial year, start on or after 1 April 2024 and not end in the future. The pack was refused.',
+      'पॅकमधील तारखा या ॲपसाठी वैध नाहीत: पॅक एकाच आर्थिक वर्षात असावा, 1 एप्रिल 2024 किंवा नंतर सुरू व्हावा आणि भविष्यात संपू नये. पॅक नाकारला.',
+      'पैक की तारीखें इस ऐप के लिए वैध नहीं हैं: पैक एक ही वित्तीय वर्ष के भीतर हो, 1 अप्रैल 2024 या उसके बाद शुरू हो और भविष्य में समाप्त न हो। पैक अस्वीकार किया गया।');
+    msg('m_incomplete', ['PERIOD_INCOMPLETE'],
+      'The engine has not finalised every day of this period. The pack was refused. Finalise the days in the engine, then export again.',
+      'इंजनने या कालावधीतील प्रत्येक दिवस अंतिम केलेला नाही. पॅक नाकारला. इंजनमध्ये दिवस अंतिम करा, मग पुन्हा तयार करा.',
+      'इंजन ने इस अवधि के हर दिन को अंतिम नहीं किया है। पैक अस्वीकार किया गया। इंजन में दिन अंतिम करें, फिर दोबारा बनाएँ।');
+    msg('m_dict', ['TENDER_DICTIONARY_MISMATCH'],
+      'The pack uses a different payment-type list than this app. It was refused. The Owner must approve a new list before such packs can be used.',
+      'पॅक या ॲपपेक्षा वेगळी पेमेंट-प्रकार यादी वापरतो. तो नाकारला. असे पॅक वापरण्यापूर्वी मालकाने नवी यादी मंजूर करावी लागेल.',
+      'पैक इस ऐप से अलग भुगतान-प्रकार सूची का उपयोग करता है। उसे अस्वीकार किया गया। ऐसे पैक के उपयोग से पहले मालिक को नई सूची मंज़ूर करनी होगी।');
+    msg('m_hash', ['HASH_MISMATCH'],
+      'A file inside the pack does not match its recorded fingerprint (hash). The pack was refused. Copy it again, or export a new pack.',
+      'पॅकमधील एक फाइल नोंदलेल्या हॅशशी जुळत नाही. पॅक नाकारला. पुन्हा कॉपी करा किंवा नवीन पॅक तयार करा.',
+      'पैक के अंदर की एक फ़ाइल दर्ज हैश से मेल नहीं खाती। पैक अस्वीकार किया गया। दोबारा कॉपी करें या नया पैक बनाएँ।');
+    msg('m_row', ['ROW_INVALID'],
+      'A row or value in the pack is invalid or over the allowed size. The pack was refused. Export it again, and tell the Owner if it happens again.',
+      'पॅकमधील एखादी ओळ किंवा किंमत अवैध आहे किंवा परवानगीपेक्षा मोठी आहे. पॅक नाकारला. पुन्हा तयार करा, पुन्हा झाल्यास मालकाला कळवा.',
+      'पैक की कोई पंक्ति या मान अमान्य है या अनुमत आकार से बड़ा है। पैक अस्वीकार किया गया। फिर से बनाएँ, दोबारा हो तो मालिक को बताएँ।');
+    msg('m_rowperiod', ['ROW_OUT_OF_PERIOD'],
+      'A row in the pack has a date outside the pack period. The pack was refused. Export it again.',
+      'पॅकमधील एका ओळीची तारीख पॅकच्या कालावधीबाहेर आहे. पॅक नाकारला. पुन्हा तयार करा.',
+      'पैक की एक पंक्ति की तारीख पैक की अवधि से बाहर है। पैक अस्वीकार किया गया। फिर से बनाएँ।');
+    msg('m_rowcount', ['ROW_COUNT_MISMATCH'],
+      'The number of rows in a file does not match the count recorded in the pack. The pack was refused. Copy it again, or export a new pack.',
+      'फाइलमधील ओळींची संख्या पॅकमध्ये नोंदलेल्या संख्येशी जुळत नाही. पॅक नाकारला. पुन्हा कॉपी करा किंवा नवीन पॅक तयार करा.',
+      'फ़ाइल की पंक्तियों की संख्या पैक में दर्ज संख्या से मेल नहीं खाती। पैक अस्वीकार किया गया। दोबारा कॉपी करें या नया पैक बनाएँ।');
+    msg('m_totals', ['TOTALS_MISMATCH'],
+      'The rows in the pack do not add up exactly to the engine totals. The pack was refused. Nothing is shown or kept. Tell the Owner.',
+      'पॅकमधील ओळींची बेरीज इंजनच्या एकूणाशी अचूक जुळत नाही. पॅक नाकारला. काहीही दाखवले किंवा ठेवले नाही. मालकाला कळवा.',
+      'पैक की पंक्तियों का जोड़ इंजन के कुल से ठीक-ठीक नहीं मिलता। पैक अस्वीकार किया गया। कुछ भी दिखाया या रखा नहीं गया। मालिक को बताएँ।');
+    msg('m_internal', ['INTERNAL_ERROR', 'VERIFY_FAILED'],
+      'The check could not be completed. Nothing was kept or changed.',
+      'तपासणी पूर्ण करता आली नाही. काहीही ठेवले किंवा बदलले नाही.',
+      'जाँच पूरी नहीं हो सकी। कुछ भी नहीं रखा या बदला गया।');
+    msg('m_request', ['REQUEST_INVALID'],
+      'The request to the secure gateway was not valid. Nothing was read or changed. Close this screen and try again.',
+      'सुरक्षित गेटवेला पाठवलेली विनंती वैध नव्हती. काहीही वाचले किंवा बदलले नाही. ही स्क्रीन बंद करून पुन्हा प्रयत्न करा.',
+      'सुरक्षित गेटवे को भेजा गया अनुरोध वैध नहीं था। कुछ भी पढ़ा या बदला नहीं गया। यह स्क्रीन बंद करके फिर कोशिश करें।');
+    msg('m_session', ['SESSION_INVALID'],
+      'The Owner session could not be confirmed. Nothing was read. Sign in again and retry.',
+      'मालकाचे सत्र निश्चित करता आले नाही. काहीही वाचले नाही. पुन्हा साइन इन करून प्रयत्न करा.',
+      'मालिक का सत्र पक्का नहीं हो सका। कुछ भी पढ़ा नहीं गया। फिर से साइन इन करके कोशिश करें।');
+    msg('m_role', ['ROLE_REFUSED'],
+      'This role may not check engine packs. Only the Owner, or the Store Manager with Owner approval, can. Nothing was read.',
+      'या भूमिकेला इंजन पॅक तपासता येत नाहीत. फक्त मालक, किंवा मालकाच्या मंजुरीसह दुकान व्यवस्थापक, तपासू शकतो. काहीही वाचले नाही.',
+      'इस भूमिका को इंजन पैक जाँचने की अनुमति नहीं है। केवल मालिक, या मालिक की मंज़ूरी के साथ स्टोर मैनेजर, जाँच सकता है। कुछ भी पढ़ा नहीं गया।');
+    msg('m_reauth', ['REAUTH_DENIED'],
+      'Owner approval was not given, so the pack was not read. Try again and enter the Owner PIN.',
+      'मालकाची मंजुरी मिळाली नाही, म्हणून पॅक वाचला नाही. पुन्हा प्रयत्न करा आणि मालकाचा पिन टाका.',
+      'मालिक की मंज़ूरी नहीं मिली, इसलिए पैक पढ़ा नहीं गया। फिर कोशिश करें और मालिक का पिन डालें।');
+    msg('m_access', ['ETP_ACCESS_DENIED'],
+      'Owner approval was not given, or this role may not check packs. Only the Owner, or the Store Manager with Owner approval, can check a pack. Nothing was read.',
+      'मालकाची मंजुरी मिळाली नाही, किंवा या भूमिकेला पॅक तपासता येत नाही. पॅक फक्त मालक किंवा मालकाच्या मंजुरीसह दुकान व्यवस्थापक तपासू शकतो. काहीही वाचले गेले नाही.',
+      'मालिक की मंज़ूरी नहीं मिली, या इस भूमिका को पैक जाँचने की अनुमति नहीं है। पैक केवल मालिक, या मालिक की मंज़ूरी के साथ स्टोर मैनेजर, जाँच सकता है। कुछ भी पढ़ा नहीं गया।');
+    msg('m_busy', ['BUSY'],
+      'Another pack check is already running. Wait for it to finish, then try again.',
+      'दुसरी पॅक तपासणी आधीच सुरू आहे. ती संपेपर्यंत थांबा, मग पुन्हा प्रयत्न करा.',
+      'एक और पैक जाँच पहले से चल रही है। उसके पूरा होने तक रुकें, फिर कोशिश करें।');
+    msg('m_stale', ['STAGE_INVALID'],
+      'The checked pack is no longer held in memory. Choose the pack file again.',
+      'तपासलेला पॅक आता स्मृतीत नाही. पॅक फाइल पुन्हा निवडा.',
+      'जाँचा गया पैक अब स्मृति में नहीं है। पैक फ़ाइल फिर से चुनें।');
+    msg('m_comparefailed', ['COMPARE_FAILED'],
+      'The comparison could not be completed. Nothing was changed. Discard the pack and try again.',
+      'तुलना पूर्ण करता आली नाही. काहीही बदलले नाही. पॅक रद्द करून पुन्हा प्रयत्न करा.',
+      'तुलना पूरी नहीं हो सकी। कुछ भी नहीं बदला। पैक हटाकर फिर कोशिश करें।');
+    msg('m_unavailable', ['UNAVAILABLE'],
+      'The secure ETP gateway is unavailable. Nothing can be read or changed.',
+      'सुरक्षित ETP गेटवे अनुपलब्ध आहे. काहीही वाचता किंवा बदलता येत नाही.',
+      'सुरक्षित ETP गेटवे अनुपलब्ध है। कुछ भी पढ़ा या बदला नहीं जा सकता।');
+    msg('m_response', ['RESPONSE_INVALID'],
+      'The secure gateway gave an unexpected answer. Nothing was changed.',
+      'सुरक्षित गेटवेने अनपेक्षित उत्तर दिले. काहीही बदलले नाही.',
+      'सुरक्षित गेटवे ने अनपेक्षित उत्तर दिया। कुछ भी नहीं बदला।');
+    msg('m_reimport', ['ETP_REIMPORT_REQUIRED'],
+      'The XLSX import for this period is locked after a restore. Import the four reports again, then compare.',
+      'रिस्टोअरनंतर या कालावधीची XLSX आयात लॉक आहे. चारही अहवाल पुन्हा आयात करा, मग तुलना करा.',
+      'रीस्टोर के बाद इस अवधि का XLSX आयात लॉक है। चारों रिपोर्ट फिर आयात करें, फिर तुलना करें।');
+    msg('m_nobase', ['COMPARE_NO_TABLET_GENERATION'],
+      'No XLSX import has been published for this store and period, so there is nothing to compare with. The pack is checked and held in memory only. To compare, import the four XLSX reports on the Import tab.',
+      'या स्टोअर आणि कालावधीसाठी कोणतीही XLSX आयात प्रकाशित झालेली नाही, म्हणून तुलना करण्यासाठी काही नाही. पॅक तपासला असून फक्त स्मृतीत आहे. तुलना करण्यासाठी आयात टॅबवर चारही XLSX अहवाल आयात करा.',
+      'इस स्टोर और अवधि के लिए कोई XLSX आयात प्रकाशित नहीं हुआ है, इसलिए तुलना के लिए कुछ नहीं है। पैक जाँचा जा चुका है और केवल स्मृति में है। तुलना के लिए आयात टैब पर चारों XLSX रिपोर्ट आयात करें।');
+    msg('m_c_input', ['COMPARE_INPUT_INVALID', 'COMPARE_PACK_NOT_VERIFIED'],
+      'The comparison could not start because the pack or the request was not valid. Nothing was changed. Discard the pack and check it again.',
+      'पॅक किंवा विनंती वैध नसल्याने तुलना सुरू करता आली नाही. काहीही बदलले नाही. पॅक रद्द करून पुन्हा तपासा.',
+      'पैक या अनुरोध वैध न होने से तुलना शुरू नहीं हो सकी। कुछ भी नहीं बदला। पैक हटाकर फिर जाँचें।');
+    msg('m_c_scope', ['COMPARE_SCOPE_MISMATCH'],
+      'The store, year and dates of the pack do not match the XLSX import being compared. Nothing was compared.',
+      'पॅकचे स्टोअर, वर्ष आणि तारखा तुलना होत असलेल्या XLSX आयातीशी जुळत नाहीत. काहीही तुलना केली नाही.',
+      'पैक का स्टोर, वर्ष और तारीखें तुलना हो रहे XLSX आयात से मेल नहीं खातीं। कुछ भी तुलना नहीं की गई।');
+    msg('m_c_incomplete', ['COMPARE_TABLET_READ_INCOMPLETE'],
+      'The XLSX import could not be read completely, so it was not compared. Import the four reports again, then compare.',
+      'XLSX आयात पूर्णपणे वाचता आली नाही, म्हणून तुलना केली नाही. चारही अहवाल पुन्हा आयात करा, मग तुलना करा.',
+      'XLSX आयात पूरी तरह पढ़ा नहीं जा सका, इसलिए तुलना नहीं की गई। चारों रिपोर्ट फिर आयात करें, फिर तुलना करें।');
+    msg('m_c_missing', ['COMPARE_REPORT_MISSING'],
+      'A report is missing on one side, so it could not be compared.',
+      'एका बाजूला अहवाल उपलब्ध नाही, म्हणून तुलना करता आली नाही.',
+      'एक तरफ़ रिपोर्ट उपलब्ध नहीं है, इसलिए तुलना नहीं हो सकी।');
+    msg('m_c_rowlimit', ['COMPARE_ROW_LIMIT_EXCEEDED'],
+      'A report has more rows than the comparison allows, so it could not be compared.',
+      'अहवालात तुलनेसाठी परवानगी असलेल्यापेक्षा जास्त ओळी आहेत, म्हणून तुलना करता आली नाही.',
+      'रिपोर्ट में तुलना के लिए अनुमत से अधिक पंक्तियाँ हैं, इसलिए तुलना नहीं हो सकी।');
+    msg('m_c_shape', ['COMPARE_ROW_SHAPE_INVALID'],
+      'A row has an unexpected shape, so the report could not be compared.',
+      'एका ओळीचे स्वरूप अपेक्षित नाही, म्हणून अहवालाची तुलना करता आली नाही.',
+      'एक पंक्ति का रूप अपेक्षित नहीं है, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_c_value', ['COMPARE_ROW_VALUE_UNPARSEABLE'],
+      'A value could not be read exactly, for example it has more decimal places than allowed, so the report could not be compared.',
+      'एक किंमत अचूक वाचता आली नाही, उदा. अनुमतीपेक्षा जास्त दशांश स्थाने आहेत, म्हणून अहवालाची तुलना करता आली नाही.',
+      'एक मान ठीक-ठीक पढ़ा नहीं जा सका, जैसे अनुमत से अधिक दशमलव स्थान हैं, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_c_txn', ['COMPARE_TXN_TYPE_UNKNOWN'],
+      'A row has a transaction type other than INV, SR or BC, so the report could not be compared.',
+      'एका ओळीचा व्यवहार प्रकार INV, SR किंवा BC नाही, म्हणून अहवालाची तुलना करता आली नाही.',
+      'एक पंक्ति का लेन-देन प्रकार INV, SR या BC नहीं है, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_c_count', ['COMPARE_TABLET_COUNT_MISMATCH'],
+      'The rows read from the XLSX import do not match its recorded row count, so the report could not be compared.',
+      'XLSX आयातीतून वाचलेल्या ओळी नोंदलेल्या ओळींच्या संख्येशी जुळत नाहीत, म्हणून अहवालाची तुलना करता आली नाही.',
+      'XLSX आयात से पढ़ी गई पंक्तियाँ दर्ज संख्या से मेल नहीं खातीं, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_c_overflow', ['COMPARE_AGGREGATE_OVERFLOW'],
+      'A total is too large to compare exactly, so the report could not be compared.',
+      'एक एकूण अचूक तुलनेसाठी खूप मोठा आहे, म्हणून अहवालाची तुलना करता आली नाही.',
+      'एक कुल ठीक-ठीक तुलना के लिए बहुत बड़ा है, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_c_packtotals', ['COMPARE_PACK_TOTALS_INCONSISTENT'],
+      'The pack rows do not add up to the pack totals, so the report could not be compared.',
+      'पॅकमधील ओळींची बेरीज पॅकच्या एकूणाशी जुळत नाही, म्हणून अहवालाची तुलना करता आली नाही.',
+      'पैक की पंक्तियों का जोड़ पैक के कुल से नहीं मिलता, इसलिए रिपोर्ट की तुलना नहीं हो सकी।');
+    msg('m_f_pairing', ['COMPARE_PAIRING_AMBIGUOUS'],
+      'Some invoice lines could not be paired one to one. Sums were still compared, but the result is weaker for those lines.',
+      'काही इनव्हॉइस ओळी एकास एक जुळवता आल्या नाहीत. बेरजांची तुलना झाली, पण त्या ओळींसाठी निकाल कमी बळकट आहे.',
+      'कुछ इनवॉइस पंक्तियाँ एक-से-एक नहीं मिलाई जा सकीं। जोड़ की तुलना हुई, पर उन पंक्तियों के लिए नतीजा कमज़ोर है।');
+    msg('m_f_zero', ['COMPARE_LEADING_ZERO_KEY_SUSPECT'],
+      'Some invoice numbers differ only by leading zeros. Check the numbers in both sources.',
+      'काही इनव्हॉइस क्रमांकांत फक्त सुरुवातीच्या शून्यांचा फरक आहे. दोन्ही स्रोतांतील क्रमांक तपासा.',
+      'कुछ इनवॉइस नंबरों में केवल शुरुआती शून्य का अंतर है। दोनों स्रोतों के नंबर जाँचें।');
+    msg('m_f_sign', ['COMPARE_SIGN_CONVENTION_SUSPECT'],
+      'Sales returns may be stored with the opposite sign in one source. Check the signs.',
+      'एका स्रोतात विक्री परतावे उलट चिन्हाने साठवलेले असू शकतात. चिन्हे तपासा.',
+      'एक स्रोत में बिक्री वापसी उलटे चिह्न के साथ रखी हो सकती है। चिह्न जाँचें।');
+    msg('m_f_days', ['COMPARE_DAYS_TRUNCATED'],
+      'Only the first days with differences are kept. More days differ than are listed.',
+      'फरक असलेले फक्त पहिले दिवस ठेवले आहेत. दाखवलेल्यांपेक्षा जास्त दिवसांत फरक आहे.',
+      'अंतर वाले केवल पहले दिन रखे गए हैं। दिखाए गए दिनों से अधिक दिनों में अंतर है।');
+
+    /* ---- small pure helpers ------------------------------------------------------------------------------------------------------ */
+    function isObj(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+    function own(object, key) { return Object.prototype.hasOwnProperty.call(object, key); }
+    function get(object, key) { return isObj(object) && own(object, key) ? object[key] : undefined; }
+    function str(value, pattern) { return typeof value === 'string' && pattern.test(value); }
+    function safeInt(value, min, max) { return typeof value === 'number' && isFinite(value) && Math.floor(value) === value && value >= min && value <= max; }
+    function fmt(template, params) {
+      var out = String(template);
+      for (var key in params) if (own(params, key)) out = out.split('{' + key + '}').join(String(params[key]));
+      return out;
+    }
+    function cleanName(name) { return String(name).replace(RE.hidden, ' ').slice(0, MAX_NAME_SHOWN); }
+    function sizeLabel(bytes) { return bytes >= 1048576 ? (bytes / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(bytes / 1024)) + ' KB'; }
+    /* Indian digit grouping for 2-place money strings; everything else is shown exactly as the facade gave it. */
+    function show(value) {
+      if (value === null || value === undefined) return '-';
+      var parts = /^(-?)(\d+)\.(\d{2})$/.exec(String(value));
+      if (!parts) return String(value);
+      var whole = parts[2];
+      if (whole.length > 3) whole = whole.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + whole.slice(-3);
+      return parts[1] + whole + '.' + parts[3];
+    }
+    function sentenceKey(code) { return own(CODE_MSG, code) ? CODE_MSG[code] : 'm_internal'; }
+
+    /* ---- reading the facade answers: anything unexpected becomes ETP_BRIDGE_RESPONSE_INVALID ----------------------------------- */
+    function detailOf(response) {
+      var detail = {}, any = false, report = get(response, 'report'), field = get(response, 'field'), line = get(response, 'line');
+      if (typeof report === 'string' && REPORTS.indexOf(report) >= 0) { detail.report = report; any = true; }
+      if (str(field, RE.field)) { detail.field = field; any = true; }
+      if (safeInt(line, 1, 99999999)) { detail.line = line; any = true; }
+      return any ? detail : null;
+    }
+    function failureOf(response) {
+      var code = get(response, 'code');
+      return { ok: false, code: str(code, RE.code) ? code : VERIFY_FAILED, detail: detailOf(response) };
+    }
+    function readStatus(response) {
+      if (!isObj(response)) return { ok: false, code: RESPONSE_INVALID, detail: null };
+      if (get(response, 'ok') === false) return failureOf(response);
+      var gate = get(response, 'gate'), access = get(response, 'access'), max = get(response, 'maxBytes');
+      if (get(response, 'ok') !== true || (gate !== 'CLOSED' && gate !== 'OPEN') || ['OWNER', 'REAUTH', 'DENIED'].indexOf(access) < 0 || !safeInt(max, 1, MAX_BYTES)) {
+        return { ok: false, code: RESPONSE_INVALID, detail: null };
+      }
+      return { ok: true, gate: gate, access: access, maxBytes: max };
+    }
+    function readStage(response) {
+      var bad = { ok: false, code: RESPONSE_INVALID, detail: null };
+      if (!isObj(response)) return bad;
+      if (get(response, 'ok') === false) return failureOf(response);
+      if (get(response, 'ok') !== true || get(response, 'state') !== 'STAGED' || get(response, 'appliedToCalculations') !== false || get(response, 'publishes') !== false) return bad;
+      var tokenText = get(response, 'stageToken'), pack = get(response, 'pack');
+      if (!str(tokenText, RE.token) || !isObj(pack)) return bad;
+      var rows = get(pack, 'rows'), checks = get(pack, 'checks'), out = { rows: {} }, i;
+      if (!str(get(pack, 'storeCode'), RE.store) || !str(get(pack, 'financialYear'), RE.fy) || !str(get(pack, 'periodStart'), RE.date) || !str(get(pack, 'periodEnd'), RE.date) ||
+          !safeInt(get(pack, 'engineGeneration'), 1, 99999) || !str(get(pack, 'createdAtUtc'), RE.stamp) || !str(get(pack, 'engineVersion'), RE.version) ||
+          !str(get(pack, 'keyId'), RE.key16) || !str(get(pack, 'exportId8'), RE.id8) || !str(get(pack, 'finalisedThrough'), RE.date) || !isObj(rows) || !isObj(checks)) return bad;
+      for (i = 0; i < REPORTS.length; i += 1) if (!safeInt(get(rows, REPORTS[i]), 0, 100000000)) return bad;
+      var checkNames = ['signature', 'hashes', 'totals', 'store', 'period', 'dictionary'];
+      for (i = 0; i < checkNames.length; i += 1) if (get(checks, checkNames[i]) !== 'OK') return bad;
+      out.storeCode = pack.storeCode; out.financialYear = pack.financialYear; out.periodStart = pack.periodStart; out.periodEnd = pack.periodEnd;
+      out.engineGeneration = pack.engineGeneration; out.createdAtUtc = pack.createdAtUtc; out.engineVersion = pack.engineVersion; out.keyId = pack.keyId;
+      out.exportId8 = pack.exportId8; out.finalisedThrough = pack.finalisedThrough;
+      for (i = 0; i < REPORTS.length; i += 1) out.rows[REPORTS[i]] = rows[REPORTS[i]];
+      return { ok: true, token: tokenText, pack: out };
+    }
+    function codeList(list, max) {
+      if (!Array.isArray(list) || list.length > max) return null;
+      var out = [];
+      for (var i = 0; i < list.length; i += 1) { if (!str(list[i], RE.code)) return null; out.push(list[i]); }
+      return out;
+    }
+    function readCompare(response) {
+      var bad = { ok: false, code: RESPONSE_INVALID, detail: null };
+      if (!isObj(response)) return bad;
+      if (get(response, 'ok') === false) return failureOf(response);
+      if (get(response, 'ok') !== true || get(response, 'state') !== 'COMPARED' || get(response, 'appliedToCalculations') !== false || get(response, 'publishes') !== false) return bad;
+      var outcome = get(response, 'outcome'), reasons = codeList(get(response, 'reasonCodes'), 20), base = get(response, 'baseline');
+      var reports = get(response, 'reports'), figures = get(response, 'figures'), i, j;
+      if (OUTCOMES.indexOf(outcome) < 0 || !reasons || !isObj(base) || !isObj(reports) || !Array.isArray(figures) || figures.length > 32 || Object.keys(reports).length !== REPORTS.length) return bad;
+      var generation = get(base, 'generation8');
+      if (generation !== null && !str(generation, RE.id8)) return bad;
+      var out = { outcome: outcome, reasonCodes: reasons, generation8: generation, reports: {}, figures: [] };
+      for (i = 0; i < REPORTS.length; i += 1) {
+        var item = get(reports, REPORTS[i]);
+        if (!isObj(item)) return bad;
+        var status = get(item, 'status'), why = codeList(get(item, 'reasonCodes'), 20), flags = codeList(get(item, 'flags'), 10), days = get(item, 'daysDiffering');
+        var measures = get(item, 'measures'), diffs = get(item, 'differences'), kept = { status: status, reasonCodes: why, flags: flags, daysDiffering: days, measures: [], differences: [] };
+        if (OUTCOMES.indexOf(status) < 0 || !why || !flags || !safeInt(days, 0, 100000000) || !Array.isArray(measures) || measures.length > 24 || !Array.isArray(diffs) || diffs.length > MAX_DIFFERENCES) return bad;
+        for (j = 0; j < measures.length; j += 1) {
+          var one = measures[j];
+          if (!isObj(one) || !str(get(one, 'key'), RE.name) || !str(get(one, 'pack'), RE.number) || !str(get(one, 'tablet'), RE.number)) return bad;
+          kept.measures.push({ key: one.key, pack: one.pack, tablet: one.tablet });
+        }
+        for (j = 0; j < diffs.length; j += 1) {
+          var diff = diffs[j];
+          if (!isObj(diff) || !str(get(diff, 'date'), RE.date) || !str(get(diff, 'key'), RE.name) || !str(get(diff, 'pack'), RE.number) || !str(get(diff, 'tablet'), RE.number)) return bad;
+          kept.differences.push({ date: diff.date, key: diff.key, pack: diff.pack, tablet: diff.tablet });
+        }
+        out.reports[REPORTS[i]] = kept;
+      }
+      for (i = 0; i < figures.length; i += 1) {
+        var figure = figures[i], date = get(figure, 'date'), packValue = get(figure, 'pack'), tabletValue = get(figure, 'tablet');
+        if (!isObj(figure) || !str(get(figure, 'figureId'), RE.figure) || REPORTS.indexOf(get(figure, 'reportId')) < 0 || (date !== null && !str(date, RE.date)) ||
+            FIGURE_STATUSES.indexOf(get(figure, 'status')) < 0 || (packValue !== null && !str(packValue, RE.whole)) || (tabletValue !== null && !str(tabletValue, RE.whole))) return bad;
+        out.figures.push({ figureId: figure.figureId, reportId: figure.reportId, date: date, status: figure.status, pack: packValue, tablet: tabletValue });
+      }
+      return { ok: true, result: out };
+    }
+
+    /* ---- the screen ---------------------------------------------------------------------------------------------------------------- */
+    function create(env) {
+      var doc = env.document;
+      var access = 'pending', accessCode = '', reauthHint = false, limit = MAX_BYTES;
+      var phase = 'idle', pickedFile = null, pickedInfo = null, staged = null, token = '', result = null;
+      var notice = { idle: true, kind: '', keys: ['nStatus'], code: '', detail: null };
+      var seq = 0, destroyed = false, focusId = '', lastCleanup = null;
+
+      function $(id) { return doc.getElementById(id); }
+      function lang() { var value = env.language(); return LANGS.indexOf(value) >= 0 ? value : 'en'; }
+      function T(key, params) {
+        var table = STR[lang()], text = table && own(table, key) ? table[key] : STR.en[key];
+        return params ? fmt(text, params) : text;
+      }
+      function busy() { return phase === 'checking' || phase === 'comparing' || phase === 'discarding'; }
+      function el(tag, className, text) {
+        var node = doc.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+      }
+      function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+      function codeEl(text) { var node = el('code', '', text); node.setAttribute('lang', 'en'); return node; }
+      function clearInput() { var input = $('etpBridgeFile'); if (input) input.value = ''; }
+      function measureLabel(key) { var id = 'ms_' + key; return own(STR.en, id) ? T(id) : key.replace(/_/g, ' '); }
+
+      /* ---- notices ---- */
+      function noticeOf(kind, keys) { return { idle: false, kind: kind, keys: keys, code: '', detail: null }; }
+      function failureNotice(code, detail) { return { idle: false, kind: 'error', keys: [], code: code, detail: detail || null }; }
+      function idleNotice() {
+        var keys = ['nStatus'];
+        if (access === 'ready') keys = reauthHint ? ['nIdle', 'nReauth'] : ['nIdle'];
+        else if (access !== 'pending') keys = ['nOff'];
+        notice = { idle: true, kind: '', keys: keys, code: '', detail: null };
+      }
+
+      /* ---- drawing (text only: no markup is ever built from a string) ---- */
+      function hydrate() {
+        var nodes = doc.querySelectorAll('[data-etp-b]');
+        for (var i = 0; i < nodes.length; i += 1) {
+          var key = nodes[i].getAttribute('data-etp-b');
+          if (own(STR.en, key)) nodes[i].textContent = T(key);
+        }
+      }
+      function drawGate() {
+        var card = $('etpBridgeGate'), visible = access !== 'ready' && access !== 'pending', title = '', text = '', code = '';
+        card.hidden = !visible;
+        if (!visible) return;
+        if (access === 'closed') { title = T('gateTitle'); text = T('gateWhy'); code = 'GATE-ETP-BRIDGE-TRUST'; }
+        else if (access === 'denied') { title = T('deniedTitle'); text = T('deniedText'); }
+        else { title = T('unavailTitle'); text = T(sentenceKey(accessCode)); code = accessCode; }
+        $('etpBridgeGateTitle').textContent = title;
+        $('etpBridgeGateText').textContent = text;
+        var codeNode = $('etpBridgeGateCode');
+        codeNode.textContent = code;
+        codeNode.hidden = code === '';
+      }
+      function drawNotice() {
+        var node = $('etpBridgeNotice'), parts = [], i;
+        clear(node);
+        node.className = 'notice' + (notice.kind ? ' ' + notice.kind : '');
+        node.setAttribute('role', notice.kind === 'error' ? 'alert' : 'status');
+        node.setAttribute('aria-live', notice.kind === 'error' ? 'assertive' : 'polite');
+        for (i = 0; i < notice.keys.length; i += 1) parts.push(T(notice.keys[i]));
+        if (notice.code) parts.push(T(sentenceKey(notice.code)));
+        node.appendChild(doc.createTextNode(parts.join(' ')));
+        if (notice.code) {
+          node.appendChild(doc.createTextNode(' ('));
+          node.appendChild(codeEl(notice.code));
+          node.appendChild(doc.createTextNode(')'));
+        }
+        if (notice.detail) {
+          var bits = [], line = el('div', '');
+          if (notice.detail.report) bits.push(notice.detail.report);
+          if (notice.detail.field) bits.push(notice.detail.field);
+          if (notice.detail.line) bits.push(T('whereLine') + ' ' + notice.detail.line);
+          line.appendChild(doc.createTextNode(T('where') + ' '));
+          line.appendChild(codeEl(bits.join(' / ')));
+          node.appendChild(line);
+        }
+      }
+      function drawPicker() {
+        var open = access === 'ready' && phase === 'idle';
+        $('etpBridgeFile').disabled = !open;
+        $('etpBridgeFileField').className = 'file-field' + (open ? '' : ' etp-b-off');
+        $('etpBridgeCheck').disabled = !(open && pickedFile);
+        $('etpBridgeFileName').textContent = pickedInfo ? T('picked', { name: pickedInfo.name, size: sizeLabel(pickedInfo.size) }) : T('pickHint');
+      }
+      function fact(label, value) {
+        var box = el('div', 'metric'), strong = el('strong', '');
+        box.appendChild(el('small', '', label));
+        if (typeof value === 'string') strong.textContent = value; else strong.appendChild(value);
+        box.appendChild(strong);
+        return box;
+      }
+      function drawStaged() {
+        var card = $('etpBridgeStaged'), visible = !!staged && phase !== 'idle' && phase !== 'checking';
+        card.hidden = !visible;
+        $('etpBridgeCompareBtn').disabled = phase !== 'staged';
+        $('etpBridgeDiscard').disabled = phase !== 'staged';
+        var facts = $('etpBridgeFacts'), rows = $('etpBridgeRows'), checks = $('etpBridgeChecks');
+        clear(facts); clear(rows); clear(checks);
+        if (!visible) return;
+        facts.appendChild(fact(T('fStore'), staged.storeCode));
+        facts.appendChild(fact(T('fFy'), staged.financialYear));
+        facts.appendChild(fact(T('fPeriod'), staged.periodStart + ' – ' + staged.periodEnd));
+        facts.appendChild(fact(T('fGen'), String(staged.engineGeneration)));
+        facts.appendChild(fact(T('fCreated'), staged.createdAtUtc));
+        facts.appendChild(fact(T('fVersion'), staged.engineVersion));
+        facts.appendChild(fact(T('fThrough'), staged.finalisedThrough));
+        facts.appendChild(fact(T('fKey'), codeEl(staged.keyId)));
+        facts.appendChild(fact(T('fExport'), codeEl(staged.exportId8)));
+        for (var i = 0; i < REPORTS.length; i += 1) {
+          var chip = el('div', 'coverage-item');
+          chip.appendChild(el('strong', '', REPORTS[i]));
+          chip.appendChild(el('small', '', T('rowsN', { n: staged.rows[REPORTS[i]] })));
+          rows.appendChild(chip);
+        }
+        var names = ['cSig', 'cHash', 'cTotals', 'cStore', 'cPeriod', 'cDict'];
+        for (var k = 0; k < names.length; k += 1) {
+          var item = el('li', ''), mark = el('strong', '', T('ok') + ' ');
+          mark.appendChild(el('span', '', '✓')).setAttribute('aria-hidden', 'true');
+          item.appendChild(el('span', '', T(names[k])));
+          item.appendChild(mark);
+          checks.appendChild(item);
+        }
+      }
+      function statusWord(status) { return T(status === 'MATCH' ? 'stMatch' : (status === 'DIFFERENCES' ? 'stDiff' : 'stCannot')); }
+      function glyph(status) { var node = el('span', '', status === 'MATCH' ? '✓' : (status === 'DIFFERENCES' ? '≠' : '?')); node.setAttribute('aria-hidden', 'true'); return node; }
+      function figureStatusWord(status) {
+        return T(status === 'MATCH' ? 'fsMatch' : (status === 'BUSINESS_RULE_DIFFERENCE' ? 'fsRule' : (status === 'ROW_DIFFERENCE_PRESENT' ? 'fsRow' : 'fsNot')));
+      }
+      function drawReasons(host, codes, title) {
+        if (!codes.length) return;
+        host.appendChild(el('h5', '', title));
+        var list = el('ul', 'history-items');
+        for (var i = 0; i < codes.length; i += 1) {
+          var item = el('li', '', T(sentenceKey(codes[i])) + ' (');
+          item.appendChild(codeEl(codes[i]));
+          item.appendChild(doc.createTextNode(')'));
+          list.appendChild(item);
+        }
+        host.appendChild(list);
+      }
+      function drawReport(host, id, report) {
+        var block = el('div', 'etp-b-block ' + (report.status === 'MATCH' ? 'etp-b-ok' : 'etp-b-diff')), i;
+        var heading = el('h4', '', id + ' - ' + statusWord(report.status) + ' ');
+        heading.appendChild(glyph(report.status));
+        block.appendChild(heading);
+        drawReasons(block, report.reasonCodes, T('reasonsTitle'));
+        if (report.status !== 'CANNOT_COMPARE') {
+          var head = el('div', 'etp-b-row etp-b-head');
+          head.appendChild(el('span', '', T('colMeasure')));
+          head.appendChild(el('span', 'etp-b-num', T('colPack')));
+          head.appendChild(el('span', 'etp-b-num', T('colXlsx')));
+          block.appendChild(head);
+          for (i = 0; i < report.measures.length; i += 1) {
+            var row = el('div', 'etp-b-row'), packCell = el('span', 'etp-b-num', show(report.measures[i].pack)), tabletCell = el('span', 'etp-b-num', show(report.measures[i].tablet));
+            packCell.setAttribute('data-label', T('colPack'));
+            tabletCell.setAttribute('data-label', T('colXlsx'));
+            row.appendChild(el('span', '', measureLabel(report.measures[i].key)));
+            row.appendChild(packCell);
+            row.appendChild(tabletCell);
+            block.appendChild(row);
+          }
+          if (report.daysDiffering > 0) block.appendChild(el('p', '', T('daysDiffer', { n: report.daysDiffering })));
+          if (report.differences.length) {
+            block.appendChild(el('h5', '', T('diffTitle')));
+            var list = el('ol', 'history-items');
+            for (i = 0; i < report.differences.length; i += 1) {
+              var diff = report.differences[i];
+              list.appendChild(el('li', '', T('diffLine', { date: diff.date, measure: measureLabel(diff.key), a: show(diff.pack), b: show(diff.tablet) })));
+            }
+            block.appendChild(list);
+            if (report.differences.length >= MAX_DIFFERENCES) block.appendChild(el('p', '', T('diffMore', { n: report.daysDiffering })));
+          }
+        }
+        drawReasons(block, report.flags, T('notesTitle'));
+        host.appendChild(block);
+      }
+      function drawFigures(host, figures) {
+        if (!figures.length) return;
+        var title = el('h4', '', T('figTitle') + ' ');
+        title.appendChild(el('span', 'tag', 'ETP Reporting Engine'));
+        host.appendChild(title);
+        var list = el('ul', 'history-items');
+        for (var i = 0; i < figures.length; i += 1) {
+          var figure = figures[i], id = 'fg_' + figure.figureId.replace(/\./g, '_');
+          var label = own(STR.en, id) ? T(id) : T('fgUnknown');
+          var item = el('li', '', label + ' ');
+          if (!own(STR.en, id)) item.appendChild(codeEl(figure.figureId));
+          item.appendChild(doc.createTextNode(' - ' + (figure.date || T('figWhole')) + ' - ' + T('figLine', { a: show(figure.pack), b: show(figure.tablet) }) + ' - ' + figureStatusWord(figure.status)));
+          list.appendChild(item);
+        }
+        host.appendChild(list);
+        host.appendChild(el('p', '', T('figNote')));
+      }
+      function drawResult() {
+        var card = $('etpBridgeResult'), body = $('etpBridgeResultBody'), visible = !!result && !!staged && phase === 'staged';
+        card.hidden = !visible;
+        clear(body);
+        if (!visible) return;
+        var different = 0, i;
+        for (i = 0; i < REPORTS.length; i += 1) if (result.reports[REPORTS[i]].status === 'DIFFERENCES') different += 1;
+        if (result.generation8) body.appendChild(el('p', '', T('cmpBase', { id: result.generation8 })));
+        var outcome = el('p', 'etp-b-outcome'), word = el('strong', '', statusWord(result.outcome) + ' ');
+        word.appendChild(glyph(result.outcome));
+        outcome.appendChild(word);
+        outcome.appendChild(doc.createTextNode(' ' + (result.outcome === 'MATCH' ? T('outMatch') : (result.outcome === 'DIFFERENCES' ? T('outDiff', { n: different }) : T('outCannot')))));
+        body.appendChild(outcome);
+        body.appendChild(el('p', '', T('cmpInfo')));
+        if (result.reasonCodes.indexOf(NO_GENERATION) >= 0) {
+          var info = el('div', 'notice', T('m_nobase') + ' (');
+          info.appendChild(codeEl(NO_GENERATION));
+          info.appendChild(doc.createTextNode(')'));
+          body.appendChild(info);
+        } else drawReasons(body, result.reasonCodes, T('reasonsTitle'));
+        var chips = el('div', 'coverage-list');
+        for (i = 0; i < REPORTS.length; i += 1) {
+          var status = result.reports[REPORTS[i]].status, chip = el('div', 'coverage-item ' + (status === 'MATCH' ? 'etp-b-ok' : 'etp-b-diff'));
+          chip.appendChild(el('strong', '', REPORTS[i]));
+          var small = el('small', '', statusWord(status) + ' ');
+          small.appendChild(glyph(status));
+          chip.appendChild(small);
+          chips.appendChild(chip);
+        }
+        body.appendChild(chips);
+        for (i = 0; i < REPORTS.length; i += 1) drawReport(body, REPORTS[i], result.reports[REPORTS[i]]);
+        drawFigures(body, result.figures);
+      }
+      function render() {
+        hydrate();
+        drawGate();
+        drawNotice();
+        drawPicker();
+        drawStaged();
+        drawResult();
+        var panel = $('panel-bridge');
+        if (panel) panel.setAttribute('aria-busy', busy() ? 'true' : 'false');
+        if (focusId) { var target = $(focusId); focusId = ''; if (target && typeof target.focus === 'function') target.focus(); }
+      }
+
+      /* ---- facade calls: never throw, always end in a plain answer ---- */
+      function call(name, request) {
+        return new Promise(function (resolve) {
+          var gateway = env.gateway(), pending;
+          if (!gateway || typeof gateway[name] !== 'function') { resolve({ ok: false, code: UNAVAILABLE }); return; }
+          try { pending = request === undefined ? gateway[name]() : gateway[name](request); }
+          catch (failed) { resolve({ ok: false, code: VERIFY_FAILED }); return; }
+          Promise.resolve(pending).then(resolve, function () { resolve({ ok: false, code: VERIFY_FAILED }); });
+        });
+      }
+      function applyStatus(response) {
+        var read = readStatus(response);
+        if (!read.ok) { access = 'unavailable'; accessCode = read.code; reauthHint = false; }
+        else {
+          limit = Math.min(MAX_BYTES, read.maxBytes);
+          reauthHint = read.access === 'REAUTH';
+          accessCode = '';
+          access = read.gate === 'CLOSED' ? 'closed' : (read.access === 'DENIED' ? 'denied' : 'ready');
+        }
+        if (access !== 'ready') { clearInput(); pickedFile = null; pickedInfo = null; }
+        if (notice.idle) idleNotice();
+      }
+      function refreshStatus() {
+        if (destroyed || busy()) return Promise.resolve();
+        var mine = (seq += 1);
+        return call('status').then(function (response) {
+          if (destroyed || mine !== seq) return;
+          applyStatus(response);
+          render();
+        });
+      }
+      function dropStage() { phase = 'idle'; staged = null; token = ''; result = null; }
+      function discardFailure(response) { return isObj(response) && get(response, 'ok') === false ? failureOf(response).code : RESPONSE_INVALID; }
+      function cleanup(tokenText) {
+        return call('discard', { stageToken: tokenText }).then(function (response) {
+          var good = isObj(response) && get(response, 'ok') === true && get(response, 'state') === 'DISCARDED';
+          lastCleanup = { ok: good, code: good ? '' : discardFailure(response) };
+          return lastCleanup;
+        });
+      }
+
+      /* ---- user actions ---- */
+      function onPick() {
+        if (destroyed) return;
+        var input = $('etpBridgeFile'), list = input && input.files ? input.files : null, chosen = list && list.length === 1 ? list[0] : null;
+        if (access !== 'ready' || phase !== 'idle') { clearInput(); pickedFile = null; pickedInfo = null; render(); return; }
+        if (!list || list.length === 0) { pickedFile = null; pickedInfo = null; idleNotice(); render(); return; }
+        var verdict = chosen ? precheck(chosen) : { code: FILE_INVALID };
+        if (verdict.code) {
+          clearInput(); pickedFile = null; pickedInfo = null;
+          notice = failureNotice(verdict.code); focusId = 'etpBridgeNotice';
+        } else { pickedFile = chosen; pickedInfo = verdict.info; idleNotice(); }
+        render();
+      }
+      /* Only the name and the size are read here. The bytes are never read by this screen. */
+      function precheck(file) {
+        var name = '', size = -1, code = '';
+        try { name = file.name; size = file.size; } catch (failed) { code = FILE_INVALID; }
+        if (code) return { code: code };
+        if (typeof name !== 'string' || !SUFFIX.test(name) || typeof size !== 'number' || !isFinite(size) || Math.floor(size) !== size || size < 1) return { code: FILE_INVALID };
+        if (size > limit) return { code: FILE_TOO_LARGE };
+        return { code: '', info: { name: cleanName(name), size: size } };
+      }
+      function onSubmit(event) {
+        if (event && typeof event.preventDefault === 'function') event.preventDefault();
+        check();
+        return false;
+      }
+      function check() {
+        if (destroyed || access !== 'ready' || phase !== 'idle' || !pickedFile) return;
+        var file = pickedFile, mine = (seq += 1);
+        phase = 'checking'; staged = null; token = ''; result = null;
+        notice = noticeOf('', ['nChecking']);
+        render();
+        call('stage', { file: file }).then(function (response) { finishStage(mine, response); });
+      }
+      function finishStage(mine, response) {
+        var read = readStage(response);
+        if (destroyed || mine !== seq) { if (read.ok) cleanup(read.token); return; }
+        clearInput(); pickedFile = null; pickedInfo = null;
+        if (!read.ok) {
+          dropStage();
+          notice = failureNotice(read.code, read.detail); focusId = 'etpBridgeNotice';
+          render();
+          refreshStatus();
+          return;
+        }
+        phase = 'staged'; staged = read.pack; token = read.token; result = null;
+        notice = noticeOf('success', ['nStaged']); focusId = 'etpBridgeStagedTitle';
+        render();
+      }
+      function onCompare() {
+        if (destroyed || phase !== 'staged' || !token) return;
+        var mine = (seq += 1), tokenText = token;
+        phase = 'comparing'; result = null;
+        notice = noticeOf('', ['nComparing']);
+        render();
+        call('compare', { stageToken: tokenText }).then(function (response) { finishCompare(mine, response); });
+      }
+      function finishCompare(mine, response) {
+        var read = readCompare(response);
+        if (destroyed || mine !== seq) return;
+        if (!read.ok) {
+          var lost = DROPS_STAGE.indexOf(read.code) >= 0;
+          if (lost) dropStage(); else { phase = 'staged'; result = null; }
+          notice = failureNotice(read.code, read.detail); focusId = 'etpBridgeNotice';
+          render();
+          if (lost) refreshStatus();
+          return;
+        }
+        phase = 'staged'; result = read.result;
+        notice = noticeOf('success', ['nCompared']); focusId = 'etpBridgeResultTitle';
+        render();
+      }
+      function onDiscard() {
+        if (destroyed || phase !== 'staged' || !token) return;
+        var mine = (seq += 1), tokenText = token;
+        phase = 'discarding';
+        notice = noticeOf('', ['nDiscarding']);
+        render();
+        call('discard', { stageToken: tokenText }).then(function (response) { finishDiscard(mine, response); });
+      }
+      function finishDiscard(mine, response) {
+        if (destroyed || mine !== seq) return;
+        var good = isObj(response) && get(response, 'ok') === true && get(response, 'state') === 'DISCARDED';
+        dropStage();
+        notice = good ? noticeOf('success', ['nDiscarded']) : failureNotice(discardFailure(response));
+        focusId = 'etpBridgeFile';
+        render();
+        refreshStatus();
+      }
+      function onShown() { if (!destroyed && !busy()) refreshStatus(); }
+      /* Closing the module releases the staged pack. The answer of the facade is returned, never swallowed. */
+      function destroy() {
+        if (destroyed) return Promise.resolve({ ok: true, code: '' });
+        destroyed = true; seq += 1;
+        var tokenText = token;
+        dropStage(); pickedFile = null; pickedInfo = null;
+        return tokenText ? cleanup(tokenText) : Promise.resolve({ ok: true, code: '' });
+      }
+      function start() {
+        var tab = $('tab-bridge'), win = env.window;
+        /* Handlers are plain on-properties of this screen's own elements, so no extra listener site is created. */
+        if (tab) { tab.onclick = onShown; tab.onfocus = onShown; }
+        $('etpBridgeForm').onsubmit = onSubmit;
+        $('etpBridgeFile').onchange = onPick;
+        $('etpBridgeCompareBtn').onclick = onCompare;
+        $('etpBridgeDiscard').onclick = onDiscard;
+        if (win && !win.onpagehide) win.onpagehide = function () { destroy(); };
+        render();
+        return refreshStatus();
+      }
+      function snapshot() {
+        return { access: access, accessCode: accessCode, phase: phase, staged: !!staged, token: token, compared: !!result, limit: limit, destroyed: destroyed, lastCleanup: lastCleanup, seq: seq };
+      }
+      return { start: start, render: render, refreshStatus: refreshStatus, check: check, compare: onCompare, discard: onDiscard, destroy: destroy, snapshot: snapshot };
+    }
+
+    var exported = { CATALOG_STATUS: CATALOG_STATUS, LANGS: LANGS, REPORTS: REPORTS, STR: STR, CODE_MSG: CODE_MSG, MAX_BYTES: MAX_BYTES, create: create, readStatus: readStatus,
+      readStage: readStage, readCompare: readCompare, show: show, fmt: fmt, cleanName: cleanName };
+    if (typeof module === 'object' && module && module.exports) { module.exports = exported; return; }
+    var page = window;
+    create({
+      document: document,
+      window: page,
+      gateway: function () {
+        var found = null;
+        try { found = page.SaagarModuleBridge && page.SaagarModuleBridge.etpBridgeGateway ? page.SaagarModuleBridge.etpBridgeGateway : null; } catch (failed) { found = null; }
+        return found;
+      },
+      language: function () {
+        var saved = '';
+        try { saved = page.SaagarI18n && typeof page.SaagarI18n.getLanguage === 'function' ? page.SaagarI18n.getLanguage() : ''; } catch (failed) { saved = ''; }
+        if (LANGS.indexOf(saved) >= 0) return saved;
+        return document.documentElement && LANGS.indexOf(document.documentElement.lang) >= 0 ? document.documentElement.lang : 'en';
+      }
+    }).start();
+  })();
   </script>
 
   <link id="st-v5-back-style" rel="stylesheet" href="../../shared/module-back.css">

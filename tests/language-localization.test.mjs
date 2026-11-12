@@ -11,7 +11,7 @@ const moduleNames = (await readdir(new URL('modules/', root), { withFileTypes: t
   .map(entry => entry.name)
   .sort();
 
-function loadRuntime(initialLanguage) {
+function loadRuntime(initialLanguage, readyState = 'loading') {
   const listeners = {};
   let derivedObjectCreates = 0;
   const instrumentedObject = {
@@ -19,7 +19,7 @@ function loadRuntime(initialLanguage) {
     freeze: Object.freeze
   };
   const document = {
-    readyState: 'loading',
+    readyState,
     documentElement: { lang: 'en' },
     addEventListener(type, handler) { listeners[type] = handler; },
     querySelectorAll() { return []; }
@@ -47,7 +47,8 @@ function loadRuntime(initialLanguage) {
 function loadApi() { return loadRuntime().api; }
 
 test('one offline localization runtime is loaded by the shell and every module', async () => {
-  assert.match(shell, /<script src="app-i18n\.js"><\/script>/);
+  assert.match(shell, /<script defer src="app-i18n\.js"><\/script>/);
+  assert.doesNotMatch(shell, /<script src="app-i18n\.js"><\/script>/, 'the shell defers the shared language runtime');
   assert.equal(moduleNames.length, 12);
   for (const moduleName of moduleNames) {
     const html = await readFile(new URL(`modules/${moduleName}/index.html`, root), 'utf8');
@@ -142,11 +143,18 @@ test('first Marathi or Hindi use builds lookups synchronously and early ST_LANG 
   assert.equal(earlyNative.api.getLanguage(), 'hi');
 });
 
+test('deferred load (readyState interactive) applies the saved language immediately without waiting for DOMContentLoaded', () => {
+  const deferred = loadRuntime('hi', 'interactive');
+  assert.equal(deferred.listeners.DOMContentLoaded, undefined, 'no DOMContentLoaded wait when the document is already interactive');
+  assert.equal(deferred.document.documentElement.lang, 'hi');
+  assert.equal(deferred.api.getLanguage(), 'hi');
+});
+
 test('offline API-23 localization remains one static local asset with no dynamic or remote loader', async () => {
   assert.doesNotMatch(source, /document\.createElement\(['"]script['"]\)|https?:\/\//);
   assert.doesNotMatch(source, /\b(?:Promise|fetch|import)\s*\(/);
   for (const html of [shell, ...await Promise.all(moduleNames.map(name => readFile(new URL(`modules/${name}/index.html`, root), 'utf8')))]) {
-    const match = html.match(/<script src="([^"]*app-i18n\.js)"><\/script>/);
+    const match = html.match(/<script(?: defer)? src="([^"]*app-i18n\.js)"><\/script>/);
     assert.ok(match, 'each surface must load app-i18n.js');
     assert.doesNotMatch(match[1], /^(?:https?:)?\/\//, 'localization runtime must stay local/offline');
   }

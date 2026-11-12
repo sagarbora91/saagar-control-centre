@@ -48,8 +48,8 @@ function operationalFacade(){
 }
 
 test('mounted form and button workflow reaches immutable lock and a new restatement cycle',async()=>{
-  const document=new Document(),roots={e3:new Element('div',document),e4:new Element('div',document)},operation=operationalFacade();
-  const mounted=mountApi.mount({roots,bridge:{e3:operation.facade,e4:{load(){}},getVerifiedBinding:()=>binding},presentations:{e3:e3Presentation,e4:{mount:()=>({ok:true,refresh:async()=>({ok:true})})}},getScope:()=>scope,getActor:()=>actor});
+  const document=new Document(),roots={e3:new Element('div',document),e4:new Element('div',document),e6:new Element('div',document),e5:new Element('div',document)},operation=operationalFacade();
+  const mounted=mountApi.mount({roots,bridge:{e3:operation.facade,e4:{load(){}},e6:{load(){}},e5:{load(){}},getVerifiedBinding:()=>binding},presentations:{e3:e3Presentation,e4:{mount:()=>({ok:true,refresh:async()=>({ok:true})})},e6:{mount:()=>({ok:true,refresh:async()=>({ok:true})})},e5:{mount:()=>({ok:true,refresh:async()=>({ok:true})})}},getScope:()=>scope,getActor:()=>actor});
   assert.equal(mounted.ok,true);assert.equal((await mounted.controller.refresh()).ok,true);
   setForm(roots.e3,'declare',{invoiceId:'INV-1',croId:'CRO-1',netAmount:100});await click(roots.e3,'declare');
   await click(roots.e3,'close');await click(roots.e3,'import');await click(roots.e3,'reconcile');await click(roots.e3,'mark-variance');

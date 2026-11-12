@@ -1,5 +1,5 @@
 /* V6 E7: exact-key, PII-free Service ETP verifier. It never consumes Retail ETP facts. */
-(function(root,factory){'use strict';var api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE7ServiceVerifier=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
+(function(root,factory){'use strict';var api=factory(root&&root.SaagarEtpOperationalFoundation);if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.SaagarEtpE7ServiceVerifier=api;})(typeof globalThis!=='undefined'?globalThis:this,function(foundation){
   'use strict';
   var VERSION='ETP_E7_SERVICE_VERIFIER_V1',BOUNDARY='SERVICE_ETP_V1';
   var MANDATORY=Object.freeze(['S003_REVENUE','S004_TENDER_DETAILED']),OPTIONAL=Object.freeze(['REPAIR_SNAPSHOT','TAT_SNAPSHOT','PENDING_SNAPSHOT','PURCHASE_CREATED_RECEIVED']);
@@ -9,7 +9,7 @@
   function exact(v,keys){return record(v)&&Object.keys(v).sort().join('|')===keys.slice().sort().join('|');}
   function token(v,re,max){return typeof v==='string'&&v.length>0&&v.length<=max&&re.test(v)?v:'';}
   function fail(code,details){var out={ok:false,status:'BLOCKED',code:code};if(details)out.details=details;return freeze(out);}
-  function date(v){var m=typeof v==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(v),d;if(!m)return'';d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3]?v:'';}
+  if(!foundation&&typeof require==='function')foundation=require('./etp-operational-foundation.js');if(!foundation||typeof foundation.date!=='function')throw new Error('ETP_OPERATIONAL_FOUNDATION_REQUIRED');var date=foundation.date;
   function scopeKey(v){return token(v,/^SERVICE_ETP_V1\|[A-Za-z0-9][A-Za-z0-9._-]{1,31}\|[^|]{3,20}\|\d{4}-\d{2}-\d{2}\.\.\d{4}-\d{2}-\d{2}$/,160);}
   function binding(v,scope){return exact(v,['source','boundary','scopeKey','generationId','receiptId'])&&v.source==='ETP_VERIFIED'&&v.boundary===BOUNDARY&&v.scopeKey===scope&&token(v.generationId,/^etp_[a-f0-9]{32}$/,36)&&token(v.receiptId,/^[A-Za-z0-9][A-Za-z0-9._:-]{2,95}$/,96)?freeze(Object.assign({},v)):null;}
   function mapOf(dictionary){var out=Object.create(null);if(!record(dictionary)||!Array.isArray(dictionary.entries))return null;for(var i=0;i<dictionary.entries.length;i++){var x=dictionary.entries[i];if(!exact(x,['sourceValue','canonicalValue'])||typeof x.sourceValue!=='string'||Object.prototype.hasOwnProperty.call(out,x.sourceValue))return null;out[x.sourceValue]=x.canonicalValue;}return out;}

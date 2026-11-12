@@ -84,17 +84,22 @@ class El { constructor(doc){this.ownerDocument=doc;this.children=[];this.attribu
 const doc={createElement:()=>new El(doc)};
 
 test('mounted presentation receives narrow facades only and controller cannot escape privileged handles',()=>{
-  const roots={e3:new El(doc),e4:new El(doc)},privileged={storage:{secret:true},nativeStore:{readFacts(){}}};
-  let capturedE3,capturedE4;
-  const bridge={e3:Object.freeze({load(){}}),e4:Object.freeze({load(){}})};
+  const roots={e3:new El(doc),e4:new El(doc),e6:new El(doc),e5:new El(doc)},privileged={storage:{secret:true},nativeStore:{readFacts(){}}};
+  let capturedE3,capturedE4,capturedE6,capturedE5;
+  const bridge={e3:Object.freeze({load(){}}),e4:Object.freeze({load(){}}),e6:Object.freeze({load(){}}),e5:Object.freeze({load(){}})};
   const presentations={
     e3:{create:o=>{capturedE3=o;return {ok:true,controller:{refresh:async()=>({ok:true}),destroy(){}}};}},
-    e4:{mount:(_host,facade,o)=>{capturedE4={facade,o};return {ok:true,refresh:async()=>({ok:true})};}}
+    e4:{mount:(_host,facade,o)=>{capturedE4={facade,o};return {ok:true,refresh:async()=>({ok:true})};}},
+    e6:{mount:(_host,facade,o)=>{capturedE6={facade,o};return {ok:true,refresh:async()=>({ok:true})};}},
+    e5:{mount:(_host,facade,o)=>{capturedE5={facade,o};return {ok:true,refresh:async()=>({ok:true})};}}
   };
   const out=mount.mount({roots,bridge,presentations,getScope:()=>({storeCode:'WLMHW'}),getActor:()=>({actorId:'owner-live',role:'Owner'}),...privileged});
   assert.equal(out.ok,true);
   assert.equal(capturedE3.facade,bridge.e3);
   assert.equal(capturedE4.facade,bridge.e4);
+  assert.equal(capturedE6.facade,bridge.e6);
+  assert.equal(capturedE5.facade,bridge.e5);
+  for (const given of [capturedE3,capturedE4.o,capturedE6.o,capturedE5.o]) assert.equal(Object.keys(given).some(k=>/storage|nativeStore|secret/i.test(k)),false);
   assert.deepEqual(Object.keys(out.controller).sort(),['VERSION','destroy','refresh']);
   assert.doesNotMatch(JSON.stringify(out),/secret|nativeStore|readFacts|storage/);
 });

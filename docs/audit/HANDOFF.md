@@ -3,7 +3,184 @@
 **Updated:** 2026-08-24 (Asia/Kolkata)
 **Purpose:** authoritative resume point for the Phase-5 carryover and Phase-6 build programme.
 
-## RESUME HERE — Phase 6I source frozen; begin Phase 6J release gates — 2026-08-24
+## RESUME HERE — Restored on new PC; Wave 1 engineering baseline — 2026-11-11
+
+**Restore.** The repo was restored from the old-PC backup to `E:\Projects\saagar-control-centre`.
+The old `C:\Codex\...` and `V:\Co work\...` paths no longer exist. Workspace and reports:
+`E:\Projects\Saagar Control Centre Workspace` (wave reports in `wave-1\`, inventory in
+`PENDING_WORK_INVENTORY.md`). HEAD `605002f`, branch `agent/modular-phase1-shared-spine-v2`.
+The unpushed branch tips were backed up to GitHub as tags `backup/old-pc-2026-11-11/<branch>`;
+the tags are not present locally, but the final audit (A5) confirmed via `git ls-remote github`
+that 13 such tags exist, each pointing at the matching local branch tip. The second remote `origin` is a dead old-PC `V:/` path; the live remote is `github`.
+
+**Test baseline on this PC (Node 25.9.0; Node 24.22.2 gives identical failing sets for phase0, security and modular, the only suites run on it).**
+Node version is not a factor; every cause is repo content.
+
+| Suite | tests | pass | fail |
+|---|---|---|---|
+| `test:phase0` | 70 | 66 | 4 |
+| `test:security` | 101 | 100 | 1 |
+| `test:modular` | 76 | 69 | 7 |
+| `test:etp` | 229 | 228 | 1 |
+| `test:phase6i` / `test:v6-etp-final-uat` / `test:reports` | 3 / 24 / 9 | all | 0 |
+
+Audited causes (no source, test or hash was changed):
+- Commit `605002f` (synthetic demo) added a `demoService` block to `www/modules/etp/index.html` and a
+  `document.write` loader to `www/index.html` without extending the reconstruction helpers or the MAH-4
+  allow-count. This explains all 4 phase0 failures and several modular failures. A scratch-copy fix made
+  phase0 72/72 with no expected hash changed; the MAH-4 count 2 to 3 is an owner security-policy decision.
+- A3 capability drift 704 to 735 (mostly older than `605002f`; ledger is pending-owner-approval).
+- A hidden older cause: the historical-manifest reconstruction error "sharedAssets must contain exactly
+  ten entries" (since about `d080a0e`); fixing the 605002f helpers alone leaves mah3/mah4 red.
+- `test:security`: stale assertion at `tests/d3-service-integration.test.mjs:129` (720px, now 899px per `a2db88d`).
+- `test:etp`: `605002f` made the module-bridge `etpReadGateway` prefer the synthetic demo gateway; this is
+  a narrow-gateway security assertion and needs a policy decision before the test is updated.
+- `test:offline` and `test:phase6h` stop at that etp failure; their later links were run directly.
+  The phase6h1 remainder gave 81 tests, 78 pass, 3 fail (ETP identity annotations, the phase6g
+  shell-responsive reconstruction test and the Phase 6C frozen-profile test, all the `605002f` cause);
+  6h2 to 6h5 plus integration gave 31/31.
+
+**Debug APK.** `npm.cmd run build:apk` succeeded (Gradle BUILD SUCCESSFUL). 7,270,849 bytes,
+`com.saagartraders.bcc`, versionCode 600, versionName 6, minSdk 23, debug-signed (CN=Android Debug),
+copy at `Saagar Control Centre Workspace\wave-1\SaagarCC-debug-wave1.apk`. Not run on a device.
+
+**Local branches and rescued patches.** `etp-synthetic-fixtures` (re-landed as `4fcda83`) and
+`etp-verified-presentation` (re-landed as `05fdd9f`) are superseded. `p4c1-lazy-freeze-blockers`
+(`8d62d42`) and `p4c-a10-shell-performance` (`c7dfcbd`) are documented rejected candidates.
+`p4c-a10-module-perf-v2` (`bcfc7ca`, narrow app-i18n preload) is unique and has no recorded verdict.
+All 11 rescued patches are already present in HEAD in equal or stronger form (for the a7-a8-tests
+patch only test names and opening lines were matched); discarding is supported.
+`github/main` (`9bf9653`) is a strict ancestor of HEAD (262 behind) and its workflow can overwrite
+the `latest` release on any branch push. Nothing was deleted, merged or pushed.
+
+**Open owner decisions.** (1) Approve the `605002f` reversal rules in `tests/lib/phase6g-shell-source.mjs`
+and `tests/lib/phase6h1-etp-source.mjs`, and the MAH-4 policy for the demo `document.write` sink.
+(2) Re-baseline the capability ledger 704 to 735 and review the 31 new ETP capabilities.
+(3) Approve the one-line 720 to 899 test edit. (4) Decide the etp-module-shell bridge assertion.
+(5) `bcfc7ca` stays archived or not. (6) Lockfile-only update of `@capacitor/android` to 6.2.3 (the only
+production-dependency vulnerability) and whether to plan Capacitor 8. (7) How to update `github/main`.
+(8) Production-signing environment: clean worktree at `a2db88d`, signing material, local-maven.
+(9) Confirm discarding the 11 rescued patches and decide on the 13 unmerged `github` branches.
+
+**Release identity and signing.** The production keystore was not in the backup. The 24 Aug approval
+(versionName 2.9 / versionCode 209) and the 25 Aug V6 build (versionName 6 / versionCode 600) disagree;
+the owner must choose the release identity.
+
+**Not done in this wave:** nothing was committed, pushed, signed or published. The pre-existing
+uncommitted work was left untouched. Frozen identities were not re-bound.
+
+Reports: `E:\Projects\Saagar Control Centre Workspace\wave-1\`.
+
+### Wave 2 — owner-approved fixes applied (uncommitted) — 2026-11-11
+
+**Owner approvals (given in chat, 2026-11-11):** the three test fixes (helpers undo the `605002f` demo loader and accept the `document.write` loader in the MAH-4 policy; capability inventory re-baselined 704 to 735; stale 720px assertion changed to 899px); `@capacitor/android` 6.2.1 to 6.2.3; new version scheme "V 1.601 and so on"; discard of the 11 rescued patches; the production keystore is lost, so a new signing key will be created later by the owner.
+
+**What each step changed (all uncommitted, no hash constant changed):**
+- Test fixes: `tests/lib/phase6g-shell-source.mjs`, `tests/lib/phase6h1-etp-source.mjs`, `scripts/lib/mah4-contract-source.mjs` (www/index.html allow-count 2 to 3), `tests/d3-service-integration.test.mjs`. Historical blobs still reconstruct to the same frozen hashes.
+- Historical manifest: `tests/lib/phase6c-historical-root.mjs` extra reversals for post-`8423905` commits.
+- Capability re-baseline: analyzer now 735 (visible-action 490, permission 29, failure-posture 117, added 430); ledger and new `verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json` (31 new ids, status stays pending-owner-approval).
+- Capacitor: `package-lock.json` only (3 lines); `@capacitor/android` 6.2.3, core 6.2.1, cli 6.2.1. `npm audit` still shows 7 (all via the `@capacitor/cli` devDependency).
+- Version identity: display "V 1.601", versionName "1.601", versionCode 601 (`www/build-identity.js`, 3 labels in `www/index.html`, related tests, `verification/audit/RELEASE-IDENTITY-APPROVAL-2026-11-11.json`). Next build is V 1.602 / 602. The expected signer certificate was NOT changed.
+
+**Gate counts now (Node 25.9, one suite at a time):** phase0 72/72; security 101/101; modular 81 tests, 79 pass, 2 fail; reports 9/9; etp 229, 228 pass, 1 fail; phase6h chain 341, 340 pass, 1 fail; phase6i 3/3; v6-etp-final-uat 24/24; v6-gate0 5, 4 pass, 1 fail; offline main command 275/275 (npm chain stops at the etp link).
+
+**Still failing and why:** (1) etp-module-shell bridge assertion (`605002f` demo gateway in the module bridge; policy decision). (2) `mah4-message-lifecycle-baseline`: live policy needs 3 sinks, the historical tree has 2 (Option A accept 2 or 3, B pass expected count, C leave). (3) "Phase 1 audit exit ..." AssertionError A2-01 (duplicate `date`/`canonical` helpers across `www/etp-*.js`, or an audit exception). (4) v6-gate0 receipt for `etp-operational-shell-composer.js` stale since `605002f`.
+
+**Debug builds (debug-signed, com.saagartraders.bcc.debug, versionCode 601, 1.601-debug, not run on a device), in `Saagar Control Centre Workspace\builds\2026-11\`:**
+- `SaagarCC-V1.601-debug-2026-11-11.apk`: 7,271,117 bytes, SHA-256 `0f48015bb1682216303662f81d3798da366a4f8847ee9d43ba70f76a917c2857`
+- `SaagarCC-V1.601-DummyData-2Y-2026-11-11.apk`: 7,455,590 bytes, SHA-256 `dfc3414b8c3773058749a7ddbc419e2b20608748b792b1d0e9b50b93386efe75`
+
+**State:** everything is uncommitted and unpushed, HEAD still `605002f`; awaiting the owner's commit decision. Patch: `wave-2\FA-final.patch` (`G-final-tree.patch` is the gate-tested tree, without this sub-section).
+
+**Remaining owner decisions:** new signing key creation and then the expected signer certificate; commit approval; ETP bridge demo-gateway policy; MAH-4 option A/B/C; A2-01 resolution and capability-ledger approval (incl. 6 re-measured entries); v6-gate0 receipt re-recording; undecided branch `bcfc7ca`; updating `github/main`; Capacitor cli 8.x; confirm the "V 1.601" reading.
+
+### Waves 3 and 4 — startup speed, demo route, dedupe, Android 13 (uncommitted) — 2026-11-11
+
+**Owner decisions (Sagar, given in chat, 2026-11-11):**
+- D-A ETP: a bridge to the ETP report engine; for now the demo gateway lives only in the dummy-data build. D-B: production keeps 2 `document.write` loaders in `www/index.html`; the demo loader is injected only by the seeded build; MAH-4 not loosened (count back to 2).
+- D-C remove the duplicate helpers now. D-D re-record the stale ETP gate-0 receipt. D-E fix the swallowed catch (do not accept it).
+- D-F compare with the audit tool's baseline (9e3d938); trim comments in the main screen file (no line moved) below 580,636 bytes; update the 3 script-ordering tests to state the new rule; apply the deferred-script fix; report audited number and time-to-usable.
+- D-G the app runs only on Samsung Tab S7 (SM-T875), Android 13: minSdk 33, no Android 6 image, Android-6 code NOT removed. D-H everything stays uncommitted until all waves are done; then rebuild APK, commit, push. D-I search like HCC/ETP: design only.
+
+**What each step changed (all uncommitted; no frozen historical hash changed):**
+- Demo route: the synthetic ETP demo gateway and its loader left production (`www/index.html`, `modules/etp`, `shared/module-bridge.js`, `etp-demo-operational.js` moved to `build-overrides/demo`); `scripts/build-seeded-apk.mjs` injects them only into the generated seeded build, then restores (loader anchored outside any try).
+- Dedupe: `date`/`canonical` now come from `www/etp-operational-foundation.js` (6 and 4 files); `modules/etp/index.html` shows an error notice when destroy fails (no empty catch). Differential check: 0 mismatches.
+- Startup: 27 `defer` tags and 21 comment-only trims; `www/index.html` 581,801 to 580,298 bytes (338 under 580,636); 2 loaders. Ordering test rewritten, plus one extra assertion that sync scripts name no deferred global.
+- Android 13: `minSdk 33` (targetSdk 34). Identity regenerated with the project scripts: module manifest, golden hashes, gate-0 receipt, capability ledger (734; 1 removed, 7 outcome changes; approval JSON says owner re-confirmation of the 734 binding is pending).
+
+**Gate (one suite at a time, Node 25.9):** phase0 72/72; security 101/101; modular 88/88; reports 9/9; etp 229/229; phase6h chain 229+81+31; phase6i 3/3; v6-gate0 5/5; v6-etp-final-uat 25/25; mah4 46/46; offline main 276/276; all other v6 waves pass except wave5 22/23, wave6 16/19. **Still failing:** `test:mah3` 17/19 (DSR/QMS canary evidence pins stale hashes; module files equal HEAD, so it also fails at HEAD); wave5 (1) and wave6 (3): tests mount with roots e3/e4 only; the same tests fail on a clean `git archive` copy of HEAD (wave5 22/23, wave6 14/17 there; checked by A-W2 and the final audit). Outside the gate suites, the audit's combined run of phase1-shared-spine, mh1-modular-inventory and whole-app-audit-runner gave 84/88, all 4 in whole-app-audit-runner: 1 registry test (3 tracked test files in no package script; its inputs equal HEAD) and 3 anchor-fingerprint tests (not verified on clean HEAD).
+
+**APKs** (debug-signed, `com.saagartraders.bcc.debug`, versionCode 601, 1.601-debug, minSdk 33, targetSdk 34), in `Saagar Control Centre Workspace\builds\2026-11\`:
+- `SaagarCC-V1.601-debug-wave4-2026-11-11.apk`: 11,665,008 bytes, SHA-256 `e5562e25f6ca68399fd38cd9c7d3d5d0e2b6cef8c567db5f2faec069ac3ae9a7`
+- `SaagarCC-V1.601-DummyData-2Y-wave4-2026-11-11.apk`: 11,849,596 bytes, SHA-256 `0ef256d4518ecaeb829069f1ee5888066f8d64ea91a8e52a952ffb573dbe8d6d`
+- About 4.4 MB larger than Wave 2 (7.27 MB); cause not confirmed (classes.dex stored uncompressed).
+- Final audit re-hashed both files (same sizes and SHA-256) and re-ran aapt2 badging (minSdk 33, targetSdk 34). Plain APK: 2 `document.write` loaders, no demo file, no demoService, no demo gateway. Dummy-data APK: 3 loaders, demo file, demoService and demo gateway present.
+
+**Emulator smoke** (dummy-data APK, LodgeTablet API 35, not Android 13; supporting evidence only): 8 of 8 checks passed (install, launch, seeded Home, Modules 12 tiles, ETP, rotation), 0 app crashes or ANRs. Not a test on the SM-T875.
+
+**Startup lab numbers** (headless Edge on this PC, 960 loads; not a governed capture, not the tablet): audited metric domInteractive median 211.8 ms before (the uncommitted tree at the start of Wave 4, after Wave 2) to 203.5 ms now (paired ratio 0.939); audit-baseline 9e3d938 is 181.7 ms, so now/baseline = 1.087 (CI 1.036 to 1.118; geometric mean 1.066). Time-to-usable 271.1 ms before, 261.0 ms now, baseline 247.8 ms (+12.7 ms, ratio 1.054). **A10-01 is NOT passed and NOT closed:** the byte rule passes (580,298 < 580,636); the median domInteractive is probably more than 5% above the baseline (chance of 5% or less about 8-9%); the real rule (p95 of 30 loads) is only modelled, with about a 0.6 chance of passing; no real audit run was made, and formal closure needs committed code plus a signed governed capture and audit run. Three Hindi/Marathi shell strings stay English for about 12 to 30 ms before the deferred i18n runs (A-W3, 2 desktop runs on the W3 tree, not re-run on the final tree; visibility on the device not verified).
+
+**Carried gates:** GATE-ETP-PHYSICAL, GATE-UPDATE-API23 and the API-23 part of GATE-ETP-INTERRUPTION are now "not applicable by owner scope decision" (SUPPORTED-DEVICES-DECISION, isPass false). This is NOT a pass: no Android 6 / API-23 evidence was produced, and `OPEN_GATES` is unchanged.
+
+**Designs (documents only, nothing built), in `wave-4\`:** `DESIGN-search.md` (HCC/ETP-style places search, new `www/shared/shell-search.js`, 10 owner questions O1-O10) and `DESIGN-etp-report-engine-bridge.md` (signed read-only export pack from the engine, compare-only first, 12 owner questions; the APK declares INTERNET, to be raised separately).
+
+**State:** HEAD `605002f`, 57 status entries, nothing committed or pushed. Agreed order: rebuild APK, then commit, then push. Reports: `Saagar Control Centre Workspace\wave-4\` (`C-closing.md` summary, `FA-final-audit.md` final audit; cumulative patch `FA.patch`).
+
+**Remaining owner inputs:** create the NEW signing key first (then the expected signer certificate); re-confirm the 734 capability inventory; decide mah3 canary evidence, wave5/wave6 test fix, the 3 unregistered tests; accept or trim the startup timing gap; answer the search and bridge questions; branch `bcfc7ca`; `github/main`; Capacitor cli 8.x; stop idle Gradle 8.2.1 daemon (PID 26720; still running at the final audit).
+
+### Wave 5 - tests, ETP on demand, search v1, permission (uncommitted) - 2026-11-12
+
+**Owner decisions (Sagar, owner decision given in chat, 2026-11-12):** E-A fix the six failing tests; E-B load ETP scripts only when needed (A10-01 startup); E-C check INTERNET and remove only if proven unneeded; E-D tidy the 3 unlisted tests and the Wave 1 path fixes; E-E search v1 only (places only, top-bar button, English/Hindi/Marathi/romanised, PIN-locked modules, nothing saved, O1-O10 "approve all"); E-F everything uncommitted.
+
+**What each step did (all uncommitted; no historical frozen hash changed):**
+- W1 (E-A, E-D): ETP wave5/wave6 tests fixed (roots e5/e6 added; wave5 now 39/39, wave6 19/19). 3 unlisted tests wired into package scripts. Wave 1 path hunks 2-22 applied to 8 files (hunk 1, `release\run-phase6-production-signing.ps1`, deliberately skipped). `package.json` keeps mixed line endings (48 CR).
+- W2 (E-B): 25 `etp-*` files now load on demand through new `www/etp-chain-loader.js`, only after a verified ETP scope is selected; `etp-operational-i18n.js` stays with the ETP module. MAH-4 inventory honestly extended (new loader group; literal count 12 + 25). New export `window.__SaagarPdfLibs.injectEtp` (same-origin, flat `etp-*.js` names only) is security-relevant. `www/index.html` 580,298 to 579,028 bytes.
+- W3 (E-E): search v1 in new `www/shared/shell-search.js` (29,583 bytes; test size cap 32,768), top-bar button, Modules-box leak fix; `www/index.html` 579,370 bytes (below 580,636). Search file is a deferred script, parsed at startup.
+- W4 (E-C): `build-overrides/apply-overrides.js` removes `android.permission.INTERNET` at build time (tools:node="remove"). Two builds ran on the LodgeTablet emulator without INTERNET: W4's plain debug build (made before the W5 manifest regeneration; logcat had no net::ERR) and the final dummy-data APK (G2). The final plain APK was not run on a device.
+- W5: module manifest, gate-0 receipt and capability ledger (734 to 735) regenerated with the project scripts; frame-bridge failure-posture row changed (catch blocks 2 to 4). New approval record `SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json`: owner reconfirmation NOT given (signature fields null).
+- P2 (mah3 evidence) NOT applied: needs a human reviewer.
+
+**Gate (Node 25.9, one suite at a time):** phase0 73/73, security 101/101, modular 88/88, reports 9/9, etp 229/229, phase6h 341/341, phase6i 3/3, v6-gate0 5/5, v6-etp-wave5 39/39, wave6 19/19, final-uat 36/36, mobile 8/8, settings 8/8, language 11/11, manifest 8/8, mah4 46/46, phase6g 257/257, offline chain passes (main 277). **Still failing:** `test:mah3` 17/19 (DSR/QMS canary evidence binds pre-Phase-6C bytes; no MAH-3 visual record of the current DSR/QMS; also fails at HEAD) and whole-app-audit-runner 77/80 (3 product-anchor fingerprint tests, expected 448 files vs actual 528; the Wave 4 final audit already listed these 3 fingerprint failures; owner re-anchor decision after commit; not verified on clean HEAD).
+
+**APKs** (debug-signed, `com.saagartraders.bcc.debug`, 601, 1.601-debug, minSdk 33, targetSdk 34, no INTERNET; in `Saagar Control Centre Workspace\builds\2026-11\`):
+- `SaagarCC-V1.601-debug-wave5-2026-11-12.apk`: 11,849,575 bytes, SHA-256 `3e9394f7cad364ac52d9d2245e3290acadf8ce03e70d38059f9063468a02e4dd`
+- `SaagarCC-V1.601-DummyData-2Y-wave5-2026-11-12.apk`: 11,849,649 bytes, SHA-256 `baaf43c7b9779a5bda4316ff41e6a8d5d643fcebf3a283fa5daa94d5d593e954`
+- Plain APK is 184,567 bytes larger than the Wave 4 plain APK; cause not determined. Permissions: RECEIVE_BOOT_COMPLETED, WAKE_LOCK, POST_NOTIFICATIONS (plus the app's own DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION).
+
+**Emulator** (dummy-data APK, LodgeTablet API 35, not Android 13, not the tablet): 12 checks passed, 0 crashes, 0 ANRs, 0 JS errors; Home, Modules (12), ETP Verified Reports, search open/romanised "vetan"/open Payroll, rotation. NOT verified: the PIN lock and prompt from search (seeded build has no owner PIN), ETP Coverage and Reconciliation tabs. Side finding: as Cashier, search hides Stock/Service/Compliance/Payroll but the Modules grid still shows all 12 tiles (cause not determined).
+
+**Startup lab** (headless Edge on this PC, not the tablet, not a governed capture): decision session `g-decision-1` on the W2 tree (G, before search was added): domInteractive median 204.6 ms vs 211.3 ms for the A10 audit baseline 9e3d938 (variant N; paired ratio 0.962, CI 0.945 to 1.000; pooled p95 275.5 vs 286.4 ms, ratio 0.962) and vs 216.7 ms for the Wave 4 tree (F; ratio 0.939). Time until usable (`__stReadyAtMs`) 268.8 vs 270.9 ms for N (ratio 0.985). Model chance that the real 30-load p95 timing rule passes, G vs N: about 0.8 (identical code gets only about 0.7 on this PC). The 1.075 / 1.126 figures in that session compare with the original August baseline 8f96480 (variant A), not with the A10 baseline. First ETP open 64 ms median on a fast PC. The final-tree session `f2-decision-1` (with search) ended at 06:42 with 16/16 blocks, after these notes were drafted, but it has NOT been analysed (no G3 report), so there is no number for the final tree yet. Its block 6 overlapped a CPU-heavy check run by the final audit (06:19 to 06:21); whoever analyses it must report that. **A10-01 is NOT passed and NOT closed** (desktop lab only; final-tree session not analysed; needs committed code plus a signed governed capture and audit run, and the tablet).
+
+**Remaining for the owner:** create the NEW signing key first (then the expected signer certificate); test on the Tab S7 (Android 13); ETP bridge questions Q1-Q12; reconfirm the approval record and the 735 inventory (737 once the two new JS files are tracked); mah3 option (a) human re-record or (b) reclassify as historical; search choices (29,583-byte file, owner-level reports listed for every role, O3 wording incl. Marathi/Hindi "report" ranking ETP first); PIN-prompt proof with a test PIN; Cashier grid mismatch. The two wave-5 APKs were built from the final tree (G1); rebuild only if source changes again (the earlier W4 APK predates the W5 manifest regeneration). Order: commit (regenerate ledger and analyser constants 737/118/432/823 and the two count tests first), then push; nothing is committed yet. Reports: `Saagar Control Centre Workspace\wave-5\`.
+
+### Wave 6 - ETP report-engine bridge, tablet side (uncommitted) - 2026-11-12
+
+**Owner decisions (Sagar, owner decision given in chat, 2026-11-12), Q1-Q12 of `wave-4\DESIGN-etp-report-engine-bridge.md`, recorded in `wave-6\OWNER-DECISIONS-wave-6.md`:** Q1 own bridge key, made by the owner (Wave 6 uses a throwaway test key); Q2 engine becomes an approved source only after one full matching month of WLMHW (not granted); Q3 owner's words "When the engine and the tablet differ because of a business rule, which figure counts - ETP counts. Rest all recommendations accepted as yes." (the "row totals must match exactly or the pack is refused" reading is the orchestrator's; incentives and payroll NOT confirmed); Q4 XLSX import stays, one source per store and period; Q5 HEMW blocked; Q6 four reports R003/R013/R022/R025 plus totals; Q7 import by Owner or Store Manager with Owner reauthentication; Q8 GATE-ETP-PRODUCTION carried, new GATE-ETP-BRIDGE-TRUST; Q9 USB/OTG/synced folder, never online; Q10 INTERNET removed; Q11 later dummy-data pack; Q12 engine-side exporter later. Scope B-1 to B-7: tablet side only, nothing published, no calculation changes, no key in the tree, HEMW and AW330 refused, nothing committed.
+
+**What was built (all uncommitted):**
+- W1: `.scc-etp` pack format (ECDSA P-256 / SHA-256, authenticated before parsing), `www/etp-bridge-trust.js` (empty frozen anchor), `www/etp-bridge-pack-verifier.js`, synthetic pack generator `scripts/generate-etp-bridge-packs.mjs` (in-memory non-extractable test key; output outside the repo), `docs/ETP-BRIDGE-PACK-FORMAT-V1.md`.
+- W2: `www/etp-bridge-compare.js`, `www/etp-bridge-facade.js`, four synchronous tags in `www/index.html` (579,557 bytes, limit strictly below 580,636), read-only `etpBridgeGateway` getter in `module-bridge.js`. Pack held in memory only; no storage, native, registry or history write.
+- W3: "Engine pack" tab in `www/modules/etp/index.html` (file input without `accept`, mr/hi text TEST_ONLY_UNAPPROVED).
+- W4: module manifest, golden etp entry (no test enforces it), capability ledger 735 to 740 (748 once the six untracked JS files are tracked), approval record `ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json` (reconfirmation not given). Commit-time overlay in `wave-6\W4-commit-time-overlay\`.
+- Nothing from a pack is published; the trust gate is closed (in the tests every pack gives ETP_BRIDGE_TRUST_GATE_CLOSED before any file read or PIN prompt, or ETP_BRIDGE_UNAVAILABLE first if a bridge part is missing; on the emulator the picker is disabled, so no per-pack refusal was seen); in today's app no pack can be checked or compared; no key or trust anchor is in the tree (scans by W1, W2, W4, red team and G1 found none). GATE-ETP-BRIDGE-TRUST is declared in code only, not registered in `scripts/audit/config.mjs` (owner step after the commit plus audit-tooling re-freeze). GATE-ETP-PRODUCTION still carried.
+
+**Gate (G1, Node 25.9, one at a time):** etp-bridge 167/167 (new), phase0 73, security 101, modular 88, reports 9, etp 229, phase6h 341, phase6g 257, mah4 46, offline chain all pass. Still failing, known cause only: mah3 17/19 (DSR/QMS evidence) and whole-app-audit-runner 77/80 (3 product-anchor fingerprint tests). Must fix before commit 1: audit check A2-04 (duplicate `VERSION = 1` in five files, `STORE = 'WLMHW'` in two); rename trial in `wave-6\w4-work\a2-04-rename-trial.mjs`, then re-run `W4-make-approval-record.mjs`. The final audit confirmed this in the tracked-state scratch copy: `phase1-shared-spine` 5/6 (A2-04 fail), so `test:modular`, `test:phase6g` and the offline chain would go red after commit; with the trial renames it is 6/6 and phase0 73, modular 88, etp-bridge 167 pass, audit-runner stays 77/80. The rename was NOT applied; the four bridge files are inside both wave6 APKs, so after the rename the APKs no longer match those committed bytes unless rebuilt. **Final audit verdict: not commit-ready as is** (`wave-6\FA-final-audit.md`). Also leave the untracked Phase 5 Firebase API-23 physical-catalog exception document (under verification/audit) out of the commit until the owner decides: it holds a personal e-mail address that is in no commit yet.
+
+**APKs** (debug-signed, `com.saagartraders.bcc.debug`, 601 / 1.601-debug, minSdk 33, targetSdk 34, no INTERNET; permissions RECEIVE_BOOT_COMPLETED, WAKE_LOCK, POST_NOTIFICATIONS; in `Saagar Control Centre Workspace\builds\2026-11\`):
+- `SaagarCC-V1.601-debug-wave6-2026-11-12.apk`: 11,849,931 bytes, SHA-256 `d1fd731d1cebd7ed28209b6a6a0ab0981ce092713803f4969bf15ca99d7adbca`
+- `SaagarCC-V1.601-DummyData-2Y-wave6-2026-11-12.apk`: 11,850,007 bytes, SHA-256 `5687d0f61a01fa6e1eab8d133ad16d38a4e7a7ea664737d743acabe879ced136`
+
+**Emulator** (LodgeTablet API 35, not Android 13, not the tablet): no crash, ANR or JS error; Engine pack tab shows "Engine packs are switched off" with the picker disabled, so no per-pack refusal was seen on the device.
+
+**Startup lab** (desktop only, not the tablet, not a governed capture). Wave 5 final tree (L1, 14 blocks after the 40% CPU rule excluded blocks 3 and 6): domInteractive F2/N paired median ratio 0.985 (CI 0.971-1.001). Wave 6 tree (G3, 576/576 valid loads): H vs F2 1.033 (CI 1.027-1.042), H vs N 1.022 (CI 1.006-1.039); predicted pass chance of the real rule about 0.62-0.64. **A10-01 is NOT passed and NOT closed.** Likely cause of the extra cost: four synchronous bridge tags (not isolated). Owner may move them on demand later.
+
+**Deferred / not verified:** Worker-realm verification (in the APK-transformed tree Babel async helpers are writable window globals; fix before the gate opens); same-origin replacement of `SaagarOwnerSession`/`SaagarReauth`/`roleCanOpen` (same exposure as the XLSX gateway); persisted Q2 compare evidence, replay/rollback memory, `sourceKind`. Not verified: ECDSA P-256 on the SM-T875 WebView, the file chooser with no `accept` from USB/OTG/cloud, 32 MiB verify time, Chrome 44 transpile in a running WebView. The red team finished only part of its plan: runtime pack forgery and replay, role/reauthentication bypass (including a never-resolving reauth leaving the busy flag set), staged-data reach into Home, reports, incentives, payroll, backup/restore and search, restore of a backup with a planted anchor, memory exhaustion and markup injection were not exercised.
+
+**Owner points:** Store Manager `roleCanOpen('etp')` is stricter than the XLSX IMPORT path; weak compare grain (no item number) and Q2; `R022.INVOICE_COUNT` derivation against ETP decision 41; unreviewed mr/hi wording; incentives and payroll under Q3 still open.
+
+**Remaining:** owner's bridge key and key ceremony (then the anchor and gate registration); engine-side exporter after engine 1.15.0; one full matching month of compare before authority (Q2); Tab S7 test; new signing key. Reports: `Saagar Control Centre Workspace\wave-6\` (`C-closing.md`, final audit `FA-final-audit.md`, cumulative patch `FA.patch`).
+
+## Prior resume point — Phase 6I source frozen; begin Phase 6J release gates — 2026-08-24
 
 Phase 6I freezes twelve external iframe routes and the ETP parent-gateway/sealed-store
 hybrid. The temporary Phase 6C mobile legacy asset has zero production consumers and was

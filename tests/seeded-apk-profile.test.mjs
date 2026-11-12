@@ -51,6 +51,20 @@ test('production-oriented source remains clean while the seeded builder targets 
   assert.doesNotThrow(() => new vm.Script(inline));
 });
 
+test('seeded builder injects the synthetic ETP demo into generated assets only and re-syncs afterwards', () => {
+  assert.match(build, /seeded-demo-injection/);
+  assert.match(build, /DEMO_FILE_PATCHES/);
+  assert.match(build, /DEMO_LOADER_STATEMENT/);
+  assert.match(build, /rmSync\(generatedDemoPath/);
+  assert.match(build, /finally\s*\{[\s\S]*generatedClean[\s\S]*syncGeneratedAssets\(\)/);
+  assert.ok(build.indexOf('applyDemoPatch(') < build.indexOf("'prepare-api23-assets.mjs'", build.indexOf('applyDemoPatch(')),
+    'demo patches must be applied before prepare-api23-assets recomputes manifest pins');
+  assert.doesNotMatch(build, /writeFileSync\(\s*path\.join\(repoDir,\s*'www'/);
+  assert.doesNotMatch(index, /etp-demo-operational/);
+  assert.equal(fs.existsSync(path.join(repoDir, 'www', 'etp-demo-operational.js')), false);
+  assert.ok(fs.existsSync(path.join(repoDir, 'build-overrides', 'demo', 'etp-demo-operational.js')));
+});
+
 test('normal SQLite-primary runtime keeps production build flavor', () => {
   const buildFlavorSource = index.match(/function buildFlavor\(\)\{[\s\S]*?\n\}/)?.[0];
   assert.ok(buildFlavorSource, 'buildFlavor function must remain present');

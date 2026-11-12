@@ -1,13 +1,28 @@
 /*
  * Build a clearly identified full V6 synthetic-data debug APK without ever
- * enabling demo seeding in www/index.html. Only the generated Android asset is
+ * enabling demo seeding in www/index.html. Only the generated Android assets are
  * changed, then restored after Gradle has packaged the APK.
+ *
+ * The synthetic ETP demo wiring (loader, demo gateway selector, composer hook,
+ * E7 form defaults and etp-demo-operational.js) does not exist in production
+ * source. It is injected here, into generated assets only, behind the seeded
+ * guard (owner decision given in chat, 2026-11-11). Injection happens before
+ * prepare-api23-assets so the generated manifest pins the patched bytes; the
+ * finally block re-syncs so the generated tree is demo-free again.
  */
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import vm from 'node:vm';
+import {
+  DEMO_FILE_PATCHES,
+  DEMO_LOADER_STATEMENT,
+  DEMO_PUBLIC_NAME,
+  DEMO_SOURCE_RELATIVE,
+  applyDemoPatch
+} from './lib/seeded-demo-injection.mjs';
 
 const repoDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const androidDir = path.join(repoDir, 'android');
@@ -35,6 +50,11 @@ const sourceRuntimePath = path.join(repoDir, 'www', 'shared', 'module-runtime.js
 const generatedRuntimePath = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public', 'shared', 'module-runtime.js');
 const sourceMah4RuntimePath = path.join(repoDir, 'www', 'shared', 'mah4-runtime.js');
 const generatedMah4RuntimePath = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public', 'shared', 'mah4-runtime.js');
+const generatedPublicDir = path.join(androidDir, 'app', 'src', 'main', 'assets', 'public');
+const generatedDemoPath = path.join(generatedPublicDir, DEMO_PUBLIC_NAME);
+const generatedBridgePath = path.join(generatedPublicDir, 'shared', 'module-bridge.js');
+const demoSourcePath = path.join(repoDir, ...DEMO_SOURCE_RELATIVE.split('/'));
+const productionDemoPath = path.join(repoDir, 'www', DEMO_PUBLIC_NAME);
 const builtApkPath = path.join(
   androidDir,
   'app',
@@ -83,14 +103,27 @@ if (!/\bvar\s+DEMO_SEED_ENABLED\s*=\s*false\s*;/.test(sourceIndex) ||
   throw new Error('Clean source seed flag is not safely disabled');
 }
 
-run(process.execPath, [
-  '-r',
-  path.join(repoDir, 'scripts', 'node-userinfo-shim.cjs'),
-  path.join(repoDir, 'node_modules', '@capacitor', 'cli', 'bin', 'capacitor'),
-  'sync',
-  'android'
-]);
-run(process.execPath, [path.join(repoDir, 'build-overrides', 'apply-overrides.js')]);
+if (fs.existsSync(productionDemoPath)) {
+  throw new Error('The demo implementation must not live in production www/; keep it under build-overrides/demo/');
+}
+if (!fs.existsSync(demoSourcePath)) {
+  throw new Error(`Missing demo implementation: ${DEMO_SOURCE_RELATIVE}`);
+}
+
+// Same three steps as "npm run build:apk" before Gradle (sync, overrides; the
+// API 23 transform is run separately so demo injection can sit between them).
+function syncGeneratedAssets() {
+  run(process.execPath, [
+    '-r',
+    path.join(repoDir, 'scripts', 'node-userinfo-shim.cjs'),
+    path.join(repoDir, 'node_modules', '@capacitor', 'cli', 'bin', 'capacitor'),
+    'sync',
+    'android'
+  ]);
+  run(process.execPath, [path.join(repoDir, 'build-overrides', 'apply-overrides.js')]);
+}
+
+syncGeneratedAssets();
 
 const sourceManifest = fs.readFileSync(sourceManifestPath);
 const generatedManifest = fs.readFileSync(generatedManifestPath);
@@ -102,6 +135,15 @@ if (!fs.readFileSync(sourceRuntimePath).equals(fs.readFileSync(generatedRuntimeP
 }
 if (!fs.readFileSync(sourceMah4RuntimePath).equals(fs.readFileSync(generatedMah4RuntimePath))) {
   throw new Error('Generated Android MAH-4 runtime does not byte-match www/shared/mah4-runtime.js');
+}
+// The demo patch anchors must apply to production bytes, so the generated
+// copies of the three patched files must still match www/ before patching.
+for (const patch of DEMO_FILE_PATCHES) {
+  const sourceFile = fs.readFileSync(path.join(repoDir, 'www', ...patch.file.split('/')));
+  const generatedFile = fs.readFileSync(path.join(generatedPublicDir, ...patch.file.split('/')));
+  if (!sourceFile.equals(generatedFile)) {
+    throw new Error(`Generated Android ${patch.file} does not byte-match www/${patch.file}`);
+  }
 }
 const generatedClean = fs.readFileSync(generatedIndexPath, 'utf8');
 const manifestTag = '<script src=' + JSON.stringify('module-manifest.js') + '></script>';
@@ -123,6 +165,15 @@ generatedSeeded = replaceOnce(
     `if(!window.__SEED_WALK) window.__SEED_WALK = ${PROFILE.walkInsPerWorkingDay};`,
   'generated two-year seed profile'
 );
+// Demo loader: parser-blocking, its own statement (not inside a try/catch, so a
+// failure is not swallowed) in the seeded-only inline script after the
+// strict-boolean guard, at the same place 605002f had it (before the profile line).
+generatedSeeded = replaceOnce(
+  generatedSeeded,
+  `\ntry{ if(!window.__SEED_DAYS) window.__SEED_DAYS = ${PROFILE.daysBack};`,
+  `\n${DEMO_LOADER_STATEMENT}\ntry{ if(!window.__SEED_DAYS) window.__SEED_DAYS = ${PROFILE.daysBack};`,
+  'generated demo loader'
+);
 if (!generatedSeeded.includes('two-year-review-v1') &&
     !generatedSeeded.includes('__SAAGAR_DEMO_PROFILE')) {
   throw new Error('Generated shell is missing the demo-profile safety control');
@@ -130,7 +181,18 @@ if (!generatedSeeded.includes('two-year-review-v1') &&
 
 try {
   fs.writeFileSync(generatedIndexPath, generatedSeeded, 'utf8');
+  for (const patch of DEMO_FILE_PATCHES) {
+    const target = path.join(generatedPublicDir, ...patch.file.split('/'));
+    fs.writeFileSync(target, applyDemoPatch(fs.readFileSync(target, 'utf8'), patch), 'utf8');
+  }
+  fs.copyFileSync(demoSourcePath, generatedDemoPath);
   run(process.execPath, [path.join(repoDir, 'scripts', 'prepare-api23-assets.mjs')]);
+  if (!fs.existsSync(generatedDemoPath) ||
+      !fs.readFileSync(generatedBridgePath, 'utf8').includes('SaagarEtpDemoOperational') ||
+      !fs.readFileSync(generatedIndexPath, 'utf8').includes(DEMO_PUBLIC_NAME)) {
+    throw new Error('Seeded demo injection is missing from the generated assets; refusing to build a non-demo APK');
+  }
+  new vm.Script(fs.readFileSync(generatedManifestPath, 'utf8'), { filename: 'generated module-manifest.js' });
   if (process.platform === 'win32') {
     run(
       process.env.ComSpec || 'cmd.exe',
@@ -144,6 +206,23 @@ try {
   fs.copyFileSync(builtApkPath, outputApkPath);
 } finally {
   fs.writeFileSync(generatedIndexPath, generatedClean, 'utf8');
+  // The three patched pinned files and the generated manifest were rewritten by
+  // prepare-api23-assets, so restoring single files would leave them inconsistent.
+  // Remove the demo file and rebuild the whole generated tree from production www.
+  try {
+    fs.rmSync(generatedDemoPath, { force: true });
+    syncGeneratedAssets();
+    run(process.execPath, [path.join(repoDir, 'scripts', 'prepare-api23-assets.mjs')]);
+    if (fs.existsSync(generatedDemoPath) ||
+        fs.readFileSync(generatedBridgePath, 'utf8').includes('SaagarEtpDemoOperational')) {
+      throw new Error('demo wiring still present after restore');
+    }
+  } catch (error) {
+    process.exitCode = 1;
+    process.stderr.write(
+      `Generated assets may still contain demo wiring (${error.message}); run npm.cmd run sync before any production build.\n`
+    );
+  }
 }
 
 const apk = fs.readFileSync(outputApkPath);

@@ -1,6 +1,12 @@
 /* Deterministic reversal of the additive Phase 6H.1 ETP analytics wiring. */
 export function restorePrePhase6h1EtpIndex(source) {
   return String(source)
+    // ETP report-engine bridge screen (Wave 6, owner decisions given in chat, 2026-11-12): the five additive edits come out first.
+    .replace(/    <button data-action="tab-bridge"[^\n]*\n/, '')
+    .replace(/    <section class="etp-panel" id="panel-bridge"[\s\S]*?<\/section>\r?\n\r?\n/, '')
+    .replace("var VIEWS = ['import', 'bridge', 'verified', 'coverage', 'reconciliation'];", "var VIEWS = ['import', 'verified', 'coverage', 'reconciliation'];")
+    .replace(/  <script id="etp-bridge-screen">[\s\S]*?<\/script>\r?\n/, '')
+    .replace(/    #panel-bridge,#panel-bridge \*\{[^\n]*\n/, '')
     .replace(/  <link rel="stylesheet" href="\.\.\/\.\.\/etp-e3-presentation\.css">\r?\n/, '')
     .replace(/  <link rel="stylesheet" href="\.\.\/\.\.\/etp-e[4567]-presentation\.css">\r?\n/g, '')
     .replace(/  <link rel="stylesheet" href="\.\.\/\.\.\/etp-operational-i18n\.css">\r?\n/, '')
@@ -10,6 +16,7 @@ export function restorePrePhase6h1EtpIndex(source) {
     .replace('  <script src="../../etp-e7-presentation.js"></script>\n', '')
     .replace('  <script src="../../etp-e7-module-host.js"></script>\n', '')
     .replace(/      <section class="card" aria-labelledby="etpE7Heading">[\s\S]*?      <\/section>\r?\n(?=    <\/section>)/, '')
+    .replace(/      var demoService=serviceBridge\(\);\r?\n      if\(demoService&&demoService\.demoSynthetic===true&&demoService\.defaultScope\)\{\r?\n(?:        document\.getElementById\('etpE7[A-Za-z]+'\)\.value=demoService\.defaultScope\.[A-Za-z]+;\r?\n){4}      \}\r?\n/, '')
     .replace(', serviceController = null;', ';')
     .replace(/      function serviceScope\(\) \{[\s\S]*?^      \}\r?\n(?=      function setBusy)/m, '')
     .replace("      document.getElementById('etpE7Refresh').addEventListener('click', refreshServiceVerification);\n", '')

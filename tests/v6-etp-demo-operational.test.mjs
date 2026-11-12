@@ -2,9 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createRequire} from 'node:module';
+import {DEMO_FILE_PATCHES,DEMO_LOADER_STATEMENT,applyDemoPatch} from '../scripts/lib/seeded-demo-injection.mjs';
 
 const require=createRequire(import.meta.url);
-const demo=require('../www/etp-demo-operational.js');
+const demo=require('../build-overrides/demo/etp-demo-operational.js');
 const e4=require('../www/etp-e4-presentation.js');
 const e5=require('../www/etp-e5-presentation.js');
 const e6=require('../www/etp-e6-presentation.js');
@@ -52,19 +53,35 @@ test('demo retail composer accepts the public module scope without an internal s
   assert.equal(mounted.getScope().scopeKey,demo.scope.scopeKey);
 });
 
-test('clean source loads the demo facades only behind the strict seeded-build guard',()=>{
-  const index=fs.readFileSync(new URL('../www/index.html',import.meta.url),'utf8');
-  const composer=fs.readFileSync(new URL('../www/etp-operational-shell-composer.js',import.meta.url),'utf8');
-  const bridge=fs.readFileSync(new URL('../www/shared/module-bridge.js',import.meta.url),'utf8');
-  const moduleFrame=fs.readFileSync(new URL('../www/modules/etp/index.html',import.meta.url),'utf8');
-  const guard=index.indexOf('if(!__DEMO_SEED_ACTIVE) return;');
-  const loader=index.indexOf('etp-demo-operational.js');
+test('production source is demo-free; the demo route exists only as build-time injection',()=>{
+  const www=name=>fs.readFileSync(new URL('../www/'+name,import.meta.url),'utf8');
+  const forbidden=/etp-demo-operational|SaagarEtpDemoOperational|demoService|demoSynthetic/;
+  assert.equal(fs.existsSync(new URL('../www/etp-demo-operational.js',import.meta.url)),false);
+  assert.ok(fs.existsSync(new URL('../build-overrides/demo/etp-demo-operational.js',import.meta.url)));
+  for(const name of ['index.html','etp-operational-shell-composer.js','shared/module-bridge.js','modules/etp/index.html']){
+    assert.doesNotMatch(www(name),forbidden,name);
+  }
+  const index=www('index.html');
   assert.match(index,/var DEMO_SEED_ENABLED = false;/);
-  assert.ok(guard>=0&&loader>guard);
-  assert.equal((index.match(/etp-demo-operational\.js/g)||[]).length,1);
-  assert.match(composer,/demo\.syntheticOnly===true/);
-  assert.match(bridge,/demo && demo\.syntheticOnly === true/);
-  assert.match(moduleFrame,/demoService\.demoSynthetic===true/);
+  assert.equal((index.match(/document\.write\(/g)||[]).length,2);
+  assert.match(www('shared/module-bridge.js'),/etpReadGateway: getter\(function \(\) \{ var gateway = parentValue\('SaagarEtpModuleGateway'\); return gateway && gateway\.readFacade; \}\),/);
+});
+
+test('seeded-build demo patches apply exactly once to production bytes and round-trip',()=>{
+  const patched={};
+  for(const patch of DEMO_FILE_PATCHES){
+    const production=fs.readFileSync(new URL('../www/'+patch.file,import.meta.url),'utf8');
+    assert.equal(production.split(patch.before).length-1,1,patch.file+' anchor occurs once');
+    const out=applyDemoPatch(production,patch);
+    assert.ok(out.includes(patch.after),patch.file);
+    assert.equal(out.replace(patch.after,patch.before),production,patch.file+' round trip');
+    patched[patch.file]=out;
+  }
+  assert.throws(()=>applyDemoPatch('nothing here',DEMO_FILE_PATCHES[0]),/anchor not found/);
+  assert.match(DEMO_LOADER_STATEMENT,/etp-demo-operational\.js/);
+  assert.match(patched['shared/module-bridge.js'],/demo && demo\.syntheticOnly === true/);
+  assert.match(patched['etp-operational-shell-composer.js'],/demo\.syntheticOnly===true/);
+  assert.match(patched['modules/etp/index.html'],/demoService\.demoSynthetic===true/);
 });
 
 test('demo E6 and E7 actions update only synthetic in-memory histories',async()=>{

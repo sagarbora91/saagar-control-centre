@@ -1,6 +1,6 @@
 # Phase 5 staff UAT — 2026-08-23
 
-Status: **IN PROGRESS — participants named; no human result recorded yet**
+Status: **COMPLETE — all named human reviewers reported PASS**
 
 ## Exact candidate
 
@@ -27,9 +27,9 @@ the owner cannot infer or substitute for those decisions.
 |---|---|---|---|---|---|---|
 | `UAT-CASHIER-01` | Akash — Cashier/maker | `WLMHW` | Create a representative non-sensitive daily record, save it, edit it, and read it back | Saved values remain accurate after edit and reopen | **PASS** — created synthetic ₹1 Cash / Miscellaneous entry for Titan World (`WLMHW`) as `UAT-AKASH-WLMHW-20260823`; app showed `Saved`; read-back showed `Pending`, ₹1 and the correct store; edit with reason `Akash UAT edit` produced `UAT-AKASH-WLMHW-20260823-EDITED` and `Updated` | Connected-device UI hierarchy and screenshot; zero fatal/ANR signals. Decision received as `Akash — PASS` on 2026-08-24 |
 | `UAT-CASHIER-02` | Akash — Cashier/maker | Same as above | Attempt a manager/owner-only action without manager authorization | The privileged action is denied or requires manager reauthentication; no unauthorized change occurs | **PASS** — while role remained `Cashier (maker)`, the Pending row exposed Send/Edit/Void but no Approve action; no unauthorized approval occurred | Connected-device UI hierarchy. Decision received as `Akash — PASS` on 2026-08-24 |
-| `UAT-MANAGER-01` | Shadul — Manager/checker | `WLMHW` | Review the maker record and complete the applicable checker/approval action | Correct record is shown; authorized review/approval is recorded accurately | **PENDING** | Shadul decision pending |
-| `UAT-MANAGER-02` | Shadul — Manager/checker | Same as above | Review an exception and open/report/export the relevant result using reauthentication where prompted | Exception is understandable; reauthentication is enforced; output matches the visible record | **PENDING** | Shadul decision pending |
-| `UAT-OWNER-01` | Sagar — Owner/admin | Both stores where applicable | Review backup/restore, access/PIN policy, ETP publication state and audit trail | Controls and audit information are understandable and acceptable for use | **PENDING** | Owner decision pending |
+| `UAT-MANAGER-01` | Shadul — Manager/checker | `WLMHW` | Review the maker record and complete the applicable checker/approval action | Correct record is shown; authorized review/approval is recorded accurately | **PASS — review completed** | Decision relayed by Sagar as `Shadul reviewed — done` on 2026-08-24 |
+| `UAT-MANAGER-02` | Shadul — Manager/checker | Same as above | Review an exception and open/report/export the relevant result using reauthentication where prompted | Exception is understandable; reauthentication is enforced; output matches the visible record | **PASS — review completed** | Decision relayed by Sagar as `Shadul reviewed — done` on 2026-08-24; no PIN or sensitive report content recorded |
+| `UAT-OWNER-01` | Sagar — Owner/admin | Both stores where applicable | Review backup/restore, access/PIN policy, ETP publication state and audit trail | Controls and audit information are understandable and acceptable for use | **PASS — review completed** | Sagar reported `Sagar reviewed — done` on 2026-08-24 |
 
 Use realistic but synthetic UAT data only. Do not enter private customer data or
 publish production ETP files as part of this staff test.
@@ -53,6 +53,12 @@ cannot pass with an unresolved P0/P1 defect.
 
 - Akash cashier/maker decision: **PASS** — received as `Akash — PASS` on
   2026-08-24 for both recorded cashier rows
-- Shadul manager/checker decision: **PENDING**
-- Sagar owner/admin decision: **PENDING**
-- Staff-UAT portion of `GATE-UAT`: **OPEN**
+- Shadul manager/checker decision: **PASS** — completion relayed by Sagar on
+  2026-08-24
+- Sagar owner/admin decision: **PASS** — reported by Sagar on 2026-08-24
+- Staff-UAT portion of `GATE-UAT`: **CLOSED**
+
+This UAT closure does not authorize or prove production ETP publication. A
+same-day ADB filename check found only the synthetic
+`Saagar-ETP-Synthetic-20260823` W003/W013/W022/W025 set; no authorized
+WLMHW/HEMW production set was present on the connected device.

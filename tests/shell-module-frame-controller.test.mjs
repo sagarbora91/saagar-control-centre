@@ -71,7 +71,7 @@ test('shell controller has one local versioned byte authority loaded before it',
   assert.deepEqual(Array.from(manifest.assets, asset => asset.id), [
     'shell-module-frame-controller', 'shell-core-css', 'shell-features-css',
     'shell-fonts-css', 'shell-mobile-css', 'shell-redesign-css', 'shell-report-css',
-    'shell-responsive-css', 'shell-responsive-runtime'
+    'shell-responsive-css', 'shell-responsive-runtime', 'shell-search'
   ]);
   for (const asset of manifest.assets) {
     const bytes = fs.readFileSync(path.join(root, 'www', asset.file));

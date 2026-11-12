@@ -104,7 +104,7 @@ test('BKP-03 automatic delivery is provider-bound, encrypted, verified, and GFS-
   assert.ok(index.indexOf('<script src="offdevice-backup.js"></script>') < index.indexOf('<script src="auto-backup.js"></script>'));
 });
 
-test('DAT-02 real-device gate and API-23 production floor are permanent', () => {
+test('DAT-02 real-device gate and centrally enforced minSdk are permanent', () => {
   assert.ok(index.indexOf('<script src="persistence-acceptance.js"></script>') < index.indexOf('<script src="storage-core.js"></script>'));
   assert.ok(index.indexOf('<script src="storage-recovery-policy.js"></script>') < index.indexOf('<script src="storage-core.js"></script>'));
   assert.match(index, /__nativeAuthority\?null:localStorage\.getItem\('saagar_ui_mode'\)/);

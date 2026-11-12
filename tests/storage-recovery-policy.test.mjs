@@ -62,8 +62,8 @@ test('copied diagnostics retain allowlisted metrics and discard raw native data'
   const policy = loadPolicy();
   const secret = 'CUSTOMER_SENTINEL_90817';
   const diagnostic = policy.diagnostics({
-    appVersion: 'V6',
-    apkBuild: '6',
+    appVersion: 'V 1.601',
+    apkBuild: '1.601',
     state: 'blocked',
     code: 'DB_OPEN_FAILED',
     stage: 'native-status',

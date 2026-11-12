@@ -16,7 +16,7 @@ const historicalHtml = restorePrePhase6gShellAssets({
 }).index;
 const markup = html.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, '');
 const original = new Set(['master-add-brands','master-add-vendors','master-add-customers']);
-const added = ['select-session-role','toggle-ui-mode','share-today-brief','toggle-admin-mode','select-home-store','open-attention','toggle-hide-amounts','open-today','close-today','generate-owner-brief','open-reports-hub','share-today-view','search-modules','open-home','open-modules','open-reports','open-settings','close-module','open-module-switcher','toggle-module-ui-mode','share-current-module','toggle-module-actions','reload-module','open-module-reports','open-whatsapp-composer','print-module','close-shell-modal'];
+const added = ['select-session-role','toggle-ui-mode','share-today-brief','toggle-admin-mode','select-home-store','open-attention','toggle-hide-amounts','open-today','close-today','generate-owner-brief','open-reports-hub','share-today-view','search-modules','open-global-search','open-home','open-modules','open-reports','open-settings','close-module','open-module-switcher','toggle-module-ui-mode','share-current-module','toggle-module-actions','reload-module','open-module-reports','open-whatsapp-composer','print-module','close-shell-modal'];
 const expected = [...original, ...added].sort();
 
 test('shared shell freezes the exact safe identity set for the controls Phase 6 moves', () => {
@@ -39,5 +39,5 @@ test('shared shell remains an exact conflict-free A3 action surface', async () =
   const check = (await run(buildContext(root))).checks.find(item => item.id === 'A3-02');
   const actions = check.metric.inventory.filter(item => item.category === 'visible-action' && item.surface === 'shell');
   assert.equal(check.result, 'pass'); assert.equal(check.metric.conflictingIds, 0);
-  assert.equal(actions.length, 117); assert.equal(new Set(actions.map(item => item.capabilityId)).size, 117);
+  assert.equal(actions.length, 118); assert.equal(new Set(actions.map(item => item.capabilityId)).size, 118);
 });

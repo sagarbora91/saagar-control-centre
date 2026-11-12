@@ -18,6 +18,7 @@
   function safe(v,re){return typeof v==='string'&&re.test(v)?v:null;}
   function timestamp(v){var n=Date.parse(v);return typeof v==='string'&&isFinite(n)&&/^\d{4}-\d{2}-\d{2}T/.test(v)?new Date(n).toISOString():null;}
   function canonical(v){if(Array.isArray(v))return '['+v.map(canonical).join(',')+']';if(record(v))return '{'+Object.keys(v).sort().map(function(k){return JSON.stringify(k)+':'+canonical(v[k]);}).join(',')+'}';return JSON.stringify(v);}
+  function date(v){var m=typeof v==='string'&&/^(\d{4})-(\d{2})-(\d{2})$/.exec(v),d;if(!m)return'';d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));return d.getUTCFullYear()===+m[1]&&d.getUTCMonth()===+m[2]-1&&d.getUTCDate()===+m[3]?v:'';}
   function hash(s){var h=2166136261,i;for(i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
   function hasForbidden(v){if(Array.isArray(v))return v.some(hasForbidden);if(!record(v))return false;return Object.keys(v).some(function(k){return FORBIDDEN.indexOf(k)>=0||hasForbidden(v[k]);});}
   function authority(input){
@@ -55,5 +56,5 @@
     return freeze({ok:true,restored:Object.assign({},restored,{scopes:scopes})});
   }
   function canRead(restored,scopeKey,binding){if(!record(restored)||!Array.isArray(restored.scopes)||!record(binding))return false;return restored.scopes.some(function(x){return x.scopeKey===scopeKey&&x.status==='BOUND_VERIFIED'&&x.generationId===binding.generationId&&x.receiptId===binding.receiptId;});}
-  return freeze({VERSION:VERSION,DOMAINS:DOMAINS,ROLES:ROLES,ACTIONS:ACTIONS,registerAuthority:authority,authorize:authorize,createOverlay:function(v){var out=overlay(v);return out?freeze({ok:true,overlay:out}):fail('ETP_OVERLAY_INVALID');},createPortableBackup:portableBackup,restorePortableBackup:restore,rebindVerifiedScope:rebind,canReadVerifiedScope:canRead});
+  return freeze({VERSION:VERSION,DOMAINS:DOMAINS,ROLES:ROLES,ACTIONS:ACTIONS,registerAuthority:authority,authorize:authorize,createOverlay:function(v){var out=overlay(v);return out?freeze({ok:true,overlay:out}):fail('ETP_OVERLAY_INVALID');},createPortableBackup:portableBackup,restorePortableBackup:restore,rebindVerifiedScope:rebind,canReadVerifiedScope:canRead,canonical:canonical,date:date});
 });

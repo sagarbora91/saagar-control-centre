@@ -32,6 +32,17 @@ const APPROVED_ETP_DELTA_IDS = Object.freeze(new Set([
   "etp:route:entry",
 ]));
 
+/* ETP report-engine bridge, tablet side (Wave 6): the five compare-only controls of the
+   "Engine pack" tab. Owner decision given in chat, 2026-11-12; see
+   verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json */
+const APPROVED_BRIDGE_DELTA_IDS = Object.freeze(new Set([
+  'etp:action:etpbridgecheck:3935d6d5a2',
+  'etp:action:etpbridgecomparebtn:866f00d73b',
+  'etp:action:etpbridgediscard:0dda52c502',
+  'etp:action:etpbridgeform:226df48c80',
+  'etp:action:tab-bridge:319abff657'
+]));
+
 const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
   'dsr:action:st-v5-home-fab:c05eb3ddb3',
   'qms:action:st-v5-home-fab:c05eb3ddb3',
@@ -85,6 +96,21 @@ function actionBindingSummary(capability) {
 
 function classification(change, before, after) {
   const capability = after || before;
+  /* Search v1 entry button: a genuinely new control, not a Phase 6B identity annotation.
+     Owner decision given in chat, 2026-11-12; see
+     verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json */
+  if (change === 'added' && capability.capabilityId === 'shell:action:open-global-search:0c573f26c9') {
+    return {
+      reviewClass: 'shell-global-search-v1-entry-button',
+      reason: 'New top-bar search button for Search v1 (places only); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if (change === 'added' && APPROVED_BRIDGE_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'etp-engine-bridge-compare-v1-capability',
+      reason: 'New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.'
+    };
+  }
   if ((change === 'added' || change === 'removed') && capability.category === 'visible-action' &&
       PHASE6B_IDENTITY_SURFACES.has(String(capability.surface || '').split(':')[0])) {
     return {
@@ -261,15 +287,17 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 704);
+  assert.equal(current.length, 740);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 489, permission: 27, 'persisted-outcome': 86, 'failure-posture': 89 });
-  assert.equal(count('added'), 399);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 29, 'persisted-outcome': 86, 'failure-posture': 116 });
+  assert.equal(count('added'), 435);
   assert.equal(count('removed'), 350);
   assert.equal(count('changed'), 41);
   assert.equal(classCount('handler-body-hash-only'), 21);
   assert.equal(classCount('failure-posture-source-boundary-change'), 16);
   assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
+  assert.equal(classCount('shell-global-search-v1-entry-button'), 1);
+  assert.equal(classCount('etp-engine-bridge-compare-v1-capability'), 5);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 

@@ -1,0 +1,177 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "ETP-CAPABILITY-DELTA-V6-REBASELINE",
+  "decision": "approve",
+  "state": "approved-for-735-inventory; owner-reconfirmation-pending-for-734-binding",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-11",
+  "approvalEvidence": "owner approval given in chat, 2026-11-11",
+  "recordedBy": "Claude Code agent, Wave 2 step S3, transcribing the owner chat approval; updated by Claude Code agent, Wave 4 step W5, to match the regenerated ledger. This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "sourceBinding": {
+    "sourceCommit": "605002ff6b9319d287f3f06d0761b5ecb2cf0797",
+    "includesUncommittedWave2Changes": true,
+    "ledgerPath": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+    "currentInventorySha256": "ddb8732f369143dca14b2a29b82ad2b42b68915dea308b2d0b1ab35eb2f0ebb5",
+    "includesUncommittedWave4Changes": true
+  },
+  "inventory": {
+    "baselineCapabilities": 704,
+    "currentCapabilities": 734,
+    "netNew": 30,
+    "ledgerSummary": {
+      "added": 429,
+      "removed": 350,
+      "changed": 41,
+      "capabilityApprovalsRequired": 820
+    },
+    "categoriesAfter": {
+      "failure-posture": 116,
+      "permission": 29,
+      "persisted-outcome": 86,
+      "route": 13,
+      "visible-action": 490
+    }
+  },
+  "approvedDeltas": {
+    "newVisibleActions": [
+      "etp:action:etpe7refresh:37414a7b15"
+    ],
+    "newPermissions": [
+      "script-etp-operational-shell-composer:permission:owner-session",
+      "script-etp-operational-shell-composer:permission:reauthentication"
+    ],
+    "newFailurePostures": [
+      "script-etp-e3-orchestrator:failure:posture",
+      "script-etp-e3-presentation:failure:posture",
+      "script-etp-e3-verified-join:failure:posture",
+      "script-etp-e4-authority-intake:failure:posture",
+      "script-etp-e4-orchestrator:failure:posture",
+      "script-etp-e4-presentation:failure:posture",
+      "script-etp-e5-authority-intake:failure:posture",
+      "script-etp-e5-payroll-bridge:failure:posture",
+      "script-etp-e5-presentation:failure:posture",
+      "script-etp-e6-authority-intake:failure:posture",
+      "script-etp-e6-presentation:failure:posture",
+      "script-etp-e7-authority-intake:failure:posture",
+      "script-etp-e7-module-host:failure:posture",
+      "script-etp-e7-presentation:failure:posture",
+      "script-etp-e7-service-operational:failure:posture",
+      "script-etp-e7-service-verifier:failure:posture",
+      "script-etp-operational-adapters:failure:posture",
+      "script-etp-operational-bootstrap:failure:posture",
+      "script-etp-operational-foundation:failure:posture",
+      "script-etp-operational-frame-bridge:failure:posture",
+      "script-etp-operational-gateway:failure:posture",
+      "script-etp-operational-i18n:failure:posture",
+      "script-etp-operational-module-host:failure:posture",
+      "script-etp-operational-mount:failure:posture",
+      "script-etp-operational-runtime:failure:posture",
+      "script-etp-operational-shell-composer:failure:posture",
+      "script-etp-operational-store:failure:posture"
+    ]
+  },
+  "remeasuredExistingEntries": {
+    "note": "These ledger entries already existed in the 704 inventory and kept their change type and review class; only the measured current outcome changed because the ETP source changed after the Phase 6I freeze. They are listed for transparency; the owner chat approval covered the 704 to 735 delta, and these six re-measurements were not itemised to the owner before approval.",
+    "ids": [
+      "etp:action:etpimportform:a9e08f3687",
+      "etp:failure:posture",
+      "script-etp-exception-monitor:failure:posture",
+      "script-etp-import-runtime:failure:posture",
+      "script-etp-incentive-control:failure:posture",
+      "script-etp-module-gateway:failure:posture"
+    ]
+  },
+  "earlierApprovalText": "Sagar (Owner/Admin) approved, in chat on 2026-11-11, the three test fixes including re-baselining the modular capability inventory from 704 to 735. The 31 added capabilities are all from the Retail ETP V6 E3 to E7 and demo work after the Phase 6I freeze: 1 visible action, 2 permissions and 28 failure-postures. Decision: APPROVE.",
+  "approvalText": "Sagar (Owner/Admin) approved, in chat on 2026-11-11, the three test fixes including re-baselining the modular capability inventory (first recorded as 704 to 735). Also in chat on 2026-11-11, he decided: the synthetic demo read gateway must not live in production code (the demo-operational capability leaves production), the duplicate date/canonical helper code is removed (\"remove the duplicates now, which changes those files and their fingerprints\"), and the swallowed catch is fixed (\"fix the error swallow issue\"). The regenerated inventory is 734 capabilities: the 30 net-new capabilities versus 704 are 1 visible action, 2 permissions and 27 failure-postures. Decision: APPROVE for the original 735 inventory; the re-measured 734 inventory rests on those decisions and awaits his confirmation (see supersession.ownerReconfirmation).",
+  "scope": {
+    "authorizes": [
+      "Setting the analyser expected capability inventory to 734 in scripts/analyze-modular-capability-delta.mjs",
+      "Regeneration of MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json with 429 added, 350 removed and 41 changed entries",
+      "Matching assertion updates in tests/modular-capability-delta.test.mjs and tests/phase1-shared-spine.test.mjs"
+    ],
+    "doesNotClose": [
+      "production signing, release approval, physical-device acceptance, staff UAT, legal approval",
+      "any capability added after this inventory hash (the gate stays fail-closed for them)"
+    ]
+  },
+  "registryNote": "The ledger itself intentionally remains approvalStatus pending-owner-approval with every delta ownerApproval pending; approval lives in this separate record, as with ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json.",
+  "supersession": {
+    "note": "This record first bound the 735-capability inventory (hash in earlierBinding). Wave 4 changed the tree, so the ledger was regenerated by node scripts/analyze-modular-capability-delta.mjs --write and this record now binds the regenerated 734-capability inventory. Nothing else in the ledger moved: removed 350, changed 41, handler-body-hash-only 21, failure-posture-source-boundary-change 16, report-presentation-enrichment-fallback-added 1, bindingStructureChanged 3 are all unchanged.",
+    "earlierBinding": {
+      "currentInventorySha256": "8dc820ace5708eca48b7c6db12bf1db53442ed2df873b17c53eb2f778d6944b1",
+      "currentCapabilities": 735,
+      "netNew": 31,
+      "ledgerSummary": {
+        "added": 430,
+        "removed": 350,
+        "changed": 41,
+        "capabilityApprovalsRequired": 821
+      },
+      "categoriesAfter": {
+        "failure-posture": 117,
+        "permission": 29,
+        "persisted-outcome": 86,
+        "route": 13,
+        "visible-action": 490
+      },
+      "approvalText": "Sagar (Owner/Admin) approved, in chat on 2026-11-11, the three test fixes including re-baselining the modular capability inventory from 704 to 735. The 31 added capabilities are all from the Retail ETP V6 E3 to E7 and demo work after the Phase 6I freeze: 1 visible action, 2 permissions and 28 failure-postures. Decision: APPROVE."
+    },
+    "ownerDecisionsGivenInChat20261111": {
+      "D-A": "ETP bridge: \"we are already building ETP report engine which has all the data of ETP so ... let's have a bridge for ETP report engine\". Implemented for now by keeping the synthetic demo read gateway out of production code; only the dummy-data (seeded) build adds it.",
+      "D-B": "Production keeps exactly 2 document.write loaders in www/index.html; the demo loader is injected only by the seeded build.",
+      "D-C": "\"remove the duplicates now, which changes those files and their fingerprints\"",
+      "D-E": "\"fix the error swallow issue\""
+    },
+    "removedFromInventory": [
+      {
+        "id": "script-etp-demo-operational:failure:posture",
+        "category": "failure-posture",
+        "reason": "D-A/D-B: www/etp-demo-operational.js left production (moved to build-overrides/demo, injected only by the seeded build). It was in the earlier approved newFailurePostures list."
+      }
+    ],
+    "addedToInventory": [],
+    "outcomeChangedEntries": [
+      {
+        "id": "etp:failure:posture",
+        "change": "swallowedCatchBlocks 1 to 0",
+        "reason": "D-E: the swallowed catch in www/modules/etp/index.html (refreshOperational destroy path) now shows an error notice with a safe code. It stays an \"added\" ledger entry; counts of catch blocks, fallback sites and throw sites are unchanged."
+      },
+      {
+        "id": "script-etp-e4-authority-intake:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date/canonical copies were replaced by the shared helpers in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing. No new capability id; no new file."
+      },
+      {
+        "id": "script-etp-e5-authority-intake:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date/canonical copies were replaced by the shared helpers in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing. No new capability id; no new file."
+      },
+      {
+        "id": "script-etp-e6-authority-intake:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date/canonical copies were replaced by the shared helpers in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing. No new capability id; no new file."
+      },
+      {
+        "id": "script-etp-e7-authority-intake:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date/canonical copies were replaced by the shared helpers in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing. No new capability id; no new file."
+      },
+      {
+        "id": "script-etp-e7-service-verifier:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date copy was replaced by the shared date helper in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing. No new capability id; no new file."
+      },
+      {
+        "id": "script-etp-incentive-control:failure:posture",
+        "change": "throwSites +1",
+        "reason": "D-C: the duplicate local date copy was replaced by the shared date helper in www/etp-operational-foundation.js, with a fail-closed throw if the foundation is missing; this file keeps its own canonical function. No new capability id; no new file."
+      }
+    ],
+    "noNewSharedHelperCapability": "D-C added no new www file, so no new shared-helper capability id exists. The shared helpers live in the already approved www/etp-operational-foundation.js entry.",
+    "ownerReconfirmation": "Not yet given. The owner approved the 704 to 735 move and later gave decisions D-A, D-C and D-E, but the exact 734 figures and the seven re-measured outcomes above were not itemised to him in chat before this record was updated. Please confirm or reject."
+  }
+}

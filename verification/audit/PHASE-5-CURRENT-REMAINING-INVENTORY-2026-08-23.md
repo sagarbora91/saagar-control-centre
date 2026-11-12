@@ -39,6 +39,24 @@ is rejected because it visibly displayed a stale `TEST` badge.
 Phase 5 remains open on external inputs. No completed SM-T875, picker,
 performance, memory, visual, language or synthetic ETP evidence was repeated.
 
+## Firebase API-23 catalog disposition — 2026-08-24
+
+The existing Spark project `saagar-phase-5-test-lab` was resumed and its live
+Android catalog was filtered with the exact query `API 23`. Firebase returned
+**No matching devices**, so no qualifying physical OEM API-23 hardware is
+currently available. This is recorded as a carried exception and is not a pass.
+The production APK hash was reverified locally; the APK was not uploaded and no
+Firebase test was run. Evidence:
+`verification/audit/PHASE-5-FIREBASE-API23-PHYSICAL-CATALOG-EXCEPTION-2026-08-24.md`.
+
+## Named UAT disposition — 2026-08-24
+
+Akash's cashier/maker decision remains PASS. Sagar reported completion of
+Shadul's manager/checker review and Sagar's owner/admin review; both are recorded
+as PASS in `verification/audit/PHASE-5-STAFF-UAT-2026-08-23.md`. The staff UAT
+portion of `GATE-UAT` is closed. Authorized production publication remains a
+separate open gate.
+
 ## Current status
 
 - Repository-controlled ETP defect remediation: **complete**.
@@ -59,10 +77,10 @@ performance, memory, visual, language or synthetic ETP evidence was repeated.
 
 | ID | Current state | Exact remaining work | Required input/authority | Can current SM-T875 close it? |
 |---|---|---|---|---|
-| `GATE-ETP-PHYSICAL` | Carried open; SM-T875 synthetic path passed | On a real API-23-class OEM device, select the four files through its document provider, retain URI permission, import, relaunch and verify readback against the final shipping artifact | API-23-class physical/OEM device or qualifying cloud real-device farm; named tester; authorized safe four-file set | **No further SM-T875 work.** Its API-33 synthetic validation/publication/readback is banked |
-| `GATE-ETP-INTERRUPTION` | Carried open; SM-T875 picker-background reauth passed | Run only the uncovered API-23/OEM and safe-low-storage cases; prove no partial generation or plaintext publication | API-23-class OEM device/tester and controlled storage setup | **No further SM-T875 picker repetition.** Do not repeat the banked emulator or API-33 subsets |
+| `GATE-ETP-PHYSICAL` | **Carried exception; not passed.** Live Firebase catalog returned `No matching devices` for exact `API 23` search on 2026-08-24; SM-T875 synthetic path passed only at API 33 | If qualifying hardware later becomes available, on a real API-23-class OEM device select the four files through its document provider, retain URI permission, import, relaunch and verify readback against the exact shipping artifact | API-23-class physical/OEM device or qualifying cloud real-device farm; named tester; authorized safe four-file set | **No further SM-T875 work.** Its API-33 synthetic validation/publication/readback is banked |
+| `GATE-ETP-INTERRUPTION` | Carried open; Firebase API-23 hardware unavailable; SM-T875 picker-background reauth passed | Run only the uncovered API-23/OEM and safe-low-storage cases; prove no partial generation or plaintext publication | API-23-class OEM device/tester and controlled storage setup | **No further SM-T875 picker repetition.** Do not repeat the banked emulator or API-33 subsets |
 | `GATE-ETP-PRODUCTION` | Carried open, owner-deferred, not passed | Import untouched authorized WLMHW/HEMW R003, R013, R022 and R025; record bounded hashes/counts, complete-period declaration, manager reauthentication, REC-002, active/previous generation and metadata-only receipt | Authorized four-report production set; production-data custodian; Sagar as Owner/Admin | SM-T875 is optional; the gate itself needs the authorized data, not a particular device |
-| `GATE-UAT` | In progress; staff participants named, results pending | Complete the role/store matrix with Akash (cashier/maker), Shadul (manager/checker) and Sagar (owner/admin); record expected/actual results, owner decision and privacy/legal checklist | Akash and Shadul must personally state their results; Sagar remains owner/admin and owner self-reviewer for privacy/legal unless independent counsel is added | Device may be used, but Codex/ADB cannot substitute for staff decisions |
+| `GATE-UAT` | **Staff UAT closed:** Akash cashier/maker PASS; Shadul manager/checker PASS; Sagar owner/admin PASS | No remaining named staff workflow. Preserve the identity-bound decisions and carry the already-recorded same-person privacy/legal and release-independence posture separately | Optional independent counsel/release approver remains outside the completed staff matrix | No further SM-T875 UAT repetition required |
 | `GATE-RELEASE` | Pending; signed-artifact build/install complete | Production-signed artifact, certificate, non-debug posture and exact-hash SM-T875 install/launch are verified. Remaining: complete prerequisite external gates, perform final identity rebind and issue the exact-artifact release decision acknowledging every carried exception | Sagar's release decision after API-23/OEM, production-data and staff-UAT inputs. Current same-person approver assignment remains a recorded independence exception | Corrected signed artifact is installed; SM-T875 cannot close the missing API-23 or human/data gates |
 
 ## Historical closed gates that still need final-artifact rebinding
@@ -94,10 +112,12 @@ unless Sagar explicitly reverses that disposition.
 ## Inputs not currently available
 
 1. A real Android API-23-class OEM device or qualifying cloud real-device farm.
+   Firebase Test Lab was checked live on 2026-08-24 and returned no matches for
+   `API 23`; this unavailable-provider condition is now a carried exception.
 2. Authorized WLMHW/HEMW R003/R013/R022/R025 files for the controlled production
    publication session.
-3. Participation and identity-bound decisions from named testers Akash
-   (cashier/maker) and Shadul (manager/checker). The working matrix is
+3. ~~Participation and identity-bound decisions from Akash, Shadul and Sagar.~~
+   **Received and recorded 2026-08-24** in
    `verification/audit/PHASE-5-STAFF-UAT-2026-08-23.md`.
 4. Optional independent release approver. Sagar currently holds both custodian
    and approver roles; the separation-of-duties control remains unsatisfied and

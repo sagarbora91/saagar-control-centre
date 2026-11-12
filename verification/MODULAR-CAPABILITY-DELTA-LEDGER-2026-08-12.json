@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 704,
+    "capabilities": 740,
     "categories": {
-      "failure-posture": 89,
-      "permission": 27,
+      "failure-posture": 116,
+      "permission": 29,
       "persisted-outcome": 86,
       "route": 13,
-      "visible-action": 489
+      "visible-action": 496
     },
     "conflicts": 0,
-    "inventorySha256": "00c3e7e87fe09f45185c36243ac99d8e78b75a12c77d685ca2ae2a556bcbe150"
+    "inventorySha256": "7496c0faf7770ebcaeefe52da0b41531b3be602cdd7699d9b1c8748b8cede707"
   },
   "deltas": [
     {
@@ -5183,6 +5183,161 @@
         "current": {
           "bindings": 1,
           "expressionSha256": [
+            "20e66a8c2ba354150767b83f412f5643e7d11b475e839c935f1d929b7a54ff57"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpbridgecheck:3935d6d5a2",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "submit",
+              "expressionSha256": "20e66a8c2ba354150767b83f412f5643e7d11b475e839c935f1d929b7a54ff57",
+              "kind": "native-form-submit",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "button",
+          "type": "submit"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "1877c7e0a5349a6bb1d7884104d62e9f95f31bf94cd01996a586451cfbdd41c7",
+      "ownerApproval": "pending",
+      "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "etp-engine-bridge-compare-v1-capability"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpbridgecomparebtn:866f00d73b",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "etp-engine-bridge-compare-v1-capability"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpbridgediscard:0dda52c502",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "8df52d409f391497e6358e089481659ecdecb5fe34243f6a26edadab2b2f25c9",
+      "ownerApproval": "pending",
+      "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "etp-engine-bridge-compare-v1-capability"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "e5f6249edd9f3433b9ecbe7ca624649628872d22f8f49304eabbb7dbeed74d56"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "etp:action:etpbridgeform:226df48c80",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "submit",
+              "expressionSha256": "e5f6249edd9f3433b9ecbe7ca624649628872d22f8f49304eabbb7dbeed74d56",
+              "kind": "native-form",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "form"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "ebeae0a31d153eb607a9b4f51ce796812ab2a99357652eb770858fa93c589e93",
+      "ownerApproval": "pending",
+      "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "etp-engine-bridge-compare-v1-capability"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
             "b45dcefff4538f1a38c12f4325d3d40791af193019141865b92fd102214b03a2"
           ],
           "handlerNames": [
@@ -5278,6 +5433,57 @@
         "current": {
           "bindings": 1,
           "expressionSha256": [
+            "dc01e6af0f73745064d5730e88bcdb89d4f7cc948112d21f9aae102b6b038ac0"
+          ],
+          "handlerNames": [
+            "refreshServiceVerification"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "etp:action:etpe7refresh:37414a7b15",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "dc01e6af0f73745064d5730e88bcdb89d4f7cc948112d21f9aae102b6b038ac0",
+              "kind": "addEventListener",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "fe8e661b063899b9f1bf02675b86920ea78200e170bcca1284b14e903a5dbfc2",
+                  "name": "refreshServiceVerification"
+                }
+              ]
+            }
+          ],
+          "element": "button",
+          "type": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "77b426f7af8e039b8bfa01fdec8ed8d417115de3f665db490aebff51f8da8bda",
+      "ownerApproval": "pending",
+      "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
+      "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
             "caa10f0c33bd6803e7f44578b2cc52f261fe8ced83080bf42f974ca8439fc6a0"
           ],
           "handlerNames": [
@@ -5352,7 +5558,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "b946f8ba32cbef26f53730233101758fbe10e6f72bb8a34bd863cda5a3da2dbf",
+                  "bodySha256": "1dc9d3409d9821ef184f75eaa06be86a1e388c272870c79032f118dafd34ba19",
                   "name": "validateImport"
                 }
               ]
@@ -5369,7 +5575,7 @@
         },
         "surface": "etp"
       },
-      "currentOutcomeSha256": "26479e3e5bb040f80519d71aea31504afcb8289601c6d04bb1d1878a623f0f19",
+      "currentOutcomeSha256": "c6c71832636b627dda4f84b739b402452a014b0ea44f1f30942624b4b116d410",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -5702,6 +5908,39 @@
           "referencedHandlerBodies": 0
         }
       },
+      "capabilityId": "etp:action:tab-bridge:319abff657",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [],
+          "element": "button"
+        },
+        "surface": "etp"
+      },
+      "currentOutcomeSha256": "39166c834da694ea12dcd7f012ae2baad6bcc32ad08992b3a0ad1f9e2daf1a2a",
+      "ownerApproval": "pending",
+      "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "etp-engine-bridge-compare-v1-capability"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
       "capabilityId": "etp:action:tab-coverage:bdc145f6b7",
       "category": "visible-action",
       "change": "added",
@@ -5860,15 +6099,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 4,
-          "explicitFallbackSites": 3,
+          "catchBlocks": 11,
+          "explicitFallbackSites": 9,
           "swallowedCatchBlocks": 0,
           "throwSites": 0,
-          "userVisibleErrorSites": 0
+          "userVisibleErrorSites": 1
         },
         "surface": "etp"
       },
-      "currentOutcomeSha256": "48cdea2da976c081641038f581836edb24ee50651e182c86e2500d2de14fddff",
+      "currentOutcomeSha256": "9dc957a79c394c7364e0eea62fe14cbd3d14f9b9588fb2a834bfea5b89952449",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21665,7 +21904,139 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
-      "capabilityId": "script-etp-exception-monitor:failure:posture",
+      "capabilityId": "script-etp-e3-orchestrator:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 3,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e3-orchestrator"
+      },
+      "currentOutcomeSha256": "3f81197eee170f948b7146e23509f67c56b1b5b20481fce309a831af61ae1651",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e3-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 3,
+          "explicitFallbackSites": 4,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e3-presentation"
+      },
+      "currentOutcomeSha256": "843323187203a324cfd5265432a53127f8a1de22a3fd11128b5f1e2724520a83",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e3-verified-join:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e3-verified-join"
+      },
+      "currentOutcomeSha256": "0704093b95f51876f1286f383e3d562b4a34b97435dfce1ded8915acc0d9a27f",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e4-authority-intake:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 9,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e4-authority-intake"
+      },
+      "currentOutcomeSha256": "9edd01fac2611bdfe8a3e307a92409d15a2c4777717cfcdbdf8ed848d2758949",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e4-orchestrator:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 3,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e4-orchestrator"
+      },
+      "currentOutcomeSha256": "b2e0fad59605a63deb8ebc07472cbdd9aa99e30dccc376a11f41f4a6ec554300",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e4-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 20,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-etp-e4-presentation"
+      },
+      "currentOutcomeSha256": "8b0e54c4994b130bccbffba70791e2a806c2b2229aefb49ff24668420a5dbb9f",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e5-authority-intake:failure:posture",
       "category": "failure-posture",
       "change": "added",
       "current": {
@@ -21674,12 +22045,232 @@
           "catchBlocks": 1,
           "explicitFallbackSites": 8,
           "swallowedCatchBlocks": 0,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e5-authority-intake"
+      },
+      "currentOutcomeSha256": "01d6106a108cb4377004a385c18872b106fb589dfe8a0efd54c9b1d470343275",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e5-payroll-bridge:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 0,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e5-payroll-bridge"
+      },
+      "currentOutcomeSha256": "697acaa67bd653ac03603e23d6c5ea110f25cf5ada5c38b42863beec275c2d38",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e5-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 17,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-etp-e5-presentation"
+      },
+      "currentOutcomeSha256": "24a297ab9aa721ac51389f4e440cb3ca9cd7c7b49dda82effc233f22c0a44640",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e6-authority-intake:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 11,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e6-authority-intake"
+      },
+      "currentOutcomeSha256": "28b3eb2cf508aaef20961b86037b18dda9ecbf9dee86161e0df19c593eb71795",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e6-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 15,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-etp-e6-presentation"
+      },
+      "currentOutcomeSha256": "0cdebb3677ee98b0075c14bb0a6820daa5fbfe10936c45fb287f0f456b49731a",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e7-authority-intake:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 11,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e7-authority-intake"
+      },
+      "currentOutcomeSha256": "21ed2b5fb768973fd44f2631d09639558835b2fc19bad23f1153df7b0d93008b",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e7-module-host:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 0,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e7-module-host"
+      },
+      "currentOutcomeSha256": "67aeb92892a3b7dcc31e94f0998088037d460ab8da91ff4eb001049ddac46fb9",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e7-presentation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 27,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-etp-e7-presentation"
+      },
+      "currentOutcomeSha256": "85653fde926e5d76c5980ee289beba47739ff10c25e5c80d7cfbce3d055e6e43",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e7-service-operational:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 8,
+          "explicitFallbackSites": 35,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e7-service-operational"
+      },
+      "currentOutcomeSha256": "ef8404358c3bcc25a035abf014e6453473b47bea5e6375affa131a99bc531d35",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-e7-service-verifier:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 8,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-e7-service-verifier"
+      },
+      "currentOutcomeSha256": "0b2cac2148bae7f213af44212b7a43553b64f8ac49039ecb37d225a62764d073",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-exception-monitor:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 21,
+          "swallowedCatchBlocks": 0,
           "throwSites": 8,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-exception-monitor"
       },
-      "currentOutcomeSha256": "9cb6f049eaf54e88a69cf119e91b71b31bc5c4793f8a7d3f61d32366bf060e76",
+      "currentOutcomeSha256": "4d0ec3a4f2ea49194d2c61948ae3801c6461032098395540ca602d563fa859ee",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21748,14 +22339,14 @@
         "category": "failure-posture",
         "outcome": {
           "catchBlocks": 4,
-          "explicitFallbackSites": 2,
+          "explicitFallbackSites": 4,
           "swallowedCatchBlocks": 0,
           "throwSites": 0,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-import-runtime"
       },
-      "currentOutcomeSha256": "edb5ff08d6b03c83c6b4481c053ff9c5adab0d139930dc670dc48985b36cf42e",
+      "currentOutcomeSha256": "66c55b9304c7725f42c97825e2b86dbf45dcb0ece26627fae9e08a9eb68873bf",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -21802,14 +22393,14 @@
         "category": "failure-posture",
         "outcome": {
           "catchBlocks": 0,
-          "explicitFallbackSites": 3,
+          "explicitFallbackSites": 14,
           "swallowedCatchBlocks": 0,
-          "throwSites": 0,
+          "throwSites": 1,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-incentive-control"
       },
-      "currentOutcomeSha256": "61b267017ce38a790f6cd698f17db501a260c38ce1969e80abed87fe18a8190e",
+      "currentOutcomeSha256": "4bf5b4ac7475f9231a79e875c9e6a7f53e9f8500b0d07186b7f490b6e145e7f3",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21824,14 +22415,14 @@
         "category": "failure-posture",
         "outcome": {
           "catchBlocks": 15,
-          "explicitFallbackSites": 32,
+          "explicitFallbackSites": 33,
           "swallowedCatchBlocks": 0,
           "throwSites": 0,
           "userVisibleErrorSites": 0
         },
         "surface": "script-etp-module-gateway"
       },
-      "currentOutcomeSha256": "164bd92e68e11f63b9b88b6e96f3ec06362db16f1d65ab8e5ab8031c23a32bea",
+      "currentOutcomeSha256": "7b41031d56aa80bc3811724d1656f3c9963e13e2986033692c11d834431f1387",
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
@@ -21867,6 +22458,280 @@
       "ownerApproval": "pending",
       "reason": "The fixed gateway now exposes its explicit action-bound reauthentication contract to the frozen analyser; final owner approval remains identity-bound.",
       "reviewClass": "bounded-etp-reauthentication-authority"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-adapters:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 11,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 24,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-adapters"
+      },
+      "currentOutcomeSha256": "d22a597a6177613c10721d1912197794447126ffc7d5c25d5d7bb76bd95aa340",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-bootstrap:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 12,
+          "explicitFallbackSites": 10,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-bootstrap"
+      },
+      "currentOutcomeSha256": "53737738fd5ffa32383b9d3016c999d21cc1c6b4d191714353323a7bf38a6471",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-foundation:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 4,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-foundation"
+      },
+      "currentOutcomeSha256": "befa7a9ffa16172d45a750d5aca9f5bcac969dc74f3db2207ab0450c95d471f1",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-frame-bridge:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 0,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-frame-bridge"
+      },
+      "currentOutcomeSha256": "e934338230cb3b0c64e365aad62b167d4e0c66011e09e8f7435df97aab8dd541",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-gateway:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 19,
+          "explicitFallbackSites": 14,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-gateway"
+      },
+      "currentOutcomeSha256": "674377c5a8e83c953c3e47eba49a43764299220b02256f04b04b8cd1a9fd1a24",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-i18n:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-i18n"
+      },
+      "currentOutcomeSha256": "792f1b7d1c39e13a9fab454f35ded13e012cf5adc0e26d47d6f496c009a10e65",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-module-host:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 3,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 1
+        },
+        "surface": "script-etp-operational-module-host"
+      },
+      "currentOutcomeSha256": "0a894a51a2cbfba229f557b3efc7448cbd309cc6af0b275392b0b20a490a6363",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-mount:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 7,
+          "explicitFallbackSites": 2,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 0,
+          "userVisibleErrorSites": 1
+        },
+        "surface": "script-etp-operational-mount"
+      },
+      "currentOutcomeSha256": "a8227a705c8c1576fc08f7ba22798ed447c7c62b70da1ec60c1a8ccb5c3a28ca",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-runtime:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 10,
+          "explicitFallbackSites": 6,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 2,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-runtime"
+      },
+      "currentOutcomeSha256": "774a03b1be25e306d16616f65650baae7e7905c62689bd2607d4f425a8010339",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-shell-composer:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 8,
+          "explicitFallbackSites": 6,
+          "swallowedCatchBlocks": 1,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-shell-composer"
+      },
+      "currentOutcomeSha256": "b2f488198d3e8fcd5be2764b7236ea30aa9acc62d6bea9006b4dd02fce13b0ab",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-shell-composer:permission:owner-session",
+      "category": "permission",
+      "change": "added",
+      "current": {
+        "category": "permission",
+        "outcome": "owner-session or owner-only decision is consulted",
+        "surface": "script-etp-operational-shell-composer"
+      },
+      "currentOutcomeSha256": "eeee6ac0678b698a0d6ae7ab9caf9d49ca1065403eabafd766fcac05ad2772f4",
+      "ownerApproval": "pending",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "reviewClass": "declared-module-access-context"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-shell-composer:permission:reauthentication",
+      "category": "permission",
+      "change": "added",
+      "current": {
+        "category": "permission",
+        "outcome": "sensitive action requires explicit reauthentication contract",
+        "surface": "script-etp-operational-shell-composer"
+      },
+      "currentOutcomeSha256": "81be8590d249cee61614cfcca8b6b8b681bcb89094fa122adb5ef72992df41b3",
+      "ownerApproval": "pending",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "reviewClass": "declared-module-access-context"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-etp-operational-store:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 2,
+          "explicitFallbackSites": 10,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-etp-operational-store"
+      },
+      "currentOutcomeSha256": "ba4c766adb576fe849715e83753be1b6d0c1582be8da16935eeb37e74bf19ef9",
+      "ownerApproval": "pending",
+      "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
+      "reviewClass": "extracted-first-party-failure-surface"
     },
     {
       "baseline": null,
@@ -34371,6 +35236,51 @@
         "current": {
           "bindings": 1,
           "expressionSha256": [
+            "28e7255deb74ac57ddbff4240a04ae398bf1407bb89baa175aa5ca0723c5058c"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "shell:action:open-global-search:0c573f26c9",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "28e7255deb74ac57ddbff4240a04ae398bf1407bb89baa175aa5ca0723c5058c",
+              "kind": "inline-event",
+              "qualifiedCalls": [
+                "open"
+              ],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "32b9b37e7716f7a6d40f9f2f75e86950ac44a94d383885a908711fc3c06e320a",
+      "ownerApproval": "pending",
+      "reason": "New top-bar search button for Search v1 (places only); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "shell-global-search-v1-entry-button"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
             "814fc1d3df1f8870bae972730a0e053d90b562e14b1fac7a132b9ee2e6ca94e9"
           ],
           "handlerNames": [
@@ -41988,15 +42898,15 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 399,
+    "added": 435,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 790,
+    "capabilityApprovalsRequired": 826,
     "changed": 41,
     "changedFailurePostures": 17,
     "changedVisibleActions": 24,
-    "comparisonDeltaSha256": "bdf0fc07e97c272151928d45f14c96bd82396f29b275feac44299337fcb99e55",
+    "comparisonDeltaSha256": "07994fdec55bdb94d1ae4c70a4ed8627c9f90d3548e35e7d4dbae919f670954d",
     "handlerBodyHashOnly": 21,
-    "netCapabilities": 49,
+    "netCapabilities": 85,
     "removed": 350,
     "reportPresentationFallbacks": 1
   }

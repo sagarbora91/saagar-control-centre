@@ -1,0 +1,288 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "ETP-ENGINE-BRIDGE-COMPARE-V1-CAPABILITY-DELTA",
+  "decision": "approve",
+  "state": "approved-for-itemised-additions; owner-reconfirmation-pending-for-exact-inventory-binding",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-12",
+  "approvalEvidence": "owner decision given in chat, 2026-11-12",
+  "recordedBy": "Claude Code agent, Wave 6 step W4, transcribing owner chat decisions. This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "priorRecords": [
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+      "bytes": 11437,
+      "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+      "treatment": "left unchanged; this record extends it"
+    },
+    {
+      "path": "verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 8217,
+      "sha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9",
+      "treatment": "left unchanged; this record extends it. Its expectedCountsOnceTracked (737 / 118 / 432 / 823) covers only the two Wave 5 files; the figures in filesNotVisibleToAnalyser below supersede it."
+    }
+  ],
+  "sourceBinding": {
+    "sourceCommit": "605002ff6b9319d287f3f06d0761b5ecb2cf0797",
+    "includesUncommittedWave6Changes": true,
+    "ledgerPath": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+    "currentInventorySha256": "7496c0faf7770ebcaeefe52da0b41531b3be602cdd7699d9b1c8748b8cede707",
+    "ledgerFileSha256": "b22939b6aeb62037c6673608849a8fbeb833a857864050f77d21ad8646800a53",
+    "previousRecordCurrentInventorySha256": "6007ec8aa8778a3940e93bd2c37f7c07ef3fd7e16c36b24a829efb44b9e147fc"
+  },
+  "inventory": {
+    "baselineCapabilities": 655,
+    "currentCapabilities": 740,
+    "netNew": 85,
+    "previousRecordCurrentCapabilities": 735,
+    "addedSincePreviousRecord": 5,
+    "ledgerSummary": {
+      "added": 435,
+      "removed": 350,
+      "changed": 41,
+      "capabilityApprovalsRequired": 826
+    },
+    "categoriesAfter": {
+      "failure-posture": 116,
+      "permission": 29,
+      "persisted-outcome": 86,
+      "route": 13,
+      "visible-action": 496
+    }
+  },
+  "ownerDecisionsGivenInChat20261112": {
+    "evidence": "owner decision given in chat, 2026-11-12",
+    "ownersWords": "When the engine and the tablet differ because of a business rule, which figure counts - ETP counts. Rest all recommendations accepted as yes.",
+    "bridgeDecisions": {
+      "Q1": "Separate bridge signing key, created by the owner himself; private key on Workpc with passphrase, backup on USB in his custody. Wave 6 uses a throwaway TEST key only. (given in chat, 2026-11-12)",
+      "Q2": "The ETP Reporting Engine becomes an approved source only after compare mode matches the XLSX imports for one full month of WLMHW; recorded as a new authority record at that time. Not granted yet. (given in chat, 2026-11-12)",
+      "Q3": "OWNER CHANGED THIS ONE: where the engine and the tablet differ because of a business rule, the ETP Reporting Engine's figure counts. (given in chat, 2026-11-12)",
+      "Q4": "Keep the four-report XLSX import as fallback for two monthly closes after go-live; one source per store and period. (given in chat, 2026-11-12)",
+      "Q5": "HEMW stays blocked on both paths until the engine holds HEMW data the owner has checked. (given in chat, 2026-11-12)",
+      "Q6": "Version 1: exactly the four reports (R003, R013, R022, R025) with today's columns, plus engine totals. (given in chat, 2026-11-12)",
+      "Q7": "Export by Owner only; import by Owner, or Store Manager with Owner reauthentication. (given in chat, 2026-11-12)",
+      "Q8": "GATE-ETP-PRODUCTION stays carried; add GATE-ETP-BRIDGE-TRUST (key ceremony and device verification) as a hard gate before bridge publication is enabled. (given in chat, 2026-11-12)",
+      "Q9": "Carrier: USB cable, OTG stick or synced cloud folder. The app never goes online. (given in chat, 2026-11-12)",
+      "Q10": "Remove INTERNET permission if nothing needs it (Wave 5 is checking). (given in chat, 2026-11-12)",
+      "Q11": "Later: dummy-data build to use a synthetic test-key-signed pack through the real gateway. (given in chat, 2026-11-12)",
+      "Q12": "Engine-side exporter after engine 1.15.0 ships; Wave 6 builds the tablet side only, against synthetic packs. (given in chat, 2026-11-12)"
+    },
+    "q3Distinction": {
+      "ownersWords": "When the engine and the tablet differ because of a business rule, which figure counts - ETP counts.",
+      "decisionFileSummary": "Q3 OWNER CHANGED THIS ONE: where the engine and the tablet differ because of a business rule, the ETP Reporting Engine's figure counts. (summary line in OWNER-DECISIONS-wave-6.md, not the owner's verbatim words)",
+      "orchestratorsReading": "Orchestrator's reading (not the owner's words): row totals must still match exactly or the pack is refused (that is integrity, not a business rule). Whether incentives and payroll also switch from row-derived net amounts to the engine's rule-based figure was NOT stated explicitly; to be confirmed with the owner before any incentive or payroll calculation is changed. Wave 6 changes no calculation.",
+      "openOwnerQuestion": "Whether incentives and payroll switch from row-derived net amounts to the engine's rule-based figure was NOT stated and is still open. Wave 6 changes no calculation anywhere."
+    },
+    "processDecision": {
+      "ownersWords": "commit and push happen automatically, and Wave 7 follows with no gap",
+      "coverage": "Covers one commit-and-push of the working branch only. It does not cover production signing or any change to the main / Release workflow."
+    }
+  },
+  "addedToInventory": {
+    "visibleActions": [
+      {
+        "capabilityId": "etp:action:etpbridgecheck:3935d6d5a2",
+        "category": "visible-action",
+        "surface": "etp",
+        "reviewClass": "etp-engine-bridge-compare-v1-capability",
+        "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12."
+      },
+      {
+        "capabilityId": "etp:action:etpbridgecomparebtn:866f00d73b",
+        "category": "visible-action",
+        "surface": "etp",
+        "reviewClass": "etp-engine-bridge-compare-v1-capability",
+        "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12."
+      },
+      {
+        "capabilityId": "etp:action:etpbridgediscard:0dda52c502",
+        "category": "visible-action",
+        "surface": "etp",
+        "reviewClass": "etp-engine-bridge-compare-v1-capability",
+        "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12."
+      },
+      {
+        "capabilityId": "etp:action:etpbridgeform:226df48c80",
+        "category": "visible-action",
+        "surface": "etp",
+        "reviewClass": "etp-engine-bridge-compare-v1-capability",
+        "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12."
+      },
+      {
+        "capabilityId": "etp:action:tab-bridge:319abff657",
+        "category": "visible-action",
+        "surface": "etp",
+        "reviewClass": "etp-engine-bridge-compare-v1-capability",
+        "reason": "New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12."
+      }
+    ],
+    "permissions": [],
+    "persistedOutcomes": [],
+    "routes": [],
+    "note": "All five visible actions are the compare-only controls of the new \"Engine pack\" tab in the Retail ETP module (tab, file form, check button, compare button, discard button). They are classified by the exact-id branch etp-engine-bridge-compare-v1-capability in scripts/analyze-modular-capability-delta.mjs, not by the generic Phase 6B annotation branch. No new permission row and no new persisted-outcome row exists in the untracked state."
+  },
+  "outcomeChangedEntries": [
+    {
+      "capabilityId": "etp:failure:posture",
+      "change": "added",
+      "reviewClass": "extracted-first-party-failure-surface",
+      "outcomeFieldsChanged": {
+        "catchBlocks": {
+          "previous": 7,
+          "current": 11
+        },
+        "explicitFallbackSites": {
+          "previous": 6,
+          "current": 9
+        },
+        "userVisibleErrorSites": {
+          "previous": 0,
+          "current": 1
+        }
+      },
+      "previousOutcomeSha256": "2e5d39add2792181b96943711c3580da775e0bc9095020ed8099d358fee76b13",
+      "currentOutcomeSha256": "9dc957a79c394c7364e0eea62fe14cbd3d14f9b9588fb2a834bfea5b89952449",
+      "reason": "The Engine pack tab adds markup, script and strings to www/modules/etp/index.html; failure-posture token counts of that surface moved accordingly."
+    }
+  ],
+  "removedFromInventory": [],
+  "filesNotVisibleToAnalyser": {
+    "note": "The analyser reads git ls-files only. These files are untracked, so the ledger counts above exclude them. The ids below are the ones they get once the files are tracked. The expectedOnceTracked figures come from a scratch git copy of the working tree made outside the project (the working tree and a copy of its .git folder copied outside the project, then git add and git commit inside the copy only; remotes removed; never pushed; the .git folder of the project itself was not written). They are a scratch measurement and must be re-verified by the orchestrator after commit 1 by running the analyser without --write and comparing the ledger byte for byte with W4-commit-time-overlay.",
+    "files": [
+      {
+        "path": "www/shared/shell-search.js",
+        "bytes": 29583,
+        "sha256": "ddacd3023ace157bc9a7eac712fc851aa920b64fa80e98cbae3f3625f08b9bfb",
+        "futureCapabilityIds": [
+          "script-shared-shell-search:failure:posture"
+        ],
+        "role": "Wave 5: search v1 (places only), deferred shell script"
+      },
+      {
+        "path": "www/etp-chain-loader.js",
+        "bytes": 2924,
+        "sha256": "0dea92de889e29f6d2d06b8218a0dc9eea38dbbd23af778525dc010dd5343987",
+        "futureCapabilityIds": [
+          "script-etp-chain-loader:failure:posture"
+        ],
+        "role": "Wave 5: on-demand loader for the 25-file Retail ETP operational chain"
+      },
+      {
+        "path": "www/etp-bridge-trust.js",
+        "bytes": 2472,
+        "sha256": "51480e1011ee66a9094c652c31c1b9f58a2ed0907de25908a35d7427e38c94ea",
+        "futureCapabilityIds": [
+          "script-etp-bridge-trust:failure:posture"
+        ],
+        "role": "Wave 6: trust anchor and GATE-ETP-BRIDGE-TRUST; frozen empty key list, so the gate is closed"
+      },
+      {
+        "path": "www/etp-bridge-pack-verifier.js",
+        "bytes": 47609,
+        "sha256": "064f7b7c46faad9347315a9ea49e4a5dfb2413fb1b4b146149cc8d9bb9e03d21",
+        "futureCapabilityIds": [
+          "script-etp-bridge-pack-verifier:failure:posture"
+        ],
+        "role": "Wave 6: signed report pack verifier (authenticate before parse; ECDSA P-256 over the exact manifest bytes)"
+      },
+      {
+        "path": "www/etp-bridge-compare.js",
+        "bytes": 34606,
+        "sha256": "a799eac395b7fa13d641afad59e6baf71ff28117af0df0dbf2f427d62a317e88",
+        "futureCapabilityIds": [
+          "script-etp-bridge-compare:failure:posture"
+        ],
+        "role": "Wave 6: compare mode against the four-report XLSX import (display only; nothing applied or published)"
+      },
+      {
+        "path": "www/etp-bridge-facade.js",
+        "bytes": 31474,
+        "sha256": "e2e3259737381f33035c69358c66a7c725f6241a7746d07223af1d47b6da6798",
+        "futureCapabilityIds": [
+          "script-etp-bridge-facade:failure:posture",
+          "script-etp-bridge-facade:permission:owner-session",
+          "script-etp-bridge-facade:permission:reauthentication"
+        ],
+        "role": "Wave 6: parent-side gateway for the module (gate first, roles, reauthentication, one in-memory staged pack)"
+      }
+    ],
+    "expectedOnceTracked": {
+      "currentCapabilities": 748,
+      "categories": {
+        "failure-posture": 122,
+        "permission": 31,
+        "persisted-outcome": 86,
+        "route": 13,
+        "visible-action": 496
+      },
+      "failurePosture": 122,
+      "added": 443,
+      "capabilityApprovalsRequired": 834,
+      "currentInventorySha256": "573e9111c4616ff1634252534efdedb8824093a4fe35dd005903726b24313385",
+      "ledgerFileSha256": "7c0cf952c6feeb2399d0c4c193e07a87dc65b998fb327ff3f306cde638263f8f",
+      "extraRowsBeyondOnePerFile": [
+        "script-etp-bridge-facade:permission:owner-session",
+        "script-etp-bridge-facade:permission:reauthentication"
+      ]
+    },
+    "knownIssueOnceTracked": "Audit check A2-04 (the same named domain constant and value defined in two product files) would have failed once the four Wave 6 bridge files were tracked, because VERSION = 1 was defined in etp-bridge-compare, etp-bridge-facade, etp-bridge-pack-verifier, etp-bridge-trust and the existing etp-native-store, and STORE = WLMHW in etp-bridge-compare and etp-bridge-facade. Fixed in step F1 (2026-11-12) by a purely internal rename of the file-local constants (TRUST_VERSION, PACK_VERSION, COMPARE_VERSION, FACADE_VERSION, COMPARE_STORE, FACADE_STORE); no exported name, public VERSION property, refusal code, message or behaviour changed, and the ledger figures in this record are identical with and without the rename (the bridge files are invisible to the analyser until tracked, and the rename adds or removes no failure-posture token). The bytes and sha256 of the four files in filesNotVisibleToAnalyser are the post-rename values."
+  },
+  "trustAndGateStatement": {
+    "gate": "GATE-ETP-BRIDGE-TRUST",
+    "state": "declared in code with an empty trust anchor; closed",
+    "shippedTree": "www/etp-bridge-trust.js holds a frozen empty key list. gate() returns CLOSED with ETP_BRIDGE_TRUST_ANCHOR_ABSENT, and every pack is refused with ETP_BRIDGE_TRUST_GATE_CLOSED before any file read or PIN prompt.",
+    "evidenceCheckG": "Check G, run in W4 on 2026-11-12: the trust file evaluated in a vm context shows isFrozen true, key list frozen and empty, gate CLOSED / ETP_BRIDGE_TRUST_ANCHOR_ABSENT, no test-seam export, global non-writable and non-configurable; no PEM public key, no JWK token and no 65-byte 0x04 point (base64 or hex) in www/, build-overrides/ or android/app/src/main.",
+    "registration": "The gate is NOT registered in scripts/audit/config.mjs (that edit would fail audit comparison C-09 EXTERNAL_GATE_SET_CHANGED and change the audit-tooling fingerprint). scripts/audit/config.mjs is byte-identical to its pre-wave state (sha256 18270ccb605f1a406f135543ecb8ab56bf0f88c050ea47fde0af8d77f217c82d). Registering it is an owner step after the commit together with a re-freeze of the audit tooling.",
+    "productionGate": "GATE-ETP-PRODUCTION remains carried (Q8).",
+    "realKey": "The owner creates the real bridge signing key himself later (Q1). Nothing in this wave creates, stores or embeds it.",
+    "keyHygieneScan": "Check K, run in W4 on 2026-11-12 over the repository tree (excluding node_modules, .git, android build output, graphify-out and any .audit-secrets folder), over the W4 patch and over the W4 untracked snapshot: 0 private key blocks, 0 private JWKs, 0 files named *.pem *.p8 *.pfx *.jks *.keystore *.key. Non-key matches, all explained: tests that build detection patterns or synthetic strings, the pre-existing tracked public audit-signer key in scripts/audit/trusted-evidence-signers.mjs, and an ignored Node compile cache under .tmp-audit-tests that holds a placeholder block. The orchestrator repeats the scan on the staged diff before each commit and before the push.",
+    "doesNotClose": "WebCrypto ECDSA P-256 verification on the Samsung Tab S7 WebView is not verified. Native acceptance of a bridge-built manifest is not verified."
+  },
+  "testKeyStatement": "The throwaway test key pair is generated in memory at run time by the tests and the synthetic-pack generator, as a non-extractable WebCrypto key; only the raw public point is exported; no private key is written to the repository or to any file this wave delivers (owner decision B-4; the CLAUDE.md rule against creating keys concerns the APK signing key). The test public key reaches the verifier only through a test-only seam (the CommonJS create() of the verifier) that the built app cannot reach.",
+  "behaviourStatement": {
+    "published": "Nothing from a pack is published to operational consumers. The engine is not an approved source (Q2): that needs compare mode to match the XLSX imports for one full month of WLMHW and a new authority record, which is not given.",
+    "calculations": "No calculation anywhere changes (Q3). Row totals must match exactly or the pack is refused. Incentives and payroll are untouched.",
+    "stores": "HEMW is blocked on both paths (Q5). The service store AW330 and every other store code are refused. One source per store and period (Q4); the XLSX import is unchanged.",
+    "roles": "Import by Owner, or Store Manager with Owner reauthentication through the existing reauthentication (Q7). Export is engine-side and not in this wave (Q12).",
+    "carrier": "The pack is read from a file the user picks (USB, OTG or a synced folder). The app never goes online (Q9); no network access is added."
+  },
+  "otherAuditedChanges": {
+    "shellScriptTags": "www/index.html gains four synchronous script tags (etp-bridge-trust.js, etp-bridge-pack-verifier.js, etp-bridge-compare.js, etp-bridge-facade.js) directly after etp-operations-consumer.js. www/index.html is 579557 bytes (limit: strictly below 580,636). The 25-file on-demand ETP chain in www/etp-chain-loader.js is unchanged.",
+    "moduleBridge": "www/shared/module-bridge.js gains one read-only getter, etpBridgeGateway, that returns the parent facade (3051 bytes, sha256 e26f724c4a3a8af1970d76c54f6cff1a60a0d580cd34aec87ad396d554c0c68c).",
+    "etpModule": "www/modules/etp/index.html gains the \"Engine pack\" tab (136961 bytes, sha256 ea818122c5c00bd8a11dc7470134409c0ed393374cdf14909a6fa5df5b4824c1). The module reads only SaagarModuleBridge.etpBridgeGateway, uses no innerHTML, and its file input has no accept attribute and no multiple. Marathi and Hindi text for the tab is TEST_ONLY_UNAPPROVED and has not been reviewed by a native speaker.",
+    "mah4Inventory": "Unchanged from Wave 5 and measured in W4: loader groups 6, script routes 35, script literal references 37; createElement 5, document.write 2, import() 0. No new message type, no postMessage, no timer, no document.write.",
+    "identities": "Regenerated in W4 with the project scripts: module manifest data block (module etp and shared module-bridge only; sharedAssets stays 66), the etp entry of verification/module-build-golden-hashes.json (no test enforces that entry), and the capability ledger. The gate-0 receipt was not regenerated because test:v6-gate0 is green. The Phase 6C current profile, the MAH-3 profile and canary evidence, the MAH-4 baseline and the Phase 6I source-freeze receipt were not touched.",
+    "android": "No new Android permission, no new native plugin. android.permission.INTERNET stays removed at build time (Wave 5)."
+  },
+  "scope": {
+    "authorizes": [
+      "the capability analyser count constants",
+      "the capability analyser exact-id classification branch etp-engine-bridge-compare-v1-capability for the five Engine pack controls",
+      "regeneration of the capability ledger",
+      "regeneration of the module manifest and golden file entries and the count tests for the files this wave changed"
+    ],
+    "doesNotClose": [
+      "GATE-ETP-PRODUCTION",
+      "GATE-ETP-BRIDGE-TRUST (key ceremony and device verification of WebCrypto ECDSA on the Tab S7 are not done)",
+      "publication of any bridge generation to operational consumers",
+      "the Q2 authority record",
+      "HEMW",
+      "any incentive or payroll rule switch",
+      "A10-01 startup acceptance",
+      "production signing",
+      "release approval",
+      "physical-device acceptance",
+      "staff UAT",
+      "legal approval",
+      "any capability added after this inventory hash"
+    ]
+  },
+  "ownerReconfirmation": "Not yet given. The exact inventory figures, ids and hashes above were not itemised to the owner in chat before this record was written.",
+  "registryNote": "The ledger remains pending-owner-approval and every delta keeps ownerApproval \"pending\"."
+}

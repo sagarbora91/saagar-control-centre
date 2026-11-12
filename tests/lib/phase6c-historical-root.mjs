@@ -37,6 +37,46 @@ const PRE_PHASE6D_BRAND_TOKENS = `:root{
 }
 `;
 
+// Later, deliberate product changes that the frozen pre-Phase6C identity predates.
+// Each restore function maps the current source back to the exact historical bytes
+// (the expected frozen hashes are unchanged); they match on stable structure, not
+// on the current build number, so a later version bump does not break them.
+function restoreBoundaryBuildIdentity(source) {
+  return String(source)
+    .replace('/* Single source of truth for the Android package and in-app build identity. */\n',
+      '/* Single source of truth for the Android package and in-app build identity.\n   Keep current evidence values unchanged until an owner-approved phase release\n   assigns a new monotonically increasing versionCode. */\n')
+    .replace(/appVersion: '[^']*'/, "appVersion: 'V5.5'")
+    .replace(/versionName: '[^']*'/, "versionName: '2.9'")
+    .replace(/versionCode: \d+/, 'versionCode: 209')
+    .replace(/minSdk: \d+/, 'minSdk: 23');
+}
+
+// 9ea88f4: E7 service getters. Also accepts the 605002f form of the etpReadGateway line (synthetic-demo
+// selector); production no longer carries it (demo wiring is injected by the seeded build only).
+function restoreBoundaryModuleBridge(source) {
+  // ETP report-engine bridge, tablet side (owner decisions given in chat, 2026-11-12): the facade getter sits directly after etpImportGateway.
+  return String(source).replace("    etpBridgeGateway: getter(function () { return parentValue('SaagarEtpBridgeFacade'); }),\n", '').replace(/    etpReadGateway: getter\(function \(\) \{[^\n]*\n    e7ServiceVerification: [^\n]*\n    e7ServiceActor: [^\n]*\n    getE7ServiceActionInput: [^\n]*\n/,
+    "    etpReadGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.readFacade; })\n");
+}
+
+// a2db88d / d102814: invoice_date and invoice_number joined the report projections and sorts.
+function restoreBoundaryEtpQueryContract(source) {
+  return String(source)
+    .replace("R003:list(['invoice_date','transaction_type_raw',", "R003:list(['transaction_type_raw',")
+    .replace("R013:list(['invoice_date','invoice_number','transaction_type_raw',", "R013:list(['transaction_type_raw',")
+    .replace("R022:list(['invoice_date','invoice_number','transaction_type_raw',", "R022:list(['transaction_type_raw',")
+    .replace("R025:list(['invoice_date','invoice_number','transaction_type_raw',", "R025:list(['invoice_number','transaction_type_raw',")
+    .replace("R013:list(['invoice_date','invoice_number','cro_number',", "R013:list(['invoice_date','cro_number',");
+}
+
+// a2db88d / d102814: canonical invoice_date row handling and the R013 invoice_number projection.
+function restoreBoundaryEtpGatewayReads(source) {
+  return String(source)
+    .replace("R013: Object.freeze(['invoice_number', 'transaction_type_raw',", "R013: Object.freeze(['transaction_type_raw',")
+    .replace(/  function canonicalInvoiceDate\(value\) \{[\s\S]*?\n  \}\n\n/, '')
+    .replace(/        if \(key === 'invoice_date'\) \{\n          var normalizedDate = [^\n]*\n[^\n]*\n[^\n]*\n        \} else row\[key\] = source\[key\];\n/, '        row[key] = source[key];\n');
+}
+
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const mobileLayoutPath = path.join(workspaceRoot, 'www/mobile-layout.css');
   fs.writeFileSync(mobileLayoutPath, fs.readFileSync(mobileLayoutPath, 'utf8')
@@ -105,8 +145,15 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 1 1 auto !important; }`, `  html.bcc-mobile[data-mod="tax"] .hd-right > *,
   html.bcc-mobile[data-mod="leave"] .header-actions > * { flex: 0 0 auto !important; }`), 'utf8');
   const buildIdentityPath = path.join(workspaceRoot, 'www/build-identity.js');
-  fs.writeFileSync(buildIdentityPath,
-    fs.readFileSync(buildIdentityPath, 'utf8').replace("appVersion: 'V6'", "appVersion: 'V5.5'"), 'utf8');
+  fs.writeFileSync(buildIdentityPath, restoreBoundaryBuildIdentity(fs.readFileSync(buildIdentityPath, 'utf8')), 'utf8');
+  for (const [file, restore] of [
+    ['www/shared/module-bridge.js', restoreBoundaryModuleBridge],
+    ['www/etp-query-contract.js', restoreBoundaryEtpQueryContract],
+    ['www/etp-module-gateway.js', restoreBoundaryEtpGatewayReads]
+  ]) {
+    const target = path.join(workspaceRoot, file);
+    fs.writeFileSync(target, restore(fs.readFileSync(target, 'utf8')), 'utf8');
+  }
   // Phase 6I removed the production legacy asset after consolidating its bytes
   // into the canonical common sheet. Recreate the earlier boundary explicitly
   // from the test-only frozen authority before applying later reverse migrations.
@@ -146,7 +193,7 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   fs.rmSync(path.join(workspaceRoot, 'www/shared/shell-responsive-runtime.js'));
   const etpPhase6hPath = path.join(workspaceRoot, 'www/modules/etp/index.html');
   fs.writeFileSync(etpPhase6hPath, restorePrePhase6h1EtpIndex(fs.readFileSync(etpPhase6hPath, 'utf8')), 'utf8');
-  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js', 'etp-operational-foundation.js', 'etp-operational-store.js', 'etp-operational-adapters.js', 'etp-operational-runtime.js', 'etp-e4-authority-intake.js', 'etp-e6-authority-intake.js', 'etp-e5-authority-intake.js', 'etp-e7-authority-intake.js', 'etp-e7-service-verifier.js', 'etp-e7-service-operational.js', 'etp-e7-presentation.js', 'etp-e7-presentation.css', 'etp-e7-module-host.js', 'etp-cro-reconciliation.js', 'etp-e3-orchestrator.js', 'etp-e3-presentation.js', 'etp-e3-presentation.css', 'etp-target-planning.js', 'etp-e4-orchestrator.js', 'etp-e4-presentation.js', 'etp-e4-presentation.css', 'etp-e6-presentation.js', 'etp-e6-presentation.css', 'etp-e5-presentation.js', 'etp-e5-presentation.css', 'etp-operational-i18n.js', 'etp-operational-i18n.css', 'etp-e5-payroll-bridge.js', 'etp-operational-gateway.js', 'etp-operational-mount.js', 'etp-e3-verified-join.js', 'etp-operational-bootstrap.js', 'etp-operational-shell-composer.js', 'etp-operational-module-host.js', 'etp-operational-frame-bridge.js', 'etp-exception-monitor.js', 'etp-incentive-control.js', 'etp-operations-consumer.js']) {
+  for (const asset of ['etp-verified-analytics.js', 'etp-analytics-consumer.js', 'etp-operational-foundation.js', 'etp-operational-store.js', 'etp-operational-adapters.js', 'etp-operational-runtime.js', 'etp-e4-authority-intake.js', 'etp-e6-authority-intake.js', 'etp-e5-authority-intake.js', 'etp-e7-authority-intake.js', 'etp-e7-service-verifier.js', 'etp-e7-service-operational.js', 'etp-e7-presentation.js', 'etp-e7-presentation.css', 'etp-e7-module-host.js', 'etp-cro-reconciliation.js', 'etp-e3-orchestrator.js', 'etp-e3-presentation.js', 'etp-e3-presentation.css', 'etp-target-planning.js', 'etp-e4-orchestrator.js', 'etp-e4-presentation.js', 'etp-e4-presentation.css', 'etp-e6-presentation.js', 'etp-e6-presentation.css', 'etp-e5-presentation.js', 'etp-e5-presentation.css', 'etp-operational-i18n.js', 'etp-operational-i18n.css', 'etp-e5-payroll-bridge.js', 'etp-operational-gateway.js', 'etp-operational-mount.js', 'etp-e3-verified-join.js', 'etp-operational-bootstrap.js', 'etp-operational-shell-composer.js', 'etp-operational-module-host.js', 'etp-operational-frame-bridge.js', 'etp-exception-monitor.js', 'etp-incentive-control.js', 'etp-operations-consumer.js', 'etp-demo-operational.js', 'etp-chain-loader.js', 'shared/shell-search.js', 'etp-bridge-trust.js', 'etp-bridge-pack-verifier.js', 'etp-bridge-compare.js', 'etp-bridge-facade.js']) {
     const assetPath = path.join(workspaceRoot, 'www', asset); if (fs.existsSync(assetPath)) fs.rmSync(assetPath);
   }
   const phase6hGatewayPath = path.join(workspaceRoot, 'www/etp-module-gateway.js');
@@ -268,6 +315,9 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const snapshot = readModuleManifestSource(workspaceRoot);
   snapshot.data.sharedAssets = snapshot.data.sharedAssets.filter(item => ![
     'etp-verified-analytics', 'etp-analytics-consumer', 'etp-cro-reconciliation', 'etp-target-planning', 'etp-exception-monitor', 'etp-incentive-control', 'etp-operations-consumer', 'etp-operational-i18n', 'etp-operational-i18n-css',
+    'etp-operational-foundation', 'etp-operational-store', 'etp-operational-adapters', 'etp-operational-runtime', 'etp-e4-authority-intake', 'etp-e6-authority-intake', 'etp-e5-authority-intake', 'etp-e7-authority-intake', 'etp-e7-service-verifier', 'etp-e7-service-operational',
+    'etp-e3-orchestrator', 'etp-e3-presentation', 'etp-e3-presentation-css', 'etp-e4-orchestrator', 'etp-e4-presentation', 'etp-e4-presentation-css', 'etp-e6-presentation', 'etp-e6-presentation-css', 'etp-e5-presentation', 'etp-e5-presentation-css',
+    'etp-e5-payroll-bridge', 'etp-e7-presentation', 'etp-e7-presentation-css', 'etp-e7-module-host', 'etp-operational-gateway', 'etp-operational-mount', 'etp-e3-verified-join', 'etp-operational-bootstrap', 'etp-operational-shell-composer', 'etp-operational-module-host', 'etp-operational-frame-bridge',
     'module-rendered-components', 'leave-ui-css', 'cro-audit-ui-css', 'tax-ui-css', 'dsr-ui-css', 'qms-view', 'qms-ui-css',
     'module-responsive-css', 'module-ui-runtime', 'module-table-css', 'module-table-runtime', 'module-components-css',
     'stock-ui-css', 'payroll-ui-css', 'grooming-ui-css', 'service-ui-css'
@@ -282,6 +332,10 @@ export function reconstructPhase6cBoundaryWww(workspaceRoot) {
   const brandBytes = fs.readFileSync(path.join(workspaceRoot, 'www', brandTokens.file));
   brandTokens.bytes = brandBytes.length;
   brandTokens.sha256 = sha256(brandBytes);
+  const moduleBridge = snapshot.data.sharedAssets.find(item => item.id === 'module-bridge');
+  const moduleBridgeBytes = fs.readFileSync(path.join(workspaceRoot, 'www', moduleBridge.file));
+  moduleBridge.bytes = moduleBridgeBytes.length;
+  moduleBridge.sha256 = sha256(moduleBridgeBytes);
   const mobileCommon = snapshot.data.sharedAssets.find(item => item.id === 'module-mobile-common-css');
   const mobileCommonBytes = fs.readFileSync(commonPath);
   mobileCommon.bytes = mobileCommonBytes.length;

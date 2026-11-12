@@ -89,7 +89,8 @@ test('implementation uses text sinks and mobile containment without horizontal-s
 
 test('production shell inventories the adapter and the ETP frame boots its script and stylesheet locally',()=>{
   const shell=fs.readFileSync(new URL('../www/index.html',import.meta.url),'utf8'),frame=fs.readFileSync(new URL('../www/modules/etp/index.html',import.meta.url),'utf8');
-  assert.match(shell,/<script src="etp-operational-i18n\.js"><\/script>/);
+  assert.equal(shell.includes('etp-operational-i18n.js'),false,'the shell does not load the adapter; only the ETP frame boots it');
+  assert.equal(fs.readFileSync(new URL('../www/etp-chain-loader.js',import.meta.url),'utf8').includes('etp-operational-i18n.js'),false,'the on-demand chain does not load a second copy');
   assert.match(frame,/<script src="\.\.\/\.\.\/etp-operational-i18n\.js"><\/script>/);
   assert.match(frame,/<link rel="stylesheet" href="\.\.\/\.\.\/etp-operational-i18n\.css">/);
   assert.doesNotMatch(frame,/https?:\/\/[^"']*etp-operational-i18n/);
