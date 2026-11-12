@@ -1317,3 +1317,12 @@ html.saagar-legacy-webview .d3-readiness > * { -webkit-flex: 1 1 220px; flex: 1 
 html.saagar-legacy-webview .d3-board,
 html.saagar-legacy-webview .d3-lane-body,
 html.saagar-legacy-webview [data-service-table-region="condition-report"] .cond-table td { display: block; }
+
+/* S08 fix U07-LOW-TARGETS: tablet-size touch targets (coarse pointer, wider than the phone layout) */
+@media (pointer: coarse) and (min-width: 900px) {
+  .btn, .btn-sm, .pg-btn, .add-line-btn, .stage-chip, .d3-card-actions button { min-height: 36px; }
+  .del-row-btn { min-width: 36px; min-height: 36px; }
+  .stage-sel, .d3-stage-select, .field-select, .cond-table td select { min-height: 36px; }
+  #view-form input[type="checkbox"], .d3-modal input[type="checkbox"] { width: 24px; height: 24px; }
+  .check-opt, .radio-opt { min-height: 36px; align-items: center; }
+}

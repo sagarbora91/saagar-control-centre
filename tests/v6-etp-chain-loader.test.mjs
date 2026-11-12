@@ -76,7 +76,7 @@ test('a hung file gives the caller ETP_CHAIN_LOAD_TIMEOUT and a later caller joi
 
 test('the loader API is frozen, non-writable and not replaced by running the source again',()=>{
   const root=fakeRoot(),loader=root.SaagarEtpChainLoader,descriptor=Object.getOwnPropertyDescriptor(root,'SaagarEtpChainLoader');
-  assert.equal(Object.isFrozen(loader),true);assert.deepEqual(Object.keys(loader).sort(),['ensure','status','version']);
+  assert.equal(Object.isFrozen(loader),true);assert.deepEqual(Object.keys(loader).sort(),['bridge','ensure','status','version']);
   assert.equal(descriptor.writable,false);assert.equal(descriptor.configurable,false);
   vm.runInNewContext(source,{window:root,Object,Promise,Error,setTimeout,clearTimeout});
   assert.equal(root.SaagarEtpChainLoader,loader);
@@ -158,7 +158,12 @@ test('MAH-4 inventories the on-demand chain honestly: one extra loader group, 25
   assert.equal(group.owner,'www/etp-chain-loader.js');assert.equal(group.trigger,'on-demand-etp-verified-scope');
   assert.deepEqual(group.coreAssetPaths,CHAIN.map(name=>'www/'+name));
   assert.deepEqual(Object.values(group.literalCounts),Array(25).fill(1));
-  assert.equal(dynamic.loaderGroupCount,6);assert.equal(dynamic.scriptRouteCount,10+25);assert.equal(dynamic.scriptLiteralReferenceCount,12+25);
+  const bridgeGroup=dynamic.loaderGroups.find(item=>item.id==='shell-etp-bridge'),BRIDGE_FILES=['etp-bridge-trust.js','etp-bridge-pack-verifier.js','etp-bridge-compare.js','etp-bridge-facade.js'];
+  assert.ok(bridgeGroup,'shell-etp-bridge group present while the loader and the facade file exist');
+  assert.equal(bridgeGroup.owner,'www/etp-chain-loader.js');assert.equal(bridgeGroup.trigger,'on-demand-etp-bridge-engine-pack');
+  assert.deepEqual(bridgeGroup.coreAssetPaths,BRIDGE_FILES.map(name=>'www/'+name));
+  assert.deepEqual(Object.values(bridgeGroup.literalCounts),Array(4).fill(1));
+  assert.equal(dynamic.loaderGroupCount,7);assert.equal(dynamic.scriptRouteCount,10+25+4);assert.equal(dynamic.scriptLiteralReferenceCount,12+25+4);
   assert.equal(dynamic.injectionSinks.createElementScript,5);assert.equal(dynamic.injectionSinks.documentWriteScript,2);assert.equal(dynamic.injectionSinks.dynamicImport,0);
   assert.deepEqual(dynamic.injectionSinks.createElementSites,{'www/index.html':4,'www/saagar-report.js':1});
   assert.deepEqual(dynamic.directScriptOverlap,[]);

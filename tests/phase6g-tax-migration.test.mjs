@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 
@@ -48,11 +49,12 @@ test('persisted and user-derived generated button arguments use encodeArgs deleg
 
 test('intentional Tax presentation escaping and FY rendering remain intact', () => {
   const source = applicationSource(html);
+  const frozen = applicationSource(undoFixWaveText('www/modules/tax/index.html', html));
   assert.doesNotThrow(() => Function(source));
   for (const identity of ['function renderFYText(text)','function stEsc(s)','function attrJsStr(s)','function saveState()','function materializeDueDates()','function computeEvidenceCompleteness(','function getTaxPayableFeed()'])
     assert.ok(source.includes(identity), `missing preserved identity: ${identity}`);
-  assert.equal(source.length, 170_677);
-  assert.equal(crypto.createHash('sha256').update(source).digest('hex'), 'c14aa2555d56b3aca5e9338ba126902f1d1db49f6e95f049cea47dc3d1a2e5ef');
+  assert.equal(frozen.length, 170_677);
+  assert.equal(crypto.createHash('sha256').update(frozen).digest('hex'), 'c14aa2555d56b3aca5e9338ba126902f1d1db49f6e95f049cea47dc3d1a2e5ef');
 });
 
 test('Tax has explicit API-23 flex fallbacks for every migrated layout family', () => {

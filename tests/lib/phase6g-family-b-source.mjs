@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { undoFixWaveText } from './fix-wave-undo.mjs';
 
 export const PRE_PHASE6G_FAMILY_B_SHA256 = Object.freeze({
   expense: 'c55bbcafc7b38b935145cdaf6e618e8991c96f578352644789693c8edf7fc334',
@@ -261,6 +262,8 @@ function restoreQms(source, css) {
 }
 
 export function restorePrePhase6gFamilyBSource(moduleId, html, css = '', validateHash = true) {
+  html = undoFixWaveText(`www/modules/${moduleId}/index.html`, html);
+  css = undoFixWaveText(`www/modules/${moduleId}/${String(moduleId).replace('_', '-')}-ui.css`, css);
   const restore = { expense: restoreExpense, leave: restoreLeave, cro_audit: restoreCroAudit, tax: restoreTax, dsr: restoreDsr, qms: restoreQms }[moduleId];
   if (!restore) throw new Error(`Unsupported Phase 6G Family-B module: ${moduleId}`);
   const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';

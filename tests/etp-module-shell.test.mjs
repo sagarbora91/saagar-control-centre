@@ -42,7 +42,7 @@ test('ETP module uses only the future narrow bridge gateway and has no direct fa
   const bridge = fs.readFileSync(path.join(root, 'www/shared/module-bridge.js'), 'utf8');
   assert.match(bridge, /etpImportGateway: getter\(function \(\) \{ var gateway = parentValue\('SaagarEtpModuleGateway'\); return gateway && gateway\.importFacade; \}\)/);
   assert.match(bridge, /etpReadGateway: getter\(function \(\) \{ var gateway = parentValue\('SaagarEtpModuleGateway'\); return gateway && gateway\.readFacade; \}\)/);
-  assert.ok(bridge.includes("    etpBridgeGateway: getter(function () { return parentValue('SaagarEtpBridgeFacade'); }),\n"), 'the engine-pack facade getter is exactly one line');
+  assert.ok(bridge.includes("    etpBridgeGateway: getter(function () { var loader = parentValue('SaagarEtpChainLoader'); return (loader && loader.bridge) || parentValue('SaagarEtpBridgeFacade'); }),\n"), 'the engine-pack gateway getter is exactly one line');
   assert.ok(bridge.indexOf('etpImportGateway:') < bridge.indexOf('etpBridgeGateway:') && bridge.indexOf('etpBridgeGateway:') < bridge.indexOf('etpReadGateway:'), 'the facade getter sits directly after etpImportGateway');
   assert.equal(bridge.split('SaagarEtpBridge').length - 1, 1, 'the module bridge names only the facade, never the verifier, trust or compare');
   assert.match(etp, /SaagarModuleBridge/);

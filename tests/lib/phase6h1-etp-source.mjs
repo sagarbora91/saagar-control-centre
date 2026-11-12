@@ -1,5 +1,7 @@
+import { undoFixWaveText } from './fix-wave-undo.mjs';
 /* Deterministic reversal of the additive Phase 6H.1 ETP analytics wiring. */
 export function restorePrePhase6h1EtpIndex(source) {
+  source = undoFixWaveText('www/modules/etp/index.html', source);
   return String(source)
     // ETP report-engine bridge screen (Wave 6, owner decisions given in chat, 2026-11-12): the five additive edits come out first.
     .replace(/    <button data-action="tab-bridge"[^\n]*\n/, '')

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 
 const html = fs.readFileSync(new URL('../www/modules/payroll/index.html', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../www/modules/payroll/payroll-ui.css', import.meta.url), 'utf8');
@@ -71,7 +72,7 @@ test('Payroll supplies explicit API-23 flex fallbacks without redefining shared 
 });
 
 test('Payroll calculation, persistence and action source remains byte-stable', () => {
-  const applicationScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+  const applicationScripts = [...undoFixWaveText('www/modules/payroll/index.html', html).matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(source => source.length > 1_000)
     .join('\n');
@@ -82,5 +83,6 @@ test('Payroll calculation, persistence and action source remains byte-stable', (
   );
   for (const invariant of ['function calcGM', 'function save', 'function lockRun', 'payroll_suite_v1_2026']) {
     assert.ok(applicationScripts.includes(invariant), `missing Payroll invariant: ${invariant}`);
+    assert.ok(html.includes(invariant), `missing Payroll invariant in the current file: ${invariant}`);
   }
 });

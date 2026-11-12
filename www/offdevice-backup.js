@@ -113,6 +113,7 @@
       if (typeof root.freshPortableBackupPayload !== 'function') throw new Error('Fresh portable-backup reader is unavailable.');
       return root.freshPortableBackupPayload();
     }).then(function (fresh) {
+      if (!fresh || !fresh.localStorage || !Object.keys(fresh.localStorage).length) throw new Error('The fresh backup has no app data, so it was not sent off-device.');
       payload = fresh;
       token = exports.authorizeScheduled(exportMeta(config.destinationId, rowCount(payload)));
       if (!token) throw new Error('Scheduled export authorization was blocked.');

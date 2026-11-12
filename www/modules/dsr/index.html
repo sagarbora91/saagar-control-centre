@@ -304,6 +304,7 @@ function smPassOk(pw){
 const stReauth=SaagarModuleRuntime.reauth;
 const SK_DSR   = 'saagar_dsr_';
 const SK_STAFF = 'saagar_dsr_staff';
+const DSR_REC_KEY_RE = /^saagar_dsr_\d{4}-\d{2}-\d{2}_/;
 
 const DEFAULT_STAFF = [];
 
@@ -372,6 +373,7 @@ let st = {
   date: todayStr(), tab: 'daystart',
   smTab: 'submissions', smDate: todayStr(),
   auditRec: null,
+  auditKey: null,
 };
 
 /* ── UTILITIES ── */
@@ -419,6 +421,30 @@ function taskNumber(v) {
 function taskEntered(v) { return v !== null && v !== undefined && v !== '' && v !== false; }
 function taskTotal(tasks) { return TASK_LIST.reduce((sum, t) => sum + taskNumber(tasks?.[t.id]), 0); }
 function stockTotal(obj) { return STOCK_CATS.reduce((s, c) => s + (Number(obj[c.id])||0), 0); }
+/* S05 (U04-F2, CR-F3): a stock count is blank or a finite number >= 0. Returns the value to store, or null = refuse. */
+function cleanStockCount(val) {
+  if (val === '' || val === null || val === undefined) return '';
+  const s = String(val).trim();
+  if (s === '') return '';
+  const n = Number(s);
+  if (!Number.isFinite(n) || n < 0) return null;
+  return val;
+}
+/* S05 (CR-F3): true only when a count was really entered (missing key, null and blank all mean "not entered"). */
+function stockEntered(v) { return v !== undefined && v !== null && String(v).trim() !== ''; }
+/* S05 (U04-F2): put the field back to its last good value and tell the user. */
+function refuseStockCount(bucket, cat) {
+  const inp = document.activeElement;
+  if (inp && inp.tagName === 'INPUT') {
+    const prev = bucket ? bucket[cat] : '';
+    inp.value = (prev === undefined || prev === null || cleanStockCount(prev) === null) ? '' : prev;
+    inp.classList.add('err');
+    setTimeout(() => inp.classList.remove('err'), 1500);
+  }
+  toast('Stock count cannot be negative','err');
+}
+/* S05 (U04-F9): one definition of "a bill" = a sale row whose amount is above zero. */
+function billCount(sales) { return (Array.isArray(sales) ? sales : []).filter(x => x && Number(x.amount) > 0).length; }
 function normalizeRecord(rec) {
   rec.opening = rec.opening || {};
   rec.closing  = rec.closing  || {};
@@ -813,11 +839,39 @@ function getAllInRange(from, to) {
   }
   return recs;
 }
+/* S05 (U04-F7, U14-05): names typed in DSR (saagar_dsr_staff) vs. the Employee Master. */
+function readSavedStaff() {
+  const out = [], seen = {};
+  try {
+    const a = JSON.parse(localStorage.getItem(SK_STAFF) || '[]');
+    if (Array.isArray(a)) a.forEach(n => { const k = String(n == null ? '' : n).trim().toLowerCase(); if (k && !seen[k]) { seen[k] = 1; out.push(String(n)); } });
+  } catch (e) {}
+  return out;
+}
+function readMasterNames() {
+  const active = {}, inactive = {}, names = [];
+  try {
+    const em = JSON.parse(localStorage.getItem('saagar_employee_master_v1') || '[]');
+    if (Array.isArray(em)) em.forEach(x => {
+      if (!x || !x.name) return;
+      const k = String(x.name).trim().toLowerCase(); if (!k) return;
+      if (x.active === false) inactive[k] = 1; else { if (!active[k]) names.push(x.name); active[k] = 1; }
+    });
+  } catch (e) {}
+  return { active, inactive, names };
+}
+/* keys (lower-case) of the names a manager may remove here: typed in DSR and NOT an active master name */
+function removableStaffKeys() {
+  const m = readMasterNames(), r = {};
+  readSavedStaff().forEach(n => { const k = n.trim().toLowerCase(); if (!m.active[k]) r[k] = 1; });
+  return r;
+}
 function getStaffList() {
   var out=[], seen={};
   function add(n){ var k=String(n||'').trim().toLowerCase(); if(n&&!seen[k]){seen[k]=1;out.push(n);} }
-  try { var s=localStorage.getItem(SK_STAFF); if(s){var a=JSON.parse(s); if(Array.isArray(a)) a.forEach(add);} } catch(e){}
-  try { var em=JSON.parse(localStorage.getItem('saagar_employee_master_v1')||'[]'); if(Array.isArray(em)) em.filter(function(x){return x&&x.name&&x.active!==false;}).forEach(function(x){add(x.name);}); } catch(e){}
+  var master = readMasterNames();
+  readSavedStaff().forEach(function(n){ var k=String(n||'').trim().toLowerCase(); if(master.inactive[k] && !master.active[k]) return; add(n); });
+  master.names.forEach(add);
   // J: drop anyone flagged leave-unavailable today by the integration bridge.
   try {
     var gs=JSON.parse(localStorage.getItem('saagar_gate_status')||'null');
@@ -867,8 +921,11 @@ function loginStaff() {
   const role = el('staff-role-sel').value;
   if (!name) { el('staff-name-inp').classList.add('err'); el('login-err').textContent='Please enter your name.'; return; }
   el('staff-name-inp').classList.remove('err');
-  const list = getStaffList();
-  if (!list.includes(name)) { list.push(name); saveStaffList(list); }
+  const known = getStaffList();
+  if (!known.includes(name)) {
+    const lk = name.toLowerCase(), m = readMasterNames(), saved = readSavedStaff();
+    if (!(m.inactive[lk] && !m.active[lk]) && !saved.some(n => n.trim().toLowerCase() === lk)) { saved.push(name); saveStaffList(saved); }
+  }
   // View the date the shell asked for (defaults to today). Past dates render
   // strictly read-only; today behaves exactly as before.
   st.staffName = name; st.role = role; st.date = stAsOfDate(); st.tab = 'daystart';
@@ -890,7 +947,7 @@ function logout() {
   showScreen('login');
   el('staff-name-inp').value=''; el('sm-pw-inp').value='';
   el('login-err').textContent='';
-  st.staffName = ''; st.auditRec = null;
+  st.staffName = ''; st.auditRec = null; st.auditKey = null;
 }
 
 /* ── STAFF ENTRY ── */
@@ -1033,10 +1090,18 @@ function dsrD4Summary(rec) {
     percent: applicable.length ? Math.round(done / applicable.length * 100) : 0 };
 }
 
+/* S05 (U04-F10): a submitted day already passed the submit gate, so the meter reads complete. Display only. */
+function dsrD4SealSummary(rec, s) {
+  if (!rec || rec.submitted !== true || !s || !s.status) return s;
+  const status = {}; let total = 0;
+  Object.keys(s.status).forEach(id => { const v = s.status[id]; if (v === 'not_applicable') status[id] = v; else { status[id] = 'complete'; total++; } });
+  return { status, done: total, total, percent: total ? 100 : 0 };
+}
+
 /* ── PROGRESS ── */
 function updateProgress() {
   const rec = getRecord();
-  const summary = dsrD4Summary(rec);
+  const summary = dsrD4SealSummary(rec, dsrD4Summary(rec));
   const status = summary.status || {};
   const tabs = ['daystart','opening','inout','sales','nonpurch','tasks','marketing','cleaning','closing'];
   tabs.forEach(id => {
@@ -1091,7 +1156,7 @@ function renderDayStart() {
           Today's Progress
         </div>
       </div>
-      <div class="info-row"><span class="info-key">Sales</span><span class="info-val">${rec.sales.length} bill${rec.sales.length!==1?'s':''} · ${fmtAmt(totalSales)}</span></div>
+      <div class="info-row"><span class="info-key">Sales</span><span class="info-val">${billCount(rec.sales)} bill${billCount(rec.sales)!==1?'s':''} · ${fmtAmt(totalSales)}</span></div>
       <div class="info-row"><span class="info-key">Visitors</span><span class="info-val">${rec.nonpurch.length} logged</span></div>
       <div class="info-row"><span class="info-key">Status</span><span class="info-val">${isOut ? '<span class="badge badge-amber">Out of Store</span>' : '<span class="badge badge-green">In Store</span>'}</span></div>
       <div class="info-row"><span class="info-key">Cleaning</span><span class="info-val">${rec.cleaning.cp1.done && rec.cleaning.cp2.done ? '<span class="badge badge-green">Both Done</span>' : rec.cleaning.cp1.done ? '<span class="badge badge-amber">1 of 2</span>' : '<span class="badge badge-red">Pending</span>'}</span></div>
@@ -1124,7 +1189,7 @@ function renderOpening() {
             const c = stockCatOf(name, g.short);
             return `<div class="fgrp">
               <label class="flbl">${esc(name)} <span class="req">*</span>${d4Carried[c.id] ? `<span class="dsr-d4-carried" title="Carried from the closing count on ${esc(d4Carried[c.id])}">carried ${esc(d4Carried[c.id])}</span>` : ''}</label>
-              <input data-action="updopening" data-action-key="definition-01" class="finp" type="number" min="0" placeholder="0"
+              <input data-action="updopening" data-action-key="definition-01" class="finp${Number(rec.opening[c.id]) < 0 ? ' err' : ''}" type="number" min="0" placeholder="0"
                 value="${esc(rec.opening[c.id])}"
                 ${locked?'disabled':''}
                 oninput="updOpening('${c.id}',this.value)" />
@@ -1141,7 +1206,9 @@ function renderOpening() {
 function updOpening(cat, val) {
   const rec = getRecord();
   if (rec.submitted || isPastView()) return;
-  rec.opening[cat] = val;
+  const clean = cleanStockCount(val);
+  if (clean === null) { refuseStockCount(rec.opening, cat); return; }
+  rec.opening[cat] = clean;
   // PERF: rec stays live in memory; coalesce the whole-record write (debounced)
   // instead of stringifying the full record on every keystroke.
   scheduleRecSave(rec);
@@ -1297,6 +1364,7 @@ function visitorPurchase(sourceRef){
   const rec = getRecord();
   const v = findVisitor(rec, sourceRef);
   if (!v) { toast('Visitor not found','err'); return; }
+  if (v.outcome === 'nonpurchase') { toast('This visitor is already marked as a non-purchase','warn'); return; }
   v.outcome = 'purchase'; v._staffMarked = true;
   // Dedup: only push a sale row if one for this sourceRef does not already exist.
   if (!Array.isArray(rec.sales)) rec.sales = [];
@@ -1317,6 +1385,7 @@ function visitorNonPurch(sourceRef){
   const rec = getRecord();
   const v = findVisitor(rec, sourceRef);
   if (!v) { toast('Visitor not found','err'); return; }
+  if (v.outcome === 'purchase') { toast('This visitor is already marked as a purchase','warn'); return; }
   v.outcome = 'nonpurchase'; v._staffMarked = true;
   if (!Array.isArray(rec.nonpurch)) rec.nonpurch = [];
   const dup = rec.nonpurch.some(n => n && String(n.sourceRef)===String(sourceRef) && (n.source==='qms-visitor'||n.source==='qms'));
@@ -1340,7 +1409,7 @@ function renderSales() {
   const total = rec.sales.reduce((s,x) => s+(Number(x.amount)||0), 0);
   el('tsec-sales').innerHTML = `
     <div class="summary-bar">
-      <div><div class="summary-bar-lbl">Total Sales Today</div><div class="summary-bar-val">${fmtAmt(total)}<span class="sub">${rec.sales.length} bill${rec.sales.length!==1?'s':''}</span></div></div>
+      <div><div class="summary-bar-lbl">Total Sales Today</div><div class="summary-bar-val">${fmtAmt(total)}<span class="sub">${billCount(rec.sales)} bill${billCount(rec.sales)!==1?'s':''}</span></div></div>
     </div>
     ${!locked ? `<button data-action="show-new-sale" data-action-key="definition-01" class="btn btn-green btn-lg" style="margin-bottom:14px" onclick="showNewSale()"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Sale</button>` : ''}
     ${rec.sales.length===0
@@ -1355,7 +1424,7 @@ function renderSales() {
       : rec.sales.map((s,i) => { const fromQMS = s.source==='qms'; return `
         <div class="entry-item"${fromQMS?' style="border-left:3px solid var(--navy)"':''}>
           <div class="entry-hdr">
-            <span class="entry-num">Bill #${i+1}${fromQMS?' <span style="font-size:11px;font-weight:700;color:var(--navy);background:var(--blue-pale);border:1px solid var(--gray-300);border-radius:999px;padding:2px 8px;margin-left:6px">from QMS \u2014 locked</span>':''}</span>
+            <span class="entry-num">Bill #${i+1}${(!fromQMS && (s.amount === '' || s.amount == null)) ? ' <span class="badge badge-amber" style="margin-left:6px">amount missing</span>' : ((!fromQMS && !(Number(s.amount) > 0)) ? ' <span class="badge badge-red" style="margin-left:6px">check amount</span>' : '')}${fromQMS?' <span style="font-size:11px;font-weight:700;color:var(--navy);background:var(--blue-pale);border:1px solid var(--gray-300);border-radius:999px;padding:2px 8px;margin-left:6px">from QMS \u2014 locked</span>':''}</span>
             ${(!locked && !fromQMS) ? `<span style="display:inline-flex;gap:6px"><button data-action="showsalemodal" data-action-key="definition-02" class="btn btn-outline btn-sm" onclick="showSaleModal(${i})">Edit</button><button data-action="deletesale" data-action-key="definition-01" class="btn btn-ghost btn-sm" onclick="deleteSale(${i})"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M6 4V2h4v2M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Remove</button></span>` : (fromQMS ? '<span class="sub" style="font-size:11px" title="Auto-filled from a closed Queue Management sale">\uD83D\uDD12 auto</span>' : '')}
           </div>
           <div class="entry-detail"><b>Bill No:</b> ${esc(s.billNo)} &nbsp;·&nbsp; <b>Product:</b> ${esc(s.product)}${s.customer ? `<br><b>Customer:</b> ${esc(s.customer)}` : ''}${s.mobile ? `<br><b>Mobile:</b> ${esc(s.mobile)}` : ''}${s.paymentMode ? ` &nbsp;·&nbsp; <b>Mode:</b> ${esc(s.paymentMode)}` : ''}</div>
@@ -1412,12 +1481,23 @@ function saveSale(idx) {
     if (!amount) el('s-amt').classList.add('err');
     toast('Bill number and amount required','err'); return;
   }
+  const amountNum = Number(amount);
+  if (!Number.isFinite(amountNum) || amountNum <= 0) {
+    el('s-amt').classList.add('err');
+    toast('Amount must be greater than zero','err'); return;
+  }
   // P1-13: optional customer mobile — validate only when non-blank (mirrors saveNP).
   const mobile = el('s-mobile').value.trim();
   if (mobile && (mobile.replace(/\D/g,'').length < 6 || !/^[0-9+\-\s]{6,15}$/.test(mobile))) { el('s-mobile').classList.add('err'); toast('Enter a valid mobile number','err'); return; }   /* verify-fix: require >=6 real DIGITS so symbol-only junk ('++++++') is rejected */
   const rec = getRecord();
   const prev = (idx !== null && rec.sales && rec.sales[idx]) ? rec.sales[idx] : {};
-  const entry = Object.assign({}, prev, { billNo, product: el('s-prod').value, amount: +amount, customer: el('s-cust').value.trim(), mobile, paymentMode: el('s-paymode').value });
+  const billKey = billNo.toLowerCase();
+  const prevBillKey = String(prev.billNo || '').trim().toLowerCase();
+  if (idx === null || billKey !== prevBillKey) {
+    const clash = (rec.sales || []).some((x, j) => j !== idx && x && String(x.billNo || '').trim().toLowerCase() === billKey);
+    if (clash) { el('s-bill').classList.add('err'); toast('Bill number ' + esc(billNo) + ' is already entered for this day','err'); return; }
+  }
+  const entry = Object.assign({}, prev, { billNo, product: el('s-prod').value, amount: amountNum, customer: el('s-cust').value.trim(), mobile, paymentMode: el('s-paymode').value });
   if (entry.source === 'qms-visitor') entry._confirmed = true;
   // Non-blocking double-count guard: a manual sale has no sourceRef, so it can't match the QMS
   // bridge dedup. If an auto-filled QMS sale of the SAME amount already exists today, warn the CRO
@@ -1491,7 +1571,7 @@ function showNPModal(idx) {
 function saveNP(idx) {
   if (isPastView()) { closeModal(); return; }
   const mobile = el('np-mobile').value.trim();
-  if (mobile && !/^[0-9+\-\s]{6,15}$/.test(mobile)) { el('np-mobile').classList.add('err'); toast('Enter a valid mobile number','err'); return; }
+  if (mobile && (mobile.replace(/\D/g,'').length < 6 || !/^[0-9+\-\s]{6,15}$/.test(mobile))) { el('np-mobile').classList.add('err'); toast('Enter a valid mobile number','err'); return; }
   const rec = getRecord();
   // P1-14: carry follow-up fields; preserve a pre-existing row's ref+flag when editing.
   const fu = el('np-fudate') ? el('np-fudate').value : '';
@@ -1669,7 +1749,7 @@ function renderClosing() {
             const c = stockCatOf(name, g.short);
             return `<div class="fgrp">
               <label class="flbl">${esc(name)} <span class="req">*</span></label>
-              <input data-action="updclosing" data-action-key="definition-01" class="finp" type="number" min="0" placeholder="0"
+              <input data-action="updclosing" data-action-key="definition-01" class="finp${Number(rec.closing[c.id]) < 0 ? ' err' : ''}" type="number" min="0" placeholder="0"
                 value="${esc(rec.closing[c.id])}"
                 ${locked?'disabled':''}
                 oninput="updClosing('${c.id}',this.value)" />
@@ -1712,7 +1792,7 @@ function renderClosing() {
         </tbody>
       </table></div>
       <div style="margin-top:12px;font-size:12px;color:var(--muted);text-align:center">
-        Total Sales: ${rec.sales.length} bills · ${fmtAmt(rec.sales.reduce((s,x)=>s+(+x.amount||0),0))}
+        Total Sales: ${billCount(rec.sales)} bills · ${fmtAmt(rec.sales.reduce((s,x)=>s+(+x.amount||0),0))}
       </div>
     </div>
 
@@ -1731,7 +1811,9 @@ function renderClosing() {
 function updClosing(cat, val) {
   const rec = getRecord();
   if (rec.submitted || isPastView()) return;
-  rec.closing[cat] = val;
+  const clean = cleanStockCount(val);
+  if (clean === null) { refuseStockCount(rec.closing, cat); return; }
+  rec.closing[cat] = clean;
   // PERF: rec stays live in memory; coalesce the whole-record write (debounced).
   scheduleRecSave(rec);
   el('cl-total').textContent = stockTotal(rec.closing);
@@ -1833,10 +1915,11 @@ function selectAuditFromEl(elm) {
 }
 function selectAudit(date, name) {
   st.auditRec = null;
+  st.auditKey = null;
   for (let i=0; i<localStorage.length; i++) {
     const k = localStorage.key(i);
     if (k===recKey(date,name) || k===recKey(date,name.replace(/_/g,' '))) {
-      try { st.auditRec=JSON.parse(localStorage.getItem(k)); break; } catch(e){}
+      try { st.auditRec=JSON.parse(localStorage.getItem(k)); st.auditKey=k; break; } catch(e){}
     }
   }
   if (!st.auditRec) {
@@ -1845,7 +1928,7 @@ function selectAudit(date, name) {
       if (k.startsWith(SK_DSR+date+'_')) {
         try {
           const r = JSON.parse(localStorage.getItem(k));
-          if (r.staffName===name || r.staffName===name.replace(/_/g,' ')) { st.auditRec=r; break; }
+          if (r.staffName===name || r.staffName===name.replace(/_/g,' ')) { st.auditRec=r; st.auditKey=k; break; }
         } catch(e){}
       }
     }
@@ -1903,7 +1986,7 @@ function renderSMAudit() {
       </div>
 
       <div class="report-sec">
-        <div class="rsec-hdr">Sales (${r.sales.length} bills · ${fmtAmt(totalSales)})</div>
+        <div class="rsec-hdr">Sales (${billCount(r.sales)} bills · ${fmtAmt(totalSales)})</div>
         ${r.sales.length===0 ? '<div class="rrow"><span class="rkey">No sales</span></div>'
           : r.sales.map(s => `<div class="rrow"><span class="rkey">Bill ${esc(s.billNo)} · ${esc(s.product)}${s.mobile?' · 📱 '+esc(s.mobile):''}${s.paymentMode?' · '+esc(s.paymentMode):''}</span><span class="rval">${fmtAmt(s.amount)}</span></div>`).join('')}
       </div>
@@ -1991,22 +2074,22 @@ function renderSMAudit() {
             <label class="flbl">SM Remarks</label>
             <textarea class="finp" id="audit-remarks" placeholder="Comments or observations…">${esc(a.remarks||'')}</textarea>
           </div>
-          <div class="audit-ar-grid">
+          ${r.submitted ? `<div class="audit-ar-grid">
             <button data-action="submit-audit-reject" data-action-key="definition-01" class="btn-reject" onclick="rejectDsrAudit()"><svg viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Reject</button>
             <button data-action="submit-audit-approve" data-action-key="definition-02" class="btn-approve" onclick="approveDsrAudit()"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Approve</button>
-          </div>
+          </div>` : '<div class="empty-sub" style="margin-top:10px">Not submitted yet. The CRO has to submit the day report before it can be approved or rejected.</div>'}
          </div>`}`;
 
   calcTotalScore();
 }
 function calcAutoScores(r) {
   return {
-    opening: activeStockCats(r.staffName).every(c => r.opening[c.id]!=='') ? 10 : 0,
+    opening: activeStockCats(r.staffName).every(c => stockEntered(r.opening && r.opening[c.id])) ? 10 : 0,
     sales: Math.min(20, r.sales.filter(x=>(+x.amount)>0).length * 4),   /* audit: only confirmed (amount>0) bills score */
     marketing: Math.min(20, MKT_ITEMS.reduce((s,m) => s+(+r.marketing[m.id]||0),0) * 2),
     tasks: Math.round(TASK_LIST.filter(t => taskNumber(r.tasks[t.id])>0).length / TASK_LIST.length * 10),
     cleaning: (r.cleaning.cp1.done&&r.cleaning.cp1.photo?10:0)+(r.cleaning.cp2.done&&r.cleaning.cp2.photo?10:0),
-    closing: activeStockCats(r.staffName).every(c => r.closing[c.id]!=='') ? 20 : 0,
+    closing: activeStockCats(r.staffName).every(c => stockEntered(r.closing && r.closing[c.id])) ? 20 : 0,
   };
 }
 function calcTotalScore() {
@@ -2019,6 +2102,24 @@ function calcTotalScore() {
   const grEl = el('tsc-grade');
   if (grEl) grEl.textContent = total>=90?'Excellent':total>=75?'Good':total>=60?'Average':'Needs Improvement';
 }
+/* S05 (U04-F3): write ONLY the audit block of the stored record, by explicit key, for today or a past day.
+   Returns true only when the value read back equals what was written. Never repoints _recCache to the audit copy. */
+function writeAuditOnly(rec, audit, requireSubmitted) {
+  if (!rec || rec._noRecord) return false;
+  const k = st.auditKey || recKey(rec.date, rec.staffName);
+  let stored;
+  try { const raw = localStorage.getItem(k); if (!raw) return false; stored = JSON.parse(raw); } catch (e) { return false; }
+  if (!stored || typeof stored !== 'object' || stored._noRecord) return false;
+  if (requireSubmitted && stored.submitted !== true) return false;
+  stored.audit = audit;
+  try { localStorage.setItem(k, JSON.stringify(stored)); } catch (e) { return false; }
+  try {
+    const back = JSON.parse(localStorage.getItem(k));
+    if (!back || JSON.stringify(back.audit === undefined ? null : back.audit) !== JSON.stringify(audit)) return false;
+  } catch (e) { return false; }
+  if (_recCache.key === k) _recCache = { key: null, rec: null };
+  return true;
+}
 async function submitAudit(approved) {
   const scores = {}; let total = 0;
   Object.keys(SCORE_MAX).forEach(s => {
@@ -2026,20 +2127,23 @@ async function submitAudit(approved) {
     scores[s]=v; total+=v;
   });
   if (!st.auditRec) return;
+  if (st.auditRec.submitted !== true) { toast('This day report has not been submitted yet - it cannot be approved or rejected.','err'); return; }
   /* Audit fix dsr-bug-06: the bridge's DSR_SUBMITTED emitter reads r.audit.score, but the
      audit only ever stored r.audit.total, so the emitted payload score was always null
      (payroll avg-score bucket + cross-module dashboards read blank/zero). Additively mirror
      the numeric result under `score` too; `total` is kept for the existing in-module readers. */
   if(!await stReauth('Sign off the DSR audit for '+st.auditRec.date))return;
-  st.auditRec.audit = { approved, total, score: total, ...scores, remarks:el('audit-remarks')?.value||'', auditTime:nowTime() };
-  saveRec(st.auditRec);
+  const audit = { approved, total, score: total, ...scores, remarks:el('audit-remarks')?.value||'', auditTime:nowTime() };
+  if (!writeAuditOnly(st.auditRec, audit, true)) { toast('Could not save the audit - nothing was stored. Please try again.','err'); return; }
+  st.auditRec.audit = audit;
   toast(approved?'Report approved':'Report rejected', approved?'ok':'warn');
   renderSMAudit(); renderSMSubmissions();
 }
 function resetAudit() {
   if (!st.auditRec) return;
   if (!confirm('Reset this audit and re-score?')) return;
-  st.auditRec.audit=null; saveRec(st.auditRec); renderSMAudit();
+  if (!writeAuditOnly(st.auditRec, null, false)) { toast('Could not reset the audit - nothing was changed.','err'); return; }
+  st.auditRec.audit = null; renderSMAudit(); renderSMSubmissions();
 }
 /* P1-12: SM "Unlock for correction". Reopens a SUBMITTED report so the CRO can
    fix an error and re-submit. Mandatory reason, append-only unlockLog audit trail,
@@ -2182,17 +2286,18 @@ function stWaLink(url,scopeId,purposeId){
 
 /* ── SETTINGS ── */
 function renderSMSettings() {
-  const list = getStaffList();
+  const list = getStaffList(), removable = removableStaffKeys();
   el('stsec-settings').innerHTML = `
     <div class="card">
       <div class="card-hdr">
         <div class="card-title"><div class="card-icon ci-navy"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>Staff Members</div>
       </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Names that come from the Employee Master are managed in Settings &gt; People (deactivate a person there to remove them here). Only names typed at login can be removed in this screen.</p>
       <div id="staff-chip-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
         ${list.map((s,i) => `
           <span class="staff-chip">
             ${esc(s)}
-            <span class="staff-chip-remove" onclick="removeStaff(${i})">×</span>
+            ${removable[String(s).trim().toLowerCase()] ? `<span class="staff-chip-remove" data-staff="${esc(s)}" onclick="removeStaff(this.getAttribute('data-staff'))">×</span>` : ''}
           </span>`).join('')}
       </div>
       <div style="display:flex;gap:8px">
@@ -2212,25 +2317,29 @@ function renderSMSettings() {
 function addStaff() {
   const name = el('new-staff-inp').value.trim();
   if (!name) return;
-  const list = getStaffList();
-  if (list.includes(name)) { toast('Name already exists','warn'); return; }
-  list.push(name); saveStaffList(list);
+  const lk = name.toLowerCase();
+  if (getStaffList().some(n => String(n).trim().toLowerCase() === lk)) { toast('Name already exists','warn'); return; }
+  const saved = readSavedStaff(); saved.push(name); saveStaffList(saved);
   el('new-staff-inp').value='';
   renderSMSettings();
-  toast('Staff added: '+name,'ok');
+  toast('Staff added: '+esc(name),'ok');
 }
-function removeStaff(i) {
-  const list = getStaffList();
-  if (!confirm(`Remove "${list[i]}" from staff list?`)) return;
-  list.splice(i,1); saveStaffList(list);
+function removeStaff(name) {
+  name = String(name == null ? '' : name);
+  const k = name.trim().toLowerCase();
+  if (!k) return;
+  if (!removableStaffKeys()[k]) { toast('This name comes from the Employee Master. Deactivate the person in Settings &gt; People to remove them from this list.','warn',5000); return; }
+  if (!confirm(`Remove "${name}" from staff list?`)) return;
+  saveStaffList(readSavedStaff().filter(n => n.trim().toLowerCase() !== k));
   renderSMSettings(); toast('Staff removed','warn');
 }
 function confirmDeleteAll() {
   el('modal-body').innerHTML = `
     <div class="modal-title" style="color:var(--red)">Delete All Records?</div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.7">
-      This will permanently delete <strong>all staff daily records</strong>. This action <strong>cannot be undone</strong>.
+      This will permanently delete <strong>all staff daily records</strong> (the staff name list is kept). This action <strong>cannot be undone</strong>.
     </p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">You will be asked for the Owner PIN. A large register can take a short while; keep this screen open.</p>
     <div class="fgrp">
       <label class="flbl">Type DELETE to confirm</label>
       <input class="finp" id="del-confirm-inp" placeholder="DELETE" />
@@ -2241,19 +2350,47 @@ function confirmDeleteAll() {
     </div>`;
   openModal();
 }
-function doDeleteAll() {
+let _deleteAllBusy = false;
+async function doDeleteAll() {
   if (el('del-confirm-inp')?.value !== 'DELETE') { toast('Type DELETE exactly','err'); return; }
-  const toDelete = [];
-  for (let i=0; i<localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith(SK_DSR)) toDelete.push(k);
-  }
-  toDelete.forEach(k => localStorage.removeItem(k));
-  closeModal(); toast(`${toDelete.length} records deleted`,'warn'); renderSMSubmissions();
+  if (_deleteAllBusy) return;
+  const collect = () => { const a = []; for (let i=0; i<localStorage.length; i++) { const k = localStorage.key(i); if (k && DSR_REC_KEY_RE.test(k)) a.push(k); } return a; };
+  const toDelete = collect();
+  if (!toDelete.length) { closeModal(); toast('No records to delete','warn'); return; }
+  if (!await stReauth('Delete ALL ' + toDelete.length + ' DSR daily records - cannot be undone')) return;
+  _deleteAllBusy = true;
+  if (_recSaveTimer !== null) { clearTimeout(_recSaveTimer); _recSaveTimer = null; }   // a pending debounced write would re-create a record
+  _recCache = { key: null, rec: null };
+  const CHUNK = 200;
+  const run = async () => {
+    for (let i = 0; i < toDelete.length; i += CHUNK) {
+      toDelete.slice(i, i + CHUNK).forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+      toast('Deleting... ' + Math.min(i + CHUNK, toDelete.length) + ' of ' + toDelete.length, 'warn', 700);
+      await new Promise(r => setTimeout(r, 0));   // let the screen breathe between chunks
+    }
+  };
+  let failed = false;
+  try {
+    let store = null;
+    try { store = (window.parent && window.parent !== window) ? window.parent.SaagarStore : null; } catch (e) { store = null; }
+    if (store && typeof store.bulkAsync === 'function') await store.bulkAsync(run); else await run();
+  } catch (e) { failed = true; }
+  _deleteAllBusy = false;
+  const left = collect().length, deleted = toDelete.length - left;
+  closeModal();
+  if (left) toast(deleted + ' of ' + toDelete.length + ' records deleted - the rest could not be removed','err');
+  else if (failed) toast(deleted + ' records deleted, but saving the change to the device failed','err');
+  else toast(deleted + ' records deleted','warn');
+  renderSMSubmissions();
 }
 
 /* ── CSV EXPORT ── */
-function csvCell(v) { return '"' + String(v===null||v===undefined?'':v).replace(/"/g,'""') + '"'; }
+function csvCell(v) {
+  let s = String(v===null||v===undefined?'':v);
+  /* S05 (U04-F6, plan G7): neutralise spreadsheet formulas. Real numbers and plain numeric text are left alone. */
+  if (typeof v !== 'number' && /^[\t\r\n ]*[=+\-@]/.test(s) && !/^[+-]?\d+(\.\d+)?$/.test(s)) s = "'" + s;
+  return '"' + s.replace(/"/g,'""') + '"';
+}
 function downloadCSV(filename, rows) {
   const csv = '\ufeff' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
   const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
@@ -2270,7 +2407,7 @@ function exportSingleCSV() {
     ['Staff Name',r.staffName],['Date',r.date],['Role',r.role.toUpperCase()],
     ['Login Time',r.loginTime],['Submit Time',r.submitTime||'—'],
     ...STOCK_CATS.map(c=>['Opening '+c.label,r.opening[c.id]||0]),
-    ['Total Sales Bills',r.sales.length],
+    ['Total Sales Bills',billCount(r.sales)],
     ['Total Sales Amount',r.sales.reduce((s,x)=>s+(+x.amount||0),0)],
     ...r.sales.map((s,i)=>['Sale #'+(i+1),`Bill:${s.billNo}|${s.product}|${s.amount}|${s.customer||'—'}|${s.mobile||'—'}|${s.paymentMode||'—'}`]),
     ['Non-Purchase Visitors',r.nonpurch.length],
@@ -2296,7 +2433,7 @@ function exportAllCSV(mode) {
   recs.forEach(r => {
     rows.push([
       r.date, r.staffName, r.role.toUpperCase(), r.loginTime,
-      r.sales.length, r.sales.reduce((s,x)=>s+(+x.amount||0),0),
+      billCount(r.sales), r.sales.reduce((s,x)=>s+(+x.amount||0),0),
       r.nonpurch.length, MKT_ITEMS.reduce((s,m)=>s+(+r.marketing[m.id]||0),0),
       taskTotal(r.tasks),
       r.cleaning.cp1.done?'Done':'No', r.cleaning.cp2.done?'Done':'No',

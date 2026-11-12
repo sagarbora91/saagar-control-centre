@@ -58,7 +58,7 @@
       <div class="frow">
         <div class="fg">
           <label class="flabel">CRO Name <span style="color:#dc2626">*</span></label>
-          <input data-action="cro-inp" class="finput" id="cro-inp" type="text" placeholder="e.g. Rahul Sharma"
+          <input data-action="cro-inp" class="finput" id="cro-inp" type="text" maxlength="60" placeholder="e.g. Rahul Sharma"
             oninput="onNamePick()" onkeydown="if(event.key==='Enter')tryStart()" autocomplete="off" list="grm-emp-list"><datalist id="grm-emp-list"></datalist>
         </div>
         <div class="fg">
@@ -524,13 +524,14 @@ function saveCRO() {
 
   const items = [];
   allItems.forEach(item => {
-    const label = item.querySelector('.cltxt').textContent;
+    const label = grmEnText(item.querySelector('.cltxt'));
     const passed = item.querySelector('.clcb').classList.contains(cls);
     items.push({label, passed});
   });
 
   const total = items.length;
   const checked = items.filter(i=>i.passed).length;
+  if (checked === 0 && !confirm('No item is ticked. Save this check as 0%?')) return;
   const pct = total ? Math.round(checked/total*100) : 0;
   const now = new Date();
 
@@ -919,6 +920,7 @@ function exportCSV() {
       rows.push([dateStr, r.name, r.gender==='m'?'Male':'Female', r.pct, r.checked, r.total, r.time, (r.store||''), q(r.checkedBy||''), grmIsSelfCheck(r)?'YES':'']);
     });
   });
+  if (rows.length === 1) { try { showToast('No records for this month. Only the header row will be exported.'); } catch(e) {} }
   const csvCell = v => { let s=String(v==null?'':v); if(/^[\t\r\n ]*[=+\-@]/.test(s))s="'"+s; return '"'+s.replace(/"/g,'""')+'"'; };
   const csv = rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
   const blob = new Blob([csv], {type:'text/csv'});
@@ -997,6 +999,104 @@ window.addEventListener('st-date', function (e) {
   } catch (err) {}
   applyViewedDate();
 });
+
+/* S14-L10N-BEGIN  (U08-F1/F2): Hindi and Marathi for grooming text the shared dictionary cannot reach.
+   Display only. Stored data is never changed: every translated node keeps its English text in node.__grmS.en
+   and saveCRO() reads the checklist label from there (grmEnText). Draft wording, owner to review. */
+const GRM_L10N = {
+  mr: {
+    'Hairstyle':'केशरचना','Uniform':'गणवेश','Name Badge & Gloves':'नेम बॅज आणि हातमोजे','Shoes, Belt & Accessories':'बूट, पट्टा आणि अॅक्सेसरीज',
+    'Name Badge':'नेम बॅज','Shoes & Belt':'बूट आणि पट्टा','Earrings & Watch':'कानातले आणि घड्याळ','Nails, Lipstick & Nail Polish':'नखे, लिपस्टिक आणि नेल पॉलिश',
+    'Short / well-trimmed hair':'लहान / नीट कापलेले केस','Natural hair colour only':'फक्त नैसर्गिक केसांचा रंग','Hair gel applied — no oil':'केसांना जेल लावलेले — तेल नाही',
+    'Sideburns do not cross the middle of the ear':'कल्ले कानाच्या मध्यभागापेक्षा खाली नाहीत','Well-fitted — not too tight or too loose':'व्यवस्थित बसणारा — फार घट्ट किंवा फार सैल नाही',
+    'Clean and properly ironed':'स्वच्छ आणि व्यवस्थित इस्त्री केलेला','Clean and properly ironed at all times':'नेहमी स्वच्छ आणि व्यवस्थित इस्त्री केलेला',
+    'No loose threads, missing buttons, or faded colour':'सैल धागे, तुटलेली बटणे किंवा फिकट रंग नाही','Shirt sleeves as per standard — not rolled up':'शर्टच्या बाह्या मानकानुसार — गुंडाळलेल्या नाहीत',
+    'Name badge worn and clearly visible':'नेम बॅज लावलेला आणि स्पष्ट दिसतो','Name badge worn and clearly visible at all times':'नेम बॅज नेहमी लावलेला आणि स्पष्ट दिसतो',
+    'Hand gloves worn during store hours':'दुकानाच्या वेळेत हातमोजे घातलेले','Shoes are black and polished — no tan or brown':'बूट काळे आणि पॉलिश केलेले — टॅन किंवा तपकिरी नाही',
+    'Belt is black and clearly visible — no tan or brown':'पट्टा काळा आणि स्पष्ट दिसतो — टॅन किंवा तपकिरी नाही','Watch: gold/silver or black/brown strap, simple dial':'घड्याळ: सोनेरी/चांदी किंवा काळा/तपकिरी पट्टा, साधा डायल',
+    'Max one ring per hand — gold or silver only':'प्रत्येक हातात जास्तीत जास्त एक अंगठी — फक्त सोन्याची किंवा चांदीची','Nails clean, dry, and trimmed':'नखे स्वच्छ, कोरडी आणि कापलेली',
+    'Hair styled in a neat bun':'केस नीट अंबाड्यात बांधलेले','Black rubber band and pins used to secure hair':'केस बांधण्यासाठी काळा रबर बँड आणि पिना वापरल्या',
+    'Hair kept off the face — pins if needed':'केस चेहऱ्यावर येत नाहीत — गरज असल्यास पिना','Natural hair colour only — no styling oil':'फक्त नैसर्गिक केसांचा रंग — स्टायलिंग तेल नाही',
+    'Only one pair of studs or small hoops':'फक्त एक जोडी स्टड किंवा लहान रिंग्ज','Lipstick shade — nude only':'लिपस्टिक शेड — फक्त न्यूड','Nail polish — nude shades only, no bright colours':'नेल पॉलिश — फक्त न्यूड शेड्स, चमकदार रंग नाही',
+    'CRO Daily Grooming Check':'CRO दैनिक ग्रूमिंग तपासणी','Enter CRO name and gender, then complete the checklist and save':'CRO चे नाव आणि लिंग भरा, मग चेकलिस्ट पूर्ण करून जतन करा',
+    'All standards met! Tap Save to record.':'सर्व मानके पूर्ण! नोंदवण्यासाठी जतन करा दाबा.','Viewing a past date':'मागील तारीख पाहत आहात',
+    'New grooming check-ins can only be recorded for today. Switch the date to today to add a checklist. The Daily Summary and Month-End Report below remain available for this date.':'नवीन ग्रूमिंग तपासणी फक्त आजच्या दिवसासाठी नोंदवता येते. चेकलिस्ट जोडण्यासाठी तारीख आजची करा. दैनिक सारांश आणि महिना-अखेर अहवाल या तारखेसाठी खाली पाहता येतात.',
+    'CROs Checked':'तपासलेले CRO','this date':'ही तारीख','Fully Compliant':'पूर्णतः अनुपालन','100% score':'100% गुण','Needs Attention':'लक्ष देणे आवश्यक','below 80%':'80% पेक्षा कमी',
+    'Unique CROs':'वेगळे CRO','this month':'या महिन्यात','highest avg':'सर्वाधिक सरासरी','all CROs':'सर्व CRO','Top Failed Checks':'सर्वाधिक अपयशी तपासण्या',
+    'Most-missed grooming standards this month':'या महिन्यात सर्वाधिक चुकलेली ग्रूमिंग मानके',
+    'Most-missed grooming standards this month — top {1} of {2} checks with failures':'या महिन्यात सर्वाधिक चुकलेली ग्रूमिंग मानके — अपयश असलेल्या {2} पैकी पहिल्या {1} तपासण्या',
+    'No records for this date':'या तारखेसाठी नोंदी नाहीत','Fill checklists in the CRO Checklist tab and save them':'CRO चेकलिस्ट टॅबमध्ये चेकलिस्ट भरून जतन करा',
+    'No records for this filter':'या फिल्टरसाठी नोंदी नाहीत','Change the Store filter or pick another date':'स्टोअर फिल्टर बदला किंवा दुसरी तारीख निवडा',
+    'No data for this month':'या महिन्यासाठी डेटा नाही','Data will appear here once CRO records are saved':'CRO नोंदी जतन केल्यावर डेटा येथे दिसेल',
+    'GENTS':'पुरुष','LADIES':'महिला','All {1} parameters passed':'सर्व {1} निकष उत्तीर्ण','{1} passed':'{1} उत्तीर्ण','failed {1} times':'{1} वेळा अपयशी',
+    '{1}% fail rate ({2}/{3})':'{1}% अपयश दर ({2}/{3})','Pending this morning — {1}':'आज सकाळी बाकी — {1}'
+  },
+  hi: {
+    'Hairstyle':'हेयरस्टाइल','Uniform':'यूनिफॉर्म','Name Badge & Gloves':'नेम बैज और दस्ताने','Shoes, Belt & Accessories':'जूते, बेल्ट और एक्सेसरीज़',
+    'Name Badge':'नेम बैज','Shoes & Belt':'जूते और बेल्ट','Earrings & Watch':'झुमके और घड़ी','Nails, Lipstick & Nail Polish':'नाखून, लिपस्टिक और नेल पॉलिश',
+    'Short / well-trimmed hair':'छोटे / अच्छी तरह कटे हुए बाल','Natural hair colour only':'केवल प्राकृतिक बालों का रंग','Hair gel applied — no oil':'बालों में जेल लगा है — तेल नहीं',
+    'Sideburns do not cross the middle of the ear':'साइडबर्न कान के बीच से नीचे नहीं हैं','Well-fitted — not too tight or too loose':'सही फिटिंग — न बहुत कसा, न बहुत ढीला',
+    'Clean and properly ironed':'साफ और ठीक से इस्त्री किया हुआ','Clean and properly ironed at all times':'हर समय साफ और ठीक से इस्त्री किया हुआ',
+    'No loose threads, missing buttons, or faded colour':'ढीले धागे, टूटे बटन या फीका रंग नहीं','Shirt sleeves as per standard — not rolled up':'शर्ट की आस्तीन मानक के अनुसार — मुड़ी हुई नहीं',
+    'Name badge worn and clearly visible':'नेम बैज लगा है और साफ दिखता है','Name badge worn and clearly visible at all times':'नेम बैज हर समय लगा है और साफ दिखता है',
+    'Hand gloves worn during store hours':'दुकान के समय में दस्ताने पहने हैं','Shoes are black and polished — no tan or brown':'जूते काले और पॉलिश किए हुए — टैन या भूरे नहीं',
+    'Belt is black and clearly visible — no tan or brown':'बेल्ट काला और साफ दिखता है — टैन या भूरा नहीं','Watch: gold/silver or black/brown strap, simple dial':'घड़ी: सुनहरी/चाँदी या काला/भूरा स्ट्रैप, साधा डायल',
+    'Max one ring per hand — gold or silver only':'प्रत्येक हाथ में अधिकतम एक अंगूठी — केवल सोने या चाँदी की','Nails clean, dry, and trimmed':'नाखून साफ, सूखे और कटे हुए',
+    'Hair styled in a neat bun':'बाल साफ़-सुथरे जूड़े में बंधे हैं','Black rubber band and pins used to secure hair':'बाल बांधने के लिए काला रबर बैंड और पिन इस्तेमाल किए',
+    'Hair kept off the face — pins if needed':'बाल चेहरे से दूर — ज़रूरत हो तो पिन','Natural hair colour only — no styling oil':'केवल प्राकृतिक बालों का रंग — स्टाइलिंग तेल नहीं',
+    'Only one pair of studs or small hoops':'केवल एक जोड़ी स्टड या छोटी बालियाँ','Lipstick shade — nude only':'लिपस्टिक शेड — केवल न्यूड','Nail polish — nude shades only, no bright colours':'नेल पॉलिश — केवल न्यूड शेड, चमकीले रंग नहीं',
+    'CRO Daily Grooming Check':'CRO दैनिक ग्रूमिंग जाँच','Enter CRO name and gender, then complete the checklist and save':'CRO का नाम और लिंग भरें, फिर चेकलिस्ट पूरी करके सहेजें',
+    'All standards met! Tap Save to record.':'सभी मानक पूरे! दर्ज करने के लिए सहेजें दबाएँ।','Viewing a past date':'पिछली तारीख देख रहे हैं',
+    'New grooming check-ins can only be recorded for today. Switch the date to today to add a checklist. The Daily Summary and Month-End Report below remain available for this date.':'नई ग्रूमिंग जाँच केवल आज के दिन के लिए दर्ज की जा सकती है। चेकलिस्ट जोड़ने के लिए तारीख आज की करें। दैनिक सारांश और माह-अंत रिपोर्ट इस तारीख के लिए नीचे देखी जा सकती हैं।',
+    'CROs Checked':'जाँचे गए CRO','this date':'यह तारीख','Fully Compliant':'पूर्णतः अनुपालित','100% score':'100% स्कोर','Needs Attention':'ध्यान देने की ज़रूरत','below 80%':'80% से कम',
+    'Unique CROs':'अलग-अलग CRO','this month':'इस महीने','highest avg':'सर्वोच्च औसत','all CROs':'सभी CRO','Top Failed Checks':'सबसे ज़्यादा विफल जाँचें',
+    'Most-missed grooming standards this month':'इस महीने सबसे ज़्यादा चूके ग्रूमिंग मानक',
+    'Most-missed grooming standards this month — top {1} of {2} checks with failures':'इस महीने सबसे ज़्यादा चूके ग्रूमिंग मानक — विफल {2} जाँचों में से शीर्ष {1}',
+    'No records for this date':'इस तारीख के लिए कोई रिकॉर्ड नहीं','Fill checklists in the CRO Checklist tab and save them':'CRO चेकलिस्ट टैब में चेकलिस्ट भरकर सहेजें',
+    'No records for this filter':'इस फ़िल्टर के लिए कोई रिकॉर्ड नहीं','Change the Store filter or pick another date':'स्टोर फ़िल्टर बदलें या दूसरी तारीख चुनें',
+    'No data for this month':'इस महीने के लिए कोई डेटा नहीं','Data will appear here once CRO records are saved':'CRO रिकॉर्ड सहेजने पर डेटा यहाँ दिखेगा',
+    'GENTS':'पुरुष','LADIES':'महिला','All {1} parameters passed':'सभी {1} मापदंड उत्तीर्ण','{1} passed':'{1} उत्तीर्ण','failed {1} times':'{1} बार विफल',
+    '{1}% fail rate ({2}/{3})':'{1}% विफलता दर ({2}/{3})','Pending this morning — {1}':'आज सुबह बाकी — {1}'
+  }
+};
+const GRM_L10N_RE = [
+  [/^All (\d+) parameters passed$/, 'All {1} parameters passed'],
+  [/^(\d+) passed$/, '{1} passed'],
+  [/^failed (\d+) times?$/, 'failed {1} times'],
+  [/^(\d+)% fail rate \((\d+)\/(\d+)\)$/, '{1}% fail rate ({2}/{3})'],
+  [/^Pending this morning — (\d+)$/, 'Pending this morning — {1}'],
+  [/^Most-missed grooming standards this month — top (\d+) of (\d+) checks with failures$/, 'Most-missed grooming standards this month — top {1} of {2} checks with failures']
+];
+/* Elements whose own text nodes are translated. Deliberately NOT buttons, labels, th, option or h1-h6: the shared
+   translator already owns those, and option text must never change (select.value). */
+const GRM_L10N_SEL = '.cltxt,.clgh,.donebanner,.sec-title,.sec-sub,.stlbl,.stsub,.empty-t,.empty-s,.chip,.tf-g,.tf-lbl,.tf-n,.tf-rate,.grm-pending-hd,#grm-topfail-sub';
+function grmLang(){ try{ if(window.__grmLang) return window.__grmLang; return (window.SaagarI18n && window.SaagarI18n.getLanguage()) || 'en'; }catch(e){ return 'en'; } }
+function grmXlate(en, lang){
+  if(lang!=='mr' && lang!=='hi') return en;
+  var m=/^(\s*)([\s\S]*?)(\s*)$/.exec(String(en)), core=m[2]; if(!core) return en;
+  var d=GRM_L10N[lang], out=d[core];
+  if(out==null){ for(var i=0;i<GRM_L10N_RE.length;i++){ var g=GRM_L10N_RE[i][0].exec(core); if(g && d[GRM_L10N_RE[i][1]]!=null){ out=d[GRM_L10N_RE[i][1]].replace(/\{(\d)\}/g,function(_,k){ return g[+k]; }); break; } } }
+  if(out==null){ try{ var t=window.SaagarI18n.translate(core,lang); if(t!==core) out=t; }catch(e){} }
+  return out==null ? en : (m[1]+out+m[3]);
+}
+function grmNode(node, lang){
+  var cur=String(node.nodeValue||''); if(!cur.trim()) return;
+  var s=node.__grmS; if(!s){ s=node.__grmS={en:cur,out:cur}; } else if(cur!==s.out && cur!==s.en){ s.en=cur; }
+  var next=grmXlate(s.en,lang); s.out=next; if(cur!==next) node.nodeValue=next;
+}
+function grmLocalize(){
+  var lang=grmLang();
+  try{ document.querySelectorAll(GRM_L10N_SEL).forEach(function(el){ for(var c=el.firstChild;c;c=c.nextSibling){ if(c.nodeType===3) grmNode(c,lang); } }); }catch(e){}
+}
+function grmEnText(el){ var n=el && el.firstChild; return (n && n.__grmS) ? n.__grmS.en : (el ? el.textContent : ''); }
+(function(){
+  var rd=renderDaily, rm=renderMonthly, ar=applyReadOnly;
+  renderDaily=function(){ var r=rd.apply(this,arguments); grmLocalize(); return r; };
+  renderMonthly=function(){ var r=rm.apply(this,arguments); grmLocalize(); return r; };
+  applyReadOnly=function(){ var r=ar.apply(this,arguments); grmLocalize(); return r; };
+  window.addEventListener('message',function(e){ if(!window.SaagarModuleRuntime || !SaagarModuleRuntime.accepts(e, window.parent)) return; var d=e && e.data; if(d && d.type==='ST_LANG' && (d.lang==='mr'||d.lang==='hi'||d.lang==='en')){ window.__grmLang=d.lang; setTimeout(grmLocalize,0); } });
+})();
+/* S14-L10N-END */
 
 // ═══════════════════════════════════════════════════════
 //  INIT RENDERS

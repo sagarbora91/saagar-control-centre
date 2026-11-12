@@ -91,6 +91,62 @@
     if (fn) for (var dd = 1; dd <= dim; dd++) { var q = fn(month + '-' + String(dd).padStart(2, '0')); s += q.sales || 0; p += q.purchases || 0; w += q.total || 0; }
     return { sales: s, purchases: p, walkins: w, conversion: w ? Math.round(p / w * 100) : 0 };
   }
+  /* ---------- role gate (S02: Reports hub / preview / generate / pack ignored the signed-in role) ----------
+     One table says which shell module each report belongs to (same mapping as shared/shell-search.js
+     REPORT_MODULE). '*' = owner-level summary (Owner mode, or the Store Manager role). */
+  var REPORT_MODULE = {
+    qmsReport: 'qms', qmsEodSummary: 'qms', lostWalkinCallSheet: 'qms', dsrRegister: 'dsr', croAudit: 'cro_audit',
+    stockRegister: 'stock', cashStatement: 'expense', expenseMonthly: 'expense', leaveRegister: 'leave',
+    payrollRegister: 'payroll', payrollSlip: 'payroll', statutorySummary: 'payroll', statutoryRegister: 'payroll',
+    advanceVoucher: 'payroll', hrLetter: 'payroll', fnfSettlement: 'payroll', groomingDaily: 'grooming',
+    groomingMonthly: 'grooming', taxReport: 'tax', serviceAging: 'service', serviceJobCard: 'service',
+    serviceTaxInvoice: 'service', ownerBrief: '*', ownerMonthly: '*', weeklyBrief: '*'
+  };
+  /* S02-1: one-shot preview grant. A closure variable, never a property of the exported object, so no other
+     script can set it. Only _payrollPick sets it (after the salary-slip gate) and preview() clears it on first use. */
+  var _grantOnce = null;
+  var _pickOpts = null;   // S02-1 audit: slip picker armed only by a gated preview('payrollSlip'); cleared by every preview() call
+  function roleApi() {                       // the ONE place that talks to the shell role model (S15 may re-point it)
+    try {
+      var s = window.SaagarOwnerSession;
+      if (!s || typeof s.read !== 'function') return null;
+      return { session: s.read(), visible: G('moduleVisibleForRole', null), ensure: G('ensureModuleAccess', null), audit: G('auditLog', null) };
+    } catch (e) { return { session: null }; }
+  }
+  /* Visibility only (no PIN prompt). Fail-open ONLY when the shell role model is not loaded at all
+     (unit tests, standalone page); once the shell role model exists, anything unclear is refused. */
+  function reportVisible(type) {
+    var r = roleApi(); if (!r) return true;
+    var s = r.session, mod = REPORT_MODULE[type];
+    if (!s) return false;
+    if (mod === undefined) mod = '*';        // unknown report types are owner-level
+    if (s.isOwner === true) return true;
+    function vis(id) { try { return typeof r.visible === 'function' && r.visible(id) === true; } catch (e) { return false; } }
+    if (mod === '*') return s.isManager === true && (type !== 'ownerMonthly' || vis('payroll'));
+    return vis(mod);
+  }
+  function denyReport(type) {
+    var r = roleApi();
+    try { if (r && typeof r.audit === 'function') r.audit('access.denied', { module: 'reports', report: String(type) }); } catch (e) {}
+    try { toast('This report is not available for your role'); } catch (e) {}
+    return false;
+  }
+  /* Entry gate for preview / generate / pack / batch slips: visibility, then the same Owner-PIN step-up the
+     shell asks when the module is opened (ensureModuleAccess), unless the user is already inside that module.
+     memo (optional object) lets a pack ask once per module. */
+  function reportGate(type, memo) {
+    if (!reportVisible(type)) return denyReport(type);
+    var r = roleApi(); if (!r) return true;
+    var mod = REPORT_MODULE[type];
+    if (mod === '*') mod = (type === 'ownerMonthly') ? 'payroll' : '';
+    if (!mod) return true;
+    if (memo && memo.hasOwnProperty(mod)) return memo[mod];
+    var active = ''; try { active = (typeof activeModuleId !== 'undefined' && activeModuleId) ? String(activeModuleId) : ''; } catch (e) {}
+    var ok = true;
+    if (active !== mod) { try { ok = typeof r.ensure === 'function' && r.ensure(mod) === true; } catch (e) { ok = false; } }
+    if (memo) memo[mod] = ok;
+    return ok;
+  }
   /* ---------- P1-47 week helpers (LOCAL date math — NEVER toISOString; IST +5:30 shifts the window a day) ---------- */
   function isoOf(dt) { return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0'); }
   function isoWeek(anchorIso) {
@@ -127,6 +183,45 @@
     } catch (err) { return (startIso || '') + ' – ' + (endIso || ''); }
   }
 
+  /* ---------- GST tax invoice figures (S02: U07-F03) ----------
+     Rule: the owner-entered FINAL AMOUNT is the GST-inclusive amount actually charged.
+     - difference from the estimate (taxable + GST) under Rs 1: true rounding, shown as "Round Off".
+     - difference of Rs 1 or more: a discount (negative) or additional charge (positive) on the pre-tax value;
+       GST is recomputed on the net taxable value so GST always matches what was charged.
+     All figures are whole rupees so the printed arithmetic always adds up. */
+  function r2(x) { return Math.round((Number(x) || 0) * 100) / 100; }
+  function invoiceFigures(sub, gstPct, finalAmt) {
+    sub = r2(sub); gstPct = Number(gstPct) || 0;
+    if (gstPct < 0 || gstPct > 100) throw new Error('GST rate must be between 0 and 100');
+    var g = gstPct / 100, estGst = r2(sub * g), estTotal = r2(sub + estGst);
+    var fin = (Number(finalAmt) > 0) ? r2(finalAmt) : estTotal;
+    var taxable, gst;
+    var trueRounding = Math.abs(r2(fin - estTotal)) < 1 && Math.abs(Math.round(fin) - Math.round(sub) - Math.round(estGst)) <= 1;   // audit: paise sub-totals could print Round Off 2
+    if (trueRounding) { taxable = sub; gst = estGst; }
+    else { taxable = r2(fin / (1 + g)); gst = r2(taxable * g); }
+    var dList = Math.round(sub), dTax = Math.round(taxable), dGst = Math.round(gst), dFin = Math.round(fin), cg = Math.round(gst / 2);
+    return { gstPct: gstPct, listed: dList, adjustment: dTax - dList, taxable: dTax, gst: dGst, cgst: cg, sgst: dGst - cg,
+             roundOff: dFin - dTax - dGst, finalAmt: fin, total: dFin };
+  }
+  /* Frozen invoice snapshot (S02-2, interface B). Service stores the result on the case as invoiceSnapshot in the
+     same save that stores invoiceNo; every later print reads the snapshot, never the live case. Throws on a
+     GST rate outside 0 to 100 (so the caller can refuse to issue). Not gated: it only reads the case it is given. */
+  function makeInvoiceSnapshot(j, invoiceNo, basis) {
+    j = j || {};
+    var org = J('saagar_org_master_v1', null);
+    var firm = (org && Array.isArray(org.firms)) ? (org.firms.filter(function (f) { return f && f.active !== false && f.name; })[0] || org.firms[0]) : null;
+    var del = j.delivery || {};
+    var items = (Array.isArray(j.lineItems) ? j.lineItems : []).filter(function (l) { return l && (l.desc || l.description); })
+      .map(function (l) { return { desc: String(l.desc || l.description || ''), qty: l.qty || 1, unit: l.unit || 0, total: l.total || 0 }; });
+    var figs = invoiceFigures(parseFloat(j.subTotal) || 0, parseFloat(j.gst) || 0, parseFloat(del.finalAmt) || null);
+    return { v: 1, basis: basis || 'issue', invoiceNo: String(invoiceNo || j.invoiceNo || ''), issuedAt: new Date().toISOString(),
+      invoiceDate: del.collectDate || (j.closedAt ? String(j.closedAt).slice(0, 10) : todayIsoSafe()), caseId: j.id || '',
+      firm: { name: (firm && firm.name) || 'Saagar Traders', gstin: (firm && (firm.gstin || firm.gstIn || firm.GSTIN)) || '', address: (firm && (firm.address || firm.addr)) || 'Latur, Maharashtra' },
+      customer: { name: j.custName || '', mobile: j.custMobile || '', address: j.custAddr || '' },
+      watch: [j.brand, j.model].filter(Boolean).join(' '), lines: items, figs: figs,
+      delivery: { collectDate: del.collectDate || '', payMode: del.payMode || '', payRef: del.payRef || '', warrantyTill: del.warrantyTill || '', warrantyMonths: del.warrantyMonths || '' } };
+  }
+
   /* ---------- per-report builders → { orientation, pages:[innerHtml,...] } ---------- */
   var BUILDERS = {
 
@@ -161,7 +256,7 @@
       var blocks = [{ t: 'header', title: 'DAILY OWNER BRIEF', sub: 'Titan World + Helios · Latur', period: longDate(date) }];
       blocks.push({ t: 'attn', flags: flags });
       blocks.push({ t: 'kpi', cols: 5, items: [
-        { label: 'Net Sales', value: inr(b.qmsSales), sub: (dsr.salesCnt ? num(dsr.salesCnt) + ' bills (DSR)' : ''), hero: true },
+        { label: 'Sales (Queue)', value: inr(b.qmsSales), sub: num(b.qmsPurchases) + ' purchases', hero: true },
         { label: 'Conversion', value: pct(b.qmsConversion) },
         { label: 'Walk-ins → Buy', value: num(b.qmsWalkins) + ' → ' + num(b.qmsPurchases), sub: ((b.qmsWalkins || 0) - (b.qmsPurchases || 0)) + ' not converted' },
         { label: 'Cash', value: cash.rec ? inr(cash.counted) : '—', sub: cash.rec ? (cash.balanced ? 'Reconciled' : 'Mismatch') : 'Not counted', subClass: cash.rec ? (cash.balanced ? 'up' : 'down') : 'neu' },
@@ -177,6 +272,9 @@
           colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 70, halign: 'right' }, 4: { cellWidth: 110, halign: 'right' } },
           foot: [['Total', num(qms.total), num(qms.purchases), pct(qms.conversion), inr(qms.sales)]] });
       } else { blocks.push({ t: 'empty', text: 'No walk-ins recorded today.' }); }
+      if ((dsr.salesCnt || 0) > 0 && Math.round(dsr.salesAmt || 0) !== Math.round(b.qmsSales || 0)) {
+        blocks.push({ t: 'note', text: 'Daily Sales Register shows ' + inr(dsr.salesAmt) + ' on ' + num(dsr.salesCnt) + ' bills; the Queue shows ' + inr(b.qmsSales) + ' on ' + num(b.qmsPurchases) + ' purchases. The two are recorded separately and are not forced to agree.' });
+      }
       blocks.push({ t: 'section', title: 'Cash Position', tag: cash.rec ? (cash.balanced ? { cls: 'ok', txt: 'Reconciled' } : { cls: 'bad', txt: 'Mismatch' }) : { cls: 'warn', txt: 'Pending' } });
       if (cash.rec) {
         blocks.push({ t: 'kv', cols: 2, pairs: [
@@ -205,7 +303,7 @@
       var nextTax = (tax.upcoming || [])[0];
       blocks.push({ t: 'section', title: 'Compliance & Service', tag: ((b.taxOverdue || 0) > 0 || (aging.b16 || 0) > 0) ? { cls: 'bad', txt: 'Action' } : { cls: 'ok', txt: 'Clear' } });
       blocks.push({ t: 'kv', cols: 2, pairs: [
-        ['Tax overdue', (b.taxOverdue || 0) > 0 ? (b.taxOverdue + (nextTax && nextTax.status === 'Overdue' ? ' · ' + nextTax.item : '')) : '0'],
+        ['Tax overdue', num(b.taxOverdue || 0)], ['Next overdue', (nextTax && nextTax.status === 'Overdue') ? trunc(nextTax.item, 34) : '—'],
         ['Due this week', num(b.taxDueWeek)], ['Open service cases', num(b.serviceOpen)],
         ['Aged 16+ days', String(aging.b16 || 0)], ['Last data backup', (b.backupDays == null ? '—' : b.backupDays === 0 ? 'Today' : b.backupDays + ' days ago')]
       ] });
@@ -434,6 +532,7 @@
         var status = (meta.run && meta.run.status) || ((p.runs && Object.keys(p.runs).length) ? 'locked' : 'draft'); locked = /lock/i.test(status);
         T = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 }; items = [];
         rows.forEach(function (r) {
+          if (r && r.active === false) return;   // retired rows are not paid and not printed (U10-F-05)
           var gross = Number(r.grossPayable != null ? r.grossPayable : (r.gross || 0)) || 0, pt = Number(r.pt) || 0, pf = Number(r.pf) || 0, es = Number(r.esic) || 0, adv = Number(r.advance) || 0, net = Number(r.net != null ? r.net : (r.netPay || 0)) || 0;
           var ot = Math.max(0, Math.round(net + pt + pf + es + adv - gross));
           T.gross += gross; T.ot += ot; T.pt += pt; T.pf += pf; T.esic += es; T.adv += adv; T.net += net;
@@ -442,9 +541,12 @@
         o.preparedBy = meta.preparedBy; o.checkedBy = meta.checkedBy; o.approvedBy = meta.approvedBy;
       }
       if (!items.length) return { orientation: 'landscape', blocks: [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period }, { t: 'empty', text: 'No employees in payroll.' }] };
+      var exactNet = T.net, RT = { gross: 0, ot: 0, pt: 0, pf: 0, esic: 0, adv: 0, net: 0 };
+      items.forEach(function (r) { RT.gross += Math.round(r.gross); RT.ot += Math.round(r.ot); RT.pt += Math.round(r.pt); RT.pf += Math.round(r.pf); RT.esic += Math.round(r.esic); RT.adv += Math.round(r.advance); RT.net += Math.round(r.net); });
+      T = RT;   // totals are the sum of the whole-rupee figures printed in the rows (U02-F16)
       items.forEach(function (r, i) {
         body.push([String(i + 1), r.empId, trunc(r.name, 22), trunc(r.designation, 16), inr(r.gross), inr(r.ot), inr(r.pt), inr(r.pf), inr(r.esic), inr(r.advance), inr(r.net)]);
-        raw.push([0, 0, 0, 0, r.gross, r.ot, r.pt, r.pf, r.esic, r.advance, r.net]); // exact per-row numerics → Σraw == foot
+        raw.push([0, 0, 0, 0, Math.round(r.gross), Math.round(r.ot), Math.round(r.pt), Math.round(r.pf), Math.round(r.esic), Math.round(r.advance), Math.round(r.net)]); // whole-rupee per-row numerics → Σraw == foot
       });
       var blocks = [{ t: 'header', title: 'PAYROLL — SALARY REGISTER', sub: 'Saagar Traders · Latur', period: period, chip: locked ? 'LOCKED — FINAL' : 'DRAFT', chipKind: locked ? 'locked' : 'draft' }];
       blocks.push({ t: 'kpi', cols: 5, items: [
@@ -460,6 +562,7 @@
         colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 56 }, 2: { cellWidth: 'auto' }, 3: { cellWidth: 92 }, 4: { cellWidth: 78, halign: 'right' }, 5: { cellWidth: 56, halign: 'right' }, 6: { cellWidth: 54, halign: 'right' }, 7: { cellWidth: 62, halign: 'right' }, 8: { cellWidth: 60, halign: 'right' }, 9: { cellWidth: 70, halign: 'right' }, 10: { cellWidth: 86, halign: 'right' } },
         foot: [['', '', 'TOTAL (' + items.length + ')', '', inr(T.gross), inr(T.ot), inr(T.pt), inr(T.pf), inr(T.esic), inr(T.adv), inr(T.net)]] });
       blocks.push({ t: 'statline', spans: [['Statutory — PT', inr(T.pt)], ['PF (EE)', inr(T.pf)], ['ESIC (EE)', inr(T.esic)], ['Net paid to staff', inr(T.net)]] });
+      if (Math.round(exactNet) !== T.net) blocks.push({ t: 'note', text: 'Totals are the sum of the whole-rupee figures printed above. Unrounded net payable: ₹' + exactNet.toFixed(2) + '.' });
       blocks.push({ t: 'sign', boxes: [{ role: 'Prepared By', name: o.preparedBy || '—' }, { role: 'Checked By', name: o.checkedBy || '—' }, { role: 'For Saagar Traders', name: o.approvedBy || '—' }] });
       return { orientation: 'landscape', blocks: blocks };
     },
@@ -469,7 +572,8 @@
       o = o || {};
       if (o.slip) return { orientation: 'portrait', blocks: [{ t: 'header', title: 'SALARY SLIP', sub: 'Saagar Traders · Latur', period: 'For ' + (o.slip.period || '') }].concat(slipBlocks(o.slip, 'Employee & Attendance')) };
       var p = J('payroll_suite_v1_2026', {}) || {}, meta = p.meta || {}, rows = Array.isArray(p.rows) ? p.rows : [];
-      var r = o.empId ? rows.filter(function (x) { return x.empId === o.empId; })[0] : (o.empIndex != null ? rows[o.empIndex] : rows[0]);
+      var isLive = function (x) { return x && x.active !== false; };   // retired rows have no slip (U10-F-05)
+      var r = o.empId ? rows.filter(function (x) { return isLive(x) && x.empId === o.empId; })[0] : (o.empIndex != null ? (isLive(rows[o.empIndex]) ? rows[o.empIndex] : undefined) : rows.filter(isLive)[0]);
       var period = (meta.month || '') + ' ' + (meta.year || '');
       var hdr = { t: 'header', title: 'SALARY SLIP', sub: 'Saagar Traders · Latur', period: 'For ' + period };
       if (!r) return { orientation: 'portrait', blocks: [hdr, { t: 'empty', text: 'Employee not found.' }] };
@@ -911,55 +1015,50 @@
       var j = o.id ? arr.filter(function (x) { return x.id === o.id; })[0] : arr[0];
       var hdr0 = { t: 'header', title: 'TAX INVOICE', sub: 'Saagar Traders · Latur', period: longDate(curDate()) };
       if (!j) return { orientation: 'portrait', blocks: [hdr0, { t: 'empty', text: 'No service case selected.' }] };
-      var org = J('saagar_org_master_v1', null);
-      var firm = (org && Array.isArray(org.firms)) ? (org.firms.filter(function (f) { return f && f.active !== false && f.name; })[0] || org.firms[0]) : null;
-      var firmName = (firm && firm.name) || 'Saagar Traders';
-      var gstin = (firm && (firm.gstin || firm.gstIn || firm.GSTIN)) || '';
-      var firmAddr = (firm && (firm.address || firm.addr)) || 'Latur, Maharashtra';
-      var del = j.delivery || {};
-      var invNo = o.invoiceNo || j.invoiceNo || ('WS-' + (j.id || ''));
-      var invDate = del.collectDate || (j.closedAt ? String(j.closedAt).slice(0, 10) : curDate());
-      var sub = parseFloat(j.subTotal) || 0;
-      var gstPct = parseFloat(j.gst) || 0;
-      var gstAmt = sub * gstPct / 100;
-      var finalAmt = parseFloat(del.finalAmt) || (sub + gstAmt);
-      var blocks = [{ t: 'header', title: 'TAX INVOICE', sub: firmName + (gstin ? (' · GSTIN ' + gstin) : ''), period: firmAddr, chip: invNo, chipKind: 'locked' }];
-      blocks.push({ t: 'kv', cols: 2, pairs: [['Invoice No', invNo], ['Invoice Date', invDate], ['Service Order', j.id || '—'], ['Delivery Date', del.collectDate || '—']] });
+      var snap = (j.invoiceSnapshot && j.invoiceSnapshot.v === 1 && j.invoiceSnapshot.figs && j.invoiceSnapshot.firm && j.invoiceSnapshot.customer && j.invoiceSnapshot.delivery && Array.isArray(j.invoiceSnapshot.lines)) ? j.invoiceSnapshot : null, legacy = false;
+      if (!snap) {
+        try { snap = makeInvoiceSnapshot(j, o.invoiceNo || j.invoiceNo, 'live'); legacy = true; }
+        catch (e) { return { orientation: 'portrait', blocks: [hdr0, { t: 'empty', text: 'Invoice cannot be built: ' + ((e && e.message) || e) + '. Correct the case first.' }] }; }
+      }
+      var invNo = snap.invoiceNo, issued = !!invNo;
+      var F = snap.figs, firmName = snap.firm.name, gstin = snap.firm.gstin, firmAddr = snap.firm.address, del = snap.delivery, cust = snap.customer;
+      var blocks = [{ t: 'header', title: 'TAX INVOICE', sub: firmName + (gstin ? (' · GSTIN ' + gstin) : ''), period: firmAddr, chip: issued ? invNo : 'DRAFT - NOT ISSUED', chipKind: issued ? 'locked' : 'draft' }];
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Invoice No', invNo || 'Not issued'], ['Invoice Date', snap.invoiceDate || '—'], ['Service Order', snap.caseId || '—'], ['Delivery Date', del.collectDate || '—']] });
       blocks.push({ t: 'section', title: 'Bill To' });
-      blocks.push({ t: 'kv', cols: 2, pairs: [['Customer', j.custName || '—'], ['Mobile', j.custMobile || '—'], ['Address', j.custAddr || '—'], ['Watch', [j.brand, j.model].filter(Boolean).join(' ') || '—']] });
-      var items = Array.isArray(j.lineItems) ? j.lineItems.filter(function (l) { return l && (l.desc || l.description); }) : [];
+      blocks.push({ t: 'kv', cols: 2, pairs: [['Customer', cust.name || '—'], ['Mobile', cust.mobile || '—'], ['Address', cust.address || '—'], ['Watch', snap.watch || '—']] });
+      var items = snap.lines.filter(function (l) { return l && l.desc; });
+      var footLabel = F.adjustment !== 0 ? 'Items total' : 'Taxable Value';
       blocks.push({ t: 'section', title: 'Particulars' });
       if (items.length) {
         blocks.push({ t: 'table',
           head: [['Description', 'Qty', 'Rate ₹', 'Amount ₹']],
-          body: items.map(function (l) { return [trunc(l.desc || l.description || '—', 46), num(l.qty || 1), inr(l.unit || 0), inr(l.total || 0)]; }),
+          body: items.map(function (l) { return [trunc(l.desc || '—', 46), num(l.qty || 1), inr(l.unit || 0), inr(l.total || 0)]; }),
           money: [3],
           colStyles: { 0: { cellWidth: 'auto' }, 1: { cellWidth: 46, halign: 'right' }, 2: { cellWidth: 90, halign: 'right' }, 3: { cellWidth: 98, halign: 'right' } },
-          foot: [['Taxable Value', '', '', inr(sub)]] });
+          foot: [[footLabel, '', '', inr(F.listed)]] });
       } else {
-        blocks.push({ t: 'table', head: [['Description', 'Amount ₹']], body: [['Service charges', inr(sub)]], money: [1], foot: [['Taxable Value', inr(sub)]] });
+        blocks.push({ t: 'table', head: [['Description', 'Amount ₹']], body: [['Service charges', inr(F.listed)]], money: [1], foot: [[footLabel, inr(F.listed)]] });
       }
       blocks.push({ t: 'section', title: 'Tax Summary' });
+      /* Audit fix bug-02: SGST is (rounded total GST - rounded CGST) so the two halves ALWAYS sum to the displayed Total GST.
+         S02 U07-F03: a gap between the amount charged and taxable + GST is shown as Discount / Additional charge (GST recomputed),
+         never as Round Off; Round Off can only be -1, 0 or +1. */
       var taxPairs = [];
-      /* Audit fix bug-02: inr() rounds to whole rupees, so rounding gstAmt/2 twice independently could make
-         CGST+SGST show ₹1 more/less than Total GST. Derive SGST as (roundedTotalGST − roundedCGST) so the
-         two halves ALWAYS sum to the displayed Total GST. */
-      var totGst = Math.round(gstAmt);
-      var cgst = Math.round(gstAmt / 2);
-      var sgst = totGst - cgst;
-      if (gstPct > 0) { taxPairs.push(['CGST @ ' + (gstPct / 2) + '%', inr(cgst)]); taxPairs.push(['SGST @ ' + (gstPct / 2) + '%', inr(sgst)]); }
+      if (F.gstPct > 0) { taxPairs.push(['CGST @ ' + (F.gstPct / 2) + '%', inr(F.cgst)]); taxPairs.push(['SGST @ ' + (F.gstPct / 2) + '%', inr(F.sgst)]); }
       else { taxPairs.push(['GST', 'Not applicable']); }
-      taxPairs.push(['Taxable Value', inr(sub)]); taxPairs.push(['Total GST', inr(totGst)]);
-      /* Audit fix bug-03: a GST tax invoice must reconcile (Taxable + Total GST [+ round-off] = Total Payable).
-         When the owner-entered final amount differs from taxable+GST, show the gap as a Round Off line so the
-         printed arithmetic is self-consistent instead of a silent mismatch. */
-      var roundOff = Math.round(finalAmt) - Math.round(sub) - totGst;
-      if (roundOff !== 0) taxPairs.push(['Round Off', inr(roundOff)]);
+      if (F.adjustment !== 0) {
+        taxPairs.push(['Items total', inr(F.listed)]);
+        taxPairs.push(F.adjustment < 0 ? ['Discount', '− ' + inr(-F.adjustment)] : ['Additional charge', inr(F.adjustment)]);
+      }
+      taxPairs.push(['Taxable Value', inr(F.taxable)]); taxPairs.push(['Total GST', inr(F.gst)]);
+      if (F.roundOff !== 0) taxPairs.push(['Round Off', inr(F.roundOff)]);
       blocks.push({ t: 'kv', cols: 2, pairs: taxPairs });
-      blocks.push({ t: 'kv', cols: 1, pairs: [['Total Payable', inr(finalAmt), 'big']] });
+      blocks.push({ t: 'kv', cols: 1, pairs: [['Total Payable', inr(F.total), 'big']] });
       if (del.warrantyTill) blocks.push({ t: 'note', text: 'Service warranty valid until ' + del.warrantyTill + (del.warrantyMonths ? (' (' + del.warrantyMonths + ' months)') : '') + '. Warranty covers only the work carried out.' });
       blocks.push({ t: 'note', text: 'Payment ' + (del.payMode ? ('via ' + del.payMode) : 'received') + (del.payRef ? (' · Ref ' + del.payRef) : '') + '. Computer-generated tax invoice for service-centre / non-franchise sales.' });
-      blocks.push({ t: 'sign', boxes: [{ role: 'Customer', name: j.custName || '' }, { role: 'For ' + firmName, name: 'Authorised Signatory' }] });
+      if (legacy && issued) blocks.push({ t: 'note', text: 'Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.', color: PAL.AMBER });
+      if (!issued) blocks.push({ t: 'note', text: 'Not issued: preview only. An invoice number is assigned when the invoice is issued from the Service module.', color: PAL.AMBER });
+      blocks.push({ t: 'sign', boxes: [{ role: 'Customer', name: cust.name || '' }, { role: 'For ' + firmName, name: 'Authorised Signatory' }] });
       return { orientation: 'portrait', blocks: blocks };
     },
 
@@ -1281,7 +1380,11 @@
       var r=Math.floor(i/cols), c=i%cols, px=x+c*(colW+gap), py=y+r*rowH+11;
       var k=SAN.text(pairs[i][0]), v=SAN.text(String(pairs[i][1])), big=pairs[i][2]==='big';
       _setf(doc,'normal',FZ.kv); _txt(doc,PAL.MUT); doc.text(k, px, py);
-      _setf(doc,'bold',big?FZ.kvBig:FZ.kv); _txt(doc,PAL.INK); doc.text(v, px+colW, py, {align:'right'});
+      var kw=doc.getTextWidth(k);
+      _setf(doc,'bold',big?FZ.kvBig:FZ.kv); _txt(doc,PAL.INK);
+      var room=colW-kw-8;                       // a value may never run back over its own label
+      if(doc.getTextWidth(v)>room){ while(v.length>1 && doc.getTextWidth(v+'...')>room) v=v.slice(0,-1); v=v+'...'; }
+      doc.text(v, px+colW, py, {align:'right'});
       _stroke(doc,PAL.LINE); doc.setLineWidth(0.4); doc.line(px, py+4, px+colW, py+4);
     }
     return y + rows*rowH + 8;
@@ -1535,6 +1638,7 @@
   /* ---------- public API ---------- */
   function buildModel(type, opts) {
     var b = BUILDERS[type]; if (!b) throw new Error('Unknown report: ' + type);
+    if (!reportVisible(type)) throw new Error('This report is not available for your role');
     return b(opts || {});
   }
   function filename(type, opts) {
@@ -1600,20 +1704,30 @@
     if (/^[\t\r\n ]*[=+\-@]/.test(text)) text = "'" + text;
     return '"' + text.replace(/"/g, '""') + '"';
   }
+  /* Money/number cell for CSV: a finite number, or a display string such as "\u20b99,53,000" / "\u20b9-500" / "1.5",
+     is written as a plain number (no rupee sign, no thousands commas, a minus stays a minus, never given the
+     formula-guard apostrophe). Anything else goes through csvCell unchanged. */
+  function csvNumber(value) {
+    if (typeof value === 'number' && isFinite(value)) return '"' + String(value) + '"';
+    var t = String(value == null ? '' : value).replace(/^\s+|\s+$/g, '');
+    if (/^[\u20b9]?\s*-?\d[\d,]*(\.\d+)?$/.test(t)) return '"' + t.replace(/[\u20b9,\s]/g, '') + '"';
+    return csvCell(value);
+  }
   function blocksToCsv(model) {
     var rows = [];
     (model.blocks || []).forEach(function (block) {
       if (!block || !Array.isArray(block.head) || !Array.isArray(block.body)) return;
-      if (rows.length) rows.push([]);
-      rows.push(block.head);
-      block.body.forEach(function (row) { rows.push(Array.isArray(row) ? row : [row]); });
+      if (rows.length) rows.push({ cells: [], money: null });
+      if (block.head.length && Array.isArray(block.head[0])) block.head.forEach(function (h) { rows.push({ cells: h, money: null }); });
+      else rows.push({ cells: block.head, money: null });
+      block.body.forEach(function (row) { rows.push({ cells: Array.isArray(row) ? row : [row], money: block.money }); });
       if (Array.isArray(block.foot)) {
-        if (block.foot.length && Array.isArray(block.foot[0])) block.foot.forEach(function (row) { rows.push(row); });
-        else rows.push(block.foot);
+        if (block.foot.length && Array.isArray(block.foot[0])) block.foot.forEach(function (row) { rows.push({ cells: row, money: block.money }); });
+        else rows.push({ cells: block.foot, money: block.money });
       }
     });
     if (!rows.length) throw new Error('This report has no tabular rows for CSV');
-    var text = '\ufeff' + rows.map(function (row) { return row.map(csvCell).join(','); }).join('\r\n');
+    var text = '\ufeff' + rows.map(function (r) { return r.cells.map(function (c, i) { return (r.money && r.money.indexOf(i) >= 0) ? csvNumber(c) : csvCell(c); }).join(','); }).join('\r\n');
     return {
       text: text,
       blob: new Blob([text], { type: 'text/csv;charset=utf-8' }),
@@ -1641,6 +1755,7 @@
        mode 'zip' = one PDF per employee in a ZIP. `slips` is the array of gmSlipData objects from the
        payroll module (exact figures). buildBatch returns the Blob; batchSlips also delivers it. */
     buildBatch: function (mode, slips) {
+      if (!reportVisible('payrollSlip')) return Promise.reject(new Error('This report is not available for your role'));
       slips = Array.isArray(slips) ? slips : [];
       var libs = (window.__SaagarPdfLibs && window.__SaagarPdfLibs.ensure) ? window.__SaagarPdfLibs.ensure() : Promise.resolve();
       return libs.then(function () {
@@ -1664,6 +1779,7 @@
       });
     },
     batchSlips: function (mode, slips, fileBase) {
+      if (!reportGate('payrollSlip')) return Promise.resolve();
       slips = Array.isArray(slips) ? slips : [];
       if (!slips.length) { try { toast('No employees selected.'); } catch (e) {} return Promise.resolve(); }
       try { toast('Preparing ' + slips.length + ' slip(s)…'); } catch (e) {}
@@ -1681,6 +1797,7 @@
         .catch(function (e) { try { toast('Could not build slips: ' + ((e && e.message) || e)); } catch (_) {} });
     },
     generate: function (type, opts) {
+      if (!reportGate(type)) return Promise.resolve();
       try { toast('Preparing report…'); } catch (e) {}
       var self = this;
       return new Promise(function (res) { setTimeout(res, 40); }).then(function () {
@@ -1697,12 +1814,16 @@
     /* ── REPORT PREVIEW (exact PDF via pdf.js) + Save / Send / Print. Generation (build/buildModel/renderDoc)
        is unchanged — this only renders the same blob on-screen and adds save/print delivery. ── */
     preview: function (type, opts) {
+      _pickOpts = null;
+      var granted = (_grantOnce === type); _grantOnce = null;
+      if (!(granted && reportVisible(type)) && !reportGate(type)) return;   // a grant skips only the PIN step-up, never the role check
       var self = this, el = function (i) { return document.getElementById(i); };
       opts = opts || {};
       // Salary slip needs ONE employee. fromHub('payrollSlip') passes no empId/empIndex,
       // so without a pick we'd silently emit the first employee — instead show a chooser
       // and let the tap re-enter preview() with the chosen empId.
       if (type === 'payrollSlip' && !opts.slip && !opts.empId && opts.empIndex == null) {
+        _pickOpts = opts;
         return this._payrollChooser(opts);
       }
       self._pp = { type: type, opts: opts, blob: null, fname: filename(type, opts) };
@@ -1736,6 +1857,7 @@
       var listHtml = !rows.length
         ? '<p class="hub-help">No employees found in this month’s payroll.</p>'
         : '<div class="hub-sec" style="margin-top:6px">' + rows.map(function (r, i) {
+            if (r && r.active === false) return '';   // retired employees have no slip (U10-F-05); i stays the stored row index
             var key = (r && r.empId != null && r.empId !== '') ? String(r.empId) : '';
             var arg = key ? ("'" + key.replace(/'/g, "\\'") + "'") : i;   // empId when present, else row index
             return '<div class="hub-row" role="button" tabindex="0" onclick="SaagarReport._payrollPick(' + arg + ')">'
@@ -1748,7 +1870,9 @@
       if (window.openModal) window.openModal();
     },
     _payrollPick: function (sel) {
-      var opts = this._ppPick || {};
+      if (!_pickOpts || !reportVisible('payrollSlip')) { denyReport('payrollSlip'); return; }
+      _grantOnce = 'payrollSlip';
+      var opts = _pickOpts;
       var next = (typeof sel === 'number') ? { empIndex: sel } : { empId: sel };
       var merged = {}; for (var k in opts) { if (Object.prototype.hasOwnProperty.call(opts, k)) merged[k] = opts[k]; }
       merged.empIndex = next.empIndex; merged.empId = next.empId;
@@ -1874,8 +1998,9 @@
       var self = this, el = function (i) { return document.getElementById(i); };
       var d = (el('rptDate') && el('rptDate').value) || curDate();
       var m = (el('rptMonth') && el('rptMonth').value) || curMonth();
-      var types = this._packTypes[scope === 'monthly' ? 'monthly' : 'daily'];
+      var memo = {}, types = this._packTypes[scope === 'monthly' ? 'monthly' : 'daily'].filter(function (t) { return reportGate(t, memo); });
       var label = (scope === 'monthly') ? ('Month-end pack · ' + m) : ('End-of-day pack · ' + d);
+      if (!types.length) { try { toast('No reports in this pack are available for your role'); } catch (e) {} return; }
       if (el('modalTitle')) el('modalTitle').textContent = label;
       if (el('modalBody')) el('modalBody').innerHTML = '<div class="pp-wrap"><div class="pp-scroll" id="ppScroll"><div class="pp-status">Building ' + types.length + ' reports…</div></div>'
         + '<div class="pp-bar"><button class="btn small" type="button" onclick="SaagarReport.packSave()">💾 Save all</button><button class="btn small primary" type="button" onclick="SaagarReport.packSend()">Send all ↗</button></div></div>';
@@ -1966,7 +2091,7 @@
       var log = []; try { log = JSON.parse(localStorage.getItem('saagar_rpt_log') || '[]') || []; } catch (e) {}
       function rel(ts) { var s = Math.max(0, (Date.now() - ts) / 1000); if (s < 60) return 'just now'; if (s < 3600) return Math.floor(s / 60) + 'm ago'; if (s < 86400) return Math.floor(s / 3600) + 'h ago'; return Math.floor(s / 86400) + 'd ago'; }
       var ACT = { view: 'opened', save: 'saved', send: 'sent' };
-      var rows = log.filter(function (e) { return META[e.t]; }).slice(0, 25).map(function (e) {
+      var rows = log.filter(function (e) { return META[e.t] && reportVisible(e.t); }).slice(0, 25).map(function (e) {
         var d = e.d || '', m = e.m || '';
         return '<button class="hub-row" type="button" onclick="SaagarReport.preview(\'' + e.t + '\',{date:\'' + d + '\',month:\'' + m + '\'})">'
           + '<span class="ico">' + META[e.t].icon + '</span><span class="ttl">' + esc(META[e.t].title) + '<small>' + (ACT[e.a] || e.a) + ' · ' + rel(e.ts) + (d ? ' · ' + d : '') + '</small></span><span class="go">↗</span></button>';
@@ -1978,19 +2103,24 @@
       var mc = document.querySelector('.modal'); if (mc) { mc.classList.remove('pdf-sheet'); mc.classList.add('hub-sheet'); }
       if (window.openModal) window.openModal();
     },
-    list: function () { return Object.keys(META).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
+    list: function () { return Object.keys(META).filter(function (k) { return reportVisible(k); }).map(function (k) { return { type: k, title: META[k].title, scope: META[k].scope, icon: META[k].icon }; }); },
+    canOpen: function (type) { return reportVisible(type); },   // visibility only, no PIN prompt (hides Reports-tab cards and PDF pills)
+    makeInvoiceSnapshot: function (j, invoiceNo) { return makeInvoiceSnapshot(j, invoiceNo); },   // interface B: Service stores the result as case.invoiceSnapshot
     forModule: function (id) { return ({ qms: 'qmsReport', dsr: 'dsrRegister', cro_audit: 'croAudit', payroll: 'payrollRegister', stock: 'stockRegister', expense: 'cashStatement', tax: 'taxReport', service: 'serviceAging', grooming: 'groomingDaily', leave: 'leaveRegister' })[id] || null; },
     /* ── REDESIGN "Find & Send": full-screen thumb sheet, search, recents, period stepper.
        Selection/presentation only — META, generate(), buildModel(), renderDoc() are untouched. ── */
     openHub: function () {
       var el = function (i) { return document.getElementById(i); };
-      var GROUPS = [
+      var GROUPS_ALL = [
         { h: 'Daily · Owner',                types: ['ownerBrief', 'cashStatement', 'dsrRegister'] },
         { h: 'Daily · Floor & Service',      types: ['qmsReport', 'croAudit', 'groomingDaily', 'stockRegister', 'serviceAging', 'serviceJobCard'] },
         { h: 'Weekly · Owner',               types: ['weeklyBrief'] },
         { h: 'Monthly · People',             types: ['payrollRegister', 'payrollSlip', 'leaveRegister', 'groomingMonthly', 'lostWalkinCallSheet'] },
         { h: 'Monthly · Money & Compliance', types: ['expenseMonthly', 'taxReport', 'ownerMonthly'] }
       ];
+      var GROUPS = GROUPS_ALL.map(function (g) { return { h: g.h, types: g.types.filter(function (t) { return reportVisible(t); }) }; })
+                             .filter(function (g) { return g.types.length; });
+      var hubTotal = GROUPS.reduce(function (n, g) { return n + g.types.length; }, 0);
       var TAGS = {
         ownerBrief: 'owner brief summary digest day', cashStatement: 'cash money statement till',
         dsrRegister: 'dsr sales register daily', qmsReport: 'queue conversion footfall walkin qms',
@@ -2014,7 +2144,7 @@
       }
       var recents = [];
       try { recents = JSON.parse(localStorage.getItem('saagar_rpt_recent') || '[]'); } catch (e) {}
-      recents = (recents || []).filter(function (t) { return META[t]; }).slice(0, 3);
+      recents = (recents || []).filter(function (t) { return META[t] && reportVisible(t); }).slice(0, 3);
       var recentHtml = recents.length
         ? '<section class="hub-sec" data-recent><h4 class="hub-sec-h">Recent</h4>' + recents.map(function (t) { return row(t, true); }).join('') + '</section>'
         : '';
@@ -2030,11 +2160,12 @@
       var body = '<div class="hub-wrap">'
         + '<div class="hub-list" id="hubList">'
         + packHtml + recentHtml + groupHtml
+        + (hubTotal ? '' : '<div class="hub-empty" style="display:block">No reports are available for your role.</div>')
         + '<div class="hub-empty" id="hubEmpty" hidden>No report matches that search.</div>'
         + '<p class="hub-help">Tap a report → it builds a clean A4 PDF and opens the share sheet. Pick WhatsApp + the contact.</p>'
         + '</div>'
         + '<div class="hub-bar">'
-        + '<div class="rpt-count" id="hubCount">' + (Object.keys(META).length) + ' reports</div>'
+        + '<div class="rpt-count" id="hubCount">' + hubTotal + ' reports</div>'
         + '<div class="rpt-period">'
         + '<button class="rpt-step" type="button" onclick="SaagarReport.hubStep(-1)" aria-label="Previous">‹</button>'
         + '<div class="valwrap"><div class="val" id="hubPeriodLabel"></div>'
@@ -2067,7 +2198,7 @@
     },
     hubFilter: function (q) {
       q = (q || '').trim().toLowerCase();
-      var shown = 0;
+      var shown = 0, total = document.querySelectorAll('#hubList .hub-row:not(.recent)').length;
       document.querySelectorAll('#hubList .hub-row').forEach(function (r) {
         var hay = (r.getAttribute('data-tags') || '') + ' ' + r.textContent.toLowerCase();
         var hit = !q || hay.indexOf(q) >= 0;
@@ -2080,9 +2211,10 @@
       });
       var empty = document.getElementById('hubEmpty'); if (empty) empty.hidden = shown > 0;
       var cnt = document.getElementById('hubCount');
-      if (cnt) cnt.textContent = q ? (shown + ' of ' + Object.keys(META).length) : (Object.keys(META).length + ' reports');
+      if (cnt) cnt.textContent = q ? (shown + ' of ' + total) : (total + ' reports');
     },
     fromHub: function (type) {
+      if (!reportVisible(type)) { denyReport(type); return; }
       var el = function (i) { return document.getElementById(i); };
       var d = (el('rptDate') && el('rptDate').value) || curDate(), m = (el('rptMonth') && el('rptMonth').value) || curMonth();
       try {
@@ -2094,6 +2226,7 @@
     },
     _buildModel: buildModel, // for tests
     _blocksToCsv: blocksToCsv,
+    csvCell: csvCell, csvNumber: csvNumber,
     _modelToCsv: modelToCsv,
     _modelRowCount: modelRowCount,
     _renderDoc: function (type, opts) { var m = buildModel(type, opts); if (!m.blocks) throw new Error('not block-based: ' + type); return renderDoc(m.blocks, m.orientation); }, // test seam → jsPDF doc

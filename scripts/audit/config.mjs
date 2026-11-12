@@ -23,6 +23,7 @@ export const OPEN_GATES = Object.freeze([
   { id: 'GATE-ETP-PHYSICAL', title: 'Physical API-23/OEM ETP import and document-provider evidence', state: 'open' },
   { id: 'GATE-ETP-INTERRUPTION', title: 'ETP process-death, disk-full, corruption, rotation and low-storage evidence', state: 'open' },
   { id: 'GATE-ETP-PRODUCTION', title: 'Real production native ETP publication acceptance', state: 'open' },
+  { id: 'GATE-ETP-BRIDGE-TRUST', title: 'ETP report-engine bridge trust: owner key ceremony and WebCrypto ECDSA verification observed on the Samsung Tab S7', state: 'open' },
   { id: 'GATE-ETP-EXCEPTIONS', title: 'User-facing R003/R013 exception presentation', state: 'open' },
   { id: 'GATE-PAYMENTTYPE25', title: 'Approved PAYMENTTYPE25 mapping', state: 'open' },
   { id: 'GATE-NATIVE-LANGUAGE', title: 'Fluent Marathi/Hindi review', state: 'open' },

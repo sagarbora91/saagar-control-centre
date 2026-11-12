@@ -50,6 +50,13 @@ test('canonical recipe never persists credentials and binds public build identit
   }
 });
 
+test('canonical recipe refuses a keystore that sits inside the repository (defence in depth)', () => {
+  assert.match(recipe, /GetFullPath\(\$keystoreFile\)/);
+  assert.match(recipe, /the keystore must be outside the repository/);
+  assert.ok(recipe.indexOf('GetFullPath($keystoreFile)') > recipe.indexOf('the process-scoped keystore path is invalid'), 'the check follows the existence check');
+  assert.ok(recipe.indexOf('GetFullPath($keystoreFile)') < recipe.indexOf("@('run', 'sync')"), 'the check runs before any build step');
+});
+
 test('optional external Gradle init is hash-bound and the approved signer is public policy', () => {
   assert.match(recipe, /ExpectedGradleInitSha256/);
   assert.match(recipe, /Gradle init script hash does not match the approved identity/);

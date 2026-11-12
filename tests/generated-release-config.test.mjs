@@ -5,9 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { verifyGeneratedAndroidRelease } from '../scripts/verify-generated-android-release.mjs';
+import { assertNoInternetPermission, verifyGeneratedAndroidRelease } from '../scripts/verify-generated-android-release.mjs';
 
-function fixture(change = value => value) {
+const GUARDED_MANIFEST = '<manifest xmlns:tools="http://schemas.android.com/tools"><application android:allowBackup="false"/><uses-permission android:name="android.permission.INTERNET" tools:node="remove" /></manifest>';
+
+function fixture(change = value => value, manifest = GUARDED_MANIFEST) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'saagar-release-config-'));
   const app = path.join(root, 'android', 'app');
   const java = path.join(app, 'src', 'main', 'java', 'com', 'saagartraders', 'bcc');
@@ -31,7 +33,7 @@ function fixture(change = value => value) {
   }`);
   fs.writeFileSync(path.join(app, 'build.gradle'), gradle);
   fs.writeFileSync(path.join(root, 'android', 'variables.gradle'), 'ext { minSdkVersion = 33 }');
-  fs.writeFileSync(path.join(app, 'src', 'main', 'AndroidManifest.xml'), '<application android:allowBackup="false"/>');
+  fs.writeFileSync(path.join(app, 'src', 'main', 'AndroidManifest.xml'), manifest);
   fs.writeFileSync(path.join(java, 'MainActivity.java'), ['SaagarKeystorePlugin', 'SaagarSecurityPlugin', 'SaagarOffDevicePlugin', 'SaagarNativeStorePlugin', 'SaagarEtpStorePlugin'].map(name => `registerPlugin(${name}.class);`).join('\n'));
   return root;
 }
@@ -92,4 +94,56 @@ test('apply-overrides removes android.permission.INTERNET idempotently (temp tre
   const second = run();
   assert.equal(second.status, 0, second.stderr + second.stdout);
   assert.equal(fs.readFileSync(manifestPath, 'utf8'), once, 'second run leaves the manifest byte-identical');
+});
+
+const TOOLS_NS = 'xmlns:tools="http://schemas.android.com/tools"';
+const manifestWith = (...permissions) => `<manifest ${TOOLS_NS}><application android:allowBackup="false"/>${permissions.join('')}</manifest>`;
+const GUARD = '<uses-permission android:name="android.permission.INTERNET" tools:node="remove" />';
+
+test('INTERNET assertion: a live INTERNET declaration, with or without a guard, fails the generated release check', t => {
+  const live = fixture(undefined, manifestWith('<uses-permission android:name="android.permission.INTERNET"/>'));
+  const liveAndGuard = fixture(undefined, manifestWith('<uses-permission android:name="android.permission.INTERNET"/>', GUARD));
+  t.after(() => fs.rmSync(live, { recursive: true, force: true }));
+  t.after(() => fs.rmSync(liveAndGuard, { recursive: true, force: true }));
+  assert.throws(() => verifyGeneratedAndroidRelease(live), /INTERNET/);
+  assert.throws(() => verifyGeneratedAndroidRelease(liveAndGuard), /INTERNET/);
+});
+
+test('INTERNET assertion: the removal guard is required (fail closed when it is missing)', t => {
+  const none = fixture(undefined, `<manifest ${TOOLS_NS}><application android:allowBackup="false"/></manifest>`);
+  t.after(() => fs.rmSync(none, { recursive: true, force: true }));
+  assert.throws(() => verifyGeneratedAndroidRelease(none), /exactly one/);
+  assert.throws(() => assertNoInternetPermission(manifestWith('<uses-permission android:name="android.permission.WAKE_LOCK"/>')), /exactly one/);
+});
+
+test('INTERNET assertion: attribute order, quote style, line breaks and the sdk-23 variants cannot hide a declaration', () => {
+  const variants = [
+    "<uses-permission android:name='android.permission.INTERNET' />",
+    '<uses-permission tools:node="merge" android:name="android.permission.INTERNET" />',
+    '<uses-permission\n    android:name="android.permission.INTERNET"\n    android:maxSdkVersion="33"\n/>',
+    '<uses-permission-sdk-23 android:name="android.permission.INTERNET"/>',
+    '<uses-permission-sdk-m android:name="android.permission.INTERNET"/>',
+    '<uses-permission android:name = "android.permission.INTERNET" tools:node = "replace"/>',
+    '<uses-permission android:name="android.permission.INTERNET" tools:node="removeAll"/>',
+    '<uses-permission android:name="android.permission.INTER&#78;ET" />'
+  ];
+  for (const variant of variants) {
+    assert.throws(() => assertNoInternetPermission(manifestWith(variant)), undefined, variant);
+    assert.throws(() => assertNoInternetPermission(manifestWith(variant, GUARD)), undefined, `with a guard too: ${variant}`);
+  }
+  assert.doesNotThrow(() => assertNoInternetPermission(manifestWith(GUARD)));
+  assert.doesNotThrow(() => assertNoInternetPermission(manifestWith("<uses-permission android:name='android.permission.INTERNET' tools:node='remove'/>")));
+  assert.doesNotThrow(() => assertNoInternetPermission(manifestWith('<uses-permission tools:node="remove"\n    android:name="android.permission.INTERNET"\n/>')));
+});
+
+test('INTERNET assertion: comments are neither a permission nor a guard', () => {
+  assert.throws(() => assertNoInternetPermission(manifestWith(`<!-- ${GUARD} -->`)), /exactly one/);
+  assert.doesNotThrow(() => assertNoInternetPermission(manifestWith('<!-- android.permission.INTERNET was removed -->', GUARD)));
+  assert.throws(() => assertNoInternetPermission(manifestWith('<!-- note -->', '<uses-permission android:name="android.permission.INTERNET"/>')), /INTERNET/);
+});
+
+test('INTERNET assertion: needs xmlns:tools, refuses two guards and a guard inside <application>', () => {
+  assert.throws(() => assertNoInternetPermission(`<manifest><application android:allowBackup="false"/>${GUARD}</manifest>`), /xmlns:tools/);
+  assert.throws(() => assertNoInternetPermission(manifestWith(GUARD, GUARD)), /exactly one/);
+  assert.throws(() => assertNoInternetPermission(`<manifest ${TOOLS_NS}><application android:allowBackup="false">${GUARD}</application></manifest>`), /directly under <manifest>/);
 });

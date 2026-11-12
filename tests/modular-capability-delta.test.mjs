@@ -12,14 +12,14 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   const recorded = JSON.parse(fs.readFileSync(path.join(root, LEDGER_PATH), 'utf8'));
   assert.deepEqual(recorded, expected);
   assert.equal(recorded.baseline.capabilities, 655);
-  assert.equal(recorded.current.capabilities, 748);
-  assert.equal(recorded.summary.added, 443);
-  assert.equal(recorded.summary.removed, 350);
-  assert.equal(recorded.summary.changed, 41);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 834);
-  assert.equal(recorded.summary.handlerBodyHashOnly, 21);
+  assert.equal(recorded.current.capabilities, 752);
+  assert.equal(recorded.summary.added, 449);
+  assert.equal(recorded.summary.removed, 352);
+  assert.equal(recorded.summary.changed, 60);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 861);
+  assert.equal(recorded.summary.handlerBodyHashOnly, 35);
   assert.equal(recorded.summary.bindingStructureChanged, 3);
-  assert.equal(recorded.summary.changedFailurePostures, 17);
+  assert.equal(recorded.summary.changedFailurePostures, 22);
   assert.equal(recorded.summary.reportPresentationFallbacks, 1);
   const presentationFallback = recorded.deltas.find(item => item.capabilityId === 'script-etp-import-ui:failure:posture');
   assert.equal(presentationFallback.change, 'changed');
@@ -38,5 +38,13 @@ test('capability review remains fail-closed until the owner explicitly approves 
   assert.ok(ledger.deltas.every(item => item.ownerApproval === 'pending'));
   assert.ok(ledger.deltas.every(item => item.reason && item.baselineOutcomeSha256 !== item.currentOutcomeSha256));
   assert.equal(ledger.deltas.filter(item => item.category === 'route').length, 1);
-  assert.equal(ledger.deltas.filter(item => item.category === 'persisted-outcome').length, 0);
+  /* Fix wave: exactly the four G5 keys (items 2 and 3) and the retired Service invoice counter (interface C). */
+  assert.deepEqual(ledger.deltas.filter(item => item.category === 'persisted-outcome')
+    .map(item => `${item.capabilityId}:${item.change}`), [
+    'payroll:persist:2c70e12b7a0646f92279:added',
+    'payroll:persist:dd25a3198b0013d1d7c3:added',
+    'service:persist:556fd13bc825db2d2664:removed',
+    'stock:persist:33b94f3f822ff4adb51a:added',
+    'stock:persist:449d73e56af4d2b66503:added'
+  ]);
 });

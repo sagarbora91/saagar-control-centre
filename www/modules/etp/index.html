@@ -319,7 +319,7 @@
         detail.hidden = false;
         text(document.getElementById('etpScopeHeading'), result.scope.storeCode + ' · ' + result.scope.financialYear + ' · ' + result.scope.periodStart + ' to ' + result.scope.periodEnd);
         var grid = document.createElement('div'); grid.className = 'history-grid';
-        appendMetric(grid, 'Native state', result.status && result.status.state || 'Unavailable');
+        appendMetric(grid, 'Status', result.status && result.status.status || 'Unavailable');
         appendMetric(grid, 'Published', result.currentReceipt.publishedAt || 'Unavailable');
         appendMetric(grid, 'Reconciliation', result.currentReceipt.reconciliationStatus || 'Unavailable');
         appendMetric(grid, 'Generation', result.currentReceipt.activeGenerationId || 'Unavailable');

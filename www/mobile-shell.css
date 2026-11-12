@@ -56,4 +56,8 @@
   html.bcc-mobile a.refresh,
   html.bcc-mobile .section-head a,
   html.bcc-mobile .section-head button { min-height: 44px; display: inline-flex; align-items: center; }
+  /* S14 X2-F05: large font scale / large display size (phone shell only; MH1 keeps desktop unchanged) */
+  html.bcc-mobile .top-actions { grid-template-columns: auto minmax(8.5em, 1fr) repeat(3, 44px); }
+  html.bcc-mobile .topbar .role-select { min-width: 8.5em; padding-right: 26px; text-overflow: ellipsis; }
+  html.bcc-mobile #__saagar-demo-banner { max-width: min(260px, 38vw) !important; opacity: .9 !important; font-size: min(11px, 2.6vw) !important; }
 }

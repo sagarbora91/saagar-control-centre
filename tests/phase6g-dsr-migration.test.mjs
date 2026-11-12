@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 
@@ -13,6 +14,11 @@ const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].
   .replace('  renderDsrEtpAnalytics();\n', '')
   .replace(/var dsrEtpAnalyticsSeq=0;\nasync function renderDsrEtpAnalytics\(\)\{[\s\S]*?\n\}\n/, ''));
 const application = scripts.reduce((longest, source) => source.length > longest.length ? source : longest, '');
+const frozenApplication = [...undoFixWaveText('www/modules/dsr/index.html', html).matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(match => match[1]
+  .replace(/    <section class="dsr-etp-e2"[\s\S]*?    <\/section>\n/, '')
+  .replace('  renderDsrEtpAnalytics();\n', '')
+  .replace(/var dsrEtpAnalyticsSeq=0;\nasync function renderDsrEtpAnalytics\(\)\{[\s\S]*?\n\}\n/, ''))
+  .reduce((longest, source) => source.length > longest.length ? source : longest, '');
 
 test('DSR adopts the frozen shared UI, table and rendered-component foundations', () => {
   for (const asset of ['module-brand-tokens.css','module-responsive.css','module-components.css','module-table.css','module-ui-runtime.js','module-table-runtime.js','module-rendered-components.js']) {
@@ -68,6 +74,6 @@ test('D4 close-day, QMS merge, persistence and audit-unlock identities remain pr
     'function submitDay(', 'function unlockForCorrection(', 'function submitAudit(',
     "api.completionSummary(rec, dsrD4Context())", "api.missingForSubmit(rec, dsrD4Context())"
   ]) assert.ok(application.includes(identity), `missing preserved DSR identity: ${identity}`);
-  assert.equal(application.length, 118_337);
-  assert.equal(crypto.createHash('sha256').update(application).digest('hex'), '41d0652eeb8ff0183e85264845e2831c00c5a20452b14ef164c6d6887da5aace');
+  assert.equal(frozenApplication.length, 118_337);
+  assert.equal(crypto.createHash('sha256').update(frozenApplication).digest('hex'), '41d0652eeb8ff0183e85264845e2831c00c5a20452b14ef164c6d6887da5aace');
 });

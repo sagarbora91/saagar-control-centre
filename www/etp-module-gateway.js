@@ -528,7 +528,7 @@
       var authority, snapshot, reauth;
       try { authority = rootValue && rootValue.SaagarOwnerSession; snapshot = authority && typeof authority.read === 'function' ? authority.read() : null; } catch (_) { return false; }
       if (!record(snapshot) || snapshot.version !== 1 || typeof snapshot.isOwner !== 'boolean' || typeof snapshot.role !== 'string') return false;
-      if (action === 'IMPORT' && snapshot.isOwner === true) return true;
+      if ((action === 'IMPORT' || action === 'CONFIRM') && snapshot.isOwner === true) return true;
       if (action === 'IMPORT' || action === 'CONFIRM') {
         try { reauth = rootValue && rootValue.SaagarReauth; } catch (_) { reauth = null; }
         if (typeof reauth !== 'function') return false;

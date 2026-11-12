@@ -82,6 +82,10 @@ try {
   if (-not [IO.Path]::IsPathRooted($keystoreFile) -or -not (Test-Path -LiteralPath $keystoreFile -PathType Leaf)) {
     throw 'Production release blocked: the process-scoped keystore path is invalid.'
   }
+  $keystoreFull = [IO.Path]::GetFullPath($keystoreFile)
+  if ($keystoreFull.StartsWith($repositoryPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+    throw 'Production release blocked: the keystore must be outside the repository.'
+  }
 
   $recipePath = $MyInvocation.MyCommand.Path
   $recipeSha256 = (Get-FileHash -LiteralPath $recipePath -Algorithm SHA256).Hash.ToUpperInvariant()

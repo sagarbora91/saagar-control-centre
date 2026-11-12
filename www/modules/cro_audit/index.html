@@ -12,11 +12,11 @@
 <script src="../../shared/module-rendered-components.js"></script>
 <script id="phase6g-cro-audit-render-policy">
 var CroAuditRenderedPolicy=SaagarRenderedComponents.createPolicy({
-  'edit-existing-audit':null,'submit-audit':{handler:'submitAudit',args:0},
+  'edit-existing-audit':null,'submit-audit':{handler:'croSubmitAudit',args:0},
   'dashboard-all-stores':{handler:'setDashStore',args:1},'dashboard-first-store':{handler:'setDashStore',args:1},'dashboard-second-store':{handler:'setDashStore',args:1},
   'period-week':{handler:'setPeriod',args:1},'period-month':{handler:'setPeriod',args:1},
   'previous-period':{handler:'shiftPeriod',args:1,delegated:true},'next-period':{handler:'shiftPeriod',args:1,delegated:true},
-  'clear-history-filters':{handler:'clearHF',args:0},'save-targets':{handler:'saveSettings',args:0},'close-modal':{handler:'hideMO',args:0},
+  'clear-history-filters':{handler:'clearHF',args:0},'save-targets':{handler:'croSaveTargets',args:0},'close-modal':{handler:'hideMO',args:0},
   'ask-for-review':{handler:'croReviewSend',args:1,delegated:true},
   'edit-audit-record':{handler:'loadAuditForEdit',args:1,delegated:true},
   'print-audit-record':{handler:'printAudit',args:1,delegated:true},
@@ -142,7 +142,7 @@ var CroAuditRenderedPolicy=SaagarRenderedComponents.createPolicy({
       </div>
       <div class="sub-meta"><span id="sub-done">0 rated</span><span id="sub-pts">0 / 100 pts</span></div>
       <div class="sub-bar"><div class="sub-fill" id="sub-fill" style="width:0%"></div></div>
-      <button data-action="submit-audit" class="sbtn green" onclick="submitAudit()">Save &amp; Submit Audit</button>
+      <button data-action="submit-audit" class="sbtn green" onclick="croSubmitAudit()">Save &amp; Submit Audit</button>
     </div>
   </div>
 </div>
@@ -233,7 +233,7 @@ var CroAuditRenderedPolicy=SaagarRenderedComponents.createPolicy({
         </div>
         <div class="fg"></div>
       </div>
-      <button data-action="save-targets" class="sbtn" onclick="saveSettings()">Save Targets</button>
+      <button data-action="save-targets" class="sbtn" onclick="croSaveTargets()">Save Targets</button>
     </div>
     <!-- P1-24 — optional per-store target overrides (saved by the same Save Targets button) -->
     <div class="card">
@@ -398,6 +398,59 @@ function getDashTargets(){
   return t;
 }
 
+/* U12 fix block (kept outside the pinned core functions) */
+/* U12-F-CRO-2: the targets the live strip uses (store-aware; falls back to the globals) */
+function croFormTargets(){ return getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); }
+function croSetTargetHint(id,s,key){ const e=document.getElementById(id); if(e) e.textContent='Daily target: '+daily(s[key])+' · Weekly: ~'+wkly(s[key])+' · Monthly: '+s[key]; }
+/* U12-F-CRO-3: read a number box as a finite value that is never below 0 (and never above `hi` when given); show the corrected value in the box */
+function croNum(id,hi){
+  const el=document.getElementById(id); if(!el) return 0;
+  const raw=+el.value; let v=raw;
+  if(!isFinite(v)||v<0) v=0;
+  if(hi!=null&&v>hi) v=hi;
+  if(el.value!==''&&v!==raw) el.value=v;
+  return v;
+}
+/* U12-F-CRO-4: problems in the Settings boxes that Save must refuse. Blank or 0 keep today's meaning (use the default / inherit the global). */
+function croTargetProblems(){
+  const list=[['s-surveys','Survey target',0],['s-nps-score','NPS score target',100],['s-rate','Response-rate target',100],['s-reviews','Review target',0],['s-mktg','Marketing target',0]];
+  CRO_STORES.forEach(st=>[['surveys','survey'],['reviews','review'],['mktg','marketing']].forEach(k=>list.push(['s-'+st.code+'-'+k[0],st.short+' '+k[1]+' target',0])));
+  const out=[];
+  list.forEach(([id,label,max])=>{
+    const el=document.getElementById(id); if(!el||el.value==='') return;
+    const v=+el.value;
+    if(!isFinite(v)||v<0) out.push({id,msg:label+' cannot be negative'});
+    else if(max&&v>max) out.push({id,msg:label+' cannot be more than '+max});
+  });
+  return out;
+}
+function croSaveTargets(){
+  if(!stIsPast()){ const p=croTargetProblems(); if(p.length){ showToast(p[0].msg+' - targets not saved'); updDerived(); return; } }
+  saveSettings(); // unchanged pinned function (it still shows its own read-only message on a past day)
+}
+/* U12-F-CRO-6: an audit cannot be dated after today */
+function croSubmitAudit(){
+  const d=(document.getElementById('f-date')||{}).value;
+  if(d&&d>stRealToday()){ showToast('Audit date cannot be in the future'); return; }
+  submitAudit(); // unchanged pinned function
+}
+/* U12-F-CRO-7: ISO week number and year */
+function isoWk(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); t.setUTCDate(t.getUTCDate()+4-(t.getUTCDay()||7)); return {y:t.getUTCFullYear(),w:Math.ceil(((t-Date.UTC(t.getUTCFullYear(),0,1))/864e5+1)/7)}; }
+function wkNum(d){ return isoWk(d).w; }
+function wkYear(d){ return isoWk(d).y; }
+/* U12: read-only checks on a SAVED audit; never changes data */
+function croAuditIssues(a){
+  const out=[]; const t=(a&&a.tasks)||{}; const n=v=>+v||0;
+  if(a&&a.editedAt&&t.t5&&t.t7&&n(t.t5.npsCollected)===0&&n(t.t5.npsScore)===0&&n(t.t7.activityCount)===0) out.push('edit-zeroed');
+  const fields=[['t5','billsCount'],['t5','npsCollected'],['t5','npsScore'],['t6','reviewsCount'],['t7','activityCount'],['t9','groomingPct']];
+  if(fields.some(f=>t[f[0]]&&n(t[f[0]][f[1]])<0)||Object.keys(t).some(k=>t[k]&&n(t[k].pts)<0)) out.push('negative');
+  return out;
+}
+function croIssueNote(a){
+  const m={'edit-zeroed':'Edited audit: NPS and marketing are all zero. Please check them against the register (an older fault could clear them).','negative':'Contains a negative figure from an older fault. Open Edit and correct it.'};
+  const i=croAuditIssues(a); return i.length?'<div class="hi-store" style="color:var(--amber)">&#9888; '+i.map(k=>m[k]).join(' ')+'</div>':'';
+}
+
 function saveSettings(){
   // READ-ONLY past: no save actions while viewing a past day
   if(stIsPast()){ showToast('Viewing a past day — settings are read-only'); return; }
@@ -459,6 +512,8 @@ function updDerived(){
   document.getElementById('d-mktg').textContent    = `Weekly: ~${wkly(mktg)} activities · Daily: ~${daily(mktg)}`;
   document.getElementById('d-nps').textContent     = `Score ≥ ${nps} = full 5 pts (out of 10 for Task 5)`;
   document.getElementById('d-rate').textContent    = `Target ${rate}% response rate = full 5 pts`;
+  const DM={'s-surveys':'d-surveys','s-nps-score':'d-nps','s-rate':'d-rate','s-reviews':'d-reviews','s-mktg':'d-mktg'};
+  croTargetProblems().forEach(p=>{ const e=DM[p.id]&&document.getElementById(DM[p.id]); if(e) e.textContent='⚠ '+p.msg+' - will not be saved'; });
 }
 
 /* ──────────────────────────────────────────
@@ -482,7 +537,7 @@ function initTData(){
 }
 
 function loadPreData(){
-  const all = getAudits();
+  const all = getAudits().filter(a=>!(editingId&&a&&a.id===editingId)); // U12-N2: an audit being edited must not count itself
   const today = todayStr();
   const wRange = getWeekRange(0);
   const mPfx   = today.substring(0,7);
@@ -521,9 +576,9 @@ function calcNps(d, s){
   const scorePts = Math.min(Math.round(((d.npsScore||0)/s.npsScore)*5), 5);
   return { total:ratePts+scorePts, ratePts, scorePts, responseRate };
 }
-function calcRev(d, s){ const dt=daily(s.reviews); return Math.min(Math.round(((d.reviewsCount||0)/dt)*10),10); }
-function calcMktg(d, s){ const dt=daily(s.mktg); return Math.min(Math.round(((d.activityCount||0)/dt)*10),10); }
-function calcGroom(d){ return Math.min(Math.round((d.groomingPct||0)/10),10); }
+function calcRev(d, s){ const dt=daily(s.reviews); return Math.max(0,Math.min(Math.round(((d.reviewsCount||0)/dt)*10),10)); }
+function calcMktg(d, s){ const dt=daily(s.mktg); return Math.max(0,Math.min(Math.round(((d.activityCount||0)/dt)*10),10)); }
+function calcGroom(d){ return Math.max(0,Math.min(Math.round((d.groomingPct||0)/10),10)); }
 
 /* ──────────────────────────────────────────
    T6 GOOGLE-REVIEW COLLECTION — per-buyer review-request list.
@@ -555,6 +610,9 @@ function croSyncReviewList(){
     return {cid:b.cid, name:b.name, mobile:b.mobile,
             requested:!!p.requested, received:!!p.received};
   });
+  /* U12-F-CRO-1: while editing a saved audit on its own date, keep its ticked rows even if QMS no longer lists the buyer, so an unchanged save cannot lower the review count */
+  if(editingId){ const sv=getAudits().find(x=>x&&x.id===editingId);
+    if(sv&&sv.date===date) prev.forEach(r=>{ if(r&&r.cid&&(r.requested||r.received)&&!list.some(x=>x.cid===String(r.cid))) list.push({cid:String(r.cid),name:r.name||'',mobile:r.mobile||'',requested:!!r.requested,received:!!r.received}); }); }
   tData.t6={ ...(tData.t6||{}), reviewList:list };
   return list;
 }
@@ -566,12 +624,13 @@ function croReviewMsg(r){
          return cfg.templates[0].build(r); }catch(e){}
   return 'Namaste '+(r&&r.name||'')+',\nThank you for your purchase at Saagar Traders, Latur 🙏\nA quick Google review would mean a lot to us: <REVIEW_LINK>';
 }
-function croReviewSend(cid){
+async function croReviewSend(cid){
   const list=(tData.t6&&tData.t6.reviewList)||[];
   const r=list.find(x=>x.cid===cid); if(!r) return;
   const d=croTel10(r.mobile); if(!d){ showToast('No valid mobile'); return; }
-  if(window.parent&&window.parent!==window){window.parent.postMessage({type:'ST_WA_LINK',url:'https://wa.me/91'+d+'?text='+encodeURIComponent(croReviewMsg(r)),scopeId:'cro-review-request',purposeId:'promotional-review-solicitation'},SaagarModuleRuntime.targetOrigin);}
-  else{showToast('Controlled WhatsApp is available only inside Saagar Control Centre.');return;}
+  if(!(window.parent&&window.parent!==window)){showToast('Controlled WhatsApp is available only inside Saagar Control Centre.');return;}
+  const sent=await SaagarModuleRuntime.whatsAppLink('https://wa.me/91'+d+'?text='+encodeURIComponent(croReviewMsg(r)),'cro-review-request','promotional-review-solicitation');
+  if(sent!==true) return;   // the shell has already said why (consent, opt-out, export control); nothing is marked
   croReviewTick(cid,'requested',true); // sending auto-marks Requested
   croRenderReviewRows(); // reflect the auto-check without a full rebuild
 }
@@ -595,7 +654,7 @@ function croReviewDerive(){
   let cnt=rec;
   if(rec>0 && tData.t6){ delete tData.t6._legacyCount; }
   else if(rec===0 && legacy>0){ cnt=legacy; }
-  const s=getS(); const dt=daily(s.reviews);
+  const s=croFormTargets(); croSetTargetHint('rev-hint',s,'reviews'); const dt=daily(s.reviews);
   tData.t6={ ...(tData.t6||{}), reviewsCount:cnt };
   const inp=document.getElementById('rev-cnt'); if(inp) inp.value=cnt;
   setFill('rev-fill', cnt/dt, 'rev-pct', cnt+'');
@@ -632,9 +691,9 @@ function croRenderReviewRows(){
 function getTaskPts(tid){
   const t=TASKS.find(x=>x.id===tid);
   const d=tData[tid]||{};
-  const s=getS();
+  const s=croFormTargets(); // U12-F-CRO-2: same targets the live strip uses
   if(t.type==='qual')     return (d.pts!=null)?d.pts:null;
-  if(t.type==='nps')      return calcNps(d,s).total;
+  if(t.type==='nps')      return Math.max(0,calcNps(d,s).total);
   if(t.type==='reviews')  return calcRev(d,s);
   if(t.type==='activity') return calcMktg(d,s);
   if(t.type==='grooming') return calcGroom(d);
@@ -655,7 +714,7 @@ function getGrade(sc){
 function buildTasks(){
   const area=document.getElementById('tasks-area');
   area.innerHTML='';
-  const s=getS();
+  const s=croFormTargets();
   loadPreData();
 
   TASKS.forEach(t=>{
@@ -767,7 +826,7 @@ function buildRevBody(t,s){
   const hasRevList=!!(tData.t6&&Array.isArray(tData.t6.reviewList)&&tData.t6.reviewList.length);
   return `<div class="metric-grp">
     <div class="mrow">
-      <div class="ml"><div class="ml-name">Google Reviews Collected Today</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="ml"><div class="ml-name">Google Reviews Collected Today</div><div class="ml-hint" id="rev-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
       <div class="mr">
         <input class="minp${hasRevList?' ro':''}" type="number" min="0" id="rev-cnt" placeholder="0" oninput="onRevInput()"${hasRevList?' readonly':''}>
         <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="rev-fill" style="width:0%;background:var(--gold)"></div></div></div>
@@ -804,7 +863,7 @@ function buildMktgBody(t,s){
   const wCur=weekPre.mktg; const mCur=monthPre.mktg;
   return `<div class="metric-grp">
     <div class="mrow">
-      <div class="ml"><div class="ml-name">Total Activities Today (calls + visits)</div><div class="ml-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
+      <div class="ml"><div class="ml-name">Total Activities Today (calls + visits)</div><div class="ml-hint" id="mktg-hint">Daily target: ${dt} · Weekly: ~${wT} · Monthly: ${mT}</div></div>
       <div class="mr">
         <input class="minp" type="number" min="0" id="mktg-cnt" placeholder="0" oninput="onMktgInput()">
         <div class="mbar-wrap"><div class="mbar"><div class="mbar-fill" id="mktg-fill" style="width:0%;background:var(--navy)"></div></div></div>
@@ -867,9 +926,9 @@ function npsBillsTouched(){
 }
 
 function onNpsInput(){
-  const bills = +document.getElementById('nps-bills').value||0;
-  const coll  = +document.getElementById('nps-coll').value||0;
-  const score = +document.getElementById('nps-score-inp').value||0;
+  const bills = croNum('nps-bills');
+  const coll  = croNum('nps-coll');
+  const score = croNum('nps-score-inp',100);
   const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); // P1-24 — targets follow the form's store
   const rr = bills>0 ? Math.round((coll/bills)*100) : 0;
 
@@ -893,8 +952,8 @@ function onRevInput(){
   // if a QMS buyer list exists, the count is DERIVED from received-ticks (read-only) —
   // don't let a manual edit override it; just re-sync from the ticks.
   if(tData.t6&&Array.isArray(tData.t6.reviewList)&&tData.t6.reviewList.length){ croReviewDerive(); return; }
-  const cnt=+document.getElementById('rev-cnt').value||0;
-  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); const dt=daily(s.reviews); // P1-24
+  const cnt=croNum('rev-cnt');
+  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); croSetTargetHint('rev-hint',s,'reviews'); const dt=daily(s.reviews); // P1-24
   setFill('rev-fill', cnt/dt, 'rev-pct', cnt+'');
   // spread to PRESERVE reviewList (old code dropped everything but count+remarks).
   tData['t6']={ ...(tData['t6']||{}), reviewsCount:cnt };
@@ -906,8 +965,8 @@ function onRevInput(){
 }
 
 function onMktgInput(){
-  const cnt=+document.getElementById('mktg-cnt').value||0;
-  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); const dt=daily(s.mktg); // P1-24
+  const cnt=croNum('mktg-cnt');
+  const s=getTargets(croStoreCode((document.getElementById('f-store')||{}).value)); croSetTargetHint('mktg-hint',s,'mktg'); const dt=daily(s.mktg); // P1-24
   setFill('mktg-fill', cnt/dt, 'mktg-pct', cnt+'');
   tData['t7']={ activityCount:cnt, remarks:tData['t7']?.remarks||'' };
   const pts=calcMktg(tData['t7'],s);
@@ -918,7 +977,7 @@ function onMktgInput(){
 }
 
 function onGroomInput(){
-  const pct=+document.getElementById('groom-pct').value||0;
+  const pct=croNum('groom-pct',100);
   setFill('groom-fill', pct/100, 'groom-pct-lbl', pct+'%');
   tData['t9']={ groomingPct:pct, remarks:tData['t9']?.remarks||'' };
   const pts=calcGroom(tData['t9']);
@@ -1206,7 +1265,7 @@ function renderHistory(){
       <div class="hi-bar" style="background:${g.color}"></div>
       <div class="hi-body">
         <div class="hi-date">${fmtDate(a.date)}</div>
-        <div><div class="hi-cro">${stEsc(a.cro)}</div><div class="hi-store">${stEsc(a.store)} · SM: ${stEsc(a.sm)}</div></div>
+        <div><div class="hi-cro">${stEsc(a.cro)}</div><div class="hi-store">${stEsc(a.store)} · SM: ${stEsc(a.sm)}</div>${croIssueNote(a)}</div>
         <div class="hi-spill ${g.cls}">${a.total}/100</div>
         <button data-action="delete-audit-record" data-saagar-args="${croArgs(a.id)}" class="hi-del" title="Delete">✕</button>
       </div></div>`;
@@ -1266,7 +1325,6 @@ function getMonthInfo(off){
 function dStr(d){ return d.toISOString().split('T')[0]; }
 /* "today" as the module sees it = the selected view date (defaults to real today) */
 function todayStr(){ return stViewDate(); }
-function wkNum(d){ const j=new Date(d.getFullYear(),0,1); return Math.ceil(((d-j)/864e5+j.getDay()+1)/7); }
 
 function renderDash(){ if(dashMode==='week') renderWeekDash(); else renderMonthDash(); }
 
@@ -1281,7 +1339,7 @@ function renderWeekDash(){
   const T=getDashTargets(); // P1-24 — effective targets for the active store filter
   const wT_sur=wkly(T.surveys); const wT_rev=wkly(T.reviews); const wT_mktg=wkly(T.mktg);
   const fmt=d=>d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-  document.getElementById('pn-lbl').textContent=`Week ${wkNum(wr.start)}, ${wr.start.getFullYear()}`;
+  document.getElementById('pn-lbl').textContent=`Week ${wkNum(wr.start)}, ${wkYear(wr.start)}`;
   document.getElementById('pn-sub').textContent=`${fmt(wr.start)} – ${fmt(wr.end)} · ${cur.length} audit${cur.length!==1?'s':''} · ${dashStore?CRO_STORES.find(x=>x.code===dashStore).short:'All stores'}`;
 
   const el=document.getElementById('dash-content');
@@ -1463,7 +1521,7 @@ function buildWeekBreakdown(audits, year, month, s){
   const weeks={};
   audits.forEach(a=>{
     const d=new Date(a.date+'T12:00:00');
-    const wn=wkNum(d);
+    const wn=wkYear(d)*100+wkNum(d);
     if(!weeks[wn]) weeks[wn]={label:'',audits:[],surveys:0,reviews:0,mktg:0,bills:0,npsVals:[]};
     weeks[wn].audits.push(a);
     weeks[wn].surveys +=a.tasks?.t5?.npsCollected||0;
@@ -1483,7 +1541,7 @@ function buildWeekBreakdown(audits, year, month, s){
     const g=getGrade(avgSc);
     const surOk=wd.surveys>=wT_sur; const revOk=wd.reviews>=wT_rev; const mktgOk=wd.mktg>=wT_mktg;
     return `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--g100);flex-wrap:wrap">
-      <div style="min-width:70px;font-size:11px;font-weight:700;color:var(--g600)">Week ${wn}</div>
+      <div style="min-width:70px;font-size:11px;font-weight:700;color:var(--g600)">Week ${+wn%100}</div>
       <div style="font-size:11px;color:var(--g800);flex:1">${wd.audits.length} audits · Avg <b>${avgSc}/100</b></div>
       <span class="wm-tag ${surOk?'on':'off'}">Sur ${wd.surveys}/${wT_sur}</span>
       <span class="wm-tag ${rr>=s.rate?'on':'off'}">Rate ${rr}%</span>
@@ -1543,6 +1601,7 @@ function renderScoringRef(){
       &nbsp;&nbsp;NPS Score (5 pts): NPS Score ÷ ${s.npsScore} × 5</div>
     <div><b>Task 6 — Google Reviews (10 pts)</b>: Reviews ÷ ${daily(s.reviews)} daily target × 10</div>
     <div><b>Task 7 — Marketing Activity (10 pts)</b>: Activities ÷ ${daily(s.mktg)} daily target × 10</div>
+    ${s.byStore?'<div style="font-size:11px;color:var(--g400)">Targets shown are the global defaults. A store with its own targets in Settings is scored on those instead.</div>':''}
     <div><b>Task 9 — Grooming (10 pts)</b>: Checklist % ÷ 10</div>
     <hr style="border:none;border-top:1px solid var(--g200);margin:8px 0">
     <div><b>Grades:</b> Outstanding ≥90 · Good ≥75 · Satisfactory ≥60 · Below Exp. ≥45 · Poor &lt;45</div>
@@ -1621,6 +1680,7 @@ function showToast(msg){
 function setToday(){
   // seed the entry-form date + header from the SELECTED view date (defaults to real today)
   document.getElementById('f-date').value=stViewDate();
+  document.getElementById('f-date').max=stRealToday();
   document.getElementById('hdate').textContent=stAnchorDate().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 }
 
@@ -1661,7 +1721,7 @@ function stApplyReadOnly(){
     } else if(note){ note.remove(); }
   }
   // --- Settings save ---
-  const setSave=document.querySelector('#sec-settings .sbtn[onclick*="saveSettings"]');
+  const setSave=document.querySelector('#sec-settings .sbtn[onclick*="croSaveTargets"]');
   if(setSave){
     setSave.disabled=past;
     setSave.style.opacity=past?'.45':'';
@@ -1890,12 +1950,15 @@ function loadAuditForEdit(id){
     const td=src[t.id]; if(!td) return;
     if(t.type==='qual'){ tData[t.id]={ pts:(td.pts!=null?td.pts:null), remarks:td.remarks||'' }; }
     else if(t.type==='nps'){ tData['t5']={ billsCount:td.billsCount||0, npsCollected:td.npsCollected||0, responseRate:td.responseRate||0, npsScore:td.npsScore||0, remarks:td.remarks||'' }; }
-    else if(t.type==='reviews'){ tData['t6']={ reviewsCount:td.reviewsCount||0, remarks:td.remarks||'', ...(Array.isArray(td.reviewList)?{reviewList:td.reviewList}:{_legacyCount:(td.reviewsCount||0)}) }; }
+    else if(t.type==='reviews'){ const rl=Array.isArray(td.reviewList)?td.reviewList:null; const rcv=rl?rl.filter(r=>r&&r.received).length:0; tData['t6']={ reviewsCount:td.reviewsCount||0, remarks:td.remarks||'', ...(rl?{reviewList:rl}:{}), ...(((!rl)||rcv===0)&&(td.reviewsCount||0)>0?{_legacyCount:td.reviewsCount}:{}) }; }
     else if(t.type==='activity'){ tData['t7']={ activityCount:td.activityCount||0, remarks:td.remarks||'' }; }
     else if(t.type==='grooming'){ tData['t9']={ groomingPct:td.groomingPct||0, remarks:td.remarks||'' }; }
   });
   editingId=id; // set BEFORE buildTasks so onCroDateChange/updDupBanner sees the edit
+  const savedT=JSON.parse(JSON.stringify(tData)); // U12-F-CRO-1: buildTasks() ends in onCroDateChange(), which re-reads the still-blank number boxes and overwrites tData.t5/t7. Keep the saved copy and put it back.
   buildTasks(); // rebuilds cards; reads tData[].pts for qual highlight + remarks; calls onCroDateChange()
+  tData=savedT; // the saved values win over whatever the rebuild pass wrote
+  croRenderReviewRows(); // redraw the buyer rows from the restored ticks
   // buildTasks leaves the quantitative <input>s blank — set their .value from tData then recompute
   const setV=(elId,val)=>{ const el=document.getElementById(elId); if(el) el.value=val; };
   setV('nps-bills',   tData['t5']?.billsCount||0);
@@ -1914,6 +1977,7 @@ function loadAuditForEdit(id){
   if(typeof onRevInput==='function') onRevInput();
   if(typeof onMktgInput==='function') onMktgInput();
   if(typeof onGroomInput==='function') onGroomInput();
+  TASKS.forEach(t=>{ if(t.type==='qual'&&tData[t.id]&&tData[t.id].pts!=null) updTaskDisp(t.id); }); // U12-F-CRO-1: headers/chips for saved qualitative ratings
   updBanner();
   updEditNote();
   updDupBanner();

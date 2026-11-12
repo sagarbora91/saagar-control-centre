@@ -16,6 +16,7 @@ import { restorePhase6eFamilyASource } from './phase6f-family-a-source.mjs';
 import { restorePrePhase6gFamilyBSource } from './phase6g-family-b-source.mjs';
 import { restorePrePhase6gShellAssets } from './phase6g-shell-source.mjs';
 import { restorePrePhase6h1EtpIndex, restorePrePhase6h1GatewaySource, restorePrePhase6h1PresentationSource, restorePreEtpBatchRuntime, restorePreEtpBatchWorker, restorePreEtpBatchWorkerClient } from './phase6h1-etp-source.mjs';
+import { undoFixWaveTree } from './fix-wave-undo.mjs';
 
 const sha256 = value => crypto.createHash('sha256').update(value).digest('hex');
 const ETP_SHA256 = 'b2973563b988779468471950bb777c6323580e90ac6011c9038581845b9cfa12';
@@ -55,7 +56,7 @@ function restoreBoundaryBuildIdentity(source) {
 // selector); production no longer carries it (demo wiring is injected by the seeded build only).
 function restoreBoundaryModuleBridge(source) {
   // ETP report-engine bridge, tablet side (owner decisions given in chat, 2026-11-12): the facade getter sits directly after etpImportGateway.
-  return String(source).replace("    etpBridgeGateway: getter(function () { return parentValue('SaagarEtpBridgeFacade'); }),\n", '').replace(/    etpReadGateway: getter\(function \(\) \{[^\n]*\n    e7ServiceVerification: [^\n]*\n    e7ServiceActor: [^\n]*\n    getE7ServiceActionInput: [^\n]*\n/,
+  return String(source).replace("    etpBridgeGateway: getter(function () { var loader = parentValue('SaagarEtpChainLoader'); return (loader && loader.bridge) || parentValue('SaagarEtpBridgeFacade'); }),\n", '').replace(/    etpReadGateway: getter\(function \(\) \{[^\n]*\n    e7ServiceVerification: [^\n]*\n    e7ServiceActor: [^\n]*\n    getE7ServiceActionInput: [^\n]*\n/,
     "    etpReadGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.readFacade; })\n");
 }
 
@@ -78,6 +79,7 @@ function restoreBoundaryEtpGatewayReads(source) {
 }
 
 export function reconstructPhase6cBoundaryWww(workspaceRoot) {
+  undoFixWaveTree(workspaceRoot);
   const mobileLayoutPath = path.join(workspaceRoot, 'www/mobile-layout.css');
   fs.writeFileSync(mobileLayoutPath, fs.readFileSync(mobileLayoutPath, 'utf8')
     .replace('  /* Service: every stage remains visible without a sideways gesture. */', '  /* Service: stage rail stays one line and exposes a gold scroll affordance. */')

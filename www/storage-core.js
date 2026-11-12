@@ -1148,6 +1148,7 @@
       keys: function () { if (storageUnavailable()) return []; if (_ready) return memKeys().slice(); var a = [], n = nLen.call(ls); for (var i = 0; i < n; i++) a.push(nKey.call(ls, i)); return a; },
       length: function () { if (storageUnavailable()) return 0; return _ready ? MEM.size : nLen.call(ls); },
       ready: function () { return _ready; },
+      authoritative: function () { return _ready && !storageUnavailable(); },   /* S03a X2-F02: true only when reads and writes are served from the authoritative store (not blocked, not pending) */
       whenReady: function (cb) { if (typeof cb !== 'function') return; if (_ready) { try { cb(); } catch (e) {} } else _whenReadyCbs.push(cb); },
       flush: function () { if (storageUnavailable()) return Promise.reject(blockedStorageError()); _dirty = true; return flush(); },
       recoveryStatus: recoveryStatus,

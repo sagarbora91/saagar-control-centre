@@ -88,7 +88,8 @@ test('ETP remains accessContext false because the parent gateway is the fail-clo
   assert.match(gateway, /if \(!await permittedAsync\('IMPORT'\)\) return failure\('ETP_ACCESS_DENIED', 'AUTHORIZE'\)/);
   assert.match(gateway, /if \(!await permittedAsync\('CONFIRM'\)\) return failure\('ETP_ACCESS_DENIED', 'AUTHORIZE'\)/);
   assert.match(gateway, /if \(!permitted\('READ'\)\) return failure\('ETP_ACCESS_DENIED', 'AUTHORIZE'\)/);
-  assert.match(gateway, /action === 'IMPORT' && snapshot\.isOwner === true/);
+  // Fix wave U13-017: Owner mode skips the extra PIN for IMPORT and CONFIRM alike; other roles still need SaagarReauth.
+  assert.match(gateway, /if \(\(action === 'IMPORT' \|\| action === 'CONFIRM'\) && snapshot\.isOwner === true\) return true;/);
   assert.match(gateway, /action === 'IMPORT' \|\| action === 'CONFIRM'[\s\S]*SaagarReauth/);
   assert.match(gateway, /snapshot\.role === 'Store Manager'[\s\S]*roleCanOpen\('etp'\) === true/);
   assert.match(gateway, /readFacade = freeze\(\{ listScopes: listScopes, inspectScope: inspectScope, loadSummary: loadSummary \}\)/);

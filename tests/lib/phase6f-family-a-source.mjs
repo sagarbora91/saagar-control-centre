@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { undoFixWaveText } from './fix-wave-undo.mjs';
 
 export const PHASE6E_FAMILY_A_SHA256 = Object.freeze({
   payroll: 'be31e33114e11d611d9e3ab60ef80ca7717f35a857611f357aba9384ea49e1e4',
@@ -116,6 +117,8 @@ function restoreService(html, css) {
 }
 
 export function restorePhase6eFamilyASource(moduleId, html, css, validateHash = true) {
+  html = undoFixWaveText(`www/modules/${moduleId}/index.html`, html);
+  css = undoFixWaveText(`www/modules/${moduleId}/${moduleId}-ui.css`, css);
   const restore = { payroll: restorePayroll, grooming: restoreGrooming, service: restoreService }[moduleId];
   if (!restore) throw new Error(`Unsupported Phase 6F Family-A module: ${moduleId}`);
   const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';

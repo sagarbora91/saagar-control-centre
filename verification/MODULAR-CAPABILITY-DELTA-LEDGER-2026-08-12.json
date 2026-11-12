@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 748,
+    "capabilities": 752,
     "categories": {
       "failure-posture": 122,
-      "permission": 31,
-      "persisted-outcome": 86,
+      "permission": 32,
+      "persisted-outcome": 89,
       "route": 13,
       "visible-action": 496
     },
     "conflicts": 0,
-    "inventorySha256": "573e9111c4616ff1634252534efdedb8824093a4fe35dd005903726b24313385"
+    "inventorySha256": "6b806a9e3401cfe4e587b45abdaddd7a79297edb763eecb0db8df573fd15a994"
   },
   "deltas": [
     {
@@ -270,7 +270,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "c4f5ab02c24fdb698a306f3226e4240e07f3f6e34938c87f047e732b1158c4c8",
+                  "bodySha256": "b8aa9fb78947de6a8e48a2a7f24cdd83e65152ea73ff4682a754c0c439f7f61d",
                   "name": "loadAuditForEdit"
                 }
               ]
@@ -287,7 +287,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "2a2802b1ff9e47a54a30134108c011bfb9313b6ecdb5f63214881846a47cb226",
+      "currentOutcomeSha256": "26fe1b80d760db898c3495b604715f41a0c3b215fc7f460b555136338c6d3544",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -756,7 +756,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "368de9cb2133e893c8121dd662869436ceea486b23398c67e9a553082211a536",
+                  "bodySha256": "e0cd136e23c44e1bb879f3af0f131be5617d2a9bc54658a3dae797e9b0f25647",
                   "name": "renderHistory"
                 }
               ]
@@ -767,7 +767,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "7a26643af15912e657e4b0f561e07b6072d28e7e248a5aba11c5b459ee74c256",
+      "currentOutcomeSha256": "30af6df482c3ac6b798441763875f5c02051f0f42977c1eade06aac19433f213",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -807,7 +807,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "368de9cb2133e893c8121dd662869436ceea486b23398c67e9a553082211a536",
+                  "bodySha256": "e0cd136e23c44e1bb879f3af0f131be5617d2a9bc54658a3dae797e9b0f25647",
                   "name": "renderHistory"
                 }
               ]
@@ -818,7 +818,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "94444b5813f4f6c1b89de86fa64e52942e8677ba9750934683e889e0b432de7c",
+      "currentOutcomeSha256": "c2b724f4d7571f4a5d23b014f1b146cf92a43c598f0ab6b06e3a48673df2f121",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -909,7 +909,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "368de9cb2133e893c8121dd662869436ceea486b23398c67e9a553082211a536",
+                  "bodySha256": "e0cd136e23c44e1bb879f3af0f131be5617d2a9bc54658a3dae797e9b0f25647",
                   "name": "renderHistory"
                 }
               ]
@@ -920,7 +920,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "94444b5813f4f6c1b89de86fa64e52942e8677ba9750934683e889e0b432de7c",
+      "currentOutcomeSha256": "c2b724f4d7571f4a5d23b014f1b146cf92a43c598f0ab6b06e3a48673df2f121",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -1677,7 +1677,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "48bd8885c691bce2b587adce0baf19c5594df957b78f3246bd22b84b49acf5b8",
+                  "bodySha256": "fdb75c4335a22adcbab6334e1c0ea886859c1187737bb52f395636f3d8cc82d4",
                   "name": "updDerived"
                 }
               ]
@@ -1688,7 +1688,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "45cd44e4ba39b1782c4323a3cca4857e1b4d3f2f141268e206b7a56975236bed",
+      "currentOutcomeSha256": "f38609b5379ebe3e4e79b3246badf9db0cfa88c06d396cefe627b270fd7d9896",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -1779,7 +1779,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "48bd8885c691bce2b587adce0baf19c5594df957b78f3246bd22b84b49acf5b8",
+                  "bodySha256": "fdb75c4335a22adcbab6334e1c0ea886859c1187737bb52f395636f3d8cc82d4",
                   "name": "updDerived"
                 }
               ]
@@ -1790,7 +1790,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "45cd44e4ba39b1782c4323a3cca4857e1b4d3f2f141268e206b7a56975236bed",
+      "currentOutcomeSha256": "f38609b5379ebe3e4e79b3246badf9db0cfa88c06d396cefe627b270fd7d9896",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -1881,7 +1881,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "48bd8885c691bce2b587adce0baf19c5594df957b78f3246bd22b84b49acf5b8",
+                  "bodySha256": "fdb75c4335a22adcbab6334e1c0ea886859c1187737bb52f395636f3d8cc82d4",
                   "name": "updDerived"
                 }
               ]
@@ -1892,7 +1892,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "45cd44e4ba39b1782c4323a3cca4857e1b4d3f2f141268e206b7a56975236bed",
+      "currentOutcomeSha256": "f38609b5379ebe3e4e79b3246badf9db0cfa88c06d396cefe627b270fd7d9896",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2034,7 +2034,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "48bd8885c691bce2b587adce0baf19c5594df957b78f3246bd22b84b49acf5b8",
+                  "bodySha256": "fdb75c4335a22adcbab6334e1c0ea886859c1187737bb52f395636f3d8cc82d4",
                   "name": "updDerived"
                 }
               ]
@@ -2045,7 +2045,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "45cd44e4ba39b1782c4323a3cca4857e1b4d3f2f141268e206b7a56975236bed",
+      "currentOutcomeSha256": "f38609b5379ebe3e4e79b3246badf9db0cfa88c06d396cefe627b270fd7d9896",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2085,7 +2085,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "48bd8885c691bce2b587adce0baf19c5594df957b78f3246bd22b84b49acf5b8",
+                  "bodySha256": "fdb75c4335a22adcbab6334e1c0ea886859c1187737bb52f395636f3d8cc82d4",
                   "name": "updDerived"
                 }
               ]
@@ -2096,7 +2096,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "45cd44e4ba39b1782c4323a3cca4857e1b4d3f2f141268e206b7a56975236bed",
+      "currentOutcomeSha256": "f38609b5379ebe3e4e79b3246badf9db0cfa88c06d396cefe627b270fd7d9896",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2219,12 +2219,12 @@
         "current": {
           "bindings": 1,
           "expressionSha256": [
-            "50c035e830abb2b4a3b31b0848a586cc7337295548f8bb8dc0a5b487be836d38"
+            "3b11e556366781fe7c711bc8938ddaf1dd440ddd3a4b0e1bb809f681a42c8902"
           ],
           "handlerNames": [
-            "saveSettings"
+            "croSaveTargets"
           ],
-          "referencedHandlerBodies": 2
+          "referencedHandlerBodies": 1
         }
       },
       "capabilityId": "cro_audit:action:save-targets:b9bab66465",
@@ -2236,17 +2236,13 @@
           "bindings": [
             {
               "event": "click",
-              "expressionSha256": "50c035e830abb2b4a3b31b0848a586cc7337295548f8bb8dc0a5b487be836d38",
+              "expressionSha256": "3b11e556366781fe7c711bc8938ddaf1dd440ddd3a4b0e1bb809f681a42c8902",
               "kind": "inline-event",
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "2f47d8b7c1be9fc02580f6505b9cea3173f7d5c2f6a7c44eac9f658887414142",
-                  "name": "saveSettings"
-                },
-                {
-                  "bodySha256": "d1dddccfe1c2b88c55108b57f87bf394050033b7d693282e0eacc7f9f0b461a5",
-                  "name": "saveSettings"
+                  "bodySha256": "9ffda24281fb099255fffe69b2fb33aefe8fb00c813f9c98385ca57db2f6a14c",
+                  "name": "croSaveTargets"
                 }
               ]
             }
@@ -2255,7 +2251,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "c8c29ba3310fb19d951e212ce8d95cbaf5f4eb927f73fcafa2ad80f9467720e9",
+      "currentOutcomeSha256": "be5e13ed28ecccd0b69c16431bda1bba263cc380012c23059e6d7d1dc8117dfe",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2681,12 +2677,12 @@
         "current": {
           "bindings": 1,
           "expressionSha256": [
-            "6e15642962ef0bd7f472977a126042acc569aa2e79e02ad27837e4297e249b08"
+            "a8841e6ae2abd19578f862bf596cd787d80a2502a9a5e533f1b64705c03f969c"
           ],
           "handlerNames": [
-            "submitAudit"
+            "croSubmitAudit"
           ],
-          "referencedHandlerBodies": 2
+          "referencedHandlerBodies": 1
         }
       },
       "capabilityId": "cro_audit:action:submit-audit:f64aba0f7a",
@@ -2698,17 +2694,13 @@
           "bindings": [
             {
               "event": "click",
-              "expressionSha256": "6e15642962ef0bd7f472977a126042acc569aa2e79e02ad27837e4297e249b08",
+              "expressionSha256": "a8841e6ae2abd19578f862bf596cd787d80a2502a9a5e533f1b64705c03f969c",
               "kind": "inline-event",
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "035458bca1af00ccf42378c09a3a1b44240de18a0d90bcfbac29e3557b1f96fb",
-                  "name": "submitAudit"
-                },
-                {
-                  "bodySha256": "fe00fd1f220d1d5ad5dc6004f3b79feafe208d5aaa1f8ce5a3b750aeda931100",
-                  "name": "submitAudit"
+                  "bodySha256": "ae58693a3e9bb993e75a54a5e8357ae7c8fa7b5f3f15248cc726f81a60242572",
+                  "name": "croSubmitAudit"
                 }
               ]
             }
@@ -2717,7 +2709,7 @@
         },
         "surface": "cro_audit"
       },
-      "currentOutcomeSha256": "6a9b24b72c94645bb2267c269e357c4d55d2a7b878a779eae24f6a528a57a475",
+      "currentOutcomeSha256": "4d925445d8ade0e728b640f20f409d2cab4f2a1346b3e25cec0fc81ba4036aed",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2859,7 +2851,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "05fdbf7a5e4f14566e3062fcd1ff0087e6cecd8487b5f763947a3fe795e8017d",
+                  "bodySha256": "f2267b2c7b3b6baab464e71369204e85a9264a46b27b35f95d239b4ad4a7db32",
                   "name": "logout"
                 }
               ]
@@ -2869,7 +2861,7 @@
         },
         "surface": "dsr"
       },
-      "currentOutcomeSha256": "80428f8999cc5524190328523b2c3c2232f9668d817603268239fecebf2e00cc",
+      "currentOutcomeSha256": "f86bdd238d342e5ac1917c47beffe92788494a98b651fa6452354a49696fcd1d",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2909,7 +2901,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "4da395c500e346babcf134bc715cf0c7a309111c74db336b8c49cd01dce8fcab",
+                  "bodySha256": "c90f5eff7e350da818480f79e5e9ec3dfd0962f9208df6e5b667bc994a29371f",
                   "name": "loginStaff"
                 }
               ]
@@ -2919,7 +2911,7 @@
         },
         "surface": "dsr"
       },
-      "currentOutcomeSha256": "d7996e96f8dde4de6a5e2633ee9219b1d892ed6a1f99a93f3109891e39a21283",
+      "currentOutcomeSha256": "5a6abef0607e1413a43d9592ec236055b1e0975da058469678bd35c0cfdde247",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -2959,7 +2951,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "05fdbf7a5e4f14566e3062fcd1ff0087e6cecd8487b5f763947a3fe795e8017d",
+                  "bodySha256": "f2267b2c7b3b6baab464e71369204e85a9264a46b27b35f95d239b4ad4a7db32",
                   "name": "logout"
                 }
               ]
@@ -2969,7 +2961,7 @@
         },
         "surface": "dsr"
       },
-      "currentOutcomeSha256": "80428f8999cc5524190328523b2c3c2232f9668d817603268239fecebf2e00cc",
+      "currentOutcomeSha256": "f86bdd238d342e5ac1917c47beffe92788494a98b651fa6452354a49696fcd1d",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -5091,15 +5083,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 31,
-          "explicitFallbackSites": 11,
-          "swallowedCatchBlocks": 22,
+          "catchBlocks": 37,
+          "explicitFallbackSites": 20,
+          "swallowedCatchBlocks": 23,
           "throwSites": 0,
-          "userVisibleErrorSites": 45
+          "userVisibleErrorSites": 58
         },
         "surface": "dsr"
       },
-      "currentOutcomeSha256": "2a2e728bac63b34cd1086d24eb8828bb19df2171b1e5ff96e5a851429230e38f",
+      "currentOutcomeSha256": "ed0d9818800ca30f40a55a1c16b35950352445c9769fbd5bbdaeaad917f5b6e7",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -7327,7 +7319,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "bef692a1901509b9965fbdaf1a3532eecae46facccfbf9712ee6db87db2fdec2",
+                  "bodySha256": "4077e4cd8e8e7a4e87e79b392d6de38b30264ceb80abd5f9e8a35dfaffc3529d",
                   "name": "setRole"
                 }
               ]
@@ -7337,7 +7329,7 @@
         },
         "surface": "expense"
       },
-      "currentOutcomeSha256": "92ebd31b90ef3dad7b0ddec9c57e6ea9047685c5d3c09d14332dff2de968a6e5",
+      "currentOutcomeSha256": "b98b338e31894098ebb132471a54469b2170a4e19f5cb332915ac77b5ac9ec28",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -7897,15 +7889,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 17,
-          "explicitFallbackSites": 30,
-          "swallowedCatchBlocks": 9,
-          "throwSites": 5,
-          "userVisibleErrorSites": 146
+          "catchBlocks": 20,
+          "explicitFallbackSites": 34,
+          "swallowedCatchBlocks": 12,
+          "throwSites": 6,
+          "userVisibleErrorSites": 157
         },
         "surface": "expense"
       },
-      "currentOutcomeSha256": "c26bb541471055908403f9ba31df9e54dabbd8ae43e940602167de4dc971dfab",
+      "currentOutcomeSha256": "bf71e2ed91e7dc4f21ca4e13afb477ba300426e83471defd9ef5d028c9924c7d",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -8115,11 +8107,11 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "8e1984c7cb1560158437344d903d2e3ccd170870d5418cd390d4b75b1ad7c76a",
+                  "bodySha256": "1fabe802b12d01749256e5e9b6a98546ab04a043d5ae780061a42ac9950cc609",
                   "name": "clearDay"
                 },
                 {
-                  "bodySha256": "ac18e057688fb50ad1d1e42010fe833f7ebefb31ea9a95820a1df79aa9f6043c",
+                  "bodySha256": "8e1984c7cb1560158437344d903d2e3ccd170870d5418cd390d4b75b1ad7c76a",
                   "name": "clearDay"
                 }
               ]
@@ -8129,58 +8121,7 @@
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "b6c6074ac9be8a2d7ec0437d138760571bf644ba8586d919e0747c8fb9980590",
-      "ownerApproval": "pending",
-      "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
-      "reviewClass": "phase6b-stable-identity-annotation"
-    },
-    {
-      "baseline": null,
-      "baselineOutcomeSha256": null,
-      "bindingReview": {
-        "baseline": {
-          "bindings": 0,
-          "expressionSha256": [],
-          "handlerNames": [],
-          "referencedHandlerBodies": 0
-        },
-        "current": {
-          "bindings": 1,
-          "expressionSha256": [
-            "83a49c0bbbc8a039c4907d474a8fd2cde519a89bb8836bd688db779e26001b19"
-          ],
-          "handlerNames": [
-            "onNamePick"
-          ],
-          "referencedHandlerBodies": 1
-        }
-      },
-      "capabilityId": "grooming:action:cro-inp:2cf9dcd54d",
-      "category": "visible-action",
-      "change": "added",
-      "current": {
-        "category": "visible-action",
-        "outcome": {
-          "bindings": [
-            {
-              "event": "input",
-              "expressionSha256": "83a49c0bbbc8a039c4907d474a8fd2cde519a89bb8836bd688db779e26001b19",
-              "kind": "inline-event",
-              "qualifiedCalls": [],
-              "referencedHandlers": [
-                {
-                  "bodySha256": "b22ec89a47dc764a29011e07af3bdd4fee9003fbe240afad83b1ced26ee6e4e6",
-                  "name": "onNamePick"
-                }
-              ]
-            }
-          ],
-          "element": "input",
-          "type": "text"
-        },
-        "surface": "grooming"
-      },
-      "currentOutcomeSha256": "66d21bd304902e887285dbc573ad5015b30a18c20d612a7d1d2044e7978d48ea",
+      "currentOutcomeSha256": "31e4ea1ade5fae1fb59e4d998de443ce73ecd8e32c3f0757a9c37cdf073a208e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -8232,6 +8173,57 @@
       "change": "removed",
       "current": null,
       "currentOutcomeSha256": null,
+      "ownerApproval": "pending",
+      "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
+      "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "83a49c0bbbc8a039c4907d474a8fd2cde519a89bb8836bd688db779e26001b19"
+          ],
+          "handlerNames": [
+            "onNamePick"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "grooming:action:cro-inp:d6e0f95764",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "input",
+              "expressionSha256": "83a49c0bbbc8a039c4907d474a8fd2cde519a89bb8836bd688db779e26001b19",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "b22ec89a47dc764a29011e07af3bdd4fee9003fbe240afad83b1ced26ee6e4e6",
+                  "name": "onNamePick"
+                }
+              ]
+            }
+          ],
+          "element": "input",
+          "type": "text"
+        },
+        "surface": "grooming"
+      },
+      "currentOutcomeSha256": "66d21bd304902e887285dbc573ad5015b30a18c20d612a7d1d2044e7978d48ea",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -8373,7 +8365,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1785d41ba356582fd4b17d47ae9d3b7c6bd5e026616701355a87918b05fa5cc7",
+                  "bodySha256": "9255a092e0997271376172bbc47e260164b88507bd06e74a3b4e61b0d1700e03",
                   "name": "exportCSV"
                 },
                 {
@@ -8381,7 +8373,7 @@
                   "name": "exportCSV"
                 },
                 {
-                  "bodySha256": "d2faef6a265030d4905efbab73823f9285bd14b4e61294678c48cf896606fe11",
+                  "bodySha256": "dad3bc1eeb584c873dc37d1ac72453c88d1f5d7f26b85ff42a38cf68e4289c0e",
                   "name": "exportCSV"
                 },
                 {
@@ -8395,7 +8387,7 @@
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "fa204c3ca51e3fbedf8b1080784290dc4cf6c64b594a95b6f1d9e659a86d3d02",
+      "currentOutcomeSha256": "432b6e0519f8e8540ef99ab1f6a823483bdabb836cdc6cd1ef93d2a45529bef6",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -8548,7 +8540,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "9abe4c5141cae17340a0cd045843c2a4cb64379da1cde5abd630d00aeaf2ff4e",
+                  "bodySha256": "9c7a5a4dbb5fb2a30a9d470fc0929fc61c6b7df08dcec811675864d086ac7c03",
                   "name": "saveCRO"
                 }
               ]
@@ -8559,7 +8551,7 @@
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "73fa1d953ae91569d124696e7b5906fe991f6c2498967982631b1b3de3c5bda0",
+      "currentOutcomeSha256": "0aa2f6c2cb7a5df4dbfd7bdc1690cc074d3cc6b3fae9984c63f10f8b5dcf97e6",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -8909,7 +8901,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "9abe4c5141cae17340a0cd045843c2a4cb64379da1cde5abd630d00aeaf2ff4e",
+                  "bodySha256": "9c7a5a4dbb5fb2a30a9d470fc0929fc61c6b7df08dcec811675864d086ac7c03",
                   "name": "saveCRO"
                 }
               ]
@@ -8919,7 +8911,7 @@
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "04ac7c0da7482c9c15a8ef0cf7f50c0699ff9dbdda917537cb6cbf2645daf780",
+      "currentOutcomeSha256": "73bc286fe463a1f81965bc9a1bea2e5893384210bd37d192465c3a873f7d1218",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -9447,15 +9439,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 18,
+          "catchBlocks": 22,
           "explicitFallbackSites": 8,
-          "swallowedCatchBlocks": 16,
+          "swallowedCatchBlocks": 19,
           "throwSites": 1,
           "userVisibleErrorSites": 4
         },
         "surface": "grooming"
       },
-      "currentOutcomeSha256": "f37694353b24317917c86b8645ba4e0cdcb4d4e7b6b7104aac64edec80d9b48b",
+      "currentOutcomeSha256": "eae71a1dd2e65644c7dfe40fc14fd447f50decf3c88260c8676be14f3b853d15",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -9611,7 +9603,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "cf5b4dcbd201225b4a5e5290f1e68b25a3d7c71147b7b11a375af1166b25a24b",
+                  "bodySha256": "9d5d27d6b8ca915aa36008e3b07fb9030f846e454cb111d32b45f34b0feb3a09",
                   "name": "addBlackout"
                 }
               ]
@@ -9621,7 +9613,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "fa643014a2541ddbb11ba6cd5a01153100c2b236ae368bb9590c4d206be64abc",
+      "currentOutcomeSha256": "34e33d432dc30bee49274d474646ad74a192871ec29f937c43927cd19931c2b2",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -9719,7 +9711,7 @@
                   "name": "addEmployee"
                 },
                 {
-                  "bodySha256": "b888408ceda7269a24dfdbc97d2f4762fbb9bd3947891a26837452991f60aa37",
+                  "bodySha256": "95701b912c3ffc6e0ac70ac0bf0d0bf134d82623aa27de0f600cf8c306da27f5",
                   "name": "addEmployee"
                 }
               ]
@@ -9729,7 +9721,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "901c2fd6d33fde6daae613ed745918d67f416406dd20576736427473acd34d36",
+      "currentOutcomeSha256": "93e138f4408315a2c2b7b8353f13457725562184c06e1d3c4df02ae8f9657b33",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -9875,7 +9867,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "2f083cbe0a1186a4a4badcdac586ea3aa5b14e1a1a43330221e01adb5475cc6a",
+                  "bodySha256": "9deaee2eb9db23994b42a88e3af067b40153a97a34b1ddc02c09f3fe8dfee0e6",
                   "name": "exportJSON"
                 },
                 {
@@ -9889,7 +9881,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "fb07dacd021c24f65d86021d1cffb4c05f4cd1b6eff48a168545cddaa17eaf39",
+      "currentOutcomeSha256": "0c7569eae044721bf1475ed11b2b042d73f985ab16d557b58acc076004a8674b",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -10283,7 +10275,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "f12ebca8b2f9ed56a1d35358de65add4db0e4a18bd41a3f81a6a1c40a93baaf7",
+                  "bodySha256": "70594edf627c245e8f3f7c6f2ef6fa830bcce5ace8f4ada6eb77ae907a357991",
                   "name": "executeClearData"
                 }
               ]
@@ -10293,7 +10285,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "a0e68f5c3424bfbf110b6c37c7c9777b4864db0744975056c82891461303104a",
+      "currentOutcomeSha256": "26a0d49a3de1aa15d2e56578c17447b9ed2b7b42231cd9dec2c6c27bb56362c6",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -10433,7 +10425,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "2f083cbe0a1186a4a4badcdac586ea3aa5b14e1a1a43330221e01adb5475cc6a",
+                  "bodySha256": "9deaee2eb9db23994b42a88e3af067b40153a97a34b1ddc02c09f3fe8dfee0e6",
                   "name": "exportJSON"
                 },
                 {
@@ -10447,7 +10439,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "fb07dacd021c24f65d86021d1cffb4c05f4cd1b6eff48a168545cddaa17eaf39",
+      "currentOutcomeSha256": "0c7569eae044721bf1475ed11b2b042d73f985ab16d557b58acc076004a8674b",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -10941,7 +10933,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d738d8c80a10470fa4e11a0271c0769e6818e1cbdac771ae1561f390b0a8fd28",
+                  "bodySha256": "2bb9625a78ed9b136f8be81f3b52b29e37530bfe34ca47993d28f23000521dd2",
                   "name": "openClearConfirm"
                 }
               ]
@@ -10951,7 +10943,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "8e365bb77195d4e4cdf8548f3464fdc69498a8aa53de7a44ab8e396cb00a81aa",
+      "currentOutcomeSha256": "2bff257574cda273601ba48a57fa5919c061e1f06f461f8423d9016124b9b8f4",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11237,15 +11229,15 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "7ee2551b491c8da6972bd5913c4282cba7e9d708201981893b0c3c563bcf812b",
+                  "bodySha256": "3c9c89b7e9e50e39b5c965889d547dd837c9e80d041b0e9563bebdd0644d2675",
+                  "name": "importJSON"
+                },
+                {
+                  "bodySha256": "474d3f28f0a95bafbcf2143456f8ad9ed9d3898afe42063c2dc58ad8e9300746",
                   "name": "importJSON"
                 },
                 {
                   "bodySha256": "ab1e9681233631423b4ac85a327073985785ccf28a0b8e2ae8aa98a2f92015c1",
-                  "name": "importJSON"
-                },
-                {
-                  "bodySha256": "d88e7c00815e1f85343e0f98f084b6da6fbaaa5bf5474ca1bdfa42632b7b6b00",
                   "name": "importJSON"
                 }
               ]
@@ -11256,7 +11248,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "23c63df08129165dc8c0f16499f36d84d4d5bfdb8a42cbb9d7a8318a2deeb268",
+      "currentOutcomeSha256": "6a150fcf994d5c95e6e2ad0a5ddbcaeaf4809959a97b39ed5a41f09475389a9e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11355,7 +11347,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d2ea00ea4776161f1e1b3cf18a9d3ff6269cbce12eef8a9b9e141ebf5e5588d5",
+                  "bodySha256": "87810cc4b27d71fc35a105a96de791bf9ed13c8fb7c5bdf28d65fa592659cc74",
                   "name": "onLeaveFormChange"
                 }
               ]
@@ -11365,7 +11357,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "a809d5d595fbb13d11f6289ba88cf9c10bdaed5eab79a36d4dd67bf6c752246c",
+      "currentOutcomeSha256": "4661d9e29bcaf1bb0e8edb5d460967509cf8c80ea42c715a1a8f62747931dd02",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11455,7 +11447,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d2ea00ea4776161f1e1b3cf18a9d3ff6269cbce12eef8a9b9e141ebf5e5588d5",
+                  "bodySha256": "87810cc4b27d71fc35a105a96de791bf9ed13c8fb7c5bdf28d65fa592659cc74",
                   "name": "onLeaveFormChange"
                 }
               ]
@@ -11466,7 +11458,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "0afdcea0d3608499cd1c3377c776eac149eb762dd68ea9e5840ab5fcf9d251df",
+      "currentOutcomeSha256": "e63041d548cfcea9166a5e2941722d7349f4095680785a26c392c36877947d15",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11607,7 +11599,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d2ea00ea4776161f1e1b3cf18a9d3ff6269cbce12eef8a9b9e141ebf5e5588d5",
+                  "bodySha256": "87810cc4b27d71fc35a105a96de791bf9ed13c8fb7c5bdf28d65fa592659cc74",
                   "name": "onLeaveFormChange"
                 }
               ]
@@ -11617,7 +11609,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "a809d5d595fbb13d11f6289ba88cf9c10bdaed5eab79a36d4dd67bf6c752246c",
+      "currentOutcomeSha256": "4661d9e29bcaf1bb0e8edb5d460967509cf8c80ea42c715a1a8f62747931dd02",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11657,7 +11649,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d2ea00ea4776161f1e1b3cf18a9d3ff6269cbce12eef8a9b9e141ebf5e5588d5",
+                  "bodySha256": "87810cc4b27d71fc35a105a96de791bf9ed13c8fb7c5bdf28d65fa592659cc74",
                   "name": "onLeaveFormChange"
                 }
               ]
@@ -11668,7 +11660,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "0afdcea0d3608499cd1c3377c776eac149eb762dd68ea9e5840ab5fcf9d251df",
+      "currentOutcomeSha256": "e63041d548cfcea9166a5e2941722d7349f4095680785a26c392c36877947d15",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -11809,7 +11801,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d2ea00ea4776161f1e1b3cf18a9d3ff6269cbce12eef8a9b9e141ebf5e5588d5",
+                  "bodySha256": "87810cc4b27d71fc35a105a96de791bf9ed13c8fb7c5bdf28d65fa592659cc74",
                   "name": "onLeaveFormChange"
                 }
               ]
@@ -11819,7 +11811,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "a809d5d595fbb13d11f6289ba88cf9c10bdaed5eab79a36d4dd67bf6c752246c",
+      "currentOutcomeSha256": "4661d9e29bcaf1bb0e8edb5d460967509cf8c80ea42c715a1a8f62747931dd02",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -12160,7 +12152,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "d7c8c425bd8b4d3522f717b5b89ebacbb4aedcd03cf8b491807f6c36205141c9",
+                  "bodySha256": "57492223236000bab5e8c94214e30f48db885f40f8de0907122719d50ee00ecd",
                   "name": "printCalendar"
                 }
               ]
@@ -12170,7 +12162,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "0a0c34296af0bf7ffe7bd90782b95c26f95e0c3566eb8223024f114ef89eb281",
+      "currentOutcomeSha256": "611e6ef990053862bd47ac759beececf1fd0b2e796ef92a7fd4f63310aeae375",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -12460,7 +12452,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "3d672d679b39a5d2f772d2f8440e35cc7ddbf9b0cab87852cd1f95c2a674a362",
+                  "bodySha256": "5f52c9ac08d2842a719842e06f88ee7d9fb04eef8115cf638830303a47e68c6a",
                   "name": "saveEntDefaults"
                 }
               ]
@@ -12470,7 +12462,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "4d841bd4941ef56022334cb5d9fd9a13166457201b3fbb86a4bdca369325e7c9",
+      "currentOutcomeSha256": "77c922d9a6c118b48091e134e6b3199721e8d6c249e841b1aa1b70b460866dc7",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -12560,7 +12552,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "e6592128b189f34616f4de546db95aece8533e21f8e6d12d3942083adfdf6b26",
+                  "bodySha256": "9988c85d081dd02761809a31b80249a0c9153dc3f5762d70b4f4a1a9d64d66dc",
                   "name": "saveStoreCapsFromUI"
                 }
               ]
@@ -12570,7 +12562,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "fc59221d0c9932cb19d94cff624b1c0faeaa679d54152a1f157f21af72a3aa29",
+      "currentOutcomeSha256": "7631303a47e25265864c4e810c4cf07a35c25c8287359392527c036178f95cce",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -12610,7 +12602,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "7f61b719818c6e087d9a1ce65822a5f8aaeff4ccc3552264c474c1a9a8b64fcc",
+                  "bodySha256": "0b575ba0b83039cf008de769b9e1a9b792542b4b4d96f1201767fa0147d036ee",
                   "name": "saveWeekOffFromUI"
                 }
               ]
@@ -12620,7 +12612,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "21b1c724cc10ad1b787695ee31eb5c326bd7f0423064d6b911be6b42908b391a",
+      "currentOutcomeSha256": "721bf91f1b81285d4721e50998aa729c2305b0859755fbf15585ecf52e61482e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -13114,7 +13106,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1783f75bbe22d736565f33d66148faa591c5c7e50cc1736c9d297bc56e5369ce",
+                  "bodySha256": "10a92f9f686030eea7c16e2a74ab4c23863f0d3487edea420e5da4d4492c9997",
                   "name": "submitLeave"
                 }
               ]
@@ -13124,7 +13116,7 @@
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "4726f431f2b4ab17f74cde1a57b9876e521f98c406fd707fdbf7d9d4434c9e33",
+      "currentOutcomeSha256": "4812564b58a7d30f8a5572ac96feb95c84f7897566d9543747411f3b961c53a7",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -13198,15 +13190,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 13,
-          "explicitFallbackSites": 11,
-          "swallowedCatchBlocks": 10,
+          "catchBlocks": 19,
+          "explicitFallbackSites": 14,
+          "swallowedCatchBlocks": 14,
           "throwSites": 3,
           "userVisibleErrorSites": 3
         },
         "surface": "leave"
       },
-      "currentOutcomeSha256": "d0f9fd85f5e59cf82069d42fe20d380a4dfbc08e8249c43efe1d60c064f8ce7f",
+      "currentOutcomeSha256": "c0c984af4d4418e09bd30bdc19b4a4a1f43ae60b9be078ed2e85001e2af4ef80",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -13226,6 +13218,88 @@
       "ownerApproval": "pending",
       "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
       "reviewClass": "declared-module-access-context"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "e64a2ff62aa0737cde1e73a935e3ddb910bd4219dd23dca6ac02e9c4ea6739f9",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "590a9443cad87976dc52990d416552a69276158f41065b9f028d1d016a8c19f9",
+                  "name": "addEmployee"
+                },
+                {
+                  "bodySha256": "b888408ceda7269a24dfdbc97d2f4762fbb9bd3947891a26837452991f60aa37",
+                  "name": "addEmployee"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "payroll"
+      },
+      "baselineOutcomeSha256": "22664a7ff00ed71f799fd6c50169c071222eb7cefd7888bd3cd2f0d30fd95005",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "e64a2ff62aa0737cde1e73a935e3ddb910bd4219dd23dca6ac02e9c4ea6739f9"
+          ],
+          "handlerNames": [
+            "addEmployee"
+          ],
+          "referencedHandlerBodies": 2
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "e64a2ff62aa0737cde1e73a935e3ddb910bd4219dd23dca6ac02e9c4ea6739f9"
+          ],
+          "handlerNames": [
+            "addEmployee"
+          ],
+          "referencedHandlerBodies": 2
+        }
+      },
+      "capabilityId": "payroll:action:add-employee:cd80f7e8e8",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "e64a2ff62aa0737cde1e73a935e3ddb910bd4219dd23dca6ac02e9c4ea6739f9",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "590a9443cad87976dc52990d416552a69276158f41065b9f028d1d016a8c19f9",
+                  "name": "addEmployee"
+                },
+                {
+                  "bodySha256": "95701b912c3ffc6e0ac70ac0bf0d0bf134d82623aa27de0f600cf8c306da27f5",
+                  "name": "addEmployee"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "payroll"
+      },
+      "currentOutcomeSha256": "a4de85058c5b36f06cf74f27bd62e43d5a0df26f9cd56cc4d45659a81c635a26",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
     },
     {
       "baseline": {
@@ -14244,7 +14318,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "9c961ac8ca12b09f862ce9e28fc3a1969426a4da16cb81921985ad5224f40d77",
+                  "bodySha256": "9b5aedfa8ce95f86ade49b168661fd22a94640cf3d85d978dc4ded23feea2dcb",
                   "name": "createAdvance"
                 }
               ]
@@ -14254,7 +14328,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "5944252527c8e57dde8b1a40d3f306a27a47f63c2086c1865fe47dad82c956cb",
+      "currentOutcomeSha256": "da17efcbb0b29b8a86b7e32de74a5a6a2acca5bc773eb25d9330f37415a3e093",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -14394,7 +14468,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "308a580e5d777edcd5aae978523828eaddd542da658c2c106fbea3bddbe145f5",
+                  "bodySha256": "691ae71435538c21f8faa9ab64788300b0c40050062aa55f29f7f3b39d7e6071",
                   "name": "reportBankCsv"
                 }
               ]
@@ -14404,7 +14478,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "081a407450bf843e1cb2f5c92774c1d872f961b6ee2605b9a2073fd4b1e8d0a7",
+      "currentOutcomeSha256": "f9b947a3f6209cad415ecbdc2e6e64c232f4cfb6c968c5e4b552c0568f109ebf",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -15445,15 +15519,15 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "7ee2551b491c8da6972bd5913c4282cba7e9d708201981893b0c3c563bcf812b",
+                  "bodySha256": "3c9c89b7e9e50e39b5c965889d547dd837c9e80d041b0e9563bebdd0644d2675",
+                  "name": "importJSON"
+                },
+                {
+                  "bodySha256": "474d3f28f0a95bafbcf2143456f8ad9ed9d3898afe42063c2dc58ad8e9300746",
                   "name": "importJSON"
                 },
                 {
                   "bodySha256": "ab1e9681233631423b4ac85a327073985785ccf28a0b8e2ae8aa98a2f92015c1",
-                  "name": "importJSON"
-                },
-                {
-                  "bodySha256": "d88e7c00815e1f85343e0f98f084b6da6fbaaa5bf5474ca1bdfa42632b7b6b00",
                   "name": "importJSON"
                 }
               ]
@@ -15464,7 +15538,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "46081fee9d5a7275cd7cac12de6550542db43d3eca627b57bb868848b7aef142",
+      "currentOutcomeSha256": "8fa006150ed101f150114c5d0221df83ef5e6c7e4f8c42874fff81ff35cf8e0e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -15584,8 +15658,10 @@
           "expressionSha256": [
             "6f6aa05d894cf26a9e81842fa68f24c4153085c41c8ccd78eea57ba1cde7d95a"
           ],
-          "handlerNames": [],
-          "referencedHandlerBodies": 0
+          "handlerNames": [
+            "reportStatutoryMemberCsv"
+          ],
+          "referencedHandlerBodies": 1
         }
       },
       "capabilityId": "payroll:action:member-wise-csv:d45b021adf",
@@ -15600,14 +15676,19 @@
               "expressionSha256": "6f6aa05d894cf26a9e81842fa68f24c4153085c41c8ccd78eea57ba1cde7d95a",
               "kind": "inline-event",
               "qualifiedCalls": [],
-              "referencedHandlers": []
+              "referencedHandlers": [
+                {
+                  "bodySha256": "fed1cb9d746879948b2c8c277dcacedd00c7de40ece09c5c1255a6fbabb63738",
+                  "name": "reportStatutoryMemberCsv"
+                }
+              ]
             }
           ],
           "element": "button"
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "b414a21465a3d82a8a2e405682908aa3409b73b581cd7c2d7a51f2ad4c9a4418",
+      "currentOutcomeSha256": "7c74361d996bee997ca3756badc8c70ae38ef78cb17192e4b2230a41279f466c",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -16190,11 +16271,11 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "baf7440931084dde1a3c368371cee13a6c7541bfc711dd8aac5ab6c5f8d7c8fe",
+                  "bodySha256": "6a563c32c53686448ef78b252e03209e3e4d5fcd74292562083ed6e675f85cf6",
                   "name": "resetAll"
                 },
                 {
-                  "bodySha256": "dbcf5df475625847addc98bd1734ea50aa9bba9ae69a0aa6f5411b52737ee7b4",
+                  "bodySha256": "baf7440931084dde1a3c368371cee13a6c7541bfc711dd8aac5ab6c5f8d7c8fe",
                   "name": "resetAll"
                 }
               ]
@@ -16204,7 +16285,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "f3742c2c6e454dfb62e968960436ccdbe0a6315070004f99c33f7daec1ba0da9",
+      "currentOutcomeSha256": "3f95b7ed4b57e6f992ffe13ce1b0dc0f3195cf8c4cde9899517475eda295bccd",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -16402,7 +16483,7 @@
                   "name": "saveSettings"
                 },
                 {
-                  "bodySha256": "d1dddccfe1c2b88c55108b57f87bf394050033b7d693282e0eacc7f9f0b461a5",
+                  "bodySha256": "bea92c82f65017e19778d8a724013ab2959f2a85cb4a141d05ca537c1993ce04",
                   "name": "saveSettings"
                 }
               ]
@@ -16412,7 +16493,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "ee4aabf4db64154ded472eb98397ff52322081cf1c1c2027aac0b5fe1a9a7a3d",
+      "currentOutcomeSha256": "dedcb7ffc7909bd34a23c58332bcb75060fabadd8aa0fd5edf3a4e6cf1a53a9e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -16903,7 +16984,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "cea1708d84cd23e62dc14543d05e9f947aaf7c4fae8f88030d0f6b88f3367370",
+                  "bodySha256": "046b2a3f10e19e56758aa4f2e3852b1a6f5068009cd89615364f461a71950ba3",
                   "name": "slipRecords"
                 },
                 {
@@ -16917,7 +16998,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "fdb37282275cb2d08b130186e9e908e00cd9b9c3011b9866f309c1e2d4ce1edc",
+      "currentOutcomeSha256": "d269f3e65b94c2d1c496f628a06a1a67b32c1454d7565569af1e02b3348b91fd",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -17441,7 +17522,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "cea1708d84cd23e62dc14543d05e9f947aaf7c4fae8f88030d0f6b88f3367370",
+                  "bodySha256": "046b2a3f10e19e56758aa4f2e3852b1a6f5068009cd89615364f461a71950ba3",
                   "name": "slipRecords"
                 },
                 {
@@ -17456,7 +17537,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "98cd92f121a6ba270a4b2bd969dd2d398779e96fe9fbe178c63fc6d8a4520e75",
+      "currentOutcomeSha256": "92668fa95c99d4f4f4d1f4ee2af306c6c4be2a10bc395943943ee7d7707ddfde",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -17856,7 +17937,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "54a6cc484ea4afe8432802c7c5805ce52b35a665ab33e85b9715699be6576928",
+                  "bodySha256": "b57d8dd5662ff0c514b457cdd555653fe7e9bef3b412523e3cb0b7ef6afd7eb5",
                   "name": "downloadSnapshot"
                 }
               ]
@@ -17866,7 +17947,7 @@
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "442ba15208326e8463022c3fc74dd99f5988c3994c2c1a987a6e672e9fe5edeb",
+      "currentOutcomeSha256": "4f8e57d28956ec196ba6a1e0e64033bd06d7a436b00c14c0937cbe9b781638a1",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -19460,15 +19541,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 14,
+          "catchBlocks": 18,
           "explicitFallbackSites": 18,
-          "swallowedCatchBlocks": 5,
+          "swallowedCatchBlocks": 8,
           "throwSites": 1,
-          "userVisibleErrorSites": 59
+          "userVisibleErrorSites": 66
         },
         "surface": "payroll"
       },
-      "currentOutcomeSha256": "d13df2089592aa511a7964e054d1e872cee2740ee1dfe37d113ed72c1a99ad80",
+      "currentOutcomeSha256": "40387792850f52deffe870166f0f30bd83c7cd98ed663d41f580dfcf88382a5c",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -19504,6 +19585,46 @@
       "ownerApproval": "pending",
       "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
       "reviewClass": "module-permission-authority-relocation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "payroll:persist:2c70e12b7a0646f92279",
+      "category": "persisted-outcome",
+      "change": "added",
+      "current": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "computed",
+          "keyIdentitySha256": "2c70e12b7a0646f92279f427c7b38e7334d8e5389cff167a1dc30e73f826b683",
+          "operation": "write"
+        },
+        "surface": "payroll"
+      },
+      "currentOutcomeSha256": "bad3dd4db88523b834353efbb4c25847aefabad9b867e07900b68803976bbeca",
+      "ownerApproval": "pending",
+      "reason": "New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "fix-wave-2026-11-new-storage-key"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "payroll:persist:dd25a3198b0013d1d7c3",
+      "category": "persisted-outcome",
+      "change": "added",
+      "current": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "computed",
+          "keyIdentitySha256": "dd25a3198b0013d1d7c3cb89be9037a5393be3462c1c40dcd2cdba4ff84d08c9",
+          "operation": "write"
+        },
+        "surface": "payroll"
+      },
+      "currentOutcomeSha256": "90cf32ed9a1cce55c16bc3008b4ba904b3fe73f6c9dbd1b9e553957d8463edd6",
+      "ownerApproval": "pending",
+      "reason": "New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "fix-wave-2026-11-new-storage-key"
     },
     {
       "baseline": null,
@@ -19656,7 +19777,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "2582cde824f90595419cb66cf43d9df0ed31e45b1532d904f3db803ac6335b7c",
+                  "bodySha256": "644d0e7c738686ac5f53472889bb25a950aab35840963fe5d121e46d4b0c0887",
                   "name": "saveFestival"
                 }
               ]
@@ -19666,7 +19787,7 @@
         },
         "surface": "planning"
       },
-      "currentOutcomeSha256": "e0a418414841241e5a92c4646e13b4ff397b6b3965c2b6528410c99387936c1f",
+      "currentOutcomeSha256": "29561839bee1f07946e505fd2378311e3aaa1c46919a9122c43a319384d3260c",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -20098,11 +20219,11 @@
           "explicitFallbackSites": 1,
           "swallowedCatchBlocks": 1,
           "throwSites": 0,
-          "userVisibleErrorSites": 13
+          "userVisibleErrorSites": 14
         },
         "surface": "planning"
       },
-      "currentOutcomeSha256": "d762e030e8c2724bf338cc371be7565ca1e262d917d51a06010782b1132f9288",
+      "currentOutcomeSha256": "65b220290663a20c4ad68921f9e32aa455d6faa7cf16f4dba2ac98f8575cf602",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -21230,7 +21351,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "3523892f20b156e239feeadb58b79de0e72436b095e6ae5b2ef5cf8ddb9bbf0a",
+                  "bodySha256": "93abd419153891f51fe41f6dd88cf5961a0bca28560c6c4fb8787c9eb822e1bd",
                   "name": "switchRole"
                 }
               ]
@@ -21240,7 +21361,7 @@
         },
         "surface": "qms"
       },
-      "currentOutcomeSha256": "a1e39e5395544bd3268c0c41c53ff3731cb1a215727cb74d5ad49f260579c6b0",
+      "currentOutcomeSha256": "2da873b957e576a537cb52dd6b9beb9b28ad3f089e4847985cfedebb83fb1781",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -21382,7 +21503,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "3523892f20b156e239feeadb58b79de0e72436b095e6ae5b2ef5cf8ddb9bbf0a",
+                  "bodySha256": "93abd419153891f51fe41f6dd88cf5961a0bca28560c6c4fb8787c9eb822e1bd",
                   "name": "switchRole"
                 }
               ]
@@ -21392,7 +21513,7 @@
         },
         "surface": "qms"
       },
-      "currentOutcomeSha256": "a1e39e5395544bd3268c0c41c53ff3731cb1a215727cb74d5ad49f260579c6b0",
+      "currentOutcomeSha256": "2da873b957e576a537cb52dd6b9beb9b28ad3f089e4847985cfedebb83fb1781",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -21844,15 +21965,79 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 21,
-          "explicitFallbackSites": 28,
-          "swallowedCatchBlocks": 3,
+          "catchBlocks": 24,
+          "explicitFallbackSites": 31,
+          "swallowedCatchBlocks": 4,
           "throwSites": 4,
-          "userVisibleErrorSites": 108
+          "userVisibleErrorSites": 115
         },
         "surface": "qms"
       },
-      "currentOutcomeSha256": "f1d7f79c8ea4c002f37a23b72a66dc26712b60c317c8fd8e171cd064a8411558",
+      "currentOutcomeSha256": "f5013235567627a485fcf9b3128095dd7f253085e017fda4b18f2b85fede3d28",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 27,
+          "explicitFallbackSites": 43,
+          "swallowedCatchBlocks": 9,
+          "throwSites": 13,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-auto-backup"
+      },
+      "baselineOutcomeSha256": "2953b64a99bee5bbdf588b477915a1212352adb617007db412c5fba4cb8c3e0b",
+      "capabilityId": "script-auto-backup:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 29,
+          "explicitFallbackSites": 47,
+          "swallowedCatchBlocks": 9,
+          "throwSites": 17,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-auto-backup"
+      },
+      "currentOutcomeSha256": "c9c22b124d7a0b7eabdbb4ae94ee81b7e03d92984d79e90928ceadea02643938",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 0,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-dashboard-policy"
+      },
+      "baselineOutcomeSha256": "d41cb39596622a6bb1d935b8462860e45fbba5833c2e3425cb516f0345700302",
+      "capabilityId": "script-dashboard-policy:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 1,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-dashboard-policy"
+      },
+      "currentOutcomeSha256": "36fcfdcef0fbed8f903960e43022943e65d0c0b6bbd1d6ce498251aaa82fea04",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -23062,6 +23247,38 @@
       "reviewClass": "failure-posture-source-boundary-change"
     },
     {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 42,
+          "explicitFallbackSites": 11,
+          "swallowedCatchBlocks": 15,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-integration-bridge"
+      },
+      "baselineOutcomeSha256": "69c7aa5e046e0b2ff388b0c6af2d43147e58e75f910bb25c1b1f2d854c0044cd",
+      "capabilityId": "script-integration-bridge:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 52,
+          "explicitFallbackSites": 13,
+          "swallowedCatchBlocks": 34,
+          "throwSites": 0,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-integration-bridge"
+      },
+      "currentOutcomeSha256": "c19c28ace6e93394e191d0b0de53f0f2411c30f1182e66d9511639074685c639",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
       "baseline": null,
       "baselineOutcomeSha256": null,
       "capabilityId": "script-modules-qms-qms-view:failure:posture",
@@ -23082,6 +23299,86 @@
       "ownerApproval": "pending",
       "reason": "A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.",
       "reviewClass": "extracted-first-party-failure-surface"
+    },
+    {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 18,
+          "explicitFallbackSites": 5,
+          "swallowedCatchBlocks": 8,
+          "throwSites": 19,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-offdevice-backup"
+      },
+      "baselineOutcomeSha256": "6a6c6b200039e48a2989415896b6c4952799b35a36f74a25024e2db3bf4ddd98",
+      "capabilityId": "script-offdevice-backup:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 18,
+          "explicitFallbackSites": 5,
+          "swallowedCatchBlocks": 8,
+          "throwSites": 20,
+          "userVisibleErrorSites": 2
+        },
+        "surface": "script-offdevice-backup"
+      },
+      "currentOutcomeSha256": "61e8321470eb330e729f30940ec58484d5881b6181c9989cbfe1d3d5e3c17fc7",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
+      "baseline": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 68,
+          "explicitFallbackSites": 13,
+          "swallowedCatchBlocks": 37,
+          "throwSites": 7,
+          "userVisibleErrorSites": 20
+        },
+        "surface": "script-saagar-report"
+      },
+      "baselineOutcomeSha256": "fadd0368531f42eb56ae443675dd430d3db8f151e3ae33da3d5e538ace0e8fa9",
+      "capabilityId": "script-saagar-report:failure:posture",
+      "category": "failure-posture",
+      "change": "changed",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 76,
+          "explicitFallbackSites": 17,
+          "swallowedCatchBlocks": 41,
+          "throwSites": 9,
+          "userVisibleErrorSites": 22
+        },
+        "surface": "script-saagar-report"
+      },
+      "currentOutcomeSha256": "ad1f3dfb6fccb1d99ee54a8ef1e30e73b71c97c8d8cbb141c6deccb63667b9bd",
+      "ownerApproval": "pending",
+      "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
+      "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-saagar-report:permission:owner-session",
+      "category": "permission",
+      "change": "added",
+      "current": {
+        "category": "permission",
+        "outcome": "owner-session or owner-only decision is consulted",
+        "surface": "script-saagar-report"
+      },
+      "currentOutcomeSha256": "5d12f3ef88af1f6a9c7495f6ee44a06ef052f635a1ba615ae6db9fe4abc72133",
+      "ownerApproval": "pending",
+      "reason": "The module now exposes its existing shared-stage access-context participation to the frozen analyser.",
+      "reviewClass": "declared-module-access-context"
     },
     {
       "baseline": null,
@@ -23178,15 +23475,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 48,
-          "explicitFallbackSites": 7,
+          "catchBlocks": 54,
+          "explicitFallbackSites": 12,
           "swallowedCatchBlocks": 40,
           "throwSites": 6,
           "userVisibleErrorSites": 3
         },
         "surface": "script-shared-module-runtime"
       },
-      "currentOutcomeSha256": "a01414a34ddaa0cdec348279d8f13abd81a0b07473a54483d70e4e976e108cfe",
+      "currentOutcomeSha256": "1b51723ebde9caa2c3353b493169a6e2e1d93feab988bc90b010b449a9c1b550",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -23830,7 +24127,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "e2cb460915d26db2877d7b2f102d6f34566d08dc189ac11030f376d6aa62a4be",
+                  "bodySha256": "21c746a66368b11bbd3cf4a257ae51e4ed7291b5e076f909812f1947075d6769",
                   "name": "addFollowUp"
                 }
               ]
@@ -23841,7 +24138,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "b8e3770b009232bb232628771dfc6c27d960af8fabae488d46eb1a55264c2ac7",
+      "currentOutcomeSha256": "67edf8d3f0ba70e07caf5546f4f12960ec36a3c93a9268b1497ada355a161aea",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -24452,7 +24749,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1785d41ba356582fd4b17d47ae9d3b7c6bd5e026616701355a87918b05fa5cc7",
+                  "bodySha256": "9255a092e0997271376172bbc47e260164b88507bd06e74a3b4e61b0d1700e03",
                   "name": "exportCSV"
                 },
                 {
@@ -24460,7 +24757,7 @@
                   "name": "exportCSV"
                 },
                 {
-                  "bodySha256": "d2faef6a265030d4905efbab73823f9285bd14b4e61294678c48cf896606fe11",
+                  "bodySha256": "dad3bc1eeb584c873dc37d1ac72453c88d1f5d7f26b85ff42a38cf68e4289c0e",
                   "name": "exportCSV"
                 },
                 {
@@ -24474,7 +24771,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "4c4025e65cd8e080e00650fb6c0beac612f7384f031dfd97e4d95c47449d1031",
+      "currentOutcomeSha256": "9634a813875b093672e61c8c44f7c2e5d19438db867ca3bb679c282765476a4f",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -29524,7 +29821,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "b60c4b3adf900f6fe487a9c01beb9f9f374dcf189d6437072542a3267927c849",
+                  "bodySha256": "6be620fcb55b9b5d99f696cec5f3194cc6f5b2e05f18a1998d601e0833fbf24d",
                   "name": "closeCase"
                 }
               ]
@@ -29534,7 +29831,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "fd7e84edab3c9e04e9423539460d994f8bd6d7f5a10e214b747279a97c6ca3dd",
+      "currentOutcomeSha256": "972d796174299297e6b1c02dc64b0b5b4a37565e587f4b2c8142b721d4c8d617",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -30084,7 +30381,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "52fadb453472f6d2bac3b60f68b7a8bcb55b03c14187d894fb9fb6fcf0f41ff7",
+                  "bodySha256": "0045cd51af2e60dd29413c70977a0e6a392b8d7f2c363d79428fd9c2b6d4b647",
                   "name": "openNew"
                 }
               ]
@@ -30094,7 +30391,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "72fead7ec0b5d1a0cba3f9437928c1dc0e79bbe00b87e77159a1f11576ed8bb3",
+      "currentOutcomeSha256": "21b0abb29a3163be0bf7f8469a198240b25c7971566d94ae18eaf892ae4123e4",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -30592,7 +30889,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1aec14be960176c97cdcacc3ec02f080ab063de226fca91fe8a2a14e0c2caca5",
+                  "bodySha256": "14c30d560c46c26c90b35a0665713b93894dadab1c2613c271ec49752aa811ae",
                   "name": "doPrint"
                 }
               ]
@@ -30602,7 +30899,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "104bc05c6212fa47672cd8d38a016d8e2361892954d49ab51fcc427f1ba6d4ed",
+      "currentOutcomeSha256": "f455345a13772a3fdf6257827abbabafd97a989ead8f8212810abe3be7ddfeaf",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -30642,7 +30939,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1aec14be960176c97cdcacc3ec02f080ab063de226fca91fe8a2a14e0c2caca5",
+                  "bodySha256": "14c30d560c46c26c90b35a0665713b93894dadab1c2613c271ec49752aa811ae",
                   "name": "doPrint"
                 }
               ]
@@ -30652,7 +30949,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "104bc05c6212fa47672cd8d38a016d8e2361892954d49ab51fcc427f1ba6d4ed",
+      "currentOutcomeSha256": "f455345a13772a3fdf6257827abbabafd97a989ead8f8212810abe3be7ddfeaf",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -30692,7 +30989,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1aec14be960176c97cdcacc3ec02f080ab063de226fca91fe8a2a14e0c2caca5",
+                  "bodySha256": "14c30d560c46c26c90b35a0665713b93894dadab1c2613c271ec49752aa811ae",
                   "name": "doPrint"
                 }
               ]
@@ -30702,7 +30999,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "104bc05c6212fa47672cd8d38a016d8e2361892954d49ab51fcc427f1ba6d4ed",
+      "currentOutcomeSha256": "f455345a13772a3fdf6257827abbabafd97a989ead8f8212810abe3be7ddfeaf",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -30942,7 +31239,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1fd1174b35bc7d3120eeb76cfde8004d22f41abaf45f8dabfe160ae710c4d260",
+                  "bodySha256": "3e93d275d984af397eeaab3d0bc7e5b6b4b11569c9fba4a9460b9dc949da7603",
                   "name": "doProforma"
                 }
               ]
@@ -30952,7 +31249,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "7b8880a5d9ed37b0c6ba606279afa668c40a4f14b11ca9536ab97345eb285b1a",
+      "currentOutcomeSha256": "340801a60574ac78b41a6ce8b764a7aa5be1c4f7c5b41b78f355377f53100848",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -31094,7 +31391,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "90a64fa1bdb313fccd298965e0a893561c3865859454e4f2c0a1270f6dfed7cd",
+                  "bodySha256": "30127d7f2f1bde88813d247db08d42c4197a1e6c0796724daeec904aa6bc3436",
                   "name": "doSave"
                 }
               ]
@@ -31104,7 +31401,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "b43b9c86311f9f3ab6f9f30865dad0e0f1b12530d6ee7bb47fb4d79724f72718",
+      "currentOutcomeSha256": "76d62210f75968cbb7f52563c6c2071ed1a11bd5bbbfd6f5a45feb81ab1c2a8e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -31144,7 +31441,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "90a64fa1bdb313fccd298965e0a893561c3865859454e4f2c0a1270f6dfed7cd",
+                  "bodySha256": "30127d7f2f1bde88813d247db08d42c4197a1e6c0796724daeec904aa6bc3436",
                   "name": "doSave"
                 }
               ]
@@ -31154,7 +31451,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "b43b9c86311f9f3ab6f9f30865dad0e0f1b12530d6ee7bb47fb4d79724f72718",
+      "currentOutcomeSha256": "76d62210f75968cbb7f52563c6c2071ed1a11bd5bbbfd6f5a45feb81ab1c2a8e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -31194,7 +31491,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "90a64fa1bdb313fccd298965e0a893561c3865859454e4f2c0a1270f6dfed7cd",
+                  "bodySha256": "30127d7f2f1bde88813d247db08d42c4197a1e6c0796724daeec904aa6bc3436",
                   "name": "doSave"
                 }
               ]
@@ -31204,7 +31501,7 @@
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "b43b9c86311f9f3ab6f9f30865dad0e0f1b12530d6ee7bb47fb4d79724f72718",
+      "currentOutcomeSha256": "76d62210f75968cbb7f52563c6c2071ed1a11bd5bbbfd6f5a45feb81ab1c2a8e",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -32548,15 +32845,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 28,
-          "explicitFallbackSites": 19,
-          "swallowedCatchBlocks": 17,
-          "throwSites": 1,
-          "userVisibleErrorSites": 59
+          "catchBlocks": 33,
+          "explicitFallbackSites": 25,
+          "swallowedCatchBlocks": 18,
+          "throwSites": 2,
+          "userVisibleErrorSites": 76
         },
         "surface": "service"
       },
-      "currentOutcomeSha256": "507a12ef349891490ed7016ba98cbb6ed3c8f4970d7f52932387396ca4dbeb82",
+      "currentOutcomeSha256": "a1637b8d03a286a5264cc9ed884a23f3d9900be78dd37ccfbd7ec34b099ebf15",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -32576,6 +32873,26 @@
       "ownerApproval": "pending",
       "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
       "reviewClass": "module-permission-authority-relocation"
+    },
+    {
+      "baseline": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "literal",
+          "keyIdentitySha256": "556fd13bc825db2d2664726a0c55ea058b6851d4cc2f949fb09edd72a98c2a94",
+          "operation": "write"
+        },
+        "surface": "service"
+      },
+      "baselineOutcomeSha256": "799cb415ecb1ab91219132840681cb2653048dac31b13e56db4fde6efd9a0425",
+      "capabilityId": "service:persist:556fd13bc825db2d2664",
+      "category": "persisted-outcome",
+      "change": "removed",
+      "current": null,
+      "currentOutcomeSha256": null,
+      "ownerApproval": "pending",
+      "reason": "Service no longer writes saagar_invoice_seq_v1: the invoice counter moved into saagar_wsf_settings_v1.invoiceSeq (per financial year), as fix-wave plan interface C requires. Owner reconfirmation pending.",
+      "reviewClass": "fix-wave-2026-11-retired-storage-key"
     },
     {
       "baseline": {
@@ -33854,6 +34171,164 @@
       "reviewClass": "phase6b-stable-identity-annotation"
     },
     {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "change",
+              "expressionSha256": "d7311b0e4f13225ad5aa8540fe59a779ba31567e2edf05df71a5fb7dfe75b5a7",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "7d4ab70a1f6689d33f744ad121d011a56484d10db7ff9a75aadf0fed522dfe34",
+                  "name": "renderConfigAdmin"
+                },
+                {
+                  "bodySha256": "900e726a7d947856568b319786cdfe6275a3f60c01a40c739a5d26560dbcaaed",
+                  "name": "setCurrentRole"
+                }
+              ]
+            }
+          ],
+          "element": "select"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "3a89f44d751f4981db5aee4feaa020bdfea609dbeddf036f28d0401623e7df70",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "d7311b0e4f13225ad5aa8540fe59a779ba31567e2edf05df71a5fb7dfe75b5a7"
+          ],
+          "handlerNames": [
+            "renderConfigAdmin",
+            "setCurrentRole"
+          ],
+          "referencedHandlerBodies": 2
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "d7311b0e4f13225ad5aa8540fe59a779ba31567e2edf05df71a5fb7dfe75b5a7"
+          ],
+          "handlerNames": [
+            "renderConfigAdmin",
+            "setCurrentRole"
+          ],
+          "referencedHandlerBodies": 2
+        }
+      },
+      "capabilityId": "shell:action:cfgroleselect:7c559a06ea",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "change",
+              "expressionSha256": "d7311b0e4f13225ad5aa8540fe59a779ba31567e2edf05df71a5fb7dfe75b5a7",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "7d4ab70a1f6689d33f744ad121d011a56484d10db7ff9a75aadf0fed522dfe34",
+                  "name": "renderConfigAdmin"
+                },
+                {
+                  "bodySha256": "8f64193ecf4ea7e3d2f5b036fd6e724fc3a46edc8f254053451ae76d344e88cf",
+                  "name": "setCurrentRole"
+                }
+              ]
+            }
+          ],
+          "element": "select"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "002f8a5accf577ef7e6fe5c09e901803e58fa7cbe9fd943910319243a3c660e6",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "62bdb5d4588ddc352802c6f17aaefa7ee4c27544563c8ef3e0cfea2e56952e4e",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "77a00883e7bbfdf4681efaccb3f47f430c18f8b7bac832f875f7cdc161f63bbf",
+                  "name": "factoryReset"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "af74943be1b544e1ff2e4229b959f7e8bdefedba6bea96c49f512514fc3b37fc",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "62bdb5d4588ddc352802c6f17aaefa7ee4c27544563c8ef3e0cfea2e56952e4e"
+          ],
+          "handlerNames": [
+            "factoryReset"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "62bdb5d4588ddc352802c6f17aaefa7ee4c27544563c8ef3e0cfea2e56952e4e"
+          ],
+          "handlerNames": [
+            "factoryReset"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:clear-all-app-data:686d896524",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "62bdb5d4588ddc352802c6f17aaefa7ee4c27544563c8ef3e0cfea2e56952e4e",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "477ef2d549abb18b2f215dfce1bf2e29d347b37c5d893598092c554d561fb616",
+                  "name": "factoryReset"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "27f8cdbf0c01d78b0f5a0b1e22940912d5fe6c3f20d6844321a60ed3c7e71b4b",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
       "baseline": null,
       "baselineOutcomeSha256": null,
       "bindingReview": {
@@ -34088,6 +34563,166 @@
         "surface": "shell"
       },
       "currentOutcomeSha256": "39eda4bf1666e929fe5daf89725f301a1d0e83f51349e16126bf7b9d103ee989",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "toggle",
+              "expressionSha256": "7c1affec48d550dd2a98cad321cd97102297caffe9d6064a6b99c9b4edf3021a",
+              "kind": "native-summary",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "summary"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "075b49b9f2962ee7a9b51093270bff9b84f2d599bcb2b0d07c7f82fc01ad6b07",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "7c1affec48d550dd2a98cad321cd97102297caffe9d6064a6b99c9b4edf3021a"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "shell:action:detailed-change-log-v5-5:ea7b2f5a7a",
+      "category": "visible-action",
+      "change": "removed",
+      "current": null,
+      "currentOutcomeSha256": null,
+      "ownerApproval": "pending",
+      "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
+      "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "bindingReview": {
+        "baseline": {
+          "bindings": 0,
+          "expressionSha256": [],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "7c1affec48d550dd2a98cad321cd97102297caffe9d6064a6b99c9b4edf3021a"
+          ],
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
+        }
+      },
+      "capabilityId": "shell:action:detailed-change-log:f009974d69",
+      "category": "visible-action",
+      "change": "added",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "toggle",
+              "expressionSha256": "7c1affec48d550dd2a98cad321cd97102297caffe9d6064a6b99c9b4edf3021a",
+              "kind": "native-summary",
+              "qualifiedCalls": [],
+              "referencedHandlers": []
+            }
+          ],
+          "element": "summary"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "075b49b9f2962ee7a9b51093270bff9b84f2d599bcb2b0d07c7f82fc01ad6b07",
+      "ownerApproval": "pending",
+      "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
+      "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "3f3d12c4777ea020756b5fc3099318bca0e6a53b35bd09c0f20e10c7712cc4aa",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "ca83d0ceb943038e02598251f2ff075221fcf0c8230d8b5f4ea1cf91aade1556",
+                  "name": "addEmployeeMasterFromForm"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "4be4ad56fd84a332729279d61139281701d59dd9c93ba3d1ab36b90e7e615a31",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "3f3d12c4777ea020756b5fc3099318bca0e6a53b35bd09c0f20e10c7712cc4aa"
+          ],
+          "handlerNames": [
+            "addEmployeeMasterFromForm"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "3f3d12c4777ea020756b5fc3099318bca0e6a53b35bd09c0f20e10c7712cc4aa"
+          ],
+          "handlerNames": [
+            "addEmployeeMasterFromForm"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:emformbtn:656448f1c8",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "3f3d12c4777ea020756b5fc3099318bca0e6a53b35bd09c0f20e10c7712cc4aa",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "f5ce79f4fe40416089604f1a7d7a0e8debfd83b7839a8e6ed60116960cb652c1",
+                  "name": "addEmployeeMasterFromForm"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "57c6b57d6bc0cdcf2f6f0277b03c75990582a04da9535a634c7f84c894fb0215",
       "ownerApproval": "pending",
       "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
       "reviewClass": "handler-body-hash-only"
@@ -34864,6 +35499,228 @@
           "bindings": [
             {
               "event": "click",
+              "expressionSha256": "f2ec0e88d23e6e18d188a025c468322c2bc48bc8985ac2a8d954acbb53d64547",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "61bdc75385bb4ae90258f92c3ef8b957f7827561faf6d19aa48561d0e28b2002",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "760922400ab125d9c3b7e99d13a30f5749ffed5922eb57ad8cb12c67dbb0d591",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "f2ec0e88d23e6e18d188a025c468322c2bc48bc8985ac2a8d954acbb53d64547"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "f2ec0e88d23e6e18d188a025c468322c2bc48bc8985ac2a8d954acbb53d64547"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:master-add-brands:4243c7c077",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "f2ec0e88d23e6e18d188a025c468322c2bc48bc8985ac2a8d954acbb53d64547",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "fa899d09eb37c9893cd41b4b234bd9dd49dd3e14f4df9139235dc6e6bf6877d2",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "626afbd7a942bb88ce7a0c93281c0b47747cbb0d10e89b2add2185606398684f",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "24fb79e1499ed2612d28464955e9f31f041b5ee35860ba16ec27b4c932755acd",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "61bdc75385bb4ae90258f92c3ef8b957f7827561faf6d19aa48561d0e28b2002",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "b71a8676ab9214e8959848f7330bfb59828fe90af0a524554888ebb8e3406f45",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "24fb79e1499ed2612d28464955e9f31f041b5ee35860ba16ec27b4c932755acd"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "24fb79e1499ed2612d28464955e9f31f041b5ee35860ba16ec27b4c932755acd"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:master-add-customers:b7902726dd",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "24fb79e1499ed2612d28464955e9f31f041b5ee35860ba16ec27b4c932755acd",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "fa899d09eb37c9893cd41b4b234bd9dd49dd3e14f4df9139235dc6e6bf6877d2",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "6b2d7f1efd500e26717eef44834ec4d5a7b4203e88b12f96762322b15296b349",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "72a09a48c0c1bee560f4083cf89c749a24d42d9bed8abbf9bde09edc12b1fac1",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "61bdc75385bb4ae90258f92c3ef8b957f7827561faf6d19aa48561d0e28b2002",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "68895b83f1cebe3e7a07d39491142f4253a3b2973c8722819353dee53e2cfa45",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "72a09a48c0c1bee560f4083cf89c749a24d42d9bed8abbf9bde09edc12b1fac1"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "72a09a48c0c1bee560f4083cf89c749a24d42d9bed8abbf9bde09edc12b1fac1"
+          ],
+          "handlerNames": [
+            "masterAdd"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:master-add-vendors:72b239db12",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "72a09a48c0c1bee560f4083cf89c749a24d42d9bed8abbf9bde09edc12b1fac1",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "fa899d09eb37c9893cd41b4b234bd9dd49dd3e14f4df9139235dc6e6bf6877d2",
+                  "name": "masterAdd"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "064cfac4e51dadd2d1d40ef5a593e4a459998a8d8a772eae23c62b9d755521db",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
               "expressionSha256": "c13c1543d7dd5a7910108c9a7f03edc8352c716099179991001aa616a2d01331",
               "kind": "inline-event",
               "qualifiedCalls": [],
@@ -35173,7 +36030,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "8b5feabe0b4e65b56ebe30decee3bc442129c757ac8767aed4f3934e9adc1f8c",
+                  "bodySha256": "290512a07fb208d27506af875b9c9d2e07ed6c70624e35cb4a260b4a1e56baeb",
                   "name": "openModuleSwitcher"
                 }
               ]
@@ -35184,7 +36041,7 @@
         },
         "surface": "shell"
       },
-      "currentOutcomeSha256": "f3c8d76eca1b5edd23b9ccae33e4e28a45453aa82b0e7214ca4ffc911f9bda54",
+      "currentOutcomeSha256": "14df1b173bae45910e5b7006bca6260d7cc77ac40955dd22d6379f2c8e97a151",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -36206,6 +37063,154 @@
           "bindings": [
             {
               "event": "click",
+              "expressionSha256": "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "717580c40bb5e7fd9b758b13a1036c092b58dd2575082d967ace62a2ad4efd8e",
+                  "name": "publishOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "29f3a7a4d38be1ecba580c0073df22bc8a92db9f76850c4697f41ef489304daf",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3"
+          ],
+          "handlerNames": [
+            "publishOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3"
+          ],
+          "handlerNames": [
+            "publishOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:publish-organisation:5dc1ecdf04",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "701628d6f6af2521f70617ada452df7942b34d30e0769cb0b2ca27cb8d694b57",
+                  "name": "publishOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "3208a444522a31411c4bb0e41b91ad0c36b6dce3f44821af71fa9c8e13de1b99",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "717580c40bb5e7fd9b758b13a1036c092b58dd2575082d967ace62a2ad4efd8e",
+                  "name": "publishOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "29f3a7a4d38be1ecba580c0073df22bc8a92db9f76850c4697f41ef489304daf",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3"
+          ],
+          "handlerNames": [
+            "publishOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3"
+          ],
+          "handlerNames": [
+            "publishOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:publish-to-modules:f70f0b5c81",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "a84af4c178035126b066f01dd9630581fc68f6dcfa54f8e6b1612913841bcbe3",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "701628d6f6af2521f70617ada452df7942b34d30e0769cb0b2ca27cb8d694b57",
+                  "name": "publishOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "3208a444522a31411c4bb0e41b91ad0c36b6dce3f44821af71fa9c8e13de1b99",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
               "expressionSha256": "1124be388b93c66f5f3fd3975ea11e123d9e8c5f81776ac787b5413b46ef0263",
               "kind": "inline-event",
               "qualifiedCalls": [],
@@ -36258,7 +37263,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "c24d0ae4b0576ae73ea79aff93899718427d78fb50a95a7653d908532b63ad10",
+                  "bodySha256": "0751dedd79faeb6259b5d81a9290ccdcadc29ab0b926441b00e5aedf05e441fd",
                   "name": "renderHome"
                 }
               ]
@@ -36268,7 +37273,7 @@
         },
         "surface": "shell"
       },
-      "currentOutcomeSha256": "451e504e0feacc547216c538de4614973d24899461c26878c9ad7e783dddac93",
+      "currentOutcomeSha256": "c583574e172d7b66c8aa05ea66c75ab74598877b342c510b2bb934d00d0e65ce",
       "ownerApproval": "pending",
       "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
       "reviewClass": "handler-body-hash-only"
@@ -36336,11 +37341,11 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "499c644b07764626a6b94f55c2af97778b49716a65d6101742928a58f75f829a",
+                  "bodySha256": "97a314cbcfc6636badf5ff901e23654682984ae51056400279d408dc8416ead2",
                   "name": "renderSync"
                 },
                 {
-                  "bodySha256": "97a314cbcfc6636badf5ff901e23654682984ae51056400279d408dc8416ead2",
+                  "bodySha256": "c1b6a12b07f1649d20dc989d0b73bb0468c7c2032cb9776694743217797eb8bf",
                   "name": "renderSync"
                 }
               ]
@@ -36350,7 +37355,7 @@
         },
         "surface": "shell"
       },
-      "currentOutcomeSha256": "3bba6b132282a77941cfbb9b321db250ab94c1d78e31291f4ef1c8159c8c9458",
+      "currentOutcomeSha256": "f6f8881d9f8131abf73a94207d22ea861bd2ff769d34bf3059a711a106202e29",
       "ownerApproval": "pending",
       "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
       "reviewClass": "handler-body-hash-only"
@@ -36525,6 +37530,80 @@
         "outcome": {
           "bindings": [
             {
+              "event": "click",
+              "expressionSha256": "6d00030342a40be15d358bc2030550d3827e39609fac9e84cfd7d3c119922968",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "ede7792f65f860e47f62ccbe087107113600fd76fc814dabe003f7329d8f9e3d",
+                  "name": "restoreFromDeviceBackup"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "63e988d6cf9f4014f684229aa8d5113143c29103815a4ce7a5abee50f79d2098",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "6d00030342a40be15d358bc2030550d3827e39609fac9e84cfd7d3c119922968"
+          ],
+          "handlerNames": [
+            "restoreFromDeviceBackup"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "6d00030342a40be15d358bc2030550d3827e39609fac9e84cfd7d3c119922968"
+          ],
+          "handlerNames": [
+            "restoreFromDeviceBackup"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:restore-from-device-backup:02b30b7e84",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "6d00030342a40be15d358bc2030550d3827e39609fac9e84cfd7d3c119922968",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "46f7a9d14b3b44a5ce5bd9eefafb083ff7e527c595fa6a4b343f7292d3448e9c",
+                  "name": "restoreFromDeviceBackup"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "c0c261198a3a67e7be40f6fcd7d51f0394263b3064cb02c887f43e22e5125b87",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
               "event": "change",
               "expressionSha256": "3acdec122f8468e9ab512582049835649c754f1c108d03730c59a3b74de9a099",
               "kind": "inline-event",
@@ -36618,6 +37697,154 @@
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "81a6103cfda15d167fa26e62af530ff459e957fa3c9ca97c681e1b86a27a2fb7",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "4a6724960d27ab8d5a16a83ab8373932714d1fed0f6d2da62ff518d076ce2a82",
+                  "name": "saveOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "843d69a1443f4c6a65c2a7079f3b10f0bd178064eeea4d8a454fcf5240ddcb36",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "81a6103cfda15d167fa26e62af530ff459e957fa3c9ca97c681e1b86a27a2fb7"
+          ],
+          "handlerNames": [
+            "saveOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "81a6103cfda15d167fa26e62af530ff459e957fa3c9ca97c681e1b86a27a2fb7"
+          ],
+          "handlerNames": [
+            "saveOrganisation"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:save-organisation:8069f60dc5",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "81a6103cfda15d167fa26e62af530ff459e957fa3c9ca97c681e1b86a27a2fb7",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "1a5ab8cd8e7ffd5ee8c0d37b622eb3b2c7e7d722b39340596b9307254131c6c6",
+                  "name": "saveOrganisation"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "d12096b64f1027992c80501726de96b11d58efd2364246747c245a38c312bad8",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "fe6443ae95cad75456fd2258e3db703ebaaf2ec6f8e9df86718b0770e94b8b46",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "2a8e91c6dc5689141fc80bc7fd5f98ca9631695fdf5475ceced5ad743b12b85e",
+                  "name": "saveBridgeConfig"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "baselineOutcomeSha256": "c14d05dba697367a5e7c3f55b87eecf084c3a1c5c038210ddaa63512d1ea1f5b",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "fe6443ae95cad75456fd2258e3db703ebaaf2ec6f8e9df86718b0770e94b8b46"
+          ],
+          "handlerNames": [
+            "saveBridgeConfig"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "fe6443ae95cad75456fd2258e3db703ebaaf2ec6f8e9df86718b0770e94b8b46"
+          ],
+          "handlerNames": [
+            "saveBridgeConfig"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "shell:action:save-rules:e43e9fc740",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "fe6443ae95cad75456fd2258e3db703ebaaf2ec6f8e9df86718b0770e94b8b46",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "5955df18bfac7235104d2cbfcb8865f0c7be34548272166c18e67be94a74da23",
+                  "name": "saveBridgeConfig"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "shell"
+      },
+      "currentOutcomeSha256": "8338fc6903495f59f3138c7fa26df7266a8f1d326e6638a191d52fb22a802522",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
     },
     {
       "baseline": {
@@ -37203,18 +38430,92 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 557,
-          "explicitFallbackSites": 100,
-          "swallowedCatchBlocks": 395,
-          "throwSites": 50,
-          "userVisibleErrorSites": 214
+          "catchBlocks": 561,
+          "explicitFallbackSites": 101,
+          "swallowedCatchBlocks": 397,
+          "throwSites": 51,
+          "userVisibleErrorSites": 221
         },
         "surface": "shell"
       },
-      "currentOutcomeSha256": "bdbfd59f020a26217b5c24f66562cbd426f4028fb4b5f417772f0d444216935d",
+      "currentOutcomeSha256": "613efa0a92619b62f14b2cb28c59f96686e13839c3accfb7955f86aa302972cb",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
+    },
+    {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "6702b1c1108fd86b51a6a7a3e11d7acf78185c24b85a4953e3816ff3500c6863",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "c23e63aea851858badff5a2c47d1521619b0d4aedaeae36a0ed0e0ab8b59402a",
+                  "name": "addBrand"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "stock"
+      },
+      "baselineOutcomeSha256": "b2021c9158c821a59811adee8e6347766f850980b91939e4c934a32784ce397f",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "6702b1c1108fd86b51a6a7a3e11d7acf78185c24b85a4953e3816ff3500c6863"
+          ],
+          "handlerNames": [
+            "addBrand"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "6702b1c1108fd86b51a6a7a3e11d7acf78185c24b85a4953e3816ff3500c6863"
+          ],
+          "handlerNames": [
+            "addBrand"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "stock:action:add-brand:62a14e7fcf",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "6702b1c1108fd86b51a6a7a3e11d7acf78185c24b85a4953e3816ff3500c6863",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "9717d6cf0bf896d3f2c5ccbfe4f369fcd3fe2f011c3f86439c59c397a65047bb",
+                  "name": "addBrand"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "stock"
+      },
+      "currentOutcomeSha256": "403b215d5e4a2184d62fae85db27f9e79494fa24c0b1a19869c54944c5245144",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
     },
     {
       "baseline": {
@@ -37751,11 +39052,11 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "8e1984c7cb1560158437344d903d2e3ccd170870d5418cd390d4b75b1ad7c76a",
+                  "bodySha256": "1fabe802b12d01749256e5e9b6a98546ab04a043d5ae780061a42ac9950cc609",
                   "name": "clearDay"
                 },
                 {
-                  "bodySha256": "ac18e057688fb50ad1d1e42010fe833f7ebefb31ea9a95820a1df79aa9f6043c",
+                  "bodySha256": "8e1984c7cb1560158437344d903d2e3ccd170870d5418cd390d4b75b1ad7c76a",
                   "name": "clearDay"
                 }
               ]
@@ -37765,7 +39066,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "4781cdd89c663ffa8248dbb5fd1631037b181639c042f12919458dcb9f1718a5",
+      "currentOutcomeSha256": "2295d874d38bfb0654d42bceb16ee0872a8b356e1cb8d29de97d76ee47248f78",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38067,7 +39368,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1785d41ba356582fd4b17d47ae9d3b7c6bd5e026616701355a87918b05fa5cc7",
+                  "bodySha256": "9255a092e0997271376172bbc47e260164b88507bd06e74a3b4e61b0d1700e03",
                   "name": "exportCSV"
                 },
                 {
@@ -38075,7 +39376,7 @@
                   "name": "exportCSV"
                 },
                 {
-                  "bodySha256": "d2faef6a265030d4905efbab73823f9285bd14b4e61294678c48cf896606fe11",
+                  "bodySha256": "dad3bc1eeb584c873dc37d1ac72453c88d1f5d7f26b85ff42a38cf68e4289c0e",
                   "name": "exportCSV"
                 },
                 {
@@ -38089,7 +39390,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "a58a841d37b8e1dd8d80dacfd232ebffe6800c6837ceb7630d7e3d93df45d359",
+      "currentOutcomeSha256": "fc5608691163b8f4202e1986000b663c100af8439af0ffebd2f70ac6331c7d6d",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38333,7 +39634,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "c33080c31e7c4ff08ea7f34c1ee1213e198c4d5b58517ca159cda4bfdbf8c3ef",
+                  "bodySha256": "8c2dbeda7ab12ceb7c8673ac1d269de56939d33304d5adea79e5922ab367e162",
                   "name": "delConfirmSubmit"
                 }
               ]
@@ -38343,7 +39644,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "20636f8e0c04461a2516003112c3896e815d6eb033d4ae4eec837c577e7f94d3",
+      "currentOutcomeSha256": "bbd31cc2660926933a303cc4778bb831ade791450b6ecff234a0f8f4ba80cdbb",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38445,7 +39746,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "1785d41ba356582fd4b17d47ae9d3b7c6bd5e026616701355a87918b05fa5cc7",
+                  "bodySha256": "9255a092e0997271376172bbc47e260164b88507bd06e74a3b4e61b0d1700e03",
                   "name": "exportCSV"
                 },
                 {
@@ -38453,7 +39754,7 @@
                   "name": "exportCSV"
                 },
                 {
-                  "bodySha256": "d2faef6a265030d4905efbab73823f9285bd14b4e61294678c48cf896606fe11",
+                  "bodySha256": "dad3bc1eeb584c873dc37d1ac72453c88d1f5d7f26b85ff42a38cf68e4289c0e",
                   "name": "exportCSV"
                 },
                 {
@@ -38467,7 +39768,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "a58a841d37b8e1dd8d80dacfd232ebffe6800c6837ceb7630d7e3d93df45d359",
+      "currentOutcomeSha256": "fc5608691163b8f4202e1986000b663c100af8439af0ffebd2f70ac6331c7d6d",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38557,7 +39858,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "4c730df7cd846b75e23f3e515ea79219bd9ffd27e1a7f934a53875043adbd3d1",
+                  "bodySha256": "bc51888ecdd74ae4145805e0ede88bdacc9c00fc639dea510cd16fada6ebfc51",
                   "name": "exportAllJSON"
                 }
               ]
@@ -38567,7 +39868,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "0a4e29b9de78553f4a653bc7ae3ed4c42ce1c6698ea70a1d965abd7bdd74384a",
+      "currentOutcomeSha256": "f6acebdf83218af749703574f85f64e7ce7e218f9ab5967c73aaab688d530efa",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38607,15 +39908,15 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "7ee2551b491c8da6972bd5913c4282cba7e9d708201981893b0c3c563bcf812b",
+                  "bodySha256": "3c9c89b7e9e50e39b5c965889d547dd837c9e80d041b0e9563bebdd0644d2675",
+                  "name": "importJSON"
+                },
+                {
+                  "bodySha256": "474d3f28f0a95bafbcf2143456f8ad9ed9d3898afe42063c2dc58ad8e9300746",
                   "name": "importJSON"
                 },
                 {
                   "bodySha256": "ab1e9681233631423b4ac85a327073985785ccf28a0b8e2ae8aa98a2f92015c1",
-                  "name": "importJSON"
-                },
-                {
-                  "bodySha256": "d88e7c00815e1f85343e0f98f084b6da6fbaaa5bf5474ca1bdfa42632b7b6b00",
                   "name": "importJSON"
                 }
               ]
@@ -38626,7 +39927,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "14a18a15e9148f26caa86f423066fd9f4f9ba29b4b6483189ed4c6f64c6e0fc3",
+      "currentOutcomeSha256": "8c06164d0325d58d23034b9afaad5174595c925e849785218c0c3fa70d837f0a",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -38779,7 +40080,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "2f083cbe0a1186a4a4badcdac586ea3aa5b14e1a1a43330221e01adb5475cc6a",
+                  "bodySha256": "9deaee2eb9db23994b42a88e3af067b40153a97a34b1ddc02c09f3fe8dfee0e6",
                   "name": "exportJSON"
                 },
                 {
@@ -38793,7 +40094,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "63153845509224ad1e4e282a08ecadc330e5c8df5137b06fbcce3aad18390967",
+      "currentOutcomeSha256": "8eed8532593b179c78a74cd63e380c7dfd1066b904a26e9c9e86a0823f7e1141",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -39317,6 +40618,80 @@
       "reviewClass": "phase6b-stable-identity-annotation"
     },
     {
+      "baseline": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "2f1d0997994f6a798a031780d8ed271cb96ec1efdc3a889a259a09f17c92d413",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "aeeda0d08bffa93b33ca0ed1ffd0057e7bf62c0fa66adeefa16011fb9cccf4bb",
+                  "name": "printOpeningReg"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "stock"
+      },
+      "baselineOutcomeSha256": "b54c2c40f04e2f5f60aa5b68e7cb5eabf8b83c5d8d30f88d8af0704bd578e6b3",
+      "bindingReview": {
+        "baseline": {
+          "bindings": 1,
+          "expressionSha256": [
+            "2f1d0997994f6a798a031780d8ed271cb96ec1efdc3a889a259a09f17c92d413"
+          ],
+          "handlerNames": [
+            "printOpeningReg"
+          ],
+          "referencedHandlerBodies": 1
+        },
+        "current": {
+          "bindings": 1,
+          "expressionSha256": [
+            "2f1d0997994f6a798a031780d8ed271cb96ec1efdc3a889a259a09f17c92d413"
+          ],
+          "handlerNames": [
+            "printOpeningReg"
+          ],
+          "referencedHandlerBodies": 1
+        }
+      },
+      "capabilityId": "stock:action:print-opening-register:5647881bb6",
+      "category": "visible-action",
+      "change": "changed",
+      "current": {
+        "category": "visible-action",
+        "outcome": {
+          "bindings": [
+            {
+              "event": "click",
+              "expressionSha256": "2f1d0997994f6a798a031780d8ed271cb96ec1efdc3a889a259a09f17c92d413",
+              "kind": "inline-event",
+              "qualifiedCalls": [],
+              "referencedHandlers": [
+                {
+                  "bodySha256": "949b8b0325dc74a514320825356e66ae4e612fc525dd311b22b6ad118db910a2",
+                  "name": "printOpeningReg"
+                }
+              ]
+            }
+          ],
+          "element": "button"
+        },
+        "surface": "stock"
+      },
+      "currentOutcomeSha256": "8f1fffaaac8a8828c2bcc4cd9c91d7a39716169aeff1ac665afd36799a61c1e6",
+      "ownerApproval": "pending",
+      "reason": "The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.",
+      "reviewClass": "handler-body-hash-only"
+    },
+    {
       "baseline": null,
       "baselineOutcomeSha256": null,
       "bindingReview": {
@@ -39351,7 +40726,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "ad0e0425874e448e122b352c28ef3dde6cec15a6f0e47afea4d3c301f8bdaff5",
+                  "bodySha256": "8ac878e3772ac96ffe20b9e01c6887173ef5309ba2d9284ba20e9b4c3d2776b7",
                   "name": "resetBrandsToDefault"
                 }
               ]
@@ -39361,7 +40736,7 @@
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "02a42af17d0265a5681a06a4759db59f058f1ed562b6e9eca97e675d019f5bfb",
+      "currentOutcomeSha256": "eb8f0d2a1e064b41fa553f6232ceb6f647b1d7bc08d48c2dde0950d94c834d8a",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -41241,15 +42616,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 21,
-          "explicitFallbackSites": 16,
-          "swallowedCatchBlocks": 15,
+          "catchBlocks": 32,
+          "explicitFallbackSites": 23,
+          "swallowedCatchBlocks": 18,
           "throwSites": 0,
-          "userVisibleErrorSites": 47
+          "userVisibleErrorSites": 61
         },
         "surface": "stock"
       },
-      "currentOutcomeSha256": "e05a5c11ec7a1240798d683ba8da7e957b685e379497edcd7092da5fbd6cb210",
+      "currentOutcomeSha256": "0603fdf9cdbe7459fcd8c93dd1d13139a693660cdea37d6fb76f2240af330112",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -41285,6 +42660,46 @@
       "ownerApproval": "pending",
       "reason": "The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.",
       "reviewClass": "module-permission-authority-relocation"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "stock:persist:33b94f3f822ff4adb51a",
+      "category": "persisted-outcome",
+      "change": "added",
+      "current": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "SK_CLEARLOG",
+          "keyIdentitySha256": "33b94f3f822ff4adb51a3adc23abeab1fd882535c30b8a61e733a32b447477e6",
+          "operation": "write"
+        },
+        "surface": "stock"
+      },
+      "currentOutcomeSha256": "9e9d1cb76b9f72961995ee5de68755f40fdc2934b85129a9da98979d23515c80",
+      "ownerApproval": "pending",
+      "reason": "New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "fix-wave-2026-11-new-storage-key"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "stock:persist:449d73e56af4d2b66503",
+      "category": "persisted-outcome",
+      "change": "added",
+      "current": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "SK_BRANDS_HIDDEN",
+          "keyIdentitySha256": "449d73e56af4d2b6650353574829fdd541fa67d29dd9f9d5a3c29ab33711d041",
+          "operation": "write"
+        },
+        "surface": "stock"
+      },
+      "currentOutcomeSha256": "5f518798a794f86c911d38db63ff102d78bdea2c2d2a80c02709316f447617fc",
+      "ownerApproval": "pending",
+      "reason": "New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.",
+      "reviewClass": "fix-wave-2026-11-new-storage-key"
     },
     {
       "baseline": {
@@ -42678,10 +44093,8 @@
           "expressionSha256": [
             "d5906cc827d81b39ca2b150d94b5dd33bb734ad1fb1bc02f9ca89a6872bf1b12"
           ],
-          "handlerNames": [
-            "exportComplianceCSV"
-          ],
-          "referencedHandlerBodies": 1
+          "handlerNames": [],
+          "referencedHandlerBodies": 0
         }
       },
       "capabilityId": "tax:action:tax-compliance-csv-export:fcf9ce3db2",
@@ -42696,19 +44109,14 @@
               "expressionSha256": "d5906cc827d81b39ca2b150d94b5dd33bb734ad1fb1bc02f9ca89a6872bf1b12",
               "kind": "inline-event",
               "qualifiedCalls": [],
-              "referencedHandlers": [
-                {
-                  "bodySha256": "4ee30e692bd2e89ea5a65326bea649f1abeb27885af56280fb16c58c4628379d",
-                  "name": "exportComplianceCSV"
-                }
-              ]
+              "referencedHandlers": []
             }
           ],
           "element": "button"
         },
         "surface": "tax"
       },
-      "currentOutcomeSha256": "13720141a6831fe62731772e10de401f1f718cf96c0515190f8d0c79df243faa",
+      "currentOutcomeSha256": "8d6ae727b3ad9254816bfac9b1174219dbd31b31e0121266485ec5ca94ffd9b6",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -42841,7 +44249,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "db6ef3cc6f6d3a367081f761e2b4d95dfb1febc12bf0250cb6f47bc13f1a8361",
+                  "bodySha256": "5e8e4af640c13ffc3cdc86ec0eef9110dc4cc64fdc955368701c7ffbedece117",
                   "name": "exportEvidenceZip"
                 }
               ]
@@ -42851,7 +44259,7 @@
         },
         "surface": "tax"
       },
-      "currentOutcomeSha256": "462ee95aa597ca86329fc21537e1696606588d1976762cd06d644526ee0f54ad",
+      "currentOutcomeSha256": "5b2a03e70ecc4cbe6913ca2830ecebe4b829e79518bc3bb75a6b70225dead4c1",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -42891,7 +44299,7 @@
               "qualifiedCalls": [],
               "referencedHandlers": [
                 {
-                  "bodySha256": "bec934359215744b412a5061920876e73d5484da697f54d00015c5f8eb4b406e",
+                  "bodySha256": "8bbe70dffa658a083a75c7b329328e3fcb49def48f597941cdf90b45c4ab2f52",
                   "name": "saveFirm"
                 }
               ]
@@ -42901,7 +44309,7 @@
         },
         "surface": "tax"
       },
-      "currentOutcomeSha256": "bafa0c7d7dd262a89ecbf3ae731fc89588fbfed37af961525de9cb42166a8f89",
+      "currentOutcomeSha256": "6fe1872011b5a3bcbae8b5001b6b46a326e962cd26905c807bc5a90acea0265d",
       "ownerApproval": "pending",
       "reason": "Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.",
       "reviewClass": "phase6b-stable-identity-annotation"
@@ -43025,15 +44433,15 @@
       "current": {
         "category": "failure-posture",
         "outcome": {
-          "catchBlocks": 21,
-          "explicitFallbackSites": 30,
-          "swallowedCatchBlocks": 15,
-          "throwSites": 3,
-          "userVisibleErrorSites": 26
+          "catchBlocks": 23,
+          "explicitFallbackSites": 31,
+          "swallowedCatchBlocks": 17,
+          "throwSites": 4,
+          "userVisibleErrorSites": 30
         },
         "surface": "tax"
       },
-      "currentOutcomeSha256": "4d9249c8b342238cf694f58036ce17102723f3207d4531865f87080c360c3eef",
+      "currentOutcomeSha256": "246bd5327eead5d63936f662f4ff99b01668cc884d84d23db5b133ae2335a822",
       "ownerApproval": "pending",
       "reason": "Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.",
       "reviewClass": "failure-posture-source-boundary-change"
@@ -43062,16 +44470,16 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 443,
+    "added": 449,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 834,
-    "changed": 41,
-    "changedFailurePostures": 17,
-    "changedVisibleActions": 24,
-    "comparisonDeltaSha256": "92417ccb8e099122b0e3447609e6d875ff7a3709523b54766d67d5de45000b50",
-    "handlerBodyHashOnly": 21,
-    "netCapabilities": 93,
-    "removed": 350,
+    "capabilityApprovalsRequired": 861,
+    "changed": 60,
+    "changedFailurePostures": 22,
+    "changedVisibleActions": 38,
+    "comparisonDeltaSha256": "85af319343e6480e74daa1f6eee44f2230c36bf1109483071cd98f0c4a652d69",
+    "handlerBodyHashOnly": 35,
+    "netCapabilities": 97,
+    "removed": 352,
     "reportPresentationFallbacks": 1
   }
 }

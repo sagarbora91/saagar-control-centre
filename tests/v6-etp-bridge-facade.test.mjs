@@ -838,14 +838,19 @@ test('the shell defines no global named module, so the verifier\'s Node-only fac
   assert.doesNotMatch(SHELL, /\bmodule\s*=\s*\{\s*exports/);
 });
 
-test('the four tags are synchronous, in order, directly after the operations consumer, and the shell stays below its byte limit', () => {
-  const tags = ['etp-bridge-trust.js', 'etp-bridge-pack-verifier.js', 'etp-bridge-compare.js', 'etp-bridge-facade.js'].map((name) => `<script src="${name}"></script>\n`).join('');
-  assert.ok(SHELL.includes(`<script src="etp-operations-consumer.js"></script>\n${tags}`));
-  assert.doesNotMatch(SHELL, /<script (?:defer|async)[^>]*etp-bridge/);
+test('the four bridge files are no shell tags any more: they load on demand through the loader, one line, in order, and the shell stays below its byte limit', () => {
+  const names = ['etp-bridge-trust.js', 'etp-bridge-pack-verifier.js', 'etp-bridge-compare.js', 'etp-bridge-facade.js'];
+  assert.equal(SHELL.includes('etp-bridge-'), false, 'the shell names no bridge file at all');
+  assert.equal(SHELL.includes('SaagarEtpBridge'), false, 'the shell names no bridge global');
+  assert.ok(SHELL.includes('<script src="etp-operations-consumer.js"></script>\n<!-- R1 LEG-01..10'), 'the operations consumer tag is followed directly by the R1 comment, as before Wave 6');
   assert.ok(Buffer.byteLength(SHELL) < 580636, `index.html is ${Buffer.byteLength(SHELL)} bytes`);
-  assert.equal(SHELL.split('etp-bridge-').length - 1, 4, 'nothing else in the shell names a bridge file');
   const chain = readWww('etp-chain-loader.js');
-  assert.ok(!chain.includes('etp-bridge'), 'the on-demand chain is untouched');
+  const lists = chain.split('\n').filter((row) => row.includes('etp-bridge-'));
+  assert.equal(lists.length, 1, 'the bridge list is a single line (the chain scrape sees one name per line only)');
+  const found = [...lists[0].matchAll(/'(etp-bridge-[a-z-]+\.js)'/g)].map((match) => match[1]);
+  assert.deepEqual(found, names, 'the loader names the four files, in load order');
+  for (const global of ['SaagarEtpBridgeTrust', 'SaagarEtpBridgePackVerifier', 'SaagarEtpBridgeCompare']) assert.equal(chain.split(global).length - 1, 1, `${global} is named once`);
+  assert.equal(chain.split('SaagarEtpBridgeFacade').length - 1, 2, 'the facade global is named in the name list and in the locked-global check');
   assert.equal(readWww('etp-module-gateway.js').includes('SaagarEtpBridge'), false, 'the gateway is byte-unchanged and does not know the bridge');
 });
 

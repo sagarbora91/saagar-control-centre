@@ -43,6 +43,21 @@ const APPROVED_BRIDGE_DELTA_IDS = Object.freeze(new Set([
   'etp:action:tab-bridge:319abff657'
 ]));
 
+/* Fix wave 2026-11-12: the persisted keys the plan declares in G5 (items 2 and 3). Each id is
+   sha256(<key text>).slice(0, 20) of the A3 key identity: payroll 'key' and 'ST_LAST_RESET_KEY' (the Reset All
+   recovery copy), stock 'saagar_stk_clearlog_v1' and 'saagar_brands_hidden'. Owner decision given in chat,
+   2026-11-12 (OD-3); see verification/audit/approvals/FIX-WAVE-2026-11-12-IDENTITY-AND-CAPABILITY-RECORD.json. */
+const APPROVED_FIXWAVE_STORAGE_KEY_IDS = Object.freeze(new Set([
+  'payroll:persist:2c70e12b7a0646f92279',
+  'payroll:persist:dd25a3198b0013d1d7c3',
+  'stock:persist:33b94f3f822ff4adb51a',
+  'stock:persist:449d73e56af4d2b66503'
+]));
+
+/* Fix wave 2026-11-12: the one retired persisted write. Service key 'saagar_invoice_seq_v1' is replaced by
+   saagar_wsf_settings_v1.invoiceSeq (plan section 2.1, interface C). Exact id only; any other removal still throws. */
+const FIXWAVE_RETIRED_INVOICE_COUNTER_ID = 'service:persist:556fd13bc825db2d2664';
+
 const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
   'dsr:action:st-v5-home-fab:c05eb3ddb3',
   'qms:action:st-v5-home-fab:c05eb3ddb3',
@@ -103,6 +118,18 @@ function classification(change, before, after) {
     return {
       reviewClass: 'shell-global-search-v1-entry-button',
       reason: 'New top-bar search button for Search v1 (places only); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if (change === 'added' && APPROVED_FIXWAVE_STORAGE_KEY_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'fix-wave-2026-11-new-storage-key',
+      reason: 'New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if (change === 'removed' && capability.capabilityId === FIXWAVE_RETIRED_INVOICE_COUNTER_ID) {
+    return {
+      reviewClass: 'fix-wave-2026-11-retired-storage-key',
+      reason: 'Service no longer writes saagar_invoice_seq_v1: the invoice counter moved into saagar_wsf_settings_v1.invoiceSeq (per financial year), as fix-wave plan interface C requires. Owner reconfirmation pending.'
     };
   }
   if (change === 'added' && APPROVED_BRIDGE_DELTA_IDS.has(capability.capabilityId)) {
@@ -287,17 +314,19 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 748);
+  assert.equal(current.length, 752);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 31, 'persisted-outcome': 86, 'failure-posture': 122 });
-  assert.equal(count('added'), 443);
-  assert.equal(count('removed'), 350);
-  assert.equal(count('changed'), 41);
-  assert.equal(classCount('handler-body-hash-only'), 21);
-  assert.equal(classCount('failure-posture-source-boundary-change'), 16);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 32, 'persisted-outcome': 89, 'failure-posture': 122 });
+  assert.equal(count('added'), 449);
+  assert.equal(count('removed'), 352);
+  assert.equal(count('changed'), 60);
+  assert.equal(classCount('handler-body-hash-only'), 35);
+  assert.equal(classCount('failure-posture-source-boundary-change'), 21);
   assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
   assert.equal(classCount('shell-global-search-v1-entry-button'), 1);
   assert.equal(classCount('etp-engine-bridge-compare-v1-capability'), 5);
+  assert.equal(classCount('fix-wave-2026-11-new-storage-key'), 4);
+  assert.equal(classCount('fix-wave-2026-11-retired-storage-key'), 1);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 

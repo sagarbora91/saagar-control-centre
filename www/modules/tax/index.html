@@ -97,7 +97,7 @@
           </div>
           <div class="ff-field">
             <div class="ff-label">GSTIN</div>
-            <input class="ff-input" id="ff-gstin" type="text" placeholder="27ABCDE1234F1Z5">
+            <input class="ff-input" id="ff-gstin" type="text" maxlength="15" placeholder="27ABCDE1234F1Z5">
           </div>
           <div class="ff-field">
             <div class="ff-label">Entity Type</div>
@@ -275,6 +275,10 @@ function loadState(){
   if(!Array.isArray(STATE.archived)) STATE.archived = []; // old data without this field is fine
   if(!Array.isArray(STATE.archivedCats)) STATE.archivedCats = []; // archived whole categories
   if(!STATE.fyStartYear || STATE.fyStartYear < 2026) STATE.fyStartYear = 2026;
+  if(STATE.activeFirmId && !STATE.firms.some(f=>f && f.id===STATE.activeFirmId)){
+    STATE.activeFirmId = STATE.firms.find(f=>f && f.id)?.id || null;   // same fallback deleteFirm uses
+    try { localStorage.setItem('taxcal_v2', JSON.stringify(STATE)); } catch(e){}
+  }
   // Defensive: a corrupt compliance bucket must not throw at INIT and brick the
   // whole module (loadState runs at top-level; an uncaught throw kills every fn).
   try {
@@ -287,6 +291,33 @@ function loadState(){
       }
     });
   } catch(e){}
+  try { pruneOrphanCustomStubs(); } catch(e){}
+}
+/* One-time clean-up of records left behind by an already-deleted custom obligation: only BARE stubs
+   (nothing the user typed, fully re-derivable) are removed. Filed or annotated orphans are kept. */
+function pruneOrphanCustomStubs(){
+  const live = {};
+  (STATE.custom || []).forEach(c=>{ if(c && c.id) live[c.id] = true; });
+  const re = /^(cust-\d+)-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/;
+  let n = 0;
+  Object.keys(STATE.compliance || {}).forEach(fid=>{
+    const byFy = STATE.compliance[fid];
+    if(!byFy || typeof byFy !== 'object') return;
+    Object.keys(byFy).forEach(fy=>{
+      const bucket = byFy[fy];
+      if(!bucket || typeof bucket !== 'object') return;
+      Object.keys(bucket).forEach(k=>{
+        const m = re.exec(k);
+        if(!m || live[m[1]]) return;
+        const r = bucket[k];
+        if(r && typeof r === 'object' && r.done !== true && !r.na && !r.filedOn && !r.notes && !r.evidenceRef && !r.reviewerNote){
+          delete bucket[k]; n++;
+        }
+      });
+    });
+  });
+  if(n) saveState();
+  return n;
 }
 function saveState(){
   try { localStorage.setItem('taxcal_v2', JSON.stringify(STATE)); } catch(e){}
@@ -579,6 +610,7 @@ function materializeDueDates(){
         changed = true;
       } else {
         if(!rec.dueDate){ rec.dueDate = iso; changed = true; } // backfill without touching done/notes
+        else if(item._custom && !rec.done && rec.dueDate !== iso){ rec.dueDate = iso; changed = true; } // custom date is derived: re-sync (done records keep their filing date)
         if(!rec.name && plainName){ rec.name = plainName; changed = true; }
         if(typeof rec.buffer !== 'number'){ rec.buffer = prof.buffer; changed = true; }
       }
@@ -615,7 +647,8 @@ function parseDueDate(due, month){
     const mi = shortMonths[mon];
     if(mi===undefined) return null;
     const y = mi <= 2 ? (STATE.fyStartYear + 1) : STATE.fyStartYear;
-    return new Date(y, mi, day);
+    const dim = new Date(y, mi + 1, 0).getDate();      // days in that month of that calendar year
+    return new Date(y, mi, Math.min(day, dim));         // never roll into the next month
   }
   return null;
 }
@@ -1439,11 +1472,29 @@ function typeLabel(t){
 function saveFirm(){
   const name = document.getElementById('ff-name').value.trim();
   if(!name){ alert('Please enter a firm name.'); return; }
+  const prevFirm = editingFirmId ? STATE.firms.find(f=>f && f.id===editingFirmId) : null;
+  const nameKey = name.toLowerCase();
+  if(!(prevFirm && String(prevFirm.name||'').trim().toLowerCase() === nameKey) &&
+     STATE.firms.some(f=>f && f.id !== (editingFirmId || '') && String(f.name||'').trim().toLowerCase() === nameKey)){
+    alert('A firm named "' + name + '" already exists. Use a different name, for example add the city.'); return;
+  }
+  const panVal = document.getElementById('ff-pan').value.trim().toUpperCase();
+  const gstinVal = document.getElementById('ff-gstin').value.trim().toUpperCase();
+  /* Same patterns as www/dashboard-policy.js (local copy so this module works standalone). Blank is allowed;
+     a value is checked only when new or changed, so an older firm saved with a bad value can still be edited. */
+  const PAN_RE = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const GSTIN_RE = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+  if(panVal && !(prevFirm && prevFirm.pan === panVal) && !PAN_RE.test(panVal)){
+    alert('PAN must be 10 characters, for example ABCDE1234F (5 letters, 4 digits, 1 letter). Leave it blank if you do not have it.'); return;
+  }
+  if(gstinVal && !(prevFirm && prevFirm.gstin === gstinVal) && !GSTIN_RE.test(gstinVal)){
+    alert('GSTIN must be 15 characters, for example 27ABCDE1234F1Z5. Leave it blank if the firm is not GST registered.'); return;
+  }
   const firm = {
     id: editingFirmId || ('firm_'+Date.now()),
     name,
-    pan: document.getElementById('ff-pan').value.trim().toUpperCase(),
-    gstin: document.getElementById('ff-gstin').value.trim().toUpperCase(),
+    pan: panVal,
+    gstin: gstinVal,
     entity: document.getElementById('ff-entity').value,
     type: document.getElementById('ff-type').value,
     hasEmployees: document.getElementById('ff-emp').value !== 'no',  // additive; default/missing = true
@@ -1485,8 +1536,12 @@ function editFirm(id){
 }
 
 function deleteFirm(id){
-  if(!confirm('Delete this firm and all its compliance records?')) return;
+  if(!confirm('Delete this firm and all its compliance records? Obligations created only for this firm will also be removed.')) return;
   STATE.firms = STATE.firms.filter(f=>f.id!==id);
+  const scopedIds = (STATE.custom || []).filter(c=>c && c.firmId===id).map(c=>c.id);
+  scopedIds.forEach(gid=>{ purgeCustomRecords(gid); });
+  STATE.custom = (STATE.custom || []).filter(c=>!(c && c.firmId===id));
+  STATE.archived = (STATE.archived || []).filter(k=>scopedIds.indexOf(k)<0);
   delete STATE.compliance[id];
   try{ const api=evApi(); if(api && api.delByMatch) api.delByMatch(id+'|'); }catch(e){}   // purge this firm's evidence files
   if(STATE.activeFirmId===id){
@@ -1703,9 +1758,27 @@ function editCustomObligation(id){
   document.getElementById('master-form')?.scrollIntoView({behavior:'smooth'});
 }
 
+/* Remove every saved record of one custom obligation (all firms, all FYs, all 12 month ids). */
+function purgeCustomRecords(gid){
+  const keys = MONTHS.map(m => gid + '-' + monthAbbr(m));
+  let n = 0;
+  Object.keys(STATE.compliance || {}).forEach(fid=>{
+    const byFy = STATE.compliance[fid];
+    if(!byFy || typeof byFy !== 'object') return;
+    Object.keys(byFy).forEach(fy=>{
+      const bucket = byFy[fy];
+      if(!bucket || typeof bucket !== 'object') return;
+      keys.forEach(k=>{ if(Object.prototype.hasOwnProperty.call(bucket, k)){ delete bucket[k]; n++; } });
+    });
+  });
+  return n;
+}
+
 function deleteCustomObligation(id){
-  if(!confirm('Delete this custom obligation? It will be removed from the calendar.')) return;
+  if(!confirm('Delete this custom obligation? It will be removed from the calendar, and any filing records already saved for it will be deleted.')) return;
   STATE.custom = (STATE.custom || []).filter(c=>c && c.id!==id);
+  purgeCustomRecords(id);
+  STATE.archived = (STATE.archived || []).filter(k=>k!==id);
   try{ const api=evApi(); if(api && api.delByMatch) api.delByMatch('|'+id+'-'); }catch(e){}   // purge this obligation's evidence files (all firms/FYs/months)
   saveState();
   resetMasterForm();
@@ -1918,9 +1991,12 @@ function expandCustom(month){
     const months = Array.isArray(c.months) ? c.months : [];
     if(!months.includes(month)) return;
     const dueDay = parseInt(c.dueDay, 10);
+    const calYear = getCalendarYearForMonth(month);
+    const calMonthIdx = ['January','February','March','April','May','June','July','August','September','October','November','December'].indexOf(month);
+    const dim = (calMonthIdx < 0) ? 31 : new Date(calYear, calMonthIdx + 1, 0).getDate();
     const due = (dueDay === 0 || isNaN(dueDay))
       ? ('Last day of ' + abbr)
-      : (dueDay + ' ' + abbr);
+      : (Math.min(dueDay, dim) + ' ' + abbr);
     // SECURITY: custom items reuse the BUILT-IN render path, which emits item text
     // as raw HTML (built-ins intentionally carry <strong> etc.). So escape every
     // user-supplied custom string HERE, where it enters the rendered item, so a
@@ -2224,7 +2300,8 @@ function exportComplianceCSV(){
   const f = getActiveFirm();
   if(!f){ alert('Select a firm first to export its compliance register.'); return; }
   const fyLabel = (typeof getFinancialYearLabel==='function') ? getFinancialYearLabel() : '';
-  const cell = s => { s = String(s==null?'':s); if(/^[\t\r\n ]*[=+\-@]/.test(s))s="'"+s; s=s.replace(/"/g,'""'); return /[",\r\n]/.test(s) ? '"'+s+'"' : s; };
+  const cell = s => { s = String(s==null?'':s); if(/^[\t\r\n ]*[=+\-@]/.test(s))s="'"+s; return '"'+s.replace(/"/g,'""')+'"'; };   // G7 text cell: guard, always quote
+  const num = s => /^-?\d+$/.test(String(s)) ? String(s) : cell(s);   // G7 numeric cell (Days Left): plain number
   const rows = [['Firm','FY','Month','Due','Obligation','Form/Portal','Category','Frequency','Responsible','Risk','Status','Filed On','Days Left']];
   MONTHS.forEach(m=>{
     getVisibleItems(getMonthItems(m)).forEach(it=>{
@@ -2237,7 +2314,7 @@ function exportComplianceCSV(){
         na?'N/A':(done?'Done':'Pending'), (rec&&(rec.filedOn||rec.filedRef))||'', (days===null?'':String(days)) ]);
     });
   });
-  const csv = '﻿' + rows.map(r=>r.map(cell).join(',')).join('\r\n');   // BOM so Excel reads UTF-8
+  const csv = '﻿' + rows.map((r,ri)=>r.map((v,ci)=>(ri>0&&ci===12)?num(v):cell(v)).join(',')).join('\r\n');   // BOM so Excel reads UTF-8
   const fileBase = ('Compliance_'+(f.name||'firm')+'_'+(fyLabel||'')).replace(/[^\w.-]+/g,'_').replace(/^_+|_+$/g,'');
   const fileName = (fileBase||'Compliance')+'.csv';
   try {
@@ -2284,6 +2361,14 @@ function dataURLToBytes(u){
   for(let j=0;j<bin.length;j++) arr[j] = bin.charCodeAt(j);
   return arr;
 }
+/* dataURL -> base64 payload string. Strings are realm-independent, so the shell's JSZip accepts them
+   (a Uint8Array built in this frame is rejected by JSZip's cross-realm instanceof check). */
+function dataURLToBase64(u){
+  const s = String(u||'');
+  const i = s.indexOf(',');
+  if(i < 0 || !/;base64$/i.test(s.slice(0,i))) throw new Error('bad dataURL');
+  return s.slice(i+1).replace(/\s+/g,'');
+}
 /* Deliver the zip Blob: ST_SHARE to the shell (Android-safe) / desktop anchor. */
 function downloadZipBlob(blob, fileName, rowCount){
   try{
@@ -2323,8 +2408,8 @@ async function exportEvidenceZip(){
       let folder = sanitize(m ? (m.month+'_'+m.cat+'_'+m.name) : itemId).slice(0,60);
       if(!folder) folder = 'evidence';
       folder = folder + '__' + (sanitize(itemId).slice(0,24) || 'x');   // always-suffix itemId tail → guaranteed-unique folders
-      let bytes;
-      try{ bytes = dataURLToBytes(e.dataURL); }catch(err){ skipped++; return; }
+      let b64;
+      try{ b64 = dataURLToBase64(e.dataURL); }catch(err){ skipped++; return; }
       if(!folderSeen[folder]) folderSeen[folder] = {};
       let fname = sanitize(e.name||'evidence') || 'evidence';
       if(folderSeen[folder][fname]){
@@ -2336,7 +2421,7 @@ async function exportEvidenceZip(){
         fname = base+' ('+n+')'+ext;
       }
       folderSeen[folder][fname] = true;
-      zip.folder(folder).file(fname, bytes);
+      zip.folder(folder).file(fname, b64, { base64:true });
       manifest.push([ (m?m.name:itemId), (e.name||''), folder+'/'+fname, fmtAdded(e.addedAt) ]);
       added++;
     });
@@ -2346,7 +2431,7 @@ async function exportEvidenceZip(){
     const blob = await zip.generateAsync({ type:'blob', compression:'DEFLATE', compressionOptions:{ level:5 } });
     const fileBase = ('Evidence_'+(f.name||'firm')+'_'+getFinancialYearShortLabel()).replace(/[^\w.-]+/g,'_').replace(/^_+|_+$/g,'');
     downloadZipBlob(blob, (fileBase||'Evidence')+'.zip', added);
-  }catch(e){ alert('Could not build the evidence ZIP.'); }
+  }catch(e){ alert('Could not build the evidence ZIP.' + (e && e.message ? ' (' + e.message + ')' : '')); }
 }
 
 /* P1-33 (in-module button): open the shell WhatsApp composer LOCKED to the
@@ -2413,8 +2498,12 @@ function clickDone(id){
   if(isItemNA(id)){ alert('This item is marked Not Applicable (NA) and is read-only. Remove NA first to change its status.'); return; }
   if(isItemDone(id)){
     const f=getActiveFirm(); if(!f) return alert('Please select a firm first.');
+    if(!confirm('Undo this filing? The filed date, notes, evidence reference and reviewer note for this item will be cleared. Attached files are kept.')) return;
     const fyCompliance = getFirmCompliance(f.id);
-    delete fyCompliance[id];
+    const old = fyCompliance[id] || {};
+    const stub = { done:false };                       // same shape materializeDueDates writes
+    ['dueDate','name','buffer'].forEach(k=>{ if(old[k]!=null) stub[k] = old[k]; });
+    fyCompliance[id] = stub;
     saveState();
     renderMonth(curMonth);
   } else {
@@ -2658,6 +2747,7 @@ function confirmDone(id){
   if(isItemNA(id)){ alert('This item is marked Not Applicable (NA) and is read-only. Remove NA first to record a filing.'); return; }
   const fyCompliance = getFirmCompliance(f.id);
   const filedOn = document.getElementById('ddate-'+id)?.value || todayStr();
+  if(filedOn > todayStr()){ alert('The filed-on date cannot be in the future. Pick today or an earlier date.'); return; }
   const notes = document.getElementById('dnotes-'+id)?.value || '';
   const evidenceRef = document.getElementById('devidence-'+id)?.value || '';
   const reviewerNote = document.getElementById('dreview-'+id)?.value || '';
@@ -2708,6 +2798,9 @@ function renderMonth(month){
     const days = getDaysLeft(item.due, month);
     const isOverdue = !isNA && !isDone && days !== null && days < 0;
     const profile = getControlProfile(item, month);
+    const esc = isDone ? { label:'Filed', cls:'cash-low', note:'Filed. No escalation needed.' }
+              : isNA ? { label:'N/A', cls:'', note:'Not applicable. No escalation needed.' }
+              : profile.escalation;
     const doneButtonClass=`done-btn${isDone?' done':''}`;
     const doneButton=isNA
       ? `<button class="${doneButtonClass}" title="Not Applicable — read-only" disabled style="opacity:.4;cursor:not-allowed"></button>`
@@ -2717,7 +2810,7 @@ function renderMonth(month){
     const naToggleButton=isNA
       ? `<button data-action="togglena" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="na-toggle on">✓ Not Applicable (NA)</button>`
       : `<button data-action="togglena" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-02" class="na-toggle">Mark Not Applicable (NA)</button>`;
-    htmlParts.push(`<div class="cc ${item.cat}${isDone?' done-card':''}${isOverdue?' overdue-card':''}${isNA?' na-card':''}" id="card-${item.id}"><div class="cc-stripe"></div><div class="cc-top"><div class="cc-left"><div class="cc-meta"><span class="cat-badge">${catLabel(item.cat)}</span>${isNA?`<span class="na-chip">NA</span>`:''}<span class="due-tag${item.urgent?' urgent':''}${isOverdue?' overdue':''}">📅 ${item.due}</span>${daysLeftTag(days,isDone)}<span class="freq-tag">${item.freq}</span></div><div class="cc-name">${renderFYText(item.name)}</div><div class="cc-form"><span>Form / Portal:</span> ${renderFYText(item.form)}</div>${taxPayableBadge(item, month)}${qrmpAdvisory(item, month)}${isDone&&rec.filedOn?`<div class="cc-filed">✓ Filed: ${formatDate(rec.filedOn)}${rec.evidenceRef?` · Evidence: ${escapeHtml(rec.evidenceRef)}`:''}${rec.reviewerNote?` · Reviewed by: ${escapeHtml(rec.reviewerNote)}`:''}</div>`:''}<div class="control-strip"><span class="control-pill ${riskClass(profile.risk)}">${profile.risk} Risk</span><span class="control-pill ${cashClass(profile.cashFlow)}">${profile.cashFlow} Cash Flow</span><span class="control-pill ${profile.escalation.cls}">${profile.escalation.label}</span><span class="control-pill">Internal due ${formatShortDate(profile.internalDate)}</span></div></div><div class="cc-right"><button data-action="togglenote" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="exp-btn" id="ebtn-${item.id}">▼ Controls</button>${doneButton}</div></div><div class="done-capture" id="dcap-${item.id}"><div class="done-capture-row"><label>📅 Filed on:</label><input type="date" id="ddate-${item.id}" value="${rec.filedOn || todayStr()}"><label>📝 Notes:</label><input type="text" id="dnotes-${item.id}" value="${escapeHtml(rec.notes || '')}" placeholder="Ack no. or filing note"><label>📁 Evidence:</label><input type="text" id="devidence-${item.id}" value="${escapeHtml(rec.evidenceRef || '')}" placeholder="Challan / return / working file ref"><label>👀 Reviewer:</label><input type="text" id="dreview-${item.id}" value="${escapeHtml(rec.reviewerNote || '')}" placeholder="Reviewer or sign-off"><label>📎 Files:</label><input type="file" id="evfiles-${item.id}" class="ev-file-inp" multiple><button data-action="confirmdone" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="btn-confirm">✓ Confirm</button><button data-action="canceldone" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="btn-cancel-done">Cancel</button></div></div><div class="cc-notes" id="note-${item.id}"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap"><div style="font-size:11px;color:var(--g600)">${isNA?'Marked <b>Not Applicable</b> — this item is excluded from the score and is read-only.':'Mark this item Not Applicable if it does not apply to this firm.'}</div>${naToggleButton}</div><div class="accordion-header tax-acc-h" aria-expanded="true">Ownership</div><div class="accordion-panel tax-acc-p"><div class="owner-grid"><div class="owner-box"><div class="owner-role">Responsible</div><div class="owner-name">${profile.responsible}</div></div><div class="owner-box"><div class="owner-role">Reviewer</div><div class="owner-name">${profile.reviewer}</div></div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Deadline · Escalation · Evidence</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-grid"><div class="cos-mini"><div class="cos-mini-label">Internal Deadline</div><div class="cos-mini-value">T-${profile.buffer} · ${formatShortDate(profile.internalDate)}</div><div class="cos-mini-sub">Prevents last-day filing and portal dependency.</div></div><div class="cos-mini"><div class="cos-mini-label">Escalation Rule</div><div class="cos-mini-value">${profile.escalation.label}</div><div class="cos-mini-sub">7 days reminder, 3 days escalation, 1 day critical.</div></div><div class="cos-mini"><div class="cos-mini-label">Evidence Pack</div><div class="cos-mini-value">${profile.evidence.length} required artifacts</div><div class="cos-mini-sub">${profile.evidence.join(' · ')}</div></div></div></div><div class="ev-attach"><div class="ev-attach-hd">📎 Attached Evidence <span class="ev-count" id="evcount-${item.id}"></span></div><div class="ev-files" data-itemid="${item.id}"><div class="ev-empty">No files attached yet.</div></div><label class="ev-add-btn">+ Attach file<input data-action="evattachhere" data-action-key="definition-01" type="file" multiple style="display:none" onchange="evAttachHere('${item.id}', this)"></label></div><div class="accordion-header tax-acc-h" aria-expanded="false">Input Checklist</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-panel"><div class="control-list">${profile.checklist.map((step, idx)=>`<div class="control-item"><div class="control-step">${idx+1}</div><div>${step}</div></div>`).join('')}</div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Workflow Mapping</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-panel"><div class="control-list">${profile.workflow.map((step, idx)=>`<div class="control-item"><div class="control-step">${idx+1}</div><div>${step}</div></div>`).join('')}</div><div class="control-note">${profile.escalation.note}</div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Reference &amp; Penalty</div><div class="accordion-panel tax-acc-p" hidden><div class="ng"><div class="nf full"><div class="nl">📌 What This Is</div><div class="nv">${renderFYText(item.what)}</div></div><div class="nf full"><div class="nl">💡 Why It Must Be Done</div><div class="nv">${renderFYText(item.why)}</div></div><div class="nf"><div class="nl">👥 Applicable To</div><div class="nv">${renderFYText(item.who)}</div></div><div class="nf pen-box"><b>⚠ Penalty for Non-Compliance:</b> ${renderFYText(item.penalty)}</div></div></div></div></div>`);
+    htmlParts.push(`<div class="cc ${item.cat}${isDone?' done-card':''}${isOverdue?' overdue-card':''}${isNA?' na-card':''}" id="card-${item.id}"><div class="cc-stripe"></div><div class="cc-top"><div class="cc-left"><div class="cc-meta"><span class="cat-badge">${catLabel(item.cat)}</span>${isNA?`<span class="na-chip">NA</span>`:''}<span class="due-tag${item.urgent?' urgent':''}${isOverdue?' overdue':''}">📅 ${item.due}</span>${daysLeftTag(days,isDone)}<span class="freq-tag">${item.freq}</span></div><div class="cc-name">${renderFYText(item.name)}</div><div class="cc-form"><span>Form / Portal:</span> ${renderFYText(item.form)}</div>${taxPayableBadge(item, month)}${qrmpAdvisory(item, month)}${isDone&&rec.filedOn?`<div class="cc-filed">✓ Filed: ${formatDate(rec.filedOn)}${rec.evidenceRef?` · Evidence: ${escapeHtml(rec.evidenceRef)}`:''}${rec.reviewerNote?` · Reviewed by: ${escapeHtml(rec.reviewerNote)}`:''}</div>`:''}<div class="control-strip"><span class="control-pill ${riskClass(profile.risk)}">${profile.risk} Risk</span><span class="control-pill ${cashClass(profile.cashFlow)}">${profile.cashFlow} Cash Flow</span><span class="control-pill ${esc.cls}">${esc.label}</span><span class="control-pill">Internal due ${formatShortDate(profile.internalDate)}</span></div></div><div class="cc-right"><button data-action="togglenote" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="exp-btn" id="ebtn-${item.id}">▼ Controls</button>${doneButton}</div></div><div class="done-capture" id="dcap-${item.id}"><div class="done-capture-row"><label>📅 Filed on:</label><input type="date" id="ddate-${item.id}" value="${rec.filedOn || todayStr()}"><label>📝 Notes:</label><input type="text" id="dnotes-${item.id}" value="${escapeHtml(rec.notes || '')}" placeholder="Ack no. or filing note"><label>📁 Evidence:</label><input type="text" id="devidence-${item.id}" value="${escapeHtml(rec.evidenceRef || '')}" placeholder="Challan / return / working file ref"><label>👀 Reviewer:</label><input type="text" id="dreview-${item.id}" value="${escapeHtml(rec.reviewerNote || '')}" placeholder="Reviewer or sign-off"><label>📎 Files:</label><input type="file" id="evfiles-${item.id}" class="ev-file-inp" multiple><button data-action="confirmdone" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="btn-confirm">✓ Confirm</button><button data-action="canceldone" data-saagar-args="${taxArgs([item.id])}" data-action-key="definition-01" class="btn-cancel-done">Cancel</button></div></div><div class="cc-notes" id="note-${item.id}"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap"><div style="font-size:11px;color:var(--g600)">${isNA?'Marked <b>Not Applicable</b> — this item is excluded from the score and is read-only.':'Mark this item Not Applicable if it does not apply to this firm.'}</div>${naToggleButton}</div><div class="accordion-header tax-acc-h" aria-expanded="true">Ownership</div><div class="accordion-panel tax-acc-p"><div class="owner-grid"><div class="owner-box"><div class="owner-role">Responsible</div><div class="owner-name">${profile.responsible}</div></div><div class="owner-box"><div class="owner-role">Reviewer</div><div class="owner-name">${profile.reviewer}</div></div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Deadline · Escalation · Evidence</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-grid"><div class="cos-mini"><div class="cos-mini-label">Internal Deadline</div><div class="cos-mini-value">T-${profile.buffer} · ${formatShortDate(profile.internalDate)}</div><div class="cos-mini-sub">Prevents last-day filing and portal dependency.</div></div><div class="cos-mini"><div class="cos-mini-label">Escalation Rule</div><div class="cos-mini-value">${esc.label}</div><div class="cos-mini-sub">7 days reminder, 3 days escalation, 1 day critical.</div></div><div class="cos-mini"><div class="cos-mini-label">Evidence Pack</div><div class="cos-mini-value">${profile.evidence.length} required artifacts</div><div class="cos-mini-sub">${profile.evidence.join(' · ')}</div></div></div></div><div class="ev-attach"><div class="ev-attach-hd">📎 Attached Evidence <span class="ev-count" id="evcount-${item.id}"></span></div><div class="ev-files" data-itemid="${item.id}"><div class="ev-empty">No files attached yet.</div></div><label class="ev-add-btn">+ Attach file<input data-action="evattachhere" data-action-key="definition-01" type="file" multiple style="display:none" onchange="evAttachHere('${item.id}', this)"></label></div><div class="accordion-header tax-acc-h" aria-expanded="false">Input Checklist</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-panel"><div class="control-list">${profile.checklist.map((step, idx)=>`<div class="control-item"><div class="control-step">${idx+1}</div><div>${step}</div></div>`).join('')}</div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Workflow Mapping</div><div class="accordion-panel tax-acc-p" hidden><div class="cos-panel"><div class="control-list">${profile.workflow.map((step, idx)=>`<div class="control-item"><div class="control-step">${idx+1}</div><div>${step}</div></div>`).join('')}</div><div class="control-note">${esc.note}</div></div></div><div class="accordion-header tax-acc-h" aria-expanded="false">Reference &amp; Penalty</div><div class="accordion-panel tax-acc-p" hidden><div class="ng"><div class="nf full"><div class="nl">📌 What This Is</div><div class="nv">${renderFYText(item.what)}</div></div><div class="nf full"><div class="nl">💡 Why It Must Be Done</div><div class="nv">${renderFYText(item.why)}</div></div><div class="nf"><div class="nl">👥 Applicable To</div><div class="nv">${renderFYText(item.who)}</div></div><div class="nf pen-box"><b>⚠ Penalty for Non-Compliance:</b> ${renderFYText(item.penalty)}</div></div></div></div></div>`);
   });
   document.getElementById('content').innerHTML = htmlParts.join('');
   updateNavDots();

@@ -363,7 +363,7 @@
 
       <div class="set-card" id="brand-card">
         <h3>Brand List <span style="color:#dc2626">*</span> <span style="font-size:11px;font-weight:400;color:var(--gray-400);">(SM only)</span></h3>
-        <p style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">Add or remove watch brands for the current store. Drag ≡ to reorder.</p>
+        <p style="font-size:11px;color:var(--gray-400);margin-bottom:10px;">New brands are added in Settings → Masters → Brands (shared by all modules). Here you can remove a brand from this store's list or drag ≡ to reorder the brands set up in Stock.</p>
         <div id="brand-list" style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;max-height:260px;overflow-y:auto;"></div>
         <div class="add-row" id="brand-add-row">
           <input type="text" class="finp" id="brand-inp" placeholder="New brand name (e.g. NEBULA)" onkeydown="if(event.key==='Enter')addBrand()">
@@ -382,7 +382,7 @@
           <label class="flbl">Clear ALL data (all stores, all dates)</label>
           <button data-action="clear-everything" class="btn btn-red btn-sm" onclick="clearAll()">⚠ Clear Everything</button>
         </div>
-        <p style="font-size:11px;color:var(--gray-400);margin-top:8px;">Export a backup before clearing. This cannot be undone.</p>
+        <p id="clear-last-note" style="font-size:11px;color:var(--gray-400);margin-top:8px;">Export a backup before clearing. This cannot be undone.</p>
       </div>
 
     </div>
@@ -492,9 +492,13 @@ const SK_PREFIX  = 'saagar_stock_';
 const SK_CROS    = 'saagar_cros';
 const SK_STATE   = 'saagar_appstate';
 const SK_BRANDS  = 'saagar_brands';
+const SK_BRANDS_HIDDEN = 'saagar_brands_hidden';
+const SK_CLEARLOG      = 'saagar_stk_clearlog_v1';
+const MAX_STOCK_QTY    = 999999;   /* per count box; owner decision D1 */
+const MAX_BRAND_NAME   = 40;       /* owner decision D3 */
 
 /* Brand list — persisted in localStorage, falls back to defaults */
-function getBrands(store) {
+function getOwnBrands(store) {
   store = store || st.store;
   var base = [];
   try {
@@ -502,6 +506,11 @@ function getBrands(store) {
     if (Array.isArray(raw[store]) && raw[store].length) base = raw[store].slice();
   } catch(e) {}
   if (!base.length) base = [...(DEFAULT_BRANDS[store] || [])];
+  return base;
+}
+function getBrands(store) {
+  store = store || st.store;
+  var base = getOwnBrands(store);
   /* Union the central Brand Master (saagar_master_brands [{name,store}]) added in Settings -> Masters,
      shown alongside Stock's own brands WITHOUT persisting (mirrors getCROs unioning the employee master).
      Master store is '' (all) / 'titanworld' / 'helios' (and legacy codes WLMHW/HEMW are mapped). */
@@ -510,11 +519,13 @@ function getBrands(store) {
     if (Array.isArray(mb)) {
       var code = store === 'titanworld' ? 'wlmhw' : store === 'helios' ? 'hemw' : '';
       var seen = {}; base.forEach(function(n){ seen[String(n).trim().toLowerCase()] = 1; });
+      var hid = {}; getHiddenBrands(store).forEach(function(n){ hid[n] = 1; });
       mb.forEach(function(b){
         if (!b || !b.name) return;
         var bs = String(b.store || '').trim().toLowerCase();
         if (bs && bs !== store && bs !== code) return;
         var k = String(b.name).trim().toLowerCase();
+        if (hid[k]) return;
         if (!seen[k]) { base.push(b.name); seen[k] = 1; }
       });
     }
@@ -528,6 +539,9 @@ function saveBrands(store, arr) {
     localStorage.setItem(SK_BRANDS, JSON.stringify(raw));
   } catch(e) {}
 }
+/* Brand Master brands the Store Manager removed from this store's Stock list (lower-case names). */
+function getHiddenBrands(store){ try{ var h=JSON.parse(localStorage.getItem(SK_BRANDS_HIDDEN)||'{}'); var a=h&&h[store]; return Array.isArray(a)?a.map(function(n){return String(n).trim().toLowerCase();}):[]; }catch(e){ return []; } }
+function saveHiddenBrands(store, arr){ try{ var h=JSON.parse(localStorage.getItem(SK_BRANDS_HIDDEN)||'{}'); if(!h||typeof h!=='object'||Array.isArray(h)) h={}; if(arr.length) h[store]=arr; else delete h[store]; localStorage.setItem(SK_BRANDS_HIDDEN, JSON.stringify(h)); }catch(e){} }
 
 /* ══════════════════════════════════════════════════
    STATE
@@ -626,6 +640,18 @@ function parseStockInt(value) {
   if (s === '') return null;
   if (!/^\d+$/.test(s)) return null;
   return Number(s);
+}
+/* U05-F-03: upper bound per count box. parseStockInt itself is unchanged (a null from an oversize value would erase the old value). */
+function stockOversize(raw){
+  if (typeof raw === 'number') return raw > MAX_STOCK_QTY;
+  var s = String(raw == null ? '' : raw).trim();
+  return /^\d+$/.test(s) && Number(s) > MAX_STOCK_QTY;
+}
+function rejectOversize(raw, inputEl, prev){
+  if (!stockOversize(raw)) return false;
+  if (inputEl) { inputEl.value = (prev != null) ? prev : ''; flashInput(inputEl); }
+  toast('Quantity too large - the most allowed in one box is ' + MAX_STOCK_QTY.toLocaleString('en-IN') + '. Not saved.', 'err');
+  return true;
 }
 
 /* ══════════════════════════════════════════════════
@@ -960,11 +986,11 @@ function renderOpening() {
     const canEdit = !locked;
 
     // FIX 6: Show blank (null) as empty string in inputs
-    const dV = o.display   !== null ? o.display   : '';
-    const sV = o.storage   !== null ? o.storage   : '';
-    const dE = o.defective !== null ? o.defective : '';
-    const yV = o.yLoc      !== null ? o.yLoc      : '';
-    const syV = sys         !== null ? sys          : '';
+    const dV = o.display ?? '';
+    const sV = o.storage ?? '';
+    const dE = o.defective ?? '';
+    const yV = o.yLoc ?? '';
+    const syV = sys ?? '';
 
     const physDisp  = phys !== null ? phys : '<span class="pend-lbl">—</span>';
     const vrDisp    = phys !== null || sys !== null
@@ -1063,10 +1089,10 @@ function renderMovements() {
   document.getElementById('tbody-mov').innerHTML = brands.map(brand => {
     const m   = data.movements[brand] || {};
     const net = netMov(m);
-    const inV  = m.inward  !== null ? m.inward  : '';
-    const ouV  = m.outward !== null ? m.outward : '';
-    const saV  = m.sales   !== null ? m.sales   : '';
-    const grV  = m.grn     !== null ? m.grn     : '';
+    const inV  = m.inward ?? '';
+    const ouV  = m.outward ?? '';
+    const saV  = m.sales ?? '';
+    const grV  = m.grn ?? '';
     const thV  = (m.theft ?? null) !== null ? m.theft : '';  // old blobs: undefined ⇒ blank
 
     return `<tr data-brand="${bid(brand)}">
@@ -1140,10 +1166,10 @@ function renderClosing() {
 
     const croOpts = croOptions(cros, c.croName);
 
-    const dV = c.display   !== null ? c.display   : '';
-    const sV = c.storage   !== null ? c.storage   : '';
-    const dE = c.defective !== null ? c.defective : '';
-    const yV = c.yLoc      !== null ? c.yLoc      : '';
+    const dV = c.display ?? '';
+    const sV = c.storage ?? '';
+    const dE = c.defective ?? '';
+    const yV = c.yLoc ?? '';
 
     const physDisp = phys !== null ? phys : '<span class="pend-lbl">—</span>';
     const sysC  = cSys < 0 ? 'cv cv-bad' : 'cv cv-neutral';
@@ -1547,14 +1573,16 @@ function renderSettings() {
   // Brand list (SM-only controls)
   const isSM    = st.mode === 'sm';
   const brands  = getBrands(st.store);
+  const ownN    = getOwnBrands(st.store).length;
   const bList   = document.getElementById('brand-list');
   const addRow  = document.getElementById('brand-add-row');
   if (bList) {
     bList.innerHTML = brands.map((b, i) => `
-      <div class="brand-chip" draggable="${isSM}" data-idx="${i}"
+      <div class="brand-chip" draggable="${isSM && i < ownN}" data-idx="${i}"
            ondragstart="brandDragStart(event,${i})" ondragover="brandDragOver(event)" ondrop="brandDrop(event,${i})">
-        <span class="drag-handle" style="${isSM?'':'display:none'}">≡</span>
+        <span class="drag-handle" style="${(isSM && i < ownN)?'':'display:none'}">≡</span>
         <span style="flex:1;font-size:12px;font-weight:600;">${esc(b)}</span>
+        ${i >= ownN ? '<span style="font-size:10px;color:var(--gray-400);">Master</span>' : ''}
         ${isSM ? `<span class="rm" onclick="removeBrand(${i})" title="Remove brand">×</span>` : ''}
       </div>`).join('');
   }
@@ -1564,6 +1592,8 @@ function renderSettings() {
   const resetBtn = document.querySelector('#brand-card .btn-outline');
   if (resetBtn) resetBtn.style.display = (isSM && !ro) ? '' : 'none';
 
+  const ln = document.getElementById('clear-last-note'); const lc = lastClear();
+  if (ln) ln.textContent = 'Export a backup before clearing. This cannot be undone.' + (lc ? ' Last ' + (lc.scope==='day'?'day clear':'full clear') + ': ' + fmtStamp(lc.at) + ' by ' + lc.by + ' (' + lc.records + ' record' + (lc.records===1?'':'s') + ').' : '');
   updateSettingsStatus(loadData());
   applyReadOnlyChrome();
 }
@@ -1604,6 +1634,18 @@ function updOpen(brandId, field, rawValue, inputEl) {
   }
 
   const isNum = !['remarks','croName'].includes(field);
+  if (isNum && rejectOversize(rawValue, inputEl, data.opening[brand][field])) return;
+  /* U05-F-04 part B: a lower opening system figure must not leave outflows above on-hand */
+  if (field === 'systemStock') {
+    const newSys = parseStockInt(rawValue), mv = data.movements[brand] || {};
+    const availSys = (newSys ?? 0) + (mv.inward ?? 0) + (mv.grn ?? 0), outSys = totalOutflow(mv);
+    if (outSys > availSys) {
+      if (inputEl) inputEl.value = (data.opening[brand].systemStock ?? '');
+      flashInput(inputEl);
+      toast(`"${brand}": outflow (${outSys}) exceeds on-hand (${availSys}) — closing would go negative. Not saved.`, 'err');
+      return;
+    }
+  }
   data.opening[brand][field] = isNum ? parseStockInt(rawValue) : rawValue;
   data.opening[brand].time   = nowTime();
   if (['display','storage','defective','yLoc','systemStock'].includes(field)) {
@@ -1646,6 +1688,7 @@ function updMov(brandId, field, rawValue, inputEl) {
 
   const prev    = m[field] ?? null;        // value before this edit (null-safe)
   const newVal  = parseStockInt(rawValue); // null for blank
+  if (rejectOversize(rawValue, inputEl, prev)) return;
 
   /* ── NO-NEGATIVE GUARD ──────────────────────────────────────────────
      On-hand available = opening system + inward + grn (inflows).
@@ -1660,7 +1703,7 @@ function updMov(brandId, field, rawValue, inputEl) {
   const outflow   = totalOutflow(candidate);
   if (outflow > avail) {
     // Reject: restore previous value into the input, flash red, toast, do NOT save.
-    if (inputEl) inputEl.value = (prev !== null ? prev : '');
+    if (inputEl) inputEl.value = (prev != null ? prev : '');
     flashInput(inputEl);
     const over = outflow - avail;
     toast(`"${brand}": outflow (${outflow}) exceeds on-hand (${avail}) — closing would go negative by ${over}. Not saved.`, 'err');
@@ -1706,6 +1749,7 @@ function updClose(brandId, field, rawValue, inputEl) {
   }
 
   const isNum = !['remarks','croName'].includes(field);
+  if (isNum && rejectOversize(rawValue, inputEl, data.closing[brand][field])) return;
   data.closing[brand][field] = isNum ? parseStockInt(rawValue) : rawValue;
   data.closing[brand].time   = nowTime();
   if (['display','storage','defective','yLoc'].includes(field)) {
@@ -2289,10 +2333,13 @@ function addBrand() {
   const inp = document.getElementById('brand-inp');
   const n   = inp.value.trim().toUpperCase();
   if (!n) return;
+  if (n.length > MAX_BRAND_NAME) { toast('Brand name is too long (maximum ' + MAX_BRAND_NAME + ' characters).', 'err'); return; }
   const brands = getBrands(st.store);
   if (brands.some(b => b === n)) { toast('Brand already exists.', 'err'); return; }
-  brands.push(n);
-  saveBrands(st.store, brands);
+  const own = getOwnBrands(st.store);
+  own.push(n);
+  saveBrands(st.store, own);
+  saveHiddenBrands(st.store, getHiddenBrands(st.store).filter(x => x !== n.toLowerCase()));
   // Initialise this brand in today's data so it appears immediately in all tabs
   const data = loadData();
   if (!data.opening[n])   data.opening[n]   = { display:null, storage:null, defective:null, yLoc:null, systemStock:null, remarks:'', croName:'', time:'', verified:false, countDone:false };
@@ -2309,9 +2356,13 @@ function removeBrand(i) {
   if (st.mode !== 'sm') { toast('Only SM can remove brands.', 'err'); return; }
   const brands = getBrands(st.store);
   const name   = brands[i];
+  if (name === undefined) return;
   if (!confirm(`Remove "${name}" from the brand list?\n\nNote: Existing stock data for this brand is preserved — re-add the brand to access it again.`)) return;
-  brands.splice(i, 1);
-  saveBrands(st.store, brands);
+  const key = String(name).trim().toLowerCase();
+  const own = getOwnBrands(st.store);
+  const oi  = own.findIndex(n => String(n).trim().toLowerCase() === key);
+  if (oi >= 0) { own.splice(oi, 1); saveBrands(st.store, own); }
+  if (getBrands(st.store).some(n => String(n).trim().toLowerCase() === key)) { const h = getHiddenBrands(st.store); h.push(key); saveHiddenBrands(st.store, h); }
   renderSettings();
   toast(`Removed: ${name}`);
 }
@@ -2321,6 +2372,7 @@ function resetBrandsToDefault() {
   if (st.mode !== 'sm') { toast('Only SM can reset brands.', 'err'); return; }
   if (!confirm('Reset brand list to factory defaults? Your entered stock data is NOT deleted.')) return;
   saveBrands(st.store, [...DEFAULT_BRANDS[st.store]]);
+  saveHiddenBrands(st.store, []);
   renderSettings();
   toast('Brand list reset to defaults.', 'ok');
 }
@@ -2332,12 +2384,13 @@ function brandDragOver(e)     { e.preventDefault(); e.dataTransfer.dropEffect = 
 function brandDrop(e, toIdx) {
   e.preventDefault();
   if (roBlock()) { _dragIdx = null; return; }  // VIEW-ONLY past: no reorder writes
+  const own = getOwnBrands(st.store);
   if (_dragIdx === null || _dragIdx === toIdx) return;
-  const brands = getBrands(st.store);
-  const [moved] = brands.splice(_dragIdx, 1);
-  brands.splice(toIdx, 0, moved);
+  if (_dragIdx >= own.length || toIdx >= own.length) { _dragIdx = null; toast('Brands from the shared Brand Master keep the master order.', 'warn'); return; }
+  const [moved] = own.splice(_dragIdx, 1);
+  own.splice(toIdx, 0, moved);
   _dragIdx = null;
-  saveBrands(st.store, brands);
+  saveBrands(st.store, own);
   renderSettings();
 }
 
@@ -2356,6 +2409,20 @@ function validateImportSchema(parsed) {
     if (typeof parsed.data.closing   !== 'object' || !parsed.data.closing)   errs.push('Missing closing section');
     if ('openingLocked' in parsed.data && typeof parsed.data.openingLocked !== 'boolean') errs.push('openingLocked must be boolean');
     if ('closingLocked' in parsed.data && typeof parsed.data.closingLocked !== 'boolean') errs.push('closingLocked must be boolean');
+    /* U05-F-03: no count above MAX_STOCK_QTY (at most 3 messages) */
+    const SCAN = { opening: ['display','storage','defective','yLoc','systemStock'], movements: ['inward','outward','sales','grn','theft'], closing: ['display','storage','defective','yLoc'] };
+    let bigN = 0;
+    Object.keys(SCAN).forEach(function(sec){
+      const blk = parsed.data[sec];
+      if (!blk || typeof blk !== 'object') return;
+      Object.keys(blk).forEach(function(brand){
+        const rec = blk[brand];
+        if (!rec || typeof rec !== 'object') return;
+        SCAN[sec].forEach(function(f){
+          if (bigN < 3 && stockOversize(rec[f])) { bigN++; errs.push('Value too large for "' + brand + '" ' + f + ' (maximum ' + MAX_STOCK_QTY + ')'); }
+        });
+      });
+    });
   }
   return errs;
 }
@@ -2435,13 +2502,33 @@ function normaliseImportData(parsed) {
   return parsed;
 }
 
+/* U05-F-01 / F-04 helpers for import */
+function storedDay(key){ try{ var raw=localStorage.getItem(key); return raw?{raw:raw,rec:JSON.parse(raw)}:null; }catch(e){ return null; } }
+function lockedSections(rec){ var s=[]; if(rec&&typeof rec==='object'){ if(rec.openingLocked===true)s.push('opening'); if(rec.movementsSubmitted===true)s.push('movements'); if(rec.closingLocked===true)s.push('closing'); } return s; }
+function stampImportOverwrite(d, secs, oldRec){
+  var now=new Date().toISOString(), old=Array.isArray(oldRec&&oldRec.reopenLog)?oldRec.reopenLog:[];
+  var keep=old.concat((d.reopenLog||[]).filter(function(e){ return !old.some(function(x){ return x.at===e.at&&x.section===e.section&&x.reason===e.reason; }); }));
+  secs.forEach(function(s){ keep.push({section:s,by:stActor(),role:st.mode,at:now,reason:'Locked day replaced by file import'}); });
+  d.reopenLog=keep.slice(-50);
+  d.reopenedCount=Math.max(Number.isInteger(oldRec&&oldRec.reopenedCount)?oldRec.reopenedCount:0, d.reopenedCount||0)+secs.length;
+}
+function negativeBalanceBrands(d){
+  var bad=[], n=function(v){ var x=parseStockInt(v); return x===null?0:x; };
+  Object.keys(d.movements||{}).forEach(function(b){
+    var o=(d.opening&&d.opening[b])||{}, m=d.movements[b]||{};
+    if (n(m.outward)+n(m.sales)+n(m.theft) > n(o.systemStock)+n(m.inward)+n(m.grn)) bad.push(b);
+  });
+  return bad;
+}
+function validHiddenBrandsBlob(v){ return !!v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).every(function(s){ return Array.isArray(v[s]) && v[s].every(function(n){ return typeof n==='string'; }); }); }
+
 function importJSON(input) {
   if (roBlock()) { input.value=''; return; }  // VIEW-ONLY past: no imports while viewing history
   if (st.mode !== 'sm') { toast('Only SM can import data.', 'err'); input.value=''; return; }
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = async e => {
     try {
       let parsed;
       try { parsed = JSON.parse(e.target.result); } catch(pe) { toast('Invalid JSON — cannot parse file.', 'err'); input.value=''; return; }
@@ -2451,31 +2538,59 @@ function importJSON(input) {
         const errs = validateImportSchema(parsed);
         if (errs.length) { toast('Import rejected: ' + errs.join('; '), 'err'); input.value=''; return; }
         const norm = normaliseImportData(parsed);
+        const neg = negativeBalanceBrands(norm.data);
+        if (neg.length) { toast('Import rejected: closing stock would be negative for ' + neg.slice(0,3).join(', ') + (neg.length>3?' and '+(neg.length-3)+' more':'') + '. Fix the file and try again.', 'err'); input.value=''; return; }
+        const key = SK_PREFIX + norm.store + '_' + norm.date;
+        const newJson = JSON.stringify(norm.data);
+        const ex = storedDay(key);
+        const secs = (ex && ex.raw !== newJson) ? lockedSections(ex.rec) : [];
+        if (secs.length) {
+          if (!await stReauth('Import will replace a locked, signed-off day (' + norm.store + ' ' + norm.date + ') - this is permanently logged')) {
+            input.value = ''; toast('Import cancelled: the day is locked and Owner approval was not given. Nothing was changed.', 'warn'); return;
+          }
+          stampImportOverwrite(norm.data, secs, ex.rec);
+        }
         localStorage.setItem(SK_PREFIX + norm.store + '_' + norm.date, JSON.stringify(norm.data));
         toast('Data imported ✓', 'ok');
         goTab(st.tab);
       }
       // Full-backup format: object of keyed records
       else if (typeof parsed === 'object' && !Array.isArray(parsed)) {
-        let count = 0, failed = 0;
-        Object.entries(parsed).forEach(([k, v]) => {
+        let count = 0, failed = 0, keptLocked = 0, negDays = 0, pinAsked = false, pinOk = false;
+        for (const [k, v] of Object.entries(parsed)) {
           if (k === SK_CROS || k === SK_BRANDS || k === SK_STATE) {
             localStorage.setItem(k, JSON.stringify(v));
             count++;
-            return;
+            continue;
           }
-          if (!k.startsWith(SK_PREFIX)) return;
+          if (k === SK_BRANDS_HIDDEN) {
+            if (validHiddenBrandsBlob(v)) { localStorage.setItem(k, JSON.stringify(v)); count++; }
+            continue;
+          }
+          if (!k.startsWith(SK_PREFIX)) continue;
           // Reconstruct as single-record format to validate
           const parts = k.replace(SK_PREFIX,'').split('_');
-          if (parts.length < 2) { failed++; return; }
+          if (parts.length < 2) { failed++; continue; }
           const fakeRec = { store: parts[0], date: parts[1], data: v };
           const errs    = validateImportSchema(fakeRec);
-          if (errs.length) { failed++; return; }
+          if (errs.length) { failed++; continue; }
           const norm = normaliseImportData(fakeRec);
+          const newJson = JSON.stringify(norm.data);
+          const ex = storedDay(k);
+          const secs = (ex && ex.raw !== newJson) ? lockedSections(ex.rec) : [];
+          if (secs.length) {
+            if (!pinAsked) { pinAsked = true; pinOk = await stReauth('Backup import will replace one or more locked, signed-off days - this is permanently logged'); }
+            if (!pinOk) { keptLocked++; continue; }
+            stampImportOverwrite(norm.data, secs, ex.rec);
+          }
+          if (negativeBalanceBrands(norm.data).length) negDays++;
           localStorage.setItem(k, JSON.stringify(norm.data));
           count++;
-        });
-        toast(`Full backup imported: ${count} records${failed?' ('+failed+' skipped)':''}`, count?'ok':'warn');
+        }
+        toast(`Full backup imported: ${count} records${failed?' ('+failed+' skipped)':''}`
+          + (keptLocked ? ` - ${keptLocked} locked day(s) kept because Owner approval was not given` : '')
+          + (negDays ? ` - ${negDays} day(s) have a negative closing balance, please review` : ''),
+          (count && !keptLocked && !negDays) ? 'ok' : 'warn');
         goTab(st.tab);
       } else {
         toast('Unrecognised file format.', 'err');
@@ -2498,7 +2613,7 @@ function exportAllJSON() {
   const all = {};
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);
-    if (k && (k.startsWith(SK_PREFIX) || k === SK_CROS || k === SK_BRANDS || k === SK_STATE)) {
+    if (k && (k.startsWith(SK_PREFIX) || k === SK_CROS || k === SK_BRANDS || k === SK_BRANDS_HIDDEN || k === SK_STATE)) {
       try { all[k] = JSON.parse(localStorage.getItem(k)); } catch(e) {}
     }
   }
@@ -2530,10 +2645,23 @@ function exportCSV() {
 /* ══════════════════════════════════════════════════
    CLEAR
 ══════════════════════════════════════════════════ */
-function clearDay() {
+/* U05-F-02: permanent module-local record of every Clear Everything (and Clear Day on a locked day). Newest last, 20 kept. */
+function writeClearLog(e){ try{ var a=JSON.parse(localStorage.getItem(SK_CLEARLOG)||'[]'); if(!Array.isArray(a))a=[];
+  e.at=new Date().toISOString(); e.by=stActor(); e.role=st.mode; a.push(e); localStorage.setItem(SK_CLEARLOG, JSON.stringify(a.slice(-20))); return e.at; }catch(err){ return null; } }
+function finishClearLog(at, patch){ try{ var a=JSON.parse(localStorage.getItem(SK_CLEARLOG)||'[]'); if(!Array.isArray(a))return false;
+  var e=a.find(function(x){ return x&&x.at===at; }); if(!e)return false; Object.assign(e, patch); localStorage.setItem(SK_CLEARLOG, JSON.stringify(a)); return true; }catch(err){ return false; } }
+function lastClear(){ try{ var a=JSON.parse(localStorage.getItem(SK_CLEARLOG)||'[]'); return Array.isArray(a)&&a.length?a[a.length-1]:null; }catch(e){ return null; } }
+async function clearDay() {
   if (roBlock()) return;  // VIEW-ONLY past: never delete a read-only day
   const s = st.store==='titanworld'?'Titan World':'Helios';
   if (!confirm(`Clear ALL data for ${s} on ${fmtDate(st.date)}?\n\nThis cannot be undone.`)) return;
+  const rec = storedDay(dataKey());
+  const secs = rec ? lockedSections(rec.rec) : [];
+  if (secs.length) {
+    if (!await stReauth('Clear a locked, signed-off day - this is permanently logged')) { toast('Clear cancelled: the day is locked and Owner approval was not given. Nothing was changed.', 'warn'); return; }
+    if (roBlock()) return;
+    if (!writeClearLog({scope:'day', store:st.store, date:st.date, records:1, locked:1, stores:{}})) { toast('Could not write the clear log. Nothing was deleted.', 'err'); return; }
+  }
   localStorage.removeItem(dataKey());
   toast('Day data cleared.'); goTab(st.tab);
 }
@@ -2546,18 +2674,52 @@ function clearAll() {
   document.getElementById('del-confirm-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('del-inp').focus(), 80);
 }
-function delConfirmSubmit() {
+let _delBusy = false;
+async function delConfirmSubmit() {
+  if (_delBusy) return;
   if (roBlock()) { delCancel(); return; }  // VIEW-ONLY past: never delete while viewing history
+  if (st.mode !== 'sm') { delCancel(); toast('Only SM can clear all data.', 'err'); return; }
   if (document.getElementById('del-inp').value !== 'DELETE') {
     document.getElementById('del-err').textContent = 'You must type DELETE exactly (in capitals).';
     return;
   }
   document.getElementById('del-confirm-modal').style.display = 'none';
-  const keys = [];
-  for (let i=0; i<localStorage.length; i++) { const k=localStorage.key(i); if (k&&k.startsWith(SK_PREFIX)) keys.push(k); }
-  keys.forEach(k => localStorage.removeItem(k));
-  toast('All data permanently deleted.', 'err');
-  goTab('opening');
+  _delBusy = true;
+  try {
+    const keys = [], stores = {}; let locked = 0;
+    for (let i=0; i<localStorage.length; i++) { const k=localStorage.key(i); if (k&&k.startsWith(SK_PREFIX)) keys.push(k); }
+    if (!keys.length) { toast('Nothing to clear.', 'warn'); return; }
+    keys.forEach(k => {
+      const p = k.slice(SK_PREFIX.length).split('_'); stores[p[0]] = (stores[p[0]] || 0) + 1;
+      try { if (lockedSections(JSON.parse(localStorage.getItem(k))).length) locked++; } catch (e) {}
+    });
+    if (!await stReauth('Erase ALL stock data: ' + keys.length + ' day records, all stores' + (locked ? ' (' + locked + ' locked/signed-off)' : '') + '. This cannot be undone and is permanently logged')) return;
+    if (roBlock()) return;
+    /* S06-2: the log entry is written BEFORE the wipe (no log, no delete) and finished AFTER it */
+    const logAt = writeClearLog({scope:'all', records:keys.length, locked:locked, stores:stores, done:false});
+    if (!logAt) { toast('Could not write the clear log. Nothing was deleted.', 'err'); return; }
+    toast('Clearing ' + keys.length + ' records...', 'warn');
+    const CHUNK = 100;
+    const run = async () => {
+      for (let i=0; i<keys.length; i+=CHUNK) {
+        keys.slice(i, i+CHUNK).forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+        await new Promise(r => setTimeout(r, 0));   // let the screen breathe between chunks
+      }
+    };
+    let failed = false;
+    try {
+      let store = null;
+      try { store = (window.parent && window.parent !== window) ? window.parent.SaagarStore : null; } catch (e) { store = null; }
+      if (store && typeof store.bulkAsync === 'function') await store.bulkAsync(run); else await run();
+    } catch (e) { failed = true; }
+    const removed = keys.filter(k => localStorage.getItem(k) === null).length;
+    finishClearLog(logAt, { done: !failed && removed === keys.length, removed: removed });
+    if (failed || removed < keys.length) toast(removed + ' of ' + keys.length + ' records deleted - the rest could not be removed.', 'err');
+    else toast('All data permanently deleted.', 'err');
+    goTab('opening');
+  } catch (err) {
+    toast('Clear failed: ' + (err && err.message ? err.message : err), 'err');
+  } finally { _delBusy = false; }
 }
 function delCancel() {
   document.getElementById('del-confirm-modal').style.display = 'none';
@@ -2635,14 +2797,14 @@ function printOpeningReg(){
   if (!brands.length) {
     body += '<div class="stp-empty">No entries.</div>';
   } else {
-    let tSys = 0, tPhys = 0;
+    let tSys = 0, tPhys = 0, tVar = 0;
     const rows = brands.map(brand => {
       const o    = data.opening[brand] || {};
       const sys  = o.systemStock;
       const phys = totalPhys(o);
       const sysN = sys ?? 0, physN = phys ?? 0;
       const vr   = physN - sysN;
-      tSys += sysN; tPhys += physN;
+      tSys += sysN; tPhys += physN; if (phys !== null) tVar += vr;
       const counted = isCounted(o);
       const status  = o.verified ? 'Verified'
                     : (counted && vr !== 0) ? 'Mismatch'
@@ -2653,7 +2815,7 @@ function printOpeningReg(){
         + '<td class="stp-r">' + (sys  !== null ? stEsc(sys)  : '—') + '</td>'
         + '<td>' + (o.croName ? stEsc(o.croName) : '<span class="stp-mut">—</span>') + '</td>'
         + '<td class="stp-r">' + (phys !== null ? stEsc(phys) : '—') + '</td>'
-        + '<td class="stp-r">' + ((phys !== null || sys !== null) ? stEsc(stVar(vr)) : '—') + '</td>'
+        + '<td class="stp-r">' + (phys !== null ? stEsc(stVar(vr)) : '—') + '</td>'
         + '<td>' + stEsc(status) + '</td>'
         + '<td>' + stEsc(o.remarks || '') + '</td>'
         + '</tr>';
@@ -2662,7 +2824,7 @@ function printOpeningReg(){
       + '<table class="stp-table">'
       + '<thead><tr><th>Brand</th><th class="stp-r">System</th><th>CRO</th><th class="stp-r">Physical</th><th class="stp-r">Variance</th><th>Status</th><th>Remarks</th></tr></thead>'
       + '<tbody>' + rows + '</tbody>'
-      + '<tfoot><tr><td>TOTAL</td><td class="stp-r">' + tSys + '</td><td></td><td class="stp-r">' + tPhys + '</td><td class="stp-r">' + stVar(tPhys - tSys) + '</td><td></td><td></td></tr></tfoot>'
+      + '<tfoot><tr><td>TOTAL</td><td class="stp-r">' + tSys + '</td><td></td><td class="stp-r">' + tPhys + '</td><td class="stp-r">' + stVar(tVar) + '</td><td></td><td></td></tr></tfoot>'
       + '</table></div>';
   }
   stPrintDoc({ title:'Stock — Opening Stock Register', fileBase:'Stock-Opening-' + st.date, body, orientation:'portrait' });
@@ -2957,7 +3119,7 @@ function croOptions(cros, selected) {
 function emptyStateRow(cols) {
   const isSM = st.mode === 'sm';
   const hint = isSM
-    ? 'Add watch brands in <strong>Settings → Brand List</strong> to begin.'
+    ? 'Add watch brands in <strong>Settings → Masters → Brands</strong> to begin.'
     : 'Ask the Store Manager to add brands in Settings.';
   return `<tr class="empty-row"><td colspan="${cols}">
       <div class="tbl-empty">

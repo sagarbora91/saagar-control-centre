@@ -1,0 +1,268 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "WAVE-7-RELEASE-READINESS-CAPABILITY-ADDENDUM",
+  "decision": "recorded-no-capability-added",
+  "state": "addendum; no new capability id; owner-reconfirmation-pending",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-12",
+  "approvalEvidence": "owner decision given in chat, 2026-11-12",
+  "recordedBy": "Claude Code agent, Wave 7 step W4, transcribing owner chat decisions about release work. This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "priorRecords": [
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+      "bytes": 11437,
+      "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+      "treatment": "left unchanged; this addendum extends it"
+    },
+    {
+      "path": "verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 8217,
+      "sha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9",
+      "treatment": "left unchanged; this addendum extends it"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 20850,
+      "sha256": "4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237",
+      "treatment": "left unchanged. One statement in it is superseded by this addendum: its trustAndGateStatement.registration says the gate is NOT registered in scripts/audit/config.mjs (see gateRegistration below)."
+    }
+  ],
+  "sourceBinding": {
+    "sourceCommit": "d6eab0b1f124c82c58cbe1a8003668d28a2304a1",
+    "includesUncommittedWave7Changes": true,
+    "ledgerPath": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+    "currentInventorySha256": "704bed0b2feb2aad5a0c63cdb155f9b123ad059cd58d165c2beb0bb5e33aaa02",
+    "ledgerFileSha256": "291d60e71fa7ec396ca38b03c24af47fa5b7b90d1d965595ce520f6ba44127c4",
+    "previousInventorySha256": "573e9111c4616ff1634252534efdedb8824093a4fe35dd005903726b24313385",
+    "whyTheInventoryHashMoved": "Only the line number of 164 rows moved: 4 script-tag lines were removed from www/index.html (the four ETP bridge tags now load on demand), so every shell visible-action and shell persisted-outcome row below those lines reports a lower line. No row was added, removed or changed in any other field ({\".line\":164}; surfaces visible-action/shell, persisted-outcome/shell; paths www/index.html). The inventory hash covers the line field, so it moves. The 748 capability ids, their categories and every outcome hash are unchanged.",
+    "evidence": "inventory-diff.json in the Wave 7 workspace (HEAD inventory 573e9111c4616ff1634252534efdedb8824093a4fe35dd005903726b24313385 versus working inventory 704bed0b2feb2aad5a0c63cdb155f9b123ad059cd58d165c2beb0bb5e33aaa02, both 748 rows, 0 added, 0 removed, 164 differing in line only)"
+  },
+  "inventory": {
+    "baselineCapabilities": 655,
+    "currentCapabilities": 748,
+    "netNew": 93,
+    "previousRecordCurrentCapabilities": 748,
+    "addedSincePreviousRecord": 0,
+    "removedSincePreviousRecord": 0,
+    "ledgerSummary": {
+      "added": 443,
+      "removed": 350,
+      "changed": 41,
+      "capabilityApprovalsRequired": 834
+    },
+    "categoriesAfter": {
+      "failure-posture": 122,
+      "permission": 31,
+      "persisted-outcome": 86,
+      "route": 13,
+      "visible-action": 496
+    },
+    "approvalStatus": "pending-owner-approval"
+  },
+  "ownerDecisionsGivenInChat20261112": {
+    "evidence": "owner decision given in chat, 2026-11-12",
+    "ownersWords": [
+      "After wave 6 You directly start wave 7",
+      "commit and push happen automatically, and Wave 7 follows with no gap"
+    ],
+    "scopeFromDecisionFile": [
+      "R-1 Fix the fresh-clone test failure (www/shared/module-mobile-common.css line endings; old defect from 04d192b).",
+      "R-2 Load the four ETP bridge files on demand to recover startup time; contain the build-time helper functions the red team flagged.",
+      "R-3 Release tooling readiness: signing script that the OWNER runs with his own key (no agent handles keys or passwords); fail-closed check that the release has no INTERNET permission.",
+      "R-4 Owner-facing documents: key creation and bridge key ceremony guide, tablet install and backup procedure, staff UAT script, ETP production gate paperwork, governed startup (A10) capture runbook.",
+      "R-5 Finish the bridge red-team runtime pass."
+    ],
+    "coverage": "The commit-and-push go-ahead covered Waves 1-6 only. Wave 7 stays uncommitted until the owner says so.",
+    "processDecision": "The commit-and-push go-ahead covered Waves 1-6 only. It does not cover Wave 7, production signing, creation of any key, publication, GitHub Releases, or any change to the main branch or the Release workflow."
+  },
+  "waveChanges": {
+    "r1FreshCloneCss": {
+      "what": "A .gitattributes rule stores www/shared/module-mobile-common.css byte-exact (the sheet carries 3 CRs on lines 6-8 that the Phase 6I identity expects). The sheet itself is untouched in the working copy.",
+      "gitattributes": {
+        "path": ".gitattributes",
+        "bytes": 851,
+        "sha256": "d539d6c4b83aabd1ac3d593bd458506aa14e07d6dcc487d8f525280ef7faaad2"
+      },
+      "ruleLine": "www/shared/module-mobile-common.css -text",
+      "sheet": {
+        "path": "www/shared/module-mobile-common.css",
+        "bytes": 26137,
+        "sha256": "b8ae67010cb906861df2e858079106a1d76a122ccc6f2748b9090a843d7f67f2"
+      },
+      "atCommitTime": "The rule only takes effect for the sheet when it is staged with git add --renormalize on that one path (command list in the W1 report). Expected result per the W1 scratch clone: blob d7bbd41418e357336f5f4d065d8c649a338340de, 26137 bytes, i/mixed w/mixed attr/-text.",
+      "noIdentityChange": "No expected hash of a historical identity was changed. The working-copy bytes of the sheet are unchanged, so the module manifest, the Phase 6I receipt and the www fingerprint of the sheet are unchanged."
+    },
+    "r2BridgeOnDemand": {
+      "what": "The four ETP bridge scripts (trust, pack verifier, compare, facade) are no longer static script tags in www/index.html. www/etp-chain-loader.js loads them on demand, in order, when the ETP module is first opened; until then the module bridge returns a frozen stand-in whose answer is CLOSED. The APK build wraps the transformed output of those four files in one function (scripts/prepare-api23-assets.mjs) so no Babel helper becomes a page global.",
+      "shell": {
+        "path": "www/index.html",
+        "bytes": 579370,
+        "sha256": "b2f21cc5c0b4839f4213bfe77bc919524e85a07aaeaf67d3a4057db812431916",
+        "scriptSrcTagLines": 63,
+        "mentionsBridgeFile": false,
+        "limitBytesStrictlyBelow": 580636
+      },
+      "loader": {
+        "path": "www/etp-chain-loader.js",
+        "bytes": 5503,
+        "sha256": "d9daabaf0ba62dd1fcdda2cc33d524a7f8ac4991b5b3b22b09f10097dc35efee"
+      },
+      "moduleBridge": {
+        "path": "www/shared/module-bridge.js",
+        "bytes": 3130,
+        "sha256": "c7f3e32542c6a25b6d52226e2cd58eee7fc5f3f6f0e1118052bee2fa180756f6"
+      },
+      "mah4Inventory": {
+        "loaderGroups": 7,
+        "scriptRoutes": 39,
+        "scriptLiteralReferences": 41,
+        "currentTreeVersusFrozenBaseline": "MAH-4 message/lifecycle baseline profile does not match current source",
+        "note": "The MAH-4 baseline profile is frozen history and was not regenerated; the dynamic inventory gains one loader group (shell-etp-bridge) with four paths. Sinks unchanged: no new createElement or document.write site and no import()."
+      },
+      "identitiesRegenerated": "Only the module-bridge record of www/module-manifest.js (bytes 3051 to 3130, sha256 c7f3e32542c6a25b6d52226e2cd58eee7fc5f3f6f0e1118052bee2fa180756f6) and current.inventorySha256 of the capability ledger. The etp entry of the golden file and the gate-0 receipt did not change.",
+      "securityResidual": "While the trust gate is closed the on-demand path is accepted with a known residual. A bridge global (trust, verifier, compare or facade) that is already defined before the first load keeps the bridge closed (the loader refuses to inject over a taken name). But a script already running in the shell realm that defines a locked, frozen global while that file is being injected is accepted, and so is the static-tag path. The residual applies to all four bridge globals, not only the facade. Before the gate is ever opened with a real key, the bridge must first move back to eager tags or into a Worker (R-4 key-ceremony guide).",
+      "correctedBy": "Auditor correction recorded in A-W1-W2: the first W2 wording named only the facade; it applies to all four globals. A top-level Babel helper function in the loader was removed by the auditor."
+    },
+    "r3ReleaseTooling": {
+      "what": "Owner-run release tooling, a post-build APK verifier and a fail-closed INTERNET-permission assertion. No key was created, opened or used; no release was built or signed.",
+      "files": [
+        {
+          "path": "scripts/release-owner.ps1",
+          "bytes": 17338,
+          "sha256": "cf5b6aa22df1dd2a4549027c308d00937d26d68a4771bfac64f59686df09f8f9",
+          "role": "Owner-run release script (Release and DryRun are separate parameter sets; passwords only through hidden prompts)"
+        },
+        {
+          "path": "scripts/lib/release-owner-guards.ps1",
+          "bytes": 6149,
+          "sha256": "b50764c1f927a1309b65af15d786c3ceef812f6163618f9eaa4210863baab2bb",
+          "role": "Guards for the owner script (keystore outside every git work tree, no non-interactive Release run)"
+        },
+        {
+          "path": "scripts/verify-release-apk.mjs",
+          "bytes": 17866,
+          "sha256": "51e4027be21117a3cf39102c69b39b1fb8eb8f9e9c3c42488e5db32dcfa650f8",
+          "role": "Post-build APK verifier; writes release-record.json (dry runs write dry-run-record.json only)"
+        },
+        {
+          "path": "scripts/lib/apk-tools.mjs",
+          "bytes": 2556,
+          "sha256": "3bc88da53b0695b5719b8b1d1d4d2a6285e7f142444c13bbc81d4c2ae7960c43",
+          "role": "APK reading helpers for the verifier"
+        },
+        {
+          "path": "scripts/lib/release-asset-checks.mjs",
+          "bytes": 7330,
+          "sha256": "c45ebee82582efd287a8534ab46ecfcc593034c76a2d78aaa0e3140ec23c2b9a",
+          "role": "Asset checks: demo seed flag, demo wiring, trust list, key material"
+        },
+        {
+          "path": "scripts/verify-generated-android-release.mjs",
+          "bytes": 6400,
+          "sha256": "88861990858a714a9280efe212ff3d35c0881ee94bb8cab20e484312cb65aa25",
+          "role": "Fail-closed INTERNET assertion (exactly one tools:node=remove guard directly under manifest)"
+        },
+        {
+          "path": "scripts/release-register.mjs",
+          "bytes": 2999,
+          "sha256": "3a91177ad079a4ca566b9df7aa30138bc5d5dbd4ef5f78b1e6bf44ae0a2db936",
+          "role": "Release register helper (no shell use)"
+        },
+        {
+          "path": "scripts/build-production-release.ps1",
+          "bytes": 8472,
+          "sha256": "7be689410e874b60d3c228e86ea8d39f51c7b8b83bcca9d4098bd767daf36410",
+          "role": "Production recipe; second refusal for a keystore inside the repo"
+        }
+      ],
+      "signerPolicy": {
+        "path": "config/production-signing-policy.json",
+        "bytes": 162,
+        "sha256": "5e9e58f4ae7d7c4772d4f0966df9830cbd4a73113d20c1aea517b3382569dc8d",
+        "unchangedFromHead": true,
+        "note": "config/production-signing-policy.json is unchanged. The pinned old certificate stays, so every real release fails closed until the owner supplies a new certificate in a later, separate, committed change with its own dated signer approval record (RELEASE-IDENTITY-APPROVAL-2026-11-11.json says NOT UPDATED)."
+      },
+      "android": "No new Android permission, no new native plugin; android.permission.INTERNET stays removed at build time and is now asserted fail-closed in the generated release."
+    }
+  },
+  "gateRegistration": {
+    "gate": "GATE-ETP-BRIDGE-TRUST",
+    "state": "registered as open in scripts/audit/config.mjs",
+    "registeredLine": "{ id: 'GATE-ETP-BRIDGE-TRUST', title: 'ETP report-engine bridge trust: owner key ceremony and WebCrypto ECDSA verification observed on the Samsung Tab S7', state: 'open' },",
+    "config": {
+      "path": "scripts/audit/config.mjs",
+      "bytes": 2357,
+      "sha256": "b54b6c746c76caa7714a49e3683430b9d63e0e99c4c3704204cec5396f68e937"
+    },
+    "openGateCountInConfig": 11,
+    "supersedes": "Wave 6 record verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json (sha256 4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237), trustAndGateStatement.registration: \"The gate is NOT registered in scripts/audit/config.mjs (that edit would fail audit comparison C-09 EXTERNAL_GATE_SET_CHANGED and change the audit-tooling fingerprint). scripts/audit/config.mjs is byte-identical to its pre-wave state (sha256 18270ccb605f1a406f135543ecb8ab56bf0f88c050ea47fde0af8d77f217c82d). Registering it is an owner step after the commit together with a re-freeze of the audit tooling.\". That statement is now false: the gate IS registered and config.mjs is no longer byte-identical to the sha256 named there.",
+    "consequence": "Audit comparison C-09 (EXTERNAL_GATE_SET_CHANGED) compares gate sets: a baseline taken with the old tooling lists one gate fewer. Any tooling commit that is used as an audit baseline or comparison must carry this final config.mjs. Whether the A10 anchor stays at 9e3d938 or moves is an owner decision (O-4 in the plan) and is not made here.",
+    "closedInCode": "Unchanged: the shipped trust list is empty, the gate reports CLOSED / ETP_BRIDGE_TRUST_ANCHOR_ABSENT, every pack is refused. Registration records the gate; it does not open it."
+  },
+  "addedToInventory": {
+    "visibleActions": [],
+    "permissions": [],
+    "persistedOutcomes": [],
+    "routes": [],
+    "failurePostures": [],
+    "note": "Wave 7 adds no capability id. No www file was added in Wave 7; the analyser scans tracked www files only."
+  },
+  "removedFromInventory": [],
+  "outcomeChangedEntries": [],
+  "filesNotVisibleToAnalyser": {
+    "note": "Wave 7 creates no www file. Its new files are scripts and tests, which the analyser does not scan. A scratch git copy of the working tree outside the project (git add and git commit inside the copy only; never pushed; the project .git was not written) was measured with the analyser: the ledger it produces is byte-identical to the ledger on disk. So the tracked and untracked states give the same figures and no commit-time overlay is needed.",
+    "expectedOnceTracked": {
+      "currentCapabilities": 748,
+      "categories": {
+        "failure-posture": 122,
+        "permission": 31,
+        "persisted-outcome": 86,
+        "route": 13,
+        "visible-action": 496
+      },
+      "added": 443,
+      "capabilityApprovalsRequired": 834,
+      "currentInventorySha256": "704bed0b2feb2aad5a0c63cdb155f9b123ad059cd58d165c2beb0bb5e33aaa02",
+      "ledgerFileSha256": "291d60e71fa7ec396ca38b03c24af47fa5b7b90d1d965595ce520f6ba44127c4",
+      "identicalToLedgerOnDisk": true,
+      "phase1SharedSpineInScratchTrackedState": "6/6 pass in the scratch tracked state"
+    },
+    "reverifyAfterCommit": "The orchestrator runs the analyser without --write after the Wave 7 commit and compares the output byte for byte with the ledger file sha256 above."
+  },
+  "trustAndGateStatement": {
+    "gate": "GATE-ETP-BRIDGE-TRUST",
+    "keyHygiene": "Check K, run in W4 on 2026-11-12 (scan script built from string fragments so it does not match itself): no private key block in the repository tree outside the one test file that builds its detection pattern, no private JWK, no file named *.pem *.p8 *.pfx *.jks *.keystore *.key; no .audit-secrets folder was opened.",
+    "trustAnchorAbsent": "Check G, run in W4 on 2026-11-12: the shipped trust list is an empty frozen array, the gate reports CLOSED / ETP_BRIDGE_TRUST_ANCHOR_ABSENT, no test seam is exported, and www/, build-overrides/ and android/app/src/main contain no PEM public key, no JWK token and no 65-byte 0x04 point.",
+    "noKeyCreated": "No signing key, bridge key or keystore was created, read, moved or printed in Wave 7. The owner creates both himself.",
+    "doesNotClose": "The key ceremony, WebCrypto ECDSA verification on the Samsung Tab S7 and native acceptance of a bridge-built manifest remain unverified."
+  },
+  "scope": {
+    "authorizes": [
+      "regeneration of the module-bridge record of the module manifest data block",
+      "regeneration of the capability ledger (current.inventorySha256 only)",
+      "registration of GATE-ETP-BRIDGE-TRUST as open in scripts/audit/config.mjs",
+      "the release tooling files listed above (no key, no signing)"
+    ],
+    "doesNotClose": [
+      "GATE-ETP-PRODUCTION",
+      "GATE-ETP-BRIDGE-TRUST",
+      "A10-01 startup acceptance",
+      "production signing, the new signing key and the signer policy pin",
+      "release approval",
+      "commit and push of Wave 7 (not authorised yet)",
+      "physical-device acceptance",
+      "staff UAT",
+      "legal approval",
+      "any capability added after this inventory hash"
+    ]
+  },
+  "ownerReconfirmation": "Not yet given. The exact figures and hashes above were not itemised to the owner in chat before this record was written. The ledger remains pending-owner-approval and every delta keeps ownerApproval \"pending\".",
+  "registryNote": "Documentation only: no script or test consumes this directory. Older records are listed by sha256 and were not edited."
+}

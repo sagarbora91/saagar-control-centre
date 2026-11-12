@@ -114,9 +114,11 @@
     if(!name){ toast('Name is required'); return; }
     if(!start||!end){ toast('Start and end dates are required'); return; }
     if(end<start){ toast('End date is before start'); return; }
+    var tt=Number(val('f_tt'))||0, th=Number(val('f_th'))||0;
+    if(!isFinite(tt)||!isFinite(th)||tt<0||th<0){ toast('Targets cannot be negative'); return; }
     var c=getCal(), id=val('f_id');
     var rec={ id:id||uid(), name:name, start:start, end:end,
-      targets:{ titanworld:Number(val('f_tt'))||0, helios:Number(val('f_th'))||0 },
+      targets:{ titanworld:tt, helios:th },
       note:(val('f_note')||'').trim(), blackout:document.getElementById('f_black').checked, checklist:[] };
     if(id){ var i=c.festivals.findIndex(function(x){return x.id===id;}); if(i>-1){ rec.checklist=c.festivals[i].checklist||[]; c.festivals[i]=rec; } else c.festivals.push(rec); }
     else c.festivals.push(rec);
@@ -147,7 +149,9 @@
     if(!fests.length){ host.innerHTML='<div class="card"><div class="empty">No festivals planned yet. Add Dhanteras or Diwali above to set targets and a prep checklist.</div></div>'; return; }
     host.innerHTML=fests.map(function(f){
       var past=f.end&&t>f.end;
-      var tgt=((f.targets&&f.targets.titanworld)||0)+((f.targets&&f.targets.helios)||0);
+      var twRaw=Number(f.targets&&f.targets.titanworld)||0, heRaw=Number(f.targets&&f.targets.helios)||0;
+      var twT=Math.max(0,twRaw), heT=Math.max(0,heRaw), badT=(twRaw<0||heRaw<0);
+      var tgt=twT+heT;
       var act=actualFor(f.start,f.end);
       var pct=tgt>0?Math.min(100,Math.round(act/tgt*100)):0;
       var chk=(f.checklist||[]);
@@ -158,9 +162,10 @@
         '<div class="row" style="justify-content:space-between"><div><b style="font-size:15px;color:var(--navy)">'+esc(f.name)+'</b> '+statusBadge(f)+(f.blackout?' <span class="badge free">Leave freeze</span>':'')+'<div class="muted">'+esc(f.start)+' → '+esc(f.end)+'</div></div>'+
           '<div class="row"><button class="btn xs" onclick="editFestival(\''+f.id+'\')">Edit</button><button class="btn xs red" onclick="delFestival(\''+f.id+'\')">Delete</button></div></div>'+
         (f.note?'<div class="muted" style="margin-top:4px">'+esc(f.note)+'</div>':'')+
-        '<div class="kpi"><div><b>'+inr(tgt)+'</b><span>Target (TW '+inr((f.targets&&f.targets.titanworld)||0)+' · HE '+inr((f.targets&&f.targets.helios)||0)+')</span></div>'+
+        '<div class="kpi"><div><b>'+inr(tgt)+'</b><span>Target (TW '+inr(twT)+' · HE '+inr(heT)+')</span></div>'+
           '<div><b>'+inr(act)+'</b><span>Actual (QMS sales)</span></div>'+
           '<div><b>'+pct+'%</b><span>of target</span></div></div>'+
+        (badT?'<div class="muted" style="color:var(--red)">A negative target was saved earlier - edit this festival to correct it</div>':'')+
         (tgt>0?'<div class="bar"><span style="width:'+pct+'%"></span></div>':'')+
         '<div style="margin-top:12px"><label>'+esc(checklistLabel)+'</label>'+chkHtml+
           '<div class="row" style="margin-top:8px"><input id="ck_'+f.id+'" placeholder="Add a prep item — e.g. top up Raga stock" style="flex:1"><button class="btn xs g" onclick="addChkItem(\''+f.id+'\')">Add</button></div></div>'+

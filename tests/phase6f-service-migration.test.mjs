@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 import test from 'node:test';
 
 const html = fs.readFileSync(new URL('../www/modules/service/index.html', import.meta.url), 'utf8');
@@ -50,7 +51,7 @@ test('Service provides explicit API-23 fallbacks for modern layouts', () => {
 });
 
 test('Service business, persistence, action and evidence source remains byte-stable', () => {
-  const applicationScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
+  const applicationScripts = [...undoFixWaveText('www/modules/service/index.html', html).matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(source => source.length > 1_000)
     .join('\n');
@@ -61,7 +62,13 @@ test('Service business, persistence, action and evidence source remains byte-sta
     'function closeCase()', 'function delCase(', 'function svcD3RenderWorkboard(',
     'function watchKey(id)', 'function watchKeyAfter(id)', 'function compressWatchImage(',
     'function persistWatchPhoto(id)', 'function loadWatchPhoto(id)', 'function svcEv()'
-  ]) assert.ok(applicationScripts.includes(identity), `missing preserved Service identity: ${identity}`);
+  ]) {
+    assert.ok(applicationScripts.includes(identity), `missing preserved Service identity: ${identity}`);
+    assert.ok(html.includes(identity), `missing Service identity in the current file: ${identity}`);
+  }
+  for (const pattern of [/return 'wsf\|' \+ \(id \|\| g\('f-ono'\) \|\| 'DRAFT'\);/, /\+ '\|after';/, /api\.delByKey\|\|api\.delByMatch/, /persistWatchPhoto\(editId \|\| id\)/]) {
+    assert.match(html, pattern, 'current file');
+  }
   assert.match(applicationScripts, /return 'wsf\|' \+ \(id \|\| g\('f-ono'\) \|\| 'DRAFT'\);/);
   assert.match(applicationScripts, /\+ '\|after';/);
   assert.match(applicationScripts, /api\.delByKey\|\|api\.delByMatch/);

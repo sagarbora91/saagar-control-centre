@@ -281,10 +281,13 @@ owner approves the freeze.
 Files: `www/etp-bridge-facade.js` (global `SaagarEtpBridgeFacade`), `www/etp-bridge-compare.js` (global `SaagarEtpBridgeCompare`). The ETP module reaches the
 facade only through the shell bridge getter `SaagarModuleBridge.etpBridgeGateway`. The facade has exactly six keys: `VERSION`, `CODES`, `status`, `stage`,
 `compare`, `discard`. It has no publish, confirm, import, export or row-returning member.
+The four bridge files (`etp-bridge-trust.js`, `etp-bridge-pack-verifier.js`, `etp-bridge-compare.js`, `etp-bridge-facade.js`) are not shell script tags: they load on demand
+through `www/etp-chain-loader.js` the first time the ETP module asks the bridge. Until they are loaded, and whenever loading fails, the gateway answers
+`ETP_BRIDGE_UNAVAILABLE` (closed). In the APK build each of the four files is wrapped in a function scope so that Babel helper functions never become page globals.
 
 **GATE-ETP-BRIDGE-TRUST.** Every entry point checks the verifier's gate first. While the shipped trust list is empty (every shipped build) the gate is closed:
 `stage` and `compare` return `ETP_BRIDGE_TRUST_GATE_CLOSED` before the Owner session is read, before any file is touched and before any PIN keypad is shown.
-Nothing stored, sent, typed or contained in a pack can open the gate. The registration of this gate in the audit tooling is an owner step after the commit.
+Nothing stored, sent, typed or contained in a pack can open the gate. The gate is registered as open in the audit register (`scripts/audit/config.mjs`, `OPEN_GATES`); registering it does not open it.
 
 **Roles (owner decision Q7, given in chat, 2026-11-12).** The role comes only from the Owner session snapshot, never from the request or the pack.
 The Owner may use the bridge with no prompt. A Store Manager who can open the ETP module (`roleCanOpen('etp')`) is asked once for the Owner PIN through the

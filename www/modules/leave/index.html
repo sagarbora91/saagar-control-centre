@@ -37,7 +37,7 @@ var LeaveRenderedPolicy=SaagarRenderedComponents.createPolicy({
 <title>Staff Leave Manager</title>
 <!-- Google Fonts with system-font fallback so layout works offline -->
 <link id="phase6g-leave-ui-css" rel="stylesheet" href="leave-ui.css">
-<style id="st-v5-hide-css">.btn-teal{display:none !important}</style>
+<style id="st-v5-hide-css">.btn-teal:not(#hdrStaffBtn){display:none !important}</style>
 
 <link id="st-v5-uniform-css" rel="stylesheet" href="../../shared/module-uniform.css">
 <link rel="stylesheet" href="../../c1-control-desk.css">
@@ -710,6 +710,112 @@ function populateApproverSelect() {
   sel.value = '';
 }
 
+// ── S09 fix-wave helpers ──
+const MAX_LEAVE_SPAN_DAYS     = 366;   // one request may cover at most this many calendar days
+const CONFIRM_LEAVE_SPAN_DAYS = 31;    // longer than this asks the user to confirm first
+
+// Who is acting? Read live at every guard (never cached) from the shared module runtime, falling back to the
+// shell bridge. Unreadable => nobody (fail closed).
+function leaveSession() {
+  try {
+    const rt = window.SaagarModuleRuntime;
+    if (rt && typeof rt.session === 'function') {
+      const v = rt.session() || {};
+      return { isOwner: v.isOwner === true, isManager: v.isManager === true, role: String(v.role || ''), actorName: String(v.actorName || '') };
+    }
+    const os = window.SaagarModuleBridge && window.SaagarModuleBridge.ownerSession;
+    if (os && typeof os.read === 'function') {
+      const v = os.read() || {};
+      return { isOwner: v.isOwner === true, isManager: v.isManager === true, role: String(v.role || ''), actorName: '' };
+    }
+  } catch (e) {}
+  return { isOwner: false, isManager: false, role: '', actorName: '' };
+}
+function canDecideLeave() { const s = leaveSession(); return s.isOwner || s.isManager; }
+// Display name of the person acting: the session's name; else the owner name / named staff signed in; else the role.
+function leaveActorName(sess) {
+  if (sess.actorName && sess.actorName.trim()) return sess.actorName.trim();
+  try {
+    if (sess.isOwner) return (localStorage.getItem('st_v5_owner_name') || '').trim() || 'Owner';
+    const a = JSON.parse(localStorage.getItem('saagar_active_staff_v1') || 'null');
+    if (a && a.name) return String(a.name).trim();
+  } catch (e) {}
+  return sess.role || 'Store Manager';
+}
+// Returns true (and says why) when the acting role may not do manager-level things. Mirrors guardReadOnly().
+function guardManager(what) {
+  if (canDecideLeave()) return false;
+  showToast('Only the Owner or a Store Manager can ' + what, 'error');
+  return true;
+}
+// Names of active "leave blackout" festivals covering a date (Planning calendar). Never throws.
+function festivalFreezeNames(key) {
+  try {
+    const c = JSON.parse(localStorage.getItem('saagar_festival_calendar_v1') || 'null');   // Planning owns this key; read-only here
+    const fs = (c && Array.isArray(c.festivals)) ? c.festivals : [];
+    return [...new Set(fs.filter(f => f && f.blackout && f.start && f.end && key >= f.start && key <= f.end)
+                         .map(f => String(f.name || 'Festival')))];
+  } catch (e) { return []; }
+}
+// True when the central Employee Master marks every matching record of this Leave staff row inactive/archived.
+// No master, or no match => false (fail open: a manually added Leave employee stays selectable).
+// The bridge's own flag on the Leave row (active === false, interface E) also counts as inactive.
+function isStaffInactive(emp) {
+  try {
+    if (emp && emp.active === false) return true;
+    const list = getCentralEmployees();
+    if (!emp || !list.length) return false;
+    const idv = String(emp.empId || emp.employeeId || '').trim().toLowerCase();
+    const nm  = String(emp.name || '').trim().toLowerCase();
+    const hits = list.filter(e => e && ((idv && String(e.employeeId || '').trim().toLowerCase() === idv)
+                                     || (nm  && String(e.name || '').trim().toLowerCase() === nm)));
+    return hits.length > 0 && hits.every(e => e.active === false || !!e.archived);
+  } catch (e) { return false; }
+}
+// Calendar days from..to inclusive (DST-safe); 0 when either date is invalid or from > to.
+function leaveSpanDays(from, to) {
+  if (!isValidDateKey(from) || !isValidDateKey(to) || from > to) return 0;
+  const a = parseKey(from), b = parseKey(to);
+  return Math.round((Date.UTC(b.year, b.month, b.day) - Date.UTC(a.year, a.month, a.day)) / 86400000) + 1;
+}
+// Trading-day keys of a request (weekly-off removed). Empty when the span is invalid or over the maximum.
+function leaveTradingKeys(from, to) {
+  const out = [], span = leaveSpanDays(from, to);
+  if (!span || span > MAX_LEAVE_SPAN_DAYS) return out;
+  const p = parseKey(from);
+  for (let i = 0; i < span; i++) {
+    const dt = new Date(p.year, p.month, p.day + i);
+    const k = dateKey(dt.getFullYear(), dt.getMonth(), dt.getDate());
+    if (!isWeekOffDate(k)) out.push(k);
+  }
+  return out;
+}
+// The request's days split by financial year: [{ fy, days }] (days already weighted 1 / 0.5).
+function requestedLeaveDaysByFY(from, to, type) {
+  const w = type === 'full_day' ? 1 : 0.5, out = [];
+  leaveTradingKeys(from, to).forEach(k => {
+    const p = parseKey(k), fy = fyRangeOf(p.year, p.month);
+    let slot = out.find(x => x.fy.from === fy.from);
+    if (!slot) { slot = { fy, days: 0 }; out.push(slot); }
+    slot.days += w;
+  });
+  return out;
+}
+// Days still PENDING approval, per category, for one employee inside a FY (same shape as fyUsage).
+function fyPending(name, fy) {
+  const key = String(name || '').trim().toLowerCase(), pend = {};
+  Object.keys(data.leaves).forEach(k => {
+    if (k < fy.from || k > fy.to) return;
+    (data.leaves[k] || []).forEach(l => {
+      if (leaveStatus(l) !== 'pending') return;
+      if (String(l.name || '').trim().toLowerCase() !== key) return;
+      const c = l.category || 'Other';
+      pend[c] = (pend[c] || 0) + leaveDaysOf(l);
+    });
+  });
+  return pend;
+}
+
 // ── Pending list + decisions ──
 function allPendingLeaves() {
   const out = [];
@@ -727,18 +833,33 @@ function updateApprovalsBadge() {
 function decideLeave(key, id, decision) {
   if (guardReadOnly()) return;   // no decisions on a past-date view
   if (!['approved','rejected'].includes(decision)) return;
+  if (guardManager('approve or reject leave')) return;
   const l = (data.leaves[key] || []).find(x => x && x.id === id);
   if (!l) return;
   if (leaveStatus(l) !== 'pending') { showToast('This leave is already ' + leaveStatus(l), 'info'); return; }
+  const sess = leaveSession(), actor = leaveActorName(sess);
+  if (!sess.isOwner && actor.trim().toLowerCase() === String(l.name || '').trim().toLowerCase()) {
+    showToast('You cannot approve or reject your own leave — ask the Owner', 'error'); return;
+  }
   l.status    = decision;
-  l.decidedBy = l.approvedBy || 'Owner';   // the designated approver (SM/owner) — never free-text
+  l.decidedBy = actor;   // the person who really decided (approvedBy stays the approver named on the request)
   l.decidedAt = new Date().toISOString();
   saveData();
   renderCalendar();
   if (document.getElementById('approvalsOverlay').classList.contains('active')) renderApprovals();
   if (document.getElementById('dayOverlay').classList.contains('active') && currentDayKey) openDayModal(currentDayKey);
   closeOverlay('staffOverlay');
-  showToast(decision === 'approved' ? 'Leave approved — now live for floor gate & payroll' : 'Leave rejected — kept for audit',
+  let note = '';
+  if (decision === 'approved') {
+    const fz = festivalFreezeNames(key);
+    if (fz.length) note += ' ⚠ Festival leave-freeze: ' + fz.join(', ') + '.';
+    const q = entFor(l.name)[l.category];            // over-balance after approval is flagged, not blocked
+    if (q != null) {
+      const pk = parseKey(key), u = fyUsage(l.name, fyRangeOf(pk.year, pk.month))[l.category] || 0;
+      if (u > q) note += ' ⚠ ' + l.name + ' is now over the ' + l.category + ' balance (' + (u % 1 === 0 ? u : u.toFixed(1)) + ' of ' + q + ').';
+    }
+  }
+  showToast((decision === 'approved' ? 'Leave approved — now live for floor gate & payroll' : 'Leave rejected — kept for audit') + note,
             decision === 'approved' ? 'success' : 'info');
 }
 
@@ -751,7 +872,7 @@ function renderApprovals() {
   const list = document.getElementById('approvalsList');
   list.innerHTML = '';
   const pend = allPendingLeaves();
-  document.getElementById('approvalsSub').textContent = pend.length + ' request(s) awaiting a decision';
+  document.getElementById('approvalsSub').textContent = pend.length + ' request(s) awaiting a decision' + (canDecideLeave() ? '' : ' · view only (Owner or Store Manager decides)');
   if (!pend.length) {
     const es = document.createElement('div'); es.className = 'empty-state';
     es.innerHTML = '<div class="empty-icon">✅</div>';
@@ -768,10 +889,12 @@ function renderApprovals() {
     nm2.textContent = l.name + ' — ' + formatDateShort(p.key);
     const mt = document.createElement('div'); mt.className = 'leave-row-meta';
     const typeLabel = l.type === 'full_day' ? 'Full Day' : l.type === 'half_day_am' ? 'Half AM' : 'Half PM';
-    mt.textContent = typeLabel + ' · ' + (l.category || '—') + ' · Approver: ' + (l.approvedBy || '—') + (l.reason ? ' · ' + l.reason : '');
+    const fz = festivalFreezeNames(p.key);
+    mt.textContent = typeLabel + ' · ' + (l.category || '—') + ' · Approver: ' + (l.approvedBy || '—') + (l.reason ? ' · ' + l.reason : '')
+                   + (fz.length ? ' · ⚠ Festival leave-freeze: ' + fz.join(', ') : '');
     info.appendChild(nm2); info.appendChild(mt);
     row.appendChild(info);
-    if (!ro) {
+    if (!ro && canDecideLeave()) {
       const ok = document.createElement('button'); ok.dataset.action = 'approve-pending-leave'; ok.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([p.key, l.id]); ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
       const no = document.createElement('button'); no.dataset.action = 'reject-pending-leave'; no.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([p.key, l.id]); no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
       row.appendChild(ok); row.appendChild(no);
@@ -790,6 +913,7 @@ function renderEntDefaults() {
 }
 function saveEntDefaults() {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const ent = loadEnt();
   TRACKED_CATS.forEach((c, i) => {
     const el = document.getElementById('entDef' + i);
@@ -824,6 +948,7 @@ function renderWeekOff() {
 }
 function saveWeekOffFromUI() {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const days = [];
   for (let i = 0; i < 7; i++) { const el = document.getElementById('wo' + i); if (el && el.checked) days.push(i); }
   saveWeekOff({ days });
@@ -839,6 +964,7 @@ function renderStoreCaps() {
 }
 function saveStoreCapsFromUI() {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const a = document.getElementById('capWLMHW'), b = document.getElementById('capHEMW');
   // A BLANK field means "leave this cap unchanged" (not a hard 0) — clearing a field must not silently impose a
   // 0-cap that then flags every store as over-capacity. An explicitly typed '0' is still honoured (value!=='').
@@ -884,6 +1010,7 @@ function renderBlackouts() {
 }
 function addBlackout() {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const from = document.getElementById('bkFrom').value, to = document.getElementById('bkTo').value;
   if (!from || !to) { showToast('Pick both blackout dates', 'error'); return; }
   if (!isValidDateKey(from) || !isValidDateKey(to)) { showToast('Invalid blackout date', 'error'); return; }
@@ -906,6 +1033,7 @@ function addBlackout() {
 }
 function removeBlackout(id) {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const cfg = loadBlackouts();
   cfg.entries = cfg.entries.filter(e => e.id !== id);
   saveBlackouts(cfg);
@@ -921,6 +1049,7 @@ function toggleEntEditor(i) {
 }
 function saveEntOverride(i) {
   if (guardReadOnly()) return;
+  if (guardManager('change Staff Master settings')) return;
   const emp = (data.employees || [])[i]; if (!emp) return;
   const ent = loadEnt(), k = String(emp.name).trim().toLowerCase(), ov = {};
   let any = false;
@@ -1247,8 +1376,7 @@ function applyReadOnlyUI() {
   // full (3 leaves). Reuses the same display:none hide used for read-only.
   const hdrAdd = document.getElementById('hdrAddLeave');
   if (hdrAdd) {
-    const tgtKey = currentDayKey || getAsOf();
-    hdrAdd.style.display = (!ro && getCapacity(tgtKey).dayFull) ? 'none' : '';
+    hdrAdd.style.display = '';   // always available; the form itself warns/blocks when a day is full (inventory LV-015b)
   }
   const banner = document.getElementById('readonlyBanner');
   if (banner) {
@@ -1476,7 +1604,7 @@ function openDayModal(key) {
       const typeLabel = l.type === 'full_day' ? 'Full Day' : l.type === 'half_day_am' ? 'Half Day AM' : 'Half Day PM';
       const badgeCls  = l.type === 'full_day' ? 'badge-full' : l.type === 'half_day_am' ? 'badge-half-am' : 'badge-half-pm';
 
-      const row = document.createElement('div'); row.className = 'leave-row'; row.onclick = () => openStaffDetail(key, i);
+      const row = document.createElement('div'); row.className = 'leave-row'; row.onclick = ev => { if (ev && ev.target && typeof ev.target.closest === 'function' && ev.target.closest('button')) return; openStaffDetail(key, i); };
 
       const av = document.createElement('div'); av.className = 'leave-avatar';
       av.style.cssText = `background:${color}22;color:${color}`; av.textContent = getInitials(l.name);
@@ -1499,7 +1627,7 @@ function openDayModal(key) {
         row.appendChild(sb);
       }
       if (st === 'rejected') row.classList.add('leave-row-rejected');
-      if (!readOnly && st === 'pending') {
+      if (!readOnly && st === 'pending' && canDecideLeave()) {
         const ok = document.createElement('button'); ok.dataset.action = 'approve-day-leave'; ok.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([key, l.id]); ok.className = 'leave-row-del';
         ok.style.cssText = 'background:color-mix(in srgb, var(--green) 10%, transparent);color:var(--green);';
         ok.title = 'Approve'; ok.textContent = '✓';
@@ -1609,7 +1737,7 @@ function openStaffDetail(key, idx) {
     grid.appendChild(item);
   }
   body.appendChild(grid);
-  if (leaveStatus(leave) === 'pending' && !isPastView()) {
+  if (leaveStatus(leave) === 'pending' && !isPastView() && canDecideLeave()) {
     const acts = document.createElement('div'); acts.className = 'form-actions';
     const no = document.createElement('button'); no.dataset.action = 'reject-staff-leave'; no.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([key, leave.id]); no.className = 'btn btn-danger'; no.textContent = '⊘ Reject';
     const ok = document.createElement('button'); ok.dataset.action = 'approve-staff-leave'; ok.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([key, leave.id]); ok.className = 'btn btn-green'; ok.textContent = '✓ Approve';
@@ -1656,6 +1784,8 @@ function onLeaveFormChange() {
   else if (leaveType === 'full_day'    && !cap.canAddFullDay) msg = `⚠ Full day blocked — AM: ${cap.amUsed}/4, PM: ${cap.pmUsed}/4`;
   else if (leaveType === 'half_day_am' && !cap.canAddAM)      msg = `⚠ Morning shift is full (${cap.amUsed}/4)`;
   else if (leaveType === 'half_day_pm' && !cap.canAddPM)      msg = `⚠ Afternoon shift is full (${cap.pmUsed}/4)`;
+  const spanLive = leaveSpanDays(dateStr, document.getElementById('leaveTo').value || dateStr);
+  if (spanLive > MAX_LEAVE_SPAN_DAYS) msg = `⚠ Range too long — ${spanLive} days (max ${MAX_LEAVE_SPAN_DAYS} per request)`;
   warn.style.display = msg ? 'flex' : 'none';
   warn.textContent   = msg;
 
@@ -1714,29 +1844,35 @@ function renderBalanceHint() {
   const category = document.getElementById('leaveCategory').value;
   const from     = document.getElementById('leaveFrom').value;
   if (!employee || !from) { el.style.display = 'none'; return; }
-  const { year, month } = parseKey(from);
-  const fy    = fyRangeOf(year, month);
-  const used  = (fyUsage(employee.name, fy)[category] || 0);
+  const to    = document.getElementById('leaveTo').value || from;
+  const type  = document.getElementById('leaveType').value;
   const quota = entFor(employee.name)[category];
-  const req   = requestedLeaveDays();
   const fmt   = n => (n % 1 === 0 ? n : n.toFixed(1));
+  let parts = requestedLeaveDaysByFY(from, to, type);   // the request split by financial year
+  if (!parts.length) { const p0 = parseKey(from); parts = [{ fy: fyRangeOf(p0.year, p0.month), days: 0 }]; }
   el.style.display = 'block';
   if (quota == null) {   // untracked category (Maternity / Comp-Off / Other)
+    const used0 = (fyUsage(employee.name, parts[0].fy)[category] || 0);
     el.style.color = 'var(--ink-dim)';
-    el.textContent = `${category}: ${fmt(used)} day(s) used this ${fy.label} (no annual quota tracked)`;
+    el.textContent = `${category}: ${fmt(used0)} day(s) used this ${parts[0].fy.label} (no annual quota tracked)`;
     return;
   }
-  const after  = used + req;
-  const exceed = after > quota;
-  el.style.color = exceed ? 'var(--red)' : 'var(--green)';
-  el.textContent = `${category}: used ${fmt(used)} of ${quota} this ${fy.label}`
-                 + (req ? ` — this request adds ${fmt(req)} → ${fmt(after)}${exceed ? ' (EXCEEDS balance)' : ''}` : '');
+  let anyExceed = false;
+  const texts = parts.map(pt => {
+    const used = (fyUsage(employee.name, pt.fy)[category] || 0), pend = (fyPending(employee.name, pt.fy)[category] || 0);
+    const after = used + pend + pt.days, exceed = after > quota;
+    if (exceed) anyExceed = true;
+    return `${category}: used ${fmt(used)} of ${quota} this ${pt.fy.label}` + (pend ? ` (+${fmt(pend)} pending)` : '')
+         + (pt.days ? ` — this request adds ${fmt(pt.days)} → ${fmt(after)}${exceed ? ' (EXCEEDS balance)' : ''}` : '');
+  });
+  el.style.color = anyExceed ? 'var(--red)' : 'var(--green)';
+  el.textContent = texts.join(' · ');
 }
 
 function populateLeaveSelect() {
   const sel  = document.getElementById('leaveName');
   const hint = document.getElementById('leaveNameHint');
-  const emps = data.employees || [];
+  const emps = (data.employees || []).filter(emp => !isStaffInactive(emp));   // hide staff the Employee Master has deactivated
 
   // Rebuild options, keeping the placeholder
   sel.innerHTML = '<option value="">— Select Staff Member —</option>';
@@ -1747,7 +1883,7 @@ function populateLeaveSelect() {
     sel.appendChild(opt);
   });
 
-  hint.style.display = emps.length === 0 ? 'block' : 'none';
+  hint.style.display = (data.employees || []).length === 0 ? 'block' : 'none';
   sel.disabled       = emps.length === 0;
 }
 
@@ -1764,6 +1900,7 @@ function submitLeave() {
     showToast('Select a staff member from the Staff Master list', 'error');
     return;
   }
+  if (isStaffInactive(employee)) { showToast(employee.name + ' is inactive in the Employee Master — leave cannot be added', 'error'); return; }
   const name     = employee.name;   // canonical name — no free-text, no case drift
   const approver = document.getElementById('leaveApprover').value.trim();
   const from     = document.getElementById('leaveFrom').value;
@@ -1775,18 +1912,26 @@ function submitLeave() {
   if (!approver) { showToast('Approver name is required', 'error');   return; }
   if (!from || !to) { showToast('Please select leave dates', 'error'); return; }
   if (from > to) { showToast('Leave From cannot be after Leave To', 'error'); return; }
+  if (!isValidDateKey(from) || !isValidDateKey(to)) { showToast('Please select valid leave dates', 'error'); return; }
+  const span = leaveSpanDays(from, to);
+  if (span > MAX_LEAVE_SPAN_DAYS) { showToast('Leave range is too long (' + span + ' days). The most one request can cover is ' + MAX_LEAVE_SPAN_DAYS + ' days — split it.', 'error'); return; }
   if (!['full_day','half_day_am','half_day_pm'].includes(type)) { showToast('Invalid leave type', 'error'); return; }
+  if (span > CONFIRM_LEAVE_SPAN_DAYS) {
+    const n = leaveTradingKeys(from, to).length;
+    if (!confirm('This request covers ' + span + ' days and will create up to ' + n + ' separate pending leave records for ' + name + '.\n\nRecord it anyway?')) return;
+  }
 
-  // W2-4(b): balance check — non-blocking, the owner can override via confirm().
+  // W2-4(b): balance check — non-blocking, the owner can override via confirm(). Counts approved + pending days,
+  // and charges each financial year its own share of the request.
   const quotaCat = entFor(name)[category];
   if (quotaCat != null) {
-    const fy   = fyRangeOf(parseKey(from).year, parseKey(from).month);
-    const used = fyUsage(name, fy)[category] || 0;
-    const req  = requestedLeaveDays();
-    if (used + req > quotaCat) {
-      const fmt = n => (n % 1 === 0 ? n : n.toFixed(1));
-      if (!confirm(`${name} has used ${fmt(used)} of ${quotaCat} ${category} day(s) this ${fy.label}.\nThis request adds ${fmt(req)} more and EXCEEDS the balance.\n\nRecord it anyway (it will still need approval)?`)) return;
-    }
+    const fmt = n => (n % 1 === 0 ? n : n.toFixed(1)), over = [];
+    requestedLeaveDaysByFY(from, to, type).forEach(pt => {
+      const used = fyUsage(name, pt.fy)[category] || 0, pend = fyPending(name, pt.fy)[category] || 0;
+      if (used + pend + pt.days > quotaCat) over.push(`${name} has used ${fmt(used)} of ${quotaCat} ${category} day(s) this ${pt.fy.label}`
+        + (pend ? ` (and ${fmt(pend)} more are waiting for approval)` : '') + `.\nThis request adds ${fmt(pt.days)} more and EXCEEDS the balance.`);
+    });
+    if (over.length && !confirm(over.join('\n\n') + '\n\nRecord it anyway (it will still need approval)?')) return;
   }
 
   // W12 P1-29: blackout gate. Walk from..to (bounded, skipping weekly-off days that
@@ -1809,6 +1954,12 @@ function submitLeave() {
       }
       if (!confirm('These dates fall in a blackout window (' + labels + '): ' + category + ' leave is discouraged.\nRecord it anyway?')) return;
     }
+  }
+
+  {   // Planning festival leave-freeze: soft confirm only, never blocks
+    const fzSet = new Set();
+    leaveTradingKeys(from, to).forEach(k => festivalFreezeNames(k).forEach(n => fzSet.add(n)));
+    if (fzSet.size && !confirm('These dates fall in a festival leave-freeze (' + [...fzSet].join(', ') + ').\nRecord it anyway (it will still need approval)?')) return;
   }
 
   let d = new Date(from), end = new Date(to);
@@ -1834,7 +1985,7 @@ function submitLeave() {
   saveData();
   closeOverlay('addLeaveOverlay');
   renderCalendar();
-  if (currentDayKey) openDayModal(currentDayKey);
+  if (currentDayKey && document.getElementById('dayOverlay').classList.contains('active')) openDayModal(currentDayKey);
 
   const parts = [];
   if (added    > 0) parts.push(`${added} day(s) submitted — pending approval`);
@@ -2060,7 +2211,7 @@ function renderEmpList() {
     const hasOv = !!entAll.perEmployee[String(emp.name).trim().toLowerCase()];
     const qStr  = TRACKED_CATS.map(c => c.split(' ').map(w => w[0]).join('') + ' ' + quota[c]).join(' · ');
     mt.textContent = ([emp.empId, emp.department].filter(Boolean).join(' · ') || 'No ID / department')
-                   + ' · ' + qStr + '/FY' + (hasOv ? ' (custom)' : '');
+                   + ' · ' + qStr + '/FY' + (hasOv ? ' (custom)' : '') + (isStaffInactive(emp) ? ' · inactive (hidden from Add Leave)' : '');
     info.appendChild(nm); info.appendChild(mt);
     const cog   = document.createElement('button'); cog.dataset.action = 'edit-employee-entitlements'; cog.dataset.saagarArgs = SaagarRenderedComponents.encodeArgs([i]); cog.className = 'emp-del';
     cog.style.cssText = 'background:color-mix(in srgb, var(--gold) 12%, transparent);color:var(--gold);';
@@ -2092,6 +2243,7 @@ function renderEmpList() {
 
 function addEmployee() {
   if (guardReadOnly()) return;   // viewing the past → master is read-only
+  if (guardManager('change Staff Master settings')) return;
   const name = document.getElementById('empName').value.trim();
   const id   = document.getElementById('empId').value.trim();
   const dept = document.getElementById('empDept').value.trim();
@@ -2110,6 +2262,7 @@ function addEmployee() {
 
 function removeEmployee(idx) {
   if (guardReadOnly()) return;   // viewing the past → master is read-only
+  if (guardManager('change Staff Master settings')) return;
   const emp = data.employees[idx];
   if (!confirm(`Remove ${emp.name} from staff master?\n(Existing leave records will not be affected.)`)) return;
   data.employees.splice(idx, 1);
@@ -2294,10 +2447,16 @@ function importJSON(event) {
       const validLeaves  = {};
       const validAgendas = {};
       let skipped = 0;
+      // A backup that carries its own weekOff block is this app's full-state export: restore its dated records as stored
+      // (a row on a day that is a weekly-off day NOW was real leave when it was recorded). Only a file without a weekOff
+      // block (older or hand-made) is still judged against the device's weekly-off setting.
+      const impWO0 = (imp.weekOff && Array.isArray(imp.weekOff.days))
+        ? { days: [...new Set(imp.weekOff.days.map(Number).filter(n => n >= 0 && n <= 6))] } : null;
+      const isOffDay = k => !impWO0 && isWeekOffDate(k);
 
       // ─── Validate leaves ───
       Object.entries(imp.leaves).forEach(([k, arr]) => {
-        if (!isValidDateKey(k) || isWeekOffDate(k)) { skipped++; return; }   // was isWeekendDate(k); shared with submitLeave so import + submit agree
+        if (!isValidDateKey(k) || isOffDay(k)) { skipped++; return; }   // was isWeekendDate(k); shared with submitLeave so import + submit agree
         if (!Array.isArray(arr)) { skipped++; return; }
         arr.forEach(l => {
           if (typeof l !== 'object' || l === null) { skipped++; return; }
@@ -2347,6 +2506,19 @@ function importJSON(event) {
         });
       });
 
+      // The staff list travels with the backup (validated; merged by name, never overwritten).
+      const validEmps = [];
+      if (Array.isArray(imp.employees)) imp.employees.slice(0, 500).forEach(x => {
+        if (typeof x !== 'object' || x === null) { skipped++; return; }
+        const nm = sanitizeStr(x.name, 100);
+        if (!nm) { skipped++; return; }
+        const e = { id: sanitizeStr(x.id, 30) || uid(), name: nm, empId: sanitizeStr(x.empId, 40), department: sanitizeStr(x.department, 100) };
+        const eid = sanitizeStr(x.employeeId, 40); if (eid) e.employeeId = eid;   // shape written by the bridge back-fill
+        const st  = sanitizeStr(x.store, 40);      if (st)  e.store = st;
+        if (x.active === false) e.active = false;   // keep the bridge's inactive flag (interface E)
+        validEmps.push(e);
+      });
+
       // W2-4(b): entitlements config travels with newer backups (validated, merged on confirm).
       let impEnt = null;
       if (imp.entitlements && typeof imp.entitlements === 'object') {
@@ -2363,14 +2535,20 @@ function importJSON(event) {
       }
 
       // Weekly-off config travels with newer backups (validated, overwrites only when present).
-      let impWO = null;
-      if (imp.weekOff && Array.isArray(imp.weekOff.days))
-        impWO = { days: imp.weekOff.days.map(Number).filter(n => n >= 0 && n <= 6) };
+      const impWO = impWO0;   // weekly-off carried by the backup (null when absent)
+      let impCaps = null;
+      if (imp.caps && typeof imp.caps === 'object') {
+        impCaps = {};
+        STORE_CODES.forEach(c => { const v = Number(imp.caps[c]); if (Number.isFinite(v) && v >= 0 && v === Math.floor(v)) impCaps[c] = v; });
+        if (!Object.keys(impCaps).length) impCaps = null;
+      }
+      const impBk = (imp.blackouts && Array.isArray(imp.blackouts.entries))
+        ? imp.blackouts.entries.slice(0, 200).map(coerceBlackout).filter(Boolean) : [];
 
       const lCnt = Object.values(validLeaves).reduce((s,a) => s + a.length, 0);
       const aCnt = Object.values(validAgendas).reduce((s,a) => s + a.length, 0);
 
-      if (!confirm(`Import preview:\n• ${lCnt} valid leave record(s)\n• ${aCnt} valid agenda item(s)\n• ${skipped} record(s) skipped (invalid / weekend / missing fields)\n\nThis will MERGE with existing data. Continue?`)) return;
+      if (!confirm(`Import preview:\n• ${lCnt} valid leave record(s)\n• ${aCnt} valid agenda item(s)\n• ${validEmps.length} staff member(s), ${impBk.length} blackout/holiday entr${impBk.length === 1 ? 'y' : 'ies'}\n• ${skipped} record(s) skipped (invalid / weekly-off / missing fields)\n\nThis will MERGE with existing data. Continue?`)) return;
 
       // ─── Merge with capacity checks ───
       let lAdded = 0, lSkipped = 0, aAdded = 0;
@@ -2378,8 +2556,8 @@ function importJSON(event) {
         if (!data.leaves[k]) data.leaves[k] = [];
         arr.forEach(l => {
           if (data.leaves[k].some(x => x.id === l.id)) return;
-          if (data.leaves[k].some(x => leaveStatus(x) !== 'rejected' && x.name.toLowerCase() === l.name.toLowerCase())) { lSkipped++; return; }   /* a rejected row must not block importing a valid one — mirrors the in-app dup rule */
-          if (!canAddLeave(k, l.type)) { lSkipped++; return; }
+          if (leaveStatus(l) !== 'rejected' && data.leaves[k].some(x => leaveStatus(x) !== 'rejected' && x.name.toLowerCase() === l.name.toLowerCase() && (x.type === l.type || x.type === 'full_day' || l.type === 'full_day'))) { lSkipped++; return; }   /* same rule as submitLeave isDup: AM + PM half-days coexist; a rejected row neither blocks nor is blocked */
+          if (leaveStatus(l) !== 'rejected' && !canAddLeave(k, l.type)) { lSkipped++; return; }
           data.leaves[k].push(l); lAdded++;
         });
       });
@@ -2390,6 +2568,13 @@ function importJSON(event) {
         });
       });
 
+      let eAdded = 0;
+      validEmps.forEach(e => {
+        if (data.employees.some(x => x && String(x.name).trim().toLowerCase() === e.name.toLowerCase())) return;   // already there: keep the existing row
+        if (data.employees.some(x => x && x.id === e.id)) e.id = uid();
+        data.employees.push(e); eAdded++;
+      });
+
       if (impEnt) {
         const ent = loadEnt();
         Object.assign(ent.defaults, impEnt.defaults);
@@ -2397,8 +2582,14 @@ function importJSON(event) {
         saveEnt(ent);
       }
       if (impWO) saveWeekOff(impWO);   // only overwrites when the backup carried a weekOff block
+      if (impCaps) saveCaps(Object.assign(loadCaps(), impCaps));   // only the caps the backup carried
+      if (impBk.length) {                                          // merge: add entries whose id is not already present
+        const cfg = loadBlackouts();
+        impBk.forEach(b => { if (!cfg.entries.some(x => x.id === b.id)) cfg.entries.push(b); });
+        saveBlackouts(cfg);
+      }
       saveData(); renderCalendar();
-      showToast(`Imported: ${lAdded} leaves, ${aAdded} agendas. Skipped: ${skipped + lSkipped}`, 'success');
+      showToast(`Imported: ${lAdded} leaves, ${aAdded} agendas${eAdded ? ', ' + eAdded + ' staff' : ''}. Skipped: ${skipped + lSkipped}`, 'success');
     } catch(err) {
       showToast('Import failed: ' + err.message, 'error');
     }
@@ -2412,7 +2603,7 @@ function importJSON(event) {
 // ═══════════════════════════════════════════════════
 function exportJSON() {
   // W2-4: bundle the entitlements config with the backup (the leavedesk_v3 blob itself is unchanged).
-  const payload = Object.assign({}, data, { entitlements: loadEnt(), weekOff: loadWeekOff() });
+  const payload = Object.assign({}, data, { entitlements: loadEnt(), weekOff: loadWeekOff(), caps: loadCaps(), blackouts: loadBlackouts() });
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const rowCount=Object.keys(data.leaves||{}).reduce((n,k)=>n+((data.leaves[k]||[]).length),0);
   if(window.parent&&window.parent!==window){
@@ -2435,7 +2626,9 @@ function openClearConfirm() {
    `${totAgendas} agenda item(s) across all dates`,
    `${(data.employees || []).length} employee(s) in Staff Master`,
    `Leave entitlement settings (defaults + per-employee overrides)`,
-   `Weekly-off setting`
+   `Weekly-off setting`,
+   `Per-store leave caps`,
+   `Blackout dates and store holidays`
   ].forEach(txt => {
     const li = document.createElement('li'); li.textContent = txt;
     list.appendChild(li);
@@ -2458,6 +2651,8 @@ function executeClearData() {
   data = { leaves: {}, agendas: {}, employees: [] };
   try { localStorage.removeItem(ENT_KEY); } catch(e) {}
   try { localStorage.removeItem(WEEKOFF_KEY); } catch(e) {}
+  try { localStorage.removeItem(CAPS_KEY); } catch(e) {}
+  try { localStorage.removeItem(BLACKOUT_KEY); } catch(e) {}
   saveData();
   closeOverlay('clearOverlay');
   renderCalendar();
@@ -2495,6 +2690,7 @@ function printCalendar() {
 
   // Collect leave rows + agenda rows for the currently viewed month, in date order.
   const leaveRows  = [];
+  let apDays = 0, pendN = 0, rejN = 0;
   const agendaRows = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const key = dateKey(currentYear, currentMonth, d);
@@ -2504,6 +2700,7 @@ function printCalendar() {
 
     (data.leaves[key] || []).forEach(l => {
       const stTag = leaveStatus(l) !== 'approved' ? '[' + leaveStatus(l).toUpperCase() + ']' : '';
+      const s0 = leaveStatus(l); if (s0 === 'pending') pendN++; else if (s0 === 'rejected') rejN++; else apDays += leaveDaysOf(l);
       const notes = [stTag, l.category, l.reason, l.approvedBy ? 'By: ' + l.approvedBy : '']
         .filter(Boolean).join(' · ');
       leaveRows.push({ dateLabel, dow, name: l.name || '', type: typeLabelOf(l.type), notes });
@@ -2518,12 +2715,13 @@ function printCalendar() {
     });
   }
 
+  const fmtD = n => (n % 1 === 0 ? n : n.toFixed(1));
   let body =
     '<div class="stp-head">' +
       '<div class="stp-brand">Saagar Traders<small>Leave &amp; Agenda</small></div>' +
       '<div class="stp-title">Leave Calendar<small>' + stEsc(monthYear) + '</small></div>' +
     '</div>' +
-    '<div class="stp-meta">Leaves: ' + leaveRows.length +
+    '<div class="stp-meta">Approved leave days: ' + fmtD(apDays) + ' · Pending: ' + pendN + ' · Rejected: ' + rejN +
       ' · Agendas: ' + agendaRows.length + '</div>';
 
   if (!leaveRows.length && !agendaRows.length) {
@@ -2546,8 +2744,8 @@ function printCalendar() {
         '<table class="stp-table"><thead><tr>' +
           '<th>Date</th><th>Day</th><th>Employee</th><th>Leave Type</th><th>Notes</th>' +
         '</tr></thead><tbody>' + rows + '</tbody>' +
-        '<tfoot><tr><td class="stp-tot" colspan="5">Total leaves: ' +
-          leaveRows.length + '</td></tr></tfoot>' +
+        '<tfoot><tr><td class="stp-tot" colspan="5">Total approved leave days: ' +
+          fmtD(apDays) + ' (pending and rejected rows are listed for audit only)</td></tr></tfoot>' +
         '</table></div>';
     }
 
@@ -2581,7 +2779,7 @@ function printCalendar() {
 //  HELPERS
 // ═══════════════════════════════════════════════════
 function openOverlay(id)  { document.getElementById(id).classList.add('active'); }
-function closeOverlay(id) { document.getElementById(id).classList.remove('active'); }
+function closeOverlay(id) { document.getElementById(id).classList.remove('active'); if (id === 'dayOverlay') currentDayKey = null; }
 function todayISOStr()    { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }   /* audit: local date — toISOString gave the previous day in IST */
 
 function showToast(msg, type = 'info') {

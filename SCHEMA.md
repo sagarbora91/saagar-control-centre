@@ -259,9 +259,9 @@ Owner: `expense.html`. This module keeps the legacy `gm_` prefix and the outlier
 | `tanishq_statements` | object keyed by **date** | Daily cash statements (date is the *inner* key). See below. |
 | `gm_petty` | `{ float, history[] }` | Petty-cash float; `history[] = { at, by, add }`. |
 | `gm_budgets` | object keyed by **`YYYY-MM`** | Per-month category budgets `{ Inventory, Rent, … }`. |
-| `gm_tax_feed` | object keyed by **`YYYY-MM`** | Monthly tax feed `{ month, income, expense, net, gstRate, gstEstimate, byCategory, generatedAt, by }`. Bridge reads `gstEstimate`. |
+| `gm_tax_feed` | object keyed by **`YYYY-MM`** | Monthly tax feed `{ month, income, expense, net, gstRate, gstEstimate, incomeGstBasis, byCategory, generatedAt, by }`. Bridge reads `gstEstimate`. `incomeGstBasis` (`inclusive` or `exclusive`, fix wave 2026-11-12) records the basis the estimate was built on. |
 | `gm_audit` | array | `{ id, at, by, action, detail }`. |
-| `gm_settings` | object | `{ migratedV2, gstRate }`. |
+| `gm_settings` | object | `{ migratedV2, gstRate, gstIncomeBasis }`. `gstIncomeBasis` (`inclusive` default, or `exclusive`; Owner-only switch; fix wave 2026-11-12) says whether typed income amounts already include GST. |
 | `gm_vendors` | array | `{ name, gstin }` (mirror of vendor master). |
 | `gm_role` | string | Active role (shared with shell). |
 
@@ -394,7 +394,7 @@ of the server schema.
 | `saagar_bridge_qms2dsr` | object | De-dup tracker: `{ <qmsCustomerId>: { dsr, at, cro, kind } }`. |
 | `saagar_payroll_attendance_feed` | object keyed by `YYYY-MM` | Derived attendance: `{ <name>: { present, leave, half, dsrDays, scoreSum, scoreN, avgScore } }` + `_generatedAt/_note`. Payroll maker reconciles before lock. |
 | `saagar_cro_audit_feed` | object keyed by **date → kk(name)** | Derived CRO-audit inputs: `{ cro, date, groomingPct, qmsSales, qmsSalesAmt, qmsNonPurch, dsrSubmitted, dsrScore, dsrSalesCount?, dsrSalesAmt?, dsrNonPurch? }`. |
-| `saagar_tax_payable` | object keyed by `YYYY-MM` | `{ month, pf, esic, pt, gstEstimate, sources[], at }` — PF/ESIC/PT summed from Payroll rows + GST from `gm_tax_feed`. |
+| `saagar_tax_payable` | object keyed by `YYYY-MM` (the Payroll sheet month) | `{ month, pf, esic, pt, gstEstimate, sources[], at }` — PF/ESIC/PT summed from Payroll rows + GST from `gm_tax_feed`. |
 | `saagar_exceptions` | object | Aggregated red-flag feed for *today*: `{ date, items[ {sev (high|med|low), area, msg, at} ], generatedAt }`. |
 | `saagar_bridge_config` | object | `{ failPct, leaveGates, voucherThreshold }` (tunables; defaults 60 / true / 2000). |
 
@@ -487,3 +487,16 @@ Index **`byKey`** on `itemKey` (a single `itemKey` may map to **multiple** file 
 5. **The event bus is the intended server backbone** — model `saagar_bus` (events + per-consumer
    idempotency) plus the derived feeds (`saagar_*_feed`, `saagar_tax_payable`, `saagar_exceptions`,
    `saagar_gate_status`) as first-class server constructs rather than reverse-engineering pairwise links.
+
+## Fix wave 2026-11-12: declared new stored items
+
+Declared in the fix-wave plan (G5) and accepted by the owner decision given in chat, 2026-11-12. The last row is not on that list and still waits for a declaration.
+
+| Key | Owner | Shape | Meaning |
+|---|---|---|---|
+| `saagar_stk_clearlog_v1` | Stock | array | Log of Clear Everything and Clear Day actions. Kept inside the shell backup and wipe rules (`STORAGE_RULES.stock.exact`). |
+| `saagar_brands_hidden` | Stock | object | Brands hidden from Stock by Brand Master removal; the shell master list is not changed. |
+| `st_v4_restore_rollback_module_reset_payroll_<stamp>` | Payroll | object | Recovery copy written before Payroll Reset All, so the shell Undo can restore it. |
+| `st_v2_last_module_reset_v1` | Payroll | object | Pointer to the latest module-reset recovery copy: `{ rollbackKey, module, title, createdAt, undone }`. |
+| `saagar_wsf_settings_v1` (new fields) | Service | object | `idHigh` (highest job id ever issued), `deleted[]` (deletion tombstones, newest last, capped at 2,000), `invoiceSeq` (one counter per April to March year, for example `{ "2026-27": 12 }`). It replaces the old separate invoice counter key. |
+| `bcc_autobackup_log` (new entry fields) | Automatic backup | array | Existing device-local log. A good run's entry carries `good: {date, keys, bytes}`; a too-small run's entry carries `suspectOf: {date, keys, bytes}`. Trimming the log to 30 entries never drops the newest of each. No new storage key. Never part of a backup file. |

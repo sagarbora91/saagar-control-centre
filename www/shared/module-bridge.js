@@ -39,7 +39,7 @@
     jsZip: getter(function () { return parentValue('JSZip'); }),
     ensureJsZip: getter(function () { return parentValue('ensureJSZip'); }),
     etpImportGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.importFacade; }),
-    etpBridgeGateway: getter(function () { return parentValue('SaagarEtpBridgeFacade'); }),
+    etpBridgeGateway: getter(function () { var loader = parentValue('SaagarEtpChainLoader'); return (loader && loader.bridge) || parentValue('SaagarEtpBridgeFacade'); }),
     etpReadGateway: getter(function () { var gateway = parentValue('SaagarEtpModuleGateway'); return gateway && gateway.readFacade; }),
     e7ServiceVerification: getter(function () { return parentValue('SaagarEtpE7OperationalFacade'); }),
     e7ServiceActor: getter(function () { return parentValue('SaagarEtpE7ServiceActor'); }),

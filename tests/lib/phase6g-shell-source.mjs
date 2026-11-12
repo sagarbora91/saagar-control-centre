@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { undoFixWaveText } from './fix-wave-undo.mjs';
 
 const INDEX_SHA256 = 'dc9a5832bcad119b5794df210bb95b40db15293b515f91b497045bd27d9d395c';
 const MANIFEST_SHA256 = '4a2b046c3baa24434c11eb7c0ecffa8c2caac8617373a52bf75bdfd7f38fab78';
@@ -31,7 +32,7 @@ const SHELL_COMMENT_TRIM_INVERSE = new Map([
 ]);
 
 export function restorePrePhase6gShellAssets(input) {
-  let index = String(input.index);
+  let index = undoFixWaveText('www/index.html', String(input.index));
   // Phase 4C startup defer (owner decision given in chat, 2026-11-11): 27 shell tags carry `defer` now.
   // No historical shell contains a `defer` script tag, so one global restore is exact for all 27.
   index = index.replaceAll('<script defer src="', '<script src="');
@@ -115,7 +116,7 @@ function toggleUiMode(){ setUiMode(getUiMode()==='mobile'?'desktop':'mobile'); }
 `)
     .replace(/\s*try\{ if\(window\.SaagarShellResponsive\)\{ window\.SaagarShellResponsive\.onChange[^\n]+\r?\n/, '\n');
 
-  const manifest = String(input.manifest)
+  const manifest = undoFixWaveText('www/shell-asset-manifest.js', String(input.manifest))
     .replace(/,\r?\n\s*Object\.freeze\(\{ id: 'shell-search'[^\n]+/, '')
     .replace(/,\r?\n\s*Object\.freeze\(\{ id: 'shell-responsive-css'[^\n]+\r?\n\s*Object\.freeze\(\{ id: 'shell-responsive-runtime'[^\n]+/, '');
 

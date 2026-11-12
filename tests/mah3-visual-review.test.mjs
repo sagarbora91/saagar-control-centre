@@ -14,6 +14,7 @@ import {
   validateBaseline
 } from '../scripts/mah3-visual-review-server.mjs';
 import { createPrePhase6cWorkspace } from './lib/phase6c-historical-root.mjs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const profilePath = path.join(root, 'verification', 'MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json');
@@ -85,7 +86,9 @@ test('historical MAH-3 Planning canary pins reconstructed inline source and pres
   }
   assert.equal(profile.sharedRuntimeCandidates.cssExtractionDeferred, true);
   assert.match(planning, /<script src="\.\.\/\.\.\/shared\/module-runtime\.js"><\/script>/);
-  const runtime = fs.readFileSync(path.join(root, 'www', 'shared', 'module-runtime.js'));
+  // Fix wave: the pinned runtime is the registered pre-wave text (undo layer), like the rest of this historical test.
+  const runtime = Buffer.from(undoFixWaveText('www/shared/module-runtime.js',
+    fs.readFileSync(path.join(root, 'www', 'shared', 'module-runtime.js'), 'utf8')), 'utf8');
   assert.equal(runtime.length, candidate.runtimeAsset.bytes);
   assert.equal(sha256(runtime), candidate.runtimeAsset.sha256);
 });

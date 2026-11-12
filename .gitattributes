@@ -23,3 +23,5 @@ www/**/*.apk binary
 www/**/*.png binary
 www/**/*.jpg binary
 www/**/*.ico binary
+# Phase 6I identity: this sheet carries 3 CRs (lines 6-8) that the manifest expects; store it byte-exact (stage with git add --renormalize).
+www/shared/module-mobile-common.css -text

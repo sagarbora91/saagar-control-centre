@@ -861,7 +861,7 @@ function stApplyReadOnly(){
   // buttons: disable by matching their inline handler so we never touch ids/markup.
   document.querySelectorAll("button[onclick]").forEach(b=>{
     const h=b.getAttribute("onclick")||"";
-    if(/\b(saveState|addEmployee|dupLastRow|addMasterEmployee|addGMEmployee|createAdvance|closeMonth|lockRun|unlockRun|setRunStatus|saveSettings|resetSettingsDefaults)\s*\(/.test(h)){
+    if(/\b(saveState|addEmployee|dupLastRow|addMasterEmployee|addGMEmployee|createAdvance|closeMonth|lockRun|unlockRun|setRunStatus|saveSettings|resetSettingsDefaults|resetAll)\s*\(/.test(h)){
       b.disabled=true;b.title="Read-only past view — disabled.";
     }
   });
@@ -1024,7 +1024,7 @@ function normalizeState(raw){
 function normalizeAdvance(a){
   a=a||{};
   return{
-    id:a.id||0,
+    id:Math.max(0,Math.trunc(safeN(a.id))),   /* S10-F04: id is printed into onclick="delAdvance(..)"; an imported text id must never reach the markup */
     voucherNo:String(a.voucherNo||""),
     empId:String(a.empId||""),
     empName:String(a.empName||""),
@@ -1060,15 +1060,20 @@ function mirrorRowOutputs(){
   const r2=v=>Math.round((safeN(v)+Number.EPSILON)*100)/100;
   state.rows.forEach(row=>{
     if(!row||row.firm!=="GM")return;
+    if(row.active===false){row.grossPayable=0;row.pf=0;row.esic=0;row.pt=0;row.net=0;row.pfER=0;row.esicER=0;return;}   /* S10-F05: a retired employee adds nothing to the figures other modules sum */
     try{
       const c=gmComputed(row);
       row.grossPayable=r2(c.grossPayable);
       row.pf=r2(c.pfEE);
       row.esic=r2(c.esicEE);
+      row.pfER=r2(c.pfEmpr);
+      row.esicER=r2(c.esicEmpr);
       row.pt=r2(c.pt);
       row.net=r2(c.finalPay);
     }catch(e){/* never let mirroring block a save */}
   });
+  /* S10-F05: the shell and the reports read meta.run.status; keep it equal to the status of the period being shown */
+  try{state.meta.run=state.meta.run||{};state.meta.run.status=runStatus(curKey());}catch(e){}
 }
 function saveState(show){
   // READ-ONLY-PAST: block persistence entirely. Explicit Save warns; auto-save is silent.
@@ -1084,27 +1089,34 @@ function saveState(show){
 function queueSave(){if(ST_READ_ONLY)return;clearTimeout(dirtyTimer);dirtyTimer=setTimeout(()=>saveState(false),450);}
 
 // ══ CALCULATIONS ══
+/* S10-F06: attendance counts live between 0 and the days of the month. Stored values outside that range are
+   counted as the nearest valid value and flagged (risk => blocks locking until corrected). */
+const ATT_LABELS={absent:"Absent",halfDay:"Half Day",late:"Late",noThumb:"No Thumb",leavesApplied:"Leaves"};
+function attMaxValue(){return daysInMonth(state.meta.month,Number(state.meta.year))||31;}
+function attClean(v){return Math.min(attMaxValue(),Math.max(0,safeN(v)));}
 function calcAttendance(row){
   const totalDays=totalWorkingDays();
-  const lateDeduction=roundHalf(Math.floor(safeN(row.late)/3)*0.5);
-  const absentDeduction=roundHalf(safeN(row.absent));
-  const halfDayDeduction=roundHalf(safeN(row.halfDay)*0.5);
-  const noThumbDeduction=roundHalf(safeN(row.noThumb)*0.5);
+  const A=f=>attClean(row[f]);
+  const lateDeduction=roundHalf(Math.floor(A("late")/3)*0.5);
+  const absentDeduction=roundHalf(A("absent"));
+  const halfDayDeduction=roundHalf(A("halfDay")*0.5);
+  const noThumbDeduction=roundHalf(A("noThumb")*0.5);
   const totalDeduction=roundHalf(lateDeduction+absentDeduction+halfDayDeduction+noThumbDeduction);
   let extraDays=totalDeduction<=5.5?4:totalDeduction<7?2:0;
   const finalPresent=Math.max(0,roundHalf(totalDays-totalDeduction));
-  const raw=roundHalf(finalPresent+safeN(row.leavesApplied)+extraDays);
+  const raw=roundHalf(finalPresent+A("leavesApplied")+extraDays);
   const totalSalaryDays=Math.min(totalDays,Math.max(0,raw));
   const otDays=Math.max(0,roundHalf(raw-totalDays));
   const issues=[];
   const lbl=row.name||row.empId||"Employee";
   if(rowHasId(row)&&!row.firm)issues.push({type:"risk",text:`${lbl}: Missing Firm Code.`});
-  if(safeN(row.leavesApplied)>5.5)issues.push({type:"risk",text:`${lbl}: Leaves applied (${safeN(row.leavesApplied)}) exceed 5.5-day limit.`});
+  Object.keys(ATT_LABELS).forEach(f=>{const x=safeN(row[f]);if(x<0||x>attMaxValue())issues.push({type:"risk",text:`${lbl}: ${ATT_LABELS[f]} (${x}) is outside 0 to ${attMaxValue()} — counted as ${attClean(x)}. Correct the entry.`});});
+  if(A("leavesApplied")>5.5)issues.push({type:"risk",text:`${lbl}: Leaves applied (${A("leavesApplied")}) exceed 5.5-day limit.`});
   if(totalDeduction>=totalDays)issues.push({type:"risk",text:`${lbl}: Total deduction (${totalDeduction}) ≥ total days (${totalDays}) — zero salary days.`});
   else if(totalDeduction>5.5)issues.push({type:"warn",text:`${lbl}: High total deduction — ${totalDeduction} days.`});
   if(otDays>0)issues.push({type:"warn",text:`${lbl}: ${fmtN(otDays)} OT day(s) — salary capped at ${totalDays}, OT tracked separately.`});
-  if(safeN(row.late)>=3)issues.push({type:"warn",text:`${lbl}: ${row.late} late mark(s).`});
-  if(safeN(row.noThumb)>0)issues.push({type:"warn",text:`${lbl}: ${row.noThumb} no-thumb entry/entries.`});
+  if(A("late")>=3)issues.push({type:"warn",text:`${lbl}: ${A("late")} late mark(s).`});
+  if(A("noThumb")>0)issues.push({type:"warn",text:`${lbl}: ${A("noThumb")} no-thumb entry/entries.`});
   return{totalDays,lateDeduction,absentDeduction,halfDayDeduction,noThumbDeduction,totalDeduction,extraDays,finalPresent,totalSalaryDays,otDays,issues};
 }
 // Total advance deducted for an employee in the CURRENT pay period =
@@ -1301,7 +1313,11 @@ function handleAttInput(e){
   const el=e.target;const i=Number(el.dataset.row);const field=el.dataset.field;
   if(!state.rows[i])return;
   if(el.type==="checkbox")state.rows[i][field]=el.checked?"Signed":"";
-  else if(el.type==="number")state.rows[i][field]=safeN(el.value);
+  else if(el.type==="number"){
+    const raw=safeN(el.value),v=attClean(raw);
+    if(v!==raw){el.value=String(v);toast(raw<0?"Attendance values cannot be negative.":"Cannot be more than the days in the month ("+attMaxValue()+").");}
+    state.rows[i][field]=v;
+  }
   else if(field==="firm")state.rows[i][field]=normFirm(el.value);
   else state.rows[i][field]=el.value;
   refreshAttRow(i);renderAttSummary();renderValidation();renderAttFeedPanel();renderLeaveReconPanel();updateBadges();
@@ -1344,6 +1360,8 @@ function checkGlobalValidation(){
   Object.entries(idCounts).filter(([,n])=>n>1).forEach(([id,n])=>{issues.push({type:"warn",text:`Duplicate Employee ID "${id}" appears in ${n} rows.`});});
   named.forEach(r=>{if(!r.name&&!r.empId)issues.push({type:"warn",text:`A row (Firm: ${r.firm||"?"}) has no Employee Name or ID.`});else if(!r.name)issues.push({type:"warn",text:`Employee ID "${r.empId}" (${r.firm||"?"}) has no name.`});});
   named.filter(r=>r.firm==="GM").forEach(r=>{const lbl=r.name||r.empId||"GM emp";if(safeN(r.gross)<=0)issues.push({type:"warn",text:`${lbl}: Gross Salary not set (Employee Master).`});});
+  const vc={};(state.advances||[]).forEach(a=>{const n=String(a.voucherNo||"");if(n)vc[n]=(vc[n]||0)+1;});
+  Object.entries(vc).filter(([,n])=>n>1).forEach(([no,n])=>{issues.push({type:"warn",text:`Advance voucher number "${no}" is used by ${n} vouchers (created by an earlier version). Keep their paper copies apart; new vouchers will not repeat a number.`});});
   return issues;
 }
 function renderValidation(){
@@ -1351,7 +1369,7 @@ function renderValidation(){
   const globalIssues=checkGlobalValidation();const issues=[...rowIssues,...globalIssues];
   document.getElementById("val-count").textContent=issues.length?`${issues.length} warning${issues.length>1?"s":""}`:"> All clear";
   document.getElementById("val-list").innerHTML=issues.length
-    ?issues.map(x=>`<div class="val-item ${x.type}"><span class="val-dot"></span><span>${x.text}</span></div>`).join("")
+    ?issues.map(x=>`<div class="val-item ${x.type}"><span class="val-dot"></span><span>${escT(x.text)}</span></div>`).join("")
     :`<div class="val-item ok"><span class="val-dot"></span><span>No warnings. Ready for final payroll approval.</span></div>`;
 }
 
@@ -1398,7 +1416,7 @@ function renderGM(){
       <td data-label="Gender"><select data-row="${gi}" data-field="gender" style="width:36px"><option ${row.gender==="M"?"selected":""}>M</option><option ${row.gender==="F"?"selected":""}>F</option></select></td>
       <td class="calc-cell" data-label="Gross Salary"><input type="number" value="${safeN(row.gross)}" data-row="${gi}" data-field="gross" style="width:70px;color:var(--navy);font-weight:700"></td>
       <td class="calc-cell" data-label="Type"><select data-row="${gi}" data-field="salaryType" style="width:38px"><option value="S" ${row.salaryType==="S"?"selected":""}>S</option><option value="B" ${row.salaryType==="B"?"selected":""}>B</option></select></td>
-      <td class="locked" data-label="Total Days" id="gm-td-${gi}">${fmtN(c.totalDays)}</td>
+      <td class="locked" data-label="Total Days" id="gm-td-${gi}">${c.totalDays==null?"—":fmtN(c.totalDays)}</td>
       <td data-label="Absent Days" id="gm-absent-${gi}">${fmtN(safeN(row.absent))}</td>
       <td class="total-cell" data-label="Salary Days" id="gm-saldays-${gi}">${fmtN(c.totalSalaryDays)}</td>
       <td class="final-cell" data-label="OT Days" id="gm-otdays-${gi}">${c.otDays>0?fmtN(c.otDays):"—"}</td>
@@ -1497,20 +1515,15 @@ function clearGMFoot(){["gross","absent","saldays","otdays","grosspay","basic","
 // byte-for-byte we still recompute via calcGM when locked.
 function renderGMSummary(){
   const rowCount=gmCalcCache.length;
-  let totalNet,totalCTC,totalAdvRaw;
-  if(isCurLocked()){
-    const calcs=gmCalcCache.map(e=>calcGM(e.row));
-    totalNet=calcs.reduce((a,c)=>a+c.netPayable,0);
-    totalCTC=calcs.reduce((a,c)=>a+c.totalCTC,0);
-  }else{
-    totalNet=gmCalcCache.reduce((a,e)=>a+e.c.netPayable,0);
-    totalCTC=gmCalcCache.reduce((a,e)=>a+e.c.totalCTC,0);
-  }
-  totalAdvRaw=gmCalcCache.reduce((a,e)=>a+safeN(e.row.advance),0);
+  /* S10-F09/F10: gmCalcCache.c is already the frozen snapshot for a locked month and the live figure otherwise,
+     so the cards and the table footer can never disagree (voucher advances included). */
+  const totalNet=gmCalcCache.reduce((a,e)=>a+e.c.netPayable,0);
+  const totalCTC=gmCalcCache.reduce((a,e)=>a+e.c.totalCTC,0);
+  const totalAdvRaw=gmCalcCache.reduce((a,e)=>a+safeN(e.c.advance),0);
   document.getElementById("gm-summary").innerHTML=`
     <div class="sc gold"><div class="sc-l">Employees</div><div class="sc-v">${rowCount}</div></div>
     <div class="sc"><div class="sc-l">Working Days</div><div class="sc-v">${fmtN(totalWorkingDays())}</div></div>
-    <div class="sc green"><div class="sc-l">Net Payable</div><div class="sc-v">₹${fmtMoney(totalNet,0)}</div></div>
+    <div class="sc green"><div class="sc-l">Net before OT &amp; advance</div><div class="sc-v">₹${fmtMoney(totalNet,0)}</div></div>
     <div class="sc orange"><div class="sc-l">Total Advance</div><div class="sc-v">₹${fmtMoney(totalAdvRaw,0)}</div></div>
     <div class="sc"><div class="sc-l">Total CTC</div><div class="sc-v">₹${fmtMoney(totalCTC,0)}</div></div>`;
 }
@@ -1526,7 +1539,7 @@ function renderMasterSummary(){
     <div class="sc"><div class="sc-l">Total Gross</div><div class="sc-v">₹${fmtMoney(rows.reduce((a,r)=>a+safeN(r.gross),0),0)}</div></div>
     <div class="sc green"><div class="sc-l">PF Applicable</div><div class="sc-v">${nPf}</div></div>
     <div class="sc orange"><div class="sc-l">ESIC Applicable</div><div class="sc-v">${nEs}</div></div>
-    <div class="sc"><div class="sc-l">Total Advance</div><div class="sc-v">₹${fmtMoney(rows.reduce((a,r)=>a+safeN(r.advance),0),0)}</div></div>`;
+    <div class="sc"><div class="sc-l">Total Advance</div><div class="sc-v">₹${fmtMoney(rows.reduce((a,r)=>a+advanceForRow(r),0),0)}</div></div>`;
 }
 function renderMaster(){
   const rows=gmRows();const body=document.getElementById("ms-body");
@@ -1706,17 +1719,42 @@ function importJSON(event){
 }
 function downloadSnapshot(){
   saveState(false);const clone=document.documentElement.cloneNode(true);
-  const ds=clone.querySelector("#app-data");if(ds)ds.textContent=JSON.stringify(state);
+  const ds=clone.querySelector("#app-data");if(ds)ds.textContent=JSON.stringify(state).replace(/</g,"\\u003c");
   const html="<!DOCTYPE html>\n"+clone.outerHTML;
   const blob=new Blob([html],{type:"text/html"});
   appSaveBlob(blob,`PayrollSuite_${state.meta.month}_${state.meta.year}.html`,{exportId:'payroll-state-html',scopeId:'payroll-snapshot',scopeLabel:'payroll self-contained snapshot',rowCount:state.rows.length,purposeId:'business-continuity'});
 }
-function resetAll(){
-  if(!confirm("Reset everything? All data will be cleared."))return;
+/* S10-F01: recovery copy in the SAME place the shell's "Reset a single module" uses, so the shell's
+   "Undo last reset" button (Settings) brings it back. Whole payroll state, raw, exactly as it would be saved. */
+const ST_ROLLBACK_PREFIX="st_v4_restore_rollback_", ST_LAST_RESET_KEY="st_v2_last_module_reset_v1";
+function payrollRecoverySnapshot(title){
+  try{
+    clearTimeout(dirtyTimer);
+    mirrorRowOutputs();
+    const raw=JSON.stringify(state);
+    const createdAt=new Date().toISOString();
+    const key=ST_ROLLBACK_PREFIX+"module_reset_payroll_"+createdAt.replace(/[:.]/g,"-");
+    localStorage.setItem(key,JSON.stringify({createdAt:createdAt,module:"payroll",title:title||"Payroll",keys:{[STORAGE_KEY]:raw}}));
+    if(localStorage.getItem(key)===null)return{ok:false};
+    localStorage.setItem(ST_LAST_RESET_KEY,JSON.stringify({rollbackKey:key,module:"payroll",title:title||"Payroll",createdAt:createdAt,undone:false}));
+    const mine=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf(ST_ROLLBACK_PREFIX+"module_reset_payroll_")===0)mine.push(k);}
+    mine.sort().slice(0,Math.max(0,mine.length-2)).forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});   /* keep the two newest copies */
+    return{ok:true,key:key};
+  }catch(e){return{ok:false};}
+}
+async function resetAll(){
+  if(stGuardWrite())return;
+  const lockedKeys=Object.keys(state.runs||{}).filter(k=>isLocked(k));
+  const nAdv=(state.advances||[]).length;
+  if(!confirm("Reset ALL payroll data?\n• "+state.rows.length+" employee row(s)\n• "+nAdv+" advance voucher(s)\n• "+lockedKeys.length+" locked pay-run(s)\n\nA recovery copy is saved first. The Owner PIN is required."))return;
+  if(lockedKeys.length&&!confirm("FINAL WARNING: "+lockedKeys.length+" LOCKED pay-run(s) and their frozen salary figures will be erased from Payroll.\nThey can be brought back only with Settings > Reset a single module > Undo last reset.\nContinue?"))return;
+  if(!await stReauth("Reset ALL payroll data ("+lockedKeys.length+" locked pay-run(s), "+nAdv+" advance voucher(s))"))return;
+  if(!payrollRecoverySnapshot("Payroll").ok){toast("Reset cancelled: a recovery copy could not be saved, so nothing was deleted.");return;}
   localStorage.removeItem(STORAGE_KEY);state=normalizeState(defaultState());
   bindMeta();renderAttendance();renderAttSummary();renderValidation();updateBadges();updateHeaders();
   const gb=document.getElementById("gm-body");if(gb)gb.innerHTML="";
   const mb=document.getElementById("ms-body");if(mb)mb.innerHTML="";saveState(true);
+  toast("Payroll reset. To bring it back: Settings > Reset a single module > Undo last reset.");
 }
 
 // ══ MODAL ══
@@ -1770,7 +1808,7 @@ function slipRecords(){
     if(!String(row.name||"").trim())issues.push({lv:"err",t:"Missing employee name"});
     if(safeN(row.gross)<=0)issues.push({lv:"err",t:"Gross salary is zero"});
     (c.issues||[]).forEach(x=>issues.push({lv:x.type==="risk"?"err":"warn",t:x.text}));
-    if(net<0)issues.push({lv:"warn",t:"Negative net pay — advance/deductions exceed earnings"});
+    if(net<0)issues.unshift({lv:"err",t:"Negative net pay — advance/deductions exceed earnings. Reduce the advance or move its recovery to a later month."});
     const diff=earnings-deductions-net;
     if(Math.abs(diff)>1)issues.push({lv:"warn",t:"Computed net differs from Final Pay by "+slipINR(diff)});
     const status=issues.some(x=>x.lv==="err")?"err":issues.some(x=>x.lv==="warn")?"warn":"ok";
@@ -2038,7 +2076,23 @@ function fillAdvForm(){
   if(!document.getElementById("advYear").value)document.getElementById("advYear").value=safeN(state.meta.year);
   if(!document.getElementById("advDate").value)document.getElementById("advDate").value=stRealToday();
 }
-function advVoucherNo(){return `GM/ADV/${safeN(state.meta.year)}/${String((state.advances||[]).length+1).padStart(3,"0")}`;}
+/* S10-F03: next number = highest number ever issued + 1. state.advSeq remembers numbers of deleted vouchers. */
+function advNextSeq(){
+  let mx=Math.max(0,Math.floor(safeN(state.advSeq)),(state.advances||[]).length);
+  (state.advances||[]).forEach(a=>{const m=/(\d+)\s*$/.exec(String(a.voucherNo||""));if(m)mx=Math.max(mx,parseInt(m[1],10));});
+  return mx+1;
+}
+function advVoucherNo(seq){return `GM/ADV/${safeN(state.meta.year)}/${String(seq==null?advNextSeq():seq).padStart(3,"0")}`;}
+/* S10-F02: the first recovery of a new voucher must fit inside what the employee can actually be paid that month. */
+function advCapProblem(row,amt,emi,month,year){
+  const first=emi>0?Math.min(emi,amt):amt;
+  let room,basis;
+  if(month===state.meta.month&&year===safeN(state.meta.year)){const c=calcGM(row);room=c.netPayable+c.otAmount-c.advance;basis="pay for "+month+" "+year+" after PT/PF/ESIC and other advances";}
+  else{room=safeN(row.gross);basis="monthly gross salary";}
+  const cap=Math.floor(Math.max(0,room));
+  if(first<=cap)return "";
+  return "Advance not created: the first recovery (₹"+fmtMoney(first,0)+" in "+month+" "+year+") is more than "+(row.name||"this employee")+" can be paid ("+basis+": ₹"+fmtMoney(cap,0)+").\nLower the amount, set a monthly recovery (EMI) of at most ₹"+fmtMoney(cap,0)+", or pick a later month.";
+}
 function renderAdvances(){
   fillAdvForm();
   const m=state.meta.month,y=safeN(state.meta.year);
@@ -2076,8 +2130,13 @@ function createAdvance(){
   if(!row){toast("Employee not found. Refresh and try again.");return;}
   const amt=safeN(document.getElementById("advAmt").value);
   if(amt<=0){toast("Enter a valid advance amount.");return;}
-  const v=normalizeAdvance({id:++state.nextId,voucherNo:advVoucherNo(),empId:row.empId,empName:row.name,
-    amount:amt,emi:safeN(document.getElementById("advEmi").value),
+  const emiIn=safeN(document.getElementById("advEmi").value);
+  if(emiIn<0){toast("Monthly recovery (EMI) cannot be negative.");return;}
+  const capMsg=advCapProblem(row,amt,emiIn,document.getElementById("advMonth").value,safeN(document.getElementById("advYear").value)||safeN(state.meta.year));
+  if(capMsg){toast(capMsg);return;}
+  const seq=advNextSeq();
+  const v=normalizeAdvance({id:++state.nextId,voucherNo:advVoucherNo(seq),empId:row.empId,empName:row.name,
+    amount:amt,emi:emiIn,
     date:document.getElementById("advDate").value||stRealToday(),
     mode:document.getElementById("advMode").value,
     refNo:document.getElementById("advRef").value,
@@ -2086,7 +2145,7 @@ function createAdvance(){
     deductMonth:document.getElementById("advMonth").value,
     deductYear:safeN(document.getElementById("advYear").value)||safeN(state.meta.year),
     createdAt:new Date().toISOString()});
-  state.advances.push(v);
+  state.advances.push(v);state.advSeq=seq;
   document.getElementById("advAmt").value="";document.getElementById("advReason").value="";
   document.getElementById("advRef").value="";document.getElementById("advEmi").value="";
   renderAdvances();updateBadges();queueSave();
@@ -2435,6 +2494,7 @@ function runBlockingErrors(){
     });
     if(blanks.length) errs.push({name:"Missing identity ("+blanks.slice(0,3).join(", ")+(blanks.length>3?", …":"")+")",issues:[{t:blanks.length+" row(s) have no Emp ID or name — the locked snapshot cannot key them uniquely"}]});
   }catch(e){}
+  try{ settingsProblems(state.meta.rules).forEach(p=>errs.push({name:"Settings",issues:[{t:p}]})); }catch(e){}
   return errs;
 }
 // ════════════════ MONTH-WISE READ-ONLY VIEWER ════════════════
@@ -2543,9 +2603,9 @@ function renderApproval(){
   if(st==="locked"){
     iss.innerHTML=`<div class="lockbar">🔒 LOCKED on ${slipEsc((run.lockedAt||"").slice(0,10))} by ${slipEsc(run.approvedBy||"—")}. Attendance, Master &amp; Advances are frozen for ${slipEsc(state.meta.month)} ${slipEsc(String(state.meta.year))}.</div>`;
   }else if(errs.length){
-    iss.innerHTML=`<div class="issue err" style="background:var(--red-bg);border-left:4px solid var(--red);padding:10px;border-radius:8px;color:var(--red);font-size:12px">⚠ ${errs.length} blocking error(s): ${slipEsc(errs.slice(0,4).map(e=>e.name).join(", "))}${errs.length>4?" …":""}. Fix in Employee Master / Attendance before locking.</div>`;
+    iss.innerHTML=`<div class="issue err" style="background:var(--red-bg);border-left:4px solid var(--red);padding:10px;border-radius:8px;color:var(--red);font-size:12px">⚠ ${errs.length} blocking error(s): ${slipEsc(errs.slice(0,4).map(e=>e.name).join(", "))}${errs.length>4?" …":""}. Fix in Employee Master / Attendance / Advances / Settings before locking.</div>`;
   }else{
-    iss.innerHTML=`<div class="issue ok" style="background:var(--green-bg);border-left:4px solid var(--green);padding:10px;border-radius:8px;color:var(--green);font-size:12px">✓ No blocking errors. ${rows.length} employee(s), Net ₹${fmtMoney(T.net,0)}. Ready to approve &amp; lock.</div>`;
+    iss.innerHTML=`<div class="issue ok" style="background:var(--green-bg);border-left:4px solid var(--green);padding:10px;border-radius:8px;color:var(--green);font-size:12px">✓ No blocking errors. ${rows.length} employee(s), Final pay ₹${fmtMoney(T.net,0)}. Ready to approve &amp; lock.</div>`;
   }
   // prefill names
   const g=id=>document.getElementById(id);
@@ -2673,13 +2733,21 @@ function renderReports(){
 function repPeriod(){return state.meta.month+" "+safeN(state.meta.year);}
 // Legacy screenshot register (html2canvas → image PDF) retired — now a native-vector engine report.
 function reportRegisterPdf(){ openEngineReport('payrollRegister'); }
+/* S10-CR-F2 + G7: text cells are always quoted and a leading = + - @ (after optional blanks) gets an apostrophe;
+   account numbers, UAN and ESIC IP are written as plain digits - a leading apostrophe is a literal character in a CSV
+   and made the bank file invalid. A non-digit value in a number column is treated as a text cell. */
+function csvGuard(v){const s=String(v==null?"":v);return /^[\t\r\n ]*[=+\-@]/.test(s)?"'"+s:s;}
+function csvQuoted(v){return '"'+csvGuard(v).replace(/"/g,'""')+'"';}
+function csvPlain(v){const s=String(v==null?"":v);return /^\d*$/.test(s)?s:csvQuoted(s);}
 function reportBankCsv(){
   const {rows}=payTotals();
   if(!rows.length){toast("No employees.");return;}
+  /* S10-F02: never write a negative or invalid payout into a bank file */
+  const bad=rows.filter(x=>!Number.isFinite(x.c.finalPay)||Math.round(x.c.finalPay)<0);
+  if(bad.length){toast("Bank file NOT created: "+bad.length+" employee(s) have a negative or invalid net pay ("+bad.slice(0,3).map(x=>x.row.name||x.row.empId||"(no name)").join(", ")+(bad.length>3?", …":"")+").\nFix the advance or attendance first.");return;}
   let csv="Sr,Employee Name,Employee ID,Bank Name,Account No,IFSC,Net Amount\n";
   rows.forEach((x,i)=>{const r=x.row,c=x.c;
-    csv+=[i+1,'"'+String(r.name||"").replace(/"/g,'""')+'"',r.empId||"",'"'+String(r.bankName||"").replace(/"/g,'""')+'"',
-      "'"+(r.accountNo||""),r.ifsc||"",Math.round(c.finalPay)].join(",")+"\n";});
+    csv+=[i+1,csvQuoted(r.name),csvQuoted(r.empId),csvQuoted(r.bankName),csvPlain(r.accountNo),csvQuoted(r.ifsc),Math.round(c.finalPay)].join(",")+"\n";});
   appSaveBlob(new Blob([csv],{type:"text/csv"}),"BankDisbursement_"+repPeriod().replace(/[^A-Za-z0-9]+/g,"_")+".csv",{exportId:'payroll-bank-csv',scopeId:'payroll-bank-disbursement',scopeLabel:'bank disbursement register',rowCount:rows.length,purposeId:'salary-disbursement'});
 }
 function reportStatutoryCsv(){
@@ -2714,12 +2782,11 @@ function statutoryMemberRows(){
 function reportStatutoryMemberCsv(){
   const {list,tot}=statutoryMemberRows();
   if(!list.length){toast("No employees.");return;}
-  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
   let csv="Sr,UAN,Employee Name,Emp ID,Gross Payable,PF Wages,PF EE,PF ER,ESIC IP No,ESIC Wages,ESIC EE,ESIC ER,PT\n";
-  // Leading apostrophe on UAN / ESIC IP = the reportBankCsv accountNo convention — stops Excel
-  // mangling 12-digit numbers into scientific notation. TOTAL row uses the T-based totals
+  // UAN / ESIC IP are written as plain digits (a leading apostrophe is a literal character in a CSV and
+  // makes the number invalid for PF / ESIC upload). TOTAL row uses the T-based totals
   // (never re-summed rounded rows), matching reportStatutoryCsv exactly.
-  list.forEach(r=>{ csv+=[r.sr,"'"+r.uan,q(r.name),q(r.empId),r.gross,r.pfWages,r.pfEE,r.pfER,"'"+r.esicIp,r.esicWages,r.esicEE,r.esicER,r.pt].join(",")+"\n"; });
+  list.forEach(r=>{ csv+=[r.sr,csvPlain(r.uan),csvQuoted(r.name),csvQuoted(r.empId),r.gross,r.pfWages,r.pfEE,r.pfER,csvPlain(r.esicIp),r.esicWages,r.esicEE,r.esicER,r.pt].join(",")+"\n"; });
   csv+=["TOTAL ("+tot.emp+")","","","",tot.gross,tot.pfWages,tot.pfEE,tot.pfER,"",tot.esicWages,tot.esicEE,tot.esicER,tot.pt].join(",")+"\n";
   appSaveBlob(new Blob([csv],{type:"text/csv"}),"StatutoryRegister_"+repPeriod().replace(/[^A-Za-z0-9]+/g,"_")+".csv",{exportId:'payroll-statutory-register-csv',scopeId:'payroll-statutory-register',scopeLabel:'member-wise statutory register',rowCount:list.length,purposeId:'statutory-compliance'});
 }
@@ -2734,13 +2801,29 @@ function renderSettings(){
   V("setEsEE",E.rateEE);V("setEsER",E.rateER);V("setEsCeil",E.wageCeiling);
   V("setFirmName",M.firmName||"");V("setSignatory",M.signatory||"");V("setFirmAddr",M.firmAddr||"");V("setFirmContact",M.firmContact||"");
 }
+/* S10-F07: allowed ranges for the statutory figures. Used when saving and again before a pay-run is locked. */
+function settingsProblems(R){
+  const out=[],num=v=>typeof v==="number"?v:(typeof v==="string"&&v.trim()!==""?Number(v):NaN);
+  const chk=(label,v,min,max,unit)=>{const x=num(v);if(!Number.isFinite(x)||x<min||x>max)out.push(label+" must be a number from "+min+" to "+max+unit);};
+  const P=(R&&R.pt)||{},F=(R&&R.pf)||{},E=(R&&R.esic)||{};
+  chk("PF employee rate",F.rateEE,0,25," %");chk("PF employer rate",F.rateER,0,25," %");chk("PF wage cap",F.wageCap,1,1000000," Rs");
+  chk("ESIC employee rate",E.rateEE,0,10," %");chk("ESIC employer rate",E.rateER,0,10," %");chk("ESIC gross ceiling",E.wageCeiling,1,1000000," Rs");
+  chk("PT male exempt limit",P.maleExempt,0,1000000," Rs");chk("PT male mid limit",P.maleMid,0,1000000," Rs");chk("PT female exempt limit",P.femaleExempt,0,1000000," Rs");
+  chk("PT male mid amount",P.maleMidAmt,0,5000," Rs");chk("PT standard amount",P.stdAmt,0,5000," Rs");chk("PT February amount",P.febAmt,0,5000," Rs");
+  if(num(P.maleExempt)>num(P.maleMid))out.push("PT male exempt limit cannot be above the male mid limit");
+  return out;
+}
 function saveSettings(){
   if(stGuardWrite())return;
-  const g=id=>document.getElementById(id),n=id=>safeN(g(id).value);
+  const g=id=>document.getElementById(id),n=id=>{const t=String(g(id).value==null?"":g(id).value).trim();return t===""?NaN:Number(t);};
+  const next={
+    pt:{maleExempt:n("setPtMaleExempt"),maleMid:n("setPtMaleMid"),maleMidAmt:n("setPtMaleMidAmt"),stdAmt:n("setPtStd"),febAmt:n("setPtFeb"),femaleExempt:n("setPtFemaleExempt")},
+    pf:{rateEE:n("setPfEE"),rateER:n("setPfER"),wageCap:n("setPfCap")},
+    esic:{rateEE:n("setEsEE"),rateER:n("setEsER"),wageCeiling:n("setEsCeil")}};
+  const problems=settingsProblems(next);
+  if(problems.length){toast("Settings NOT saved:\n- "+problems.slice(0,4).join("\n- ")+(problems.length>4?"\n- …":""));return;}
   const R=state.meta.rules;
-  R.pt={maleExempt:n("setPtMaleExempt"),maleMid:n("setPtMaleMid"),maleMidAmt:n("setPtMaleMidAmt"),stdAmt:n("setPtStd"),febAmt:n("setPtFeb"),femaleExempt:n("setPtFemaleExempt")};
-  R.pf={rateEE:n("setPfEE"),rateER:n("setPfER"),wageCap:n("setPfCap")};
-  R.esic={rateEE:n("setEsEE"),rateER:n("setEsER"),wageCeiling:n("setEsCeil")};
+  R.pt=next.pt;R.pf=next.pf;R.esic=next.esic;
   state.meta.firmName=g("setFirmName").value||"SAAGAR TRADERS";
   state.meta.signatory=g("setSignatory").value||"";
   state.meta.firmAddr=g("setFirmAddr").value||"";

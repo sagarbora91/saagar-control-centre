@@ -9,6 +9,7 @@ import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { buildCaseSet, buildPack, DEFAULT_VERIFY_OPTIONS } from '../scripts/lib/etp-bridge-pack-builder.mjs';
+import { OPEN_GATES } from '../scripts/audit/config.mjs';
 import { BANNED_BROWSER_TOKENS, loadBridge, readWww, spyCrypto, trustApi, verifierApi } from './lib/etp-bridge-test-support.mjs';
 
 const OPTIONS = DEFAULT_VERIFY_OPTIONS;
@@ -281,4 +282,29 @@ test('the contract constants in the verifier match the format document', () => {
   for (const [name, value] of [['file bytes', verifierApi.LIMITS.FILE_BYTES], ['manifest bytes', verifierApi.LIMITS.MANIFEST_BYTES], ['rows', verifierApi.LIMITS.ROWS_PER_REPORT], ['line bytes', verifierApi.LIMITS.LINE_BYTES]]) {
     assert.ok(doc.includes(String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',')) || doc.includes(String(value)), `${name} ${value} is documented`);
   }
+});
+
+test('GATE-ETP-BRIDGE-TRUST is registered once, as an open gate, in the audit register; the ten earlier gates are untouched (W3)', () => {
+  assert.equal(Object.isFrozen(OPEN_GATES), true);
+  const ids = OPEN_GATES.map((gate) => gate.id);
+  assert.equal(new Set(ids).size, ids.length, 'gate ids are unique');
+  const bridge = OPEN_GATES.filter((gate) => gate.id === trustApi.GATE_ID);
+  assert.equal(bridge.length, 1, 'registered exactly once, under the id the shipped trust file declares');
+  assert.deepEqual(Object.keys(bridge[0]), ['id', 'title', 'state']);
+  assert.equal(bridge[0].state, 'open');
+  assert.match(bridge[0].title, /key ceremony/);
+  assert.equal(trustApi.keys.length, 0, 'the shipped anchor is empty, so no build may carry this gate as anything but open');
+  // Keeping the original ten ids and states is what keeps audit check C-09 meaningful against a re-frozen baseline.
+  assert.deepEqual(OPEN_GATES.filter((gate) => gate.id !== trustApi.GATE_ID), [
+    { id: 'GATE-UPDATE-PHYSICAL', title: 'Owner physical update-in-place smoke for final APK hash', state: 'open' },
+    { id: 'GATE-UPDATE-API23', title: 'Install-replace evidence for final APK hash', state: 'open' },
+    { id: 'GATE-ETP-PHYSICAL', title: 'Physical API-23/OEM ETP import and document-provider evidence', state: 'open' },
+    { id: 'GATE-ETP-INTERRUPTION', title: 'ETP process-death, disk-full, corruption, rotation and low-storage evidence', state: 'open' },
+    { id: 'GATE-ETP-PRODUCTION', title: 'Real production native ETP publication acceptance', state: 'open' },
+    { id: 'GATE-ETP-EXCEPTIONS', title: 'User-facing R003/R013 exception presentation', state: 'open' },
+    { id: 'GATE-PAYMENTTYPE25', title: 'Approved PAYMENTTYPE25 mapping', state: 'open' },
+    { id: 'GATE-NATIVE-LANGUAGE', title: 'Fluent Marathi/Hindi review', state: 'open' },
+    { id: 'GATE-UAT', title: 'Staff/owner UAT and legal review', state: 'open' },
+    { id: 'GATE-RELEASE', title: 'Production signing and release acceptance', state: 'open' }
+  ]);
 });

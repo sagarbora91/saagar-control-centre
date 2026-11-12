@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 import test from 'node:test';
 import { createRequire } from 'node:module';
 
@@ -49,8 +50,9 @@ test('Leave provides explicit API-23 fallbacks for calendar and form grids', () 
 
 test('Leave business, storage and calculation identities remain pinned', () => {
   const source = applicationSource(html);
-  assert.equal(source.length, 107_195);
-  assert.equal(crypto.createHash('sha256').update(source).digest('hex'), '634a5712f66d9da0f00c7972fb6e9197a549c95ad99b804fb1c72b484e06b612');
+  const frozen = applicationSource(undoFixWaveText('www/modules/leave/index.html', html));
+  assert.equal(frozen.length, 107_195);
+  assert.equal(crypto.createHash('sha256').update(frozen).digest('hex'), '634a5712f66d9da0f00c7972fb6e9197a549c95ad99b804fb1c72b484e06b612');
   for (const identity of [
     "localStorage.getItem('leavedesk_v3')", "localStorage.setItem('leavedesk_v3', JSON.stringify(data))", 'function submitLeave()',
     'function decideLeave(', "['approved','rejected'].includes(decision)", "leaveStatus(l) !== 'pending'", 'function fyUsage(', 'function entFor(',

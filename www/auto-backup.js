@@ -41,6 +41,15 @@
   var LOG_KEY = 'bcc_autobackup_log';       // small JSON ring of recent results
   var WARNING_KEY = 'bcc_autobackup_plaintext_warning'; /* persistent until history + latest write are sealed */
   var START_DELAY_MS = 6000;                // let the app paint first
+  var READY_POLL_MS = 1000;                 // X2-F02: how often to re-check that storage is open
+  var READY_GIVE_UP_MS = 10 * 60 * 1000;    // after this the 6-hour timer alone keeps trying
+  /* S03a-1: the last good figures {date,keys,bytes} and a first too-small run are kept as
+     log entries (fields good / suspectOf); trimming the log never drops the newest of each. */
+  var LOG_MAX = 30;
+  var SHRINK_MIN_KEYS = 20;                 // judge "too small" only once the last good backup had this many keys
+  var SHRINK_RATIO = 0.5;                   // a snapshot below this share of the last good keys (or bytes) is suspect
+  var SECRET_KEYS = { 'st_v2_admin_pin_hash': 1, 'st_v2_admin_mode': 1, 'saagar_staff_pins_v1': 1 }; // U02-F05: never in a backup file
+  var _waiting = null;                      // in memory only: {since} while storage is not open yet
 
   function todayStr() {
     var d = new Date();
@@ -49,6 +58,37 @@
   }
 
   function nowIso() { return new Date().toISOString(); }
+
+  function storeReady() {
+    var S = window.SaagarStore;
+    if (!S) return true;                                   // no storage engine on this page (browser preview, unit tests)
+    try {
+      if (typeof S.authoritative === 'function') return !!S.authoritative();
+      if (typeof S.ready === 'function') return !!S.ready();
+    } catch (e) { return false; }
+    return true;
+  }
+  function markWaiting() { if (!_waiting) _waiting = { since: nowIso() }; }
+  function clearWaiting() { _waiting = null; }
+  function readLog() {
+    var arr = [];
+    try { arr = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { arr = []; }
+    return Array.isArray(arr) ? arr : [];
+  }
+  function isFigures(v) { return !!(v && typeof v === 'object' && typeof v.keys === 'number'); }
+  function newestGoodAt(arr) {
+    for (var i = 0; i < arr.length; i++) if (arr[i] && isFigures(arr[i].good)) return i;
+    return -1;
+  }
+  function newestSuspectAt(arr) {   // only a suspect run newer than the newest good one counts
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i] && isFigures(arr[i].good)) return -1;
+      if (arr[i] && isFigures(arr[i].suspectOf)) return i;
+    }
+    return -1;
+  }
+  function readLastGood() { var a = readLog(), i = newestGoodAt(a); return i < 0 ? null : a[i].good; }
+  function readSuspect() { var a = readLog(), i = newestSuspectAt(a); return i < 0 ? null : a[i].suspectOf; }
 
   function getFS() {
     // Capacitor exposes plugins on window.Capacitor.Plugins when no bundler is used.
@@ -68,28 +108,40 @@
      the app or one of the embedded modules, so a full snapshot is correct and
      also future-proof if new modules add new keys. */
   function snapshot() {
-    var data = {};
+    var data = {}, appKeys = 0;
     for (var i = 0; i < localStorage.length; i++) {
       var k = localStorage.key(i);
-      // do not back up our own transient log
-      if (k === LOG_KEY || k === WARNING_KEY) continue;
-      data[k] = localStorage.getItem(k);
+      if (k == null && localStorage.getItem('') != null) k = '';   // a key with an empty name reads back as null
+      if (k == null) throw new Error('storage changed during snapshot');
+      // do not back up our own transient log, or PIN hashes / admin flag (U02-F05)
+      if (k === LOG_KEY || k === WARNING_KEY || SECRET_KEYS[k]) continue;
+      var v = localStorage.getItem(k);
+      if (v == null) throw new Error('storage key unreadable: ' + k);
+      data[k] = v;
+      if (k.indexOf('bcc_autobackup_') !== 0) appKeys++;
     }
     return {
       app: 'Saagar Traders Business Control Centre',
       build: 'V4-APK',
       createdAt: nowIso(),
       keyCount: Object.keys(data).length,
+      appKeyCount: appKeys,
       localStorage: data
     };
   }
 
   function pushLog(entry) {
-    var arr = [];
-    try { arr = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { arr = []; }
-    if (!Array.isArray(arr)) arr = [];
+    var arr = readLog();
     arr.unshift(entry);
-    if (arr.length > 30) arr = arr.slice(0, 30);
+    if (arr.length > LOG_MAX) {
+      var g = newestGoodAt(arr), s = newestSuspectAt(arr), keep = arr.slice(0, LOG_MAX);
+      var pins = [s, g].filter(function (i) { return i >= LOG_MAX; });   // suspect first: it is newer than the good one
+      if (pins.length) {
+        keep = arr.slice(0, LOG_MAX - pins.length);
+        for (var p = 0; p < pins.length; p++) keep.push(arr[pins[p]]);
+      }
+      arr = keep;
+    }
     try { localStorage.setItem(LOG_KEY, JSON.stringify(arr)); } catch (e) {}
   }
 
@@ -367,7 +419,41 @@
     });
   }
 
-  function runBackupInner(force) {
+  /* S03a-1: the safer shrink rule.
+     empty  : 0 app keys while a good backup was ever recorded -> refuse, write nothing.
+     suspect: under half of the last good keys or bytes -> written only as today's dated daily file.
+     A later calendar day that is still under half is accepted as genuine (null = proceed normally). */
+  function judgeSnapshot(snap, json, opts, today) {
+    var prev = readLastGood();
+    if (!snap.appKeyCount) {
+      if (prev && prev.keys > 0) return { code: 'empty', prev: prev, message: 'Backup skipped: the app data looked empty (0 items; the last good backup had ' + prev.keys + '). Earlier backups were left untouched.' };
+      return { code: 'nothing', benign: true, prev: prev };   // fresh install, nothing to protect yet: not a failure
+    }
+    if (prev && prev.keys >= SHRINK_MIN_KEYS && !(opts && opts.acceptSmaller)) {
+      var fewKeys = snap.appKeyCount < prev.keys * SHRINK_RATIO;
+      var fewBytes = prev.bytes >= 50000 && json.length < prev.bytes * SHRINK_RATIO;
+      if (fewKeys || fewBytes) {
+        var sus = readSuspect();
+        if (sus && typeof sus.date === 'string' && sus.date < today) return null;   // S03a-1 d: still smaller on a later day, so it is genuine
+        return { code: 'suspect', suspect: true, prev: prev, firstDate: (sus && typeof sus.date === 'string' && sus.date <= today) ? sus.date : today, message: 'The app data is much smaller than the last good backup (' + snap.appKeyCount + ' items against ' + prev.keys + '). The copy of today was saved as a separate daily file only; the latest, weekly and monthly backups were kept. If this is expected, the next daily backup will accept it.' };
+      }
+    }
+    return null;
+  }
+  function refuse(today, verdict, keys) {
+    if (verdict.benign) { console.log('[auto-backup] Nothing to back up yet (no app data).'); return Promise.resolve({ skipped: true, reason: 'nothing-to-back-up' }); }
+    pushLog({ at: nowIso(), date: today, mode: 'refused-' + verdict.code, keys: keys, prevKeys: verdict.prev ? verdict.prev.keys : null, ok: false, refused: true, error: verdict.message });
+    console.warn('[auto-backup] ' + verdict.message);
+    return Promise.resolve({ ok: false, refused: verdict.code, error: new Error(verdict.message) });
+  }
+  function confirmWritten(FS, path, bytes) {
+    if (!FS.stat) return Promise.resolve();
+    return FS.stat({ path: FOLDER + '/' + path, directory: DIR }).then(function (st) {
+      if (st && typeof st.size === 'number' && st.size !== bytes.length) throw new Error('backup file size mismatch for ' + path + ' (' + st.size + ' bytes on disk, ' + bytes.length + ' expected)');
+    });
+  }
+
+  function runBackupInner(force, opts) {
     var today = todayStr();
     var last = null;
     try { last = localStorage.getItem(MARKER_KEY); } catch (e) {}
@@ -377,12 +463,18 @@
       return Promise.resolve({ skipped: true });
     }
 
-    var snap = snapshot();
-    var json = JSON.stringify(snap);
+    var snap, json, buildMs = 0, t0 = Date.now();
+    try { snap = snapshot(); json = JSON.stringify(snap); buildMs = Date.now() - t0; }
+    catch (err) { return refuse(today, { code: 'unreadable', prev: readLastGood(), message: 'Backup skipped: app data could not be read completely (' + String(err && err.message || err) + '). Earlier backups were left untouched.' }, 0); }
+    console.log('[auto-backup] Snapshot build took ' + buildMs + ' ms (' + json.length + ' characters, ' + snap.keyCount + ' keys).');   /* S03a-4 measurement */
+    var verdict = judgeSnapshot(snap, json, opts, today);
+    if (verdict && !verdict.suspect) return refuse(today, verdict, snap.appKeyCount);
+    var suspectRun = !!verdict;
     var FS = getFS();
 
     if (!FS) {
       // Plain browser / Capacitor not available — degrade gracefully.
+      if (suspectRun) return Promise.resolve({ browser: true, suspect: true });
       try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
       pushLog({ at: nowIso(), date: today, mode: 'browser-noop', keys: snap.keyCount });
       console.log('[auto-backup] No native filesystem (browser preview). Snapshot ready, '
@@ -420,16 +512,26 @@
         sealedMode = isSealed(bytes);
         return writeBytes(FS, 'backup-' + today + '.json', storedBytes);
       })
-      .then(function () { return writeBytes(FS, 'latest.json', storedBytes); })
-      .then(function () { return writeGfsCopies(FS, today, storedBytes); })
-      .then(function () { return pruneOldFiles(FS); })
+      .then(function () { return confirmWritten(FS, 'backup-' + today + '.json', storedBytes); })
       .then(function () {
+        if (suspectRun) return null;   /* S03a-1 c: only the dated daily file; latest, weekly, monthly and pruning stay untouched */
+        return writeBytes(FS, 'latest.json', storedBytes)
+          .then(function () { return writeGfsCopies(FS, today, storedBytes); })
+          .then(function () { return pruneOldFiles(FS); });
+      })
+      .then(function () {
+        if (suspectRun) {
+          pushLog({ at: nowIso(), date: today, mode: 'suspect-daily', keys: snap.appKeyCount, prevKeys: verdict.prev ? verdict.prev.keys : null, ok: true, suspect: true, buildMs: buildMs,
+            suspectOf: { date: verdict.firstDate, keys: snap.appKeyCount, bytes: json.length } });
+          console.warn('[auto-backup] ' + verdict.message);
+          return { ok: true, suspect: true, file: 'backup-' + today + '.json', sealed: sealedMode };
+        }
         try { localStorage.setItem(MARKER_KEY, today); } catch (e) {}
         if (sealedMode) {
           try { if (localStorage.getItem(WARNING_KEY) !== 'history') setPlaintextWarning(''); } catch (e) {}
         } else setPlaintextWarning('write');
         pushLog({ at: nowIso(), date: today, mode: sealedMode ? 'file-sealed' : 'file-plaintext-fallback',
-          keys: snap.keyCount, ok: true });
+          keys: snap.keyCount, ok: true, buildMs: buildMs, good: { date: today, keys: snap.appKeyCount, bytes: json.length } });
         console.log('[auto-backup] Saved ' + (sealedMode ? 'sealed' : 'PLAINTEXT FALLBACK')
           + ' app-private ' + DIR + '/' + FOLDER + '/backup-' + today + '.json ('
           + snap.keyCount + ' keys).');
@@ -445,6 +547,7 @@
 
   function finishRun(result, force) {
     notifyStatus();
+    if (result && (result.refused || result.waiting || result.suspect)) return Promise.resolve(result);   // X2-F02: never send an unchecked snapshot off-device
     try {
       if (window.SaagarOffDeviceBackup && typeof window.SaagarOffDeviceBackup.run === 'function') {
         return window.SaagarOffDeviceBackup.run(!!force).catch(function (err) {
@@ -456,12 +559,14 @@
     return Promise.resolve(result);
   }
 
-  function runBackup(force) {
+  function runBackup(force, opts) {
+    if (!storeReady()) { markWaiting(); return Promise.resolve({ ok: false, waiting: true }); }   // X2-F02: not before storage is open
+    clearWaiting();
     var FS = getFS();
-    if (!FS) return runBackupInner(force).then(function (result) { return finishRun(result, force); });
+    if (!FS) return runBackupInner(force, opts).then(function (result) { return finishRun(result, force); });
     return hardenExistingSnapshots(FS).then(function (migration) {
       if (migration && migration.fallback) console.warn('[auto-backup] Existing plaintext snapshot hardening is pending; durability is preserved.');
-      return runBackupInner(force);
+      return runBackupInner(force, opts);
     }).then(function (result) { return finishRun(result, force); });
   }
   /* Public manual trigger — can be called from the app or dev console:
@@ -475,6 +580,10 @@
     function validateText(text) {
       var parsed = JSON.parse(text);
       if (!parsed || typeof parsed !== 'object') throw new Error('invalid backup payload');
+      var lsv = parsed.localStorage;
+      if (lsv && typeof lsv === 'object' && !Object.keys(lsv).some(function (k) { return k.indexOf('bcc_autobackup_') !== 0; })) {
+        var empty = new Error('Backup file contains no app data'); empty.code = 'EMPTY_BACKUP'; throw empty;
+      }
       return text;
     }
     function decode(bytes) {
@@ -498,10 +607,9 @@
       if (!FS.readdir) return Promise.resolve(['latest.json']);
       return FS.readdir({ path: FOLDER, directory: DIR }).then(function (res) {
         var files = (res && res.files) ? res.files : [];
-        var dated = files.map(function (f) { return typeof f === 'string' ? f : f.name; })
-          .filter(function (n) { return /^backup-\d{4}-\d{2}-\d{2}\.json$/.test(n); })
-          .sort().reverse();
-        return ['latest.json'].concat(dated);
+        var names = files.map(function (f) { return typeof f === 'string' ? f : f.name; });
+        function pick(re) { return names.filter(function (n) { return re.test(n); }).sort().reverse(); }
+        return ['latest.json'].concat(pick(/^backup-\d{4}-\d{2}-\d{2}\.json$/), pick(/^weekly-\d{4}-W\d{2}\.json$/), pick(/^monthly-\d{4}-\d{2}\.json$/));
       }).catch(function () { return ['latest.json']; });
     }
     return candidates().then(function (names) {
@@ -558,7 +666,7 @@
   }
 
   window.SaagarBackup = {
-    now: function () { return runBackup(true); },
+    now: function (opts) { return runBackup(true, opts); },
     readLatest: readLatest,
     purgeLegacyDocs: purgeLegacyDocs,
     status: function () {
@@ -573,6 +681,15 @@
           failureSince = log[i].at || failureSince;
         }
       }
+      var lastRefusal = null;
+      for (var j = 0; j < log.length; j++) {
+        if (log[j] && log[j].ok === true) break;
+        if (log[j] && log[j].refused) { lastRefusal = { at: log[j].at, code: String(log[j].mode || '').replace('refused-', ''), message: log[j].error || '' }; break; }
+      }
+      var waitedMs = _waiting ? (Date.now() - new Date(_waiting.since).getTime()) : 0;
+      var suspect = readSuspect(), lastGood = readLastGood();
+      var suspectNotice = suspect ? ('The app data is much smaller than the last good backup (' + suspect.keys + ' items against ' + (lastGood ? lastGood.keys : '?') + '). Only a separate daily copy was saved; latest, weekly and monthly backups were kept. If this is expected, the next daily backup will accept it.') : '';
+      var notice = lastRefusal ? lastRefusal.message : (suspectNotice || (waitedMs > 30000 ? 'Backup is waiting for secure storage to open.' : ''));
       var failureAgeHours = failureSince ? Math.max(0, (Date.now() - new Date(failureSince).getTime()) / 3600000) : 0;
       return {
         lastBackup: localStorage.getItem(MARKER_KEY) || 'never',
@@ -582,8 +699,14 @@
         consecutiveFailures: consecutiveFailures,
         failureSince: failureSince,
         failureThresholdHours: 36,
-        failureEscalated: consecutiveFailures > 0 && failureAgeHours >= 36,
-        recent: log
+        failureEscalated: !!lastRefusal || (consecutiveFailures > 0 && failureAgeHours >= 36),
+        recent: log,
+        lastRefusal: lastRefusal,
+        waitingForStorage: !!_waiting,
+        waitingSince: _waiting ? _waiting.since : null,
+        suspect: suspect,
+        notice: notice,
+        lastGood: lastGood
       };
     }
   };
@@ -591,10 +714,17 @@
   /* Kick off shortly after launch, then re-check every 6 hours so a long-running
      session still rolls over to a new day's backup. */
   function schedule() {
-    setTimeout(function () {
-      runBackup(false);
+    var begun = Date.now();
+    function arm() {
+      setTimeout(function () { runBackup(false); }, START_DELAY_MS);
       setInterval(function () { runBackup(false); }, 6 * 60 * 60 * 1000);
-    }, START_DELAY_MS);
+    }
+    (function waitForStore() {
+      if (storeReady()) { clearWaiting(); arm(); return; }
+      markWaiting();
+      if (Date.now() - begun < READY_GIVE_UP_MS) setTimeout(waitForStore, READY_POLL_MS);
+      else setInterval(function () { runBackup(false); }, 6 * 60 * 60 * 1000);   // storage never opened: runBackup itself refuses until it does
+    })();
   }
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {

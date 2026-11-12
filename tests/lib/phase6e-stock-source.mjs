@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { undoFixWaveText } from './fix-wave-undo.mjs';
 
 export const PHASE6D_STOCK_SHA256 = 'f53711784a1e20fab3b599ccb75d5aacda57b3777de525fbf9727fd43cd33d25';
 
@@ -30,6 +31,8 @@ export function restorePhase6dStockCss(css) {
 }
 
 export function restorePhase6dStockSource(html, css, validate = true) {
+  html = undoFixWaveText('www/modules/stock/index.html', html);
+  css = undoFixWaveText('www/modules/stock/stock-ui.css', css);
   const common = '<link rel="stylesheet" href="../../shared/module-mobile-common.css">\n';
   const legacy = '<link id="st-v5-mobile-css" rel="stylesheet" href="../../shared/module-mobile-legacy.css">';
   if (!html.includes(legacy)) html = html.replace(common, common + legacy);

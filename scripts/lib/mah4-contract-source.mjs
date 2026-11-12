@@ -107,12 +107,25 @@ const ETP_CHAIN_LOADER_GROUP = Object.freeze({
   ]),
   optionalAssetPaths: Object.freeze([])
 });
+// On-demand ETP bridge group (R-2, 2026-11-12): the four report-engine bridge files, loaded by the same loader through the same injector.
+const ETP_BRIDGE_LOADER_GROUP = Object.freeze({
+  id: 'shell-etp-bridge', owner: ETP_CHAIN_LOADER_OWNER, trigger: 'on-demand-etp-bridge-engine-pack',
+  mechanisms: ['create-element-script'],
+  coreAssetPaths: Object.freeze([
+    'etp-bridge-trust.js',
+    'etp-bridge-pack-verifier.js',
+    'etp-bridge-compare.js',
+    'etp-bridge-facade.js'
+  ]),
+  optionalAssetPaths: Object.freeze([])
+});
 const BASE_SCRIPT_LITERAL_REFERENCE_COUNT = 12;
 
 function dynamicLoaderGroups(root) {
-  return fs.existsSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER))
-    ? [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP]
-    : DYNAMIC_LOADER_GROUPS;
+  if (!fs.existsSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER))) return DYNAMIC_LOADER_GROUPS;
+  return fs.existsSync(path.join(root, 'www', 'etp-bridge-facade.js'))
+    ? [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP, ETP_BRIDGE_LOADER_GROUP]
+    : [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP];
 }
 
 const DYNAMIC_WORKER_BINDINGS = Object.freeze([
@@ -681,6 +694,7 @@ function exactSiteCounts(rows) {
 function createDynamicLocalInventory(root, shell, loadedAssets) {
   const loaderGroupConfigs = dynamicLoaderGroups(root);
   const etpChainLoaderPresent = loaderGroupConfigs.includes(ETP_CHAIN_LOADER_GROUP);
+  const etpBridgeLoaderPresent = loaderGroupConfigs.includes(ETP_BRIDGE_LOADER_GROUP);
   const ownerSources = new Map([
     ['index.html', shell.active],
     ['saagar-report.js', fs.readFileSync(path.join(root, 'www', 'saagar-report.js'), 'utf8')]
@@ -730,7 +744,8 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
     };
   });
   if (scriptLiteralReferenceCount !== BASE_SCRIPT_LITERAL_REFERENCE_COUNT
-    + (etpChainLoaderPresent ? ETP_CHAIN_LOADER_GROUP.coreAssetPaths.length : 0)) {
+    + (etpChainLoaderPresent ? ETP_CHAIN_LOADER_GROUP.coreAssetPaths.length : 0)
+    + (etpBridgeLoaderPresent ? ETP_BRIDGE_LOADER_GROUP.coreAssetPaths.length : 0)) {
     throw new Error('MAH-4 dynamic script literal count drift');
   }
 

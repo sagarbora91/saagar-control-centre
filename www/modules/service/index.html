@@ -74,27 +74,27 @@
 
     <div class="stats-grid">
       <div class="stat-card c-navy clickable" id="tile-all" role="button" tabindex="0" onclick="setDashFilter('all')">
-        <div class="stat-label">Total Cases</div>
+        <div class="stat-label" data-i18n-ui>Total Cases</div>
         <div class="stat-value" id="st-tot">0</div>
       </div>
       <div class="stat-card c-amber clickable" id="tile-open" role="button" tabindex="0" onclick="setDashFilter('open')">
-        <div class="stat-label">Open</div>
+        <div class="stat-label" data-i18n-ui>Open</div>
         <div class="stat-value amber" id="st-op">0</div>
       </div>
       <div class="stat-card c-green clickable" id="tile-closed" role="button" tabindex="0" onclick="setDashFilter('closed')">
-        <div class="stat-label">Closed</div>
+        <div class="stat-label" data-i18n-ui>Closed</div>
         <div class="stat-value green" id="st-cl">0</div>
       </div>
       <div class="stat-card c-gold">
-        <div class="stat-label">Est. Revenue</div>
+        <div class="stat-label" data-i18n-ui>Est. Revenue</div>
         <div class="stat-value gold" id="st-rv">₹0</div>
       </div>
       <div class="stat-card c-blue">
-        <div class="stat-label">Collected (this month)</div>
+        <div class="stat-label" data-i18n-ui>Collected (this month)</div>
         <div class="stat-value blue" id="st-cm">₹0</div>
       </div>
       <div class="stat-card c-navy">
-        <div class="stat-label">Avg TAT (delivered)</div>
+        <div class="stat-label" data-i18n-ui>Avg TAT (delivered)</div>
         <div class="stat-value blue" id="st-tat">—</div>
       </div>
     </div>
@@ -943,7 +943,42 @@ let watchPhotoAfterDirty = false;   // after-service photo changed this session
 // ── Service settings (tiny, additive — its own key, never touches the case array) ──
 const SVC_SETTINGS_KEY = 'saagar_wsf_settings_v1';
 let SVC_SETTINGS = (function(){ try{ const s = JSON.parse(localStorage.getItem(SVC_SETTINGS_KEY) || '{}'); return (s && typeof s === 'object' && !Array.isArray(s)) ? s : {}; }catch(e){ return {}; } })();
-function saveSvcSettings(){ try{ localStorage.setItem(SVC_SETTINGS_KEY, JSON.stringify(SVC_SETTINGS)); }catch(e){} }
+function saveSvcSettings(){ try{ localStorage.setItem(SVC_SETTINGS_KEY, JSON.stringify(SVC_SETTINGS)); return true; }catch(e){ return false; } }
+function svcReloadSettings() {
+  try { const s = JSON.parse(localStorage.getItem(SVC_SETTINGS_KEY) || '{}'); if (s && typeof s === 'object' && !Array.isArray(s)) SVC_SETTINGS = s; } catch (e) {}
+  return SVC_SETTINGS;
+}
+function svcSuffix(id) { const m = /(\d+)\s*$/.exec(id != null ? String(id) : ''); return m ? parseInt(m[1], 10) : 0; }
+function svcNoteIssuedId(id) {
+  const n = svcSuffix(id); if (!(n > 0)) return true;
+  svcReloadSettings();
+  if (!(Number(SVC_SETTINGS.idHigh) >= n)) { SVC_SETTINGS.idHigh = n; return saveSvcSettings(); }
+  return true;
+}
+function svcDeletedIds() { const out = new Set(); (Array.isArray(SVC_SETTINGS.deleted) ? SVC_SETTINGS.deleted : []).forEach(t => { if (t && t.id != null) out.add(String(t.id)); }); return out; }
+/* Role label for the audit trail only (attribution, never a permission). */
+function svcActorLabel() {
+  try {
+    const rt = (typeof SaagarModuleRuntime !== 'undefined' && SaagarModuleRuntime && typeof SaagarModuleRuntime.session === 'function') ? SaagarModuleRuntime.session() : null;
+    if (rt && rt.ok) return (rt.actorName ? rt.actorName + ' (' + (rt.role || rt.tier) + ')' : (rt.role || rt.tier)) || 'unknown role';
+    const s = SaagarModuleBridge.ownerSession; return (s && s.currentRole && s.currentRole()) || 'unknown role';
+  } catch (e) { return 'unknown role'; }
+}
+/* Deletion tombstone (interface C). Written BEFORE the case is removed; a failed write keeps the case. */
+function svcRecordDeletion(c, how) {
+  svcReloadSettings();
+  const d = c.delivery || {};
+  const list = Array.isArray(SVC_SETTINGS.deleted) ? SVC_SETTINGS.deleted.slice() : [];
+  list.push({ id: c.id, at: new Date().toISOString(), by: svcActorLabel(), was: c.status || 'open', ownerPin: !!(how && how.pin), reason: (how && how.reason) || '',
+    finalAmt: d.finalAmt || '', payMode: d.payMode || '', collectDate: d.collectDate || '', ledgerRef: 'wsc_' + c.id });
+  const prevDeleted = SVC_SETTINGS.deleted, prevHigh = SVC_SETTINGS.idHigh;
+  SVC_SETTINGS.deleted = list.slice(-2000);
+  const n = svcSuffix(c.id);
+  if (n > 0 && !(Number(SVC_SETTINGS.idHigh) >= n)) SVC_SETTINGS.idHigh = n;
+  if (saveSvcSettings()) return true;
+  SVC_SETTINGS.deleted = prevDeleted; SVC_SETTINGS.idHigh = prevHigh;   // failed write: the case is kept, so no tombstone may linger in memory
+  return false;
+}
 function setWatchPhotoMandatory(on){
   if(!isSuperAdmin()){ try{ toast('Owner access is required to change this setting'); }catch(e){} try{ renderDash(); }catch(e){} return false; }
   SVC_SETTINGS.watchPhotoMandatory = !!on;
@@ -1289,6 +1324,7 @@ function svcD3RestorePersistedDb() {
   try { renderDash(); } catch (error) {}
 }
 function svcD3CommitCases(nextDb) {
+  if (typeof svcMergeForeignCases === 'function') svcMergeForeignCases(nextDb);   // interface D: keep stubs the bridge added
   const persistence = svcD3PersistenceApi();
   if (!persistence || typeof persistence.commit !== 'function' ||
       !persistence.commit(localStorage, STORE_KEY, nextDb)) {
@@ -1388,13 +1424,13 @@ function svcD3RenderWorkboard() {
     const visible = cards.slice(0, 8);
     const cardHtml = visible.map(card => {
       const index = indexFor(card.caseId);
-      const due = card.promisedDate ? 'Promised ' + card.promisedDate : 'Promised date missing';
-      const owner = card.ownerLabel ? 'Owner ' + card.ownerLabel : 'Owner unassigned';
+      const due = card.promisedDate ? `<span data-i18n-ui>Promised</span> ${escapeHtml(card.promisedDate)}` : '<span data-i18n-ui>Promised date missing</span>';
+      const owner = card.ownerLabel ? `<span data-i18n-ui>Owner</span> ${escapeHtml(card.ownerLabel)}` : '<span data-i18n-ui>Owner unassigned</span>';
       const item = card.itemLabel || 'Item details pending';
       return `<div class="d3-card">
         <div class="d3-card-top"><strong>${escapeHtml(card.caseId)}</strong>${card.exceptionCount ? `<span class="d3-ex-count">${card.exceptionCount}</span>` : ''}</div>
         <div class="d3-card-item">${escapeHtml(item)}</div>
-        <div class="d3-card-meta">${escapeHtml(due)} · ${escapeHtml(owner)}</div>
+        <div class="d3-card-meta">${due} · ${owner}</div>
         <div class="d3-card-safe" title="${escapeHtml(card.safeStatusText)}">${escapeHtml(card.safeStatusLabel)}</div>
         <div class="d3-card-actions">
           <button data-action="workboard-open-case" type="button" onclick="svcD3OpenCase(${index})">Open</button>
@@ -1405,8 +1441,8 @@ function svcD3RenderWorkboard() {
       </div>`;
     }).join('');
     return `<section class="d3-lane d3-lane-${lane}">
-      <div class="d3-lane-head"><span>${escapeHtml(labels[lane] || lane)}</span><b>${cards.length}</b></div>
-      <div class="d3-lane-body">${cardHtml || '<div class="d3-empty">No cases</div>'}${cards.length > visible.length ? `<div class="d3-more">+${cards.length - visible.length} more — use the filters below</div>` : ''}</div>
+      <div class="d3-lane-head"><span data-i18n-ui>${escapeHtml(labels[lane] || lane)}</span><b>${cards.length}</b></div>
+      <div class="d3-lane-body">${cardHtml || '<div class="d3-empty" data-i18n-ui>No cases</div>'}${cards.length > visible.length ? `<div class="d3-more">+${cards.length - visible.length} more — use the filters below</div>` : ''}</div>
     </section>`;
   }).join('');
   const exceptionHtml = board.exceptions.slice(0, 16).map(item => {
@@ -1420,12 +1456,12 @@ function svcD3RenderWorkboard() {
   }).join('');
   window.__svcD3BoardCaseIds = ids;
   host.innerHTML = `<div class="d3-head">
-      <div><div class="d3-title">Service Workboard</div><div class="d3-sub">Controlled stages, readiness and exceptions · ${escapeHtml(board.asOf || todayStr())}</div></div>
-      <span class="d3-context">Combined / untagged Service data</span>
+      <div><div class="d3-title" data-i18n-ui>Service Workboard</div><div class="d3-sub"><span data-i18n-ui>Controlled stages, readiness and exceptions</span> · ${escapeHtml(board.asOf || todayStr())}</div></div>
+      <span class="d3-context" data-i18n-ui>Combined / untagged Service data</span>
     </div>
     <div class="d3-board">${laneHtml}</div>
-    <div class="d3-ex-wrap"><div class="d3-ex-head"><strong>Exceptions requiring review</strong><span>${board.exceptions.length}</span></div>
-      <div class="d3-ex-list">${exceptionHtml || '<div class="d3-empty">No current exceptions</div>'}${board.exceptions.length > 16 ? `<div class="d3-more">+${board.exceptions.length - 16} more</div>` : ''}</div>
+    <div class="d3-ex-wrap"><div class="d3-ex-head"><strong data-i18n-ui>Exceptions requiring review</strong><span>${board.exceptions.length}</span></div>
+      <div class="d3-ex-list">${exceptionHtml || '<div class="d3-empty" data-i18n-ui>No current exceptions</div>'}${board.exceptions.length > 16 ? `<div class="d3-more">+${board.exceptions.length - 16} more</div>` : ''}</div>
     </div>`;
 }
 function svcD3BoardTransition(index, targetStage) {
@@ -1587,13 +1623,25 @@ async function svcD3ConfirmTransition() {
   toast('Stage → ' + policy.stageLabel(plan.to));
   if (plan.to === 'ready' && notificationPending) offerReadyNotify(caseId);
 }
-function saveDB() { localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }
+function svcMergeForeignCases(list) {      // add records another writer (the bridge) put in storage that this page does not hold; never removes, never overwrites
+  const target = list || DB;
+  try {
+    const raw = localStorage.getItem(STORE_KEY); if (!raw) return 0;
+    const stored = JSON.parse(raw); if (!Array.isArray(stored)) return 0;
+    const have = new Set(target.map(c => c && String(c.id))), gone = svcDeletedIds();
+    let n = 0;
+    stored.forEach(s => { if (s && s.id != null && !have.has(String(s.id)) && !gone.has(String(s.id))) { target.push(s); have.add(String(s.id)); n++; } });
+    return n;
+  } catch (e) { return 0; }
+}
+function saveDB() { svcMergeForeignCases(DB); localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }
 function byId(id) { return DB.find(c => c.id === id); }
 function genId() {
   const y = new Date().getFullYear();
   // Collision-safe: derive the next sequence from the MAX existing numeric
   // suffix + 1 (not DB.length+1, which re-collides after a non-last delete).
-  let maxSeq = 0;
+  svcReloadSettings();
+  let maxSeq = Number(SVC_SETTINGS.idHigh) || 0;
   for (const c of DB) {
     const m = /(\d+)\s*$/.exec(c && c.id != null ? String(c.id) : '');
     if (m) { const seq = parseInt(m[1], 10); if (seq > maxSeq) maxSeq = seq; }
@@ -1759,7 +1807,7 @@ function renderStageChips(openCases) {
   let html = chip('', 'All stages', openCases.length, '');
   STAGE_KEYS.forEach(k => { html += chip(k, stageLabel(k), openCases.filter(c => stageOf(c) === k).length, ''); });
   html += chip('overdue', '⚠ Overdue', openCases.filter(isOverdue).length, 'over');
-  html += chip('followup_due', '📞 Follow-up due', openCases.filter(followUpDue).length, '');
+  html += chip('followup_due', '📞 Follow-up due', (dashFilter === 'open' ? openCases : DB).filter(followUpDue).length, '');
   host.innerHTML = html;
 }
 
@@ -2189,6 +2237,13 @@ function delRow(r) {
   calcTotal();
 }
 
+function svcGstValid(raw) {
+  const t = String(raw == null ? '' : raw).trim();
+  if (t === '') return true;
+  if (!/^-?\d+(\.\d+)?\s*%?$/.test(t)) return false;
+  const n = parseFloat(t);
+  return n >= 0 && n <= 100;
+}
 function calcTotal() {
   let sub = 0;
   document.querySelectorAll('#est-tbody tr').forEach(tr => {
@@ -2202,8 +2257,11 @@ function calcTotal() {
   const stEl = document.getElementById('f-st');
   if (!subTotalDirty) stEl.value = sub > 0 ? sub.toFixed(2) : '';
   const base = parseRupee(stEl.value);
-  const gstPct = parseRupee(document.getElementById('f-gst').value);
+  const gstRaw = parseRupee(document.getElementById('f-gst').value);
+  const gstBad = !(gstRaw >= 0 && gstRaw <= 100);
+  const gstPct = gstBad ? 0 : gstRaw;
   const gstAmt = base * (gstPct / 100);
+  { const gEl = document.getElementById('f-gst'); if (gEl && gEl.style) gEl.style.borderColor = gstBad ? 'var(--red)' : ''; }
   const ga = document.getElementById('f-gstamt'); if (ga) ga.textContent = gstAmt.toFixed(2);
   document.getElementById('f-tot').textContent = (base + gstAmt).toFixed(2);
 }
@@ -2302,6 +2360,9 @@ function caseAgeingDays(c) {
   const days = Math.round((today.getTime() - d.getTime()) / 86400000);
   return days >= 0 ? days : '';
 }
+
+/* S08 fix U07-F01/F02: row labels of the condition table (same order as p0..p9 inputs). */
+const PARTS_LABELS = ['Crystal / Glass', 'Dial', 'Hands', 'Case (Top)', 'Case (Side)', 'Caseback', 'Crown', 'Bracelet / Strap', 'Clasp / Buckle', 'Bezel'];
 
 // Flatten a set of cases to CSV. `label` names the file/toast; `withAgeing`
 // adds an ageingDays column (used for the Open-cases export).
@@ -2439,8 +2500,8 @@ function populateForm(c) {
   set('f-rb', c.ackBy); set('f-rdg', c.ackDesig); set('f-rdt', c.ackDT);
   setChk('f-oc', c.ackConfirmed);
   // Delivery
-  if (c.delivery) {
-    const d = c.delivery;
+  if (c.delivery || c.deliveryDraft) {
+    const d = c.delivery || c.deliveryDraft;
     setChk('d1', d.d1); setChk('d2', d.d2); setChk('d3', d.d3); setChk('d4', d.d4); setChk('d5', d.d5);
     set('f-fa', d.finalAmt); setRadio('pm', d.payMode); set('f-pr', d.payRef);
     togglePayRef();
@@ -2484,6 +2545,7 @@ function openNew() {
   document.getElementById('form-subtitle').textContent = 'Fill all required fields and save';
   document.getElementById('sb-id').textContent = id;
   showView('form');
+  svcPaintInvoiceLockBanner();
   if (isMobileWiz()) showFormStep(0);   // mobile wizard: always open on step 1; desktop untouched
 }
 
@@ -2528,22 +2590,68 @@ function svcAutofillFromMaster() {
     const nm = e && e.names && e.names[0]; if (nm) { set('f-cn', nm); toast('Autofilled name from customer records'); }
   } catch (err) {}
 }
-function validMobile(v) { const d = String(v || '').replace(/\D/g, ''); return d.length >= 10 && d.length <= 13; }
+function validMobile(v) { let d = String(v || '').replace(/\D/g, ''); if (d.length === 12 && d.slice(0, 2) === '91') d = d.slice(2); else if (d.length === 11 && d[0] === '0') d = d.slice(1); return /^[6-9]\d{9}$/.test(d); }
 
 function svcLegalApi(){try{return (window.parent&&window.parent!==window&&SaagarModuleBridge.legal)||SaagarModuleBridge.legal||null}catch(e){return null}}
 function svcOpenPrivacyNotice(){const L=svcLegalApi();if(!L){toast('Privacy notice is unavailable — do not collect customer data.');return}alert(L.noticeText('service-intake'))}
 function svcLegalCapture(data){const L=svcLegalApi();if(!L)return{ok:false,message:'Privacy control unavailable'};return L.captureIntake({scope:'service-intake',source:'watch-service-intake',actor:g('f-adv')||'Service adviser',mobile:data.custMobile,ageBand:g('svc-legal-age'),guardian:{name:g('svc-guardian-name'),relationship:g('svc-guardian-relation'),verificationMethod:g('svc-guardian-method'),consent:!!document.getElementById('svc-guardian-consent').checked},promotionalConsent:!!document.getElementById('svc-promo-consent').checked,payload:data})}
+/* S08 fix U07-F04: an invoiced case (closed + invoice number) is locked. A change needs the Owner PIN, a typed reason and leaves a permanent corrections[] entry. */
+function svcInvoiceLocked(c) { return !!(c && c.status === 'closed' && c.invoiceNo); }
+let _svcApproval = null;   // {id, reason, at}: valid only for the one doSave() call that follows an approval
+const SVC_DIFF_SKIP = ['stage', 'prog', 'watchPhoto', 'watchPhotoAfter'];
+function svcDiffCase(cur, next) {
+  const out = [];
+  Object.keys(next).forEach(k => {
+    if (SVC_DIFF_SKIP.indexOf(k) !== -1) return;
+    const a = JSON.stringify(cur[k] == null ? '' : cur[k]), b = JSON.stringify(next[k] == null ? '' : next[k]);
+    if (a !== b) out.push({ field: k, from: a.slice(0, 80), to: b.slice(0, 80) });
+  });
+  return out.slice(0, 40);
+}
+async function svcRequestCorrectionApproval(c) {
+  const reason = (prompt('Case ' + c.id + ' has tax invoice ' + c.invoiceNo + '. Type the reason for this correction (required, at least 5 characters):', '') || '').trim();
+  if (reason.length < 5) { toast('⚠ A reason is required. Nothing was saved.'); return; }
+  const ok = await svcD3Reauth('Correct invoiced service case ' + c.id + ' — ' + reason.slice(0, 80));
+  if (!ok) { toast('Owner approval not given. Nothing was saved.'); return; }
+  _svcApproval = { id: c.id, reason: reason, at: new Date().toISOString() };
+  try { doSave(); } finally { _svcApproval = null; }
+}
+function svcPaintInvoiceLockBanner() {
+  const b = document.getElementById('ro-banner-form'); if (!b || isPastView()) return;
+  const c = editId ? byId(editId) : null, on = svcInvoiceLocked(c);
+  if (on) { b.textContent = '🔒 Tax invoice ' + c.invoiceNo + ' is issued. Saving a change needs the Owner PIN and a reason; the issued invoice stays as printed.'; b.style.display = ''; b.dataset.svcLock = '1'; }
+  else if (b.dataset.svcLock === '1') { b.textContent = ''; b.style.display = 'none'; b.dataset.svcLock = ''; }
+}
+/* S08 fix U07-F06: delivery details typed on an open case are kept as a draft (never as `delivery`, which means "delivered"). */
+function svcDeliveryDraftEmpty(d) {
+  if (!d) return true;
+  if (d.d1 || d.d2 || d.d3 || d.d4 || d.d5) return false;
+  if (d.finalAmt || d.payMode || d.payRef || d.collectDate || d.warrantyMonths) return false;
+  if (d.delCustName || d.delCustDate || d.delCustSig || d.delTechName || d.delTechSig || d.delAdvisorSig) return false;
+  return !(d.deno && Object.keys(d.deno).length);
+}
 function doSave() {
   if (readOnlyGuard()) return;   // past view → no edit/save (never write on a read)
   const name = g('f-cn'), mobile = g('f-cm');
   if (!g('f-dr')) { toast('⚠ Date Received is required'); scrollToSec('sec-0'); return; }
+  { const _prev = editId ? byId(editId) : null, _dr = g('f-dr'), _ed = g('f-ed');
+    if (_dr > todayStr() && !(_prev && _prev.dateRec === _dr)) { toast('⚠ Date Received cannot be in the future'); scrollToSec('sec-0'); return; }
+    if (_ed && _ed < _dr && !(_prev && _prev.dateRec === _dr && _prev.expDel === _ed)) { toast('⚠ Expected Delivery cannot be before Date Received'); scrollToSec('sec-0'); return; } }
   if (!name || !mobile) { toast('⚠ Customer name and mobile are required'); scrollToSec('sec-1'); return; }
-  if (!validMobile(mobile)) { toast('⚠ Enter a valid mobile number (10 digits)'); scrollToSec('sec-1'); return; }
+  if (!validMobile(mobile) && !(editId && byId(editId) && byId(editId).custMobile === mobile)) { toast('⚠ Enter a valid 10-digit Indian mobile number (starts with 6, 7, 8 or 9; +91 is optional)'); scrollToSec('sec-1'); return; }
+  if (!svcGstValid(g('f-gst'))) { toast('⚠ GST % must be a number from 0 to 100'); scrollToSec('sec-7'); return; }
   if (!g('f-wb') || !g('f-wm')) { toast('⚠ Brand and model name are required'); scrollToSec('sec-2'); return; }
   if (SVC_SETTINGS.watchPhotoMandatory && !hasWatchPhotoNow()) { toast('⚠ A watch photo is required before saving (see Watch Details)'); scrollToSec('sec-2'); return; }
+  const _lockCase = editId ? byId(editId) : null;
+  const _approved = !!(_svcApproval && _lockCase && _svcApproval.id === _lockCase.id);
+  if (svcInvoiceLocked(_lockCase) && !_approved) {
+    if (!svcDiffCase(_lockCase, readForm()).length) { toast('No changes to save'); return; }
+    svcRequestCorrectionApproval(_lockCase);
+    return;
+  }
   const data = readForm();
   const computed = cp();   // recompute form-completion % (also updates the sidebar UI)
-  const id = g('f-ono');
+  let id = g('f-ono');
   const isNew = !editId;
   if (isNew) {
     const legalResult = svcLegalCapture(data);
@@ -2555,8 +2663,22 @@ function doSave() {
   const prog = (!isNew && byId(editId) && byId(editId).status === 'closed') ? 100 : computed;
   if (editId) {
     const idx = DB.findIndex(c => c.id === editId);
-    if (idx > -1) DB[idx] = Object.assign(DB[idx], data, { id: editId, prog });
+    if (idx > -1) {
+      const _before = _approved ? JSON.parse(JSON.stringify(DB[idx])) : null;
+      DB[idx] = Object.assign(DB[idx], data, { id: editId, prog });
+      if (_approved) {
+        if (!Array.isArray(DB[idx].corrections)) DB[idx].corrections = [];
+        DB[idx].corrections.push({ at: _svcApproval.at, by: svcActorLabel(), reason: _svcApproval.reason, invoiceNo: DB[idx].invoiceNo,
+          changed: svcDiffCase(_before, data), note: 'Issued invoice figures stay frozen (invoiceSnapshot).' });
+      }
+      if (DB[idx].status !== 'closed' && document.getElementById('s11-open') && document.getElementById('s11-open').style.display !== 'none') {
+        const _dd = readDelivery();
+        if (svcDeliveryDraftEmpty(_dd)) delete DB[idx].deliveryDraft; else DB[idx].deliveryDraft = _dd;
+      }
+    }
   } else {
+    if (byId(id)) { const fresh = genId(); set('f-ono', fresh); id = fresh; document.getElementById('form-order-badge').textContent = id; }   // never save over an existing id
+    svcNoteIssuedId(id);
     DB.push(Object.assign({}, data, { id, status: 'open', prog, createdAt: new Date().toISOString() }));
     editId = id;
     document.getElementById('s11-lock').style.display = 'none';
@@ -2620,6 +2742,10 @@ function closeCase() {
     toast('⚠ Enter a valid Final Amount before closing');
     return;
   }
+  if (!svcGstValid(g('f-gst'))) { toast('⚠ GST % must be a number from 0 to 100'); return; }
+  { const _cnt = DENOMS.reduce((s, D) => s + (parseInt(del.deno && del.deno[D], 10) || 0) * D, 0);
+    if (del.payMode === 'Cash' && _cnt > 0 && _cnt !== Math.round(parseRupee(del.finalAmt)) &&
+        !confirm('Cash counted ₹' + _cnt.toLocaleString('en-IN') + ' differs from the Final Amount ₹' + Math.round(parseRupee(del.finalAmt)).toLocaleString('en-IN') + '. Close the case anyway?')) return; }
   const idx = DB.findIndex(c => c.id === editId);
   if (idx > -1) {
     // Wave 3 — warranty capture: stamp warrantyTill onto the delivery from the entered months.
@@ -2630,6 +2756,7 @@ function closeCase() {
     DB[idx] = Object.assign(DB[idx], readForm(), {
       id: editId, status: 'closed', prog: 100, delivery: del, closedAt: new Date().toISOString()
     });
+    delete DB[idx].deliveryDraft;   // the draft is replaced by the real delivery record
     // P1-10 verify-fix: a stage changed on the close form was applied silently — log it so the
     // transition trail stays complete (closedAt itself is the delivered timestamp for TAT).
     if (stageOf(DB[idx]) !== _preCloseStage) logStageChange(DB[idx], stageOf(DB[idx]), DB[idx].advisor);
@@ -2644,8 +2771,24 @@ function closeCase() {
 
 function delCase(id) {
   if (readOnlyGuard()) return;   // past view → no delete
+  const c = byId(id); if (!c) return;
+  if (svcInvoiceLocked(c)) { toast('⛔ ' + id + ' has tax invoice ' + c.invoiceNo + ' and cannot be deleted.'); return; }
+  if (c.status === 'closed') { svcDeleteClosedWithApproval(c); return; }
   if (!confirm('Delete case ' + id + '? This cannot be undone.')) return;
-  DB = DB.filter(c => c.id !== id);
+  svcFinishDelete(c, { pin: false, reason: '' });
+}
+async function svcDeleteClosedWithApproval(c) {
+  if (!confirm('Delete delivered case ' + c.id + '? Its service income entry will be cancelled. This cannot be undone.')) return;
+  const reason = (prompt('Reason for deleting delivered case ' + c.id + ' (required, at least 5 characters):', '') || '').trim();
+  if (reason.length < 5) { toast('⚠ A reason is required. Nothing was deleted.'); return; }
+  if (!(await svcD3Reauth('Delete delivered service case ' + c.id + ' — ' + reason.slice(0, 80)))) { toast('Owner approval not given. Nothing was deleted.'); return; }
+  svcFinishDelete(c, { pin: true, reason: reason });
+}
+function svcFinishDelete(c, how) {
+  const id = c.id, cur = byId(id);
+  if (!cur || svcInvoiceLocked(cur)) return;                 // re-check after the awaited PIN
+  if (!svcRecordDeletion(cur, how)) { toast('⚠ Could not record the deletion. The case was kept.'); return; }
+  DB = DB.filter(x => x.id !== id);
   saveDB();
   try { const api = svcEv(); if (api && (api.delByKey||api.delByMatch)) { const d = (api.delByKey||api.delByMatch).bind(api); d(watchKey(id)); d(watchKeyAfter(id)); } } catch (e) {}   // purge ONLY this case's photos (received + after, exact key)
   renderDash();
@@ -2917,40 +3060,74 @@ function doPrint() {                       // form → Job Card (intake)
   const data = readForm();
   const id = g('f-ono') || editId || 'DRAFT';
   const status = editId ? (byId(editId)?.status || 'open') : 'open';
-  resolveWatchPhoto(id, true).then(url => sendPrint('Job Card — ' + id, buildIntakeHtml(data, id, status, url), 'form'));
+  resolveWatchPhoto(id, true).then(url => sendPrint('Job Card — ' + id, buildIntakeHtml(data, id, status, url), 'form'))
+    .catch(err => { toast('⚠ Could not prepare the print: ' + ((err && err.message) || err)); });
 }
 function printById(id) {                   // case list → Job Card (intake)
   const c = byId(id); if (!c) return;
-  resolveWatchPhoto(id, false).then(url => sendPrint('Job Card — ' + id, buildIntakeHtml(c, id, c.status, url), 'dash'));
+  resolveWatchPhoto(id, false).then(url => sendPrint('Job Card — ' + id, buildIntakeHtml(c, id, c.status, url), 'dash'))
+    .catch(err => { toast('⚠ Could not prepare the print: ' + ((err && err.message) || err)); });
 }
 function doProforma() {                     // form (delivery) → Proforma Invoice
   if (!editId) { alert('Save the service order first, then print the Proforma Invoice.'); return; }
   const c = byId(editId); if (!c) return;
-  Promise.all([resolveWatchPhoto(editId, true), resolveWatchPhotoAfter(editId, true)]).then(([u1, u2]) => sendPrint('Proforma Invoice — ' + editId, buildProformaHtml(c, u1, u2), 'form'));
+  Promise.all([resolveWatchPhoto(editId, true), resolveWatchPhotoAfter(editId, true)]).then(([u1, u2]) => sendPrint('Proforma Invoice — ' + editId, buildProformaHtml(c, u1, u2), 'form'))
+    .catch(err => { toast('⚠ Could not prepare the print: ' + ((err && err.message) || err)); });
 }
 function printProformaById(id) {            // case list → Proforma Invoice
   const c = byId(id); if (!c) return;
-  Promise.all([resolveWatchPhoto(id, false), resolveWatchPhotoAfter(id, false)]).then(([u1, u2]) => sendPrint('Proforma Invoice — ' + id, buildProformaHtml(c, u1, u2), 'dash'));
+  Promise.all([resolveWatchPhoto(id, false), resolveWatchPhotoAfter(id, false)]).then(([u1, u2]) => sendPrint('Proforma Invoice — ' + id, buildProformaHtml(c, u1, u2), 'dash'))
+    .catch(err => { toast('⚠ Could not prepare the print: ' + ((err && err.message) || err)); });
 }
 
 // ─── GST TAX INVOICE (Wave 3) ──────────────────────────────────
 // Native-vector PDF via the shell's SaagarReport engine. Service-centre /
 // non-franchise sales only (never the Titan World POS bill). A stable sequential
-// invoice number (WS-YYYY-NNN) is stamped ONCE per case so re-printing is idempotent.
+// invoice number (SV/<FY>/NNNN) is stamped ONCE per case, with a frozen snapshot, so re-printing is idempotent.
+function svcFinancialYear(iso) {            // 'YYYY-MM-DD' → '2026-27' (April to March)
+  const y = parseInt(String(iso).slice(0, 4), 10), m = parseInt(String(iso).slice(5, 7), 10);
+  const st = m >= 4 ? y : y - 1;
+  return st + '-' + String((st + 1) % 100).padStart(2, '0');
+}
+function svcInvoiceDateOf(c) {              // same rule the printed invoice uses: collection date, else close date, else today
+  const d = c.delivery || {};
+  const raw = String(d.collectDate || '').slice(0, 10) || (c.closedAt ? String(c.closedAt).slice(0, 10) : '');
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : todayStr();
+}
 function assignInvoiceNo(c) {
   if (c.invoiceNo) return c.invoiceNo;
-  let seq = parseInt(localStorage.getItem('saagar_invoice_seq_v1') || '0', 10); if (isNaN(seq)) seq = 0;
-  seq += 1; localStorage.setItem('saagar_invoice_seq_v1', String(seq));
-  c.invoiceNo = 'WS-' + new Date().getFullYear() + '-' + String(seq).padStart(3, '0');
+  const invDate = svcInvoiceDateOf(c), fy = svcFinancialYear(invDate);
+  svcReloadSettings();
+  const map = (SVC_SETTINGS.invoiceSeq && typeof SVC_SETTINGS.invoiceSeq === 'object' && !Array.isArray(SVC_SETTINGS.invoiceSeq)) ? SVC_SETTINGS.invoiceSeq : {};
+  const used = new Set(DB.map(x => x && x.invoiceNo).filter(Boolean));
+  let seq = parseInt(map[fy], 10) || 0, no;
+  do { seq += 1; no = 'SV/' + fy + '/' + String(seq).padStart(4, '0'); } while (used.has(no));
+  /* Interface B: the frozen snapshot is built by SaagarReport BEFORE the counter is saved; no builder or an error means no number. */
+  let snap;
+  try {
+    const R = SaagarModuleBridge.report;
+    if (!R || typeof R.makeInvoiceSnapshot !== 'function') throw new Error('Report engine unavailable');
+    snap = R.makeInvoiceSnapshot(Object.assign({}, c), no);
+  } catch (e) { toast('⚠ Invoice not issued: ' + ((e && e.message) || e)); return ''; }
+  const prevSeq = map[fy], hadSeq = Object.prototype.hasOwnProperty.call(map, fy), prevMap = SVC_SETTINGS.invoiceSeq;
+  map[fy] = seq; SVC_SETTINGS.invoiceSeq = map;
+  if (!saveSvcSettings()) {
+    if (hadSeq) map[fy] = prevSeq; else delete map[fy];
+    SVC_SETTINGS.invoiceSeq = prevMap;
+    toast('⚠ Could not reserve an invoice number. Try again.'); return '';
+  }
+  c.invoiceNo = no;
+  c.invoiceSnapshot = snap;
   saveDB();
-  return c.invoiceNo;
+  return no;
 }
 function doTaxInvoice() { if (!editId) { alert('Save and close the service order first.'); return; } taxInvoiceById(editId); }
 function taxInvoiceById(id) {
   const c = byId(id); if (!c) return;
   const fa = parseFloat(c.delivery && c.delivery.finalAmt) || 0;
-  if (!(fa > 0)) { toast('⚠ Record the Final Amount (close the case) before invoicing'); return; }
+  if (c.status !== 'closed' || !(fa > 0)) { toast('⚠ Record the Final Amount (close the case) before invoicing'); return; }
   const no = assignInvoiceNo(c);
+  if (!no) return;
   try {
     const R = (window.parent && window.parent !== window && SaagarModuleBridge.report) || SaagarModuleBridge.report;
     if (R && typeof R.preview === 'function') { R.preview('serviceTaxInvoice', { id: id, invoiceNo: no }); return; }
@@ -3037,6 +3214,7 @@ function applyReadOnlyUI() {
   // Lock the form fields themselves so a past case can be read but not altered.
   document.querySelectorAll('#view-form input, #view-form select, #view-form textarea')
     .forEach(el => { el.disabled = ro; });
+  svcPaintInvoiceLockBanner();
 }
 
 // ─── VIEW-DATE EVENTS ──────────────────────────────────────────
@@ -3049,6 +3227,11 @@ window.addEventListener('st-date', e => {
   if (next) viewDate = next;
   applyReadOnlyUI();
   renderDash();
+});
+
+window.addEventListener('storage', function (e) {
+  if (e && e.key && e.key !== STORE_KEY) return;
+  if (svcMergeForeignCases(DB)) { try { renderDash(); } catch (x) {} }
 });
 
 // ─── FOLLOW-UP LOG (additive; #6) ──────────────────────────────
@@ -3128,10 +3311,20 @@ function scheduleWarrantyFollowUp(c, del, baseDate, months) {
   } catch (e) {}
 }
 function followUpDue(c) {
-  if (!c || c.status === 'closed') return false;
-  const dues = (c.followUps || []).map(f => f && f.dueDate).filter(Boolean).sort();
+  if (!c) return false;
+  const live = (c.followUps || []).filter(f => f && f.dueDate && !f.done);
+  if (c.status === 'closed') {            // closed cases: only the automatic warranty/battery reminder, same 30-day window the Home card uses
+    const lim = new Date(new Date(todayStr() + 'T00:00:00').getTime() + 30 * 86400000);
+    const limIso = lim.getFullYear() + '-' + pad2(lim.getMonth() + 1) + '-' + pad2(lim.getDate());
+    return live.some(f => f.auto === 'warranty' && f.dueDate <= limIso);
+  }
+  const dues = live.map(f => f.dueDate).sort();
   if (!dues.length) return false;
   return dues[dues.length - 1] <= todayStr();
+}
+function svcClearReminders(c, by) {
+  const now = new Date().toISOString();
+  (c.followUps || []).forEach(f => { if (f && f.dueDate && !f.done) { f.done = true; f.doneAt = now; f.doneBy = by || 'resolved call'; } });
 }
 
 function openFollowUps(id) {
@@ -3199,6 +3392,7 @@ function addFollowUp() {
   if (!datetime) { toast('⚠ Pick a date & time'); return; }
   if (!Array.isArray(c.followUps)) c.followUps = [];   // additive init for old cases
   c.followUps.push({ type, datetime, remarks, outcome, dueDate, by, createdAt: new Date().toISOString() });
+  if (outcome === 'Resolved') svcClearReminders(c, by);
   saveDB();                              // EXISTING persist fn — same key/shape + array
   // Refresh the history and the card count, clear the per-entry fields for the next one.
   renderFollowUps();

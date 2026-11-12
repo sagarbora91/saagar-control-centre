@@ -80,6 +80,10 @@ function babel(source, filename) {
   }).code;
 }
 
+// Babel puts its helper functions (_regenerator, asyncGeneratorStep, _asyncToGenerator, _typeof ...) at the top level of every script, where a classic
+// script makes them writable window globals. The four ETP bridge files are security code, so their transformed output is wrapped in a function scope.
+const CONTAINED_ASSETS = new Set(['etp-bridge-trust.js', 'etp-bridge-pack-verifier.js', 'etp-bridge-compare.js', 'etp-bridge-facade.js']);
+
 export function transformJavaScriptAsset(source, filename, relativePath) {
   // This file is the canonical package/version authority consumed by the audit
   // and release tooling. It already uses Chrome-44-compatible syntax, so changing
@@ -87,7 +91,8 @@ export function transformJavaScriptAsset(source, filename, relativePath) {
   // contract. Scope the exception to the exact root asset; similarly named nested
   // files remain ordinary application JavaScript and are still down-levelled.
   if (relativePath === 'build-identity.js') return source;
-  return babel(source, filename);
+  const output = babel(source, filename);
+  return CONTAINED_ASSETS.has(relativePath) ? `(function () {\n${output}\n}).call(this);\n` : output;
 }
 
 export function transformHtml(source, filename, cssVariables) {

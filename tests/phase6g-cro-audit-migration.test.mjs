@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import { undoFixWaveText } from './lib/fix-wave-undo.mjs';
 
 const html = fs.readFileSync(new URL('../www/modules/cro_audit/index.html', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../www/modules/cro_audit/cro-audit-ui.css', import.meta.url), 'utf8');
@@ -41,11 +42,12 @@ test('CRO Audit supplies explicit API-23 flex fallbacks without redefining share
 
 test('CRO Audit scoring and persistence core remains byte-stable', () => {
   const names = ['getS', 'saveSettings', 'calcNps', 'submitAudit', 'getAudits'];
+  const pinned = undoFixWaveText('www/modules/cro_audit/index.html', html);
   const core = names.map(name => {
-    const start = html.indexOf(`function ${name}(`);
+    const start = pinned.indexOf(`function ${name}(`);
     assert.ok(start >= 0, `missing CRO Audit function: ${name}`);
-    const end = html.indexOf('\nfunction ', start + 10);
-    return html.slice(start, end);
+    const end = pinned.indexOf('\nfunction ', start + 10);
+    return pinned.slice(start, end);
   }).join('\n');
   assert.equal(core.length, 5_482);
   assert.equal(

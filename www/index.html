@@ -83,10 +83,6 @@
 <script src="etp-module-gateway.js"></script>
 <script src="etp-analytics-consumer.js"></script>
 <script src="etp-operations-consumer.js"></script>
-<script src="etp-bridge-trust.js"></script>
-<script src="etp-bridge-pack-verifier.js"></script>
-<script src="etp-bridge-compare.js"></script>
-<script src="etp-bridge-facade.js"></script>
 <!-- R1 LEG-01..10: purpose register, collection notices, separate promotional
      consent, global suppression, rights register and human-gate evidence. -->
 <script src="legal-control.js"></script>
@@ -837,22 +833,8 @@ else{document.write('<scr'+'ipt src="demo-seed.js"><\/scr'+'ipt>');}  /* flag OF
             <button class="btn primary small" onclick="saveOwnerName()">Save</button>
           </div>
         </div>
-        <div class="card card-pad">
-          <h4><span class="em">🌟</span> What's new in V5.5</h4>
-          <ul style="font-size:13px;color:var(--gray-700);padding-left:18px;line-height:1.7">
-            <li>All reports &amp; payroll documents now print as crisp, selectable PDFs — no more screenshots</li>
-            <li>On-screen print preview everywhere, with Save to Documents and Send to WhatsApp</li>
-            <li>Payroll: native salary slips, salary register, statutory summary, advance vouchers &amp; HR letters (single, ZIP, or one combined PDF)</li>
-            <li>Compliance calendar: multiple firms + updated FY 2026-27 statutory due dates</li>
-            <li>Queue (QMS): fair CRO allocation &amp; rotation, pre-claims, and fairness reports</li>
-            <li>View past-date records across modules (read-only)</li>
-            <li>Watch "before &amp; after" photos on service job cards</li>
-            <li>Mobile-friendly layouts across all modules</li>
-            <li>Stability: fixed a Queue-screen crash on the phone</li>
-          </ul>
-        </div>
         <details class="card card-pad" id="changelogCard">
-          <summary style="cursor:pointer;font-weight:600;color:var(--navy)">📋 Detailed change log (V5.5)</summary>
+          <summary style="cursor:pointer;font-weight:600;color:var(--navy)">📋 Detailed change log</summary>
           <style>
             #changelogBody{margin-top:10px;max-height:440px;overflow:auto;font-size:12.5px;line-height:1.6;color:var(--gray-700);-webkit-overflow-scrolling:touch}
             #changelogBody h3{font-size:14px;color:var(--navy);margin:0 0 6px}
@@ -1226,7 +1208,7 @@ Code movement: Tax_Compliance_Calendar_India_v4.html — 137,614 B -> 194,996 B 
 - Tax statutory wording/form changes should be reviewed by a tax professional.
 - Service and Tax modules are substantially larger; test on target Android devices.`;
 const STORAGE_RULES = {
-  stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands"], prefix: ["saagar_stock_"] },
+  stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands","saagar_brands_hidden","saagar_stk_clearlog_v1"], prefix: ["saagar_stock_"] },
   service: { exact: ["saagar_wsf_v2","saagar_wsf_settings_v1","saagar_invoice_seq_v1"], prefix: [] },
   expense: { exact: ["gm_expenses","gm_role","tanishq_statements","saagar_udhaar_ledger_v1"], prefix: ["gm_"] },
   grooming:{ exact: [], prefix: ["saagar_grooming_"] },
@@ -1352,6 +1334,7 @@ function setCurrentRole(r){
      Owner (isAdmin) is never blocked; lowering/keeping-equal privilege is free; owner policy default ON. */
   const cur=currentRole();
   if(!isAdmin && roleSwitchLocked() && roleRank(r)>roleRank(cur)){
+    if(!hasAdminPin()){ try{ auditLog('roles.current.denied',{from:cur,to:r,reason:'no-pin'}); }catch(e){} try{ toast('No Owner PIN is set yet. Open Owner mode and set a PIN, then raise the role.'); }catch(e){} applyMode(); return; }
     if(!promptVerifyOnly('Enter Admin PIN to switch to a higher-access role')){ try{ auditLog('roles.current.denied',{from:cur,to:r}); }catch(e){} try{ toast('Admin PIN required to switch to a higher-access role'); }catch(e){} applyMode(); return; }
   }
   safeSet(CURRENT_ROLE_KEY, r); try{ auditLog('roles.current.set',{role:r}); }catch(e){} applyMode(); try{ renderHome(); }catch(e){} try{ renderToday(); }catch(e){}
@@ -1378,7 +1361,7 @@ function currentRoleAccessRow(){ const matrix=loadRoleAccess(); return matrix[cu
 function moduleVisibleForRole(id){ const policy=window.SaagarDashboardPolicy; return policy?policy.moduleVisible(id,isAdmin,currentRoleAccessRow()):(!id||roleCanOpen(id)); }
 function actionModuleId(action){ const policy=window.SaagarDashboardPolicy; if(policy) return policy.actionModuleId(action); const m=String(action||'').match(/(?:openModule|navigateToModule)\(['"]([^'"]+)['"]\)/); return m?m[1]:''; }
 function attentionVisibleForRole(item){ const id=(item&&item.moduleId)||actionModuleId(item&&item.action); return !id||moduleVisibleForRole(id); }
-const BRIEF_SCOPE_MODULES={ 'Walk-ins':'qms','Service':'service','Expenses':'expense','Cash sheet':'expense','Grooming':'grooming','Leave':'leave' };
+const BRIEF_SCOPE_MODULES={ 'Walk-ins':'qms','Service':'service','Expenses':'expense','Income':'expense','Cash sheet':'expense','Grooming':'grooming','Leave':'leave' };
 function visibleBriefScopeLabels(labels){ return (Array.isArray(labels)?labels:[]).filter(label=>moduleVisibleForRole(BRIEF_SCOPE_MODULES[label]||'')); }
 function briefModuleOrganisationWide(brief,moduleId){
   if(!brief||brief.storeIsAll) return false;
@@ -1484,6 +1467,7 @@ function backupStorageStrict(){
       const k=localStorage.key(i);
       if(k==null) throw new Error('storage changed during backup');
       if(!isWhitelistedAppKey(k)) continue;
+      if(k===ADMIN_PIN_KEY||k===ADMIN_MODE_KEY||k===STAFF_PIN_KEY) continue;   /* U02-F05 */
       const v=localStorage.getItem(k);
       if(v==null) throw new Error('storage key became unreadable: '+k);
       out[k]=v;
@@ -1497,8 +1481,8 @@ function moduleById(id){ return MODULES.find(m=>m.id===id); }
 function categories(){ return ['All', ...Array.from(new Set(MODULES.map(m=>m.category)))]; }
 function appControlKeys(){ return [PROTECTED_MODULES_KEY,MODULE_PIN_POLICY_KEY,ADMIN_PIN_KEY,ADMIN_MODE_KEY,LAST_BACKUP_KEY,EXPORT_POLICY_KEY,EMP_MASTER_KEY,ORG_MASTER_KEY,ROLE_MASTER_KEY,ROLE_ACCESS_KEY,CURRENT_ROLE_KEY,CURRENT_STORE_KEY,MK_BRANDS,MK_VENDORS,MK_CUSTOMERS,CUST_MASTER_KEY,ACTIVITY_KEY,AUDIT_LOG_KEY,OWNER_NAME_KEY,OWNER_SETUP_KEY,STAFF_PIN_KEY,ACTIVE_STAFF_KEY,"saagar_owner_name","saagar_bridge_config","saagar_lang",ATTN_STATE_KEY,"saagar_text_size",STAFF_LOGIN_REQ_KEY,PIN_POLICY_KEY,LAUNCH_LOCK_KEY,"saagar_legal_notice_events_v1","saagar_legal_consent_events_v1","saagar_legal_promo_suppression_v1","saagar_legal_rights_register_v1","saagar_legal_disclosure_register_v1","saagar_legal_breach_register_v1","saagar_legal_retention_log_v1","saagar_legal_governance_v1"]; }   /* R1 LEG-01..10: legal evidence and suppression are portable so a device migration cannot resurrect opted-out marketing. R0-W4: export policy is portable; EXPORT_REGISTER_KEY is permanent device-local evidence and is deliberately not exported. R0-W3 S4: OFFDEVICE_BACKUP_KEY is device-local evidence, never exported/imported. */   /* R0-W1 Slice D: st_v2_launch_lock exported+restored; effective gate re-ANDs hasAdminPin() at boot so a PIN-restore-blocked device fails open */   /* R0-W1 SEC-03: pin policy exported+restored (clamped at read); st_v2_pin_attempts_v1 DELIBERATELY absent — device-local, never exported (owner-signed rule-bend 2026-07-17) */   // R0-W1 SEC-02: saagar_staff_login_required_v1 policy (control fallthrough on restore; APP_RE saagar_ covers reset)   // Wave-13: device-pref/attention keys (saagar_lang P1-36, st_v5_attn_state_v1 P1-38, saagar_text_size P1-39) — restore re-validates each via its getter   // Wave6: export owner-setup marker + staff PINs (import-blocked) + active-staff for own-device continuity   // bug-hunt #3: CURRENT_ROLE_KEY added so the device role is exported/restored (was asymmetric with its two siblings); Wave 3: CUST_MASTER_KEY (derived customer identity index); Audit fix SEC-DATA-02: saagar_bridge_config (integration thresholds) so backup/restore stops silently dropping it while factory-reset wipes it
 /* Audit fix SEC-PIN-04: keys that must NEVER be imported from a backup/migration file — a tampered file
-   could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They stay in
-   EXPORT (own-device continuity) but restore rejects them; the owner re-establishes the PIN on the new device. */
+   could otherwise preset the owner PIN hash or auto-enable admin mode on the target device. They are NOT
+   exported (backupStorageStrict skips them) and restore rejects them; the owner re-establishes the PIN on the new device. */
 function restoreBlockedKeys(){ return [ADMIN_PIN_KEY, ADMIN_MODE_KEY, CURRENT_ROLE_KEY, CURRENT_STORE_KEY, ROLE_ACCESS_KEY, STAFF_PIN_KEY, PIN_ATTEMPTS_KEY, OFFDEVICE_BACKUP_KEY, EXPORT_REGISTER_KEY, RESTORE_DRILL_KEY, RESTORE_ACCEPTANCE_KEY, LAST_MODULE_RESET_KEY, PRODUCTION_DEVICE_KEY, HIGHEST_BUILD_KEY]; }   /* Device-local control evidence cannot be forged by restore. */
 function keyMatchesModule(k,id){ const r=STORAGE_RULES[id]; if(!r) return false; if(r.exact.includes(k)) return true; return r.prefix.some(p=>k.startsWith(p)); }
 function isWhitelistedAppKey(k){ return appControlKeys().includes(k) || k==='saagar_etp_scope_registry' || k==='saagar_etp_control_registry_v1' || String(k).startsWith(RESTORE_ROLLBACK_PREFIX) || Object.keys(STORAGE_RULES).some(id=>keyMatchesModule(k,id)); } /* ETP receipts/scope are portable control metadata; fact rows remain excluded and restored scopes are fenced for re-import. */
@@ -2002,6 +1986,7 @@ function raSubmit(){
 }
 function raKeydownHandler(e){
   if(!raVisible())return;
+  if(e.key==='Escape') e.stopImmediatePropagation();
   if(e.key>='0'&&e.key<='9'){e.preventDefault();raKey(e.key);}else if(e.key==='Backspace'){e.preventDefault();raKey('bk');}else if(e.key==='Enter'){e.preventDefault();raSubmit();}else if(e.key==='Escape'){e.preventDefault();raCancel();}else if(e.key==='Tab'){e.preventDefault();}
 }
 document.addEventListener('keydown',raKeydownHandler,true);
@@ -2033,6 +2018,7 @@ window.SaagarOwnerSession=Object.freeze({
   currentRole:function(){ return currentRole(); },
   read:moduleAccessSnapshot
 });
+try{ SaagarModuleRuntime.seal(); }catch(e){}
 function notifyModuleAccessChanged(){
   try{ const frame=$('moduleFrame'); if(frame&&frame.contentWindow) frame.contentWindow.postMessage({type:'ST_ACCESS_CONTEXT'},SaagarModuleRuntime.targetOrigin); }catch(e){}
 }
@@ -2239,7 +2225,7 @@ function ensureModuleAccess(id){
 }
 function normText(v){ return String(v||'').trim().replace(/\s+/g,' '); }
 function normLower(v){ return normText(v).toLowerCase(); }
-function uidEmp(){ return 'emp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
+function uidEmp(s){ return s&&window.SaagarDashboardPolicy?SaagarDashboardPolicy.stableEmpId(s):'emp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7); }
 /* Firms come from the Organisation master (Settings → Organisation). FIRM_OPTIONS is only a
    fallback when the org master is empty. This makes "add/rename a firm once" flow everywhere. */
 function _orgFirms(){ try{ var fs=(loadOrg().firms||[]).filter(function(f){return f&&f.code;}); return fs.length?fs:FIRM_OPTIONS.filter(function(f){return f.code;}); }catch(e){ return FIRM_OPTIONS.filter(function(f){return f.code;}); } }
@@ -2266,7 +2252,7 @@ function normalizeEmployee(e={}){
        : (Number.isFinite(Number(e.salaryAmount)) ? Number(e.salaryAmount) : 0));
   const active = (e.active===false || String(e.status||'').toLowerCase()==='inactive') ? false : true;
   return {
-    id: normText(e.id||'') || uidEmp(),
+    id: normText(e.id||'') || uidEmp(employeeId||name+'|'+normText(e.firm||e.company||'')),
     employeeId, name,
     firm: firmCode(e.firm||e.company||e.departmentFirm||''),
     department: normText(e.department||e.dept||''),
@@ -2598,8 +2584,8 @@ function buildTodayBrief(dIso){
     const qToday=(Array.isArray(q.customers)?q.customers:[]).filter(c=>String(c.entryTime||'').slice(0,10)===t);
     const qRows=briefScopeRows(out,qToday,'Walk-ins',selection,branches);
     const day=computeQmsDay(t,qRows);
-    out.qmsSales=day.sales; out.qmsConversion=day.conversion; out.qmsPurchases=day.purchases; out.qmsWalkins=day.total;
-  }catch(e){ out.qmsSales=0; out.qmsConversion=0; out.qmsPurchases=0; out.qmsWalkins=0; }
+    out.qmsSales=day.sales; out.qmsCash=day.cashSales; out.qmsConversion=day.conversion; out.qmsPurchases=day.purchases; out.qmsWalkins=day.total;
+  }catch(e){ out.qmsSales=0; out.qmsCash=0; out.qmsConversion=0; out.qmsPurchases=0; out.qmsWalkins=0; }
 
   // Stock: canonical...
   try{
@@ -2620,8 +2606,8 @@ function buildTodayBrief(dIso){
   const expRows=briefScopeRows(out,expDay,'Expenses',selection,branches);
   out.expenseToday=expRows.length;
   out.expenseTodayAmount=expRows.reduce((sum,e)=>sum+(Number(e.amount||e.total||0)||0),0);
+  try{ const DP=window.SaagarDashboardPolicy; out.incomeTodayAmount=DP.sumAmount(briefScopeRows(out,DP.ledgerDay(expAll,t,1),'Income',selection,branches)); }catch(e){ out.incomeTodayAmount=0; }
 
-  // Cash: canonical completion accepts filledBy or closed. Legacy date-only sheets remain organisation-wide.
   const statements=briefJson('tanishq_statements',{});
   const cashRec=statements&&statements[t];
   const cashRows=briefScopeRows(out,cashRec?[cashRec]:[],'Cash sheet',selection,branches);
@@ -2638,6 +2624,7 @@ function buildTodayBrief(dIso){
   let leaveRows=[];
   if(Array.isArray(leaveValue)) leaveRows=leaveValue.map(v=>v&&typeof v==='object'?v:{name:String(v||'')});
   else if(leaveValue&&typeof leaveValue==='object') leaveRows=Object.entries(leaveValue).map(([name,v])=>v&&typeof v==='object'?Object.assign({name},v):{name});
+  leaveRows=leaveRows.filter(v=>v&&!/^(pending|rejected)$/.test(v.status));
   out.leavesToday=briefScopeRows(out,leaveRows,'Leave',selection,branches).length;
 
   // Tax and backup are organisation/device controls, intentionally independent of workflow store context.
@@ -2645,12 +2632,12 @@ function buildTodayBrief(dIso){
   out.taxOverdue=0; out.taxDueWeek=0;
   try{
     const comp=tax.compliance||{};
-    const now=new Date(); const weekEnd=new Date(now.getTime()+7*86400000);
+    const now=dueLocal(todayIso()); const weekEnd=new Date(now.getTime()+7*86400000);
     Object.keys(comp).forEach(fid=>Object.keys(comp[fid]||{}).forEach(fy=>{
       Object.entries(comp[fid][fy]||{}).forEach(([key,v])=>{
         if(v&&v.na===true) return;
         if(v&&v.done) return;
-        const due=v&&v.dueDate?new Date(v.dueDate):null;
+        const due=v&&v.dueDate?dueLocal(v.dueDate):null;
         if(!due||isNaN(+due)) return;
         if(due<now) out.taxOverdue++;
         else if(due<=weekEnd) out.taxDueWeek++;
@@ -2766,14 +2753,14 @@ function orgDel(k,i){ const o=orgDraft(); (k==='firm'?o.firms:o.branches).splice
 function orgAddFirm(){ orgDraft().firms.push({code:'',name:'',legalName:'',pan:'',gstin:'',address:'',active:true}); renderOrganisation(); }
 function orgAddBranch(){ orgDraft().branches.push({code:'',name:'',firmCode:'SAT',channel:'',region:'WEST-2',rso:'',active:true}); renderOrganisation(); }
 function saveOrganisation(){
-  const o=orgDraft(); o.updatedAt=new Date().toISOString();
+  const o=orgDraft(); const bad=window.SaagarDashboardPolicy?SaagarDashboardPolicy.validateOrg(o):''; if(bad){ orgStatus('Not saved - '+bad,'warn'); return false; } o.updatedAt=new Date().toISOString();
   o.stores=(o.branches||[]).filter(function(b){return b&&b.code&&b.active!==false;}).map(function(b){return {name:b.channel||b.name||b.code, storeKey:storeKeyForCode(b.code)};});
   safeSet(ORG_MASTER_KEY, JSON.stringify(o));
   try{ auditLog('org.save',{firms:o.firms.length,branches:o.branches.length}); }catch(e){}
-  orgStatus('Saved — '+o.firms.length+' firm(s), '+o.branches.length+' branch(es). Tap “Publish to modules” to seed Payroll & Tax.','ok');
+  orgStatus('Saved — '+o.firms.length+' firm(s), '+o.branches.length+' branch(es). Tap “Publish to modules” to seed Payroll & Tax.','ok'); return true;
 }
 function publishOrganisation(){
-  saveOrganisation();
+  if(!saveOrganisation()) return;
   let res;
   try{
     if(window.SaagarBridge && typeof window.SaagarBridge.publishOrg==='function'){ const r=window.SaagarBridge.publishOrg(); res='Published to modules — '+JSON.stringify(r); }
@@ -2862,12 +2849,13 @@ function saveModuleSetting(id){
   if(typeof toast==='function') toast(m.label+' settings saved — reopen the module to apply');
 }
 function saveBridgeConfig(){
+  const nz=(v,d)=>isNaN(v)?d:v;
   const c={
-    failPct: Math.max(0,Math.min(100, parseInt($('cfgFailPct').value,10) || 60)),
-    voucherThreshold: Math.max(0, parseInt($('cfgVoucher').value,10) || 2000),
+    failPct: Math.max(0,Math.min(100, nz(parseInt($('cfgFailPct').value,10),60))),
+    voucherThreshold: Math.max(0, nz(parseInt($('cfgVoucher').value,10),2000)),
     leaveGates: $('cfgLeaveGates').value!=='0'
   };
-  safeSet('saagar_bridge_config', JSON.stringify(c));
+  safeSet('saagar_bridge_config', JSON.stringify(Object.assign({},tryJSON(safeGet('saagar_bridge_config'))||{},c)));
   try{ auditLog('bridge.config.save', c); }catch(e){}
   try{ if(window.SaagarBridge&&window.SaagarBridge.runNow) window.SaagarBridge.runNow(); }catch(e){}
   if(typeof toast==='function') toast('Integration rules saved');
@@ -2910,14 +2898,17 @@ function masterTable(name, hostId, cols){
 }
 function masterAdd(name){
   let obj=null;
-  if(name==='brands'){ const n=($('mb-name').value||'').trim(); if(!n){toast('Enter a brand name');return;} obj={name:n,store:$('mb-store').value||''}; $('mb-name').value=''; }
-  if(name==='vendors'){ const n=($('mv-name').value||'').trim(); if(!n){toast('Enter a vendor name');return;} obj={name:n,gstin:($('mv-gstin').value||'').trim()}; $('mv-name').value=''; $('mv-gstin').value=''; }
-  if(name==='customers'){ const n=($('mc-name').value||'').trim(); if(!n){toast('Enter a customer name');return;} obj={name:n,mobile:($('mc-mobile').value||'').trim()}; $('mc-name').value=''; $('mc-mobile').value=''; }
+  if(name==='brands'){ const n=($('mb-name').value||'').trim(); if(!n){toast('Enter a brand name');return;} if(n.length>40){ toast('Brand name is too long (maximum 40 characters).'); return; } obj={name:n,store:$('mb-store').value||''}; }
+  if(name==='vendors'){ const n=($('mv-name').value||'').trim(); if(!n){toast('Enter a vendor name');return;} obj={name:n,gstin:($('mv-gstin').value||'').trim().toUpperCase()}; }
+  if(name==='customers'){ const n=($('mc-name').value||'').trim(); if(!n){toast('Enter a customer name');return;} obj={name:n,mobile:($('mc-mobile').value||'').trim()}; }
   if(!obj) return;
+  const DP=window.SaagarDashboardPolicy, bad=DP?DP.masterError(name,obj):''; if(bad){ toast(bad); return; }
+  if(DP&&name==='customers'&&obj.mobile) obj.mobile=DP.normMobile(obj.mobile);
   const list=window.SaagarMasters.get(name);
   const dup=list.some(r=>String(r.name||'').trim().toLowerCase()===obj.name.toLowerCase() && (name!=='brands'||(r.store||'')===(obj.store||'')));
   if(dup){ toast('Already in the master'); return; }
   window.SaagarMasters.add(name,obj);
+  ['mb-name','mv-name','mv-gstin','mc-name','mc-mobile'].forEach(i=>{ if($(i)) $(i).value=''; });
   try{ auditLog('master.add',{master:name,name:obj.name}); }catch(e){}
   renderMasters();
 }
@@ -3111,7 +3102,7 @@ function renderActingAs(){
 }
 /* Rec #6: which module fixes each cross-module exception area (areas emitted by the bridge's
    buildExceptions). Floor-gate → grooming (the actionable fix; leave-blocks stay visible in Sync). */
-const EXC_AREA_TO_MODULE = { 'Floor gate':'grooming', 'QMS':'qms', 'Stock':'stock', 'Cash':'expense', 'Expense':'expense', 'Tax':'tax', 'Service':'service', 'CRO':'cro_audit' };
+const EXC_AREA_TO_MODULE = { 'Floor gate':'grooming', 'Grooming':'grooming', 'DSR':'dsr', 'Payroll':'payroll', 'QMS':'qms', 'Stock':'stock', 'Cash':'expense', 'Expense':'expense', 'Tax':'tax', 'Service':'service', 'CRO':'cro_audit' };
 
 /* Rec #9: "Today's run" — a read-only, DERIVED checklist (writes NO new key). Reuses the existing
    .rcard collapsible + buildTodayBrief() so almost no new reads. Each row taps into its module. */
@@ -3188,7 +3179,6 @@ function buildCloseDaySteps(brief){
   steps.push({ id:'stock', icon:'📦', label:'Lock stock closing', mod:'stock',
     done:b.stockToday>0 && sLock.length===0,
     sub:b.stockToday<=0? 'no stock entry yet' : (sLock.length? sLock.map(x=>String(x.msg||'').split(' ')[0]).join(' + ')+' not locked' : 'locked') });
-  // 4 · Cash — close today's statement (same b.cashTodayDone the Today's-run row uses; mismatch flag from the hub)
   const cashMis = exIn('Cash').filter(x=>/mismatch/i.test(x.msg||''));
   steps.push({ id:'cash', icon:'💳', label:'Close cash sheet', mod:'expense',
     done:!!b.cashTodayDone && cashMis.length===0,
@@ -3317,7 +3307,7 @@ function renderHome(brief){
   reflectSelectedDate();                       // re-skinned date stepper, now living inside the hero
   const b = brief||buildTodayBrief(viewDate());
   const hideAmts = amountsHidden();
-  const heroINR = n => { if(hideAmts) return '₹ •••'; n=Math.round(Number(n)||0); const a=Math.abs(n); let s; if(a>=1e7) s='₹'+(n/1e7).toFixed(2).replace(/\.00$/,'')+'Cr'; else if(a>=1e5) s='₹'+(n/1e5).toFixed(2).replace(/\.00$/,'')+'L'; else s='₹'+n.toLocaleString('en-IN'); return s; };
+  const heroINR = n => { if(hideAmts) return '₹ •••'; n=Math.round(Number(n)||0); const a=Math.abs(n); let s; if(a>=9999500) s='₹'+(n/1e7).toFixed(2).replace(/\.00$/,'')+'Cr'; else if(a>=1e5) s='₹'+(n/1e5).toFixed(2).replace(/\.00$/,'')+'L'; else s='₹'+n.toLocaleString('en-IN'); return s; };
   // Privacy eye — open eye = visible (tap to hide), slashed eye = hidden (tap to show)
   if($('heroEye')){
     $('heroEye').innerHTML = hideAmts
@@ -3328,7 +3318,7 @@ function renderHome(brief){
   }
   const canSeeNet=moduleVisibleForRole('qms')&&moduleVisibleForRole('expense');
   if($('heroNetWrap')) $('heroNetWrap').classList.toggle('hidden',!canSeeNet);
-  const net=(Number(b.qmsSales)||0)-(Number(b.expenseTodayAmount)||0);
+  const net=(Number(b.qmsSales)||0)+(Number(b.incomeTodayAmount)||0)-(Number(b.expenseTodayAmount)||0);
   if($('heroNetLabel')) $('heroNetLabel').textContent = isViewingToday() ? (stT('hero.netToday')||'Net today') : (stT('hero.netForDay')||'Net for day');   /* Wave-13 P1-36 */
   if($('heroNet')){ $('heroNet').textContent = heroINR(net); $('heroNet').classList.toggle('neg', net<0 && !hideAmts); }
   // Keep past-date and store-scope qualifications beside the headline numbers.
@@ -3344,7 +3334,7 @@ function renderHome(brief){
   // 5 mini-stats — Walk-ins, Cash (sales taken), Expenses, Conversion, Grooming — from buildTodayBrief
   const heroStats = [
     [String(b.qmsWalkins||0),        'Walk-ins',   'qms'],
-    [heroINR(b.qmsSales||0),         'Cash',       'qms'],
+    [heroINR(b.qmsCash||0),          'Cash',       'qms'],
     [heroINR(b.expenseTodayAmount||0),'Expenses',  'expense'],
     [(b.qmsConversion||0)+'%',       'Conversion', 'qms'],
     [b.groomingTodayChecks ? (b.groomingTodayAvg+'%') : '—', 'Grooming', 'grooming']
@@ -3355,7 +3345,6 @@ function renderHome(brief){
     const tap=mod?` data-mod="${escapeHtml(mod)}" onclick="navigateToModule('${mod}')"`:'';
     return `<button type="button" class="hero-stat${mod?' tappable':''}"${tap}><b>${escapeHtml(String(s[0]))}</b><span>${escapeHtml(s[1])}</span></button>`;
   }).join(''):`<span class="sub" style="padding:8px 0">No KPIs assigned to ${escapeHtml(currentRole())}</span>`;
-  // ── Quick actions — SIX tiles (2×3): Stock, CRO Login(dsr), Walk-in(qms), Expense, Grooming, Service
   const quicks = [
     ['stock','📦','Stock'],
     ['dsr','📋','CRO Login'],
@@ -3388,19 +3377,16 @@ function renderHome(brief){
   }  if (b.taxOverdue > 0) items.push({color:'red', em:'⚖️', title:`${b.taxOverdue} overdue tax item${b.taxOverdue===1?'':'s'}`, msg:'Clear or re-schedule in Tax Calendar.', action:"openModule('tax')", cta:'Open'});
   if (b.taxDueWeek > 0) items.push({color:'orange', em:'⚖️', title:`${b.taxDueWeek} tax item${b.taxDueWeek===1?'':'s'} due this week`, msg:'Plan ahead of due date.', action:"openModule('tax')", cta:'Open'});
   if (b.serviceOpen > 5) items.push({color:'orange', em:'🛠️', title:`${b.serviceOpen} open service jobs${briefModuleOrganisationWide(b,'service')?' (all stores)':''}`, msg:'Review pendency in Watch Service Centre.', action:"openModule('service')", cta:'Open'});
-  // Wave 3 — outstanding udhaar (credit) owed to the shop; overdue count drives severity. Read-only sum from the receivables register.
   try{ const _u=tryJSON(safeGet(UDHAAR_LEDGER_KEY)); const _rs=(_u&&Array.isArray(_u.receivables))?_u.receivables:[];
     let _out=0, _od=0; const _t=todayIso();
     _rs.forEach(r=>{ if(!r||r.void) return; const paid=(r.settlements||[]).reduce((s,x)=>s+(Number(x.amount)||0),0); const o=(Number(r.amount)||0)-paid; if(o>0.5){ _out+=o; if(r.dueDate && _t>r.dueDate) _od++; } });
     if(_out>0) items.push({color:_od>0?'red':'orange', em:'🧾', title:`₹${Math.round(_out).toLocaleString('en-IN')} outstanding credit (udhaar)${b.storeIsAll?'':' · all stores'}`, msg:_od>0?`${_od} customer${_od===1?'':'s'} past due — send a reminder.`:'Money owed to you on credit. Track ageing in Expense → Udhaar.', action:"openModule('expense')", cta:'Open'});
   }catch(e){}
-  // Wave 3 — warranty / battery-due reminders (repeat footfall). Auto follow-ups (auto==='warranty') on service cases due within 30 days or overdue.
   try{ const _w=briefJson('saagar_wsf_v2',[]); const _cases=Array.isArray(_w)?_w:[];
     const _soon=new Date(new Date(todayIso()+'T00:00:00').getTime()+30*86400000).toISOString().slice(0,10);
-    let _due=0; _cases.forEach(c=>{ (c&&Array.isArray(c.followUps)?c.followUps:[]).forEach(f=>{ if(f&&f.auto==='warranty'&&f.dueDate&&f.dueDate<=_soon&&!f.done) _due++; }); });
+    const _due=SaagarDashboardPolicy.warrantyDue(_cases,_soon);
     if(_due>0) items.push({color:'orange', em:'🔔', title:`${_due} warranty/battery reminder${_due===1?'':'s'} due${b.storeIsAll?'':' · all stores'}`, msg:'Customers to call for renewal or battery replacement — a footfall driver.', action:"openModule('service')", cta:'Open'});
   }catch(e){}
-  // Wave 3 — festival leave-freeze advisory (additive, non-blocking). A blackout festival active now or within 10 days warns against approving staff leave.
   try{ const _fc=tryJSON(safeGet('saagar_festival_calendar_v1')); const _fs=(_fc&&Array.isArray(_fc.festivals))?_fc.festivals:[];
     const _t=todayIso(); const _near=new Date(new Date(_t+'T00:00:00').getTime()+10*86400000).toISOString().slice(0,10);
     const _fz=_fs.filter(f=>f&&f.blackout&&f.end&&f.end>=_t&&f.start&&f.start<=_near).sort((a,b)=>String(a.start).localeCompare(String(b.start)))[0];
@@ -3438,7 +3424,7 @@ function renderHome(brief){
   try{
     let exc = (window.SaagarBridge && window.SaagarBridge.exceptions && window.SaagarBridge.exceptions())
               || tryJSON(safeGet('saagar_exceptions')) || {items:[]};
-    const exItems = (exc.items||[]);
+    const exItems = (exc.date===todayIso()?exc.items:[])||[];
     const sevMap = {high:'red', med:'orange', low:'orange'};
     const sevEm  = {high:'⛔', med:'⚠️', low:'•'};
     exItems.forEach(x=>{
@@ -3474,6 +3460,7 @@ var __etpHomeAnalyticsSeq=0;
 async function renderEtpAnalyticsHome(){
   var host=$('etpAnalyticsHome'),consumer=window.SaagarEtpAnalyticsConsumer,gateway=window.SaagarEtpModuleGateway,seq=++__etpHomeAnalyticsSeq;
   if(!host||!consumer)return;
+  if(!moduleVisibleForRole('etp')){ host.innerHTML=''; host.style.display='none'; return; } host.style.display='';
   var selected=currentStoreSelection(),facade=gateway&&gateway.readFacade;
   var result=await consumer.load(facade,selected&&selected.isAll?'':selected.code,viewDate(),'DAY');
   if(seq!==__etpHomeAnalyticsSeq)return;
@@ -3646,7 +3633,6 @@ function renderGreetings(){
   try{
     const cm=tryJSON(safeGet(CUST_MASTER_KEY)); const by=(cm&&cm.byMobile)||{};
     const md=todayIso().slice(5);   // 'MM-DD' — compare by string slice, no Date() timezone drift
-    // verify-fix: Feb-29 birthdays/anniversaries are greeted on Feb-28 in non-leap years (else never greeted 3 of 4 years)
     const yr=+todayIso().slice(0,4), leap=(yr%4===0&&yr%100!==0)||yr%400===0;
     const hit=v=>{ const s=String(v).slice(5); return s===md || (md==='02-28' && !leap && s==='02-29'); };
     for(const m10 in by){
@@ -3916,7 +3902,7 @@ function renderReports(){
   try{ cards = isDaily ? dailyReportsHTML(repDate) : monthlyReportsHTML(repMonth); }
   catch(e){ cards = '<div class="empty"><span class="em">⚠️</span>Could not build report — '+escapeHtml(e.message)+'</div>'; }
   host.innerHTML = header + cards;
-  try{ decorateRepCards(); }catch(e){}
+  try{ decorateRepCards(); }catch(e){ host.innerHTML=''; }
   updateRepCount();
 }
 function setReportScope(s){ repScope = (s==='monthly')?'monthly':'daily'; renderReports(); }
@@ -3958,6 +3944,8 @@ function decorateRepCards(){
   var d=repDate, m=repMonth;
   host.querySelectorAll('.rcard').forEach(function(card){
     var sum=card.querySelector('summary'); var lc=((sum&&sum.textContent)||'').toLowerCase();
+    var tt=sum&&sum.querySelector('b'); if(!(window.SaagarDashboardPolicy&&SaagarDashboardPolicy.reportCardVisible(tt&&tt.textContent,moduleVisibleForRole,isAdmin))){ card.remove(); return; }
+    if(sum) sum.querySelectorAll('b').forEach(function(x){ x.setAttribute('data-i18n-ui',''); });
     card.setAttribute('data-tags', lc);
     var t=null; for(var i=0;i<map.length;i++){ if(lc.indexOf(map[i][0])>=0){ t=map[i][1]; break; } }
     if(!t || !(window.SaagarReport&&window.SaagarReport.generate)) return;
@@ -4199,11 +4187,11 @@ function computeQmsDay(dateIso, customers){
   const cros = Array.isArray(q.cros)?q.cros:[];
   const nameOf = id => { const c=cros.find(x=>x.id===id); return c?c.name:null; };
   const day = custs.filter(c=>String(c.entryTime||'').slice(0,10)===dateIso);
-  const out = { total:day.length, purchases:0, service:0, nonPurchase:0, closed:0, sales:0, conversion:0, byCro:[] };
+  const out = { total:day.length, purchases:0, service:0, nonPurchase:0, closed:0, sales:0, cashSales:0, conversion:0, byCro:[] };
   const cm = {};
   day.forEach(c=>{
     const oc = c.outcome||'';
-    if(oc==='Purchase'){ out.purchases++; out.sales += Number(c.purchaseAmount)||0; }
+    if(oc==='Purchase'){ out.purchases++; const a=Number(c.purchaseAmount)||0; out.sales+=a; if(c.paymentMode==='Cash') out.cashSales+=a; }
     else if(oc==='Service') out.service++;
     else if(oc==='Non Purchase') out.nonPurchase++;
     if(c.status==='Closed') out.closed++;
@@ -4294,14 +4282,7 @@ function computeLeaveDay(dateIso){
 }
 
 function computePayrollSummary(){
-  const p = tryJSON(safeGet('payroll_suite_v1_2026'))||{};
-  const meta = p.meta||{}, rows = Array.isArray(p.rows)?p.rows:[];
-  let gross=0, net=0;
-  rows.forEach(r=>{
-    gross += Number((r.gross!=null?r.gross:(r.grossPay!=null?r.grossPay:r.salaryAmount)))||0;
-    net += Number((r.net!=null?r.net:(r.netPay!=null?r.netPay:r.payable)))||0;
-  });
-  return { month: meta.month||'', year: meta.year||'', status: (meta.run&&meta.run.status)||'draft', firm: meta.firmName||'', headcount: rows.length, gross, net };
+  return SaagarDashboardPolicy.payrollSummary(tryJSON(safeGet('payroll_suite_v1_2026')));
 }
 
 function computeCroAuditMonth(month){
@@ -4563,20 +4544,21 @@ function getTaxComplianceLabel(code) {
   return (head + tail).trim() || String(code).toUpperCase();
 }
 
+function dueLocal(s){ return new Date(String(s).slice(0,10)+'T00:00:00'); }
 function computeTaxStatus(){
   const state = tryJSON(safeGet('taxcal_v2'))||{};
   const comp = state.compliance||{};
   const firms = Array.isArray(state.firms)?state.firms:[];
   const firmName_ = (id)=>{ const f=firms.find(x=>x.id===id||x.code===id); return f?f.name||f.code:id; };
   const out = { overdue:0, dueWeek:0, dueMonth:0, done:0, upcoming:[] };
-  const now = new Date();
+  const now = dueLocal(todayIso());
   const wkEnd = new Date(now.getTime()+7*86400000);
   const moEnd = new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59);
   Object.keys(comp).forEach(fid=>{
     Object.keys(comp[fid]||{}).forEach(fy=>{
       Object.entries(comp[fid][fy]||{}).forEach(([key,v])=>{
         if(v && v.na === true) return; // Not Applicable — excluded from every count, matching the tax module
-        const due = v && v.dueDate ? new Date(v.dueDate) : null;
+        const due = v && v.dueDate ? dueLocal(v.dueDate) : null;
         if(v && v.done){ out.done++; return; }
         if(!due || isNaN(+due)) return;
         if(due < now) out.overdue++;
@@ -4602,7 +4584,7 @@ function computeFirmTaxStatus(firmId, fy){
   const bucket = (comp[firmId] && comp[firmId][fyKey]) || null;
   const out = { firmMissing:!bucket, fy:fyKey, overdue:0, dueWeek:0, dueMonth:0, done:0, total:0, overdueList:[], dueMonthList:[], next:null };
   if(!bucket) return out;
-  const now = new Date();
+  const now = dueLocal(todayIso());
   const wkEnd = new Date(now.getTime()+7*86400000);
   const moEnd = new Date(now.getFullYear(), now.getMonth()+1, 0, 23,59,59);
   let nextSort = Infinity;
@@ -4611,7 +4593,7 @@ function computeFirmTaxStatus(firmId, fy){
     const nm = (v && v.name) || (typeof getTaxComplianceLabel==='function' ? getTaxComplianceLabel(key) : key);
     out.total++;
     if(v && v.done){ out.done++; return; }
-    const due = v && v.dueDate ? new Date(v.dueDate) : null;
+    const due = v && v.dueDate ? dueLocal(v.dueDate) : null;
     if(!due || isNaN(+due)) return;
     const dd = due.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
     if(due < now){ out.overdue++; out.overdueList.push({item:nm,due:dd}); }
@@ -5499,6 +5481,7 @@ async function openControlledWhatsApp(url, scopeId, purposeId){
   try{
     window.open(String(url||''),'_blank','noopener');
     window.SaagarExportControl.recordOutcome(token,'shared');
+    return true;
   }catch(e){
     try{window.SaagarExportControl.recordOutcome(token,'failed');}catch(_e){}
     try{toast('WhatsApp could not be opened.');}catch(_e){}
@@ -5589,6 +5572,7 @@ function addEmployeeMasterFromForm(){
   const list = getEmployeeMaster();
   const editId = (($('emEditId') && $('emEditId').value) || '').trim();
   if(ownerName() && normLower(name)===normLower(ownerName())){ toast('The owner is the super-admin, not an employee'); return; }
+  const sal = parseFloat($('emSalary').value)||0; if(sal<0){ toast('Salary cannot be negative'); return; }
   const incoming = normalizeEmployee({
     name,
     employeeId: editId || nextEmployeeId(list),
@@ -5597,7 +5581,7 @@ function addEmployeeMasterFromForm(){
     department: $('emDept').value,
     role: $('emRole').value,
     gender: $('emGender').value,
-    monthlySalary: parseFloat($('emSalary').value)||0,
+    monthlySalary: sal,
     salaryType: $('emSalaryType').value,
     phone: $('emPhone').value,
     joiningDate: $('emJoin').value,
@@ -5610,7 +5594,7 @@ function addEmployeeMasterFromForm(){
   });
   const before = list.slice();
   const idx = findEmployeeIndex(list, incoming);
-  if(idx>=0){ if(editId){ incoming.id = list[idx].id; list[idx] = incoming; } else { list[idx] = combineEmployee(list[idx], incoming); } }
+  if(idx>=0){ if(editId){ incoming.id = list[idx].id; list[idx] = incoming; } else { toast(list[idx].name+' is already in the master ('+list[idx].employeeId+'). Use Edit on that row.'); return; } }
   else { list.push(incoming); }
   saveEmployeeMaster(list);
   auditLog(editId?'employee.update':'employee.add', { name:incoming.name, employeeId:incoming.employeeId }, before, list);
@@ -5631,6 +5615,7 @@ function saveEmpRow(i){
   });
   list[i] = normalizeEmployee(list[i]);
   if(!list[i].name){ toast('Name cannot be blank'); return; }
+  if(list[i].monthlySalary<0){ toast('Salary cannot be negative'); return; }
   if(ownerName() && normLower(list[i].name)===normLower(ownerName())){ toast('The owner is the super-admin, not an employee'); renderConfigEmployees(); return; }
   saveEmployeeMaster(list);
   auditLog('employee.update',{name:list[i].name, employeeId:list[i].employeeId}, before, list[i]);
@@ -5899,6 +5884,7 @@ function freshPortableBackupPayload(){
   return Promise.resolve().then(function(){
     return backupPayload();   /* never reuse __stBackupPayload: a preview can be stale by the time Share is tapped */
   }).then(function(payload){
+    if(!Object.keys(payload.localStorage||{}).length) throw new Error('No app data to back up yet: storage is not open. Wait a moment and try again.');
     var engineOn=!!(window.SaagarStore&&window.SaagarStore.enabled);
     var photoApi=(engineOn&&window.SaagarStore.photo)?window.SaagarStore.photo:null;
     var photosP=engineOn
@@ -6058,6 +6044,7 @@ function restoreFromDeviceBackup(){
       toast('Device backup is too large (>64 MB) — restore aborted.');
       return;
     }
+    if(err && err.code==='EMPTY_BACKUP'){ toast('The device backup is empty (an old fault). Use an encrypted .sccbak portable backup.'); return; }
     toast('Could not read the device backup');
   });
 }
@@ -6192,7 +6179,7 @@ function previewRestorePayload(parsed, source){
     window.__stRestoreReview=bundle.review;
     $('modalTitle').textContent=portable?'Encrypted restore preview':'Legacy restore preview';
     $('modalBody').innerHTML=`
-      <p style="font-size:13px;color:var(--gray-700)">Source: <b>${escapeHtml(sourceLabel)}</b><br>Created: <b>${escapeHtml(sourceDate)}</b> · App/build: <b>${escapeHtml(sourceVersion)}</b><br>All sections will be checked after writing. If any section fails, the original device state is restored automatically.</p>
+      <p style="font-size:13px;color:var(--gray-700)">Source: <b>${escapeHtml(sourceLabel)}</b><br>Created: <b>${escapeHtml(sourceDate)}</b> · App/build: <b>${escapeHtml(sourceVersion)}</b><br>All sections will be checked after writing. Only the keys listed below are replaced; newer records for keys not in this backup (for example later days) are kept. If any section fails, the original device state is restored automatically.</p>
       <div class="emp-stats">
         <div class="emp-pill green"><b>${keys.length}</b><span>Keys</span></div>
         <div class="emp-pill"><b>${bundle.review.rejected.length}</b><span>Rejected</span></div>
@@ -6248,6 +6235,7 @@ function verifyStorageValues(values){
 async function restoreValidatedBackup(){
   const bundle=window.__stRestoreBundle; if(!bundle) return;
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
+  if(!(await SaagarReauth('Restore from backup'))) return;
   if(!(window.SaagarRestoreEngine&&typeof window.SaagarRestoreEngine.run==='function')){ toast('Restore engine unavailable. Nothing changed.'); return; }
   closeModal(); toast('Capturing current state before restore…');
   const keys=Object.keys(bundle.review.valid);
@@ -6396,7 +6384,7 @@ async function undoLastModuleReset(){
 }
 /* Factory reset — wipe ALL app data on this device for a clean start.
    Auto-exports a backup first; requires admin + typed confirmation. */
-function factoryReset(){
+async function factoryReset(){
   if(!isAdmin){ unlockAdmin(); if(!isAdmin) return; }
   const APP_RE = /^(saagar_|gm_|st_v\d+_|payroll_|leavedesk_|taxcal|retail_queue_management|tanishq_statements|cro_s_v3|cro_audits_v3|cro_audit)/;   // bug-hunt #1: st_v\d+_ covers st_v2_..st_v5_ + future. Wave-11: 'payroll_suite'→'payroll_' so payroll_fnf_v1 (F&F records) is both wiped by reset AND included in the pre-reset safety backup.
   let keys=[]; for(let n=0;n<localStorage.length;n++){ const k=localStorage.key(n); if(k && APP_RE.test(k)) keys.push(k); }
@@ -6407,6 +6395,7 @@ function factoryReset(){
   }
   if(!confirm('Factory reset will permanently delete ALL saved data for every module ('+keys.length+' keys) on this device.\n\nA verified encrypted backup is saved first. Continue?')) return;
   if(prompt('Type RESET to confirm clearing all data:') !== 'RESET'){ toast('Factory reset cancelled.'); return; }
+  if(!(await SaagarReauth('Factory reset'))) return;
   // §reset-safety: the old code called exportBackup() here — which only OPENS the backup PREVIEW modal
   // (exportBackup → exportBackupPreview; no file is ever written) — and then wiped anyway, so the promised
   // safety backup never existed. Now the backup is written to a real file and VERIFIED by reading it back
@@ -6772,7 +6761,8 @@ function renderConfigBackup(){
       const s = window.SaagarBackup.status();
       if(s) autoLine = `On-device safety copy last saved: <b>${escapeHtml((s.lastBackup && s.lastBackup!=='never')?s.lastBackup:'never')}</b><br>Location: <code>${escapeHtml(s.folder||'app-private')}</code>`
         + (s.plaintextWarning ? '<br><b style="color:var(--danger,#b3261e)">Warning: encryption was unavailable, so a private plaintext fallback exists. Restart after unlocking the device; keep a fresh Share-to-Drive backup.</b>' : '')
-        + (s.failureEscalated ? '<br><b style="color:var(--danger,#b3261e)">Backup failure threshold exceeded ('+Number(s.failureThresholdHours||36)+' hours). Resolve device storage before relying on this copy.</b>' : '');
+        + (s.failureEscalated&&!s.lastRefusal ? '<br><b style="color:var(--danger,#b3261e)">Backup failure threshold exceeded ('+Number(s.failureThresholdHours||36)+' hours). Resolve device storage before relying on this copy.</b>' : '')
+        + (s.notice ? '<br><b style="color:var(--danger,#b3261e)">'+escapeHtml(s.notice)+'</b>' : '');
     }
   }catch(e){}
   if($('backupStatusBox')) $('backupStatusBox').innerHTML = `
@@ -6914,7 +6904,6 @@ function renderDiagnostics(){
     <div class="table-wrap"><table class="data-table small">
       <thead><tr><th>Check</th><th>Status</th><th>Details</th></tr></thead>
       <tbody>${checks.map(c=>`<tr><td>${escapeHtml(c.name)}</td><td>${c.pass?'<span class="dot green"></span>Pass':'<span class="dot amber"></span>Check'}</td><td><small>${escapeHtml(c.detail)}</small></td></tr>`).join('')}</tbody></table></div>`;
-  // Storage engine readout (READ-ONLY: calls the existing _status()/_walLen() getters + sums localStorage; no writes, no boot/init touch)
   try {
     const eng = (window.SaagarStore && window.SaagarStore.enabled) ? window.SaagarStore : null;
     let bytes = 0, keys = 0;
@@ -7036,12 +7025,12 @@ function runDiagnostics(showModal=false){
     MODULES.every(m=>m && MODULE_MANIFEST.get(m.id)===m && m.src===m.file && !m.html_b64);
   add('Module manifest integrity', manifestOk, MODULES.length+' validated external module(s)');
   add('External module routes', MODULES.every(m=>!!m.src), MODULES.filter(m=>!!m.src).length+'/'+MODULES.length+' paths configured');
-  add('Storage rules coverage', Object.keys(STORAGE_RULES).length===MODULES.length, `${Object.keys(STORAGE_RULES).length}/${MODULES.length} configured`);
+  add('Storage rules coverage', MODULES.every(m=>m.id==='etp'||STORAGE_RULES[m.id]), `${Object.keys(STORAGE_RULES).length}/${MODULES.length} configured (ETP uses its own encrypted store)`);
   add('Employee master configured', !!EMP_MASTER_KEY, EMP_MASTER_KEY+' key set');
   add('Employee sync available', typeof syncEmployeeMasterToPayroll==='function' && typeof syncEmployeeMasterToLeave==='function', 'Payroll + Leave sync functions present');
   add('Audit log configured', !!AUDIT_LOG_KEY, AUDIT_LOG_KEY+' key set');
   add('Backup whitelist', Object.keys(appStorage()).every(isWhitelistedAppKey), 'Backup is limited to app keys');
-  add('Module validators', Object.keys(MODULE_VALIDATORS).length===MODULES.length, `${Object.keys(MODULE_VALIDATORS).length}/${MODULES.length} validators ready`);
+  add('Module validators', MODULES.every(m=>m.id==='etp'||MODULE_VALIDATORS[m.id]), `${Object.keys(MODULE_VALIDATORS).length}/${MODULES.length} validators ready`);
   add('Restore rollback', !!RESTORE_ROLLBACK_PREFIX, 'Restore takes snapshots before writing');
   add('Startup errors', startupErrors.length===0, startupErrors.length?`${startupErrors.length} captured`:'None');
   return checks;
@@ -7216,7 +7205,6 @@ function seedModuleFromMaster(id){
         const ms=Number(e.monthlySalary);
         const existing=(idk && rowByKey['id:'+idk]) || rowByKey['nm:'+nk];
         if(existing){
-          // master is the source of truth for gross ONLY while the row's gross is still 0/blank (never clobber a manual edit)
           if(ms>0 && !(Number(existing.gross)>0)){ existing.gross=ms; patched++; }
           if((e.salaryType==='S'||e.salaryType==='B') && !existing.salaryType) existing.salaryType=e.salaryType;
           if(e.bankName && !existing.bankName) existing.bankName=e.bankName;
@@ -7319,7 +7307,7 @@ function openModuleSwitcher(){
   const recent = (tryJSON(safeGet(ACTIVITY_KEY)) || []).map(e=>e&&e.id).filter(Boolean);
   const seen = {};
   const order = recent.filter(id=>{ if(seen[id]||!moduleById(id))return false; seen[id]=1; return true; })
-                      .concat(MODULES.map(m=>m.id).filter(id=>!seen[id]));
+                      .concat(MODULES.map(m=>m.id).filter(id=>!seen[id])).filter(id=>moduleVisibleForRole(id));
   if($('modalTitle')) $('modalTitle').textContent = 'Switch module';
   if($('modalBody')) $('modalBody').innerHTML = order.map(id=>{
     const m=moduleById(id); if(!m) return '';
@@ -7693,6 +7681,7 @@ function reflectBuildBadge(){
       if(!activeModuleId && activeView==='home'){ renderHome(); try{ renderToday(); }catch(e){} }
       else if(!activeModuleId && activeView==='today'){ try{ renderToday(); }catch(e){} }
     }, 60000);
+    setTimeout(()=>{ if(!activeModuleId&&activeView==='home') renderHome(); },6000);
 
     // Run silent diagnostics on startup so any failure is in audit/log
     try{ runDiagnostics(false); }catch(e){ startupErrors.push({type:'init', message:e.message}); }

@@ -359,7 +359,7 @@ html.saagar-legacy-webview .fgrid>*,
 html.saagar-legacy-webview .st-grid>*,
 html.saagar-legacy-webview .deno>*{width:48%;-webkit-flex:1 1 280px;flex:1 1 280px}
 </style>
-<style id="st-v5-hide-css">#vn,[onclick="addVendor()"]{display:none !important}</style>
+<style id="st-v5-hide-css">#vn,#vgst,[onclick="addVendor()"]{display:none !important}</style>
 
 <link id="st-v5-uniform-css" rel="stylesheet" href="../../shared/module-uniform.css">
 <link rel="stylesheet" href="../../c1-control-desk.css">
@@ -483,6 +483,9 @@ function validDate(s){ return typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(
 function asOf(){ try{ var v=window.__stAsOf; return validDate(v)?v:todayStr(); }catch(e){ return todayStr(); } }
 function isPast(){ return asOf()<todayStr(); }
 function toast(m,k){ var t=document.getElementById('toast'); t.textContent=m; t.className='toast '+(k||''); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.add('hide');},2600); }
+/* U06-F10: re-render AFTER the current change/blur event has finished. Replacing innerHTML of a region that
+   holds the focused input from inside that input's own change handler makes Chrome throw NotFoundError. */
+function deferRender(fn){ setTimeout(function(){ try{ fn(); }catch(e){} },0); }
 /* Per-row WhatsApp/share: read-only summary of ONE entry, sent via the shell's
    existing share infra (SaagarModuleBridge.shareText / SaagarModuleBridge.share) with offline-safe
    fallbacks. Never mutates data; every cross-frame call is typeof-guarded. */
@@ -503,8 +506,24 @@ function shareEntry(id){
   }catch(err){}
   toast('Controlled sharing is available only inside Saagar Control Centre.','warn');
 }
-function role(){ return localStorage.getItem(K.role)||'cashier'; }
-function setRole(r){ localStorage.setItem(K.role,r); render(); toast('Role: '+r,'ok'); }
+/* U06-F01: the module role can never exceed the role signed in to the app shell. The ceiling comes from the
+   shell (SaagarModuleRuntime.session(), fallback SaagarModuleBridge.ownerSession.read()); the stored gm_role is
+   CLAMPED on every read and never rewritten. Missing or throwing shell context fails CLOSED to cashier. */
+function shellCtx(){
+  try{
+    var v=null;
+    if(typeof SaagarModuleRuntime.session==='function'){ v=SaagarModuleRuntime.session(); if(v&&v.ok!==true) v=null; }
+    else{ var s=SaagarModuleBridge.ownerSession; v=(s&&typeof s.read==='function')?s.read():null; }
+    if(v&&typeof v==='object') return {isOwner:v.isOwner===true,isManager:(v.isOwner===true||v.isManager===true)};
+  }catch(e){}
+  return {isOwner:false,isManager:false};
+}
+function allowedRoles(){ var c=shellCtx(); return c.isOwner?['cashier','accounts','owner']:(c.isManager?['cashier','accounts']:['cashier']); }
+function role(){ var r=localStorage.getItem(K.role)||'cashier'; return allowedRoles().indexOf(r)>=0?r:'cashier'; }
+function setRole(r){
+  if(allowedRoles().indexOf(r)<0){ toast('That role is not available for the role signed in to the app','err'); render(); return; }
+  localStorage.setItem(K.role,r); render(); toast('Role: '+r,'ok');
+}
 /* Shared Super-Admin flag set by the shell (same key/pattern as the service module). */
 var adminModeKey='st_v2_admin_mode';
 function isSuperAdmin(){ try{ return !!(SaagarModuleBridge.ownerSession&&SaagarModuleBridge.ownerSession.isOwnerActive()); }catch(e){ return false; } }
@@ -717,9 +736,11 @@ function go(s){
   render();
 }
 function render(){
-  document.getElementById('roleSel').value=role();
+  var __rs=document.getElementById('roleSel'), __al=allowedRoles();
+  if(__rs){ if(__rs.options){ for(var __ri=0;__ri<__rs.options.length;__ri++) __rs.options[__ri].disabled=__al.indexOf(__rs.options[__ri].value)<0; } __rs.value=role(); }
   document.getElementById('todayBadge').textContent='Today · '+todayStr();
-  var pend=pendingSyncCount();
+  var __fi=null; try{ __fi=feedItems(); }catch(e){}
+  var pend=pendingSyncCount(__fi);
   var sp=document.getElementById('syncPill'); sp.textContent=pend; sp.className='pill'+(pend?' red':'');
   // #18: Audit tab visible to Super-Admin only. Hide the tab button for non-admins
   // (renderAudit also early-returns, so the log is never shown).
@@ -732,7 +753,7 @@ function render(){
   if(CUR==='petty') renderPetty();
   if(CUR==='vendors') renderVendors();
   if(CUR==='budget') renderBudget();
-  if(CUR==='sync') renderSync();
+  if(CUR==='sync') renderSync(__fi);
   if(CUR==='close') renderClose();
   if(CUR==='audit') renderAudit();
 }
@@ -945,6 +966,7 @@ function addEntry(){
   if(amt<=0){ toast('Enter an amount greater than 0','err'); return; }
   if(!desc){ toast('Description is required','err'); return; }
   if(isPast()){ toast('Historical view is read-only. Switch to today to add entries.','err'); return; }
+  if(!validDate(date)){ toast('Pick a valid date for the entry','err'); return; }   /* U06-F04: blank date used to be saved as today, past the closed-day gate */
   if(getStmt(date).closed){ toast('That day’s cash statement is locked. Owner must reopen it first.','err'); return; }
   /* P1-18: month-lock gate — the month's tax feed was already generated */
   var __m=ym(date), __mLock=isMonthLocked(date);
@@ -1563,7 +1585,10 @@ function reopenDay(){
   modal('Reopen locked day',
     fld('Reason','<select id="ro_r">'+REASONS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select>')+
     fld('Detail','<input id="ro_n" placeholder="audit note">','full'),
-    function(){
+    async function(){
+      if(!await stReauth('Reopen the locked day '+SD)) return false;
+      if(!can('reopen')){ toast('Only Owner can reopen','err'); return true; }
+      st=getStmt(SD);
       st.closed=false; st.approved=false; st.reopenReason=val('ro_r')+(val('ro_n')?(' — '+val('ro_n')):'');
       saveStmt(st); audit('stmt.reopen',SD+' · '+st.reopenReason); toast('Day reopened','warn'); renderStmt(); return true;
     });
@@ -1620,7 +1645,10 @@ function reopenStoreDay(store){
   modal('Reopen '+storeName(store)+' drawer',
     fld('Reason','<select id="ro_r">'+REASONS.map(function(r){return '<option>'+r+'</option>';}).join('')+'</select>')+
     fld('Detail','<input id="ro_n" placeholder="audit note">','full'),
-    function(){
+    async function(){
+      if(!await stReauth('Reopen the '+storeName(store)+' drawer for '+SD)) return false;
+      if(!can('reopen')){ toast('Only Owner can reopen','err'); return true; }
+      st=getStmt(SD); sub=stSub(st,store);
       sub.closed=false; sub.approved=false; sub.reopenReason=val('ro_r')+(val('ro_n')?(' — '+val('ro_n')):'');
       saveStmt(st); audit('stmt.reopen.store',SD+' · '+store+' · '+sub.reopenReason); toast(storeName(store)+' drawer reopened','warn'); renderStmt(); return true;
     });
@@ -1653,12 +1681,16 @@ function setFloat(){ if(isPast()){ toast('Historical view is read-only','err'); 
 function pettyOut(){
   if(isPast()){ toast('Historical view is read-only','err'); return; }
   var a=num(val('pt_a')); if(a<=0){toast('Enter amount','err');return;}
+  if(getStmt(todayStr()).closed){ toast('Today’s cash statement is locked. Owner must reopen it first.','err'); return; }   /* U06-F02 */
+  var __pt=L(K.petty,{float:0,history:[]}), __spent=getLedger().filter(function(e){return e.source==='petty'&&!e.void;}).reduce(function(s,e){return s+e.amount;},0), __rem=num(__pt.float)-__spent;
+  if(num(__pt.float)>0 && a>__rem && !confirm('This is more than the petty float left ('+nINR(Math.max(__rem,0))+'). Record it anyway?')) return;   /* U06-F08: warn, never block (same pattern as the GST-over-amount warning) */
   /* P1-18: month-lock gate — petty writes a real Cash expense row; a lock hit only occurs
      when the CURRENT month's feed was generated mid-month, exactly when the books need
      protecting (Wave-10 decision #2). */
   var __m=ym(todayStr()), __mLock=isMonthLocked(todayStr());
   if(__mLock && !can('monthoverride')){ toast('Month '+__m+' is tax-locked — its tax feed was already generated. Owner override required.','err'); return; }
   var __doPetty=function(__ovRsn){
+    if(getStmt(todayStr()).closed){ toast('Today’s cash statement is locked. Owner must reopen it first.','err'); return; }   /* U06-F02: re-check after the override wait */
     var led=getLedger();                                  // fresh read INSIDE the continuation (the override modal adds a human-scale wait)
     led.push(normEntry({id:uid('e'),type:'expense',date:todayStr(),amount:a,category:val('pt_c'),mode:'Cash',description:'Petty: '+(val('pt_d')||'sundry'),source:'petty',sourceRef:uid('pty'),createdBy:role()}));
     saveLedger(led); audit('petty.out',nINR(a)+' · '+val('pt_d'));
@@ -1687,11 +1719,11 @@ function renderVendors(){
 function addVendor(){ if(isPast()){ toast('Historical view is read-only','err'); return; } var n=val('vn').trim(); if(!n)return; var vs=L(K.vend,[]); if(vs.find(function(v){return v.name.toLowerCase()===n.toLowerCase();})){toast('Already exists','warn');return;} var g=(val('vgst')||'').trim().toUpperCase(); if(g&&!gstinLooksOk(g)) toast('GSTIN looks unusual (expected 15 characters) — saved anyway','warn'); vs.push({name:n,gstin:g}); S(K.vend,vs); audit('vendor.add',n); renderVendors(); }
 /* P1-17: inline per-row GSTIN edit (index-addressed like delVendor — the table renders vs in storage order). */
 function setVendGstin(i,v){
-  if(isPast()){ toast('Historical view is read-only','err'); renderVendors(); return; }
+  if(isPast()){ toast('Historical view is read-only','err'); deferRender(renderVendors); return; }
   var vs=L(K.vend,[]); if(!(i>=0&&i<vs.length)) return;
   var g=String(v||'').trim().toUpperCase();
   if(g&&!gstinLooksOk(g)) toast('GSTIN looks unusual (expected 15 characters) — saved anyway','warn');
-  vs[i].gstin=g; S(K.vend,vs); audit('vendor.gstin',(vs[i].name||'')+' → '+(g||'(cleared)')); renderVendors();
+  vs[i].gstin=g; S(K.vend,vs); audit('vendor.gstin',(vs[i].name||'')+' → '+(g||'(cleared)')); deferRender(renderVendors);
 }
 function delVendor(i){ if(isPast()){ toast('Historical view is read-only','err'); return; } var vs=L(K.vend,[]); var nm; if(typeof i==='number'&&i>=0&&i<vs.length){ nm=vs[i].name; vs.splice(i,1); } else { nm=i; vs=vs.filter(function(v){return v.name!==i;}); } S(K.vend,vs); audit('vendor.remove',nm); renderVendors(); }
 
@@ -1715,7 +1747,7 @@ function renderBudget(){
     }).join('')+
    '</tbody></table></div></div>';
 }
-function setBudget(c,v){ if(isPast()){ toast('Historical view is read-only','err'); renderBudget(); return; } var m=ym(todayStr()),b=L(K.budg,{}); b[m]=b[m]||{}; b[m][c]=num(v); S(K.budg,b); audit('budget.set',m+' · '+c+' = '+nINR(num(v))); renderBudget(); }
+function setBudget(c,v){ if(isPast()){ toast('Historical view is read-only','err'); deferRender(renderBudget); return; } var m=ym(todayStr()),b=L(K.budg,{}); b[m]=b[m]||{}; b[m][c]=num(v); S(K.budg,b); audit('budget.set',m+' · '+c+' = '+nINR(num(v))); deferRender(renderBudget); }
 /* ── P1-19: entry-time budget alert + copy-last-month budgets ─────────────── */
 /* Reuses renderBudget's math EXACTLY: bucket = date.slice(0,7), spend = Σ non-void
    EXPENSE rows of the category in that month, pct = Math.round(ac/bg*100).
@@ -1771,12 +1803,12 @@ function feedItems(){
   var items=[]; var posted={}; getLedger().forEach(function(e){ if(e.sourceRef) posted[e.sourceRef]=true; });
   // WSC — saagar_wsf_v2 closed cases → income
   try{ var w=L('saagar_wsf_v2',[]); if(Array.isArray(w)) w.forEach(function(c){
-    if((c.status||'')==='closed'){ var ref='wsc_'+c.id, amt=num((c.delivery&&c.delivery.finalAmt)||c.estTotal);
+    if((c.status||'')==='closed'){ var ref='wsc_'+c.id, __fa=c.delivery&&c.delivery.finalAmt, __hasFinal=(__fa!==undefined&&__fa!==null&&String(__fa).trim()!==''), amt=__hasFinal?num(__fa):num(c.estTotal);
       if(amt>0) items.push({src:'wsc',ref:ref,type:'income',date:(c.closedAt||todayStr()).slice(0,10),amount:amt,category:'Service Income',mode:((c.delivery&&c.delivery.payMode)||'Cash'),desc:'WSC '+(c.custName||'service')+' '+(c.brand||''),posted:!!posted[ref]});
     }});}catch(e){}
   // Payroll — payroll_suite_v1_2026 → monthly expense per firm
   try{ var pb=L('payroll_suite_v1_2026',null);
-    if(pb&&pb.meta&&Array.isArray(pb.rows)){ var byFirm={}; pb.rows.forEach(function(r){ var f=(r.firm||'GM'); byFirm[f]=(byFirm[f]||0)+num(r.gross||r.salaryAmount); });
+    if(pb&&pb.meta&&Array.isArray(pb.rows)){ var byFirm={}; pb.rows.forEach(function(r){ if(r&&r.active===false) return; var f=(r.firm||'GM'); byFirm[f]=(byFirm[f]||0)+num(r.gross||r.salaryAmount); });
       Object.keys(byFirm).forEach(function(f){ var ref='pay_'+pb.meta.year+'_'+pb.meta.month+'_'+f, dt=pb.meta.year+'-'+p2(pb.meta.month||1)+'-28';
         items.push({src:'payroll',ref:ref,type:'expense',date:dt,amount:byFirm[f],category:'Salary',mode:'Bank',desc:'Payroll '+f+' M'+pb.meta.month+'/'+pb.meta.year,posted:!!posted[ref]});
       });}}catch(e){}
@@ -1793,16 +1825,16 @@ function feedItems(){
       }});}catch(e){}
   return items;
 }
-function pendingSyncCount(){ try{ return feedItems().filter(function(i){return !i.posted;}).length; }catch(e){ return 0; } }
-function renderSync(){
-  var items=feedItems(), pending=items.filter(function(i){return !i.posted;}), past=isPast();
+function pendingSyncCount(items){ try{ return (items||feedItems()).filter(function(i){return !i.posted;}).length; }catch(e){ return 0; } }
+function renderSync(items0){
+  var items=items0||feedItems(), __stc=L(K.stmt,{}), pending=items.filter(function(i){return !i.posted;}), past=isPast();
   var bySrc={wsc:[],payroll:[],stock:[],qms:[]}; items.forEach(function(i){ bySrc[i.src].push(i); });
   function block(src,title,note){
     var arr=bySrc[src], pend=arr.filter(function(i){return !i.posted;});
     return '<div class="card"><div class="card-h"><div><h3>'+title+'</h3><p>'+note+'</p></div>'+
       '<div class="actions">'+(pend.length&&!past?'<button data-action="post-source-items" data-saagar-args="'+jargs(src)+'" class="btn sm green">Post '+pend.length+' to ledger</button>':'')+'</div></div>'+
       (arr.length?'<div class="twrap"><table data-saagar-table-strategy="grid" data-saagar-table-workflow="cross-module" data-saagar-grid-reason="source posting review requires cross-column comparison"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th class="num">Amount</th><th>Mode</th><th>State</th></tr></thead><tbody>'+
-        arr.slice(0,40).map(function(i){return '<tr><td>'+i.date+'</td><td><span class="bdg '+(i.type==='income'?'inc':'exp')+'">'+i.type+'</span></td><td>'+esc(i.desc)+'</td><td class="num">'+nINR(i.amount)+'</td><td><span class="bdg '+badgeToken(i.mode)+'">'+esc(i.mode)+'</span></td><td>'+(i.posted?'<span class="bdg ok">posted</span>':'<span class="bdg warn">pending</span>')+'</td></tr>';}).join('')+
+        arr.slice(0,40).map(function(i){return '<tr><td>'+i.date+'</td><td><span class="bdg '+(i.type==='income'?'inc':'exp')+'">'+i.type+'</span></td><td>'+esc(i.desc)+'</td><td class="num">'+nINR(i.amount)+'</td><td><span class="bdg '+badgeToken(i.mode)+'">'+esc(i.mode)+'</span></td><td>'+(i.posted?'<span class="bdg ok">posted</span>':((__stc&&__stc[i.date]&&__stc[i.date].closed)?'<span class="bdg warn">held · day closed</span>':'<span class="bdg warn">pending</span>'))+'</td></tr>';}).join('')+
         '</tbody></table></div>':'<div class="empty">No '+src.toUpperCase()+' data found in this device. '+(src==='qms'?'QMS is not part of this 7-module build — this feed activates automatically if QMS data ever exists here.':'Use the '+src.toUpperCase()+' module first.')+'</div>')+
     '</div>';
   }
@@ -1815,25 +1847,58 @@ function renderSync(){
    block('stock','Daily Stock Register → Expense','GRN (goods received) value becomes an inventory cost.')+
    block('qms','Queue Management → Income','Confirmed walk-in sales become retail income.');
 }
+/* U06-F05: plan a sync post WITHOUT writing. Items on a closed day are held (never written); items in a
+   tax-locked month are listed so the preview can name them. Pure read. */
+function syncPlan(items){
+  var st=L(K.stmt,{}); if(!st||typeof st!=='object'||Array.isArray(st)) st={};
+  var plan={post:[],held:[],lockedMonths:[],income:0,expense:0}, seen={};
+  items.forEach(function(i){
+    var s=st[i.date];
+    if(s&&s.closed===true){ plan.held.push(i); return; }
+    plan.post.push(i);
+    if(i.type==='income') plan.income+=i.amount; else plan.expense+=i.amount;
+    var m=ym(i.date); if(!(m in seen)){ seen[m]=isMonthLocked(i.date); if(seen[m]) plan.lockedMonths.push(m); }
+  });
+  plan.lockedMonths.sort();
+  return plan;
+}
 function postSrc(src){
   if(isPast()){ toast('Historical view is read-only — switch to today to post','err'); return; }
+  if(window.__syncBusy) return;
   var items=feedItems().filter(function(i){return !i.posted&&(src==='all'||i.src===src);});
   if(!items.length){ toast('Nothing to post','warn'); return; }
-  var led=getLedger(); var n=0;
-  items.forEach(function(i){
-    led.push(normEntry({id:uid('e'),type:i.type,date:i.date,amount:i.amount,category:i.category,mode:i.mode,description:i.desc,source:i.src,sourceRef:i.ref,createdBy:'sync:'+role()}));
-    n++;
-  });
-  saveLedger(led); audit('sync.post',n+' item(s) from '+src);
-  /* P1-18: sync stays ungated (system-of-record facts; the bridge's own append can't be
-     gated this wave anyway), but posting into a tax-fed month makes the CA feed stale.
-     ONE combined toast — the module has a single #toast element. */
-  var __ms={}; items.forEach(function(i){ var m=ym(i.date); if(!(m in __ms)) __ms[m]=isMonthLocked(i.date); });
-  var __stale=Object.keys(__ms).filter(function(m){ return __ms[m]; }).sort();
-  __stale.forEach(function(m){ markFeedStale(m); });
-  if(__stale.length){ audit('feed.stale','sync posted into tax-locked month(s): '+__stale.join(', ')); toast(n+' posted · tax feed for '+__stale.join(', ')+' is now stale — regenerate from Month & Tax','warn'); }
-  else{ toast(n+' entr'+(n>1?'ies':'y')+' posted to ledger','ok'); }
-  render();
+  var plan=syncPlan(items);
+  if(!plan.post.length){ toast(plan.held.length+' item(s) are on closed days — an Owner must reopen those days before they can be posted','warn'); return; }
+  modal('Review before posting to the ledger',
+    '<p class="small" style="margin-bottom:10px">Posting <b>'+plan.post.length+'</b> item(s): income <b>'+nINR(plan.income)+'</b>, expense <b>'+nINR(plan.expense)+'</b>. Each is posted once (de-duplicated by source reference).</p>'+
+    (plan.held.length?'<div class="banner warn" style="margin-bottom:10px">⚠ <div><b>'+plan.held.length+'</b> item(s) fall on closed (counted) days and will <b>not</b> be posted. An Owner can reopen a day, then post again.</div></div>':'')+
+    (plan.lockedMonths.length?'<div class="banner warn">⚠ <div>Some items fall in tax-locked month(s) <b>'+plan.lockedMonths.join(', ')+'</b>. Posting marks those tax feeds stale; regenerate them from Month &amp; Tax afterwards.</div></div>':''),
+    function(){ return syncCommit(src); });
+}
+async function syncCommit(src){
+  if(window.__syncBusy) return false;
+  window.__syncBusy=true;
+  try{
+    var ok=document.getElementById('mok'); if(ok){ ok.disabled=true; ok.textContent='Posting…'; }
+    await new Promise(function(r){ var d=false; function postPaintGo(){ if(!d){ d=true; r(); } } if(typeof requestAnimationFrame==='function') requestAnimationFrame(function(){ setTimeout(postPaintGo,0); }); setTimeout(postPaintGo,60); });   /* let the browser paint "Posting…" (next frame) before the heavy loop */
+    if(isPast()){ toast('Historical view is read-only — switch to today to post','err'); return true; }
+    var items=feedItems().filter(function(i){return !i.posted&&(src==='all'||i.src===src);});   /* fresh read: the preview was a wait */
+    var plan=syncPlan(items);
+    if(!plan.post.length){ toast('Nothing to post','warn'); return true; }
+    var led=getLedger();
+    plan.post.forEach(function(i){
+      led.push(normEntry({id:uid('e'),type:i.type,date:i.date,amount:i.amount,category:i.category,mode:i.mode,description:i.desc,source:i.src,sourceRef:i.ref,createdBy:'sync:'+role()}));
+    });
+    saveLedger(led);
+    var n=plan.post.length;
+    audit('sync.post',n+' item(s) from '+src+(plan.held.length?(' · '+plan.held.length+' held (closed day)'):''));
+    plan.lockedMonths.forEach(function(m){ markFeedStale(m); });
+    var held=plan.held.length?(' · '+plan.held.length+' held (closed day)'):'';
+    if(plan.lockedMonths.length){ audit('feed.stale','sync posted into tax-locked month(s): '+plan.lockedMonths.join(', ')); toast(n+' posted · tax feed for '+plan.lockedMonths.join(', ')+' is now stale — regenerate from Month & Tax'+held,'warn'); }
+    else{ toast(n+' entr'+(n>1?'ies':'y')+' posted to ledger'+held,'ok'); }
+    render();
+    return true;
+  } finally { window.__syncBusy=false; }
 }
 
 /* ═══════════════ MONTH CLOSE & TAX FEED ═══════════════ */
@@ -1843,7 +1908,7 @@ function renderClose(){
   var inc=led.filter(function(e){return e.type==='income';}).reduce(function(s,e){return s+e.amount;},0);
   var exp=led.filter(function(e){return e.type==='expense';}).reduce(function(s,e){return s+e.amount;},0);
   var byCat={}; led.forEach(function(e){ var k=(e.type==='income'?'＋ ':'－ ')+e.category; byCat[k]=(byCat[k]||0)+e.amount; });
-  var set=L(K.set,{}), gst=num(set.gstRate);
+  var set=L(K.set,{}), gst=num(set.gstRate), basis=incomeGstBasis();
   /* P1-17: per-category GST rates (gm_gst_rates {cat:pct}); unset category → flat default
      gm_settings.gstRate, so zero-config output is numerically identical to before. */
   var rates=L(K.gstRates,{}); if(!rates||typeof rates!=='object'||Array.isArray(rates)) rates={};
@@ -1853,7 +1918,7 @@ function renderClose(){
   window.__gstCats=INC_CATS.slice(); Object.keys(incByCat).forEach(function(c){ if(window.__gstCats.indexOf(c)<0) window.__gstCats.push(c); });
   /* own-key + finite-number check: junk rate values ('abc') fall back to the DEFAULT rate, never 0%. */
   var rateFor=function(c){ if(!Object.prototype.hasOwnProperty.call(rates,c)) return gst; var v=rates[c]; var n=(typeof v==='number')?v:((typeof v==='string'&&String(v).trim()!=='')?+v:NaN); return isFinite(n)?n:gst; };
-  var gstEst=0; Object.keys(incByCat).forEach(function(c){ gstEst+=incByCat[c]*rateFor(c)/100; });
+  var gstEst=0; Object.keys(incByCat).forEach(function(c){ gstEst+=gstOnIncome(incByCat[c],rateFor(c),basis); });
   var gstPaid=led.filter(function(e){return e.type==='expense';}).reduce(function(s,e){return s+num(e.gstAmount);},0);
   var canRates=!isPast()&&can('monthoverride');
   var feed=L(K.tax,{}); var saved=feed[CM];
@@ -1868,17 +1933,18 @@ function renderClose(){
    (unappr.length?'<div class="banner warn">⚠ <div>'+unappr.length+' day(s) in this period are closed but not approved by a checker: '+unappr.join(', ')+'</div></div>':'')+
    (isPast()?'<div class="banner lock">🔒 <div>Viewing <b>'+asOf()+'</b> (past). This is a read-only historical view — month-lock / tax-feed generation and edits are disabled. CSV export remains available.</div></div>':'')+
    '<div class="fgrid"><div class="fld"><label>Default GST rate (%) — used when a category has no rate below</label><input type="number" id="gstr" min="0" step="0.01" value="'+gst+'"'+(canRates?'':' disabled')+' onchange="saveGst(this.value)"></div>'+
+    '<div class="fld"><label>Income amounts already include GST?</label><select id="gstbasis"'+(canRates?'':' disabled')+' onchange="saveGstBasis(this.value)"><option value="inclusive"'+(basis==='inclusive'?' selected':'')+'>Yes — GST is inside the amount</option><option value="exclusive"'+(basis==='exclusive'?' selected':'')+'>No — GST is added on top</option></select></div>'+
     window.__gstCats.map(function(c,i){ return '<div class="fld"><label>Rate — '+esc(c)+' (%)</label><input type="number" min="0" step="0.01" data-i="'+i+'" value="'+(Object.prototype.hasOwnProperty.call(rates,c)?num(rates[c]):'')+'" placeholder="default '+gst+'"'+(canRates?'':' disabled')+' onchange="saveGstCat(this)"></div>'; }).join('')+
    '</div>'+
    (canRates?'':(isPast()?'':'<div class="small muted" style="margin:-6px 0 8px">Only Owner can change GST rates.</div>'))+
    '<div class="twrap" style="margin-top:6px"><table class="gm-tbl-monthsum" data-saagar-table-strategy="cards" data-saagar-table-workflow="month-summary"><thead><tr><th>Head</th><th class="num">Amount</th></tr></thead><tbody>'+
      Object.keys(byCat).sort().map(function(k){return '<tr><td class="name-cell" data-label="Head">'+esc(k)+'</td><td class="num" data-label="Amount">'+nINR(byCat[k])+'</td></tr>';}).join('')+
-     Object.keys(incByCat).sort().map(function(c){ var r=rateFor(c); return '<tr><td class="name-cell" data-label="Head">Est. GST — '+esc(c)+' ('+r+'%)</td><td class="num" data-label="Amount">'+nINR(incByCat[c]*r/100)+'</td></tr>'; }).join('')+
+     Object.keys(incByCat).sort().map(function(c){ var r=rateFor(c); return '<tr><td class="name-cell" data-label="Head">Est. GST — '+esc(c)+' ('+r+'%)</td><td class="num" data-label="Amount">'+nINR(gstOnIncome(incByCat[c],r,basis))+'</td></tr>'; }).join('')+
      '<tr><td class="name-cell" data-label="Head"><b>Estimated GST on income (per-category rates)</b></td><td class="num" data-label="Amount"><b>'+nINR(gstEst)+'</b></td></tr>'+
      '<tr><td class="name-cell" data-label="Head"><b>GST paid on purchases (from entries — input-credit hint)</b></td><td class="num" data-label="Amount"><b>'+nINR(gstPaid)+'</b></td></tr>'+
    '</tbody></table></div>'+
-   '<div class="small muted" style="margin-top:6px">Estimates from your own configured rates — not tax advice. Verify with your CA before filing.</div>'+
-   (function(){ var bf={}; led.forEach(function(e){ var f=e.firm||'Unassigned'; bf[f]=bf[f]||{i:0,x:0}; if(e.type==='income')bf[f].i+=e.amount; else bf[f].x+=e.amount; }); var ks=Object.keys(bf).sort(); if(!ks.length) return ''; return '<h3 style="margin:16px 0 6px">Per-firm P&L — '+CM+'</h3><div class="twrap"><table class="gm-tbl-firmpl" data-saagar-table-strategy="cards" data-saagar-table-workflow="firm-profit-loss"><thead><tr><th>Firm</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th></tr></thead><tbody>'+ks.map(function(k){ var n=bf[k].i-bf[k].x; return '<tr><td class="name-cell" data-label="Firm">'+esc(k)+'</td><td class="num" data-label="Income">'+nINR(bf[k].i)+'</td><td class="num" data-label="Expense">'+nINR(bf[k].x)+'</td><td class="num" data-label="Net" style="color:'+(n<0?'var(--red)':'var(--green)')+'">'+nINR(n)+'</td></tr>'; }).join('')+'</tbody></table></div>'; })()+
+   '<div class="small muted" style="margin-top:6px">Estimates from your own configured rates — not tax advice. Verify with your CA before filing. Income amounts are treated as GST-'+basis+'.</div>'+
+   (function(){ var bf={}; led.forEach(function(e){ var f=e.firm||'Unassigned'; bf[f]=bf[f]||{i:0,x:0}; if(e.type==='income')bf[f].i+=e.amount; else bf[f].x+=e.amount; }); var ks=Object.keys(bf).sort(); if(!ks.length) return ''; return '<h3 style="margin:16px 0 6px">Per-firm P&L — <span>'+CM+'</span></h3><div class="twrap"><table class="gm-tbl-firmpl" data-saagar-table-strategy="cards" data-saagar-table-workflow="firm-profit-loss"><thead><tr><th>Firm</th><th class="num">Income</th><th class="num">Expense</th><th class="num">Net</th></tr></thead><tbody>'+ks.map(function(k){ var n=bf[k].i-bf[k].x; return '<tr><td class="name-cell" data-label="Firm">'+esc(k)+'</td><td class="num" data-label="Income">'+nINR(bf[k].i)+'</td><td class="num" data-label="Expense">'+nINR(bf[k].x)+'</td><td class="num" data-label="Net" style="color:'+(n<0?'var(--red)':'var(--green)')+'">'+nINR(n)+'</td></tr>'; }).join('')+'</tbody></table></div>'; })()+
    '<div class="row" style="margin-top:14px">'+
      (isPast()?'<span class="small muted">Historical view — month-lock / tax-feed generation is available only when viewing today.</span>':(can('monthlock')?'<button data-action="generate-lock-tax-feed" class="btn p" onclick="genTaxFeed()">Generate &amp; lock Tax feed for '+CM+'</button>':'<span class="small muted">Only Owner can lock the month / generate the tax feed.</span>'))+
      '<button data-action="export-month-csv" class="btn sm" onclick="exportMonthCSV()">⇩ Month CSV</button></div>'+
@@ -1897,43 +1963,58 @@ function renderClose(){
       return '<div class="banner warn" style="margin-top:8px">⚠ <div><b>Ledger changed after the tax feed was generated</b> — regenerate the feed for '+CM+' before sharing with your CA.'+(saved.stale===true&&saved.staleAt?' <span class="small muted">(last change '+esc(String(saved.staleAt).slice(0,16).replace('T',' '))+')</span>':'')+'</div></div>'; })()+
   '</div>';
 }
-function saveGst(v){ if(isPast()){ toast('Historical view is read-only','err'); renderClose(); return; } if(!can('monthoverride')){ toast('Owner only','err'); renderClose(); return; } var s=L(K.set,{}); s.gstRate=num(v); S(K.set,s); }
+/* U06-F07: income amounts are cash collected, i.e. GST-INCLUSIVE by default (same basis as prefillGst on purchases).
+   gm_settings.gstIncomeBasis = 'inclusive' (default) | 'exclusive'. */
+function incomeGstBasis(){ return L(K.set,{}).gstIncomeBasis==='exclusive'?'exclusive':'inclusive'; }
+function gstOnIncome(amount,rate,basis){
+  var a=num(amount), r=num(rate); if(!(a>0)||!(r>0)) return 0;
+  return basis==='exclusive'?a*r/100:a*r/(100+r);
+}
+function saveGstBasis(v){
+  if(isPast()){ toast('Historical view is read-only','err'); deferRender(renderClose); return; }
+  if(!can('monthoverride')){ toast('Owner only','err'); deferRender(renderClose); return; }
+  var s=L(K.set,{}); s.gstIncomeBasis=(v==='exclusive')?'exclusive':'inclusive'; S(K.set,s);
+  audit('gst.basis','income GST basis = '+s.gstIncomeBasis); deferRender(renderClose);
+}
+function saveGst(v){ if(isPast()){ toast('Historical view is read-only','err'); deferRender(renderClose); return; } if(!can('monthoverride')){ toast('Owner only','err'); deferRender(renderClose); return; } var s=L(K.set,{}); s.gstRate=Math.max(0,num(v)); S(K.set,s); }
 /* P1-17: per-category rate save. Index-addressed via data-i into window.__gstCats so
    quote-bearing category strings never enter inline-handler source. Empty input = clear
    (fall back to default); explicit 0 = a real 0% rate. */
 function saveGstCat(el){
-  if(isPast()){ toast('Historical view is read-only','err'); renderClose(); return; }
-  if(!can('monthoverride')){ toast('Owner only','err'); renderClose(); return; }
+  if(isPast()){ toast('Historical view is read-only','err'); deferRender(renderClose); return; }
+  if(!can('monthoverride')){ toast('Owner only','err'); deferRender(renderClose); return; }
   var cats=window.__gstCats||[], c=cats[parseInt(el.getAttribute('data-i'),10)]; if(c==null) return;
   var rates=L(K.gstRates,{}); if(!rates||typeof rates!=='object'||Array.isArray(rates)) rates={};
   var raw=String(el.value).trim();
   if(raw===''){ delete rates[c]; } else { var r=num(raw); if(r<0) r=0; rates[c]=r; }
-  S(K.gstRates,rates); audit('gst.rate',c+' = '+(raw===''?'(default)':rates[c]+'%')); renderClose();
+  S(K.gstRates,rates); audit('gst.rate',c+' = '+(raw===''?'(default)':rates[c]+'%')); deferRender(renderClose);
 }
-function genTaxFeed(){
+async function genTaxFeed(){
   if(isPast()){ toast('Historical view is read-only — month-lock is available only for today','err'); return; }
   if(!can('monthlock')){ toast('Owner only','err'); return; }
   /* A feed locks the month (P1-18): a FUTURE month must never be lockable — there is no in-app unlock.
      Also rejects an empty/cleared month picker (would write a junk feed[''] key). */
   if(!CM || !/^\d{4}-\d{2}$/.test(CM) || CM>ym(todayStr())){ toast('Pick the current or a past month — a future month cannot be locked','err'); return; }
+  if(!await stReauth('Lock '+CM+' and generate its tax feed')) return;
+  if(!can('monthlock')){ toast('Owner only','err'); return; }
   var led=getLedger().filter(function(e){return !e.void&&e.date.slice(0,7)===CM;});
   var inc=led.filter(function(e){return e.type==='income';}).reduce(function(s,e){return s+e.amount;},0);
   var exp=led.filter(function(e){return e.type==='expense';}).reduce(function(s,e){return s+e.amount;},0);
-  var gst=num(L(K.set,{}).gstRate);
+  var gst=num(L(K.set,{}).gstRate), basis=incomeGstBasis();
   /* P1-17: same per-category computation as renderClose (unset category → flat default). */
   var rates=L(K.gstRates,{}); if(!rates||typeof rates!=='object'||Array.isArray(rates)) rates={};
   /* Same collision-proof lookups + junk-tolerant rateFor as renderClose (keep the two in lockstep). */
   var incByCat=Object.create(null); led.forEach(function(e){ if(e.type==='income') incByCat[e.category]=(incByCat[e.category]||0)+e.amount; });
   var rateFor=function(c){ if(!Object.prototype.hasOwnProperty.call(rates,c)) return gst; var v=rates[c]; var n=(typeof v==='number')?v:((typeof v==='string'&&String(v).trim()!=='')?+v:NaN); return isFinite(n)?n:gst; };
   var gstEst=0, gstByCat=Object.create(null);
-  Object.keys(incByCat).forEach(function(c){ var r=rateFor(c); var v=incByCat[c]*r/100; gstByCat[c]={income:incByCat[c],ratePct:r,estimate:v}; gstEst+=v; });
+  Object.keys(incByCat).forEach(function(c){ var r=rateFor(c); var v=gstOnIncome(incByCat[c],r,basis); gstByCat[c]={income:incByCat[c],ratePct:r,estimate:v}; gstEst+=v; });
   var gstPaid=led.filter(function(e){return e.type==='expense';}).reduce(function(s,e){return s+num(e.gstAmount);},0);
   var byCat={}; led.forEach(function(e){ byCat[e.type+':'+e.category]=(byCat[e.type+':'+e.category]||0)+e.amount; });
   var feed=L(K.tax,{});
   /* Wholesale month-object replace. MUST NOT re-add the P1-18 freshness keys — this
      replace IS the auto-clear-on-regenerate (markFeedStale is their only writer). */
   feed[CM]={month:CM,income:inc,expense:exp,net:inc-exp,gstRate:gst,gstEstimate:gstEst,byCategory:byCat,
-            gstRates:rates,gstEstimateByCat:gstByCat,gstPaidOnPurchases:gstPaid,   /* P1-17 additive */
+            gstRates:rates,gstEstimateByCat:gstByCat,gstPaidOnPurchases:gstPaid,incomeGstBasis:basis,   /* P1-17 additive */
             generatedAt:new Date().toISOString(),by:role()};
   S(K.tax,feed);
   // mark days of month locked
@@ -1993,6 +2074,7 @@ function addReceivable(){
   var name=(val('ud_name')||'').trim(), mob=(val('ud_mob')||'').replace(/\D/g,''), amt=num(val('ud_amt')), due=val('ud_due')||'', note=(val('ud_note')||'').trim();
   if(!name){ toast('Customer name is required','warn'); return; }
   if(amt<=0){ toast('Enter a valid amount','warn'); return; }
+  if(mob.length>0 && mob.length<10){ toast('Mobile number must be 10 digits — fix it or clear the box','warn'); return; }   /* U06-F13: a short number used to be dropped without a word */
   var m10=mob.length>=10?mob.slice(-10):'';
   var u=getUdhaar();
   u.receivables.push({ id:uid('ud'), custId:m10?('c_'+m10):'', name:name, mobile:m10, amount:amt, date:todayStr(), dueDate:due, note:note, settlements:[], createdBy:role() });
@@ -2099,7 +2181,15 @@ var ExpenseDelegatedHandlers=Object.freeze({
 });
 if(typeof SaagarRenderedComponents!=='undefined')SaagarRenderedComponents.connect(document.body,ExpenseRenderedPolicy,ExpenseDelegatedHandlers);
 render();
-window.addEventListener('storage',function(){ render(); });
+/* U06-F05 part B: storage-core re-fires a synchronous 'storage' event on EVERY write in this window. During a sync post that was ~125 full renders
+   (each re-reads the whole ledger). The post renders once itself when it finishes, so skip the event renders while it runs and collapse a burst of events into one render. */
+var __stLast=0, __stTimer=null;
+function __stRender(){ __stLast=Date.now(); try{ render(); } finally { __stLast=Date.now(); } }
+window.addEventListener('storage',function(){
+  if(window.__syncBusy) return;
+  if(Date.now()-__stLast>250){ __stRender(); return; }   /* first event of a burst renders at once, as before */
+  if(!__stTimer) __stTimer=setTimeout(function(){ __stTimer=null; if(!window.__syncBusy) __stRender(); },260);   /* the rest of the burst collapse into one trailing render */
+});
 // VIEW-DATE RAIL: the shell broadcasts the day the user wants to view.
 // Re-point the date-bound pickers (SD = cash statement, CM = month close) to
 // the new date and re-render the active view. Dashboard / Ledger / Budget read
