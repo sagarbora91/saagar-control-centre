@@ -500,3 +500,23 @@ Declared in the fix-wave plan (G5) and accepted by the owner decision given in c
 | `st_v2_last_module_reset_v1` | Payroll | object | Pointer to the latest module-reset recovery copy: `{ rollbackKey, module, title, createdAt, undone }`. |
 | `saagar_wsf_settings_v1` (new fields) | Service | object | `idHigh` (highest job id ever issued), `deleted[]` (deletion tombstones, newest last, capped at 2,000), `invoiceSeq` (one counter per April to March year, for example `{ "2026-27": 12 }`). It replaces the old separate invoice counter key. |
 | `bcc_autobackup_log` (new entry fields) | Automatic backup | array | Existing device-local log. A good run's entry carries `good: {date, keys, bytes}`; a too-small run's entry carries `suspectOf: {date, keys, bytes}`. Trimming the log to 30 entries never drops the newest of each. No new storage key. Never part of a backup file. |
+
+## Service Stores (Phase 1): declared new stored items
+
+Service wave 1, built on the owner decisions given in chat, 2026-11-12 (design answers) and 2026-11-13 (go-ahead to build). New capabilities are recorded as pending owner reconfirmation. Every key is a JSON array, so the shell restore check "Service data must be an array" accepts them. Every key starts with `saagar_svcs_` and belongs to the Service module in the shell backup and wipe rules (`STORAGE_RULES.service.prefix`). The only code that writes any of them is `SaagarServiceStoresStore.adapterFromWindow` in `www/service-stores-store.js`. Records are append-only and hash-chained: one posted document is one record, and nothing is edited in place. Money is whole paise and GST is basis points, so no record holds a decimal. Stock is valued FIFO (cost layers); accountant confirmation is still outstanding. No customer name, mobile or address is stored: jobs are linked by job id only.
+
+`_pNN` is the shard part from 2 to 999 (the first part has no suffix). `YYYY-MM` is the India (IST) month of the record. `FYyyyy-yy` is the India financial year (1 April to 31 March).
+
+| Key | Owner | Shape | Meaning |
+|---|---|---|---|
+| `saagar_svcs_head_v1` | Service Stores | array | Control rows, one per stream: revision, record count, last hash, last time and key. |
+| `saagar_svcs_parts_v1[_pNN]` | Service Stores | array | Parts master versions (create, edit, deactivate, reactivate, remove), each with the full row and the changed fields. |
+| `saagar_svcs_labour_v1[_pNN]` | Service Stores | array | Labour master versions, same record kinds as parts. |
+| `saagar_svcs_config_v1[_pNN]` | Service Stores | array | Stores settings: the Store Manager adjustment limit (default 0) and the shell roles treated as store staff. |
+| `saagar_svcs_ledger_v1_YYYY-MM[_pNN]` | Service Stores | array | Posted stock documents with their FIFO movements: opening (OPN), goods receipt (GRN), issue to job (ISS), return from job (RET), counter sale (CSL), adjustment (ADJ) and reversal (REV). Numbers look like `GRN/26-27/0001` and restart on 1 April. |
+| `saagar_svcs_docs_v1_FYyyyy-yy[_pNN]` | Service Stores | array | Workflow events: opening and adjustment proposals, rejections and withdrawals. A proposal's state is worked out from these and the ledger. |
+| `saagar_svcs_defective_v1[_pNN]` | Service Stores | array | Old and defective part register (OLD) and the monthly scrap sign-off (SCR). |
+| `saagar_svcs_audit_v1_YYYY-MM[_pNN]` | Service Stores | array | Watermark resets, written when the Owner accepts a restore of older data. |
+| `st_v2_svcs_watermark_v1` | Service Stores | object | Device-local restore fence: the newest record seen on this device per stream. It is NOT in `STORAGE_RULES`, so it is never part of a backup file and is not cleared by a restore. An older backup restored onto this device blocks Stores posting until the Owner acknowledges it with the PIN and a reason. |
+
+Not created in this wave: any change to `saagar_wsf_v2` (cases carry no stock field; the job parts list is read from the ledger by job id), and any key for estimates, invoices, receipts, imports, reconciliation, claims or dispatch (later phases).

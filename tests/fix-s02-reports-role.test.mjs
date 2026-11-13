@@ -166,7 +166,11 @@ test('with no role model loaded every report is allowed', () => {
   const h = loadReport({});
   h.R.openHub();
   assert.equal(rowsIn(h.html('modalBody')).length, 18);
-  assert.equal(h.R.list().length, 25);
+  // 25 report types at the fix wave + the six Service Stores types of Service wave 1 (listed, not in the hub)
+  const svc = ['svcStockList', 'svcPartLedger', 'svcReorderList', 'svcGoodsReceipt', 'svcAdjustmentRegister', 'svcDefectiveRegister'];
+  const listed = Array.from(h.R.list(), (x) => x.type); // copy out of the vm realm before deepEqual
+  assert.equal(listed.length, 25 + svc.length);
+  assert.deepEqual(listed.filter((t) => svc.includes(t)).sort(), [...svc].sort());
   assert.equal(h.R.canOpen('payrollRegister'), true);
 });
 

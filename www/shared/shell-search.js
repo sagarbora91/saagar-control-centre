@@ -41,7 +41,9 @@
     payrollRegister: 'payroll', payrollSlip: 'payroll', statutorySummary: 'payroll', statutoryRegister: 'payroll',
     advanceVoucher: 'payroll', hrLetter: 'payroll', fnfSettlement: 'payroll', groomingDaily: 'grooming',
     groomingMonthly: 'grooming', taxReport: 'tax', serviceAging: 'service', serviceJobCard: 'service',
-    serviceTaxInvoice: 'service', ownerBrief: '', ownerMonthly: '', weeklyBrief: ''
+    serviceTaxInvoice: 'service', ownerBrief: '', ownerMonthly: '', weeklyBrief: '',
+    svcStockList: 'service', svcPartLedger: 'service', svcReorderList: 'service', svcGoodsReceipt: 'service',
+    svcDefectiveRegister: 'service', svcAdjustmentRegister: ''
   };
 
   /* Romanised and Devanagari synonyms. Keys: module id, module:target, r:<report type>, s:<settings route>. */

@@ -100,7 +100,9 @@
     payrollRegister: 'payroll', payrollSlip: 'payroll', statutorySummary: 'payroll', statutoryRegister: 'payroll',
     advanceVoucher: 'payroll', hrLetter: 'payroll', fnfSettlement: 'payroll', groomingDaily: 'grooming',
     groomingMonthly: 'grooming', taxReport: 'tax', serviceAging: 'service', serviceJobCard: 'service',
-    serviceTaxInvoice: 'service', ownerBrief: '*', ownerMonthly: '*', weeklyBrief: '*'
+    serviceTaxInvoice: 'service', ownerBrief: '*', ownerMonthly: '*', weeklyBrief: '*',
+    svcStockList: 'service', svcPartLedger: 'service', svcReorderList: 'service', svcGoodsReceipt: 'service',
+    svcDefectiveRegister: 'service', svcAdjustmentRegister: '*'
   };
   /* S02-1: one-shot preview grant. A closure variable, never a property of the exported object, so no other
      script can set it. Only _payrollPick sets it (after the salary-slip gate) and preview() clears it on first use. */
@@ -220,6 +222,613 @@
       customer: { name: j.custName || '', mobile: j.custMobile || '', address: j.custAddr || '' },
       watch: [j.brand, j.model].filter(Boolean).join(' '), lines: items, figs: figs,
       delivery: { collectDate: del.collectDate || '', payMode: del.payMode || '', payRef: del.payRef || '', warrantyTill: del.warrantyTill || '', warrantyMonths: del.warrantyMonths || '' } };
+  }
+
+  /* ---------- Service Stores reports (SVC1) ----------
+     Six reports. Data arrives ONLY as opts.svcData (the Service page calls core.reportData and passes the result
+     with the preview options); no stores key or global store reader is read here (only the GRN reads the firm name
+     from the org master, as makeInvoiceSnapshot does). The data is deep-copied, shape
+     checked, and printed through an allow-list of fields. Money is integer paise (names end in Paise).
+     Cost columns appear only for the Owner and the Store Manager (svcCostVisible, read at every build). */
+  var SVC_MAX_ROWS = 5000;
+  var SVC_TITLE = {
+    svcStockList: 'SERVICE STORES — STOCK LIST', svcPartLedger: 'SERVICE STORES — PART LEDGER',
+    svcReorderList: 'SERVICE STORES — REORDER LIST', svcGoodsReceipt: 'GOODS RECEIPT NOTE',
+    svcAdjustmentRegister: 'SERVICE STORES — ADJUSTMENT REGISTER', svcDefectiveRegister: 'SERVICE STORES — OLD & DEFECTIVE PARTS'
+  };
+  var SVC_MSG = {
+    UNAVAILABLE: 'The stores data engine is not available on this device.',
+    NOT_READY: 'Opening stock has not been set yet.',
+    CHAIN_BROKEN: 'The stores records failed their integrity check. No figures are shown. Ask the Owner.',
+    PART_REQUIRED: 'Open this report from a part in Service Stores.',
+    PART_UNKNOWN: 'That part code was not found.',
+    GRN_REQUIRED: 'Open this report from a goods receipt.',
+    GRN_UNKNOWN: 'That goods receipt was not found.',
+    PERIOD_INVALID: 'The dates are not valid.',
+    ASOF_UNSUPPORTED: 'Stock as at a past date is not available.',
+    TOO_MANY_ROWS: 'Too many parts for one print. Choose a group.',
+    READ_FAILED: 'The stores records could not be read.',
+    ROLE_DENIED: 'Your role is not allowed to see this report.'
+  };
+  var SVC_KNOWN_CODES = { NOT_READY: 1, CHAIN_BROKEN: 1, PART_UNKNOWN: 1, GRN_UNKNOWN: 1, ASOF_UNSUPPORTED: 1, UNAVAILABLE: 1, ROLE_DENIED: 1 };
+  var SVC_DOC_LABEL = { OPENING: 'Opening stock', OPN: 'Opening stock', GRN: 'Goods receipt', ISSUE: 'Issue to job', ISS: 'Issue to job',
+    RETURN: 'Return from job', RET: 'Return from job', COUNTER: 'Counter sale', CSL: 'Counter sale', ADJUST: 'Adjustment', ADJ: 'Adjustment',
+    REVERSAL: 'Reversal', REV: 'Reversal' };
+  var SVC_OLD_LABEL = { HELD_FOR_CLAIM: 'Held for claim', CUSTOMER_RETURNED: 'Customer Returned', SCRAP_PENDING: 'Scrap pending Owner sign-off', SCRAPPED: 'Scrapped' };
+  var SVC_NOCOST_NOTE = 'Cost and value are shown to the Store Manager and the Owner only.';
+
+  function svcCleanOpt(v, max) { return String(v == null ? '' : v).replace(/^\s+|\s+$/g, '').slice(0, max); }
+  function svcIsInt(n) { return typeof n === 'number' && isFinite(n) && Math.floor(n) === n && Math.abs(n) <= 9007199254740991; }
+  function svcIsNum(n) { return typeof n === 'number' && isFinite(n); }
+  /* audit: bounds so that 5,000 rows always sum to a safe integer (a larger value would print a wrong total) */
+  var SVC_MAX_PAISE = 1000000000000, SVC_MAX_QTY = 1000000000;
+  function svcP(n) { return svcIsInt(n) && Math.abs(n) <= SVC_MAX_PAISE; }
+  function svcQ(n) { return svcIsNum(n) && Math.abs(n) <= SVC_MAX_QTY; }
+  function isIsoDay(s) {
+    if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    var y = +s.slice(0, 4), m = +s.slice(5, 7), d = +s.slice(8, 10);
+    var t = new Date(y, m - 1, d);
+    return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d;
+  }
+  function dayOf(v) { return isIsoDay(v) ? v : ''; }
+  function fyStartIso(iso) {
+    var y = +String(iso).slice(0, 4), m = +String(iso).slice(5, 7);
+    if (m < 4) y -= 1;
+    return y + '-04-01';
+  }
+  function monthBounds(ym) {
+    if (typeof ym !== 'string' || !/^\d{4}-(0[1-9]|1[0-2])$/.test(ym)) return null;
+    var y = +ym.slice(0, 4), m = +ym.slice(5, 7), last = new Date(y, m, 0).getDate();
+    return { from: ym + '-01', to: ym + '-' + (last < 10 ? '0' : '') + last };
+  }
+  function svcDayCount(a, b) {
+    return Math.round((Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / 86400000);
+  }
+  /* integer paise to text; nothing is summed or compared as a float, it is only formatted */
+  function inr2(p) {
+    p = svcIsInt(p) ? p : 0;
+    var neg = p < 0, a = neg ? -p : p, r = Math.floor(a / 100), c = a % 100;
+    return '₹' + (neg ? '-' : '') + r.toLocaleString('en-IN') + '.' + (c < 10 ? '0' : '') + c;
+  }
+  function svcDivRound(v, q) {            // v integer paise >= 0, q > 0: nearest integer, halves up
+    if (svcIsInt(q) && svcIsInt(v) && q > 0 && v >= 0) return Math.floor((2 * v + q) / (2 * q));
+    return Math.round(v / q);
+  }
+  function fmtQty(n) {
+    n = Number(n);
+    if (!isFinite(n)) return '0';
+    if (Math.floor(n) === n) return String(n);
+    var s = n.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    return s === '-0' ? '0' : s;
+  }
+  function svcQtyEq(a, b) { return Math.round(a * 1000) === Math.round(b * 1000); }
+  function svcCostVisible() {
+    var r = roleApi();
+    if (!r || !r.session || typeof r.session !== 'object') return false;
+    var s = r.session;
+    if (s.ok === false || s.tier === 'none') return false;
+    return s.isOwner === true || s.isManager === true;
+  }
+  function svcHdr(type, period, chip, chipKind) {
+    var h = { t: 'header', title: SVC_TITLE[type] || String(type), sub: 'Saagar Traders · Latur · Service Stores', period: period || '' };
+    if (chip) { h.chip = chip; h.chipKind = chipKind || 'draft'; }
+    return h;
+  }
+  function svcFail(type, code, why) {
+    var msg = (why != null && why !== '') ? why : (SVC_MSG[code] || SVC_MSG.READ_FAILED);
+    return { orientation: 'portrait', blocks: [svcHdr(type, ''), { t: 'empty', text: msg + ' [RPT_' + code + ']' }] };
+  }
+  function svcMapCode(c) {
+    c = String(c == null ? '' : c);
+    if (SVC_KNOWN_CODES[c] === 1) return c;
+    if (c === 'SESSION_REQUIRED') return 'ROLE_DENIED';
+    if (/CHAIN|HEAD_|SHARD|WATERMARK|BLOCKED|READBACK|SEQ_GAP|SERIES_GAP|FIFO_MISMATCH/.test(c)) return 'CHAIN_BROKEN';
+    return 'READ_FAILED';
+  }
+  /* The one data entry. Missing -> UNAVAILABLE. Not an object, not copyable, or ok neither true nor false -> READ_FAILED. */
+  function svcTake(o) {
+    var raw = o ? o.svcData : undefined;
+    if (raw === undefined || raw === null) return { ok: false, code: 'UNAVAILABLE' };
+    if (typeof raw !== 'object' || Array.isArray(raw)) return { ok: false, code: 'READ_FAILED' };
+    var d;
+    try { d = JSON.parse(JSON.stringify(raw)); } catch (e) { return { ok: false, code: 'READ_FAILED' }; }
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return { ok: false, code: 'READ_FAILED' };
+    if (d.ok === false) return { ok: false, code: svcMapCode(d.code) };
+    if (d.ok !== true) return { ok: false, code: 'READ_FAILED' };
+    return { ok: true, d: d };
+  }
+  /* list check: null when not an array; 'MANY' when over the cap; else the array */
+  function svcList(v) {
+    if (!Array.isArray(v)) return null;
+    return v.length > SVC_MAX_ROWS ? 'MANY' : v;
+  }
+  function svcCols(list, showCost) {
+    var out = { keys: [], head: [], styles: {}, money: [], num: [], idx: {} };
+    list.forEach(function (c) {
+      if (c.cost && !showCost) return;
+      var i = out.keys.length;
+      out.keys.push(c.k); out.head.push(c.h); out.idx[c.k] = i;
+      var st = { cellWidth: c.w };
+      if (c.a) st.halign = c.a;
+      out.styles[i] = st;
+      if (c.m === 'money') out.money.push(i);
+      if (c.m === 'num') out.num.push(i);
+    });
+    return out;
+  }
+  function svcRow(cols, map) {
+    return cols.keys.map(function (k) { var v = map[k]; return v == null ? '' : v; });
+  }
+  function svcRaw(cols, map) {
+    return cols.keys.map(function (k) { return svcIsInt(map[k]) ? map[k] : 0; });
+  }
+  function svcCmp(a, b) { a = String(a == null ? '' : a).toLowerCase(); b = String(b == null ? '' : b).toLowerCase(); return a < b ? -1 : (a > b ? 1 : 0); }
+  function svcStable(rows, cmp) {
+    return rows.map(function (r, i) { return { r: r, i: i }; })
+      .sort(function (x, y) { return cmp(x.r, y.r) || (x.i - y.i); })
+      .map(function (x) { return x.r; });
+  }
+  function svcCostBasis(v) { return (v === 'EXCL_GST' || v === 'INCL_GST') ? v : ''; }
+  function svcBasisNote(basis) {
+    return basis === 'EXCL_GST' ? 'Costs are shown excluding GST.' : (basis === 'INCL_GST' ? 'Costs are shown including GST.' : '');
+  }
+  function svcSign(boxes) { return { t: 'sign', boxes: boxes.map(function (b) { return { role: b, name: '' }; }) }; }
+  function svcPeriod(o, today) {            // from+to, or a month, or the current month: { from, to } or null
+    var f = svcCleanOpt(o.from, 10), t = svcCleanOpt(o.to, 10);
+    if (f || t) {
+      if (!isIsoDay(f) || !isIsoDay(t) || f > t || svcDayCount(f, t) > 1100) return null;
+      return { from: f, to: t };
+    }
+    var m = svcCleanOpt(o.month, 7) || curMonth() || today.slice(0, 7);
+    return monthBounds(m);
+  }
+  function svcDataPeriod(d, fallback) {      // the period the data was read for is the period printed
+    return (dayOf(d.from) && dayOf(d.to) && d.from <= d.to) ? { from: d.from, to: d.to } : fallback;
+  }
+  function svcMoneyFmt(idx) { var f = {}; f[idx] = function (p) { return inr2(p); }; return f; }
+
+  /* stock-like rows (stock list and reorder list share the shape) */
+  function svcStockRows(arr, showCost, needValue) {
+    var out = [];
+    for (var i = 0; i < arr.length; i++) {
+      var r = arr[i];
+      if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+      var code = svcCleanOpt(r.partCode, 64);
+      if (!code || !svcQ(r.onHand) || !svcQ(r.reorderLevel)) return null;
+      var row = { code: code, desc: svcCleanOpt(r.desc, 400), group: svcCleanOpt(r.group, 64), bin: svcCleanOpt(r.bin, 40),
+        active: r.active !== false, onHand: r.onHand, level: r.reorderLevel, reorderQty: svcQ(r.reorderQty) ? r.reorderQty : 0,
+        valuePaise: 0, lastCostPaise: null, lastDate: dayOf(r.lastReceiptDate) };
+      if (showCost) {
+        if (needValue) {   // FIFO value is never negative, and is 0 when nothing is on hand (P6 A6)
+          if (!svcP(r.valuePaise) || r.valuePaise < 0 || (r.onHand <= 0 && r.valuePaise !== 0)) return null;
+          row.valuePaise = r.valuePaise;
+        }
+        if (r.lastReceiptCostPaise != null) { if (!svcP(r.lastReceiptCostPaise) || r.lastReceiptCostPaise < 0) return null; row.lastCostPaise = r.lastReceiptCostPaise; }
+      }
+      out.push(row);
+    }
+    return out;
+  }
+
+  var SVC_STOCK_COLS = [
+    { k: 'sr', h: 'Sr', w: 24, a: 'center' }, { k: 'code', h: 'Part code', w: 76, a: 'left' }, { k: 'desc', h: 'Description', w: 'auto', a: 'left' },
+    { k: 'group', h: 'Group', w: 62, a: 'left' }, { k: 'bin', h: 'Bin', w: 44, a: 'left' }, { k: 'onHand', h: 'On hand', w: 50, a: 'right', m: 'num' },
+    { k: 'level', h: 'Reorder at', w: 50, a: 'right', m: 'num' }, { k: 'avg', h: 'Avg cost (FIFO)', w: 66, a: 'right', m: 'num', cost: true },
+    { k: 'value', h: 'Stock value (FIFO)', w: 86, a: 'right', m: 'money', cost: true }, { k: 'status', h: 'Status', w: 70, a: 'left' }
+  ];
+  function svcStockList(o) {
+    var T = 'svcStockList', showCost = svcCostVisible(), today = todayIsoSafe();
+    var asOf = svcCleanOpt(o.asOf || o.date, 10) || today;
+    if (!isIsoDay(asOf) || asOf > today) return svcFail(T, 'PERIOD_INVALID');
+    var group = svcCleanOpt(o.group, 40), includeZero = (o.includeZero === true || o.includeZero === 'true');
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, list = svcList(d.rows);
+    if (list === null) return svcFail(T, 'READ_FAILED');
+    if (list === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    var all = svcStockRows(list, showCost, true);
+    if (all === null) return svcFail(T, 'READ_FAILED');
+    var gl = group.toLowerCase();
+    var rows = all.filter(function (r) {
+      if (gl && r.group.toLowerCase() !== gl) return false;
+      return r.onHand !== 0 || (r.active && (r.level > 0 || includeZero));
+    });
+    rows = svcStable(rows, function (a, b) { return svcCmp(a.group, b.group) || svcCmp(a.code, b.code); });
+    var shownAsOf = dayOf(d.asOf) || asOf, basis = svcCostBasis(d.costBasis);
+    var hdr = svcHdr(T, longDate(shownAsOf), showCost ? 'FIFO valuation' : 'Quantities only', showCost ? 'ok' : 'draft');
+    if (!rows.length) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'No parts in stock for this selection.' }] };
+    var units = 0, totalP = 0, below = 0, neg = 0;
+    rows.forEach(function (r) {
+      units += r.onHand; totalP += r.valuePaise;
+      if (r.onHand < 0) neg += 1;
+      if (r.level > 0 && r.onHand <= r.level) below += 1;
+    });
+    var items = [{ label: 'Parts listed', value: String(rows.length) }];
+    if (showCost) {
+      items.push({ label: 'Units on hand', value: fmtQty(units) });
+      items.push({ label: 'Stock value (FIFO)', value: inr2(totalP), hero: true });
+    } else { items.push({ label: 'Units on hand', value: fmtQty(units), hero: true }); }
+    items.push({ label: 'Below reorder', value: String(below) });
+    items.push({ label: 'Negative stock', value: String(neg), subClass: neg > 0 ? 'down' : '', sub: neg > 0 ? 'check' : '' });
+    var cols = svcCols(SVC_STOCK_COLS, showCost), body = [], raw = [], flags = [];
+    rows.forEach(function (r, i) {
+      var st = r.onHand < 0 ? 'Negative' : ((r.level > 0 && r.onHand <= r.level) ? 'Below reorder' : (r.active ? 'OK' : 'Inactive'));
+      body.push(svcRow(cols, { sr: String(i + 1), code: r.code, desc: r.desc, group: r.group, bin: r.bin, onHand: fmtQty(r.onHand), level: fmtQty(r.level),
+        avg: r.onHand > 0 ? inr2(svcDivRound(r.valuePaise, r.onHand)) : '—', value: inr2(r.valuePaise), status: st }));
+      raw.push(svcRaw(cols, { value: r.valuePaise }));
+      flags.push(st === 'Negative' || st === 'Below reorder');
+    });
+    var foot = svcRow(cols, { desc: 'TOTAL (' + rows.length + ')', onHand: fmtQty(units), value: inr2(totalP) });
+    var tbl = { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, flagRows: flags, numCols: cols.num.slice(), foot: [foot] };
+    if (showCost) { tbl.money = cols.money.slice(); tbl.raw = raw; tbl.fmt = svcMoneyFmt(cols.idx.value); }
+    var blocks = [hdr, { t: 'kpi', cols: items.length, items: items }, tbl];
+    blocks.push({ t: 'note', text: 'Valuation: FIFO. Each receipt is a cost layer; issues use the oldest layer first. Average cost is value divided by quantity, shown for information only.' });
+    if (showCost) { var bn = svcBasisNote(basis); if (bn) blocks.push({ t: 'note', text: bn }); }
+    else blocks.push({ t: 'note', text: SVC_NOCOST_NOTE });
+    blocks.push(svcSign(['Prepared by (Store)', 'Checked by (Store Manager)', 'Owner']));
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
+  var SVC_LEDGER_COLS = [
+    { k: 'date', h: 'Date', w: 66, a: 'left' }, { k: 'doc', h: 'Document', w: 130, a: 'left' }, { k: 'job', h: 'Job / ref', w: 70, a: 'left' },
+    { k: 'note', h: 'Note', w: 'auto', a: 'left' }, { k: 'in', h: 'In', w: 40, a: 'right', m: 'num' }, { k: 'out', h: 'Out', w: 40, a: 'right', m: 'num' },
+    { k: 'bal', h: 'Balance', w: 52, a: 'right', m: 'num' }, { k: 'vin', h: 'Value in', w: 62, a: 'right', m: 'money', cost: true },
+    { k: 'vout', h: 'Value out', w: 62, a: 'right', m: 'money', cost: true }, { k: 'bval', h: 'Balance value', w: 72, a: 'right', m: 'money', cost: true }
+  ];
+  var SVC_LAYER_COLS = [
+    { k: 'grn', h: 'Receipt (GRN no)', w: 'auto', a: 'left' }, { k: 'date', h: 'Received on', w: 66, a: 'left' }, { k: 'rec', h: 'Qty received', w: 60, a: 'right', m: 'num' },
+    { k: 'rem', h: 'Qty remaining', w: 60, a: 'right', m: 'num' }, { k: 'unit', h: 'Unit cost', w: 70, a: 'right', m: 'num' },
+    { k: 'val', h: 'Value remaining', w: 84, a: 'right', m: 'money' }
+  ];
+  function svcPartLedger(o) {
+    var T = 'svcPartLedger', showCost = svcCostVisible(), today = todayIsoSafe();
+    var code = svcCleanOpt(o.partCode, 64).toUpperCase();
+    if (!code) return svcFail(T, 'PART_REQUIRED');
+    var from = svcCleanOpt(o.from, 10) || fyStartIso(today), to = svcCleanOpt(o.to, 10) || today;
+    if (!isIsoDay(from) || !isIsoDay(to) || from > to || to > today || svcDayCount(from, to) > 1100) return svcFail(T, 'PERIOD_INVALID');
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, list = svcList(d.rows);
+    if (list === null) return svcFail(T, 'READ_FAILED');
+    if (list === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    var p = d.part;
+    if (!p || typeof p !== 'object' || svcCleanOpt(p.partCode, 64).toUpperCase() !== code) return svcFail(T, 'READ_FAILED');
+    var op = d.opening, cl = d.closing;
+    if (!op || !cl || !svcQ(op.qty) || !svcQ(cl.qty)) return svcFail(T, 'READ_FAILED');
+    if (showCost && (!svcP(op.valuePaise) || !svcP(cl.valuePaise))) return svcFail(T, 'READ_FAILED');
+    var rows = [], i;
+    for (i = 0; i < list.length; i++) {
+      var r = list[i];
+      if (!r || typeof r !== 'object' || Array.isArray(r) || !dayOf(r.date)) return svcFail(T, 'READ_FAILED');
+      if (!svcQ(r.inQty) || !svcQ(r.outQty) || !svcQ(r.balQty) || r.inQty < 0 || r.outQty < 0) return svcFail(T, 'READ_FAILED');
+      var row = { seq: svcIsNum(r.seq) ? r.seq : (i + 1), date: r.date, docType: svcCleanOpt(r.docType, 24), docNo: svcCleanOpt(r.docNo, 40), jobId: svcCleanOpt(r.jobId, 40),
+        note: svcCleanOpt(r.note, 400), inQty: r.inQty, outQty: r.outQty, balQty: r.balQty, vin: 0, vout: 0, bval: 0,
+        reversed: r.reversed === true, isReversal: r.isReversal === true, reversalOf: svcCleanOpt(r.reversalOf, 40), actor: svcCleanOpt(r.actor, 60) };
+      if (showCost) {
+        if (!svcP(r.valueInPaise) || !svcP(r.valueOutPaise) || !svcP(r.balValuePaise) || r.valueInPaise < 0 || r.valueOutPaise < 0) return svcFail(T, 'READ_FAILED');
+        row.vin = r.valueInPaise; row.vout = r.valueOutPaise; row.bval = r.balValuePaise;
+      }
+      rows.push(row);
+    }
+    var layers = null;
+    if (showCost && d.layers != null) {
+      var ll = svcList(d.layers);
+      if (ll === null) return svcFail(T, 'READ_FAILED');
+      if (ll === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+      layers = [];
+      for (i = 0; i < ll.length; i++) {
+        var y = ll[i];
+        if (!y || typeof y !== 'object' || !svcQ(y.qtyReceived) || !svcQ(y.qtyRemaining) || !svcP(y.unitCostPaise) || y.unitCostPaise < 0 || y.qtyRemaining < 0) return svcFail(T, 'READ_FAILED');
+        var yv = Math.round(y.qtyRemaining * y.unitCostPaise);
+        if (!svcP(yv)) return svcFail(T, 'READ_FAILED');
+        layers.push({ grn: svcCleanOpt(y.grnNo, 40), date: dayOf(y.date), rec: y.qtyReceived, rem: y.qtyRemaining, unit: y.unitCostPaise, val: yv });
+      }
+    }
+    var pFrom = dayOf(d.from) || from, pTo = dayOf(d.to) || to, basis = svcCostBasis(d.costBasis);
+    var hdr = svcHdr(T, pFrom + ' to ' + pTo);
+    hdr.sub = code + ' · ' + svcCleanOpt(p.desc, 400);
+    /* arithmetic check: every balance must follow from the movements (integer paise, quantities to 3 decimals) */
+    var bad = -1, badText = '', prevQ = op.qty, prevV = showCost ? op.valuePaise : 0, j;
+    for (j = 0; j < rows.length; j++) {
+      var w = rows[j], okQ = svcQtyEq(w.balQty, prevQ + w.inQty - w.outQty), okV = !showCost || (w.bval === prevV + w.vin - w.vout);
+      if (!okQ || !okV) { bad = j; badText = 'Ledger arithmetic check failed at row ' + w.seq + ' [RPT_LEDGER_ARITH]. Do not rely on this print.'; break; }
+      prevQ = w.balQty; prevV = w.bval;
+    }
+    var closeBad = false;
+    if (bad < 0 && (!svcQtyEq(cl.qty, prevQ) || (showCost && cl.valuePaise !== prevV))) {
+      closeBad = true; badText = 'Ledger arithmetic check failed at the closing balance [RPT_LEDGER_ARITH]. Do not rely on this print.';
+    }
+    var totIn = 0, totOut = 0;
+    rows.forEach(function (w2) { totIn += w2.inQty; totOut += w2.outQty; });
+    var blocks = [hdr];
+    blocks.push({ t: 'kv', cols: 2, pairs: [['Part code', code], ['Description', svcCleanOpt(p.desc, 400) || '—'], ['Group', svcCleanOpt(p.group, 64) || '—'],
+      ['Unit', svcCleanOpt(p.unit, 16) || '—'], ['Bin', svcCleanOpt(p.bin, 40) || '—']].concat(showCost ? [['Valuation', 'FIFO (oldest cost first)']] : []) });
+    var kp = [{ label: 'Opening qty', value: fmtQty(op.qty) }, { label: 'Total in', value: fmtQty(totIn) }, { label: 'Total out', value: fmtQty(totOut) },
+      { label: 'Closing qty', value: fmtQty(cl.qty), hero: !showCost }];
+    if (showCost) kp.push({ label: 'Closing value (FIFO)', value: inr2(cl.valuePaise), hero: true });
+    blocks.push({ t: 'kpi', cols: kp.length, items: kp });
+    if (bad >= 0 || closeBad) blocks.push({ t: 'attn', flags: [badText] });
+    var layerSum = 0, showLayers = showCost && layers !== null && pTo === today;
+    if (showLayers) {
+      layers.forEach(function (y2) { layerSum += y2.val; });
+      if (layerSum !== cl.valuePaise) blocks.push({ t: 'attn', flags: ['Layers do not add up to closing value [RPT_LAYER_MISMATCH]'] });
+    }
+    var cols = svcCols(SVC_LEDGER_COLS, showCost), body = [], flags = [];
+    body.push(svcRow(cols, { doc: 'Opening balance', bal: fmtQty(op.qty), bval: inr2(op.valuePaise) })); flags.push(false);
+    rows.forEach(function (w3, k) {
+      var label = w3.isReversal ? ('Reversal of ' + (w3.reversalOf || w3.docNo)) : ((SVC_DOC_LABEL[w3.docType] || w3.docType) + (w3.docNo ? (' ' + w3.docNo) : ''));
+      if (w3.reversed && !w3.isReversal) label += ' (reversed)';
+      body.push(svcRow(cols, { date: w3.date, doc: label, job: w3.jobId || '—', note: w3.note + (w3.actor ? ((w3.note ? ' · ' : '') + w3.actor) : ''),
+        'in': w3.inQty ? fmtQty(w3.inQty) : '', out: w3.outQty ? fmtQty(w3.outQty) : '', bal: fmtQty(w3.balQty),
+        vin: w3.vin ? inr2(w3.vin) : '', vout: w3.vout ? inr2(w3.vout) : '', bval: inr2(w3.bval) }));
+      flags.push(w3.reversed || w3.isReversal || k === bad);
+    });
+    var foot = svcRow(cols, { doc: 'Closing', 'in': fmtQty(totIn), out: fmtQty(totOut), bal: fmtQty(cl.qty), bval: inr2(cl.valuePaise) });
+    var tbl = { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, flagRows: flags, numCols: cols.num.slice(), foot: [foot] };
+    if (showCost) tbl.money = cols.money.slice();
+    blocks.push({ t: 'section', title: 'Movements' });
+    blocks.push(tbl);
+    if (showCost) {
+      if (showLayers) {
+        blocks.push({ t: 'section', title: 'Cost layers in stock now (FIFO, oldest first)' });
+        if (layers.length) {
+          var lc = svcCols(SVC_LAYER_COLS, true), lb = [];
+          layers.forEach(function (y3) { lb.push(svcRow(lc, { grn: y3.grn, date: y3.date, rec: fmtQty(y3.rec), rem: fmtQty(y3.rem), unit: inr2(y3.unit), val: inr2(y3.val) })); });
+          var lraw = layers.map(function (y4) { return svcRaw(lc, { val: y4.val }); });
+          blocks.push({ t: 'table', head: [lc.head], body: lb, colStyles: lc.styles, numCols: lc.num.slice(), money: lc.money.slice(), raw: lraw, fmt: svcMoneyFmt(lc.idx.val),
+            foot: [svcRow(lc, { grn: 'TOTAL', val: inr2(layerSum) })] });
+        } else { blocks.push({ t: 'empty', text: 'No cost layers are in stock.' }); }
+      } else { blocks.push({ t: 'note', text: 'Cost layers are shown only when the period ends today.' }); }
+      var bn = svcBasisNote(basis); if (bn) blocks.push({ t: 'note', text: bn });
+    } else { blocks.push({ t: 'note', text: SVC_NOCOST_NOTE }); }
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
+  var SVC_REORDER_COLS = [
+    { k: 'sr', h: 'Sr', w: 24, a: 'center' }, { k: 'code', h: 'Part code', w: 76, a: 'left' }, { k: 'desc', h: 'Description', w: 'auto', a: 'left' },
+    { k: 'group', h: 'Group', w: 62, a: 'left' }, { k: 'onHand', h: 'On hand', w: 50, a: 'right', m: 'num' }, { k: 'level', h: 'Reorder at', w: 50, a: 'right', m: 'num' },
+    { k: 'short', h: 'Short by', w: 50, a: 'right', m: 'num' }, { k: 'suggest', h: 'Suggest order', w: 60, a: 'right', m: 'num' },
+    { k: 'last', h: 'Last receipt', w: 70, a: 'left' }, { k: 'lastCost', h: 'Last cost', w: 62, a: 'right', m: 'num', cost: true },
+    { k: 'est', h: 'Est. cost', w: 74, a: 'right', m: 'money', cost: true }
+  ];
+  function svcReorderList(o) {
+    var T = 'svcReorderList', showCost = svcCostVisible();
+    var group = svcCleanOpt(o.group, 40);
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, list = svcList(d.rows);
+    if (list === null) return svcFail(T, 'READ_FAILED');
+    if (list === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    var all = svcStockRows(list, showCost, false);
+    if (all === null) return svcFail(T, 'READ_FAILED');
+    var gl = group.toLowerCase(), basis = svcCostBasis(d.costBasis);
+    var rows = all.filter(function (r) { return r.active && r.level > 0 && r.onHand <= r.level && (!gl || r.group.toLowerCase() === gl); });
+    rows.forEach(function (r) {
+      r.short = Math.max(0, r.level - r.onHand);
+      r.suggest = r.short > 0 ? Math.max(r.short, r.reorderQty || 0) : 0;
+      r.est = (showCost && r.lastCostPaise !== null) ? Math.round(r.suggest * r.lastCostPaise) : null;
+    });
+    if (rows.some(function (r) { return r.est !== null && !svcP(r.est); })) return svcFail(T, 'READ_FAILED');
+    rows = svcStable(rows, function (a, b) { return (b.short - a.short) || svcCmp(a.code, b.code); });
+    var hdr = svcHdr(T, longDate(dayOf(d.asOf) || todayIsoSafe()));
+    if (!rows.length) return { orientation: 'landscape', blocks: [hdr, { t: 'empty', text: 'Nothing is at or below its reorder level.' }] };
+    var units = 0, sugg = 0, estP = 0, known = 0;
+    rows.forEach(function (r) { units += r.short; sugg += r.suggest; if (r.est !== null) { estP += r.est; known += 1; } });
+    var items = [{ label: 'Parts to reorder', value: String(rows.length) }, { label: 'Units short', value: fmtQty(units) }];
+    if (showCost) items.push({ label: 'Est. order value', value: inr2(estP), hero: true });
+    else items.push({ label: 'Units to order', value: fmtQty(sugg), hero: true });
+    var cols = svcCols(SVC_REORDER_COLS, showCost), body = [], raw = [];
+    rows.forEach(function (r, i) {
+      body.push(svcRow(cols, { sr: String(i + 1), code: r.code, desc: r.desc, group: r.group, onHand: fmtQty(r.onHand), level: fmtQty(r.level), short: fmtQty(r.short),
+        suggest: fmtQty(r.suggest), last: r.lastDate || '—', lastCost: r.lastCostPaise === null ? '—' : inr2(r.lastCostPaise), est: r.est === null ? '—' : inr2(r.est) }));
+      raw.push(svcRaw(cols, { est: r.est === null ? 0 : r.est }));
+    });
+    var foot = svcRow(cols, { desc: 'TOTAL (' + rows.length + ')', short: fmtQty(units), suggest: fmtQty(sugg), est: inr2(estP) });
+    var tbl = { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, numCols: cols.num.slice(), foot: [foot] };
+    if (showCost) { tbl.money = cols.money.slice(); tbl.raw = raw; tbl.fmt = svcMoneyFmt(cols.idx.est); }
+    var blocks = [hdr, { t: 'kpi', cols: items.length, items: items }, tbl];
+    blocks.push({ t: 'note', text: 'Open orders to Titan are not tracked in Phase 1; check before ordering.' });
+    if (showCost) {
+      if (known < rows.length) blocks.push({ t: 'note', text: 'Est. cost counts only the ' + known + ' part(s) with a known last cost.' });
+      var bn = svcBasisNote(basis); if (bn) blocks.push({ t: 'note', text: bn });
+    } else blocks.push({ t: 'note', text: SVC_NOCOST_NOTE });
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
+  var SVC_GRN_COLS = [
+    { k: 'sr', h: 'Sr', w: 24, a: 'center' }, { k: 'code', h: 'Part code', w: 76, a: 'left' }, { k: 'desc', h: 'Description', w: 'auto', a: 'left' },
+    { k: 'rec', h: 'Qty received', w: 58, a: 'right', m: 'num' }, { k: 'short', h: 'Qty short', w: 50, a: 'right', m: 'num' },
+    { k: 'unit', h: 'Unit cost', w: 66, a: 'right', m: 'num', cost: true }, { k: 'val', h: 'Line value', w: 84, a: 'right', m: 'money', cost: true }
+  ];
+  function svcFirmName() {
+    var org = J('saagar_org_master_v1', null);
+    var firm = (org && Array.isArray(org.firms)) ? (org.firms.filter(function (f) { return f && f.active !== false && f.name; })[0] || org.firms[0]) : null;
+    return svcCleanOpt((firm && firm.name) || 'Saagar Traders', 80) || 'Saagar Traders';
+  }
+  function svcGoodsReceipt(o) {
+    var T = 'svcGoodsReceipt', showCost = svcCostVisible();
+    var grnNo = svcCleanOpt(o.grnNo, 40);
+    if (!grnNo) return svcFail(T, 'GRN_REQUIRED');
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, h = d.header, list = svcList(d.lines);
+    /* audit: the core upper-cases the number it looks up, so compare without case and print the stored number */
+    if (!h || typeof h !== 'object' || Array.isArray(h) || svcCleanOpt(h.grnNo, 40).toUpperCase() !== grnNo.toUpperCase()) return svcFail(T, 'READ_FAILED');
+    grnNo = svcCleanOpt(h.grnNo, 40);
+    if (list === null) return svcFail(T, 'READ_FAILED');
+    if (list === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    if (h.status !== 'POSTED' && h.status !== 'REVERSED') return svcFail(T, 'READ_FAILED');
+    var lines = [], i;
+    for (i = 0; i < list.length; i++) {
+      var r = list[i];
+      if (!r || typeof r !== 'object' || Array.isArray(r) || !svcCleanOpt(r.partCode, 64) || !svcQ(r.qtyReceived) || !svcQ(r.qtyShort) || r.qtyReceived < 0 || r.qtyShort < 0) return svcFail(T, 'READ_FAILED');
+      var ln = { code: svcCleanOpt(r.partCode, 64), desc: svcCleanOpt(r.desc, 400), rec: r.qtyReceived, short: r.qtyShort, unit: 0, val: 0 };
+      if (showCost) {
+        if (!svcP(r.unitCostPaise) || !svcP(r.lineValuePaise) || r.unitCostPaise < 0 || r.lineValuePaise < 0) return svcFail(T, 'READ_FAILED');
+        ln.unit = r.unitCostPaise; ln.val = r.lineValuePaise;
+      }
+      lines.push(ln);
+    }
+    var reversed = h.status === 'REVERSED', firm = svcFirmName();
+    var hdr = svcHdr(T, '', reversed ? ('REVERSED ' + grnNo) : grnNo, reversed ? 'draft' : 'locked');
+    hdr.sub = firm;
+    var blocks = [hdr];
+    blocks.push({ t: 'kv', cols: 2, pairs: [['GRN No', grnNo], ['Received on', dayOf(h.date) || '—'], ['Supplier', svcCleanOpt(h.supplier, 80) || '—'],
+      ['Supplier invoice no', svcCleanOpt(h.invoiceNo, 40) || '—'], ['Invoice date', dayOf(h.invoiceDate) || '—'], ['Received by', svcCleanOpt(h.receivedBy, 60) || '—'],
+      ['Status', reversed ? 'Reversed' : 'Posted']] });
+    if (!lines.length) { blocks.push({ t: 'empty', text: 'This receipt has no lines.' }); return { orientation: 'portrait', blocks: blocks }; }
+    var cols = svcCols(SVC_GRN_COLS, showCost), body = [], raw = [], flags = [], totRec = 0, totShort = 0, totVal = 0, shortLines = 0;
+    lines.forEach(function (l, k) {
+      body.push(svcRow(cols, { sr: String(k + 1), code: l.code, desc: l.desc, rec: fmtQty(l.rec), short: fmtQty(l.short), unit: inr2(l.unit), val: inr2(l.val) }));
+      raw.push(svcRaw(cols, { val: l.val }));
+      flags.push(l.short > 0);
+      totRec += l.rec; totShort += l.short; totVal += l.val;
+      if (l.short > 0) shortLines += 1;
+    });
+    var tbl = { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, flagRows: flags, numCols: cols.num.slice(),
+      foot: [svcRow(cols, { desc: 'TOTAL (' + lines.length + ')', rec: fmtQty(totRec), short: fmtQty(totShort), val: inr2(totVal) })] };
+    if (showCost) { tbl.money = cols.money.slice(); tbl.raw = raw; tbl.fmt = svcMoneyFmt(cols.idx.val); }
+    blocks.push(tbl);
+    if (shortLines > 0) blocks.push({ t: 'note', text: 'Short supply recorded on ' + shortLines + ' line(s), ' + fmtQty(totShort) + ' piece(s). The shortfall stays open against the supplier invoice.' });
+    if (showCost) { var bn = svcBasisNote(svcCostBasis(h.costBasis)); if (bn) blocks.push({ t: 'note', text: bn }); }
+    else blocks.push({ t: 'note', text: SVC_NOCOST_NOTE });
+    if (reversed) {
+      blocks.push({ t: 'note', color: PAL.AMBER, text: 'This receipt was reversed on ' + (dayOf(h.reversedDate) || '—') + ' by ' + (svcCleanOpt(h.reversedBy, 60) || '—')
+        + '. Reason: ' + (svcCleanOpt(h.reversalReason, 200) || '—') + '. Its stock effect has been undone.' });
+    }
+    blocks.push(svcSign(['Received by (Store)', 'Checked by (Store Manager)', 'For ' + firm]));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  var SVC_ADJ_COLS = [
+    { k: 'no', h: 'Adj no', w: 84, a: 'left' }, { k: 'date', h: 'Proposed', w: 66, a: 'left' }, { k: 'code', h: 'Part code', w: 70, a: 'left' },
+    { k: 'desc', h: 'Description', w: 'auto', a: 'left' }, { k: 'reason', h: 'Reason', w: 70, a: 'left' }, { k: 'qty', h: 'Qty change', w: 46, a: 'right', m: 'num' },
+    { k: 'val', h: 'Value effect', w: 66, a: 'right', m: 'money', cost: true }, { k: 'by', h: 'Proposed by', w: 60, a: 'left' }, { k: 'status', h: 'Status', w: 56, a: 'left' },
+    { k: 'dby', h: 'Decided by', w: 60, a: 'left' }, { k: 'ddate', h: 'Decided', w: 66, a: 'left' }
+  ];
+  var SVC_ADJ_STATUS = { PROPOSED: 'Awaiting approval', POSTED: 'Posted', REJECTED: 'Rejected' };
+  function svcAdjRows(arr, showCost, wantStatus) {
+    var out = [];
+    for (var i = 0; i < arr.length; i++) {
+      var r = arr[i];
+      if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+      var st = r.status;
+      if (wantStatus === 'PROPOSED' ? st !== 'PROPOSED' : (st !== 'POSTED' && st !== 'REJECTED')) return null;
+      if (!svcCleanOpt(r.adjNo, 40) || !dayOf(r.date) || !svcCleanOpt(r.partCode, 64) || !svcQ(r.qtyDelta)) return null;
+      if (st !== 'PROPOSED' && !dayOf(r.decidedDate)) return null;
+      var row = { no: svcCleanOpt(r.adjNo, 40), date: r.date, code: svcCleanOpt(r.partCode, 64), desc: svcCleanOpt(r.desc, 400),
+        reason: svcCleanOpt(r.reasonLabel || r.reasonCode, 60), qty: r.qtyDelta, val: 0, by: svcCleanOpt(r.proposedBy, 60), status: st,
+        dby: svcCleanOpt(r.decidedBy, 60), ddate: dayOf(r.decidedDate) };
+      if (showCost) { if (!svcP(r.valueEffectPaise)) return null; row.val = r.valueEffectPaise; }
+      out.push(row);
+    }
+    return out;
+  }
+  function svcAdjTable(rows, cols, showCost, footLabel, countOnlyPosted) {
+    var body = [], raw = [], flags = [], q = 0, v = 0, n = 0;
+    rows.forEach(function (r) {
+      var counts = !countOnlyPosted || r.status === 'POSTED';
+      body.push(svcRow(cols, { no: r.no, date: r.date, code: r.code, desc: r.desc, reason: r.reason, qty: fmtQty(r.qty),
+        val: r.status === 'REJECTED' ? '—' : inr2(r.val), by: r.by, status: SVC_ADJ_STATUS[r.status], dby: r.dby, ddate: r.ddate }));
+      raw.push(svcRaw(cols, { val: (counts && r.status !== 'REJECTED') ? r.val : 0 }));
+      flags.push(r.status === 'PROPOSED');
+      if (counts) { q += r.qty; v += r.val; n += 1; }
+    });
+    var tbl = { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, flagRows: flags, numCols: cols.num.slice(),
+      foot: [svcRow(cols, { desc: footLabel + ' (' + n + ')', qty: fmtQty(q), val: inr2(v) })] };
+    if (showCost) { tbl.money = cols.money.slice(); tbl.raw = raw; tbl.fmt = svcMoneyFmt(cols.idx.val); }
+    return { tbl: tbl, qty: q, val: v };
+  }
+  function svcAdjustmentRegister(o) {
+    var T = 'svcAdjustmentRegister', showCost = svcCostVisible(), today = todayIsoSafe();
+    var per = svcPeriod(o, today);
+    if (!per) return svcFail(T, 'PERIOD_INVALID');
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, aw = svcList(d.awaiting), de = svcList(d.decided);
+    per = svcDataPeriod(d, per);
+    if (aw === null || de === null) return svcFail(T, 'READ_FAILED');
+    if (aw === 'MANY' || de === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    var awaiting = svcAdjRows(aw, showCost, 'PROPOSED'), decidedAll = svcAdjRows(de, showCost, 'DECIDED');
+    if (awaiting === null || decidedAll === null) return svcFail(T, 'READ_FAILED');
+    var decided = decidedAll.filter(function (r) { return r.ddate >= per.from && r.ddate <= per.to; });
+    awaiting = svcStable(awaiting, function (a, b) { return svcCmp(a.date, b.date) || svcCmp(a.no, b.no); });
+    decided = svcStable(decided, function (a, b) { return svcCmp(a.ddate, b.ddate) || svcCmp(a.no, b.no); });
+    var posted = decided.filter(function (r) { return r.status === 'POSTED'; }), rejected = decided.length - posted.length;
+    var netV = 0, netQ = 0;
+    posted.forEach(function (r) { netV += r.val; netQ += r.qty; });
+    var hdr = svcHdr(T, per.from + ' to ' + per.to);
+    var items = [{ label: 'Awaiting approval', value: String(awaiting.length), subClass: awaiting.length ? 'down' : '', sub: awaiting.length ? 'needs approval' : '' },
+      { label: 'Posted in period', value: String(posted.length) }, { label: 'Rejected in period', value: String(rejected) }];
+    if (showCost) items.push({ label: 'Net value effect', value: inr2(netV), hero: true });
+    else items.push({ label: 'Net qty change', value: fmtQty(netQ), hero: true });
+    var blocks = [hdr, { t: 'kpi', cols: items.length, items: items }];
+    var cols = svcCols(SVC_ADJ_COLS, showCost);
+    blocks.push({ t: 'section', title: 'Awaiting approval (all dates)', tag: awaiting.length ? { cls: 'bad', txt: awaiting.length + ' waiting' } : { cls: 'ok', txt: 'None waiting' } });
+    if (awaiting.length) blocks.push(svcAdjTable(awaiting, cols, showCost, 'Total', false).tbl);
+    else blocks.push({ t: 'empty', text: 'No adjustments are waiting for approval.' });
+    blocks.push({ t: 'section', title: 'Decided in period' });
+    if (decided.length) blocks.push(svcAdjTable(decided, cols, showCost, 'Posted total', true).tbl);
+    else blocks.push({ t: 'empty', text: 'No adjustments were decided in this period.' });
+    blocks.push({ t: 'note', text: 'Adjustments change stock only after approval. Owner re-enters the PIN to approve; the Store Manager can approve below the owner\'s limit.' });
+    if (!showCost) blocks.push({ t: 'note', text: SVC_NOCOST_NOTE });
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
+  var SVC_OLD_COLS = [
+    { k: 'no', h: 'Reg no', w: 84, a: 'left' }, { k: 'date', h: 'Date', w: 66, a: 'left' }, { k: 'job', h: 'Job', w: 60, a: 'left' }, { k: 'code', h: 'Part code', w: 70, a: 'left' },
+    { k: 'desc', h: 'Description', w: 'auto', a: 'left' }, { k: 'qty', h: 'Qty', w: 34, a: 'right', m: 'num' }, { k: 'state', h: 'State', w: 110, a: 'left' },
+    { k: 'claim', h: 'Claim ref', w: 66, a: 'left' }, { k: 'dby', h: 'Decided by', w: 60, a: 'left' }, { k: 'ddate', h: 'Decided', w: 66, a: 'left' }
+  ];
+  function svcOldRows(arr, openOnly) {
+    var out = [];
+    for (var i = 0; i < arr.length; i++) {
+      var r = arr[i];
+      if (!r || typeof r !== 'object' || Array.isArray(r)) return null;
+      var st = svcCleanOpt(r.state, 40);
+      if (!svcCleanOpt(r.regNo, 40) || !dayOf(r.date) || !st || !svcQ(r.qty) || r.qty < 0) return null;
+      if (openOnly && st !== 'HELD_FOR_CLAIM' && st !== 'SCRAP_PENDING') return null;
+      out.push({ no: svcCleanOpt(r.regNo, 40), date: r.date, job: svcCleanOpt(r.jobId, 40), code: svcCleanOpt(r.partCode, 64), desc: svcCleanOpt(r.desc, 400),
+        qty: r.qty, state: st, claim: svcCleanOpt(r.claimRef, 60), dby: svcCleanOpt(r.decidedBy, 60), ddate: dayOf(r.decidedDate) });
+    }
+    return out;
+  }
+  function svcOldTable(rows, cols) {
+    var body = [], flags = [], q = 0;
+    rows.forEach(function (r) {
+      body.push(svcRow(cols, { no: r.no, date: r.date, job: r.job || '—', code: r.code || '—', desc: r.desc, qty: fmtQty(r.qty), state: SVC_OLD_LABEL[r.state] || r.state,
+        claim: r.claim, dby: r.dby, ddate: r.ddate }));
+      flags.push(r.state === 'SCRAP_PENDING');
+      q += r.qty;
+    });
+    return { t: 'table', head: [cols.head], body: body, colStyles: cols.styles, flagRows: flags, numCols: cols.num.slice(),
+      foot: [svcRow(cols, { desc: 'TOTAL (' + rows.length + ')', qty: fmtQty(q) })] };
+  }
+  function svcDefectiveRegister(o) {
+    var T = 'svcDefectiveRegister', today = todayIsoSafe();
+    var per = svcPeriod(o, today);
+    if (!per) return svcFail(T, 'PERIOD_INVALID');
+    var stateOpt = svcCleanOpt(o.state, 40);
+    var t = svcTake(o); if (!t.ok) return svcFail(T, t.code);
+    var d = t.d, op = svcList(d.open), li = svcList(d.listed);
+    per = svcDataPeriod(d, per);
+    if (op === null || li === null) return svcFail(T, 'READ_FAILED');
+    if (op === 'MANY' || li === 'MANY') return svcFail(T, 'TOO_MANY_ROWS');
+    var open = svcOldRows(op, true), listed = svcOldRows(li, false);
+    if (open === null || listed === null) return svcFail(T, 'READ_FAILED');
+    listed = listed.filter(function (r) { return r.date >= per.from && r.date <= per.to; });   // audit: defence, like the adjustment register
+    if (stateOpt) listed = listed.filter(function (r) { return r.state === stateOpt; });
+    open = svcStable(open, function (a, b) { return svcCmp(a.date, b.date) || svcCmp(a.no, b.no); });
+    listed = svcStable(listed, function (a, b) { return svcCmp(a.date, b.date) || svcCmp(a.no, b.no); });
+    var held = 0, scrapWait = 0, returned = 0, scrapped = 0;
+    open.forEach(function (r) { if (r.state === 'HELD_FOR_CLAIM') held += 1; else scrapWait += 1; });
+    listed.forEach(function (r) { if (r.state === 'CUSTOMER_RETURNED') returned += 1; else if (r.state === 'SCRAPPED') scrapped += 1; });
+    var blocks = [svcHdr(T, per.from + ' to ' + per.to)];
+    blocks.push({ t: 'kpi', cols: 4, items: [{ label: 'Held for claim', value: String(held) },
+      { label: 'Scrap awaiting sign-off', value: String(scrapWait), subClass: scrapWait ? 'down' : '', sub: scrapWait ? 'Owner sign-off' : '' },
+      { label: 'Customer Returned', value: String(returned), sub: 'this period' }, { label: 'Scrapped', value: String(scrapped), sub: 'this period' }] });
+    var cols = svcCols(SVC_OLD_COLS, false);
+    blocks.push({ t: 'section', title: 'Open items (all dates)', tag: open.length ? { cls: 'bad', txt: open.length + ' open' } : { cls: 'ok', txt: 'None open' } });
+    if (open.length) blocks.push(svcOldTable(open, cols)); else blocks.push({ t: 'empty', text: 'No old or defective parts are open.' });
+    blocks.push({ t: 'section', title: 'Register for the period' });
+    if (listed.length) blocks.push(svcOldTable(listed, cols)); else blocks.push({ t: 'empty', text: 'No entries in this period.' });
+    blocks.push({ t: 'note', text: 'Scrap needs the Owner\'s monthly sign-off. Parts held for a claim stay in the separate bin until the claim settles.' });
+    return { orientation: 'landscape', blocks: blocks };
   }
 
   /* ---------- per-report builders → { orientation, pages:[innerHtml,...] } ---------- */
@@ -1062,6 +1671,14 @@
       return { orientation: 'portrait', blocks: blocks };
     },
 
+    /* ===== SERVICE STORES (SVC1): data only from o.svcData ===== */
+    svcStockList: function (o) { return svcStockList(o || {}); },
+    svcPartLedger: function (o) { return svcPartLedger(o || {}); },
+    svcReorderList: function (o) { return svcReorderList(o || {}); },
+    svcGoodsReceipt: function (o) { return svcGoodsReceipt(o || {}); },
+    svcAdjustmentRegister: function (o) { return svcAdjustmentRegister(o || {}); },
+    svcDefectiveRegister: function (o) { return svcDefectiveRegister(o || {}); },
+
     /* ===== ⭐ OWNER MONTHLY BRIEF (portrait) ===== */
     ownerMonthly: function (o) {
       var month = o.month || curMonth();
@@ -1244,6 +1861,12 @@
     serviceAging: { title: 'Service — Open Cases Aging', scope: 'daily', icon: '🛠️' },
     serviceJobCard: { title: 'Service — Job Card', scope: 'daily', icon: '📋' },
     serviceTaxInvoice: { title: 'Service — GST Tax Invoice', scope: 'daily', icon: '🧾' },
+    svcStockList: { title: 'Service Stores — Stock List', scope: 'daily', icon: '🗃️' },
+    svcPartLedger: { title: 'Service Stores — Part Ledger', scope: 'daily', icon: '📒' },
+    svcReorderList: { title: 'Service Stores — Reorder List', scope: 'daily', icon: '🔁' },
+    svcGoodsReceipt: { title: 'Service Stores — Goods Receipt Note', scope: 'daily', icon: '📥' },
+    svcAdjustmentRegister: { title: 'Service Stores — Adjustment Register', scope: 'monthly', icon: '⚖️' },
+    svcDefectiveRegister: { title: 'Service Stores — Old & Defective Parts', scope: 'monthly', icon: '🧰' },
     ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' },
     weeklyBrief: { title: 'Weekly Business Summary', scope: 'weekly', icon: '📅' },
     lostWalkinCallSheet: { title: 'Lost Walk-in Call Sheet', scope: 'monthly', icon: '📞' }
@@ -1643,6 +2266,11 @@
   }
   function filename(type, opts) {
     var d = (opts && opts.date) || curDate();
+    var key = type === 'svcPartLedger' ? (opts && opts.partCode) : (type === 'svcGoodsReceipt' ? (opts && opts.grnNo) : '');
+    if (key) {
+      key = String(key).replace(/[^A-Za-z0-9._-]+/g, '_').slice(0, 40);
+      if (key) return 'Saagar_' + type + '_' + key + '_' + d + '.pdf';
+    }
     return 'Saagar_' + type + '_' + d + '.pdf';
   }
   function modelRowCount(model) {
@@ -1697,7 +2325,12 @@
     payrollRegister: true,
     expenseMonthly: true,
     leaveRegister: true,
-    stockRegister: true
+    stockRegister: true,
+    svcStockList: true,
+    svcPartLedger: true,
+    svcReorderList: true,
+    svcAdjustmentRegister: true,
+    svcDefectiveRegister: true
   };
   function csvCell(value) {
     var text = String(value == null ? '' : value);
@@ -1713,6 +2346,10 @@
     if (/^[\u20b9]?\s*-?\d[\d,]*(\.\d+)?$/.test(t)) return '"' + t.replace(/[\u20b9,\s]/g, '') + '"';
     return csvCell(value);
   }
+  function csvCols(b) {
+    if (Array.isArray(b.numCols) && b.numCols.length) return Array.isArray(b.money) ? b.money.concat(b.numCols) : b.numCols.slice();
+    return b.money;
+  }
   function blocksToCsv(model) {
     var rows = [];
     (model.blocks || []).forEach(function (block) {
@@ -1720,10 +2357,10 @@
       if (rows.length) rows.push({ cells: [], money: null });
       if (block.head.length && Array.isArray(block.head[0])) block.head.forEach(function (h) { rows.push({ cells: h, money: null }); });
       else rows.push({ cells: block.head, money: null });
-      block.body.forEach(function (row) { rows.push({ cells: Array.isArray(row) ? row : [row], money: block.money }); });
+      block.body.forEach(function (row) { rows.push({ cells: Array.isArray(row) ? row : [row], money: csvCols(block) }); });
       if (Array.isArray(block.foot)) {
-        if (block.foot.length && Array.isArray(block.foot[0])) block.foot.forEach(function (row) { rows.push({ cells: row, money: block.money }); });
-        else rows.push({ cells: block.foot, money: block.money });
+        if (block.foot.length && Array.isArray(block.foot[0])) block.foot.forEach(function (row) { rows.push({ cells: row, money: csvCols(block) }); });
+        else rows.push({ cells: block.foot, money: csvCols(block) });
       }
     });
     if (!rows.length) throw new Error('This report has no tabular rows for CSV');

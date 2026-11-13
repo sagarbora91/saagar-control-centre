@@ -1209,7 +1209,7 @@ Code movement: Tax_Compliance_Calendar_India_v4.html — 137,614 B -> 194,996 B 
 - Service and Tax modules are substantially larger; test on target Android devices.`;
 const STORAGE_RULES = {
   stock:   { exact: ["saagar_cros","saagar_appstate","saagar_brands","saagar_brands_hidden","saagar_stk_clearlog_v1"], prefix: ["saagar_stock_"] },
-  service: { exact: ["saagar_wsf_v2","saagar_wsf_settings_v1","saagar_invoice_seq_v1"], prefix: [] },
+  service: { exact: ["saagar_wsf_v2","saagar_wsf_settings_v1","saagar_invoice_seq_v1"], prefix: ["saagar_svcs_"] },
   expense: { exact: ["gm_expenses","gm_role","tanishq_statements","saagar_udhaar_ledger_v1"], prefix: ["gm_"] },
   grooming:{ exact: [], prefix: ["saagar_grooming_"] },
   payroll: { exact: ["payroll_suite_v1_2026","payroll_fnf_v1"], prefix: [] },
@@ -1808,7 +1808,7 @@ function reEvalLaunchLock(){   /* DECIDE LATE — runs under whenReady (MEM/DB a
        already fail open on no-PIN), audit it, and force honest PIN re-establishment. Runs here (MEM/DB
        authoritative), BEFORE any interaction can trigger pinSalt() regeneration and mask the orphan. */
     try{ var __h=safeGet(ADMIN_PIN_KEY); if(__h && __h.slice(0,3)==='v2:' && !safeGet(PIN_SALT_KEY)){ safeRemove(ADMIN_PIN_KEY); try{ auditLog('security.pinHashOrphaned',{}); }catch(e){} } }catch(e){}
-    if(__llUnlocked){ llDismiss(); return; }
+    if(__raState)return;if(__llUnlocked){ llDismiss(); return; }
     var on=false;
     try{ on = hasAdminPin() && launchLockEnabled(); }catch(e){ on=false; }   /* #1 BRICK GUARD: any error => NOT locked */
     var d=llEl(); if(!d) return;

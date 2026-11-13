@@ -58,6 +58,23 @@ const APPROVED_FIXWAVE_STORAGE_KEY_IDS = Object.freeze(new Set([
    saagar_wsf_settings_v1.invoiceSeq (plan section 2.1, interface C). Exact id only; any other removal still throws. */
 const FIXWAVE_RETIRED_INVOICE_COUNTER_ID = 'service:persist:556fd13bc825db2d2664';
 
+/* Service wave 1 (Phase 1, Stores): the seven new first-party script surfaces script-service-stores-*. Seven
+   failure-posture rows (one per file) and one persisted-outcome row (the store adapter, the ONLY storage write of the
+   wave). No permission row and no visible action is added. These rows exist only while the seven files are tracked by
+   git; while they are untracked the analyser cannot see them (see the integration overlay). Exact ids only: any other
+   id on these surfaces, or any other added persisted key, still throws. Owner decisions given in chat, 2026-11-12
+   (design answers) and 2026-11-13 (go-ahead to build); owner reconfirmation pending. */
+const APPROVED_SERVICE_W1_DELTA_IDS = Object.freeze(new Set([
+  'script-service-stores-core:failure:posture',
+  'script-service-stores-docs:failure:posture',
+  'script-service-stores-fifo:failure:posture',
+  'script-service-stores-masters-ui:failure:posture',
+  'script-service-stores-masters:failure:posture',
+  'script-service-stores-store:failure:posture',
+  'script-service-stores-ui:failure:posture',
+  'script-service-stores-store:persist:8254c329a92850f6d539'
+]));
+
 const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
   'dsr:action:st-v5-home-fab:c05eb3ddb3',
   'qms:action:st-v5-home-fab:c05eb3ddb3',
@@ -130,6 +147,12 @@ function classification(change, before, after) {
     return {
       reviewClass: 'fix-wave-2026-11-retired-storage-key',
       reason: 'Service no longer writes saagar_invoice_seq_v1: the invoice counter moved into saagar_wsf_settings_v1.invoiceSeq (per financial year), as fix-wave plan interface C requires. Owner reconfirmation pending.'
+    };
+  }
+  if (change === 'added' && APPROVED_SERVICE_W1_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'service-wave-1-2026-11-stores-surface',
+      reason: 'New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.'
     };
   }
   if (change === 'added' && APPROVED_BRIDGE_DELTA_IDS.has(capability.capabilityId)) {
@@ -327,6 +350,9 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   assert.equal(classCount('etp-engine-bridge-compare-v1-capability'), 5);
   assert.equal(classCount('fix-wave-2026-11-new-storage-key'), 4);
   assert.equal(classCount('fix-wave-2026-11-retired-storage-key'), 1);
+  /* 0 while the seven service-stores-*.js files are untracked (the analyser reads tracked files only); 8 once they are
+     committed, together with the tracked-state totals in the Service wave 1 ledger overlay. */
+  assert.equal(classCount('service-wave-1-2026-11-stores-surface'), 0);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 

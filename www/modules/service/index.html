@@ -22,6 +22,13 @@
 <link id="st-v5-uniform-css" rel="stylesheet" href="../../shared/module-uniform.css">
 <link rel="stylesheet" href="../../mobile-layout.css">
 <script src="../../app-i18n.js"></script>
+<script src="../../service-stores-store.js"></script>
+<script src="../../service-stores-fifo.js"></script>
+<script src="../../service-stores-masters.js"></script>
+<script src="../../service-stores-docs.js"></script>
+<script src="../../service-stores-core.js"></script>
+<script src="../../service-stores-masters-ui.js"></script>
+<script src="../../service-stores-ui.js"></script>
 </head>
 <body data-saagar-ui data-saagar-width="auto" data-saagar-width-resolved="mobile">
 <script id="service-phase6f-ui-boot">SaagarUiFoundation.configure(document.body,{mode:'auto'});</script>
@@ -687,6 +694,7 @@
           <div style="font-size:11px;color:var(--g400);margin-top:8px;font-style:italic">
             Note: This is an estimate only. Final charges may vary. Additional work requires separate approval.
           </div>
+          <div id="svs-job-host" class="svs-job-host" data-no-i18n></div>
         </div>
       </div>
 
@@ -905,6 +913,9 @@
     </main>
   </div>
 </div>
+
+<!-- STORES (service spares stock) -->
+<div class="view" id="view-stores" data-no-i18n><div class="svs-wrap" id="svs-root"></div></div>
 
 <!-- PRINT TARGET -->
 <div class="view" id="view-print"></div>
@@ -1664,8 +1675,9 @@ function toast(msg) {
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-' + id).classList.add('active');
-  document.getElementById('btn-back-dash').style.display = (id === 'form') ? '' : 'none';
+  document.getElementById('btn-back-dash').style.display = (id === 'form' || id === 'stores') ? '' : 'none';
   if (id === 'dash') renderDash();
+  if (id === 'stores' && typeof svsShowStores === 'function') svsShowStores();
   // MOBILE WIZARD: entering the form must never show a blank screen — make sure
   // exactly one step is active. Safety: if none is active, start at step 0.
   if (id === 'form' && isMobileWiz() &&
@@ -1812,6 +1824,7 @@ function renderStageChips(openCases) {
 }
 
 function renderDash() {
+  typeof svsContextChanged === 'function' && svsContextChanged();
   document.getElementById('dash-date').textContent =
     new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   const open = DB.filter(c => c.status === 'open');
@@ -2546,6 +2559,7 @@ function openNew() {
   document.getElementById('sb-id').textContent = id;
   showView('form');
   svcPaintInvoiceLockBanner();
+  typeof svsRefreshJob === 'function' && svsRefreshJob();
   if (isMobileWiz()) showFormStep(0);   // mobile wizard: always open on step 1; desktop untouched
 }
 
@@ -2570,6 +2584,7 @@ function openEdit(id) {
   // Re-apply read-only after the form is (re)built so a past case opened for
   // viewing has its inputs/buttons locked (populateForm rebuilds estimate rows).
   applyReadOnlyUI();
+  typeof svsRefreshJob === 'function' && svsRefreshJob();
   showView('form');
   if (isMobileWiz()) showFormStep(0);   // mobile wizard: always open on step 1; desktop untouched
 }
@@ -2697,6 +2712,7 @@ function doSave() {
   saveDB();
   persistWatchPhoto(editId || id);   // store/replace/remove the watch photo for this case
   toast('✓ Saved — ' + (editId || id));
+  typeof svsRefreshJob === 'function' && svsRefreshJob();
   // P1-11: offer notify only on a real transition INTO "ready" (not on re-saving an
   // already-ready case). readForm() put the chosen stage on `data`.
   if (data.stage === 'ready' && _prevStage !== 'ready') offerReadyNotify(editId || id);
@@ -2773,6 +2789,7 @@ function delCase(id) {
   if (readOnlyGuard()) return;   // past view → no delete
   const c = byId(id); if (!c) return;
   if (svcInvoiceLocked(c)) { toast('⛔ ' + id + ' has tax invoice ' + c.invoiceNo + ' and cannot be deleted.'); return; }
+  if (typeof svsBlocksDelete === 'function' && svsBlocksDelete(c)) return;
   if (c.status === 'closed') { svcDeleteClosedWithApproval(c); return; }
   if (!confirm('Delete case ' + id + '? This cannot be undone.')) return;
   svcFinishDelete(c, { pin: false, reason: '' });
@@ -2786,7 +2803,7 @@ async function svcDeleteClosedWithApproval(c) {
 }
 function svcFinishDelete(c, how) {
   const id = c.id, cur = byId(id);
-  if (!cur || svcInvoiceLocked(cur)) return;                 // re-check after the awaited PIN
+  if (!cur || svcInvoiceLocked(cur) || (typeof svsBlocksDelete === 'function' && svsBlocksDelete(cur))) return;                 // re-check after the awaited PIN
   if (!svcRecordDeletion(cur, how)) { toast('⚠ Could not record the deletion. The case was kept.'); return; }
   DB = DB.filter(x => x.id !== id);
   saveDB();
@@ -3403,8 +3420,99 @@ function addFollowUp() {
 }
 
 // ─── INIT ──────────────────────────────────────────────────────
+
+// ─── STORES GLUE (Service Stores, Phase 1; the libraries are loaded in <head>) ─────────────
+var svsCoreRef = null;
+// The Stores core takes the session and the PIN time only from here, never from what a caller passes in.
+// The time is kept inside this closure and set only after the shell PIN gate resolved exactly true.
+const svsPinGate = (function (gate) {
+  let at = 0;
+  return Object.freeze({
+    reauth: async function (label) { const ok = (await gate(label)) === true; if (ok) at = Date.now(); return ok; },
+    at: function () { return at; }
+  });
+})(svcD3Reauth);
+function svsUi() { return (typeof SaagarServiceStoresUI !== 'undefined' && SaagarServiceStoresUI) ? SaagarServiceStoresUI : null; }
+function svsSession() {
+  const none = { ok: false, isOwner: false, isManager: false, role: '', tier: 'none', actorName: '' };
+  try {
+    if (typeof SaagarModuleRuntime !== 'undefined' && SaagarModuleRuntime && typeof SaagarModuleRuntime.session === 'function') {
+      const r = SaagarModuleRuntime.session();
+      if (r && typeof r === 'object') return r;
+    }
+    const s = SaagarModuleBridge.ownerSession && SaagarModuleBridge.ownerSession.read && SaagarModuleBridge.ownerSession.read();
+    if (!s || typeof s !== 'object') return none;
+    const owner = s.isOwner === true;
+    return { ok: true, isOwner: owner, isManager: owner || s.isManager === true, role: typeof s.role === 'string' ? s.role.slice(0, 40) : '', tier: owner ? 'owner' : (s.isManager === true ? 'manager' : 'staff'), actorName: '' };
+  } catch (e) { console.warn('[stores] session read failed', e && e.message); return none; }
+}
+function svsCaseView(id) {
+  const c = id ? byId(String(id)) : null;
+  if (!c) return null;
+  const rd = (c.d3Readiness && typeof c.d3Readiness === 'object') ? c.d3Readiness : {};
+  return {
+    id: c.id,
+    status: c.status === 'closed' ? 'closed' : 'open',
+    invoiceNo: c.invoiceNo ? String(c.invoiceNo) : '',
+    paymentStatus: rd.paymentStatus ? String(rd.paymentStatus) : '',
+    stub: c._bridgeStub === true,
+    label: (String(c.id) + ' ' + String(c.brand || '') + ' ' + String(c.model || '')).replace(/\s+/g, ' ').trim().slice(0, 80)
+  };
+}
+function svsCore() {
+  if (svsCoreRef) return svsCoreRef;
+  try {
+    if (typeof SaagarServiceStoresCore === 'undefined' || typeof SaagarServiceStoresStore === 'undefined') return null;
+    const made = SaagarServiceStoresCore.create({ adapter: SaagarServiceStoresStore.adapterFromWindow(window), now: () => new Date(), cases: { get: svsCaseView }, session: svsSession, stepUpAt: svsPinGate.at });
+    if (made && made.ok === true && made.core) svsCoreRef = made.core;
+    return svsCoreRef;
+  } catch (e) { console.warn('[stores] core could not start', e && e.message); return null; }
+}
+function svsHost() {
+  return {
+    root: document.getElementById('svs-root'),
+    jobHost: document.getElementById('svs-job-host'),
+    session: svsSession,
+    reauth: svsPinGate.reauth,
+    isPast: function () { return isPastView(); },
+    viewDate: function () { return viewDate; },
+    today: function () { return todayStr(); },
+    nowIso: function () { return new Date().toISOString(); },
+    toast: function (m) { toast(m); },
+    job: function (id) {
+      const v = svsCaseView(id), c = v ? byId(v.id) : null;
+      return v ? Object.assign({}, v, { locked: svcInvoiceLocked(c) }) : null;
+    },
+    currentJobId: function () { return editId || ''; },
+    jobIds: function () { return DB.map(function (c) { return c.id; }); },
+    showCases: function () { showView('dash'); },
+    showStores: function () { showView('stores'); },
+    core: svsCore,
+    report: function () { try { return SaagarModuleBridge.report || null; } catch (e) { return null; } }
+  };
+}
+function svsMount() { try { if (svsUi()) svsUi().mount(svsHost()); } catch (e) { console.warn('[stores] mount failed', e && e.message); } }
+function svsShowStores() { try { svsUi().show(); } catch (e) { toast('⚠ Stores could not open: ' + (e && e.message || e)); } }
+function svsRefreshJob() { try { if (svsUi()) svsUi().refreshJob(); } catch (e) { console.warn('[stores] job panel failed', e && e.message); } }
+function svsContextChanged() { try { if (svsUi()) svsUi().onContextChange(); } catch (e) { console.warn('[stores] context refresh failed', e && e.message); } }
+function svsBlocksDelete(c) {
+  const id = c && c.id ? String(c.id) : '';
+  let has = null;                       // null = could not check: block (fail closed)
+  try {
+    const core = svsCore();
+    if (id && core && svsUi()) {
+      const r = core.jobHasParts(id);
+      if (r && r.ok === true && typeof r.has === 'boolean') has = r.has;
+    }
+  } catch (e) { console.warn('[stores] delete check failed', e && e.message); has = null; }
+  if (has === false) return false;
+  toast(has === true ? '⛔ Parts are still issued to ' + id + '. Return them to stores first, then delete the order.' : '⚠ Could not check issued parts. Nothing was deleted.');
+  return true;
+}
+
 renderDash();
 applyReadOnlyUI();
+svsMount();
 </script>
 <!-- ─── FOLLOW-UP LOG MODAL (additive; #6) ─── -->
 <div class="fu-overlay" id="fu-overlay" onclick="if(event.target===this)closeFollowUps()">
