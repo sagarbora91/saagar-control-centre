@@ -337,10 +337,10 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
     item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
 
   assert.equal(baseline.length, 655);
-  assert.equal(current.length, 752);
+  assert.equal(current.length, 760);
   assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
-  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 32, 'persisted-outcome': 89, 'failure-posture': 122 });
-  assert.equal(count('added'), 449);
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 32, 'persisted-outcome': 90, 'failure-posture': 129 });
+  assert.equal(count('added'), 457);
   assert.equal(count('removed'), 352);
   assert.equal(count('changed'), 60);
   assert.equal(classCount('handler-body-hash-only'), 35);
@@ -352,7 +352,7 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   assert.equal(classCount('fix-wave-2026-11-retired-storage-key'), 1);
   /* 0 while the seven service-stores-*.js files are untracked (the analyser reads tracked files only); 8 once they are
      committed, together with the tracked-state totals in the Service wave 1 ledger overlay. */
-  assert.equal(classCount('service-wave-1-2026-11-stores-surface'), 0);
+  assert.equal(classCount('service-wave-1-2026-11-stores-surface'), 8);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 

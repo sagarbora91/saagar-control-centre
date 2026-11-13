@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 752,
+    "capabilities": 760,
     "categories": {
-      "failure-posture": 122,
+      "failure-posture": 129,
       "permission": 32,
-      "persisted-outcome": 89,
+      "persisted-outcome": 90,
       "route": 13,
       "visible-action": 496
     },
     "conflicts": 0,
-    "inventorySha256": "bb12ea084312365fb496bf4463962ca88eb9662926f8b2f4540b9386203956cf"
+    "inventorySha256": "ce910c8d1e4b478334b3467a44b0dda2d043acb5c75d60348e9b8a2e51b8c90d"
   },
   "deltas": [
     {
@@ -23383,6 +23383,180 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-core:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 8,
+          "explicitFallbackSites": 16,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-stores-core"
+      },
+      "currentOutcomeSha256": "8015ef455b8518ff5084e864f5cebc102d78140657cb489b93a8586127805981",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-docs:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 4,
+          "explicitFallbackSites": 21,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-stores-docs"
+      },
+      "currentOutcomeSha256": "53837b63b1e71a9c3c5e98be4391a865b5fc5f1e6e320673d75c9aa261f5efff",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-fifo:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 2,
+          "explicitFallbackSites": 10,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-stores-fifo"
+      },
+      "currentOutcomeSha256": "ba26b4addf6eade0bca61f679c2e6610019e4966efa467d446fc7a484a15027d",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-masters-ui:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 0,
+          "explicitFallbackSites": 16,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 12
+        },
+        "surface": "script-service-stores-masters-ui"
+      },
+      "currentOutcomeSha256": "a5f9877e86fefbad9c807b2c9d2aa2695ec4eb9787d8aa38c5a5453d216c30d0",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-masters:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 3,
+          "explicitFallbackSites": 7,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-stores-masters"
+      },
+      "currentOutcomeSha256": "5ea57aaa5687a30a9f08d10c82fee2380f249732f209e1480789e7a3481279da",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-store:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 15,
+          "explicitFallbackSites": 66,
+          "swallowedCatchBlocks": 2,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-stores-store"
+      },
+      "currentOutcomeSha256": "f8c4b16b5948e02eff8f63b38912f7a139a99273a5064363c1ee80fde855c341",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-store:persist:8254c329a92850f6d539",
+      "category": "persisted-outcome",
+      "change": "added",
+      "current": {
+        "category": "persisted-outcome",
+        "outcome": {
+          "keyBinding": "computed",
+          "keyIdentitySha256": "8254c329a92850f6d539dd376f4816ee2764517da5e0235514af433164480d7a",
+          "operation": "write"
+        },
+        "surface": "script-service-stores-store"
+      },
+      "currentOutcomeSha256": "743727cc56502ad8587887b542def63f35765a264b6ab65514895e8ac689c492",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-stores-ui:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 25,
+          "explicitFallbackSites": 25,
+          "swallowedCatchBlocks": 6,
+          "throwSites": 0,
+          "userVisibleErrorSites": 59
+        },
+        "surface": "script-service-stores-ui"
+      },
+      "currentOutcomeSha256": "f5f272711c8735b98c1a106d6b2699eb2e57b59b8422cb1a7e8f584901ebc7f8",
+      "ownerApproval": "pending",
+      "reason": "New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-1-2026-11-stores-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
       "capabilityId": "script-shared-module-bridge:failure:posture",
       "category": "failure-posture",
       "change": "added",
@@ -44470,15 +44644,15 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 449,
+    "added": 457,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 861,
+    "capabilityApprovalsRequired": 869,
     "changed": 60,
     "changedFailurePostures": 22,
     "changedVisibleActions": 38,
-    "comparisonDeltaSha256": "85af319343e6480e74daa1f6eee44f2230c36bf1109483071cd98f0c4a652d69",
+    "comparisonDeltaSha256": "b989b1a45f574fe75b70bbe0e595c8c6bf41c626797b71336389d2b49e078aaa",
     "handlerBodyHashOnly": 35,
-    "netCapabilities": 97,
+    "netCapabilities": 105,
     "removed": 352,
     "reportPresentationFallbacks": 1
   }

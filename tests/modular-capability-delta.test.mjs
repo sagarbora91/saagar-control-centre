@@ -12,11 +12,11 @@ test('modular capability delta ledger exactly matches the frozen A3 comparison',
   const recorded = JSON.parse(fs.readFileSync(path.join(root, LEDGER_PATH), 'utf8'));
   assert.deepEqual(recorded, expected);
   assert.equal(recorded.baseline.capabilities, 655);
-  assert.equal(recorded.current.capabilities, 752);
-  assert.equal(recorded.summary.added, 449);
+  assert.equal(recorded.current.capabilities, 760);
+  assert.equal(recorded.summary.added, 457);
   assert.equal(recorded.summary.removed, 352);
   assert.equal(recorded.summary.changed, 60);
-  assert.equal(recorded.summary.capabilityApprovalsRequired, 861);
+  assert.equal(recorded.summary.capabilityApprovalsRequired, 869);
   assert.equal(recorded.summary.handlerBodyHashOnly, 35);
   assert.equal(recorded.summary.bindingStructureChanged, 3);
   assert.equal(recorded.summary.changedFailurePostures, 22);
@@ -43,6 +43,7 @@ test('capability review remains fail-closed until the owner explicitly approves 
     .map(item => `${item.capabilityId}:${item.change}`), [
     'payroll:persist:2c70e12b7a0646f92279:added',
     'payroll:persist:dd25a3198b0013d1d7c3:added',
+    'script-service-stores-store:persist:8254c329a92850f6d539:added',
     'service:persist:556fd13bc825db2d2664:removed',
     'stock:persist:33b94f3f822ff4adb51a:added',
     'stock:persist:449d73e56af4d2b66503:added'
