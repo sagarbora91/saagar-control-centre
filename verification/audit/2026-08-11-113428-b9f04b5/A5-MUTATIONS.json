@@ -1,0 +1,104 @@
+{
+  "format": "SAAGAR_AUDIT_MUTATION_EVIDENCE",
+  "mutations": [
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "4c4cb5a39fff19cbef415c1784a0c0ebe61764df0bfaaefe562b2acde18dd68c",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "D1 reauthentication limits a single action to one retry",
+      "invariantId": "auth",
+      "mutationId": "auth-one-retry-limit-v1",
+      "outputSha256": "090cf40f8759bdc8ec8723eb8787cabf211143811ca11d8b67175283d27dabc7",
+      "productionFile": "www/reauth-policy.js",
+      "testCommand": "node --test --test-reporter=tap tests/d1-reauth.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "ceb126cb99bafe2818a0e779a6f7a6befe7f95d4e349e995fc2fad2e2f4a9cd0",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "portable backup round-trips without leaking payload text",
+      "invariantId": "backupRestore",
+      "mutationId": "backup-photo-manifest-count-v1",
+      "outputSha256": "9b779216c7ce4df6c6720ec3825815cd2a40d1ce32701f13ec3e5c447a642d67",
+      "productionFile": "www/portable-backup.js",
+      "testCommand": "node --test --test-reporter=tap tests/portable-backup.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "9c76782e162f32af3a7034073ee61e44aba494ab433c3d9f68ef597bbe5c36d0",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "publication refuses missing facts, restored state, incomplete scope and critical failures",
+      "invariantId": "etpPublication",
+      "mutationId": "etp-critical-reconciliation-publication-gate-v1",
+      "outputSha256": "23258317b543b423645c6724f1b6fa650093764eb75341cb85f3ea8b9c515659",
+      "productionFile": "www/etp-reconciliation-policy.js",
+      "testCommand": "node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "8663a2f006f485e6064a83e70010287d4690304925c99e3e7c1a337c14888542",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "SEC-08 defaults to disabled and records the denied attempt without prompting",
+      "invariantId": "export",
+      "mutationId": "export-default-deny-policy-v1",
+      "outputSha256": "9e2f229bdc1d962fa473723d6c54938f29320a8953f40974329126594609bd5d",
+      "productionFile": "www/export-control.js",
+      "testCommand": "node --test --test-reporter=tap tests/eng04-security.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "1f879bee7e733dca457a70fbb47767f0b19d00e9e4a71928699246d71a41bcda",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "INV/SR/BC signs are applied and a mismatch remains visible",
+      "invariantId": "money",
+      "mutationId": "money-reconciliation-delta-direction-v1",
+      "outputSha256": "281eb586949bbf40aa26e715f28a8acb76be4299457707b6b2a05e38eb432603",
+      "productionFile": "www/etp-reconciliation-policy.js",
+      "testCommand": "node --test --test-reporter=tap tests/etp-reconciliation-policy.test.mjs"
+    }
+  ],
+  "productFingerprintSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+  "schemaVersion": 1,
+  "sourceSha": "b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb",
+  "toolingSha": "b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb"
+}

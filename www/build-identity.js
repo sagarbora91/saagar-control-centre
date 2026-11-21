@@ -1,6 +1,4 @@
-/* Single source of truth for the Android package and in-app build identity.
-   Keep current evidence values unchanged until an owner-approved phase release
-   assigns a new monotonically increasing versionCode. */
+/* Single source of truth for the Android package and in-app build identity. */
 (function (root, factory) {
   var identity = factory();
   if (typeof module === 'object' && module.exports) module.exports = identity;
@@ -10,9 +8,9 @@
 
   return Object.freeze({
     packageId: 'com.saagartraders.bcc',
-    appVersion: 'V5.5',
-    versionName: '2.9',
-    versionCode: 209,
-    minSdk: 23
+    appVersion: 'V 1.601',
+    versionName: '1.601',
+    versionCode: 601,
+    minSdk: 33
   });
 });

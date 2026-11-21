@@ -188,7 +188,7 @@ function contextFor(type, overrides = {}) {
 test('MAH-4 freezes 15 business types, five controls, exact directions and participant matrices', () => {
   assert.deepEqual(mah4ContractCounts(), { businessTypes: 15, controlTypes: 5, shellToModule: 8, moduleToShell: 12 });
   assert.equal(Object.keys(MAH4_MESSAGE_CONTRACTS).length, 20);
-  assert.equal(new Set(MAH4_MODULE_IDS).size, 11);
+  assert.equal(new Set(MAH4_MODULE_IDS).size, 12);
   assert.deepEqual(MAH4_MESSAGE_CONTRACTS.ST_ACCESS_CONTEXT.moduleIds, ['stock', 'service', 'dsr', 'expense']);
   assert.deepEqual(MAH4_MESSAGE_CONTRACTS.ST_OPEN_MODULE.moduleIds, ['dsr', 'expense', 'grooming', 'qms', 'service']);
   assert.deepEqual(MAH4_MESSAGE_CONTRACTS.ST_REPORT.moduleIds, ['payroll', 'qms']);

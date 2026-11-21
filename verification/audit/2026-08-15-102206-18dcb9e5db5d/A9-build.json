@@ -1,0 +1,122 @@
+{
+  "auditId": "A9",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "apk1Sha256": "af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387",
+          "apk2Sha256": "af044411e24b364381ab89ca1130f707303511bf53a64e052f44e4f5c0cb7387",
+          "code": "TWO_BUILD_COMPARISON",
+          "normalized1Sha256": "2bfd3d6802db990b01142761b1a51aed98a41f6d8fca10e8f098a53699fc3531",
+          "normalized2Sha256": "2bfd3d6802db990b01142761b1a51aed98a41f6d8fca10e8f098a53699fc3531"
+        }
+      ],
+      "id": "A9-01",
+      "mandatory": true,
+      "metric": {
+        "firstBytes": 6999062,
+        "firstEntries": 560,
+        "firstExcludedSignatureEntries": 3,
+        "identityBound": true,
+        "normalizedEqual": true,
+        "rawEqual": true,
+        "secondBytes": 6999062,
+        "secondEntries": 560,
+        "secondExcludedSignatureEntries": 3,
+        "source": "runner-controlled-probe",
+        "toolchainMatch": true
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Two runner-controlled isolated builds under the same recorded toolchain must have equal normalized entry-name/content hashes; raw APK hashes are compared separately.",
+      "severity": "INFO",
+      "title": "Isolated APK reproducibility"
+    },
+    {
+      "evidence": [
+        {
+          "build": 1,
+          "code": "GENERATED_BUILD_IDENTITY_HASH_MISMATCH"
+        },
+        {
+          "build": 2,
+          "code": "GENERATED_BUILD_IDENTITY_HASH_MISMATCH"
+        }
+      ],
+      "id": "A9-02",
+      "mandatory": true,
+      "metric": {
+        "canonical": {
+          "appVersion": "V5.5",
+          "minSdk": 23,
+          "packageId": "com.saagartraders.bcc",
+          "versionCode": 209,
+          "versionName": "2.9"
+        },
+        "comparedTrackedSources": 5,
+        "generatedBuilds": 2,
+        "generatedMismatches": 2,
+        "trackedMismatches": 0
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Tracked centralized identity consumers and both runner-generated Android receipts must agree on package, version, minimum SDK and generated source identities.",
+      "severity": "P0",
+      "title": "Version and build identity agreement"
+    },
+    {
+      "evidence": [],
+      "id": "A9-03",
+      "mandatory": true,
+      "metric": {
+        "committedProductionEntries": 1,
+        "disabledDeclarations": 1,
+        "enablementFindings": 0
+      },
+      "notes": "The explicit test-harness force flag and the separate seeded-build transformer are not production enablement.",
+      "result": "pass",
+      "rule": "Every committed production entry asset must contain exactly one disabled demo-seed declaration and no unconditional enabled declaration.",
+      "severity": "P0",
+      "title": "Production seed enablement"
+    },
+    {
+      "evidence": [],
+      "id": "A9-04",
+      "mandatory": true,
+      "metric": {
+        "boundEntries": 13,
+        "mismatches": 0,
+        "modules": 11,
+        "sharedAssets": 2
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Every manifest-bound module and shared runtime must match its declared byte count and SHA-256.",
+      "severity": "P0",
+      "title": "Module manifest byte and hash integrity"
+    },
+    {
+      "evidence": [],
+      "id": "A9-05",
+      "mandatory": true,
+      "metric": {
+        "generatedBuilds": 2,
+        "generatedReceiptFindings": 0,
+        "requiredEnvironmentInputs": 4,
+        "trackedSourceFindings": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Tracked signing enforcement and both post-override generated receipts must prove non-debuggable fail-closed release signing without committed secrets.",
+      "severity": "INFO",
+      "title": "Fail-closed release signing"
+    }
+  ],
+  "metrics": {
+    "identityMismatches": 2,
+    "manifestMismatches": 0,
+    "signingMismatches": 0,
+    "twoBuildEvidence": true
+  },
+  "title": "Build and release reproducibility"
+}

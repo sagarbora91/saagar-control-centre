@@ -203,7 +203,7 @@
   /* Public: called by the shell "📲 WhatsApp" button and by the in-module
      chooser. mode:'share' (default) makes & shares a PDF; mode:'print'
      falls back to the original print. */
-  window.SaagarShareCurrent = function (opt) {
+  window.SaagarShareCurrent = async function (opt) {
     opt = opt || {};
     var frame = document.getElementById('moduleFrame');
     var doc = frame && (frame.contentDocument || (frame.contentWindow && frame.contentWindow.document));
@@ -211,7 +211,7 @@
     if (!doc) { notify('Open a module first, then share its print output'); return; }
     removeChooser(doc);
     if (opt.mode === 'print') {
-      var printToken = authorizeExport({
+      var printToken = await authorizeExport({
         exportId: 'module-print-chooser', kind: 'print', scopeId: 'current-module-print',
         scopeLabel: 'current module print', module: (typeof activeModuleId !== 'undefined' && activeModuleId) || 'unknown',
         rowCount: 0, purposeId: 'hard-copy-business-record'
@@ -231,8 +231,8 @@
     notify('Preparing PDF for WhatsApp…');
     setTimeout(function () {
       buildPdf(doc)
-        .then(function (blob) {
-          var fname = activeModuleName(doc), token = authorizeExport({
+        .then(async function (blob) {
+          var fname = activeModuleName(doc), token = await authorizeExport({
             exportId: 'module-pdf-share', kind: 'pdf', scopeId: 'current-module-pdf',
             scopeLabel: 'current module PDF', module: modId || 'unknown', rowCount: 0,
             fileName: fname, purposeId: 'business-record-export'

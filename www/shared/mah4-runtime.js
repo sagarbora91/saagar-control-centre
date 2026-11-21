@@ -3,7 +3,7 @@
   if(root.SaagarMah4Runtime)return;
   try{root.document.documentElement.setAttribute('data-mah4-runtime','1');}catch(e){}
   var CHANNEL='saagar.module',VERSION=1,READY_MS=5000,DISPOSE_MS=1500;
-  var MODULES=['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning'];
+  var MODULES=['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning','etp'];
   function validModule(id){return MODULES.indexOf(id)>=0;}
   function id(prefix){var b=new Uint8Array(16);if(!root.crypto||typeof root.crypto.getRandomValues!=='function')throw new Error('MAH4 entropy unavailable');root.crypto.getRandomValues(b);return prefix+'.'+Array.prototype.map.call(b,function(x){var h=x.toString(16);return h.length<2?'0'+h:h;}).join('');}
   function trusted(event,source,origin){return !!event&&event.source===source&&event.origin===origin;}

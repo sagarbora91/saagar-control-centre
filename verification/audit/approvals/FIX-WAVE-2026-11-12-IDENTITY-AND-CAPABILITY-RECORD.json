@@ -1,0 +1,1358 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "FIX-WAVE-2026-11-12-AUDIT-DEFECT-FIXES",
+  "decision": "recorded-defect-fixes-identity-rebind-and-declared-capabilities",
+  "state": "approved-for-defect-fixes; owner-reconfirmation-pending-for-exact-identity-and-capability-bindings",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-12",
+  "approvalEvidence": "owner decision given in chat, 2026-11-12",
+  "ownerWords": "The only words quoted from the owner are: \"owner decision given in chat, 2026-11-12\". The fix wave itself was started by a blanket instruction to fix the audited defects. It names no capability, no identity re-binding and no hash.",
+  "recordedBy": "Claude Code agents, fix wave stage B4 (integration, then the Opus audit), rewritten from disk by the B5a second-pass closer after the S07 second-pass Expense fix and a repeat of I-2, I-3a and I-8. This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "priorRecords": [
+    {
+      "path": "verification/audit/approvals/2026-08-12-11bb84abc74c.json",
+      "bytes": 31136,
+      "sha256": "8f463cb7e68a85c543232ce2fdbfee0aec8188a7b58af09f7a94a9da5be115aa",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-12-9b54d5bd0036.json",
+      "bytes": 31136,
+      "sha256": "3106a9246eef04fc6c5f8da0acb56ce71f5b48c146126654ca71530f5ac93595",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-16-3f8a37cebf99.json",
+      "bytes": 31507,
+      "sha256": "4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-17-cc9a117c5245.json",
+      "bytes": 31507,
+      "sha256": "fbce51a37b3026fc6ea2210d45cba054e5568f5fb2cfa289ffb13236ab7a0d3d",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json",
+      "bytes": 3466,
+      "sha256": "da5337f5b19f513bf98254494da4e489252c06d60c97c3da8a2435dccd4ef612",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+      "bytes": 11437,
+      "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 20850,
+      "sha256": "4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+      "bytes": 2417,
+      "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-LOCALIZATION-APPROVAL-2026-08-21.json",
+      "bytes": 4860,
+      "sha256": "77776928c66bc27f255812ed58bdb78fed756f6f7f335326106342d5d73ab987",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+      "bytes": 3032,
+      "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json",
+      "bytes": 2881,
+      "sha256": "e48ba79490ff1ac24adee1e1c2aa677393a2bfd4f6525dfe19dbc494cd34c0e1",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4-PAYMENTTYPE25-QUARANTINE-APPROVAL-2026-08-21.json",
+      "bytes": 1594,
+      "sha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "bytes": 2703,
+      "sha256": "40cdbd0078155b50ccb776d1a17ef7075c75c7d9ab5dbec786dc3d87e1095cb9",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "bytes": 2607,
+      "sha256": "2da51e5ca86db35c2cc112fd0bfd8fec1256917b3111aa4e999ae08b60055978",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json",
+      "bytes": 2589,
+      "sha256": "9e290f1313790f274ba450f1aa8d343858a3ebfd06d4c0586335f5020b82f458",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+      "bytes": 7525,
+      "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+      "bytes": 3130,
+      "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+      "bytes": 3200,
+      "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 8217,
+      "sha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/WAVE-7-RELEASE-READINESS-ADDENDUM-2026-11-12.json",
+      "bytes": 18036,
+      "sha256": "cb9e8ab58c807580ea44899eefa6511ea1e7f2ab384e663a02f0f183336fe852",
+      "treatment": "left unchanged"
+    }
+  ],
+  "sourceBinding": {
+    "sourceCommit": "d6eab0b1f124c82c58cbe1a8003668d28a2304a1",
+    "includesUncommittedWave7AndFixWaveChanges": true,
+    "preWaveWwwFingerprint": {
+      "fileCount": 172,
+      "totalBytes": 8684924,
+      "treeSha256": "1b60b5f1392951f30450a3f77493f8e7b37a62d61c8b2e2d227cfa5759c2450b"
+    },
+    "postWaveWwwFingerprint": {
+      "fileCount": 172,
+      "totalBytes": 8825934,
+      "treeSha256": "7b1cc1c122bfbdd09e6b4a0bbc3c3015b2366b20ae11b79584df0f06c6e9d018"
+    },
+    "undoRegistry": {
+      "path": "tests/fixtures/fix-wave/undo-registry.json",
+      "bytes": 102407,
+      "sha256": "89593c4174072c15b70032f1759428758003aaa12f59c7294ee88059c38d5ded"
+    }
+  },
+  "undoLayer": {
+    "helper": {
+      "path": "tests/lib/fix-wave-undo.mjs",
+      "bytes": 2142,
+      "sha256": "687cd85c29147cc1845bc616dd4552337b4be45d4c487f2b3d4478b29fe36a84"
+    },
+    "files": [
+      {
+        "path": "www/auto-backup.js",
+        "preBytes": 28328,
+        "postBytes": 37781,
+        "preSha256": "ecccabff13285a5ca6639fea9d2402f2824ca19664e3429bdb05e68c602bad1f",
+        "postSha256": "a33842d273ce511b0e4a5decb361c8c05c85f87bc7027d2522d89cf1db091279",
+        "hunks": 23
+      },
+      {
+        "path": "www/c1-control-desk.js",
+        "preBytes": 12405,
+        "postBytes": 12546,
+        "preSha256": "648bb4b6cfb2c0f011d852aa721155f1b7cf1050c0bcf8c595cbb9f127734c50",
+        "postSha256": "bb552bfb7cc46164f759c4a605dc8534aa40da73786ac78c4ef570961f7f3906",
+        "hunks": 2
+      },
+      {
+        "path": "www/dashboard-policy.js",
+        "preBytes": 1012,
+        "postBytes": 5703,
+        "preSha256": "34f0f449214be299ca7ac0cb84da158af020e122b0ac192dad9b7bafbacf9ce7",
+        "postSha256": "b63effcb3d0937ecb55b437ff01cf5024b70cb0d3d4435894035bda46beecf88",
+        "hunks": 2
+      },
+      {
+        "path": "www/demo-seed.js",
+        "preBytes": 75300,
+        "postBytes": 78237,
+        "preSha256": "5f66a4d286e15c7e3fe890b2561113ed6be2e2aab4841adab5330fff5735b12d",
+        "postSha256": "dc52587f8543cd71106ad65c4db03db3c9e018f2935f784859ab8cf5282da6c6",
+        "hunks": 21
+      },
+      {
+        "path": "www/etp-module-gateway.js",
+        "preBytes": 44327,
+        "postBytes": 44353,
+        "preSha256": "67912d251cb8263eb52b3e724e2b1ba8dcc8c2d2ed541c5a6560a51918de7c4f",
+        "postSha256": "e092e7a6b93d9b8eeaf681f484a0b99822c245b39471ccdae191b18871e5207f",
+        "hunks": 1
+      },
+      {
+        "path": "www/index.html",
+        "preBytes": 579370,
+        "postBytes": 579789,
+        "preSha256": "b2f21cc5c0b4839f4213bfe77bc919524e85a07aaeaf67d3a4057db812431916",
+        "postSha256": "b8e7e2eed27090602cc8624fcf5d6d400f7d9fa9e9d711ee155261c60c7ef790",
+        "hunks": 67
+      },
+      {
+        "path": "www/integration-bridge.js",
+        "preBytes": 71187,
+        "postBytes": 80564,
+        "preSha256": "b83efb987a93c3297c3b9f378b13c204ba596fcc045341b9cd2575eecf072d55",
+        "postSha256": "47a2db320d0c186694b30c1bbf1cfbe77306805c7a076d8c6dc53a8b18bccc7c",
+        "hunks": 31
+      },
+      {
+        "path": "www/mobile-shell.css",
+        "preBytes": 2071,
+        "postBytes": 2531,
+        "preSha256": "c9b17aff7342e8b73b15f2cd05bc6e0ededc8a439bbbb7d24d4c1b2d82aa8f03",
+        "postSha256": "2c9903ec722eeb1fb676b6c0b4f44be7089b081d5100172f72ed40bc756bb1f3",
+        "hunks": 1
+      },
+      {
+        "path": "www/module-manifest.js",
+        "preBytes": 34733,
+        "postBytes": 34733,
+        "preSha256": "3a8a819b8823ddf2264592a973c9a08429744b3b04037bff0ab12924a362b322",
+        "postSha256": "c7a5c0f145509094d0205462a337b20ec93a22977af4a3c9634b1122010d2282",
+        "hunks": 15
+      },
+      {
+        "path": "www/modules/cro_audit/index.html",
+        "preBytes": 109254,
+        "postBytes": 114663,
+        "preSha256": "e2ee0550b4019b43af08ecce96d9fd32a5c820b8268b5889944904ceb2749db2",
+        "postSha256": "f824ec1157e55a9f266c2a4f2162d67a157e96a221c8f59d527610f00d43636c",
+        "hunks": 33
+      },
+      {
+        "path": "www/modules/dsr/index.html",
+        "preBytes": 142125,
+        "postBytes": 151213,
+        "preSha256": "f692513e0ae4ca2c23f3d81d1c255e8a292a74b2d67280e0c0b93421f767e9f9",
+        "postSha256": "faac2f8ce947ecca5d082855ba159e31ec52535b4d97921c6f4249e9dcc866ac",
+        "hunks": 47
+      },
+      {
+        "path": "www/modules/etp/index.html",
+        "preBytes": 136961,
+        "postBytes": 136956,
+        "preSha256": "ea818122c5c00bd8a11dc7470134409c0ed393374cdf14909a6fa5df5b4824c1",
+        "postSha256": "442135d9599103fe58cd1e27de2808fbb9c11d913e845d99467e50c75244c7ae",
+        "hunks": 1
+      },
+      {
+        "path": "www/modules/expense/index.html",
+        "preBytes": 168863,
+        "postBytes": 177168,
+        "preSha256": "d668b8381edf654c54467ac39e1832de2e5b440186d037a9efbe981b2419b99c",
+        "postSha256": "8c231ac500dcdb12c5a0de1302c55e7548fb57e0a8ca62a444fbd3c1ca9c5bbb",
+        "hunks": 36
+      },
+      {
+        "path": "www/modules/grooming/index.html",
+        "preBytes": 64778,
+        "postBytes": 83181,
+        "preSha256": "6ae521a672e18bc85fb89649b7928b2bb94b6c3a380e4cb9ffe651d2cdd4d396",
+        "postSha256": "0daebce8cbe61f54f3a2fb2d49e9bf46918207de41580c906aceb62ba399de30",
+        "hunks": 5
+      },
+      {
+        "path": "www/modules/leave/index.html",
+        "preBytes": 136545,
+        "postBytes": 149512,
+        "preSha256": "2a5e6cea877d8bbbf233f72f096fd3b2d591614efb7cf90b4150f48fadd19e90",
+        "postSha256": "bb4977c33d1aaeed37f94214dc5aefedebef52b4fd7a88a39f964024de3b5c8c",
+        "hunks": 56
+      },
+      {
+        "path": "www/modules/payroll/index.html",
+        "preBytes": 219484,
+        "postBytes": 227839,
+        "preSha256": "4f2fe1c64fc6262e510d37db15ab24f1ec0e9f57a3d9a56d1f038863a409102f",
+        "postSha256": "e04a681a33721dd91d4591c515ac061d7a79f76c3bfabdd78f9fedfb29283e76",
+        "hunks": 36
+      },
+      {
+        "path": "www/modules/planning/index.html",
+        "preBytes": 14670,
+        "postBytes": 14990,
+        "preSha256": "dad7b6707f30cb5c8d94cddab3d218779118b817d896bc2d668a77e753a6bffb",
+        "postSha256": "7ca1fb9e4faf4e2647b22448df46dc84087f36e063c66a5d7bd914b11dd75f2b",
+        "hunks": 5
+      },
+      {
+        "path": "www/modules/qms/index.html",
+        "preBytes": 149652,
+        "postBytes": 154359,
+        "preSha256": "927790da02217cc920c87573cd1cd7494736342655949acd2e55b8bc2e6eb6aa",
+        "postSha256": "8ad57f393bb63cf823b16e414c779c3dc46dac22a166065000047f9725b7072a",
+        "hunks": 24
+      },
+      {
+        "path": "www/modules/service/index.html",
+        "preBytes": 192878,
+        "postBytes": 206486,
+        "preSha256": "492689a8d982e3bfc648cb12e9cb60c189f2034675bf3c11742bdef3d199c56c",
+        "postSha256": "40346d51480c0583ce3545239b382fe855151440d3570f12070c6aaf5869bf07",
+        "hunks": 48
+      },
+      {
+        "path": "www/modules/service/service-ui.css",
+        "preBytes": 47207,
+        "postBytes": 47777,
+        "preSha256": "3204554d562a4ef78df74dd4ab02dc288247acd6e8da0db8406c69cead8832dc",
+        "postSha256": "8ac3c6f77f87925128f15774220815af3a101aba4e42892b0201f08ed48603f0",
+        "hunks": 1
+      },
+      {
+        "path": "www/modules/stock/index.html",
+        "preBytes": 167716,
+        "postBytes": 179372,
+        "preSha256": "548d1f4f5e1b1b4b9b04f14ec73c73537fb7ca470094055afb34379ff229392d",
+        "postSha256": "2e3a89459ff82c405fb709657e48073f3d2407d77ec592b28966fa46583927f8",
+        "hunks": 50
+      },
+      {
+        "path": "www/modules/tax/index.html",
+        "preBytes": 191063,
+        "postBytes": 196782,
+        "preSha256": "9da8a3b4107342d99efbed44395c5372f03d7594da342115d2d27d8ac4ffa8a1",
+        "postSha256": "91ac2b6625d2a79c791d669ac69a58260fc47886c78d453d171196ae34c8764e",
+        "hunks": 25
+      },
+      {
+        "path": "www/modules/tax/tax-ui.css",
+        "preBytes": 43128,
+        "postBytes": 43302,
+        "preSha256": "acd9a5fa82f71c7e864fc27333f3f668aef65b7cb83a0c8f4ac55c71cdf9a352",
+        "postSha256": "d922c8f7d68a24de8208d19c595d1fe9b15c65f9d2b69f60e30d3d4ba28d9903",
+        "hunks": 4
+      },
+      {
+        "path": "www/offdevice-backup.js",
+        "preBytes": 11985,
+        "postBytes": 12154,
+        "preSha256": "d7f748dbca18edc83e293990df15c2c9582b867329663a368834fb80ed2f7e19",
+        "postSha256": "e564a2fd2d62cef253002c0cb4299a62678554323a015720e2311513e57e1887",
+        "hunks": 1
+      },
+      {
+        "path": "www/saagar-report.js",
+        "preBytes": 165737,
+        "postBytes": 177751,
+        "preSha256": "86f56c7ae9698804b826c66991254275f55908fd07922d503bb118a33fd087b6",
+        "postSha256": "54c455e9cb640e7fe7089e2cec1ea5a33bb89290423149648e32a3d3cb010735",
+        "hunks": 46
+      },
+      {
+        "path": "www/shared/module-runtime.js",
+        "preBytes": 20392,
+        "postBytes": 22241,
+        "preSha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
+        "postSha256": "a7882afd3e755c44bd29acf9755bf114927d0b15fa643b6bb9303f215b5baac0",
+        "hunks": 3
+      },
+      {
+        "path": "www/storage-core.js",
+        "preBytes": 90150,
+        "postBytes": 90348,
+        "preSha256": "f58bd86058c0f4dc3dd577e348bc053a035efd3a6b7624f8526d95469c05d69e",
+        "postSha256": "34f5683bbabf98f32d51cbf497f02737d13fea6798aaced024accf80272f1a6d",
+        "hunks": 1
+      }
+    ],
+    "created": [],
+    "ownerApprovedAuditAnchorChanges": [
+      "www/storage-core.js"
+    ],
+    "hookSites": [
+      "tests/lib/phase6c-historical-root.mjs (tree undo, first statement of reconstructPhase6cBoundaryWww)",
+      "tests/lib/phase6g-family-b-source.mjs",
+      "tests/lib/phase6f-family-a-source.mjs",
+      "tests/lib/phase6e-stock-source.mjs",
+      "tests/lib/phase6g-shell-source.mjs",
+      "tests/lib/phase6h1-etp-source.mjs"
+    ],
+    "statement": "No frozen expected hash, byte count or evidence file was edited. The undo gives the historical helpers the exact pre-wave bytes; an unregistered edit stays red."
+  },
+  "identitiesRegenerated": {
+    "moduleManifest": {
+      "path": "www/module-manifest.js",
+      "old": {
+        "bytes": 34733,
+        "sha256": "3a8a819b8823ddf2264592a973c9a08429744b3b04037bff0ab12924a362b322"
+      },
+      "new": {
+        "bytes": 34733,
+        "sha256": "c7a5c0f145509094d0205462a337b20ec93a22977af4a3c9634b1122010d2282"
+      },
+      "recordsMoved": [
+        {
+          "kind": "modules",
+          "id": "stock",
+          "file": "modules/stock/index.html",
+          "oldBytes": 167716,
+          "newBytes": 179372,
+          "oldSha256": "548d1f4f5e1b1b4b9b04f14ec73c73537fb7ca470094055afb34379ff229392d",
+          "newSha256": "2e3a89459ff82c405fb709657e48073f3d2407d77ec592b28966fa46583927f8"
+        },
+        {
+          "kind": "modules",
+          "id": "service",
+          "file": "modules/service/index.html",
+          "oldBytes": 192878,
+          "newBytes": 206486,
+          "oldSha256": "492689a8d982e3bfc648cb12e9cb60c189f2034675bf3c11742bdef3d199c56c",
+          "newSha256": "40346d51480c0583ce3545239b382fe855151440d3570f12070c6aaf5869bf07"
+        },
+        {
+          "kind": "modules",
+          "id": "qms",
+          "file": "modules/qms/index.html",
+          "oldBytes": 149652,
+          "newBytes": 154359,
+          "oldSha256": "927790da02217cc920c87573cd1cd7494736342655949acd2e55b8bc2e6eb6aa",
+          "newSha256": "8ad57f393bb63cf823b16e414c779c3dc46dac22a166065000047f9725b7072a"
+        },
+        {
+          "kind": "modules",
+          "id": "dsr",
+          "file": "modules/dsr/index.html",
+          "oldBytes": 142125,
+          "newBytes": 151213,
+          "oldSha256": "f692513e0ae4ca2c23f3d81d1c255e8a292a74b2d67280e0c0b93421f767e9f9",
+          "newSha256": "faac2f8ce947ecca5d082855ba159e31ec52535b4d97921c6f4249e9dcc866ac"
+        },
+        {
+          "kind": "modules",
+          "id": "expense",
+          "file": "modules/expense/index.html",
+          "oldBytes": 168863,
+          "newBytes": 177168,
+          "oldSha256": "d668b8381edf654c54467ac39e1832de2e5b440186d037a9efbe981b2419b99c",
+          "newSha256": "8c231ac500dcdb12c5a0de1302c55e7548fb57e0a8ca62a444fbd3c1ca9c5bbb"
+        },
+        {
+          "kind": "modules",
+          "id": "grooming",
+          "file": "modules/grooming/index.html",
+          "oldBytes": 64778,
+          "newBytes": 83181,
+          "oldSha256": "6ae521a672e18bc85fb89649b7928b2bb94b6c3a380e4cb9ffe651d2cdd4d396",
+          "newSha256": "0daebce8cbe61f54f3a2fb2d49e9bf46918207de41580c906aceb62ba399de30"
+        },
+        {
+          "kind": "modules",
+          "id": "cro_audit",
+          "file": "modules/cro_audit/index.html",
+          "oldBytes": 109254,
+          "newBytes": 114663,
+          "oldSha256": "e2ee0550b4019b43af08ecce96d9fd32a5c820b8268b5889944904ceb2749db2",
+          "newSha256": "f824ec1157e55a9f266c2a4f2162d67a157e96a221c8f59d527610f00d43636c"
+        },
+        {
+          "kind": "modules",
+          "id": "payroll",
+          "file": "modules/payroll/index.html",
+          "oldBytes": 219484,
+          "newBytes": 227839,
+          "oldSha256": "4f2fe1c64fc6262e510d37db15ab24f1ec0e9f57a3d9a56d1f038863a409102f",
+          "newSha256": "e04a681a33721dd91d4591c515ac061d7a79f76c3bfabdd78f9fedfb29283e76"
+        },
+        {
+          "kind": "modules",
+          "id": "leave",
+          "file": "modules/leave/index.html",
+          "oldBytes": 136545,
+          "newBytes": 149512,
+          "oldSha256": "2a5e6cea877d8bbbf233f72f096fd3b2d591614efb7cf90b4150f48fadd19e90",
+          "newSha256": "bb4977c33d1aaeed37f94214dc5aefedebef52b4fd7a88a39f964024de3b5c8c"
+        },
+        {
+          "kind": "modules",
+          "id": "tax",
+          "file": "modules/tax/index.html",
+          "oldBytes": 191063,
+          "newBytes": 196782,
+          "oldSha256": "9da8a3b4107342d99efbed44395c5372f03d7594da342115d2d27d8ac4ffa8a1",
+          "newSha256": "91ac2b6625d2a79c791d669ac69a58260fc47886c78d453d171196ae34c8764e"
+        },
+        {
+          "kind": "modules",
+          "id": "planning",
+          "file": "modules/planning/index.html",
+          "oldBytes": 14670,
+          "newBytes": 14990,
+          "oldSha256": "dad7b6707f30cb5c8d94cddab3d218779118b817d896bc2d668a77e753a6bffb",
+          "newSha256": "7ca1fb9e4faf4e2647b22448df46dc84087f36e063c66a5d7bd914b11dd75f2b"
+        },
+        {
+          "kind": "modules",
+          "id": "etp",
+          "file": "modules/etp/index.html",
+          "oldBytes": 136961,
+          "newBytes": 136956,
+          "oldSha256": "ea818122c5c00bd8a11dc7470134409c0ed393374cdf14909a6fa5df5b4824c1",
+          "newSha256": "442135d9599103fe58cd1e27de2808fbb9c11d913e845d99467e50c75244c7ae"
+        },
+        {
+          "kind": "sharedAssets",
+          "id": "module-runtime",
+          "file": "shared/module-runtime.js",
+          "oldBytes": 20392,
+          "newBytes": 22241,
+          "oldSha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47",
+          "newSha256": "a7882afd3e755c44bd29acf9755bf114927d0b15fa643b6bb9303f215b5baac0"
+        },
+        {
+          "kind": "sharedAssets",
+          "id": "service-ui-css",
+          "file": "modules/service/service-ui.css",
+          "oldBytes": 47207,
+          "newBytes": 47777,
+          "oldSha256": "3204554d562a4ef78df74dd4ab02dc288247acd6e8da0db8406c69cead8832dc",
+          "newSha256": "8ac3c6f77f87925128f15774220815af3a101aba4e42892b0201f08ed48603f0"
+        },
+        {
+          "kind": "sharedAssets",
+          "id": "tax-ui-css",
+          "file": "modules/tax/tax-ui.css",
+          "oldBytes": 43128,
+          "newBytes": 43302,
+          "oldSha256": "acd9a5fa82f71c7e864fc27333f3f668aef65b7cb83a0c8f4ac55c71cdf9a352",
+          "newSha256": "d922c8f7d68a24de8208d19c595d1fe9b15c65f9d2b69f60e30d3d4ba28d9903"
+        }
+      ]
+    },
+    "golden": {
+      "path": "verification/module-build-golden-hashes.json",
+      "old": {
+        "bytes": 1591,
+        "sha256": "7bc04a5bbaeea4e884ba1a221d8fbb7cebe1b6f6768048a964fc9f1f9a54128e"
+      },
+      "new": {
+        "bytes": 1591,
+        "sha256": "a71091fe27712cfc4dbc3bb3571f0396586b834b759099edb23c9a43ce8ea43a"
+      },
+      "entriesMoved": [
+        {
+          "id": "stock",
+          "oldBytes": 167716,
+          "newBytes": 179372,
+          "oldSha256": "548d1f4f5e1b1b4b9b04f14ec73c73537fb7ca470094055afb34379ff229392d",
+          "newSha256": "2e3a89459ff82c405fb709657e48073f3d2407d77ec592b28966fa46583927f8"
+        },
+        {
+          "id": "service",
+          "oldBytes": 192878,
+          "newBytes": 206486,
+          "oldSha256": "492689a8d982e3bfc648cb12e9cb60c189f2034675bf3c11742bdef3d199c56c",
+          "newSha256": "40346d51480c0583ce3545239b382fe855151440d3570f12070c6aaf5869bf07"
+        },
+        {
+          "id": "qms",
+          "oldBytes": 149652,
+          "newBytes": 154359,
+          "oldSha256": "927790da02217cc920c87573cd1cd7494736342655949acd2e55b8bc2e6eb6aa",
+          "newSha256": "8ad57f393bb63cf823b16e414c779c3dc46dac22a166065000047f9725b7072a"
+        },
+        {
+          "id": "dsr",
+          "oldBytes": 142125,
+          "newBytes": 151213,
+          "oldSha256": "f692513e0ae4ca2c23f3d81d1c255e8a292a74b2d67280e0c0b93421f767e9f9",
+          "newSha256": "faac2f8ce947ecca5d082855ba159e31ec52535b4d97921c6f4249e9dcc866ac"
+        },
+        {
+          "id": "expense",
+          "oldBytes": 168863,
+          "newBytes": 177168,
+          "oldSha256": "d668b8381edf654c54467ac39e1832de2e5b440186d037a9efbe981b2419b99c",
+          "newSha256": "8c231ac500dcdb12c5a0de1302c55e7548fb57e0a8ca62a444fbd3c1ca9c5bbb"
+        },
+        {
+          "id": "grooming",
+          "oldBytes": 64778,
+          "newBytes": 83181,
+          "oldSha256": "6ae521a672e18bc85fb89649b7928b2bb94b6c3a380e4cb9ffe651d2cdd4d396",
+          "newSha256": "0daebce8cbe61f54f3a2fb2d49e9bf46918207de41580c906aceb62ba399de30"
+        },
+        {
+          "id": "cro_audit",
+          "oldBytes": 109254,
+          "newBytes": 114663,
+          "oldSha256": "e2ee0550b4019b43af08ecce96d9fd32a5c820b8268b5889944904ceb2749db2",
+          "newSha256": "f824ec1157e55a9f266c2a4f2162d67a157e96a221c8f59d527610f00d43636c"
+        },
+        {
+          "id": "payroll",
+          "oldBytes": 219484,
+          "newBytes": 227839,
+          "oldSha256": "4f2fe1c64fc6262e510d37db15ab24f1ec0e9f57a3d9a56d1f038863a409102f",
+          "newSha256": "e04a681a33721dd91d4591c515ac061d7a79f76c3bfabdd78f9fedfb29283e76"
+        },
+        {
+          "id": "leave",
+          "oldBytes": 136545,
+          "newBytes": 149512,
+          "oldSha256": "2a5e6cea877d8bbbf233f72f096fd3b2d591614efb7cf90b4150f48fadd19e90",
+          "newSha256": "bb4977c33d1aaeed37f94214dc5aefedebef52b4fd7a88a39f964024de3b5c8c"
+        },
+        {
+          "id": "tax",
+          "oldBytes": 191063,
+          "newBytes": 196782,
+          "oldSha256": "9da8a3b4107342d99efbed44395c5372f03d7594da342115d2d27d8ac4ffa8a1",
+          "newSha256": "91ac2b6625d2a79c791d669ac69a58260fc47886c78d453d171196ae34c8764e"
+        },
+        {
+          "id": "planning",
+          "oldBytes": 14670,
+          "newBytes": 14990,
+          "oldSha256": "dad7b6707f30cb5c8d94cddab3d218779118b817d896bc2d668a77e753a6bffb",
+          "newSha256": "7ca1fb9e4faf4e2647b22448df46dc84087f36e063c66a5d7bd914b11dd75f2b"
+        },
+        {
+          "id": "etp",
+          "oldBytes": 136961,
+          "newBytes": 136956,
+          "oldSha256": "ea818122c5c00bd8a11dc7470134409c0ed393374cdf14909a6fa5df5b4824c1",
+          "newSha256": "442135d9599103fe58cd1e27de2808fbb9c11d913e845d99467e50c75244c7ae"
+        }
+      ]
+    },
+    "shellAssetManifest": {
+      "path": "www/shell-asset-manifest.js",
+      "regenerated": false,
+      "reason": "No shell asset (shell-core.css, shell-report.css and the others) was changed by the wave; every record still matches its file.",
+      "file": {
+        "bytes": 2341,
+        "sha256": "4a928b40f8ca986581e92c9b57d1f58e534a3f3d00159c91da97cc907dd00c66"
+      }
+    },
+    "gate0": {
+      "regenerated": false,
+      "reason": "npm run test:v6-gate0 was green after the manifest refresh, so create-v6-etp-gate0-freeze.mjs was not run."
+    },
+    "capabilityLedger": {
+      "path": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+      "regenerated": true,
+      "reason": "Regenerated by the B4 Opus audit and again by the B5a closer (no constant changed, only the Expense outcome hashes and the inventory sha moved) with node scripts/analyze-modular-capability-delta.mjs --write, after the two undeclared backup keys were removed from the product and the plan-required Service counter removal was given its own exact-id class.",
+      "old": {
+        "bytes": 1532646,
+        "sha256": "291d60e71fa7ec396ca38b03c24af47fa5b7b90d1d965595ce520f6ba44127c4"
+      },
+      "new": {
+        "bytes": 1582025,
+        "sha256": "21d963407d99a4c3f588b6ed7c2f4991473666a0745e73e82ed5a79fcebb3be1"
+      },
+      "oldInventorySha256": "704bed0b2feb2aad5a0c63cdb155f9b123ad059cd58d165c2beb0bb5e33aaa02",
+      "newInventorySha256": "6b806a9e3401cfe4e587b45abdaddd7a79297edb763eecb0db8df573fd15a994",
+      "current": {
+        "capabilities": 752,
+        "categories": {
+          "failure-posture": 122,
+          "permission": 32,
+          "persisted-outcome": 89,
+          "route": 13,
+          "visible-action": 496
+        },
+        "conflicts": 0,
+        "inventorySha256": "6b806a9e3401cfe4e587b45abdaddd7a79297edb763eecb0db8df573fd15a994"
+      },
+      "summary": {
+        "added": 449,
+        "bindingStructureChanged": 3,
+        "capabilityApprovalsRequired": 861,
+        "changed": 60,
+        "changedFailurePostures": 22,
+        "changedVisibleActions": 38,
+        "comparisonDeltaSha256": "85af319343e6480e74daa1f6eee44f2230c36bf1109483071cd98f0c4a652d69",
+        "handlerBodyHashOnly": 35,
+        "netCapabilities": 97,
+        "removed": 352,
+        "reportPresentationFallbacks": 1
+      },
+      "approvalStatus": "pending-owner-approval"
+    },
+    "analyser": {
+      "path": "scripts/analyze-modular-capability-delta.mjs",
+      "old": {
+        "bytes": 17289,
+        "sha256": "647a8cac4c38574411a449212a867ee217f628b2ab1717bb9d0e08b91cf2446c"
+      },
+      "new": {
+        "bytes": 19100,
+        "sha256": "59a955e288d8884130914f5914f1879d63076cb5cc38bf029bfa8c59b09f38bf"
+      },
+      "changes": "Frozen exact-id set APPROVED_FIXWAVE_STORAGE_KEY_IDS (4 ids, class fix-wave-2026-11-new-storage-key) and one exact id FIXWAVE_RETIRED_INVOICE_COUNTER_ID (class fix-wave-2026-11-retired-storage-key), both placed before the generic rules. Asserted constants are the measured values: 752 capabilities, permission 32, persisted-outcome 89, added 449, removed 352, changed 60, handler-body-hash-only 35, failure-posture-source-boundary-change 21, new-storage-key 4, retired-storage-key 1. Any other added or removed persisted key still throws."
+    },
+    "countTests": [
+      {
+        "path": "tests/modular-capability-delta.test.mjs",
+        "old": {
+          "bytes": 2506,
+          "sha256": "07edc3e05627f4a075eb17b25a451202fb458964a19d87a76510c47e8708fd26"
+        },
+        "new": {
+          "bytes": 2924,
+          "sha256": "e4ad518e86486273d9f06312535c1eb1f4b0ca1df0fcb69184a9a1b4bf0ed02b"
+        },
+        "constants": "748/443/350/41/834/21/17 to 752/449/352/60/861/35/22; the persisted-outcome delta check moved from \"0 rows\" to the exact list of 5 ids"
+      },
+      {
+        "path": "tests/phase1-shared-spine.test.mjs",
+        "old": {
+          "bytes": 7416,
+          "sha256": "f1efc2064b0d1cdd47f4123f15fdc62537e0fe36111d43a4220b97c42f13d785"
+        },
+        "new": {
+          "bytes": 7416,
+          "sha256": "edfaf51c8587ca600a4aae2bee9ec1cd96945b2effebf2ee33b5b8ab326a6353"
+        },
+        "constants": "748/834 to 752/861"
+      }
+    ]
+  },
+  "capabilityDelta": {
+    "declaredAndClassified": [
+      {
+        "id": "payroll:persist:2c70e12b7a0646f92279",
+        "kind": "persisted-outcome",
+        "key": "computed key (st_v4_restore_rollback_module_reset_payroll_<stamp>)",
+        "reviewClass": "fix-wave-2026-11-new-storage-key",
+        "plan": "G5 item 3"
+      },
+      {
+        "id": "payroll:persist:dd25a3198b0013d1d7c3",
+        "kind": "persisted-outcome",
+        "key": "st_v2_last_module_reset_v1 (ST_LAST_RESET_KEY)",
+        "reviewClass": "fix-wave-2026-11-new-storage-key",
+        "plan": "G5 item 3"
+      },
+      {
+        "id": "stock:persist:33b94f3f822ff4adb51a",
+        "kind": "persisted-outcome",
+        "key": "saagar_stk_clearlog_v1",
+        "reviewClass": "fix-wave-2026-11-new-storage-key",
+        "plan": "G5 item 2"
+      },
+      {
+        "id": "stock:persist:449d73e56af4d2b66503",
+        "kind": "persisted-outcome",
+        "key": "saagar_brands_hidden",
+        "reviewClass": "fix-wave-2026-11-new-storage-key",
+        "plan": "G5 item 2"
+      }
+    ],
+    "planRequiredRemoval": [
+      {
+        "id": "service:persist:556fd13bc825db2d2664",
+        "change": "removed",
+        "key": "saagar_invoice_seq_v1",
+        "reviewClass": "fix-wave-2026-11-retired-storage-key",
+        "plan": "Section 2.1 interface C (invoiceSeq inside saagar_wsf_settings_v1) and S08-1. Not written in the G5 list text; classified by the B4 Opus audit as plan-required. A removal, not a new capability. Owner reconfirmation pending."
+      }
+    ],
+    "declaredButNotASeparateRow": [
+      "G5 item 1: expense select #gstbasis. The A3 scanner produced no new visible-action row for it (visible-action count stays 496), so no ledger id exists for it.",
+      "G5 item 4: permission rows. Only script-saagar-report:permission:owner-session is new (permission rows 31 to 32). qms, expense, leave and cro_audit already carried a permission row, so no row was added for them.",
+      "G5 item 5: removal of one ST_WA_LINK postMessage site in cro_audit. Not a ledger row; the MAH-4 check M4 still reads 7 39 41 on the rebuilt historical tree."
+    ],
+    "identityRenamesInGenericClass": [
+      "shell detailed-change-log-v5-5 to detailed-change-log (S01, U02-006 title change; shell visible actions stay 118).",
+      "grooming cro-inp id swap (S14)."
+    ],
+    "undeclared": [],
+    "removedFromProductByAudit": [
+      {
+        "formerId": "script-auto-backup:persist:abce7407f95174a27c73",
+        "key": "bcc_autobackup_lastgood",
+        "note": "The last good backup figures now live in entries of the existing key bcc_autobackup_log (field good). No new storage key."
+      },
+      {
+        "formerId": "script-auto-backup:persist:7f8f133053927b00523e",
+        "key": "bcc_autobackup_suspect",
+        "note": "The first too-small run now lives in entries of bcc_autobackup_log (field suspectOf). Log trimming keeps the newest of each."
+      }
+    ],
+    "fixWaveRowsInLedger": [
+      {
+        "id": "payroll:persist:2c70e12b7a0646f92279",
+        "change": "added",
+        "reviewClass": "fix-wave-2026-11-new-storage-key"
+      },
+      {
+        "id": "payroll:persist:dd25a3198b0013d1d7c3",
+        "change": "added",
+        "reviewClass": "fix-wave-2026-11-new-storage-key"
+      },
+      {
+        "id": "service:persist:556fd13bc825db2d2664",
+        "change": "removed",
+        "reviewClass": "fix-wave-2026-11-retired-storage-key"
+      },
+      {
+        "id": "stock:persist:33b94f3f822ff4adb51a",
+        "change": "added",
+        "reviewClass": "fix-wave-2026-11-new-storage-key"
+      },
+      {
+        "id": "stock:persist:449d73e56af4d2b66503",
+        "change": "added",
+        "reviewClass": "fix-wave-2026-11-new-storage-key"
+      }
+    ],
+    "idsNewComparedWithPreIntegrationLedger": [
+      "added grooming:action:cro-inp:d6e0f95764",
+      "added payroll:persist:2c70e12b7a0646f92279",
+      "added payroll:persist:dd25a3198b0013d1d7c3",
+      "added script-saagar-report:permission:owner-session",
+      "added shell:action:detailed-change-log:f009974d69",
+      "added stock:persist:33b94f3f822ff4adb51a",
+      "added stock:persist:449d73e56af4d2b66503",
+      "changed payroll:action:add-employee:cd80f7e8e8",
+      "changed script-auto-backup:failure:posture",
+      "changed script-dashboard-policy:failure:posture",
+      "changed script-integration-bridge:failure:posture",
+      "changed script-offdevice-backup:failure:posture",
+      "changed script-saagar-report:failure:posture",
+      "changed shell:action:cfgroleselect:7c559a06ea",
+      "changed shell:action:clear-all-app-data:686d896524",
+      "changed shell:action:emformbtn:656448f1c8",
+      "changed shell:action:master-add-brands:4243c7c077",
+      "changed shell:action:master-add-customers:b7902726dd",
+      "changed shell:action:master-add-vendors:72b239db12",
+      "changed shell:action:publish-organisation:5dc1ecdf04",
+      "changed shell:action:publish-to-modules:f70f0b5c81",
+      "changed shell:action:restore-from-device-backup:02b30b7e84",
+      "changed shell:action:save-organisation:8069f60dc5",
+      "changed shell:action:save-rules:e43e9fc740",
+      "changed stock:action:add-brand:62a14e7fcf",
+      "changed stock:action:print-opening-register:5647881bb6",
+      "removed service:persist:556fd13bc825db2d2664",
+      "removed shell:action:detailed-change-log-v5-5:ea7b2f5a7a"
+    ],
+    "idsNoLongerInDeltaSet": [
+      "added grooming:action:cro-inp:2cf9dcd54d"
+    ],
+    "existingRowsWhoseOutcomeHashMoved": 85,
+    "existingRowsWhoseOutcomeHashMovedIds": [
+      "added cro_audit:action:cro-dup-btn:7e10f6b0a8",
+      "added cro_audit:action:h-cro:781528fc62",
+      "added cro_audit:action:h-from:d57ac97e84",
+      "added cro_audit:action:h-to:39f2c2247e",
+      "added cro_audit:action:s-mktg:82aa60114d",
+      "added cro_audit:action:s-nps-score:539c7055dd",
+      "added cro_audit:action:s-rate:a594c79f74",
+      "added cro_audit:action:s-reviews:a64f3612b3",
+      "added cro_audit:action:s-surveys:5f111a875b",
+      "added cro_audit:action:save-targets:b9bab66465",
+      "added cro_audit:action:submit-audit:f64aba0f7a",
+      "added dsr:action:dsr-manager-logout:05e87b769a",
+      "added dsr:action:dsr-staff-login:e78dd84e0f",
+      "added dsr:action:dsr-staff-logout:0fe7d34507",
+      "added expense:action:rolesel:58b47e0bca",
+      "added grooming:action:clear-day-s-data:acba2b593e",
+      "added grooming:action:export-csv:0783fde3c4",
+      "added grooming:action:grm-float-save:4259b76446",
+      "added grooming:action:save:211d1b3611",
+      "added leave:action:add-blackout:8984922b5c",
+      "added leave:action:add-employee:30e26b6a73",
+      "added leave:action:backup-before-clear:c55cffc19f",
+      "added leave:action:delete-everything:db696b74bc",
+      "added leave:action:export-leave-data:ce9d9874f2",
+      "added leave:action:hdrclearall:5dabff632b",
+      "added leave:action:importinput:65d437c4c9",
+      "added leave:action:leavecategory:691cea600a",
+      "added leave:action:leavefrom:88e53dfdd7",
+      "added leave:action:leavename:eed14abd90",
+      "added leave:action:leaveto:0b671e5f5b",
+      "added leave:action:leavetype:f168cc0677",
+      "added leave:action:print-calendar:315c45603f",
+      "added leave:action:save-entitlement-defaults:fa68bcd833",
+      "added leave:action:save-store-caps:416fefc3d1",
+      "added leave:action:save-weekly-off:05f5ac1e0a",
+      "added leave:action:submit-leave:52184d9bae",
+      "added payroll:action:create-voucher:69b0b0750e",
+      "added payroll:action:export-bank-csv:263a84f0a1",
+      "added payroll:action:json-import:62d5d0fd21",
+      "added payroll:action:member-wise-csv:d45b021adf",
+      "added payroll:action:reset-all:41f150434c",
+      "added payroll:action:save-settings:8eef5fa7f7",
+      "added payroll:action:slipgender:46501dd8d6",
+      "added payroll:action:slipsearch:6253873f6e",
+      "added payroll:action:snapshot:02d974236e",
+      "added planning:action:save:8588330d12",
+      "added qms:action:qms-role-switch-sidebar:71b76e6c84",
+      "added qms:action:rolebtn:1c106bad05",
+      "added service:action:add-follow-up:86b7620b71",
+      "added service:action:btn-export-csv:7836d2e3ba",
+      "added service:action:mark-as-delivered-amp-close-case:af977af257",
+      "added service:action:new-service-order:0930cd9fd5",
+      "added service:action:print-177e54a8c5:3410e33534",
+      "added service:action:print-55e02303ef:577b54ef8e",
+      "added service:action:print-8132c138b0:a9d03e3449",
+      "added service:action:proforma-invoice:e56b0ffa52",
+      "added service:action:save-order-179d14e8b0:d49def68cb",
+      "added service:action:save-order-235acec870:5205e676bf",
+      "added service:action:save-order-df9e5c6aa8:7aa416f779",
+      "added shell:action:moduleswitchbtn:27b13b3bb2",
+      "added stock:action:clear-day:7e3923ff7c",
+      "added stock:action:csv:bbad8b131a",
+      "added stock:action:del-submit-btn:a9f7032439",
+      "added stock:action:export-csv:5843876225",
+      "added stock:action:full-backup-json:a69c68add7",
+      "added stock:action:import-file:08034da045",
+      "added stock:action:json:bdf794e6cd",
+      "added stock:action:reset-to-defaults:db3bdf4625",
+      "added tax:action:tax-compliance-csv-export:fcf9ce3db2",
+      "added tax:action:tax-evidence-zip-export:8320aa582a",
+      "added tax:action:tax-firm-save:1febf9ec31",
+      "changed dsr:failure:posture",
+      "changed expense:failure:posture",
+      "changed grooming:failure:posture",
+      "changed leave:failure:posture",
+      "changed payroll:failure:posture",
+      "changed planning:failure:posture",
+      "changed qms:failure:posture",
+      "changed script-shared-module-runtime:failure:posture",
+      "changed service:failure:posture",
+      "changed shell:action:refresh:41bc1e903d",
+      "changed shell:action:refresh:95a3acaf4f",
+      "changed shell:failure:posture",
+      "changed stock:failure:posture",
+      "changed tax:failure:posture"
+    ],
+    "reconciliation": "Added persisted keys: exactly the 4 on G5. Removed persisted keys: 1, required by interface C. New permission rows: 1 (G5 item 4). Undeclared: none."
+  },
+  "existingTestsMigrated": {
+    "financialGolden": "tests/financial-golden.test.mjs, edited by the S07 writer exactly as S07 R-S16-1(1): optional parent stub in browserContext, async test, await of genTaxFeed, gstIncomeBasis exclusive. Expected numbers 680, 500, 180 unchanged.",
+    "sixPinTests": [
+      "tests/phase6f-payroll-migration.test.mjs (routing only; every expected number and hash unchanged)",
+      "tests/phase6f-service-migration.test.mjs (routing only; every expected number and hash unchanged)",
+      "tests/phase6g-dsr-migration.test.mjs (routing only; every expected number and hash unchanged)",
+      "tests/phase6g-leave-migration.test.mjs (routing only; every expected number and hash unchanged)",
+      "tests/phase6g-tax-migration.test.mjs (routing only; every expected number and hash unchanged)",
+      "tests/phase6g-cro-audit-migration.test.mjs (routing only; every expected number and hash unchanged)"
+    ],
+    "byB4OpusAudit": [
+      "tests/mah3-visual-review.test.mjs: the historical Planning canary test reads shared/module-runtime.js through undoFixWaveText (same as the rest of that historical test). Expected bytes and sha256 unchanged.",
+      "tests/phase6d-access-context-decision.test.mjs: the Owner-mode assertion follows the S13 U13-017 change (IMPORT or CONFIRM). It is now an exact line match, stricter than before.",
+      "tests/phase6f-payroll-migration.test.mjs and tests/phase6f-service-migration.test.mjs: the identity-presence checks now also run on the CURRENT text (they had been moved to the undone text only).",
+      "tests/fix-s03-autobackup.test.mjs: seeds and reads the last good figures through bcc_autobackup_log and status(); two tests added (log trimming keeps the figures and adds no key; a key with an empty name does not block the snapshot)."
+    ],
+    "helperHookSites": 6
+  },
+  "secondPassB5a": {
+    "productChanges": [
+      "www/modules/expense/index.html (S07 second pass, U06-F05 part B): the storage listener skips renders while a sync post runs and collapses a burst of storage events into one trailing render; syncCommit waits one animation frame so the Posting label paints first.",
+      "www/modules/expense/index.html (B5a closer): the inner helper of that wait was renamed from go to postPaintGo, so the A3 scanner no longer links it to the existing go() tab handler. No behaviour change."
+    ],
+    "identityStepsRepeated": "I-2 (manifest and golden refresh, only the expense records moved; shell asset manifest unchanged; test:v6-gate0 green), I-3a (regen-registry.sh), I-8 (ledger --write; every asserted count unchanged, no analyser or count-test edit).",
+    "newCapabilities": "none"
+  },
+  "testsAdded": {
+    "fixTestFiles": 80,
+    "files": [
+      "fix-S06-stock-brands.test.mjs",
+      "fix-S06-stock-clear-all.test.mjs",
+      "fix-S06-stock-import-balance.test.mjs",
+      "fix-S06-stock-import-lock.test.mjs",
+      "fix-S06-stock-limits.test.mjs",
+      "fix-S06-stock-x2f06-u05f09.test.mjs",
+      "fix-s01-master-validation.test.mjs",
+      "fix-s01-policy.test.mjs",
+      "fix-s01-requests.test.mjs",
+      "fix-s01-shell-source.test.mjs",
+      "fix-s01-tax-payroll-home.test.mjs",
+      "fix-s02-reports-brief.test.mjs",
+      "fix-s02-reports-csv.test.mjs",
+      "fix-s02-reports-invoice.test.mjs",
+      "fix-s02-reports-payroll-foot.test.mjs",
+      "fix-s02-reports-role.test.mjs",
+      "fix-s03-autobackup.test.mjs",
+      "fix-s03-bridge-data.test.mjs",
+      "fix-s03-offdevice-empty.test.mjs",
+      "fix-s03-storage-authoritative.test.mjs",
+      "fix-s04-csv-export.test.mjs",
+      "fix-s04-i18n.test.mjs",
+      "fix-s04-reports.test.mjs",
+      "fix-s04-role.test.mjs",
+      "fix-s04-validation.test.mjs",
+      "fix-s05-dsr-audit.test.mjs",
+      "fix-s05-dsr-entry.test.mjs",
+      "fix-s05-dsr-staff-csv-delete.test.mjs",
+      "fix-s07-expense-closed-day.test.mjs",
+      "fix-s07-expense-cross-group.test.mjs",
+      "fix-s07-expense-feed-gst.test.mjs",
+      "fix-s07-expense-lows.test.mjs",
+      "fix-s07-expense-role-ceiling.test.mjs",
+      "fix-s08-delivery-validation.test.mjs",
+      "fix-s08-ids-ledger.test.mjs",
+      "fix-s08-invoice-lock.test.mjs",
+      "fix-s08-print-export.test.mjs",
+      "fix-s08-reminders-i18n.test.mjs",
+      "fix-s09-leave-approval.test.mjs",
+      "fix-s09-leave-backup.test.mjs",
+      "fix-s09-leave-settings-access.test.mjs",
+      "fix-s09-leave-submit.test.mjs",
+      "fix-s10-c1-control-desk.test.mjs",
+      "fix-s10-payroll-inputs.test.mjs",
+      "fix-s10-payroll-mirror-and-cards.test.mjs",
+      "fix-s10-payroll-negative-pay.test.mjs",
+      "fix-s10-payroll-reset-all.test.mjs",
+      "fix-s11-tax-csv-days.test.mjs",
+      "fix-s11-tax-due-day.test.mjs",
+      "fix-s11-tax-evidence-zip.test.mjs",
+      "fix-s11-tax-filed-date.test.mjs",
+      "fix-s11-tax-filed-pill.test.mjs",
+      "fix-s11-tax-firm-validation.test.mjs",
+      "fix-s11-tax-load-state.test.mjs",
+      "fix-s11-tax-longname.test.mjs",
+      "fix-s11-tax-orphans.test.mjs",
+      "fix-s11-tax-undo-filing.test.mjs",
+      "fix-s12-planning-cro-edit-roundtrip.test.mjs",
+      "fix-s12-planning-cro-planning.test.mjs",
+      "fix-s12-planning-cro-review-request.test.mjs",
+      "fix-s12-planning-cro-scoring.test.mjs",
+      "fix-s13-demo-seed.test.mjs",
+      "fix-s13-etp-demo-e3.test.mjs",
+      "fix-s13-etp-demo-e6-e5.test.mjs",
+      "fix-s13-etp-demo-scope-views.test.mjs",
+      "fix-s13-etp-l10n-gap.test.mjs",
+      "fix-s13-etp-module-source.test.mjs",
+      "fix-s13-etp-publish-single-pin.test.mjs",
+      "fix-s14-grooming-l10n.test.mjs",
+      "fix-s14-grooming-seed-labels.test.mjs",
+      "fix-s14-grooming-small.test.mjs",
+      "fix-s14-phrase-package.test.mjs",
+      "fix-s14-x2-css.test.mjs",
+      "fix-s15-report-parity.test.mjs",
+      "fix-s15-role-table.test.mjs",
+      "fix-s15-runtime.test.mjs",
+      "fix-s15-shell-source.test.mjs",
+      "fix-s15-stepup-inventory.test.mjs",
+      "fix-s16-undo-registry.test.mjs",
+      "fix-s16-wave-guards.test.mjs"
+    ],
+    "helpers": [
+      "fix-S06-stock-vm.mjs",
+      "fix-s01-extract.mjs",
+      "fix-s02-load.mjs",
+      "fix-s03-bridge-harness.mjs",
+      "fix-s04-qms.mjs",
+      "fix-s07-expense-harness.mjs",
+      "fix-s08-source.mjs",
+      "fix-s09-leave-sandbox.mjs",
+      "fix-s10-payroll-harness.mjs",
+      "fix-s11-extract.mjs",
+      "fix-s12-cro-vm.mjs",
+      "fix-s13-dom.mjs",
+      "fix-s13-pres-dom.mjs",
+      "fix-s13-seed-harness.mjs",
+      "fix-s15-role-table.mjs",
+      "fix-wave-undo.mjs"
+    ],
+    "undoHelper": "tests/lib/fix-wave-undo.mjs",
+    "governanceTests": [
+      "tests/fix-s16-undo-registry.test.mjs",
+      "tests/fix-s16-wave-guards.test.mjs"
+    ],
+    "script": "test:fix-wave in package.json"
+  },
+  "frozenNotRegenerated": [
+    {
+      "path": "scripts/audit/capture-mutations.mjs",
+      "sha256": "55de546d53e29c04a47ad22e6f9a47378b94693c483f97ac97808e621995fb9f",
+      "nowSha256": "55de546d53e29c04a47ad22e6f9a47378b94693c483f97ac97808e621995fb9f"
+    },
+    {
+      "path": "scripts/audit/comparison.mjs",
+      "sha256": "f62333c196e13ee45fc16ddd87ffbe9c36a5542ed7728a984d2f96295dd949b7",
+      "nowSha256": "f62333c196e13ee45fc16ddd87ffbe9c36a5542ed7728a984d2f96295dd949b7"
+    },
+    {
+      "path": "scripts/audit/config.mjs",
+      "sha256": "b54b6c746c76caa7714a49e3683430b9d63e0e99c4c3704204cec5396f68e937",
+      "nowSha256": "b54b6c746c76caa7714a49e3683430b9d63e0e99c4c3704204cec5396f68e937"
+    },
+    {
+      "path": "scripts/audit/lib.mjs",
+      "sha256": "4eec39a7832b70cb19ae79d2cf78d32b6435be865ae8c11ef04a3cac2883c2e2",
+      "nowSha256": "4eec39a7832b70cb19ae79d2cf78d32b6435be865ae8c11ef04a3cac2883c2e2"
+    },
+    {
+      "path": "scripts/audit/runner-support.mjs",
+      "sha256": "155412469a03802fbc263426f88956884e58f8a78a775b3dd6f0338c3c462ec6",
+      "nowSha256": "155412469a03802fbc263426f88956884e58f8a78a775b3dd6f0338c3c462ec6"
+    },
+    {
+      "path": "tests/fixtures/phase6c/module-mobile-legacy.css",
+      "sha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443",
+      "nowSha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443"
+    },
+    {
+      "path": "tests/whole-app-audit-runner.test.mjs",
+      "sha256": "1d58c0cb53fa67f5e5db14ce4fb9281be002ac47feb33e6509102f2751592c79",
+      "nowSha256": "1d58c0cb53fa67f5e5db14ce4fb9281be002ac47feb33e6509102f2751592c79"
+    },
+    {
+      "path": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
+      "sha256": "3233df39b36a63dc83d62dbb0f7955f502ff0531d21404f6340dc986b9d7306a",
+      "nowSha256": "3233df39b36a63dc83d62dbb0f7955f502ff0531d21404f6340dc986b9d7306a"
+    },
+    {
+      "path": "verification/MAH4-MESSAGE-LIFECYCLE-BASELINE-PROFILE.json",
+      "sha256": "f143ecbc7012e9cb8f142bb003441a5152aaae20a64abe06d587b0fa7312870a",
+      "nowSha256": "f143ecbc7012e9cb8f142bb003441a5152aaae20a64abe06d587b0fa7312870a"
+    },
+    {
+      "path": "verification/MAH4-STAGE-B-RENDERED-RUNTIME-EVIDENCE-2026-08-07.json",
+      "sha256": "06ede72fa4179c268a9d8db655b5e01558b8afb0f3e209b54060f6657d87483b",
+      "nowSha256": "06ede72fa4179c268a9d8db655b5e01558b8afb0f3e209b54060f6657d87483b"
+    },
+    {
+      "path": "verification/MH1-MODULAR-PROTECTION-PROFILE.json",
+      "sha256": "47b104630f4f9928f394a02567b42a641850766c94dc207acf8fbe59ab729623",
+      "nowSha256": "47b104630f4f9928f394a02567b42a641850766c94dc207acf8fbe59ab729623"
+    },
+    {
+      "path": "verification/audit/PHASE-6C-CURRENT-SOURCE-PROFILE-2026-08-24.json",
+      "sha256": "98f25e597c57901989ba5509b336c7f5d6def8ba324ce6b088352e0c5c87738f",
+      "nowSha256": "98f25e597c57901989ba5509b336c7f5d6def8ba324ce6b088352e0c5c87738f"
+    },
+    {
+      "path": "verification/audit/PHASE-6C-PLANNING-VISUAL-RECEIPT-2026-08-24.json",
+      "sha256": "e0819699593fd2bf8e882ad7fd720598d2857fb04530dd170a513481dd3ec913",
+      "nowSha256": "e0819699593fd2bf8e882ad7fd720598d2857fb04530dd170a513481dd3ec913"
+    },
+    {
+      "path": "verification/audit/PHASE-6I-SOURCE-FREEZE-2026-08-24.json",
+      "sha256": "45f7f51bfd4ddf93e9cdd22528b97691c48303b9542105aebd6272c468c4324b",
+      "nowSha256": "45f7f51bfd4ddf93e9cdd22528b97691c48303b9542105aebd6272c468c4324b"
+    },
+    {
+      "path": "verification/audit/PHASE-6I-SOURCE-FREEZE-2026-08-24.md",
+      "sha256": "c60267f9f25445844bfdbe8370b6a013156527d495234c4a521a13a33db14d17",
+      "nowSha256": "c60267f9f25445844bfdbe8370b6a013156527d495234c4a521a13a33db14d17"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-12-11bb84abc74c.json",
+      "sha256": "8f463cb7e68a85c543232ce2fdbfee0aec8188a7b58af09f7a94a9da5be115aa",
+      "nowSha256": "8f463cb7e68a85c543232ce2fdbfee0aec8188a7b58af09f7a94a9da5be115aa"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-12-9b54d5bd0036.json",
+      "sha256": "3106a9246eef04fc6c5f8da0acb56ce71f5b48c146126654ca71530f5ac93595",
+      "nowSha256": "3106a9246eef04fc6c5f8da0acb56ce71f5b48c146126654ca71530f5ac93595"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-16-3f8a37cebf99.json",
+      "sha256": "4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858",
+      "nowSha256": "4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-17-cc9a117c5245.json",
+      "sha256": "fbce51a37b3026fc6ea2210d45cba054e5568f5fb2cfa289ffb13236ab7a0d3d",
+      "nowSha256": "fbce51a37b3026fc6ea2210d45cba054e5568f5fb2cfa289ffb13236ab7a0d3d"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json",
+      "sha256": "da5337f5b19f513bf98254494da4e489252c06d60c97c3da8a2435dccd4ef612",
+      "nowSha256": "da5337f5b19f513bf98254494da4e489252c06d60c97c3da8a2435dccd4ef612"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+      "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+      "nowSha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json",
+      "sha256": "4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237",
+      "nowSha256": "4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+      "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
+      "nowSha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-LOCALIZATION-APPROVAL-2026-08-21.json",
+      "sha256": "77776928c66bc27f255812ed58bdb78fed756f6f7f335326106342d5d73ab987",
+      "nowSha256": "77776928c66bc27f255812ed58bdb78fed756f6f7f335326106342d5d73ab987"
+    },
+    {
+      "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+      "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
+      "nowSha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260"
+    },
+    {
+      "path": "verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json",
+      "sha256": "e48ba79490ff1ac24adee1e1c2aa677393a2bfd4f6525dfe19dbc494cd34c0e1",
+      "nowSha256": "e48ba79490ff1ac24adee1e1c2aa677393a2bfd4f6525dfe19dbc494cd34c0e1"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4-PAYMENTTYPE25-QUARANTINE-APPROVAL-2026-08-21.json",
+      "sha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277",
+      "nowSha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "sha256": "40cdbd0078155b50ccb776d1a17ef7075c75c7d9ab5dbec786dc3d87e1095cb9",
+      "nowSha256": "40cdbd0078155b50ccb776d1a17ef7075c75c7d9ab5dbec786dc3d87e1095cb9"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "sha256": "2da51e5ca86db35c2cc112fd0bfd8fec1256917b3111aa4e999ae08b60055978",
+      "nowSha256": "2da51e5ca86db35c2cc112fd0bfd8fec1256917b3111aa4e999ae08b60055978"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json",
+      "sha256": "9e290f1313790f274ba450f1aa8d343858a3ebfd06d4c0586335f5020b82f458",
+      "nowSha256": "9e290f1313790f274ba450f1aa8d343858a3ebfd06d4c0586335f5020b82f458"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+      "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+      "nowSha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+      "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+      "nowSha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+      "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
+      "nowSha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719"
+    },
+    {
+      "path": "verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json",
+      "sha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9",
+      "nowSha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9"
+    },
+    {
+      "path": "verification/audit/approvals/WAVE-7-RELEASE-READINESS-ADDENDUM-2026-11-12.json",
+      "sha256": "cb9e8ab58c807580ea44899eefa6511ea1e7f2ab384e663a02f0f183336fe852",
+      "nowSha256": "cb9e8ab58c807580ea44899eefa6511ea1e7f2ab384e663a02f0f183336fe852"
+    },
+    {
+      "path": "verification/mah3-visual-review/MAH3-DSR-CANARY-EVIDENCE-2026-08-07.json",
+      "sha256": "ce3a6f046d57cff839139b7320904058186e6711d38a08ebd4df6fd06234f481",
+      "nowSha256": "ce3a6f046d57cff839139b7320904058186e6711d38a08ebd4df6fd06234f481"
+    },
+    {
+      "path": "verification/mah3-visual-review/MAH3-PLANNING-CANARY-EVIDENCE-2026-08-07.json",
+      "sha256": "bb7aefdab06351a3b39c5d24bc9a69df7ad841754d7bab700555a053d82ecdba",
+      "nowSha256": "bb7aefdab06351a3b39c5d24bc9a69df7ad841754d7bab700555a053d82ecdba"
+    },
+    {
+      "path": "verification/mah3-visual-review/MAH3-QMS-CANARY-EVIDENCE-2026-08-07.json",
+      "sha256": "7b4aaabeae40e153fa53b4a327964ea45795348c5b4f0b1cfd139278b5baf512",
+      "nowSha256": "7b4aaabeae40e153fa53b4a327964ea45795348c5b4f0b1cfd139278b5baf512"
+    },
+    {
+      "path": "verification/mah3-visual-review/MAH3-VISUAL-REVIEW-EVIDENCE-2026-08-07.json",
+      "sha256": "c34a623190db688f869c8e07462957de5eec35d0d88a668abb928208faa38305",
+      "nowSha256": "c34a623190db688f869c8e07462957de5eec35d0d88a668abb928208faa38305"
+    }
+  ],
+  "suiteResultsAtAudit": [
+    "01-test-manifest exit=0 tests=8 pass=8 fail=0 skipped=0 secs=0",
+    "02-test-v6-gate0 exit=0 tests=5 pass=5 fail=0 skipped=0 secs=0",
+    "03-modular-capability-delta exit=0 tests=2 pass=2 fail=0 skipped=0 secs=11",
+    "04-phase1-shared-spine exit=0 tests=6 pass=6 fail=0 skipped=0 secs=17",
+    "05-phase6b-shell-shared-control-identities exit=0 tests=3 pass=3 fail=0 skipped=0 secs=5",
+    "06-shell-module-frame-controller exit=0 tests=5 pass=5 fail=0 skipped=0 secs=0",
+    "07-phase6g-shell-responsive exit=0 tests=5 pass=5 fail=0 skipped=0 secs=1",
+    "08-phase6c-planning-legacy-css-extraction exit=0 tests=7 pass=7 fail=0 skipped=0 secs=1",
+    "09-phase6b-etp-control-identities exit=0 tests=3 pass=3 fail=0 skipped=0 secs=0",
+    "10-phase6c-current-profile exit=0 tests=2 pass=2 fail=0 skipped=0 secs=3",
+    "11-test-modular exit=1 tests=88 pass=87 fail=1 skipped=0 secs=22",
+    "12-test-mah3 exit=1 tests=19 pass=16 fail=3 skipped=0 secs=10",
+    "13-test-mah4 exit=0 tests=46 pass=46 fail=0 skipped=0 secs=13",
+    "14-test-phase0 exit=0 tests=112 pass=112 fail=0 skipped=0 secs=12",
+    "15-test-security exit=0 tests=101 pass=101 fail=0 skipped=0 secs=2",
+    "16-test-etp exit=0 tests=229 pass=229 fail=0 skipped=0 secs=2",
+    "17-test-etp-bridge exit=0 tests=186 pass=186 fail=0 skipped=0 secs=6",
+    "18-test-phase6h exit=0 tests=341 pass=341 fail=0 skipped=0 secs=10",
+    "19-test-phase6i exit=0 tests=3 pass=3 fail=0 skipped=0 secs=1",
+    "20-test-v6-etp-wave5 exit=0 tests=39 pass=39 fail=0 skipped=0 secs=4",
+    "21-test-v6-etp-wave6 exit=0 tests=19 pass=19 fail=0 skipped=0 secs=1",
+    "22-test-v6-etp-final-uat exit=0 tests=36 pass=36 fail=0 skipped=0 secs=0",
+    "23-test-reports exit=0 tests=9 pass=9 fail=0 skipped=0 secs=0",
+    "24-test-language exit=0 tests=11 pass=11 fail=0 skipped=0 secs=1",
+    "25-test-phase6d exit=0 tests=48 pass=48 fail=0 skipped=0 secs=2",
+    "26-test-phase6e exit=0 tests=48 pass=48 fail=0 skipped=0 secs=4",
+    "27-test-phase6f exit=0 tests=87 pass=87 fail=0 skipped=0 secs=7",
+    "28-test-phase6g exit=0 tests=257 pass=257 fail=0 skipped=0 secs=23",
+    "29-test-phase6h1 exit=0 tests=310 pass=310 fail=0 skipped=0 secs=9",
+    "30-test-c1 exit=0 tests=12 pass=12 fail=0 skipped=0 secs=1",
+    "31-test-mobile exit=0 tests=8 pass=8 fail=0 skipped=0 secs=0",
+    "32-test-settings exit=0 tests=8 pass=8 fail=0 skipped=0 secs=0",
+    "33-test-fix-wave exit=0 tests=573 pass=573 fail=0 skipped=0 secs=8",
+    "34-test-offline exit=1 tests=356 pass=355 fail=1 skipped=0 secs=27",
+    "35-whole-app-audit-runner exit=1 tests=80 pass=77 fail=3 skipped=0 secs=60",
+    "36-test-mah3-last exit=1 tests=19 pass=16 fail=3 skipped=0 secs=10",
+    "40-test-offline-body exit=0 tests=283 pass=283 fail=0 skipped=0 secs=3",
+    "41-test-v6-foundation exit=0 tests=10 pass=10 fail=0 skipped=0 secs=2",
+    "42-test-v6-etp-wave1 exit=0 tests=21 pass=21 fail=0 skipped=0 secs=1",
+    "43-test-v6-etp-wave2 exit=0 tests=24 pass=24 fail=0 skipped=0 secs=0",
+    "44-test-v6-etp-wave3 exit=0 tests=22 pass=22 fail=0 skipped=0 secs=1",
+    "45-test-v6-etp-wave4 exit=0 tests=41 pass=41 fail=0 skipped=0 secs=1",
+    "46-test-v6-etp-wave7 exit=0 tests=22 pass=22 fail=0 skipped=0 secs=1",
+    "47-test-v6-etp-wave8 exit=0 tests=17 pass=17 fail=0 skipped=0 secs=1",
+    "48-test-v6-etp-wave9 exit=0 tests=24 pass=24 fail=0 skipped=0 secs=1",
+    "49-test-v6-etp-wave10 exit=0 tests=44 pass=44 fail=0 skipped=0 secs=1",
+    "50-test-etp-authority exit=0 tests=5 pass=5 fail=0 skipped=0 secs=1",
+    "51-test-seeded-runtime exit=0 tests=1 pass=1 fail=0 skipped=0 secs=3",
+    "61-fix-s16-both exit=0 tests=10 pass=10 fail=0 skipped=0 secs=5",
+    "63-test-fix-wave-final exit=0 tests=573 pass=573 fail=0 skipped=0 secs=8",
+    "64-test-manifest-final exit=0 tests=8 pass=8 fail=0 skipped=0 secs=1"
+  ],
+  "knownReds": {
+    "expected": [
+      "test:mah3 DSR evidence and QMS evidence (mah-runtime-canaries): known before the wave.",
+      "test:mah3 Planning canary evidence (mah3-shared-runtime): new, certain, because planning/index.html and shared/module-runtime.js changed (plan OD-24). A human re-record or reclassification is needed. Not routed through the undo layer.",
+      "whole-app-audit-runner: 3 product-anchor tests, known before the wave."
+    ],
+    "notExpected": []
+  },
+  "ownerDecisions": {
+    "approvedInChat": "OD-1 to OD-4 and OD-6 approved (owner-decisions file). OD-5 (Hindi and Marathi wording package) on hold; www/app-i18n.js was not edited and no phrase row was added.",
+    "defaults": "OD-7 to OD-26 use the defaults in PLAN-fix-wave.md section 4 and stay open for the owner to change."
+  },
+  "scope": {
+    "doesNotClose": [
+      "A10-01 startup lab numbers",
+      "audit mutation allow-list (storage-core.js changed; tooling needs an owner re-freeze)",
+      "device acceptance",
+      "release, signing or version bump",
+      "native-language wording (OD-5)",
+      "GATE-ETP-PRODUCTION and GATE-ETP-BRIDGE-TRUST",
+      "MAH-3 visual evidence re-record (Planning, DSR, QMS)"
+    ]
+  },
+  "ownerReconfirmation": "Not yet given. The exact figures and ids above were not itemised to the owner in chat before this record was written.",
+  "registryNote": "The capability ledger remains pending-owner-approval and every delta stays ownerApproval pending."
+}

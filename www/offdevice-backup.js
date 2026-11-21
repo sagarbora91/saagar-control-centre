@@ -77,10 +77,10 @@
     return root.SaagarPortableBackup.createRecoveryProfile(passphrase).then(function (created) {
       recovery = created;
       return P.off.chooseFolder();
-    }).then(function (selected) {
+    }).then(async function (selected) {
       if (!selected || !selected.configured || !selected.destinationId) throw new Error('The selected off-device folder was not verified.');
       destination = selected;
-      var grant = exports.approveScheduled(exportMeta(selected.destinationId, 0));
+      var grant = await exports.approveScheduled(exportMeta(selected.destinationId, 0));
       if (!grant) throw new Error('Owner approval for automatic backup was not completed.');
       return P.key.wrapKey({ data: recovery.keyBase64 });
     }).then(function (wrapped) {
@@ -113,6 +113,7 @@
       if (typeof root.freshPortableBackupPayload !== 'function') throw new Error('Fresh portable-backup reader is unavailable.');
       return root.freshPortableBackupPayload();
     }).then(function (fresh) {
+      if (!fresh || !fresh.localStorage || !Object.keys(fresh.localStorage).length) throw new Error('The fresh backup has no app data, so it was not sent off-device.');
       payload = fresh;
       token = exports.authorizeScheduled(exportMeta(config.destinationId, rowCount(payload)));
       if (!token) throw new Error('Scheduled export authorization was blocked.');
@@ -173,10 +174,10 @@
     };
   }
 
-  function disable() {
+  async function disable() {
     var P, exports;
     try { P = plugins(); exports = exportApi(); } catch (err) { return Promise.reject(err); }
-    if (!exports.revokeScheduled()) return Promise.reject(new Error('Owner approval to disable automatic backup was not completed.'));
+    if (!await exports.revokeScheduled()) return Promise.reject(new Error('Owner approval to disable automatic backup was not completed.'));
     return P.off.clearFolder().catch(function () { return null; }).then(function () {
       if (!removeRaw()) throw new Error('Automatic-backup configuration could not be removed.');
       audit('backup.offdevice.disabled', {});

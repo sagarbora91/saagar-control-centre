@@ -1,0 +1,10 @@
+{
+  "format": "SAAGAR_AUDIT_CONTROLLED_PROBE_FAILURE",
+  "probe": "build",
+  "productFingerprintSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+  "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE",
+  "schemaVersion": 1,
+  "sourceSha": "a74904f054f25e6212f2e7634dd3fdd659147cce",
+  "status": "unmeasured",
+  "toolingSha": "a74904f054f25e6212f2e7634dd3fdd659147cce"
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "gate": "Supported devices and minimum Android version",
+  "decidedAt": "2026-11-11",
+  "decidedBy": "Sagar (Owner/Admin)",
+  "decisionSource": "owner decision given in chat, 2026-11-11: the app runs only on Samsung Tab S7 (SM-T875) on Android 13; 'Should the app formally require Android 13 - yes because I don't have any device below that.'",
+  "supportedDevices": [
+    { "device": "Samsung Galaxy Tab S7", "model": "SM-T875", "android": "13", "apiLevel": 33 }
+  ],
+  "minSdk": 33,
+  "previousMinSdk": 23,
+  "minSdkDefinedIn": "www/build-identity.js (minSdk), enforced into android/variables.gradle by build-overrides/apply-overrides.js",
+  "androidSixCompatibilityCode": {
+    "status": "RETAINED",
+    "note": "The prepare-api23-assets.mjs transforms, API-23 emulator scripts, API-23 compatibility tests and native API guards are kept unchanged for now. They are extra safety and no longer a release requirement. Removal is a separate, later, owner-reviewed change."
+  },
+  "gateDispositions": [
+    { "gate": "GATE-ETP-PHYSICAL", "scope": "physical API-23/OEM device ETP import and document-provider evidence", "disposition": "not applicable by owner scope decision", "isPass": false },
+    { "gate": "GATE-ETP-INTERRUPTION", "scope": "the API-23 part only; the non-API-23 interruption cases are NOT covered by this decision", "disposition": "not applicable by owner scope decision (API-23 part only)", "isPass": false },
+    { "gate": "GATE-UPDATE-API23", "scope": "install-replace evidence on API 23", "disposition": "not applicable by owner scope decision", "isPass": false }
+  ],
+  "notAPass": "Not applicable by owner scope decision is NOT the same as passed. This decision produced no API-23 evidence; earlier API-23 evidence remains historical.",
+  "unchangedGates": "All other gates keep their recorded state. scripts/audit/config.mjs OPEN_GATES is intentionally unchanged so the comparison with the audit baseline stays valid.",
+  "supersedes": [
+    { "record": "verification/audit/RELEASE-IDENTITY-APPROVAL-2026-11-11.json", "field": "identity.minSdk", "was": 23, "now": 33 }
+  ],
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null
+}

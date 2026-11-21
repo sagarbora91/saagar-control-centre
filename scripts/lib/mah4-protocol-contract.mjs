@@ -3,7 +3,7 @@ export const MAH4_VERSION = 1;
 
 export const MAH4_MODULE_IDS = Object.freeze([
   'stock', 'service', 'qms', 'dsr', 'expense', 'grooming',
-  'cro_audit', 'payroll', 'leave', 'tax', 'planning'
+  'cro_audit', 'payroll', 'leave', 'tax', 'planning', 'etp'
 ]);
 
 export const MAH4_TIMING = Object.freeze({
@@ -51,7 +51,8 @@ const OPEN_FEATURE_TARGETS = Object.freeze({
   cro_audit: ['audit', 'dashboard', 'history'],
   leave: ['calendar', 'agendas'],
   service: ['new', 'estimate', 'status'],
-  planning: []
+  planning: [],
+  etp: []
 });
 const OPEN_MODULE_TARGETS = Object.freeze({
   dsr: 'stock',

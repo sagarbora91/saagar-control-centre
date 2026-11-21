@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 const require = createRequire(import.meta.url);
 const dat02 = require('../www/persistence-acceptance.js');
+const storageCore = readFileSync(new URL('../www/storage-core.js', import.meta.url), 'utf8');
 
 function sample(exportMs, frameGapMs, totalMs, ok = true) { return { exportMs, frameGapMs, totalMs, ok }; }
 
@@ -16,4 +18,10 @@ test('DAT-02 fails closed for incomplete, errored, or over-budget samples', () =
   assert.equal(dat02.evaluate([sample(80, 100, 1000)]).accepted, false);
   assert.equal(dat02.evaluate([sample(80, 100, 1000), sample(80, 100, 1000), sample(80, 100, 1000), sample(80, 100, 1000), sample(80, 100, 1000, false)]).accepted, false);
   assert.equal(dat02.evaluate([sample(80, 100, 1000), sample(80, 100, 1000), sample(80, 100, 1000), sample(80, 100, 1000), sample(151, 100, 1000)]).accepted, false);
+});
+
+test('DAT-02 frame and total timings share the same monotonic clock', () => {
+  assert.match(storageCore, /var frameStart = perfNow\(\), beforeId = _persistCounter, totalStart = frameStart/);
+  assert.match(storageCore, /requestAnimationFrame\(function \(\) \{\s*var frameEnd = perfNow\(\)/);
+  assert.doesNotMatch(storageCore, /requestAnimationFrame\(function \(frame(?:Start|End)\)/);
 });

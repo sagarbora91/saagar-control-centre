@@ -1,0 +1,144 @@
+{
+  "format": "SAAGAR_PHASE5_IDENTITY_REBIND_APPROVAL",
+  "schemaVersion": 1,
+  "decision": "approve",
+  "state": "approved",
+  "receivedAt": "2026-08-22T21:43:31+05:30",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "roles": [
+      "business-owner",
+      "fluent-marathi-hindi-reviewer",
+      "physical-device-acceptor"
+    ]
+  },
+  "ownerDirectionText": "lets Rebind approvals to corrected commit `a104f5f`",
+  "identity": {
+    "priorProductCommit": "c809d04e4b67c6239218d5707908ac64f25fc94a",
+    "priorProductFingerprintSha256": "3527503aa332c01f5c1c0ecb669f36a2d79a930f1fe0e106054db527067823a2",
+    "priorWwwTreeSha256": "1cb83a7f8a19d177e9be028285130080c79f219798f77e88843d332b16fcda41",
+    "correctedProductCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9",
+    "correctedProductFingerprintSha256": "4e42cf230b9650a7e0f8ad30633dbf639d2158215d99232dfe14f0ab90716667",
+    "correctedWwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5",
+    "correctedSeededApkSha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
+    "correctedSeededApkBytes": 7218076,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "signingClass": "debug-signed seeded test candidate, not a production release"
+  },
+  "boundedDeltaVerification": {
+    "productDeltaSincePriorApproval": "Build/test/audit-control maintenance plus one shipped WWW file. The only changed shipped WWW file is www/storage-core.js.",
+    "runtimeDelta": {
+      "path": "www/storage-core.js",
+      "sha256": "f58bd86058c0f4dc3dd577e348bc053a035efd3a6b7624f8526d95469c05d69e",
+      "scope": "DAT-02 timing instrumentation uses performance.now() for both frame endpoints and total time so one monotonic clock is compared.",
+      "doesNotChange": [
+        "UI wording",
+        "layout or CSS",
+        "ETP exception presentation",
+        "localization strings",
+        "storage semantics or persisted business records"
+      ]
+    },
+    "unchangedRenderedInputs": [
+      { "path": "www/index.html", "sha256": "85244165dadb60cfde4a8e7bdfb181dc2b96b05752f05d4952009a912ac9b950" },
+      { "path": "www/app-i18n.js", "sha256": "6f43e69dc8206422686f345e8224818d438ec9a50fc1a3800ca6e4502d459f8a" },
+      { "path": "www/mobile-layout.css", "sha256": "6e49b0c373a477c263dacddcd8f2c7eeaa5bc0d08451aa2585854c2dabdd032b" },
+      { "path": "www/mobile-shell.css", "sha256": "c9b17aff7342e8b73b15f2cd05bc6e0ededc8a439bbbb7d24d4c1b2d82aa8f03" },
+      { "path": "www/settings-navigation.css", "sha256": "df66a94f9b09c631b3be4e7058c5ea5175c60704faf321f047c8162481c7e88a" },
+      { "path": "www/etp-verified-presentation.js", "sha256": "031fe0d969062cab8319d23111a4e83c92111b1bf1e90f53238c80666acb2cc6" },
+      { "path": "www/etp-module-gateway.js", "sha256": "50105e28e3fc64ed13f36ac5c83cab15c39010f6cef544c4ec0f62a4e7ad62af" },
+      { "path": "www/modules/etp/index.html", "sha256": "c3e0669a108a4575dc79d167626327fc2e55ac7bae1267d7ef9839e255c0b717" }
+    ],
+    "governedProfile": {
+      "path": "verification/MAH3-SHARED-RUNTIME-BASELINE-PROFILE.json",
+      "sha256": "905b6f93e68a8cffc26b51fdd285823bb1d062d214fa20c1ec4e3eebb028c832",
+      "wwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5"
+    },
+    "automatedVerification": {
+      "focusedPersistenceAndBaseline": "11/11 pass",
+      "modular": "86/86 pass",
+      "security": "101/101 pass",
+      "physicalDat02": "two accepted five-save runs on SM-T875, no crash or ANR",
+      "expenseMemoryDiagnostic": "two cycles, final retained PSS -7.61%, no crash or ANR"
+    }
+  },
+  "rebindings": [
+    {
+      "approval": "MAH3-ETP-VISUAL-BASELINE",
+      "priorApproval": {
+        "path": "verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json",
+        "sha256": "e48ba79490ff1ac24adee1e1c2aa677393a2bfd4f6525dfe19dbc494cd34c0e1"
+      },
+      "evidence": {
+        "path": "verification/audit/MAH3-ETP-VISUAL-OWNER-REVIEW-2026-08-22.md",
+        "sha256": "ab502fe3e13c8f5bcd324e18d2e91b707f57c984744681af5a37754e42e86dc9"
+      },
+      "decision": "rebound-approved",
+      "identityBinding": "The twelve reviewed ETP visual cases carry forward to a104f5f because all rendered ETP inputs are byte-identical and the only WWW delta is non-visual DAT-02 clock instrumentation. The regenerated MAH-3 profile binds the current WWW tree."
+    },
+    {
+      "approval": "GATE-NATIVE-LANGUAGE",
+      "priorApproval": {
+        "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+        "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719"
+      },
+      "signedRenderedEvidence": {
+        "path": "verification/audit/attested/rendered-ui/phase5c-a6-rendered-c809d04-aae4310-20260822.json",
+        "sha256": "6d67109e8e2a20f2b7aa17b1ae81c9c0397b4c8a4b2638524bce6d3fd9ff303d",
+        "signatureStatus": "historical signature valid and authorized; carried forward by explicit owner rebind, not represented as a newly signed capture"
+      },
+      "decision": "rebound-closed",
+      "identityBinding": "The approved English/Marathi/Hindi wording, ETP markup and all layout/style inputs are byte-identical. Sagar explicitly rebinds the prior fluent review to corrected product commit a104f5f and fingerprint 4e42cf23."
+    },
+    {
+      "approval": "GATE-ETP-EXCEPTIONS",
+      "priorApproval": {
+        "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+        "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405"
+      },
+      "decision": "rebound-closed",
+      "identityBinding": "The three approved R003/R013 presentation files remain byte-identical: etp-verified-presentation.js 031fe0d9, etp-module-gateway.js 50105e28 and modules/etp/index.html c3e0669a."
+    },
+    {
+      "approval": "GATE-UPDATE-PHYSICAL",
+      "priorApproval": {
+        "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+        "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260"
+      },
+      "correctedArtifactEvidence": [
+        {
+          "path": "verification/audit/PHASE-5-DAT02-SM-T875-2026-08-22.json",
+          "sha256": "9791c8e11d1fd3f1d3b617c3f8334e4cc1318119c2d7093da71bc05de1bf6b9b"
+        },
+        {
+          "path": "verification/audit/PHASE-5-EXPENSE-MEMORY-DIAGNOSTIC-SM-T875-2026-08-22.json",
+          "sha256": "7e01a033ff3472321dc5617163d5bef03389ef67cfe8f7643c47926a1d081507"
+        }
+      ],
+      "decision": "rebound-closed",
+      "identityBinding": "The exact corrected APK 90dda701 was installed with adb install -r on SM-T875. firstInstallTime and userId remained stable, lastUpdateTime advanced, bcc.dek and the 7.9 MB archive hashes remained unchanged, installed base.apk matched the corrected artifact, and the app completed DAT-02 and two Expense cycles without crash or ANR."
+    }
+  ],
+  "scope": {
+    "rebindsAndCloses": [
+      "MAH3-ETP-VISUAL-BASELINE",
+      "GATE-NATIVE-LANGUAGE",
+      "GATE-ETP-EXCEPTIONS",
+      "GATE-UPDATE-PHYSICAL"
+    ],
+    "doesNotClose": [
+      "GATE-UPDATE-API23 rebinding to the eventual shipping artifact",
+      "A10-04 governed audit check",
+      "A10-05 governed audit check",
+      "GATE-ETP-PHYSICAL",
+      "GATE-ETP-INTERRUPTION",
+      "GATE-ETP-PRODUCTION",
+      "GATE-UAT",
+      "GATE-RELEASE",
+      "production signing or final release approval"
+    ]
+  }
+}

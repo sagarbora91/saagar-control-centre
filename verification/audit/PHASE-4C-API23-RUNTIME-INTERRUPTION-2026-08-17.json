@@ -1,0 +1,141 @@
+{
+  "format": "SAAGAR_PHASE4C_API23_RUNTIME_INTERRUPTION_EVIDENCE",
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-17T04:16:54.1815323+05:30",
+  "identity": {
+    "auditedTargetSha": "3f8a37cebf998cf6dd006e3a33de95600d3808f3",
+    "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+    "apkFile": "V:\\Co work\\Projects\\Retail\\SaagarCC-Phase4C-Seeded-2Y-v2.9-3f8a37ce-F4DDBC1D.apk",
+    "apkBytes": 7010282,
+    "apkSha256": "F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED",
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "installedBaseApkMatchedBefore": true,
+    "installedBaseApkMatchedAfter": true
+  },
+  "environment": {
+    "avd": "saagar_api23_evidence",
+    "serial": "emulator-5554",
+    "deviceModel": "Android SDK built for x86_64",
+    "androidVersion": "6.0",
+    "apiLevel": 23,
+    "emulatorOnly": true
+  },
+  "rotation": {
+    "initialSettings": {
+      "accelerometerRotation": 1,
+      "userRotation": 0
+    },
+    "landscape": {
+      "currentPixels": "1920x1080",
+      "appPixels": "1810x1080",
+      "mainActivityFocused": true,
+      "processId": 3363
+    },
+    "portrait": {
+      "currentPixels": "1080x1920",
+      "appPixels": "1080x1794",
+      "mainActivityFocused": true,
+      "processId": 3363
+    },
+    "configurationChangesObserved": 2,
+    "settingsRestored": true,
+    "fatalLogMatches": 0,
+    "result": "pass"
+  },
+  "forceStopRelaunch": {
+    "processCountAfterForceStop": 0,
+    "launchStatus": "ok",
+    "launchThisTimeMs": 435,
+    "mainActivityFocused": true,
+    "processLive": true,
+    "fatalLogMatches": 0,
+    "result": "pass"
+  },
+  "backgroundProcessDeathRelaunch": {
+    "backgroundedWithHome": true,
+    "command": "adb shell am kill com.saagartraders.bcc",
+    "processCountAfterKill": 0,
+    "launchStatus": "ok",
+    "launchThisTimeMs": 411,
+    "mainActivityFocused": true,
+    "processLive": true,
+    "fatalLogMatches": 0,
+    "result": "pass"
+  },
+  "preservedOperationalState": {
+    "bccDekMd5Before": "32bf42785c9c3be1adc3d5299f809c11",
+    "bccDekMd5After": "32bf42785c9c3be1adc3d5299f809c11",
+    "qmsArchiveMd5Before": "d44304a2c3ab7b58245ca89926fab2c5",
+    "qmsArchiveMd5After": "d44304a2c3ab7b58245ca89926fab2c5",
+    "preserved": true
+  },
+  "etpGovernedInstrumentation": {
+    "source": "verification/etp-native/EtpNativeApi23EvidenceTest.java",
+    "sourceSha256": "F39299924D6C796E1756B1AACAB614A80012C3DE53D9495CFB4BF58AD089F921",
+    "testApkSha256": "6170D4DBF77D9F54662B9988F57D7AC9EADF6F63C285CC85958E4F4CFC279D22",
+    "targetEtpDatabaseExistedBefore": false,
+    "stageRecovery": {
+      "test": "incompleteStageSurvivesActivityRecreationWithoutPublication",
+      "instrumentationExitCode": 0,
+      "testsPassed": 1,
+      "testsFailed": 0,
+      "activityScenarioRecreated": true,
+      "observedState": "STAGING",
+      "activeGenerationId": null,
+      "unpublished": true,
+      "elapsedSeconds": 4.475,
+      "result": "pass"
+    },
+    "corruptionAndReset": {
+      "test": "keystoreRoundTripUniqueIvTamperAndResetAreFailClosed",
+      "instrumentationExitCode": 0,
+      "testsPassed": 1,
+      "testsFailed": 0,
+      "roundTrip": true,
+      "uniqueAesGcmIv": true,
+      "tamperedNonFirstChunkResult": "INTEGRITY_FAILED",
+      "plaintextCanaryAbsent": true,
+      "keyAliasRemovedByReset": true,
+      "databaseRemovedByReset": true,
+      "elapsedSeconds": 2.531,
+      "result": "pass"
+    },
+    "cleanup": {
+      "testPackageRemoved": true,
+      "targetEtpDatabaseExistsAfter": false,
+      "targetPackageRelaunched": true,
+      "targetLaunchThisTimeMs": 408,
+      "targetMainActivityFocused": true,
+      "targetFatalLogMatches": 0,
+      "operationalStatePreserved": true,
+      "orientationSettingsRestored": true
+    },
+    "result": "pass"
+  },
+  "excludedUnsafeOrExternalScenarios": [
+    {
+      "scenario": "disk-full or low-storage pressure",
+      "reason": "No bounded repository harness guarantees safe disk restoration; the emulator disk was not filled."
+    },
+    {
+      "scenario": "physical API-23 OEM document-provider behavior",
+      "reason": "An emulator cannot represent OEM provider or physical-device acceptance."
+    },
+    {
+      "scenario": "production ETP source publication",
+      "reason": "No production source files or publication authority were supplied."
+    }
+  ],
+  "claimsBoundary": {
+    "engineeringEvidenceOnly": true,
+    "gateEtpInterruptionClosed": false,
+    "physicalDeviceAcceptanceClosed": false,
+    "a10_04Closed": false,
+    "a10_05Closed": false,
+    "uatClosed": false,
+    "releaseApproved": false
+  },
+  "result": "pass"
+}

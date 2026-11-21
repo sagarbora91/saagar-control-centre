@@ -70,6 +70,64 @@ const DYNAMIC_LOADER_GROUPS = Object.freeze([
   }
 ]);
 
+// On-demand ETP operational chain (owner decision given in chat, 2026-11-12). The chain files are loaded
+// one at a time by www/etp-chain-loader.js through the shell's PDF-libraries injectOne (index.html), so no
+// new createElement('script') site exists. The group applies only when the loader file exists, which keeps
+// every historical workspace (where the loader is absent) byte-identical to its frozen inventory.
+const ETP_CHAIN_LOADER_OWNER = 'etp-chain-loader.js';
+const ETP_CHAIN_LOADER_GROUP = Object.freeze({
+  id: 'shell-etp-chain', owner: ETP_CHAIN_LOADER_OWNER, trigger: 'on-demand-etp-verified-scope',
+  mechanisms: ['create-element-script'],
+  coreAssetPaths: Object.freeze([
+    'etp-operational-foundation.js',
+    'etp-operational-store.js',
+    'etp-operational-adapters.js',
+    'etp-operational-runtime.js',
+    'etp-e4-authority-intake.js',
+    'etp-e6-authority-intake.js',
+    'etp-e5-authority-intake.js',
+    'etp-e7-authority-intake.js',
+    'etp-e7-service-verifier.js',
+    'etp-e7-service-operational.js',
+    'etp-cro-reconciliation.js',
+    'etp-e3-orchestrator.js',
+    'etp-e3-presentation.js',
+    'etp-target-planning.js',
+    'etp-e4-orchestrator.js',
+    'etp-e4-presentation.js',
+    'etp-e6-presentation.js',
+    'etp-e5-presentation.js',
+    'etp-e5-payroll-bridge.js',
+    'etp-operational-gateway.js',
+    'etp-operational-mount.js',
+    'etp-e3-verified-join.js',
+    'etp-operational-bootstrap.js',
+    'etp-operational-shell-composer.js',
+    'etp-incentive-control.js'
+  ]),
+  optionalAssetPaths: Object.freeze([])
+});
+// On-demand ETP bridge group (R-2, 2026-11-12): the four report-engine bridge files, loaded by the same loader through the same injector.
+const ETP_BRIDGE_LOADER_GROUP = Object.freeze({
+  id: 'shell-etp-bridge', owner: ETP_CHAIN_LOADER_OWNER, trigger: 'on-demand-etp-bridge-engine-pack',
+  mechanisms: ['create-element-script'],
+  coreAssetPaths: Object.freeze([
+    'etp-bridge-trust.js',
+    'etp-bridge-pack-verifier.js',
+    'etp-bridge-compare.js',
+    'etp-bridge-facade.js'
+  ]),
+  optionalAssetPaths: Object.freeze([])
+});
+const BASE_SCRIPT_LITERAL_REFERENCE_COUNT = 12;
+
+function dynamicLoaderGroups(root) {
+  if (!fs.existsSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER))) return DYNAMIC_LOADER_GROUPS;
+  return fs.existsSync(path.join(root, 'www', 'etp-bridge-facade.js'))
+    ? [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP, ETP_BRIDGE_LOADER_GROUP]
+    : [...DYNAMIC_LOADER_GROUPS, ETP_CHAIN_LOADER_GROUP];
+}
+
 const DYNAMIC_WORKER_BINDINGS = Object.freeze([
   { id: 'shell-pdf-worker', owner: 'index.html', assetPath: 'pdf.worker.min.js' }
 ]);
@@ -481,12 +539,18 @@ export function inspectJavaScript(source, { mask = true } = {}) {
       }, Number.POSITIVE_INFINITY);
       const parameter = callbackParameter(callback);
       const parameterPattern = parameter ? escapeRegExp(parameter) : null;
-      const sourceIndex = parameterPattern === null
-        ? -1
-        : callback.search(new RegExp(`\\b${parameterPattern}\\.source\\s*(?:===|==|!==|!=)`));
-      const originIndex = parameterPattern === null
-        ? -1
-        : callback.search(new RegExp(`\\b${parameterPattern}\\.origin\\s*(?:===|==|!==|!=)`));
+      const firstMatch = patterns => {
+        const indexes = patterns.map(pattern => callback.search(pattern)).filter(index => index >= 0);
+        return indexes.length ? Math.min(...indexes) : -1;
+      };
+      const sourceIndex = parameterPattern === null ? -1 : firstMatch([
+        new RegExp(`\\b${parameterPattern}\\.source\\s*(?:===|==|!==|!=)`),
+        new RegExp(`\\baccepts\\s*\\(\\s*${parameterPattern}\\s*,`)
+      ]);
+      const originIndex = parameterPattern === null ? -1 : firstMatch([
+        new RegExp(`\\b${parameterPattern}\\.origin\\s*(?:===|==|!==|!=)`),
+        new RegExp(`\\baccepts\\s*\\(\\s*${parameterPattern}\\s*,`)
+      ]);
       return {
         consumerTypes: callbackConsumerTypes,
         sourceGuard: sourceIndex >= 0 && sourceIndex < firstTypeIndex,
@@ -565,14 +629,9 @@ function markerIndex(source, marker) {
 }
 
 export function splitShellInlinePrograms(inline) {
-  const startMarker = 'function injectModuleHideCSS';
-  const endMarker = 'function openModal()';
-  const start = markerIndex(inline, startMarker);
-  const end = markerIndex(inline, endMarker);
-  if (end <= start) throw new Error('MAH-4 shell dormant range markers are reversed');
   return {
-    active: `${inline.slice(0, start)}${' '.repeat(end - start)}${inline.slice(end)}`,
-    dormant: inline.slice(start, end)
+    active: inline,
+    dormant: ''
   };
 }
 
@@ -633,12 +692,23 @@ function exactSiteCounts(rows) {
 }
 
 function createDynamicLocalInventory(root, shell, loadedAssets) {
+  const loaderGroupConfigs = dynamicLoaderGroups(root);
+  const etpChainLoaderPresent = loaderGroupConfigs.includes(ETP_CHAIN_LOADER_GROUP);
+  const etpBridgeLoaderPresent = loaderGroupConfigs.includes(ETP_BRIDGE_LOADER_GROUP);
   const ownerSources = new Map([
     ['index.html', shell.active],
     ['saagar-report.js', fs.readFileSync(path.join(root, 'www', 'saagar-report.js'), 'utf8')]
   ]);
+  if (etpChainLoaderPresent) {
+    ownerSources.set(ETP_CHAIN_LOADER_OWNER, fs.readFileSync(path.join(root, 'www', ETP_CHAIN_LOADER_OWNER), 'utf8'));
+    // The loader injects only through the shell's existing injectOne; it must not own a script sink.
+    if (count(shell.active, /\binjectEtp\s*:\s*function\s*\(\s*src\s*\)/g) !== 1
+      || count(ownerSources.get(ETP_CHAIN_LOADER_OWNER), /\bcreateElement\s*\(|\bdocument\.write\s*\(|\bimport\s*\(/g) !== 0) {
+      throw new Error('MAH-4 ETP chain loader injector drift');
+    }
+  }
   let scriptLiteralReferenceCount = 0;
-  const loaderGroups = DYNAMIC_LOADER_GROUPS.map(group => {
+  const loaderGroups = loaderGroupConfigs.map(group => {
     const source = ownerSources.get(group.owner);
     if (source === undefined) throw new Error(`MAH-4 dynamic loader owner is not inventoried: ${group.owner}`);
     const assetPaths = [...group.coreAssetPaths, ...group.optionalAssetPaths];
@@ -673,7 +743,9 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
       ]))
     };
   });
-  if (scriptLiteralReferenceCount !== 12) {
+  if (scriptLiteralReferenceCount !== BASE_SCRIPT_LITERAL_REFERENCE_COUNT
+    + (etpChainLoaderPresent ? ETP_CHAIN_LOADER_GROUP.coreAssetPaths.length : 0)
+    + (etpBridgeLoaderPresent ? ETP_BRIDGE_LOADER_GROUP.coreAssetPaths.length : 0)) {
     throw new Error('MAH-4 dynamic script literal count drift');
   }
 
@@ -714,7 +786,7 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
   }
 
   const resourceLoaders = new Map();
-  for (const group of DYNAMIC_LOADER_GROUPS) {
+  for (const group of loaderGroupConfigs) {
     for (const assetPath of [...group.coreAssetPaths, ...group.optionalAssetPaths]) {
       if (!resourceLoaders.has(assetPath)) resourceLoaders.set(assetPath, new Set());
       resourceLoaders.get(assetPath).add(group.id);
@@ -770,13 +842,17 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
 
   const integration = resources.find(resource => resource.relativePath === 'integration-bridge.js');
   const whatsapp = loadedAssets.find(asset => asset.relativePath === 'whatsapp-share.js');
-  if (!integration || !whatsapp) throw new Error('MAH-4 iframe hook owner is missing');
+  const frameController = loadedAssets.find(asset => asset.relativePath === 'shared/shell-module-frame-controller.js');
+  if (!integration || !whatsapp || !frameController) throw new Error('MAH-4 iframe hook owner is missing');
+  const frameControllerSource = frameController.source || fs.readFileSync(
+    path.join(root, 'www', 'shared', 'shell-module-frame-controller.js'), 'utf8'
+  );
   const iframeLoadHookSites = [
     {
-      id: 'shell-open-module', owner: 'www/index.html', sourceKind: 'active-inline',
+      id: 'shell-open-module', owner: 'www/shared/shell-module-frame-controller.js', sourceKind: 'direct-entry-script',
       once: true, persistent: false, bindGuard: null, perDocumentGuard: null,
-      valid: count(shell.active, /\b__f\.addEventListener\(\s*["']load["']/g) === 1
-        && /\{\s*once\s*:\s*true\s*\}/.test(shell.active)
+      valid: count(frameControllerSource, /\bframe\.addEventListener\(\s*["']load["']/g) === 1
+        && /\{\s*once\s*:\s*true\s*\}/.test(frameControllerSource)
     },
     {
       id: 'integration-bridge-frame', owner: 'www/integration-bridge.js', sourceKind: 'dynamic-local-script',
@@ -795,7 +871,7 @@ function createDynamicLocalInventory(root, shell, loadedAssets) {
   iframeLoadHookSites[2].valid = iframeLoadHookSites[2].valid
     && /frame\.__saagarBound\)\s*return;\s*frame\.__saagarBound\s*=\s*true/.test(whatsappSource)
     && /win\.__saagarPrintHooked\)\s*return;\s*win\.__saagarPrintHooked\s*=\s*true/.test(whatsappSource);
-  const loadRemovalSites = count(shell.active, /removeEventListener\(\s*["']load["']/g)
+  const loadRemovalSites = count(frameControllerSource, /removeEventListener\(\s*["']load["']/g)
     + count(integration.source, /removeEventListener\(\s*["']load["']/g)
     + count(whatsappSource, /removeEventListener\(\s*["']load["']/g);
   if (iframeLoadHookSites.some(site => !site.valid) || loadRemovalSites !== 0) {
@@ -872,13 +948,20 @@ export function createMah4Inventory(root = defaultRoot) {
     const absolutePath = path.join(root, 'www', ...relativePath.split('/'));
     const bytes = fs.readFileSync(absolutePath);
     const source = bytes.toString('utf8');
+    const sourceSha256 = sha256(bytes);
+    const pinnedOpaqueVendor = relativePath === 'vendor/read-excel-file-9.3.7.min.js'
+      && sourceSha256 === '081c20d5feeb517b92397338c2696df872a0c9fd17922a05f2d864d877fa5c01';
     loadedAssets.push({
       path: `www/${relativePath}`,
       relativePath,
       bytes: bytes.length,
-      sha256: sha256(bytes),
+      sha256: sourceSha256,
       loadedBy: [...consumers].sort(),
-      messages: inspectJavaScript(source),
+      // This exact third-party worker bundle contains internal postMessage calls
+      // that are unrelated to SAAGAR's shell protocol. Treat it as opaque only
+      // while its pinned dependency hash matches; any byte drift is scanned and
+      // fails closed like every other loaded asset.
+      messages: pinnedOpaqueVendor ? inspectJavaScript('') : inspectJavaScript(source),
       lifecycle: lifecycleCounts(source)
     });
   }
@@ -1125,12 +1208,14 @@ export function createMah4Inventory(root = defaultRoot) {
         .filter(resource => resource.classification === 'application').map(resource => ({ lifecycle: resource.lifecycle })))
     },
     mountLifecycle: {
-      frameLoadHookPresent: /\b__f\.addEventListener\(\s*["']load["']/.test(shell.active),
-      frameErrorHookPresent: /\b__f\.addEventListener\(\s*["']error["']/.test(shell.active),
+      frameLoadHookPresent: dynamicLocal.iframeLoadHooks.sites.some(site => site.id === 'shell-open-module'),
+      frameErrorHookPresent: /\bframe\.addEventListener\(\s*["']error["']/.test(
+        fs.readFileSync(path.join(root, 'www/shared/shell-module-frame-controller.js'), 'utf8')
+      ),
       controlHandshakeAbsent: proposedControlTypesPresent.length === 0,
       closeRemovesSrc: /moduleFrame["']\)\.removeAttribute\(\s*["']src["']\s*\)/.test(shell.active),
       closeBlanksSrcdoc: /moduleFrame["']\)\.srcdoc\s*=\s*["']["']/.test(shell.active),
-      dormantFallbackPresent: /if\(mod\.src\)[\s\S]*else\s*\{[\s\S]*buildModuleSrc\(mod\)/.test(shell.active),
+      dormantFallbackPresent: /buildModuleSrc\(mod\)|openModuleLegacy/.test(shell.active),
       manifestRequiresSrc: manifest.modules.every(module => typeof module.src === 'string' && module.src.length > 0),
       manifestContainsHtmlB64: manifest.modules.some(module => Object.hasOwn(module, 'html_b64')),
       allProposedControlTypesObserved: proposedControlTypesPresent.length === PROPOSED_CONTROL_TYPES.length,
@@ -1138,8 +1223,8 @@ export function createMah4Inventory(root = defaultRoot) {
     },
     gates: {
       mah3RenderedCasesReviewed: renderedCasesReviewed,
-      mah3RenderedCaseTotal: 168,
-      refactorGateReady: renderedCasesReviewed === 168 && dsrCanaryPassed && qmsCanaryPassed,
+      mah3RenderedCaseTotal: 180,
+      refactorGateReady: renderedCasesReviewed === 180 && dsrCanaryPassed && qmsCanaryPassed,
       planningRuntimeWired,
       dsrCanaryPassed,
       qmsCanaryPassed,

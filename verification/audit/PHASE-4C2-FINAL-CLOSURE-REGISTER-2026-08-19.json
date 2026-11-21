@@ -1,0 +1,650 @@
+{
+  "format": "SAAGAR_PHASE4C2_FINAL_CLOSURE_REGISTER",
+  "schemaVersion": 1,
+  "registerState": "draft-open",
+  "preparedAt": "2026-08-21T00:00:00+05:30",
+  "supersedes": {
+    "path": "verification/audit/PHASE-4C-FINAL-CLOSURE-REGISTER-DRAFT-2026-08-17.json",
+    "sha256": "c1db7723db7e286425ee27ec5959407ef4d686e04a5cf6ac43a73e47de2b6f78",
+    "reason": "That draft is bound throughout to the superseded identity: product commit 3f8a37ce, product fingerprint 47c1e9c0, APK F4DDBC1D and audit tooling 29a09475. It was prepared at 04:15 on 2026-08-17, before the Phase 4C.1 refreeze later that evening. It is retained unmodified as a historical record and must not be used to close any gate."
+  },
+  "identity": {
+    "productCommit": "ad2d643dfa371c05779aafc52e0c2ecf618c1a42",
+    "productFingerprintSha256": "08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e",
+    "auditedComparisonTarget": "cc9a117c5245f352922da5c9f699daa16226bbf3",
+    "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a",
+    "baselineTargetSha": "537539f76aa333f760431acb9cb21cf3bedeab7d",
+    "baselineManifestSha256": "3a863511a04d5a7a9f16c4042d6ec7e42b1d92356ad52c8efbaec1ea6c57f23f",
+    "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+    "approvedComparisonEvidence": "verification/audit/2026-08-17-220000-cc9a117c5245",
+    "approvedComparisonManifestSha256": "f2741ee762fe39caa0ba8d99b6842611ca6cd98d573ebf70fa874399337bfd5a",
+    "apkFilename": "SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk",
+    "apkSha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287",
+    "apkBytes": 7010364,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "signingClass": "debug-UAT",
+    "signingCertificateSha256": "faae9739c054b88b4c9cee8f62bf1dfa103807b7a45a835d901467cb26fe05dc",
+    "reproducibleBuildApkSha256": "d79eb9253239352954c82322c0c46bdf17b00837b57a7a89d915272f69cbb32b"
+  },
+  "rowValidationPolicy": {
+    "placeholderTokensForbidden": [
+      "<",
+      ">",
+      "TBD",
+      "TODO",
+      "FILL_ME",
+      "UNKNOWN"
+    ],
+    "closedRowsRequire": [
+      "decision=pass-or-approve",
+      "closedAt",
+      "authority.kind",
+      "authority.identity",
+      "evidence[0].path",
+      "evidence[0].sha256",
+      "identityBinding",
+      "nonClaims"
+    ],
+    "openRowsRequire": [
+      "decision=pending-external-authority",
+      "reason",
+      "requiredAuthority",
+      "requiredEvidence"
+    ],
+    "carriedExceptionRowsRequire": [
+      "decision=open-owner-accepted-exception",
+      "ownerDirection",
+      "riskAccepted",
+      "doesNotClaim",
+      "evidence[0].path",
+      "evidence[0].sha256",
+      "reopenCondition"
+    ],
+    "blankStringsAllowed": false,
+    "closedWithoutEvidenceAllowed": false,
+    "historicalOpenGatesMutationAllowed": false,
+    "carriedExceptionCountsAsClosedAllowed": false,
+    "gateCarriedExceptionRowsRequire": [
+      "decision=open-owner-accepted-exception",
+      "ownerDirection",
+      "riskAccepted",
+      "doesNotClaim",
+      "evidence[0].path",
+      "evidence[0].sha256",
+      "reopenCondition",
+      "requiredAuthority",
+      "requiredEvidence"
+    ]
+  },
+  "summary": {
+    "gateTotal": 10,
+    "gatesClosed": 5,
+    "gatesOpen": 5,
+    "allGatesClosed": false,
+    "carriedOpenExceptionCount": 3,
+    "carriedOpenExceptionIds": [
+      "A10-01",
+      "A10-04",
+      "A10-05"
+    ],
+    "comparisonStatus": "comparison-failed-or-unmeasured",
+    "comparisonFailed": [
+      "C-08"
+    ],
+    "comparisonPassed": [
+      "C-01",
+      "C-02",
+      "C-03",
+      "C-04",
+      "C-05",
+      "C-06",
+      "C-07",
+      "C-09"
+    ],
+    "capabilityDeltasApproved": 107,
+    "findingWaivers": 0,
+    "productSuite": {
+      "result": "510 of 510 passed once for the frozen candidate",
+      "source": "verification/audit/PHASE-4C1-CRASH-CHECKPOINT-2026-08-17.md",
+      "note": "Reported in the Phase 4C.1 checkpoint prose. This is not a counter emitted by the approved comparison evidence, and the suite was not re-run for this register."
+    },
+    "auditRunResult": "complete-with-findings-or-gaps",
+    "findingCount": 1,
+    "mandatoryUnmeasuredCount": 2,
+    "gatesPendingExternalAuthority": 2,
+    "gatesCarriedAsException": 3,
+    "carriedExceptionTotal": 6,
+    "carriedGateIds": [
+      "GATE-ETP-PHYSICAL",
+      "GATE-ETP-INTERRUPTION",
+      "GATE-ETP-PRODUCTION"
+    ],
+    "gatesClosedButNeedingRebinding": 1
+  },
+  "gates": [
+    {
+      "id": "GATE-UPDATE-API23",
+      "state": "closed",
+      "decision": "pass",
+      "closedAt": "2026-08-17T20:59:51+05:30",
+      "authority": {
+        "kind": "controlled-engineering-evidence",
+        "identity": "saagar_api23_evidence/emulator-5554"
+      },
+      "identityBinding": "Installed base.apk SHA-256 equals the frozen seeded artifact f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287; package UID 10056 and first-install time were preserved across adb install -r; activity resumed and focused with zero fatal log matches.",
+      "evidence": [
+        {
+          "path": "verification/audit/PHASE-4C1-FINAL-SEEDED-APK-2026-08-17.json",
+          "sha256": "0c5cc3864122e19f49ef59229e6544bed133408fc6f621c050a5f8c41a14941e",
+          "committedAt": "2026-08-17T20:59:51+05:30",
+          "result": "pass"
+        }
+      ],
+      "nonClaims": [
+        "Not physical-device acceptance",
+        "Not OEM document-provider evidence",
+        "Not A10-04 or A10-05 measurement",
+        "Not production signing or release approval"
+      ],
+      "rebindingRequired": {
+        "reason": "Closed against the superseded Phase 4C.1 identity; see identityMigration.",
+        "boundTo": "APK f7f18ea3, which is not the artifact that will ship",
+        "status": "Needs re-running against the final production-signed artifact."
+      }
+    },
+    {
+      "id": "GATE-NATIVE-LANGUAGE",
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-22T21:43:31+05:30",
+      "authority": {
+        "kind": "fluent-marathi-hindi-reviewer",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Rebound by Sagar's explicit direction to corrected product commit a104f5f, product fingerprint 4e42cf23, WWW tree 03a766bc and seeded APK 90dda701. The prior signed 78-cell evidence remains historical signature-valid evidence; all wording, markup and layout/style inputs are byte-identical, and the only changed WWW file is non-visual DAT-02 clock instrumentation in storage-core.js. This is an explicit bounded rebind, not a claim that a new rendered capture was signed.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
+        {
+          "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+          "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
+          "result": "approve"
+        },
+        {
+          "path": "verification/audit/attested/rendered-ui/phase5c-a6-rendered-c809d04-aae4310-20260822.json",
+          "sha256": "6d67109e8e2a20f2b7aa17b1ae81c9c0397b4c8a4b2638524bce6d3fd9ff303d",
+          "result": "signature-valid"
+        }
+      ],
+      "nonClaims": [
+        "Not physical-device acceptance",
+        "Not staff UAT or legal approval",
+        "Does not close A10-01, A10-04 or A10-05",
+        "Not production signing or release approval"
+      ]
+    },
+    {
+      "id": "GATE-UPDATE-PHYSICAL",
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-22T21:43:31+05:30",
+      "authority": {
+        "kind": "business-owner-and-physical-device-acceptor",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Rebound to corrected APK 90dda701 on Samsung SM-T875, Android 13 / API 33, serial R52N807PTTE. adb install -r advanced lastUpdateTime to 21:24:22 while firstInstallTime remained 18:02:33 and userId remained 10257; bcc.dek and the 7.9 MB QMS archive hashes remained unchanged; installed base.apk matched the corrected artifact exactly. Two DAT-02 runs and two Expense open/close cycles completed without fatal exception or ANR.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
+        {
+          "path": "verification/audit/PHASE-5-DAT02-SM-T875-2026-08-22.json",
+          "sha256": "9791c8e11d1fd3f1d3b617c3f8334e4cc1318119c2d7093da71bc05de1bf6b9b",
+          "result": "pass-on-this-device-and-demo-profile"
+        },
+        {
+          "path": "verification/audit/PHASE-5-EXPENSE-MEMORY-DIAGNOSTIC-SM-T875-2026-08-22.json",
+          "sha256": "7e01a033ff3472321dc5617163d5bef03389ef67cfe8f7643c47926a1d081507",
+          "result": "diagnostic-pass"
+        },
+        {
+          "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+          "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
+          "result": "approve"
+        },
+        {
+          "path": "verification/audit/PHASE-5-UPDATE-PHYSICAL-EVIDENCE-2026-08-22.json",
+          "sha256": "eca69dfab75e679d77e09b9452a6424150ad936100056813ffaf44440cafaa0e",
+          "result": "pass"
+        }
+      ],
+      "nonClaims": [
+        "Not a production-signed release",
+        "Not physical API-23/OEM acceptance; this device is API 33",
+        "Not ETP production publication",
+        "Not staff UAT or legal approval",
+        "Does not close A10-04 or A10-05",
+        "No module smoke beyond launch and focus"
+      ]
+    },
+    {
+      "id": "GATE-ETP-PHYSICAL",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "No physical Android API-23-class OEM document-provider import has ever been performed for this build. Real OEM document providers vary in how they expose file selection and persist URI permissions, and none of that behaviour is verified. A provider-specific failure would first appear to a user importing real financial reports, with no prior evidence to diagnose against.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Emulator ETP evidence was not substituted for physical OEM acceptance",
+        "No physical document-provider import of any kind was performed for this identity"
+      ],
+      "requiredAuthority": "Named tester operating a real Android API-23-class device with its OEM document provider",
+      "requiredEvidence": [
+        "Physical device, API level and OEM WebView identity",
+        "Document-provider identity recorded without account details",
+        "Four-file selection and persisted URI permission",
+        "Import, relaunch and verified readback result"
+      ],
+      "evidence": [
+        {
+          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
+          "note": "Supporting only. Establishes real-file parser conformance on a workstation; it is not a device or document-provider record and closes nothing."
+        }
+      ],
+      "reopenCondition": "Closing requires a real Android API-23-class device with an OEM document provider completing four-file selection, persisted URI permission, import, relaunch and verified readback against the frozen identity. A cloud real-device farm satisfies this; an emulator does not."
+    },
+    {
+      "id": "GATE-ETP-INTERRUPTION",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "The physical and OEM residue is unverified: document-provider interruption during import, and a safe low-storage case. The low-storage case has never been run anywhere, having been excluded as unsafe on the emulator. An interruption or a full device during a real import could leave staging state in a condition no evidence covers.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "The banked emulator subset does not extend to physical or OEM behaviour",
+        "The low-storage case remains unexecuted on any platform"
+      ],
+      "requiredAuthority": "Named physical API-23-class OEM tester",
+      "requiredEvidence": [
+        "Document-provider interruption result on physical hardware",
+        "Safe low-storage result",
+        "No partial generation and no plaintext publication"
+      ],
+      "evidence": [
+        {
+          "path": "verification/audit/PHASE-4C-API23-RUNTIME-INTERRUPTION-2026-08-17.json",
+          "sha256": "c185afd439f0e1ca120cf5cf4dd314c31d61f54613a1cdc2e19db1e1c48b19f1",
+          "note": "Supporting only. Emulator subset: rotation, force-stop, background process death, incomplete-stage recreation and authenticated chunk-corruption refusal all passed. Document-provider interruption and low storage are not covered."
+        }
+      ],
+      "reopenCondition": "Closing requires the two uncovered cases on a real API-23-class OEM device. Do not repeat the banked emulator subset."
+    },
+    {
+      "id": "GATE-ETP-PRODUCTION",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "ownerDirection": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+      "holdReason": "Retail ETP module completes after its own modular migration; held until then.",
+      "releaseScopeNote": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+      "riskAccepted": "No real production publication has ever been performed with this build. The first authorized WLMHW or HEMW publication will therefore happen unrehearsed, against live business data. Parser conformance on real exports is genuine mitigation and is recorded below, but conformance is not publication: the complete-period declaration, manager reauthorization, receipt generation, previous-generation retention and no-partial-publication behaviours are unexercised end to end on the frozen build.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Parser conformance is not a publication rehearsal",
+        "No owner-authorized native generation was published for this identity"
+      ],
+      "requiredAuthority": "Production-data custodian and business owner Sagar (sagarbora91) acting as Owner and Admin",
+      "requiredEvidence": [
+        "Untouched WLMHW and HEMW R003, R013, R022 and R025 source hashes with bounded counts",
+        "Complete-period declaration",
+        "Manager reauthorization",
+        "REC-002 result",
+        "Active generation with metadata-only receipt",
+        "Previous-generation retention and no partial publication"
+      ],
+      "evidence": [
+        {
+          "path": "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+          "sha256": "ec62dae7b74a4cb38093ebff44ab1c0fc651a70dcffe1b89a31729ea9dd72051",
+          "note": "Supporting and materially reassuring. Both stores parsed clean against the exact four-report profile with zero PII canaries, and REC-002 reconciled with status PASS, differenceCount 0, across 4,658 WLMHW and 708 HEMW groups on both quantity and net amount."
+        }
+      ],
+      "reopenCondition": "Closing requires the authorized four-report production export set, the owner complete-period declaration, manager reauthorization, and acceptance of the active generation and metadata-only receipt. This needs no device."
+    },
+    {
+      "id": "GATE-ETP-EXCEPTIONS",
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-22T21:43:31+05:30",
+      "authority": {
+        "kind": "business-owner",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Rebound by Sagar's explicit direction to product commit a104f5f and fingerprint 4e42cf23. The approved presentation inputs remain byte-identical: etp-verified-presentation.js 031fe0d9, etp-module-gateway.js 50105e28 and modules/etp/index.html c3e0669a.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+          "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+          "result": "approve-rebind"
+        },
+        {
+          "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+          "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
+          "result": "approve"
+        }
+      ],
+      "nonClaims": [
+        "Does not approve source workbooks",
+        "Does not approve PAYMENTTYPE25 classification",
+        "Does not close GATE-ETP-PRODUCTION",
+        "Not staff UAT, production signing or release approval"
+      ],
+      "previousState": "Was carried as an owner-accepted exception pending this review; now closed on evidence."
+    },
+    {
+      "id": "GATE-PAYMENTTYPE25",
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-21T15:01:34+05:30",
+      "authority": {
+        "kind": "business-owner",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "Business disposition, not a code or device measurement. It binds to the PAYMENTTYPE25 population recorded in verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json: 2,802 non-zero WLMHW R022 rows and 18 HEMW rows.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-4-PAYMENTTYPE25-QUARANTINE-APPROVAL-2026-08-21.json",
+          "sha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277",
+          "result": "continued-quarantine"
+        }
+      ],
+      "disposition": "Continued quarantine. All non-zero PAYMENTTYPE25 tender values stay quarantined until an authoritative Helios mapping exists. They must not be classified, folded into Others, or silently published.",
+      "reopenCondition": "An authoritative Helios mapping identifier and its reviewed evidence become available.",
+      "nonClaims": [
+        "Not a tender mapping",
+        "Does not alter revenue or sales totals; quarantine drops tender attribution only",
+        "Does not close ETP production publication"
+      ]
+    },
+    {
+      "id": "GATE-UAT",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "Representative staff UAT remains unperformed because the cashier/maker and manager/checker testers are unfilled. Sagar is named as privacy/legal owner self-reviewer, not independent counsel, but the identity-bound privacy/legal checklist decision still needs to be recorded.",
+      "requiredAuthority": "Named representative staff, business owner and an authorized privacy and legal reviewer",
+      "requiredEvidence": [
+        "Completed role and store UAT matrix with expected and actual outcomes",
+        "Owner acceptance with no unresolved P0 or P1 issue",
+        "Separate privacy and legal checklist and approval"
+      ],
+      "supportingEvidence": [],
+      "roleAssignment": {
+        "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+        "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+        "privacyAndLegalReviewer": "Sagar (sagarbora91), owner self-review, not independent counsel",
+        "representativeStaffTesters": "UNFILLED",
+        "note": "The legal half has a named reviewer. The staff-matrix half still needs named cashier/maker and manager/checker testers; the owner can only fill the owner/admin row."
+      }
+    },
+    {
+      "id": "GATE-RELEASE",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "The corrected candidate is debug-signed and prerequisite gates remain open. Sagar is named as production-key custodian and release approver, but the same-person assignment does not satisfy independence and is carried as an explicit exception. No production-signed artifact, signing receipt, post-sign device result or exact-artifact release decision exists.",
+      "requiredAuthority": "Named production-key custodian and an independent release approver, who must not be the same person",
+      "requiredEvidence": [
+        "Production-signed artifact SHA-256 and signing certificate SHA-256",
+        "Fail-closed signing receipt containing no private key material",
+        "debuggable false and debug certificate absent",
+        "Post-sign install and launch result",
+        "All prerequisite gates closed or explicitly carried as accepted exceptions",
+        "Release decision naming the exact artifact. NOTE: will be made by the key custodian himself; independence exception recorded in roleAssignment."
+      ],
+      "supportingEvidence": [
+        "verification/audit/PHASE-4C1-FINAL-SEEDED-APK-2026-08-17.json proves debug-UAT identity only"
+      ],
+      "roleAssignment": {
+        "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+        "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+        "productionKeyCustodian": "Sagar (sagarbora91)",
+        "releaseApprover": "Sagar (sagarbora91)",
+        "independenceSatisfied": false,
+        "note": "Owner directed on 2026-08-22 that he hold both roles. The independence control this gate requires is NOT satisfied and must not be reported as satisfied. When this gate closes it closes carrying a stated independence exception, not as a clean pass."
+      }
+    }
+  ],
+  "carriedOpenExceptions": [
+    {
+      "id": "A10-01",
+      "title": "Shell size and parse performance",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "severity": "P2",
+      "mandatory": false,
+      "auditResult": "fail",
+      "measured": "Shell parse p95 increased from 1070.2 ms to 1151.1 ms, a 7.559 percent increase against a maximum permitted 5 percent. Shell bytes decreased from 711,857 to 576,043.",
+      "ownerDirection": "Sagar directed on 2026-08-17 that the project proceed with A10-01 remaining open.",
+      "comparisonImpact": "C-08 remains failed solely because of this result. No other comparison check fails.",
+      "riskAccepted": "Application shell parse time at startup is measurably slower than the governed limit on the measured browser harness. The user-visible effect is a slower cold start.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "This is not a silent waiver",
+        "No finding waiver row exists in the approved capability approval envelope"
+      ],
+      "evidence": [
+        {
+          "path": "verification/audit/2026-08-17-220000-cc9a117c5245/FINDINGS.json",
+          "sha256": "4b7b57a094faecec813c174961d599131ee0218678995d9d0983def5f679171d"
+        },
+        {
+          "path": "verification/audit/attested/browser-timing/phase4c1-a10-current-ad2d643-run2-667ab0d-20260817.json",
+          "sha256": "2652656f78906609ebfee1149e969f0a94191a3662a25eb5bed22628494ad86b"
+        }
+      ],
+      "reopenCondition": "A separately authorized bounded remediation task may reopen and close this finding. Do not run another timing measurement or create another performance candidate outside such a task."
+    },
+    {
+      "id": "A10-04",
+      "title": "DAT-02 five-save physical-device gate",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "mandatory": true,
+      "auditResult": "unmeasured",
+      "ownerDirection": "Sagar directed on 2026-08-21 that A10-04 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
+      "reason": "Three independent obstacles. The owner has no physical Android device. The frozen seeded APK cannot carry this evidence at all, per structural blocker BLOCKER-APK-BINDING. No committed producer emits the required record, per structural blocker BLOCKER-NO-PRODUCER.",
+      "riskAccepted": "Backup and restore save latency is unverified on physical hardware at ship time. The governed budgets of 150 ms export p95, 250 ms frame-gap p95 and 3000 ms total p95 are unconfirmed for the shipped artifact, on real storage, at representative data volume. For an application holding shop records this is a real and stated residual risk, not a formality.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Emulator evidence was not substituted and would not satisfy the validator",
+        "No DAT-02 measurement of any kind was performed for this identity"
+      ],
+      "evidence": [
+        {
+          "path": "verification/audit/2026-08-17-220000-cc9a117c5245/A10-performance.json",
+          "sha256": "2a04341aebd800d371adb54f22d8eeec0e6410aff614f816fcd2fd24aacef7a4",
+          "recordedResult": "unmeasured"
+        }
+      ],
+      "reopenCondition": "Closing A10-04 later requires resolving both structural blockers and then capturing a signed device-runtime acceptance record on genuine physical Android hardware of API level at least 23."
+    },
+    {
+      "id": "A10-05",
+      "title": "Close and reopen retained-memory delta",
+      "state": "open",
+      "decision": "open-owner-accepted-exception",
+      "mandatory": true,
+      "auditResult": "unmeasured",
+      "ownerDirection": "Sagar directed on 2026-08-21 that A10-05 be carried open as an accepted exception rather than measured, and that no device harness be built against the frozen product.",
+      "reason": "Same three obstacles as A10-04. This check was additionally absent from the superseded 2026-08-17 register draft and is recorded here for the first time.",
+      "riskAccepted": "Retained memory growth across two Expense open, close and reopen cycles is unverified on physical hardware. A leak in that path would surface as progressive slowdown or a low-memory kill during long shop sessions, and would not have been detected before release.",
+      "doesNotClaim": [
+        "This is not a pass",
+        "Emulator evidence was not substituted and would not satisfy the validator",
+        "No pre-open or post-close PSS sampling was performed for this identity"
+      ],
+      "evidence": [
+        {
+          "path": "verification/audit/2026-08-17-220000-cc9a117c5245/A10-performance.json",
+          "sha256": "2a04341aebd800d371adb54f22d8eeec0e6410aff614f816fcd2fd24aacef7a4",
+          "recordedResult": "unmeasured"
+        }
+      ],
+      "reopenCondition": "Closing A10-05 later requires resolving both structural blockers and then capturing a signed device-runtime acceptance record with two complete collection cycles and pre-open and post-close byte counts."
+    }
+  ],
+  "structuralBlockers": [
+    {
+      "id": "BLOCKER-APK-BINDING",
+      "discoveredAt": "2026-08-21",
+      "affects": [
+        "A10-04",
+        "A10-05"
+      ],
+      "statement": "Device-runtime evidence cannot be bound to the frozen seeded APK. The validator function validBuildBinding in scripts/audit/audits/a10.mjs requires the record apkSha256 to equal one of the two reproducible build captures recorded in the approved A9-BUILD-COMPARISON.json. Both captures are d79eb9253239352954c82322c0c46bdf17b00837b57a7a89d915272f69cbb32b. The frozen seeded APK f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287 is not among them, because it is produced by scripts/build-seeded-apk.mjs rather than by the audited npm run build:apk command. Any device record naming the seeded APK therefore returns DEVICE_RUNTIME_APK_BINDING_INVALID on any hardware.",
+      "consequence": "The written instruction to bind every Phase 4C.2 result to f7f18ea3 is correct for owner-judgment gates but is not satisfiable for A10-04 and A10-05.",
+      "evidence": [
+        {
+          "path": "verification/audit/2026-08-17-220000-cc9a117c5245/A9-BUILD-COMPARISON.json",
+          "note": "first.sha256 and second.sha256 both equal d79eb925; identityBound, toolchainMatch and normalizedEqual are all true"
+        }
+      ]
+    },
+    {
+      "id": "BLOCKER-NO-PRODUCER",
+      "discoveredAt": "2026-08-21",
+      "affects": [
+        "A10-04",
+        "A10-05"
+      ],
+      "statement": "No committed producer emits the required SAAGAR_A10_DEVICE_RUNTIME_ACCEPTANCE record. The record path prefix verification/audit/accepted/device-runtime/ does not exist in the working tree. The format appears only in the validator scripts/audit/audits/a10.mjs, in scripts/audit/evidence-trust-root.mjs, and in runner test fixtures. A valid record additionally requires an Ed25519 attestation signature from trusted signer keyId phase4a-renderer-ed25519-9ec3b61bbbdb245f and a SAAGAR_A10_DEVICE_HARNESS instrumentation artifact with its own artifact and protocol hashes.",
+      "consequence": "Closing A10-04 or A10-05 requires building and signing a device harness. That is engineering work against a frozen product and is barred by the current freeze.",
+      "evidence": [
+        {
+          "path": "scripts/audit/audits/a10.mjs",
+          "note": "validateRuntimeEvidence and validBuildBinding"
+        },
+        {
+          "path": "scripts/audit/evidence-trust-root.mjs",
+          "note": "AUTHORIZED_FORMATS and Ed25519 signature policy"
+        }
+      ]
+    }
+  ],
+  "phase4CompletionCondition": [
+    "Every gate row carries a complete identity-bound decision, either closed with evidence or explicitly carried as an owner-accepted exception with its risk stated.",
+    "The production artifact is signed and independently accepted.",
+    "A10-01, A10-04 and A10-05 are truthfully retained as open owner-accepted exceptions unless separately authorized remediation later closes them.",
+    "The four Retail ETP gates are truthfully retained as open owner-accepted exceptions, and the release approver is told in writing that ETP ships reachable without physical, OEM or production-publication acceptance.",
+    "No physical, UAT, legal, production-data, signing or release authority is represented by emulator-only evidence."
+  ],
+  "honestStatusSentence": "Phase 5 repository-controlled work is complete, the focused sweep is green at 439 tests, all three owner-review packages are approved and rebound to a104f5f, and physical update-in-place is accepted on SM-T875 for corrected APK 90dda701. Remaining: an API-23-class OEM device for the two ETP device gates, authorized production data, representative staff UAT, production signing and release. GATE-UPDATE-API23 still needs rebinding to the shipping artifact. C-08 remains failed and A10-01, A10-04 and A10-05 remain carried exceptions. GATE-ETP-PRODUCTION is deferred by owner direction, not passed.",
+  "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register. Where the two disagree, OPEN-GATES.json records the audit run state and this register records external closure decisions.",
+  "etpHold": {
+    "decidedAt": "2026-08-21",
+    "decidedBy": "Sagar (sagarbora91), business owner",
+    "rationale": "The Retail ETP feature is held pending its own modular migration. It was never migrated: the eleven migrated modules live under www/modules, while ETP remains eighteen files at www root. Sagar directed on 2026-08-21 that the four ETP gates be carried open as accepted exceptions rather than closed for this release.",
+    "releaseScope": "ETP is in release scope and reachable by any user of the frozen build. Seventeen etp-*.js files load via script tags in www/index.html, the eighteenth (etp-import-worker.js) loads as a Web Worker, and www/index.html line 329 exposes a live Open ETP import button. There is no feature flag of any kind. Holding these gates therefore ships a reachable financial-import feature whose external acceptance is deliberately incomplete.",
+    "migrationState": {
+      "migratedModules": [
+        "cro_audit",
+        "dsr",
+        "expense",
+        "grooming",
+        "leave",
+        "payroll",
+        "planning",
+        "qms",
+        "service",
+        "stock",
+        "tax"
+      ],
+      "etpMigrated": false,
+      "etpFileCount": 18,
+      "etpLocation": "www/ root, not www/modules/"
+    },
+    "optionNotTaken": "The alternative was to hide ETP behind a feature flag so the four gates would leave release scope honestly. That was not chosen because adding a flag is a product change that would supersede the frozen fingerprint, APK, comparison, capability approval and language approval, restarting Phase 4C.1.",
+    "notCarried": "GATE-PAYMENTTYPE25 is deliberately NOT carried as an ETP exception. It is a business mapping disposition that needs no device, no production run and no modular migration, and it remains pending owner decision."
+  },
+  "identityMigration": {
+    "recordedAt": "2026-08-22",
+    "statement": "The Phase 4C.1 identity this register was frozen against is SUPERSEDED. The ETP twelfth module, the 119-row localization import, the shared-runtime protection repair and the ETP accessibility correction all changed product bytes.",
+    "frozenPhase4C1": {
+      "productCommit": "ad2d643dfa371c05779aafc52e0c2ecf618c1a42",
+      "productFingerprintSha256": "08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e",
+      "apkFilename": "SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk",
+      "apkSha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287"
+    },
+    "currentPhase5": {
+      "productCommit": "a104f5f40bd2b475f9ab45fb407f99149fafb8d9",
+      "productFingerprintSha256": "4e42cf230b9650a7e0f8ad30633dbf639d2158215d99232dfe14f0ab90716667",
+      "wwwTreeSha256": "03a766bc9204ef956477a2f0177a636cf874165487fea381964e0bec789a20a5",
+      "seededApkFilename": "SaagarCC-C1-DemoData-2Years-v2.9.apk",
+      "seededApkSha256": "90dda701c2b9d44b89b6d7e6acadb80a22cb67d5885616781c82dec4f349d2dd",
+      "seededApkBytes": 7218076,
+      "signingClass": "debug-signed seeded test candidate, not a production release"
+    },
+    "consequence": "MAH3-ETP-VISUAL-BASELINE, GATE-NATIVE-LANGUAGE, GATE-ETP-EXCEPTIONS and GATE-UPDATE-PHYSICAL were explicitly rebound to a104f5f on 2026-08-22. GATE-UPDATE-API23 still requires rerunning against the eventual shipping artifact, and production signing will create a later artifact identity."
+  },
+  "phase5Progress": {
+    "recordedAt": "2026-08-22",
+    "completedSinceRegisterFroze": [
+      "ETP implemented as the twelfth modular module with a bounded parent gateway",
+      "119-row localization package owner-approved and imported",
+      "ETP shared-runtime protections, audit bridge, home navigation and responsive containment repaired",
+      "Identity regeneration across MAH-2, MH1, MAH-3 and MAH-4",
+      "Capability inventory 660 to 680; 17 ETP deltas owner-approved 2026-08-22",
+      "ETP accessibility correction: 44x44 checkbox target, 6.38:1 enabled and 4.97:1 disabled contrast",
+      "MAH-3 contract honestly expanded 168 to 180 cases",
+      "12 ETP visual cases captured in a visible browser",
+      "78-cell rendered-language matrix captured and Ed25519-signed, signature verified valid",
+      "Physical SM-T875 session: cold launch, background/resume, encrypted store with 6,558 records, all four ETP surfaces opened, zero crash or fatal error",
+      "Corrected a104f5f APK installed update-in-place; DAT-02 accepted twice; Expense memory diagnostic completed twice with -7.61% final retained PSS",
+      "Owner explicitly rebound MAH-3 ETP visuals, native-language, ETP exception presentation and physical update acceptance to a104f5f"
+    ],
+    "focusedSuiteSweep": "439 tests, zero failures: modular 86, MAH-4 46, MAH-3 19, ETP 155, security 101, manifest 8, language 10, mobile 6, settings 8",
+    "awaitingOwnerReview": [],
+    "notProven": [
+      "The SM-T875 session was a fresh install (firstInstallTime equals lastUpdateTime), so it does NOT prove install-replace or update preservation. GATE-UPDATE-PHYSICAL stays open.",
+      "The real four-report session was skipped by owner direction. GATE-ETP-PRODUCTION is deferred, not passed.",
+      "No production signing exists; the current artifact is debug-signed."
+    ],
+    "ownerReviewsCompleted": {
+      "at": "2026-08-22",
+      "packages": [
+        "MAH-3 ETP visual cases 169-180",
+        "78-cell rendered-language matrix",
+        "R003/R013 exception presentation"
+      ],
+      "effect": "All three approved. The MAH-3 visual baseline is complete at 180/180, GATE-NATIVE-LANGUAGE is rebound to the current identity, and GATE-ETP-EXCEPTIONS moves from carried exception to closed."
+    },
+    "deviceSession": {
+      "at": "2026-08-22",
+      "device": "SM-T875 / Android 13 / API 33",
+      "result": "Install-replace verified with full data preservation and clean relaunch for the original candidate, then repeated for corrected APK 90dda701 with preserved userId, DEK and archive. Owner explicitly rebound physical acceptance to a104f5f."
+    },
+    "identityRebind": {
+      "at": "2026-08-22T21:43:31+05:30",
+      "approval": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+      "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+      "result": "MAH3-ETP-VISUAL-BASELINE, GATE-NATIVE-LANGUAGE, GATE-ETP-EXCEPTIONS and GATE-UPDATE-PHYSICAL rebound; no visual recapture or device-test repetition required"
+    }
+  },
+  "reconciledAt": "2026-08-22",
+  "roleAssignments": {
+    "recordedAt": "2026-08-22",
+    "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+    "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+    "summary": "Owner holds privacy/legal reviewer, production key custodian and release approver. Independence between custodian and approver is NOT satisfied and is carried as an accepted exception. Staff UAT testers remain unfilled."
+  }
+}

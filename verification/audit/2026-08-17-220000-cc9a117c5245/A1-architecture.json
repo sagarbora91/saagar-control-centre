@@ -1,0 +1,1018 @@
+{
+  "auditId": "A1",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A1-01",
+      "mandatory": true,
+      "metric": {
+        "filesystemModules": 11,
+        "manifestModules": 11,
+        "manifestSharedAssets": 9,
+        "mismatches": 0
+      },
+      "notes": "The check covers the canonical module entry files and both manifest-bound shared runtime assets.",
+      "result": "pass",
+      "rule": "Every module and shared asset must exist at its manifest path with the exact declared byte count and SHA-256.",
+      "severity": "P0",
+      "title": "Manifest/filesystem module parity"
+    },
+    {
+      "evidence": [],
+      "id": "A1-02",
+      "mandatory": true,
+      "metric": {
+        "census": [
+          {
+            "declared": true,
+            "dependency": "window.SaagarModuleRuntime",
+            "moduleId": "service"
+          },
+          {
+            "declared": true,
+            "dependency": "window.SaagarStockVariancePolicy",
+            "moduleId": "stock"
+          }
+        ],
+        "declaredDependencies": 2,
+        "dependencies": 2,
+        "undeclaredDependencies": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Every application-owned parent/global dependency used by a business module must be declared by its manifest-bound runtime contract.",
+      "severity": "P1",
+      "title": "Parent/global dependency census"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_ACCESS_CONTEXT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_AUDIT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_BACK_HOME"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_DISPOSE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_DISPOSED"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_ERROR"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_INIT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_LANG"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_OPEN_FEATURE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 2,
+          "type": "ST_OPEN_MODULE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 1,
+          "sendFileCount": 5,
+          "type": "ST_PRINT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_READY"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 1,
+          "sendFileCount": 2,
+          "type": "ST_REPORT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_REPORT_BATCH"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_SET_DATE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 1,
+          "sendFileCount": 9,
+          "type": "ST_SHARE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_UI_MODE"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 1,
+          "sendFileCount": 2,
+          "type": "ST_WA"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 1,
+          "sendFileCount": 4,
+          "type": "ST_WA_LINK"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 1,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "ST_WA_SENT"
+        },
+        {
+          "code": "MESSAGE_TYPE",
+          "receiveFileCount": 0,
+          "referenceFileCount": 0,
+          "sendFileCount": 1,
+          "type": "__edit_mode_available"
+        }
+      ],
+      "id": "A1-03",
+      "mandatory": false,
+      "metric": {
+        "inventory": [
+          {
+            "receiveFiles": [],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/modules/service/index.html"
+            ],
+            "type": "__edit_mode_available"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_ACCESS_CONTEXT"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_AUDIT"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "type": "ST_BACK_HOME"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_DISPOSE"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_DISPOSED"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_ERROR"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_INIT"
+          },
+          {
+            "receiveFiles": [
+              "www/app-i18n.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_LANG"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_OPEN_FEATURE"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/integration-bridge.js",
+              "www/shared/module-runtime.js"
+            ],
+            "type": "ST_OPEN_MODULE"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "sendFiles": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/stock/index.html",
+              "www/shared/module-runtime.js",
+              "www/shell-core.css"
+            ],
+            "type": "ST_PRINT"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/shared/mah4-runtime.js"
+            ],
+            "type": "ST_READY"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "sendFiles": [
+              "www/modules/payroll/index.html",
+              "www/modules/qms/index.html"
+            ],
+            "type": "ST_REPORT"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/modules/payroll/index.html"
+            ],
+            "type": "ST_REPORT_BATCH"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_SET_DATE"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "sendFiles": [
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "type": "ST_SHARE"
+          },
+          {
+            "receiveFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_UI_MODE"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "sendFiles": [
+              "www/modules/service/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "type": "ST_WA"
+          },
+          {
+            "receiveFiles": [
+              "www/index.html"
+            ],
+            "referenceFiles": [
+              "www/shared/module-runtime.js"
+            ],
+            "sendFiles": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/qms/index.html"
+            ],
+            "type": "ST_WA_LINK"
+          },
+          {
+            "receiveFiles": [
+              "www/modules/service/index.html"
+            ],
+            "referenceFiles": [],
+            "sendFiles": [
+              "www/index.html"
+            ],
+            "type": "ST_WA_SENT"
+          }
+        ],
+        "messageTypes": 21
+      },
+      "notes": "Dynamic payload values are reported by protocol checks; this check inventories every literal message identity visible to deterministic static analysis.",
+      "result": "pass",
+      "rule": "All statically declared ST_* and legacy edit-mode message literals in shipped web runtime sources are inventoried.",
+      "severity": "INFO",
+      "title": "Complete message inventory"
+    },
+    {
+      "evidence": [],
+      "id": "A1-04",
+      "mandatory": true,
+      "metric": {
+        "dependencies": 189,
+        "resolved": 189,
+        "unresolvedOrRemote": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Every shipped script and stylesheet tag dependency must resolve to a tracked local file; remote or embedded dependencies are forbidden.",
+      "severity": "P0",
+      "title": "Local script/style dependency resolution"
+    },
+    {
+      "evidence": [],
+      "id": "A1-05",
+      "mandatory": true,
+      "metric": {
+        "directReferences": 0,
+        "sourceModules": 0,
+        "targetModules": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Business modules must communicate through declared shell/shared contracts rather than another business module path, parent API, or persistence namespace.",
+      "severity": "P1",
+      "title": "Direct business-module references"
+    },
+    {
+      "evidence": [],
+      "id": "A1-06",
+      "mandatory": false,
+      "metric": {
+        "matrix": [
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css",
+              "www/stock-variance-policy.js"
+            ],
+            "messageTypes": [
+              "ST_PRINT",
+              "ST_SHARE"
+            ],
+            "moduleId": "stock",
+            "parentOrGlobalDependencies": [
+              "window.SaagarStockVariancePolicy"
+            ]
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_SHARE",
+              "ST_WA",
+              "ST_WA_SENT",
+              "__edit_mode_available"
+            ],
+            "moduleId": "service",
+            "parentOrGlobalDependencies": [
+              "window.SaagarModuleRuntime"
+            ]
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-brand-tokens.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-delete-cell.css",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_REPORT",
+              "ST_SHARE",
+              "ST_WA_LINK"
+            ],
+            "moduleId": "qms",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-brand-tokens.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_SHARE",
+              "ST_WA_LINK"
+            ],
+            "moduleId": "dsr",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-delete-cell.css",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_SHARE"
+            ],
+            "moduleId": "expense",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_SHARE"
+            ],
+            "moduleId": "grooming",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-brand-tokens.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_PRINT",
+              "ST_WA_LINK"
+            ],
+            "moduleId": "cro_audit",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-delete-cell.css",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_REPORT",
+              "ST_REPORT_BATCH",
+              "ST_SHARE",
+              "ST_WA_LINK"
+            ],
+            "moduleId": "payroll",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-brand-tokens.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_PRINT",
+              "ST_SHARE"
+            ],
+            "moduleId": "leave",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [
+              "ST_SHARE",
+              "ST_WA"
+            ],
+            "moduleId": "tax",
+            "parentOrGlobalDependencies": []
+          },
+          {
+            "directBusinessTargets": [],
+            "localAssets": [
+              "www/app-i18n.js",
+              "www/c1-control-desk.css",
+              "www/c1-control-desk.js",
+              "www/c1-operations-policy.js",
+              "www/mobile-layout.css",
+              "www/shared/mah4-runtime.js",
+              "www/shared/module-back.css",
+              "www/shared/module-bridge.js",
+              "www/shared/module-employee.css",
+              "www/shared/module-mobile-common.css",
+              "www/shared/module-runtime.js",
+              "www/shared/module-uniform.css"
+            ],
+            "messageTypes": [],
+            "moduleId": "planning",
+            "parentOrGlobalDependencies": []
+          }
+        ],
+        "matrixSha256": "33c813faccdf426087c019c91a8b16d0a75e898c3471741832fbbce841e70b9a",
+        "moduleCount": 11
+      },
+      "notes": "This is a measurement check; its individual risks are decided by A1-02, A1-04, A1-05 and A1-07.",
+      "result": "pass",
+      "rule": "Produce a deterministic per-module matrix of parent/global dependencies, message identities, direct business targets and local assets.",
+      "severity": "INFO",
+      "title": "Shell/module coupling matrix"
+    },
+    {
+      "evidence": [],
+      "id": "A1-07",
+      "mandatory": true,
+      "metric": {
+        "applicationAssetsAtLeastThreeModules": 14,
+        "fanout": [
+          {
+            "asset": "www/app-i18n.js",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/c1-control-desk.css",
+            "moduleCount": 7,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/c1-control-desk.js",
+            "moduleCount": 7,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/c1-operations-policy.js",
+            "moduleCount": 7,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/mobile-layout.css",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/mah4-runtime.js",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-back.css",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-brand-tokens.css",
+            "moduleCount": 4,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/qms/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-bridge.js",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-delete-cell.css",
+            "moduleCount": 3,
+            "modules": [
+              "www/modules/expense/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/qms/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-employee.css",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-mobile-common.css",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-runtime.js",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/shared/module-uniform.css",
+            "moduleCount": 11,
+            "modules": [
+              "www/modules/cro_audit/index.html",
+              "www/modules/dsr/index.html",
+              "www/modules/expense/index.html",
+              "www/modules/grooming/index.html",
+              "www/modules/leave/index.html",
+              "www/modules/payroll/index.html",
+              "www/modules/planning/index.html",
+              "www/modules/qms/index.html",
+              "www/modules/service/index.html",
+              "www/modules/stock/index.html",
+              "www/modules/tax/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          },
+          {
+            "asset": "www/stock-variance-policy.js",
+            "moduleCount": 1,
+            "modules": [
+              "www/modules/stock/index.html"
+            ],
+            "referencedByTest": true,
+            "vendor": false
+          }
+        ],
+        "sharedAssets": 15,
+        "untestedApplicationAssets": 0,
+        "vendorAssetsAtLeastThreeModules": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "An application-owned shared asset consumed by at least three modules must be referenced by a test path or basename; vendor fan-out is informational.",
+      "severity": "P1",
+      "title": "Shared application asset fan-out"
+    }
+  ],
+  "metrics": {
+    "couplingMatrixSha256": "33c813faccdf426087c019c91a8b16d0a75e898c3471741832fbbce841e70b9a",
+    "dependencyCount": 189,
+    "moduleCount": 11
+  },
+  "title": "Architecture and coupling"
+}

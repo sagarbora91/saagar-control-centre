@@ -1,0 +1,90 @@
+{
+  "format": "SAAGAR_PHYSICAL_UPDATE_ACCEPTANCE",
+  "schemaVersion": 1,
+  "gateId": "GATE-UPDATE-PHYSICAL",
+  "capturedAt": "2026-08-22T20:18:08+05:30",
+  "capturedBy": "assistant, adb install -r on the owner's connected device",
+  "device": {
+    "model": "SM-T875",
+    "serial": "R52N807PTTE",
+    "androidRelease": "13",
+    "apiLevel": 33,
+    "type": "physical-android"
+  },
+  "artifact": {
+    "path": "V:\\Co work\\Projects\\Retail\\SaagarCC-C1-DemoData-2Years-v2.9.apk",
+    "sha256": "30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd",
+    "bytes": 7218076,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "minSdk": 23,
+    "targetSdk": 34,
+    "signingClass": "debug-signed seeded test candidate, not a production release",
+    "rebuiltThisSession": true,
+    "reproducibilityNote": "Rebuilt from a clean tree at commit a4612db and produced a byte-identical artifact to the one already installed, and to the hash recorded in HANDOFF. The seeded build is reproducible."
+  },
+  "method": "adb install -r (streamed install, no uninstall, no data clear)",
+  "installElapsedMs": 3763,
+  "result": "pass",
+  "preservationEvidence": {
+    "userId": { "before": 10257, "after": 10257, "preserved": true },
+    "firstInstallTime": {
+      "before": "2026-08-22 18:02:33",
+      "after": "2026-08-22 18:02:33",
+      "preserved": true,
+      "meaning": "Unchanged first-install time proves this was an update in place, not a fresh install. The prior session could not claim this because firstInstallTime equalled lastUpdateTime."
+    },
+    "lastUpdateTime": {
+      "before": "2026-08-22 18:02:33",
+      "after": "2026-08-22 20:18:08",
+      "advanced": true,
+      "meaning": "Advanced update time proves the replace actually occurred."
+    },
+    "codePath": {
+      "before": "/data/app/~~PSDefbnPiQcrIL1EHAz1_g==/com.saagartraders.bcc-bVDlAcDxVuByPR3ZtybyUQ==",
+      "after": "/data/app/~~pyqLLIBvTMmdi_DypZdAmw==/com.saagartraders.bcc-N3erEeTiDuMYfjH8KS3tvw==",
+      "meaning": "A new code path is expected on reinstall and does not indicate data loss."
+    },
+    "dataFiles": [
+      {
+        "path": "files/bcc.dek",
+        "beforeSha256": "128fa2776fb1d175da2119a8d77a57671be37f508a5a30582080e06e4a87a963",
+        "afterSha256": "128fa2776fb1d175da2119a8d77a57671be37f508a5a30582080e06e4a87a963",
+        "preserved": true,
+        "meaning": "The Keystore-wrapped data encryption key survived the update. Losing this would have made the encrypted store unreadable."
+      },
+      {
+        "path": "files/saagar_qms_archive.json",
+        "bytes": 7908853,
+        "beforeSha256": "32bbabc99d352470e326dffdd363de249f2a48fe2476330dd758799f91b40533",
+        "afterSha256": "32bbabc99d352470e326dffdd363de249f2a48fe2476330dd758799f91b40533",
+        "afterLaunchSha256": "32bbabc99d352470e326dffdd363de249f2a48fe2476330dd758799f91b40533",
+        "preserved": true
+      }
+    ],
+    "webviewStorageKb": { "before": 386, "after": 386, "preserved": true }
+  },
+  "relaunchEvidence": {
+    "method": "force-stop, then monkey LAUNCHER intent",
+    "launchAndSettleMs": 13191,
+    "processId": 24098,
+    "focusedActivity": "com.saagartraders.bcc/.MainActivity",
+    "fatalExceptions": 0,
+    "anrs": 0,
+    "webviewOrCapacitorErrors": 0
+  },
+  "installedArtifactVerification": {
+    "installedBaseApkSha256": "30922dadda48e14112638a567248cb6da35ec79f88d67f87f5fc05879b4393dd",
+    "matchesBuiltArtifact": true
+  },
+  "nonClaims": [
+    "Not a production-signed release; the artifact is debug-signed",
+    "Not ETP production publication; no real four-report set was imported",
+    "Not physical API-23/OEM document-provider acceptance; this device is API 33",
+    "Not staff UAT or legal approval",
+    "Does not close A10-04 or A10-05, which remain structurally blocked",
+    "No module smoke beyond launch and focus was performed in this session"
+  ],
+  "ownerAcceptanceRequired": "This is captured engineering evidence. Closing GATE-UPDATE-PHYSICAL still needs the owner's acceptance statement naming this device and artifact."
+}

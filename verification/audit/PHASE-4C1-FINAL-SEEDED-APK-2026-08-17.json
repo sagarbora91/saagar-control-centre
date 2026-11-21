@@ -1,0 +1,60 @@
+{
+  "format": "SAAGAR_PHASE4C1_SEEDED_APK_EVIDENCE",
+  "schemaVersion": 1,
+  "capturedDate": "2026-08-17",
+  "source": {
+    "productCommit": "ad2d643dfa371c05779aafc52e0c2ecf618c1a42",
+    "productFingerprintSha256": "08734dfbb1d82f69849a4d8857cf1c311c0c0054f5a1b46bca41d42d2c15969e",
+    "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a"
+  },
+  "artifact": {
+    "path": "V:\\Co work\\Projects\\Retail\\SaagarCC-Phase4C1-Seeded-2Y-v2.9-ad2d643-F7F18EA3.apk",
+    "bytes": 7010364,
+    "sha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287",
+    "packageName": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "compileSdk": 34,
+    "minSdk": 23,
+    "targetSdk": 34,
+    "profileId": "two-year-review-v1",
+    "syntheticOnly": true,
+    "daysBack": 730,
+    "stores": ["WLMHW", "HEMW"]
+  },
+  "signing": {
+    "releaseSigned": false,
+    "debugUatOnly": true,
+    "v1": true,
+    "v2": true,
+    "v3": false,
+    "certificateDn": "C=US, O=Android, CN=Android Debug",
+    "certificateSha256": "faae9739c054b88b4c9cee8f62bf1dfa103807b7a45a835d901467cb26fe05dc"
+  },
+  "api23EngineeringValidation": {
+    "device": "emulator-5554",
+    "avd": "saagar_api23_evidence",
+    "androidApi": 23,
+    "installReplace": "pass",
+    "installedApkSha256": "f7f18ea3e3a0bd1b42b7b390e567993ad46160e0aa844a126509c28a33754287",
+    "installedHashMatchesArtifact": true,
+    "userIdBefore": 10056,
+    "userIdAfter": 10056,
+    "firstInstallTimeBefore": "2026-08-12 09:46:52",
+    "firstInstallTimeAfter": "2026-08-12 09:46:52",
+    "launchStatus": "ok",
+    "launchWaitMs": 1542,
+    "processId": 2480,
+    "activityResumed": true,
+    "activityFocused": true,
+    "fatalLogMatches": 0
+  },
+  "scope": {
+    "closesApi23EngineeringInstallReplace": true,
+    "closesPhysicalDeviceAcceptance": false,
+    "closesA10_04": false,
+    "closesA10_05": false,
+    "closesProductionSigning": false,
+    "closesReleaseApproval": false
+  }
+}

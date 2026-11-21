@@ -72,9 +72,10 @@ test('progress-bar nodes are null-guarded like their staff-meter sibling', () =>
 
 test('not-applicable sections get a distinct tab dot, not a completed one', () => {
   const { html } = dsrPayload(readShell());
+  const css = fs.readFileSync(path.join(repoDir, 'www', 'modules', 'dsr', 'dsr-ui.css'), 'utf8');
   assert.ok(html.includes("btn.classList.toggle('optional', status[id] === 'not_applicable')"));
   assert.ok(html.includes("btn.classList.toggle('done', status[id] === 'complete')"));
-  assert.ok(html.includes('.tab-btn.optional .tab-dot'));
+  assert.ok(css.includes('.tab-btn.optional .tab-dot'));
 });
 
 test('carried opening values are marked, and only in the opening grid', () => {
@@ -159,10 +160,10 @@ test('the policy script is loaded once, before the MODULES bundle', () => {
    injects LF-terminated code into this CRLF bundle trips this test. */
 const PRE_EXISTING_BARE_LF = 22;
 
-test('external DSR has deterministic LF line endings', () => {
+test('external DSR has deterministic, non-mixed line endings', () => {
   const { html } = dsrPayload(readShell());
   const crlf = (html.match(/\r\n/g) || []).length;
   const lf = (html.match(/\n/g) || []).length;
-  assert.equal(crlf, 0);
-  assert.ok(lf > 3000, `expected LF payload, saw ${lf}`);
+  assert.ok(lf > 2000, `expected complete external payload, saw ${lf} lines`);
+  assert.ok(crlf === 0 || crlf === lf, `expected one line-ending convention, saw ${crlf} CRLF of ${lf} newlines`);
 });

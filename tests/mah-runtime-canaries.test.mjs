@@ -21,10 +21,14 @@ test('DSR shared-runtime canary replaces only the six approved helpers', () => {
   }
 });
 
-test('DSR canary preserves source-guarded access and its interval cleanup contract', () => {
+test('DSR canary delegates source-guarded access and preserves its interval cleanup contract', () => {
   const dsr = read('dsr');
-  assert.match(dsr, /id="st-v5-module-access-bridge"/);
-  assert.match(dsr, /event\.source===window\.parent&&event\.data&&event\.data\.type==='ST_ACCESS_CONTEXT'/);
+  const runtime = fs.readFileSync(path.join(root, 'www', 'shared', 'module-runtime.js'), 'utf8');
+  const access = dsr.match(/<script[^>]*id=["']st-v5-module-access-bridge["'][^>]*>([\s\S]*?)<\/script>/);
+  assert.ok(access, 'st-v5-module-access-bridge');
+  assert.equal(access[1], "SaagarModuleRuntime.run('access',{schemaVersion:1,moduleId:'dsr',nextSteps:[{id:'stock',label:'Update Stock →'}],customerSelectors:[],accessContext:true});");
+  assert.match(runtime, /function accepts\(event,source\)\{return !!event&&event\.source===source&&event\.origin===ORIGIN;\}/);
+  assert.match(runtime, /access:function\(c\)\{[\s\S]*?window\.addEventListener\('message',function\(event\)\{if\(accepts\(event,window\.parent\)&&event\.data&&event\.data\.type==='ST_ACCESS_CONTEXT'\)syncContext\(\);\}\);setup\(\);\}/);
   assert.match(dsr, /_rehydrateTimer\s*=\s*setInterval\(rehydrateBridgeRows,\s*20000\)/);
   assert.match(dsr, /clearInterval\(_rehydrateTimer\);\s*_rehydrateTimer\s*=\s*null/);
   assert.equal((dsr.match(/\bsetInterval\s*\(/g) || []).length, 1);

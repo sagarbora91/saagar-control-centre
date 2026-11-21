@@ -1,0 +1,96 @@
+{
+  "artifactCount": 17,
+  "artifacts": [
+    {
+      "bytes": 32877,
+      "file": "A1-architecture.json",
+      "sha256": "414a94a36df95a12393ede4c947504ba0aac773e1904c35a344fc884930be491"
+    },
+    {
+      "bytes": 10339,
+      "file": "A10-performance.json",
+      "sha256": "2a04341aebd800d371adb54f22d8eeec0e6410aff614f816fcd2fd24aacef7a4"
+    },
+    {
+      "bytes": 3770,
+      "file": "A11-documentation.json",
+      "sha256": "3bd19e5e6bd751fc80cba83394876a74934e0b99f688757661db29512d4a92ab"
+    },
+    {
+      "bytes": 3426,
+      "file": "A2-duplication.json",
+      "sha256": "a7fda3304f527c19a7c709eb82ad1077c399efd9a790d8b8a98d726c48c66101"
+    },
+    {
+      "bytes": 1479233,
+      "file": "A3-capabilities.json",
+      "sha256": "6adb48c2a4010f4726ce9eda71a4015f0a95a079b538c7fd89030848dab62db0"
+    },
+    {
+      "bytes": 68996,
+      "file": "A4-storage.json",
+      "sha256": "18119768b4c7c8e0a652d9c40601bc92f5da6b59f557f8c3a974e1e9d1a6e2d4"
+    },
+    {
+      "bytes": 6222,
+      "file": "A5-MUTATIONS.json",
+      "sha256": "efe93ef1ca96b3f23d437cf9ee467b0f823cc5a516303c5483f4c05bf726d2f6"
+    },
+    {
+      "bytes": 25996,
+      "file": "A5-tests.json",
+      "sha256": "70cda7db3162994202f042deff82e460d127bc7b230a9835d54daad73ce48fd3"
+    },
+    {
+      "bytes": 67918,
+      "file": "A6-ui.json",
+      "sha256": "98b57368c478eb2c4168eaed8448123d20d913eaa1f7416f37cfdd5485ab85e0"
+    },
+    {
+      "bytes": 61176,
+      "file": "A7-protocol.json",
+      "sha256": "3ca0c0532ce066dbf30692b5f00134a6eb06b6017935f64759c7b99484e6f6b2"
+    },
+    {
+      "bytes": 4751,
+      "file": "A8-security.json",
+      "sha256": "87f0cd83260186ac4253116223bb4adcbbe6f8cda31781e1bf3d79120fd6a187"
+    },
+    {
+      "bytes": 8553,
+      "file": "A9-BUILD-COMPARISON.json",
+      "sha256": "04e787a1d173cde044f8d95b22f805ab40e376abb47d4c0aa40fc693a5e758ae"
+    },
+    {
+      "bytes": 3764,
+      "file": "A9-build.json",
+      "sha256": "d45fd6b0c8370eb97d5c615cdc9eb6c9d60177510251d0ce521205cfdc4003b4"
+    },
+    {
+      "bytes": 1827,
+      "file": "FINDINGS.json",
+      "sha256": "4b7b57a094faecec813c174961d599131ee0218678995d9d0983def5f679171d"
+    },
+    {
+      "bytes": 1611,
+      "file": "OPEN-GATES.json",
+      "sha256": "73ddfe6aff7786ef4efa6df0a307ee8dfc71592d2ddac74ce749938d6cfb7ccc"
+    },
+    {
+      "bytes": 14156,
+      "file": "RUN.json",
+      "sha256": "bf78c18ccee2d5363776e73bd1f37bfc9e90a4851aadace47dc6fe0f96bc2063"
+    },
+    {
+      "bytes": 1306,
+      "file": "SUMMARY.md",
+      "sha256": "9ddcf8751e35425494c11584f7a1bc0e0cc81515ac55fc8575439c4937e398ce"
+    }
+  ],
+  "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a",
+  "format": "SAAGAR_WHOLE_APP_AUDIT_EVIDENCE_MANIFEST",
+  "mode": "comparison",
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "schemaVersion": 1,
+  "targetSha": "cc9a117c5245f352922da5c9f699daa16226bbf3"
+}

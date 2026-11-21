@@ -97,14 +97,7 @@ function applyTransform(name, input, moduleId) {
 }
 
 function runtimeModule(id) {
-  let html = decodedModule(id);
-  if (id === 'stock' || id === 'dsr') {
-    html = applyTransform('injectLegacyManagerPasswordGuard', html, id);
-  }
-  if (['stock', 'service', 'dsr', 'expense'].includes(id)) {
-    html = applyTransform('injectModuleAccessBridge', html, id);
-  }
-  return html;
+  return decodedModule(id);
 }
 
 test('successful module-entry approval cannot elevate or persist an Owner session', () => {
@@ -139,13 +132,17 @@ test('successful module-entry approval cannot elevate or persist an Owner sessio
 test('fresh action reauthentication is independent of module entry and active Owner mode', () => {
   const reauth = extractFunction('SaagarReauth');
 
-  assert.match(reauth, /promptVerifyOnlyResult\s*\(/);
+  assert.match(reauth, /await reauthKeypadResult\s*\(/);
+  assert.match(reauth, /catch\s*\(e\)\s*\{result=\{ok:false/);
+  assert.doesNotMatch(reauth, /promptVerifyOnlyResult\s*\(/);
   assert.doesNotMatch(reauth, /modulePinRequired|ensureModuleAccess/);
   assert.doesNotMatch(reauth, /\bisAdmin\b/);
   assert.doesNotMatch(reauth, /\bsetAdmin\s*\(/);
 });
 
 test('runtime module transforms preserve existing sensitive-action reauthentication gates', () => {
+  const sharedRuntime = fs.readFileSync(new URL('../www/shared/module-runtime.js', import.meta.url), 'utf8');
+  assert.match(sharedRuntime, /(?:window\.parent|parent).*SaagarReauth|root\.SaagarReauth/);
   const contracts = {
     stock: {
       helper: 'stReauth', minimumGates: 3,
@@ -175,17 +172,17 @@ test('runtime module transforms preserve existing sensitive-action reauthenticat
       new RegExp(`\\b${escapeRegExp(contract.helper)}\\s*\\(`, 'g')
     ) || [];
     assert.ok(
-      calls.length >= contract.minimumGates + 1,
-      `${moduleId} must retain its helper plus ${contract.minimumGates} sensitive-action gates`
+      calls.length >= contract.minimumGates,
+      `${moduleId} must retain ${contract.minimumGates} sensitive-action gates`
     );
-    assert.match(runtime, /(?:window\.parent|parent)\.SaagarReauth/);
+    if (contract.helper === 'stReauth') assert.match(runtime, /const stReauth=SaagarModuleRuntime\.reauth/);
     contract.reasons.forEach(reason => {
       assert.ok(runtime.includes(reason), `${moduleId} lost reauth reason: ${reason}`);
     });
     if (moduleId === 'service') {
       assert.match(
         runtime,
-        /overrideApproved\s*=\s*svcD3Reauth\s*\([\s\S]{0,500}if\s*\(\s*!overrideApproved\s*\)[\s\S]{0,220}return\s*;/
+        /overrideApproved\s*=\s*await\s+svcD3Reauth\s*\([\s\S]{0,500}if\s*\(\s*!overrideApproved\s*\)[\s\S]{0,220}return\s*;/
       );
     }
   }
@@ -195,12 +192,12 @@ test('Owner and role changes notify open modules and revoke stale manager worksp
   const applyMode = extractFunction('applyMode');
   const setAdmin = extractFunction('setAdmin');
   const setCurrentRole = extractFunction('setCurrentRole');
-  const bridge = extractFunction('injectModuleAccessBridge');
+  const bridge = fs.readFileSync(new URL('../www/shared/module-runtime.js', import.meta.url), 'utf8');
 
   assert.match(applyMode, /notifyModuleAccessChanged\s*\(/);
   assert.match(setAdmin, /applyMode\s*\(/);
   assert.match(setCurrentRole, /applyMode\s*\(/);
-  assert.match(bridge, /event\.source\s*===\s*window\.parent/);
+  assert.match(bridge, /accepts\(event,window\.parent\)/);
   assert.match(bridge, /ST_ACCESS_CONTEXT/);
   assert.match(bridge, /revokeManagerIfNeeded\s*\(/);
   assert.match(bridge, /moduleId==='stock'[\s\S]*commitMode\('cro'\)/);

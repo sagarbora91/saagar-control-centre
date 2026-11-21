@@ -15,29 +15,29 @@
   },
   "sourceFingerprint": {
     "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
-    "fileCount": 65,
-    "totalBytes": 7726843,
-    "treeSha256": "13deb48ea5a5b934751e08cfee59cf1d7a0593d3b2b98d8033cedbd334156937",
+    "fileCount": 108,
+    "totalBytes": 8142819,
+    "treeSha256": "98533df91055a81e3b1da602fe363d220840a21f208fd9923a836e508746dbf8",
     "criticalFiles": [
       {
         "path": "www/index.html",
-        "bytes": 708153,
-        "sha256": "9708bdea2dde2567d70c780c13d92185ad035ea1eee877723a1de6f977bcf230"
+        "bytes": 577065,
+        "sha256": "bd799c4162808fa9c3f94b915d876fb4f2e0aeabbec025ba0cdc76b7dd48b82a"
       },
       {
         "path": "www/module-manifest.js",
-        "bytes": 15504,
-        "sha256": "ce9ab95306dd7075074876fba02ad7a5216ce48dfe566ac414bd8cbd0a156f78"
+        "bytes": 18425,
+        "sha256": "e78f5267f711230862b1cfa87970a3030899d0a6d6e1c0e84cff6fed15a28347"
       },
       {
         "path": "www/app-i18n.js",
-        "bytes": 93658,
-        "sha256": "0718b9c4025111d330a9cd42f08f68834da7d4d5a87d802351f51ed720c146f0"
+        "bytes": 359879,
+        "sha256": "6f43e69dc8206422686f345e8224818d438ec9a50fc1a3800ca6e4502d459f8a"
       },
       {
         "path": "www/mobile-layout.css",
-        "bytes": 11501,
-        "sha256": "c1a9ebd3efe18e96e345e5c1234901e7848a5601176d88a6525cc0f076599ec3"
+        "bytes": 11611,
+        "sha256": "6e49b0c373a477c263dacddcd8f2c7eeaa5bc0d08451aa2585854c2dabdd032b"
       },
       {
         "path": "www/mobile-shell.css",
@@ -66,23 +66,23 @@
       },
       {
         "path": "www/modules/planning/index.html",
-        "bytes": 48319,
-        "sha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be"
+        "bytes": 39684,
+        "sha256": "8fd35c2046b49034f0bb293b513dbf51a69e76054ebe12a4f0b8915a330aef4c"
       },
       {
         "path": "www/modules/dsr/index.html",
-        "bytes": 217502,
-        "sha256": "4b3cd976db9e6d7b5953edf0be54a01c6d97f4ccd5c09abe90b5fed48975518b"
+        "bytes": 206953,
+        "sha256": "c720d74d9cf15011164e8bdf6e3f09a9f990e393237d3e921054ad2d625e185d"
       },
       {
         "path": "www/modules/qms/index.html",
-        "bytes": 202450,
-        "sha256": "e64d421e302e99e7131918fb7384314a7b889085c5aaff5a499a52a9b98ccdba"
+        "bytes": 197215,
+        "sha256": "9d20b603cd3a9cf74edab5e2ee109d20c94e39e1e895101a08e3dab693b1d7b4"
       },
       {
         "path": "www/shared/module-runtime.js",
-        "bytes": 14974,
-        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
+        "bytes": 20392,
+        "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47"
       }
     ]
   },
@@ -132,9 +132,10 @@
       "payroll",
       "leave",
       "tax",
-      "planning"
+      "planning",
+      "etp"
     ],
-    "minimumVisualCases": 168,
+    "minimumVisualCases": 180,
     "selectedDate": "2026-08-06",
     "textSize": "normal",
     "seedProfile": "topology-empty-no-pii-plus-planning-canary-v1",
@@ -143,8 +144,8 @@
   },
   "sharedRuntimeCandidates": {
     "planning": {
-      "moduleBytes": 48319,
-      "moduleSha256": "dab8cb2ccb84d37f8e54156514a327c5cf22171d0dd14d66a0cd3a02b47a20be",
+      "moduleBytes": 39684,
+      "moduleSha256": "8fd35c2046b49034f0bb293b513dbf51a69e76054ebe12a4f0b8915a330aef4c",
       "inlineTimeouts": 0,
       "mutationObservers": 0,
       "intervals": 0,
@@ -168,8 +169,8 @@
       },
       "runtimeAsset": {
         "path": "www/shared/module-runtime.js",
-        "bytes": 14974,
-        "sha256": "da5ad47c9a6d1b4d699d5148fc1433bb2e824a4f08fef2bc2dbb1541bdeb618b"
+        "bytes": 20392,
+        "sha256": "e4c907a922ff7e944da250905b8c022132609fa871683b0816bf8aeb4f6dba47"
       },
       "extractionApplied": true,
       "originalBlocks": [
@@ -222,8 +223,8 @@
     "visualBaselinesCaptured": true,
     "physicalDeviceAccepted": false,
     "nativeLanguageAccepted": false,
-    "runtimeRefactorGate": "satisfied by identity-bound 168-case evidence and owner confirmation",
+    "runtimeRefactorGate": "satisfied by identity-bound 180-case evidence and owner confirmation: 168 cases reviewed 2026-08-07 and the 12 etp cases reviewed 2026-08-22",
     "evidencePath": "verification/mah3-visual-review/MAH3-VISUAL-REVIEW-EVIDENCE-2026-08-07.json",
-    "evidenceSha256": "e50ce33ff871d21beb36d08e79dc237694fac846f644ba3cc4c0eac1315286c7"
+    "evidenceSha256": "c34a623190db688f869c8e07462957de5eec35d0d88a668abb928208faa38305"
   }
 }

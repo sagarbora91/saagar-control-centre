@@ -65,7 +65,7 @@ function elementStub(overrides = {}) {
   };
 }
 
-function browserContext({ storage = {}, elements = {} } = {}) {
+function browserContext({ storage = {}, elements = {}, parent = null } = {}) {
   const localStorage = memoryStorage(storage);
   const nodes = new Map(
     Object.entries(elements).map(([id, value]) => [
@@ -123,7 +123,7 @@ function browserContext({ storage = {}, elements = {} } = {}) {
     clearInterval
   };
   sandbox.window = sandbox;
-  sandbox.parent = sandbox;
+  sandbox.parent = parent || sandbox;
   sandbox.globalThis = sandbox;
   return vm.createContext(sandbox);
 }
@@ -140,6 +140,12 @@ function evaluateModule(id, options) {
   });
   assert.ok(source, `${id} calculation script must exist`);
   const context = browserContext(options);
+  vm.runInContext(fs.readFileSync(path.join(rootDir, 'www/shared/module-bridge.js'), 'utf8'), context, {
+    filename: 'shared/module-bridge.js'
+  });
+  vm.runInContext(fs.readFileSync(path.join(rootDir, 'www/shared/module-runtime.js'), 'utf8'), context, {
+    filename: 'shared/module-runtime.js'
+  });
   vm.runInContext(source, context, { filename: `${id}.embedded.html` });
   return context;
 }
@@ -268,11 +274,16 @@ test('ENG-01 daily cash golden case carries the last closed drawer across date g
   assert.equal(actual.rows.length, 4);
 });
 
-test('ENG-01 GST feed golden case preserves per-category rates and input-tax total', () => {
+test('ENG-01 GST feed golden case preserves per-category rates and input-tax total', async () => {
   const context = evaluateModule('expense', {
+    parent: {
+      SaagarOwnerSession: { read: () => ({ version: 1, isOwner: true, isManager: true, role: 'Store Manager' }) },
+      SaagarReauth: async () => true,
+      postMessage() {}
+    },
     storage: {
       gm_role: 'owner',
-      gm_settings: { gstRate: 18 },
+      gm_settings: { gstRate: 18, gstIncomeBasis: 'exclusive' },
       gm_gst_rates: { 'Retail Sale': 5 },
       gm_expenses: [
         { id: 'i1', date: '2026-01-05', type: 'income', amount: 10000, mode: 'Cash', category: 'Retail Sale' },
@@ -281,7 +292,7 @@ test('ENG-01 GST feed golden case preserves per-category rates and input-tax tot
       ]
     }
   });
-  vm.runInContext(`
+  await vm.runInContext(`
     CM = '2026-01';
     renderClose = function(){};
     toast = function(){};

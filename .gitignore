@@ -7,6 +7,8 @@ android/key.properties
 # jsdom test scratch dir (npm install + decoded module copies)
 /_v/
 _dec_*.html
+/.tmp-audit-tests/
+/.tmp-etp-synthetic-fixtures/
 
 # OS / editor noise
 .DS_Store
@@ -14,3 +16,6 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+# Added by code-review-graph
+.code-review-graph/
+/graphify-out/

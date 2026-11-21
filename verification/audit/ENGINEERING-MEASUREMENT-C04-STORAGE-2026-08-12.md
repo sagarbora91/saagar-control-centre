@@ -1,0 +1,148 @@
+# Engineering measurement — C-04 storage equivalence
+
+> **NUMBERING CORRECTION (2026-08-12).** This record was originally filed under
+> the P4.x numbering in `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`.
+> That numbering is **superseded**. The authority is
+> `docs/audit/PHASE-4-MICRO-CHECKPOINTS-2026-08-12.md`, where P4.2 is *Final
+> target freeze*, P4.3 *Unapproved controlled comparison*, P4.4 *Capability
+> approval closure* and P4.5 *Localization and trusted UI closure*.
+>
+> This document is **engineering measurement only**. It closes no micro-checkpoint
+> and must not be read as one. The current mini-phase is **P4.2 — final target
+> freeze**, blocked on the A9-02 generated identity-hash contract.
+
+
+**Date:** 2026-08-12 (Asia/Kolkata)
+**Branch:** `agent/modular-phase1-shared-spine-v2`
+**Phase authority:** `docs/audit/CONSOLIDATED-REMAINING-CLOSURE-PHASE-2026-08-12.md`
+**Status:** work package **COMPLETE**. Formal comparison artefact deferred to the
+phase-closing evidence run (see §5) — deliberately, not as an omission.
+
+---
+
+## 1. Exit criteria
+
+> **Exit:** A4-02 passes with zero unclassified artifacts and C-04 passes with no
+> unresolved storage-contract delta.
+
+| Criterion | State | Evidence |
+|---|---|---|
+| A4-02 passes, zero unclassified | **met** | §2 |
+| C-04, no unresolved storage delta | **met, measured** | §3 |
+| Fixtures so classification cannot regress | **met** | §4, commit `3f38784` |
+
+## 2. A4-02 — zero unclassified
+
+Measured at branch HEAD with the current analyser:
+
+```
+A4-01 pass  127 artifacts, inventoryComplete=true
+A4-02 pass  portable 50 | device-local 60 | re-derivable-excluded 17 | forbidden 0
+            unclassifiedArtifacts: 0
+A4-03..A4-06 pass
+```
+
+All six A4 checks pass. The starting position for this work package was **59
+unclassified artifacts** and **61 storage-contract deltas**.
+
+The closure was achieved by **deterministic analyser normalization**, the option
+the phase document allows alongside explicit classification. No product code was
+changed to satisfy the analyser — which matters, because rewriting runtime-computed
+storage keys into literals purely to satisfy a static matcher would have been
+churn on a shipped retail application, the same anti-pattern rejected during the
+A3-02 work.
+
+Three normalizations did it:
+
+1. **Multi-declarator resolution** — `var MK_BRANDS='…', MK_CUSTOMERS='…';` previously
+   yielded only the first declarator, so later keys became computed artifacts.
+2. **Comment masking** — line, block and HTML-commented storage access no longer
+   enters the census.
+3. **Derived integration feeds** — `saagar_bus`, `saagar_cro_audit_feed`,
+   `saagar_payroll_attendance_feed`, `saagar_tax_payable` classified
+   `re-derivable-excluded`, owner `integration-bridge`. They are rebuilt from their
+   owning module's data, so restoring them would resurrect stale cross-module state.
+
+## 3. C-04 — measured directly
+
+C-04's own comparator logic (`storageContractDeltas`, keyed on
+`STORAGE_CONTRACT_KEYS`) was replicated and run with the **current** analyser
+against **both** product states, so both sides share analyser identity:
+
+| Side | Product | Result |
+|---|---|---|
+| Baseline | anchor product (`8f96480`, via the Gate 0 worktree) | 127 artifacts, 0 unclassified |
+| Current | migrated product (branch HEAD) | 127 artifacts, 0 unclassified |
+
+```
+storage-contract deltas: 0   (added 0, removed 0, changed 0)
+C-04 verdict: PASS
+```
+
+**The storage contract is identical before and after the migration.** That is the
+substantive finding behind this work package: the Modular HTML migration changed
+no persistent artifact, no classification, no owner, no restore or reset behaviour.
+
+### 3.1 The one real-looking delta was a false alarm
+
+Of the original 61 deltas, 55 were `computed-*` identities and 5 were parser
+noise. Exactly one carried a real key name: `local-storage:saagar_master_customers`
+reported as `STORAGE_ARTIFACT_REMOVED`.
+
+Verified in product code rather than assumed. The key is unchanged —
+`MK_CUSTOMERS = "saagar_master_customers"` still exists in `www/index.html` and
+`www/integration-bridge.js`, and the read path moved from duplicated per-module
+inline scripts into `www/shared/module-runtime.js` as `customerKey`. The
+de-duplication moved it; the multi-declarator defect made it *look* removed.
+
+**No storage artifact was lost in the migration.**
+
+### 3.2 Why `computed-*` identity caused 55 deltas
+
+That identity is derived from the expression's text and position, so it changes
+whenever code moves — even when the runtime key is byte-identical. Any refactor
+would therefore have produced a large C-04 delta regardless of whether storage
+changed. Normalizing the identity is what makes C-04 meaningful rather than
+noisy, and is why this was analyser work and not product work.
+
+## 4. Regression fixtures — commit `3f38784`
+
+The normalization shipped with no A4 test; all three behaviours could have been
+reverted silently and the contract would have drifted again on the next refactor.
+
+Test: `A4 key normalization survives multi-declarators, comments and derived
+integration feeds`.
+
+**Proved load-bearing** by running the same three fixtures against `a4.mjs` at
+`9b54d5b` (pre-normalization):
+
+| Fixture | Old analyser |
+|---|---|
+| Multi-declarator | resolved key absent, 1 computed id, 1 unclassified |
+| Comment masking | 2 ghost keys inventoried |
+| Derived feeds | 1 unclassified |
+
+## 5. What remains, and why it is deferred
+
+C-04's pass is recorded here as a direct measurement, not yet as a committed
+comparison artefact. Producing that artefact requires a re-baseline at anchor
+product plus a comparison at the migrated target, both at current tooling, and a
+**re-issued approval envelope**: the existing envelope is bound to
+`auditToolingSha 937542f`, and tooling has since moved, so `exactIdentity()`
+would reject it and every one of the 106 capability approvals would read as
+unapproved.
+
+That envelope must be re-issued regardless of this work package. Running the
+cycle for P4.2 alone would be wasted: **P4.3 (C-07) is the only other open gate,
+and any P4.3 change invalidates a P4.2-only run immediately.** One evidence cycle
+should certify both.
+
+## 6. Non-claims
+
+- No comparison run in this branch yet shows C-04 `pass`; §3 is a measurement
+  using the shipped comparator logic, not a signed artefact.
+- Three anchor-invariant tests fail on this branch and are unrelated to this work
+  package. They assert the tooling commit preserves the pre-migration anchor
+  fingerprint, which cannot hold on a migrated product until the phase re-anchors.
+  Confirmed pre-existing.
+- This record covers C-04 only. C-07 remains open.

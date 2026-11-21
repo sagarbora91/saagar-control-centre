@@ -1,0 +1,123 @@
+{
+  "format": "SAAGAR_AUDIT_MUTATION_EVIDENCE",
+  "mutations": [
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "38eab506f49ead0e5955f33f12e263fb9d4549a27a48240f62a1c32450fe998b",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "D1 reauthentication limits a single action to one retry",
+      "invariantId": "auth",
+      "mutationId": "auth-one-retry-limit-v1",
+      "outputSha256": "560e2be0c988503b4dc4eaa2954610217ea3882680e0d01db78cd1e046a2ac13",
+      "productionFile": "www/reauth-policy.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/d1-reauth.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "9c672bcd185fabf55d4fe82ade125f4c2334c6bac3aeb62842d574a70754e04c",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "portable backup round-trips without leaking payload text",
+      "invariantId": "backupRestore",
+      "mutationId": "backup-photo-manifest-count-v1",
+      "outputSha256": "1c5e59a2ec3e1121a252fa32b18aa3750b362b200869dcb72c9f8a8f803904d0",
+      "productionFile": "www/portable-backup.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/portable-backup.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "55e58402d380c6dd62634ef3e0d22fbaa6b3520cf29fa365fdf028abdf653c87",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "publication refuses missing facts, restored state, incomplete scope and critical failures",
+      "invariantId": "etpPublication",
+      "mutationId": "etp-critical-reconciliation-publication-gate-v1",
+      "outputSha256": "9d001e90c4d011d5686ee9a8293e221396340195db1ee7eed0c3e320b9367dfd",
+      "productionFile": "www/etp-reconciliation-policy.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "85911567047f504f87f6617d16a4d9e3382b86b70a2e72fe6b146890c46bf43e",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "SEC-08 defaults to disabled and records the denied attempt without prompting",
+      "invariantId": "export",
+      "mutationId": "export-default-deny-policy-v1",
+      "outputSha256": "38bb8830b92ce02ea2f8d1418b488844d5e1ac3468facba11b664f9ef4317cdd",
+      "productionFile": "www/export-control.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/eng04-security.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "80e2e65569e37e5ac138153ca2cf21859bd66d1257471864ea57552873608af0",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "INV/SR/BC signs are applied and a mismatch remains visible",
+      "invariantId": "money",
+      "mutationId": "money-reconciliation-delta-direction-v1",
+      "outputSha256": "c132ba705b2de37ef5a79cffa8b03c0eb4994f613009fa20e29449535ca99175",
+      "productionFile": "www/etp-reconciliation-policy.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/etp-reconciliation-policy.test.mjs"
+    },
+    {
+      "afterProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "assertionEvidence": {
+        "assertionFailureDetected": true,
+        "matchedFailureBlockSha256": "7feba770c79f17d81e7f30348927fd74fbd739035dab81cbbcf74fa374660b7a",
+        "namedFailureDetected": true,
+        "setupFailureDetected": false
+      },
+      "beforeProductSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+      "detected": true,
+      "disposableWorktree": true,
+      "exitCode": 1,
+      "expectedAssertion": "runtime flush writes only changed records in bounded native batches",
+      "invariantId": "storage",
+      "mutationId": "storage-native-batch-bound-v1",
+      "outputSha256": "6c4d831f6a25ae1ab9925d37cfc0e3e88f1e2944ebcfc2c394e3c437ea6a74ce",
+      "productionFile": "www/storage-core.js",
+      "testCommand": "node --test --test-force-exit --test-reporter=tap tests/native-incremental-storage-runtime.test.mjs"
+    }
+  ],
+  "productFingerprintSha256": "f9b7dee47a7be2f6536c40e40393325392516f01584e1b613ccc26f60866d1c7",
+  "schemaVersion": 1,
+  "sourceSha": "5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c",
+  "toolingSha": "5a20fe5ebf534201cb24dd6602f6a9ed9a5c050c"
+}

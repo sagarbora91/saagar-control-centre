@@ -1,0 +1,1820 @@
+{
+  "auditId": "A6",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 47,
+          "path": "www/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 293,
+          "path": "www/modules/cro_audit/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 301,
+          "path": "www/modules/cro_audit/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 278,
+          "path": "www/modules/dsr/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 294,
+          "path": "www/modules/dsr/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "52cca7c6db6661e5",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "92cef0afb6e7a778",
+          "line": 304,
+          "path": "www/modules/dsr/index.html",
+          "token": "--green-mid"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 293,
+          "path": "www/modules/expense/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 293,
+          "path": "www/modules/grooming/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 297,
+          "path": "www/modules/grooming/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 295,
+          "path": "www/modules/leave/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 354,
+          "path": "www/modules/payroll/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "4a08e4d0db13be9b",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "13b406d84d601195",
+          "line": 260,
+          "path": "www/modules/planning/index.html",
+          "token": "--amber"
+        },
+        {
+          "actualFingerprint": "3c5c1ab6c5fd2f50",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "e21c21ccc26757fa",
+          "line": 260,
+          "path": "www/modules/planning/index.html",
+          "token": "--green"
+        },
+        {
+          "actualFingerprint": "3871da342003cbdb",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "59dbd125956e62e1",
+          "line": 260,
+          "path": "www/modules/planning/index.html",
+          "token": "--red"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 270,
+          "path": "www/modules/qms/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 294,
+          "path": "www/modules/service/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 303,
+          "path": "www/modules/service/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 293,
+          "path": "www/modules/stock/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 297,
+          "path": "www/modules/stock/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 293,
+          "path": "www/modules/tax/index.html",
+          "token": "--radius"
+        }
+      ],
+      "id": "A6-01",
+      "mandatory": true,
+      "metric": {
+        "canonicalTokens": 16,
+        "definitions": 172,
+        "divergences": 20,
+        "filesWithDefinitions": 12
+      },
+      "notes": "Absence of a token is not called divergence; this check compares only definitions of the canonical shared names.",
+      "result": "fail",
+      "rule": "Every definition of a shared SAAGAR design token must equal its canonical normalized value.",
+      "severity": "P2",
+      "title": "Shared design-token divergence"
+    },
+    {
+      "evidence": [
+        {
+          "code": "UI_SURFACE",
+          "path": "www/index.html",
+          "requiredCells": 6,
+          "surfaceId": "shell"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/cro_audit/index.html",
+          "requiredCells": 6,
+          "surfaceId": "cro_audit"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/dsr/index.html",
+          "requiredCells": 6,
+          "surfaceId": "dsr"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/expense/index.html",
+          "requiredCells": 6,
+          "surfaceId": "expense"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/grooming/index.html",
+          "requiredCells": 6,
+          "surfaceId": "grooming"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/leave/index.html",
+          "requiredCells": 6,
+          "surfaceId": "leave"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/payroll/index.html",
+          "requiredCells": 6,
+          "surfaceId": "payroll"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/planning/index.html",
+          "requiredCells": 6,
+          "surfaceId": "planning"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/qms/index.html",
+          "requiredCells": 6,
+          "surfaceId": "qms"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/service/index.html",
+          "requiredCells": 6,
+          "surfaceId": "service"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/stock/index.html",
+          "requiredCells": 6,
+          "surfaceId": "stock"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/tax/index.html",
+          "requiredCells": 6,
+          "surfaceId": "tax"
+        }
+      ],
+      "id": "A6-02",
+      "mandatory": false,
+      "metric": {
+        "languageInventory": [
+          "en",
+          "mr",
+          "hi"
+        ],
+        "languages": 3,
+        "matrixCells": 72,
+        "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+        "surfaceInventory": [
+          {
+            "id": "cro_audit",
+            "path": "www/modules/cro_audit/index.html"
+          },
+          {
+            "id": "dsr",
+            "path": "www/modules/dsr/index.html"
+          },
+          {
+            "id": "expense",
+            "path": "www/modules/expense/index.html"
+          },
+          {
+            "id": "grooming",
+            "path": "www/modules/grooming/index.html"
+          },
+          {
+            "id": "leave",
+            "path": "www/modules/leave/index.html"
+          },
+          {
+            "id": "payroll",
+            "path": "www/modules/payroll/index.html"
+          },
+          {
+            "id": "planning",
+            "path": "www/modules/planning/index.html"
+          },
+          {
+            "id": "qms",
+            "path": "www/modules/qms/index.html"
+          },
+          {
+            "id": "service",
+            "path": "www/modules/service/index.html"
+          },
+          {
+            "id": "shell",
+            "path": "www/index.html"
+          },
+          {
+            "id": "stock",
+            "path": "www/modules/stock/index.html"
+          },
+          {
+            "id": "tax",
+            "path": "www/modules/tax/index.html"
+          }
+        ],
+        "surfaces": 12,
+        "viewportInventory": [
+          {
+            "height": 844,
+            "id": "mobile-390x844",
+            "width": 390
+          },
+          {
+            "height": 768,
+            "id": "desktop-1366x768",
+            "width": 1366
+          }
+        ],
+        "viewports": 2
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Enumerate every discovered shell/module surface across the frozen mobile/desktop viewports and English, Marathi and Hindi.",
+      "severity": "INFO",
+      "title": "Surface, viewport and language matrix"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 26,
+          "path": "www/c1-control-desk.js",
+          "textFingerprint": "3e29d2ddc9c0012029d0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-property:textcontent",
+          "line": 27,
+          "path": "www/c1-control-desk.js",
+          "textFingerprint": "4a7341f2ba5996096142"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 185,
+          "path": "www/export-control.js",
+          "textFingerprint": "2e01e1d1062be94e1a05"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 189,
+          "path": "www/export-control.js",
+          "textFingerprint": "bc477194224da42a8bfd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 194,
+          "path": "www/export-control.js",
+          "textFingerprint": "66adc844a21ec26d6565"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 198,
+          "path": "www/export-control.js",
+          "textFingerprint": "8c8d687fe474ad8d9568"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 202,
+          "path": "www/export-control.js",
+          "textFingerprint": "37ec20f11be525207019"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 206,
+          "path": "www/export-control.js",
+          "textFingerprint": "2086fa0627a5b2e3076a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 211,
+          "path": "www/export-control.js",
+          "textFingerprint": "77fd4ff9c8a0e4be85ed"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 241,
+          "path": "www/export-control.js",
+          "textFingerprint": "b84ae1f759207009c86b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 246,
+          "path": "www/export-control.js",
+          "textFingerprint": "95e6d39ae0c1db8fb43d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 252,
+          "path": "www/export-control.js",
+          "textFingerprint": "6155b3b06b60d1c8a5b3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 255,
+          "path": "www/export-control.js",
+          "textFingerprint": "bf31edb977bb925c9384"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 256,
+          "path": "www/export-control.js",
+          "textFingerprint": "ae50795dd85a210c3054"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 265,
+          "path": "www/export-control.js",
+          "textFingerprint": "b878a3a8adbb585f7536"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 286,
+          "path": "www/export-control.js",
+          "textFingerprint": "1d29ea08cb110ea109e8"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 288,
+          "path": "www/export-control.js",
+          "textFingerprint": "f2d4f935062bf2c809a6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 321,
+          "path": "www/export-control.js",
+          "textFingerprint": "2ce3d7778dfea1893f77"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 327,
+          "path": "www/export-control.js",
+          "textFingerprint": "9d661c47c24c3db06eb7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1249,
+          "path": "www/index.html",
+          "textFingerprint": "565339bc4d33d72817b5"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1284,
+          "path": "www/index.html",
+          "textFingerprint": "610e48180a3f77aa026d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1286,
+          "path": "www/index.html",
+          "textFingerprint": "85603424b4bf6591bde6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1398,
+          "path": "www/index.html",
+          "textFingerprint": "ad0353dfc98d4a6a27cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1456,
+          "path": "www/index.html",
+          "textFingerprint": "895fab421e0f42cb85cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1465,
+          "path": "www/index.html",
+          "textFingerprint": "d7e4099ef2640cfbec31"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1470,
+          "path": "www/index.html",
+          "textFingerprint": "1b28a029cd6feef53d18"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1475,
+          "path": "www/index.html",
+          "textFingerprint": "1262fc853626f2d9f278"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1484,
+          "path": "www/index.html",
+          "textFingerprint": "d6c8c113c6698af42c51"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1489,
+          "path": "www/index.html",
+          "textFingerprint": "fac5cc00906d84aad974"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1498,
+          "path": "www/index.html",
+          "textFingerprint": "6874f1a17ed072ee1554"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1503,
+          "path": "www/index.html",
+          "textFingerprint": "87c71c0b24bb7f0e90b7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1508,
+          "path": "www/index.html",
+          "textFingerprint": "7a149e3ffcf155e18a7f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1517,
+          "path": "www/index.html",
+          "textFingerprint": "cbeadea373405d6ae73e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1522,
+          "path": "www/index.html",
+          "textFingerprint": "c85e502b7cb3216419b2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1562,
+          "path": "www/index.html",
+          "textFingerprint": "a26b05e06f811203c0a2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1563,
+          "path": "www/index.html",
+          "textFingerprint": "1a196eaf2c1548366740"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1571,
+          "path": "www/index.html",
+          "textFingerprint": "3af4da94e2372fc3910f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 1576,
+          "path": "www/index.html",
+          "textFingerprint": "84545b090421dc4d9d1d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1576,
+          "path": "www/index.html",
+          "textFingerprint": "dd336522354f6e613f4d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 1577,
+          "path": "www/index.html",
+          "textFingerprint": "0c0eed7f7ab5877b2623"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 1587,
+          "path": "www/index.html",
+          "textFingerprint": "1a1ff83fd240fcdc1f7c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 1589,
+          "path": "www/index.html",
+          "textFingerprint": "3ebcd3cc596ba28874df"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1589,
+          "path": "www/index.html",
+          "textFingerprint": "f3d8c96e71944625b04e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1599,
+          "path": "www/index.html",
+          "textFingerprint": "63214131c2b05e46f798"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1608,
+          "path": "www/index.html",
+          "textFingerprint": "ca6fe69a401655c43c14"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1614,
+          "path": "www/index.html",
+          "textFingerprint": "a1808aeda66ab0549b14"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1628,
+          "path": "www/index.html",
+          "textFingerprint": "5f5e79b3e114f6af1749"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1632,
+          "path": "www/index.html",
+          "textFingerprint": "1ea7cdf41d9b198398ae"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1633,
+          "path": "www/index.html",
+          "textFingerprint": "1a6bd2c84e26b8ce1024"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1637,
+          "path": "www/index.html",
+          "textFingerprint": "55bc0f22fd87291165fd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1642,
+          "path": "www/index.html",
+          "textFingerprint": "ec7e728965681412ad74"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1656,
+          "path": "www/index.html",
+          "textFingerprint": "10a5cf589c0c9f0f3422"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1671,
+          "path": "www/index.html",
+          "textFingerprint": "1d97b98b10068a16857e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1676,
+          "path": "www/index.html",
+          "textFingerprint": "388cad7c0e615eeada8c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1676,
+          "path": "www/index.html",
+          "textFingerprint": "5a67a08577a2db8a84e6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1678,
+          "path": "www/index.html",
+          "textFingerprint": "e5dbdffb881648171031"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1681,
+          "path": "www/index.html",
+          "textFingerprint": "8db296ef5695c5ce2c29"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1686,
+          "path": "www/index.html",
+          "textFingerprint": "729eef0541a6a51a0ecc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1704,
+          "path": "www/index.html",
+          "textFingerprint": "b2ca4043ebf7dac9bcc7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:aria-label",
+          "line": 1709,
+          "path": "www/index.html",
+          "textFingerprint": "3a17f80f7ff7b17637c1"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1723,
+          "path": "www/index.html",
+          "textFingerprint": "6ee94ed0f1257848fcc9"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1724,
+          "path": "www/index.html",
+          "textFingerprint": "abc0b6796da413ec2771"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1725,
+          "path": "www/index.html",
+          "textFingerprint": "d11a8b7cba5e15ebdc77"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1727,
+          "path": "www/index.html",
+          "textFingerprint": "8cfbf87c0121ba9b3638"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1733,
+          "path": "www/index.html",
+          "textFingerprint": "5f4288a4c0854dff9985"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1736,
+          "path": "www/index.html",
+          "textFingerprint": "55a5a98a33993dadc31b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1739,
+          "path": "www/index.html",
+          "textFingerprint": "2f0e86a1747f52980b6a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1742,
+          "path": "www/index.html",
+          "textFingerprint": "c8d43966ef1f8ba23b5b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1746,
+          "path": "www/index.html",
+          "textFingerprint": "6a1a0b591cb9d8924b27"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1751,
+          "path": "www/index.html",
+          "textFingerprint": "1c95dcf181b40979de5d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1755,
+          "path": "www/index.html",
+          "textFingerprint": "76f51bab2e59244e39db"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1760,
+          "path": "www/index.html",
+          "textFingerprint": "a805db90a374d21ac09d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1767,
+          "path": "www/index.html",
+          "textFingerprint": "a3bd623491157a10b13f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1777,
+          "path": "www/index.html",
+          "textFingerprint": "4dba4bd0169ee63c85f4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1781,
+          "path": "www/index.html",
+          "textFingerprint": "d69dc8f44bdae56e7b70"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1785,
+          "path": "www/index.html",
+          "textFingerprint": "c98604a736d35c53be7e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1790,
+          "path": "www/index.html",
+          "textFingerprint": "48f0d3d397d49f135f11"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1793,
+          "path": "www/index.html",
+          "textFingerprint": "7868e0c6091a186d43b1"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1794,
+          "path": "www/index.html",
+          "textFingerprint": "3da43829b5e328c23eb4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1794,
+          "path": "www/index.html",
+          "textFingerprint": "410c3d62a1ab0a95ba20"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1798,
+          "path": "www/index.html",
+          "textFingerprint": "8ca7a66a93792d284bfe"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "0ea6670e3c9a6a59d464"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "2f18bc2a00e782d933b3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "3170543ce47c2f0baa50"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "6300ef800bb884295b0b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "b075b6e113fcf02aecc4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "e67b6f61f579060a649f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1801,
+          "path": "www/index.html",
+          "textFingerprint": "f01a042bbfb3dad3690c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1805,
+          "path": "www/index.html",
+          "textFingerprint": "19ea978befdba1144316"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1807,
+          "path": "www/index.html",
+          "textFingerprint": "96ea1e9e1e28d1b8b633"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1807,
+          "path": "www/index.html",
+          "textFingerprint": "582cb22802c349fed882"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1810,
+          "path": "www/index.html",
+          "textFingerprint": "237800677ea5827df174"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1812,
+          "path": "www/index.html",
+          "textFingerprint": "22196dbb2f5452f435c6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1815,
+          "path": "www/index.html",
+          "textFingerprint": "82311d7154c8200a1e04"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1819,
+          "path": "www/index.html",
+          "textFingerprint": "e451d389502f963cf9d4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 1821,
+          "path": "www/index.html",
+          "textFingerprint": "ca55149be62e3bf7cd33"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1823,
+          "path": "www/index.html",
+          "textFingerprint": "2f29109148188e90b4da"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1826,
+          "path": "www/index.html",
+          "textFingerprint": "3fabd510fac88e08da22"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1835,
+          "path": "www/index.html",
+          "textFingerprint": "3c922dc543647cfd1bea"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1856,
+          "path": "www/index.html",
+          "textFingerprint": "3e9d2d72c6e6eeedd075"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:aria-label",
+          "line": 1863,
+          "path": "www/index.html",
+          "textFingerprint": "5899ed1b86c93a35038d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1873,
+          "path": "www/index.html",
+          "textFingerprint": "a00a88615fbafc23671f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1874,
+          "path": "www/index.html",
+          "textFingerprint": "9d7ea91ed1654889a411"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1879,
+          "path": "www/index.html",
+          "textFingerprint": "7322d414e75bae475891"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1884,
+          "path": "www/index.html",
+          "textFingerprint": "d1d7e229ac8553d97605"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1887,
+          "path": "www/index.html",
+          "textFingerprint": "7d3492962d451feff8be"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1894,
+          "path": "www/index.html",
+          "textFingerprint": "901129ad258dffbf259d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 1928,
+          "path": "www/index.html",
+          "textFingerprint": "1375fa5b50182e7e10fa"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:summary",
+          "line": 1942,
+          "path": "www/index.html",
+          "textFingerprint": "fd099999763eb9c56b60"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1988,
+          "path": "www/index.html",
+          "textFingerprint": "2c4e7b92814021da472c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 1988,
+          "path": "www/index.html",
+          "textFingerprint": "47af580435f111840540"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 1993,
+          "path": "www/index.html",
+          "textFingerprint": "85603424b4bf6591bde6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 2004,
+          "path": "www/index.html",
+          "textFingerprint": "bdc090ec61e3fcfc65f4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 2004,
+          "path": "www/index.html",
+          "textFingerprint": "bdc090ec61e3fcfc65f4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 2008,
+          "path": "www/index.html",
+          "textFingerprint": "5d27d72967808f3bdd90"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 2008,
+          "path": "www/index.html",
+          "textFingerprint": "b6ce788d9786917c9d19"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 2025,
+          "path": "www/index.html",
+          "textFingerprint": "329a1379161182cf0aa2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2377,
+          "path": "www/index.html",
+          "textFingerprint": "84b01ad2cfe2b126a7cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2438,
+          "path": "www/index.html",
+          "textFingerprint": "0cfe967bb187cbc619cf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2454,
+          "path": "www/index.html",
+          "textFingerprint": "4a4ee64fb1ee4d881941"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2558,
+          "path": "www/index.html",
+          "textFingerprint": "0abce05e37b276a14470"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2765,
+          "path": "www/index.html",
+          "textFingerprint": "edadd6c162ec45923297"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2788,
+          "path": "www/index.html",
+          "textFingerprint": "efbd15cbf3493922a4dd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2802,
+          "path": "www/index.html",
+          "textFingerprint": "d6bb0a39cb64f672bb70"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2804,
+          "path": "www/index.html",
+          "textFingerprint": "0cb4fb581433ba0e3eaf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2824,
+          "path": "www/index.html",
+          "textFingerprint": "84a3aad6403e7ffa2f65"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2833,
+          "path": "www/index.html",
+          "textFingerprint": "cda3e762d7bc593e714e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2835,
+          "path": "www/index.html",
+          "textFingerprint": "f76f82ec1faaeeced40b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2838,
+          "path": "www/index.html",
+          "textFingerprint": "7fb9066639bf6a0aa1cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2839,
+          "path": "www/index.html",
+          "textFingerprint": "a83dc0ca222cb0b4e088"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2842,
+          "path": "www/index.html",
+          "textFingerprint": "14c4029c115ccdbc99bc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2849,
+          "path": "www/index.html",
+          "textFingerprint": "8dc7b95f266e5b38657e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 2851,
+          "path": "www/index.html",
+          "textFingerprint": "39bf86d9bf7fbddcc050"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 2851,
+          "path": "www/index.html",
+          "textFingerprint": "d05969262d8d0dedac1a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2968,
+          "path": "www/index.html",
+          "textFingerprint": "71eb4b82861abd3b7155"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3003,
+          "path": "www/index.html",
+          "textFingerprint": "fe2e79f9328ce106a7d0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3014,
+          "path": "www/index.html",
+          "textFingerprint": "cca3d7e72b3927609e45"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3020,
+          "path": "www/index.html",
+          "textFingerprint": "49cfc02c9057f00a5e0d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3022,
+          "path": "www/index.html",
+          "textFingerprint": "4fefaf9dac074059585b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3023,
+          "path": "www/index.html",
+          "textFingerprint": "bd249a9a3189a9ad67a1"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3026,
+          "path": "www/index.html",
+          "textFingerprint": "2eb9ca30d7bdf8a72e8b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3028,
+          "path": "www/index.html",
+          "textFingerprint": "e0222ef4dc029d4e9dfc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3037,
+          "path": "www/index.html",
+          "textFingerprint": "e2212cae45427821c7fc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3206,
+          "path": "www/index.html",
+          "textFingerprint": "8dc7b95f266e5b38657e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3208,
+          "path": "www/index.html",
+          "textFingerprint": "e21a87ea7e4ab987fd9c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3214,
+          "path": "www/index.html",
+          "textFingerprint": "dd5c3411a51f65601f96"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3219,
+          "path": "www/index.html",
+          "textFingerprint": "6295115dfc1c72d4eb51"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3219,
+          "path": "www/index.html",
+          "textFingerprint": "8674027843ffcf1756fd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3224,
+          "path": "www/index.html",
+          "textFingerprint": "df2fe857cad55c8e33fa"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3228,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3231,
+          "path": "www/index.html",
+          "textFingerprint": "6a7a6efc055db6201a2b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3233,
+          "path": "www/index.html",
+          "textFingerprint": "ef5b5c8daa7926cd4779"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3244,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3245,
+          "path": "www/index.html",
+          "textFingerprint": "31a8eac11f2688ebaf55"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3267,
+          "path": "www/index.html",
+          "textFingerprint": "92f7f657a312045ad8a0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3274,
+          "path": "www/index.html",
+          "textFingerprint": "1cf46553d116df620e00"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3295,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3296,
+          "path": "www/index.html",
+          "textFingerprint": "ef5b5c8daa7926cd4779"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3297,
+          "path": "www/index.html",
+          "textFingerprint": "cdd770f586940d5f9a3f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3741,
+          "path": "www/index.html",
+          "textFingerprint": "ce6ae4980b6b2485997c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3742,
+          "path": "www/index.html",
+          "textFingerprint": "b76a50fb9937df48ef9b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3850,
+          "path": "www/index.html",
+          "textFingerprint": "60672af76621ab1bbc68"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3851,
+          "path": "www/index.html",
+          "textFingerprint": "5dd3861267e8af3dca8c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 3913,
+          "path": "www/index.html",
+          "textFingerprint": "624d2558b85d6f7d408e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 3913,
+          "path": "www/index.html",
+          "textFingerprint": "77dddca03ae264a26e92"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3934,
+          "path": "www/index.html",
+          "textFingerprint": "b5ff5b7c14196325bb4a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3974,
+          "path": "www/index.html",
+          "textFingerprint": "ef78e9f822956828aa1f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3975,
+          "path": "www/index.html",
+          "textFingerprint": "82e5ea0145203903804c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3976,
+          "path": "www/index.html",
+          "textFingerprint": "cfe7f2109dc087131613"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3980,
+          "path": "www/index.html",
+          "textFingerprint": "d53c8278915df5a25c01"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4002,
+          "path": "www/index.html",
+          "textFingerprint": "fe999d8bd400fc3fb269"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4285,
+          "path": "www/index.html",
+          "textFingerprint": "aef156a358743c6f2cf0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4286,
+          "path": "www/index.html",
+          "textFingerprint": "19cb2e8e97c787f9eaaf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 4614,
+          "path": "www/index.html",
+          "textFingerprint": "ab7b7a04808bf9206152"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 4616,
+          "path": "www/index.html",
+          "textFingerprint": "ee170985ae6d0d3e1877"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:a",
+          "line": 4708,
+          "path": "www/index.html",
+          "textFingerprint": "d6e645b7d2b2da646d44"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:a",
+          "line": 4734,
+          "path": "www/index.html",
+          "textFingerprint": "d6e645b7d2b2da646d44"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 4944,
+          "path": "www/index.html",
+          "textFingerprint": "4d4474dd0a4462e6779d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 5045,
+          "path": "www/index.html",
+          "textFingerprint": "ef6cf020c771d9a322c2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 5056,
+          "path": "www/index.html",
+          "textFingerprint": "b0ac9cea86878b84b241"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5072,
+          "path": "www/index.html",
+          "textFingerprint": "5737b8b8ec722fd134fe"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 5089,
+          "path": "www/index.html",
+          "textFingerprint": "bae6cdda6a6a41753878"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5096,
+          "path": "www/index.html",
+          "textFingerprint": "1ecb361a0a117393d135"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5096,
+          "path": "www/index.html",
+          "textFingerprint": "c66107009c8ae3526ae7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5147,
+          "path": "www/index.html",
+          "textFingerprint": "663b59b475791ed3bcf9"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5190,
+          "path": "www/index.html",
+          "textFingerprint": "2feab4bb1fa182f2b729"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5190,
+          "path": "www/index.html",
+          "textFingerprint": "511ddba7d4b5d81f682d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5190,
+          "path": "www/index.html",
+          "textFingerprint": "ff6b60d222c217da2a2b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h5",
+          "line": 5212,
+          "path": "www/index.html",
+          "textFingerprint": "ec41343a0ff39cefd22e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5212,
+          "path": "www/index.html",
+          "textFingerprint": "ad617a0fdd57e3f4b8eb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5212,
+          "path": "www/index.html",
+          "textFingerprint": "fd1331d7a6cd0309f811"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h5",
+          "line": 5222,
+          "path": "www/index.html",
+          "textFingerprint": "a84a828b7ad782b3c36d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5222,
+          "path": "www/index.html",
+          "textFingerprint": "652bcc3a478428893cc5"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:summary",
+          "line": 5405,
+          "path": "www/index.html",
+          "textFingerprint": "ec5b3ac7480e5f1fead4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5408,
+          "path": "www/index.html",
+          "textFingerprint": "6f0f415dec910c547a8d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5408,
+          "path": "www/index.html",
+          "textFingerprint": "f72338465fc2cf2f1a63"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:summary",
+          "line": 5413,
+          "path": "www/index.html",
+          "textFingerprint": "8c8063fa193a8cdda569"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5420,
+          "path": "www/index.html",
+          "textFingerprint": "d37078fe6a1faa15fc48"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5421,
+          "path": "www/index.html",
+          "textFingerprint": "8d525e5f158b9afe05f3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5422,
+          "path": "www/index.html",
+          "textFingerprint": "075b8c67cc57bfc5ff78"
+        }
+      ],
+      "id": "A6-03",
+      "mandatory": true,
+      "metric": {
+        "dictionaryAvailable": true,
+        "dictionaryPhrases": 855,
+        "highConfidenceBypasses": 1307,
+        "scannedFirstPartyJavaScript": 50,
+        "scannedSurfaces": 12
+      },
+      "notes": "Evidence stores only source location, kind and a one-way text fingerprint; rendered/dynamic completeness is decided by A6-05.",
+      "result": "fail",
+      "rule": "Static text on controls, control labels, accessibility attributes, literal notification calls and first-party shared JavaScript DOM-label sinks must be covered by the shared localization dictionary unless it is business data, a proper name or an approved technical label.",
+      "severity": "P1",
+      "title": "Static localization bypass"
+    },
+    {
+      "evidence": [
+        {
+          "code": "RENDERED_UI_EVIDENCE_ABSENT"
+        }
+      ],
+      "id": "A6-04",
+      "mandatory": true,
+      "metric": {
+        "contrastViolations": 0,
+        "evidenceProvided": false,
+        "identityBound": false,
+        "largeTextContrast": 3,
+        "measuredCells": 0,
+        "measuredContrastSamples": 0,
+        "measuredTargets": 0,
+        "minimumTargetCssPixels": 44,
+        "normalTextContrast": 4.5,
+        "targetViolations": 0
+      },
+      "notes": "No complete schema-valid rendered measurement bound to this product, tooling identity, browser and matrix was supplied.",
+      "result": "unmeasured",
+      "rule": "Rendered interactive targets must be at least 44 by 44 CSS pixels; normal text contrast must be at least 4.5:1 and large text at least 3:1.",
+      "severity": "P1",
+      "title": "Rendered target size and contrast"
+    },
+    {
+      "evidence": [
+        {
+          "code": "RENDERED_UI_EVIDENCE_ABSENT"
+        }
+      ],
+      "id": "A6-05",
+      "mandatory": true,
+      "metric": {
+        "browserIdentitySha256": null,
+        "duplicateCells": 0,
+        "extraCells": 0,
+        "malformedCells": 0,
+        "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+        "measuredCells": 0,
+        "missingCells": 72,
+        "productFingerprintSha256": "06643f46f89834191127478e2b6eba5c7e524353e6ef42c0fedeb37f0efbfcad",
+        "productIdentityBound": false,
+        "requiredCells": 72,
+        "toolingIdentityBound": false
+      },
+      "notes": "Absent or invalid schema/identity evidence is unmeasured, never pass.",
+      "result": "unmeasured",
+      "rule": "Exactly 72 unique mandatory surface, viewport and language cells must carry rendered evidence hashes bound to the exact product SHA, product fingerprint, tooling SHA, browser identity and matrix hash.",
+      "severity": "P1",
+      "title": "Identity-bound rendered matrix evidence"
+    }
+  ],
+  "metrics": {
+    "matrixCells": 72,
+    "renderedContrastViolations": 0,
+    "renderedEvidenceProvided": false,
+    "renderedMatrixValid": false,
+    "renderedTargetViolations": 0,
+    "staticLocalizationBypasses": 1307,
+    "surfaceCount": 12
+  },
+  "title": "UI, responsive behavior, i18n and accessibility"
+}

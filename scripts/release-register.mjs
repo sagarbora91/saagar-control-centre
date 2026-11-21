@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { findBuildTools, runApksigner } from './lib/apk-tools.mjs';
 
 const require = createRequire(import.meta.url);
 const BUILD_IDENTITY = require('../www/build-identity.js');
+const SIGNING_POLICY = require('../config/production-signing-policy.json');
 
 const apkArg = process.argv[2];
 if (!apkArg) {
@@ -17,25 +18,9 @@ const apk = path.resolve(apkArg);
 const output = path.resolve(process.argv[3] || apk.replace(/\.apk$/i, '') + '.release.json');
 if (!fs.existsSync(apk)) throw new Error(`APK not found: ${apk}`);
 
-function findApkSigner() {
-  const sdk = process.env.ANDROID_HOME || process.env.ANDROID_SDK_ROOT;
-  if (!sdk) return null;
-  const root = path.join(sdk, 'build-tools');
-  if (!fs.existsSync(root)) return null;
-  const versions = fs.readdirSync(root).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-  for (const version of versions) {
-    const file = path.join(root, version, process.platform === 'win32' ? 'apksigner.bat' : 'apksigner');
-    if (fs.existsSync(file)) return file;
-  }
-  return null;
-}
-
-const apksigner = findApkSigner();
-if (!apksigner) throw new Error('Android apksigner was not found under ANDROID_HOME/ANDROID_SDK_ROOT.');
-const verify = spawnSync(apksigner, ['verify', '--verbose', '--print-certs', apk], {
-  encoding: 'utf8',
-  shell: process.platform === 'win32'
-});
+// apksigner runs without a shell: with one, an APK path that contains a space is split into several arguments and verification fails.
+const tools = findBuildTools();
+const verify = runApksigner(tools, ['verify', '--verbose', '--print-certs', apk], process.env);
 const signatureText = `${verify.stdout || ''}\n${verify.stderr || ''}`;
 if (verify.status !== 0) throw new Error(`APK signature verification failed:\n${signatureText}`);
 if (/Android Debug/i.test(signatureText)) throw new Error('Release registration blocked: APK uses an Android debug certificate.');
@@ -46,6 +31,13 @@ if (!/Verified using v2 scheme[^:]*:\s*true/i.test(signatureText) &&
 
 const bytes = fs.readFileSync(apk);
 const cert = signatureText.match(/Signer #1 certificate SHA-256 digest:\s*([A-Fa-f0-9:]+)/i);
+const signerCount = (signatureText.match(/Signer #[0-9]+ certificate SHA-256 digest:/gi) || []).length;
+if (signerCount !== 1 || !cert) throw new Error('Release registration blocked: APK must have exactly one identifiable signer.');
+const signerCertificateSha256 = cert[1].replace(/:/g, '').toUpperCase();
+if (SIGNING_POLICY.packageId !== BUILD_IDENTITY.packageId ||
+    signerCertificateSha256 !== SIGNING_POLICY.signerCertificateSha256) {
+  throw new Error('Release registration blocked: APK signer does not match the approved production signing policy.');
+}
 const register = {
   format: 'saagar-android-release-register',
   version: 1,
@@ -58,7 +50,9 @@ const register = {
   bytes: bytes.length,
   sha256: crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase(),
   signatureVerified: true,
-  signerCertificateSha256: cert ? cert[1].replace(/:/g, '').toUpperCase() : '',
+  signerCertificateSha256,
+  signerPolicyVersion: SIGNING_POLICY.schemaVersion,
+  signerPolicyMatched: true,
   debugCertificateRejected: true
 };
 

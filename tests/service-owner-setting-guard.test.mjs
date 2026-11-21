@@ -67,7 +67,7 @@ function runHandler(isOwner) {
 test('raw Service and Expense Owner checks use only the read-only shell bridge', () => {
   for (const id of ['service', 'expense']) {
     const source = extractFunction(decoded(id), 'isSuperAdmin');
-    assert.match(source, /SaagarOwnerSession/);
+    assert.match(source, /SaagarModuleBridge\.ownerSession/);
     assert.match(source, /isOwnerActive\s*\(/);
     assert.doesNotMatch(source, /localStorage|st_v2_admin_mode|ADMIN_MODE_KEY/);
   }
@@ -87,4 +87,3 @@ test('Service watch-photo policy denies stale or programmatic non-Owner changes'
   assert.equal(allowed.saves, 1);
   assert.equal(allowed.renders, 0);
 });
-

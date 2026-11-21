@@ -1,0 +1,130 @@
+{
+  "auditId": "A8",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:667ab0d2bc83f8f6347976548f30f5a1ccf6b12a:a7-a8-static-syntax-census-v3"
+        }
+      ],
+      "id": "A8-01",
+      "mandatory": true,
+      "metric": {
+        "highConfidenceFlows": 0,
+        "runtimeFiles": 93,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true
+      },
+      "notes": "A definite static flow fails. Regex absence cannot prove end-to-end non-flow and remains unmeasured; evidence never includes values or call text.",
+      "result": "pass",
+      "rule": "A PII-bearing identifier must not reach console, network or direct share sinks outside an export-controlled delivery function.",
+      "severity": "P0",
+      "title": "PII flow to unapproved sinks"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:667ab0d2bc83f8f6347976548f30f5a1ccf6b12a:a7-a8-static-syntax-census-v3"
+        }
+      ],
+      "id": "A8-02",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "bypasses": 0,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unresolvedPaths": 0
+      },
+      "notes": "Names such as token, SaagarExportControl or beginDelivery do not authorize a sink unless the control is invoked and denial returns or throws before delivery.",
+      "result": "pass",
+      "rule": "Every reachable download, print, popup, browser share or native share delivery must have a structural fail-closed begin-delivery guard, or be a helper whose every call site has that guard.",
+      "severity": "P0",
+      "title": "Export policy bypass"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:667ab0d2bc83f8f6347976548f30f5a1ccf6b12a:a7-a8-static-syntax-census-v3"
+        }
+      ],
+      "id": "A8-03",
+      "mandatory": true,
+      "metric": {
+        "affectedFunctions": 0,
+        "failOpenPaths": 0,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unresolvedPaths": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "An authentication, authorization or PIN control must deny when its required control is absent or throws.",
+      "severity": "P0",
+      "title": "Fail-open authentication and PIN controls"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:667ab0d2bc83f8f6347976548f30f5a1ccf6b12a:a8-tracked-secret-census-v1"
+        }
+      ],
+      "id": "A8-04",
+      "mandatory": true,
+      "metric": {
+        "binaryFilesSkipped": 3,
+        "scannedBytes": 53129497,
+        "scannedTextFiles": 705,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "trackedFiles": 708,
+        "unresolvedFiles": 0,
+        "verifiedSecretPatterns": 0
+      },
+      "notes": "The report emits only rule identifier, file, line and one-way fingerprint; suspected values are never emitted.",
+      "result": "pass",
+      "rule": "Every tracked nonbinary text file must be bounded-scanned for private keys, secret-bearing files and high-confidence credential formats.",
+      "severity": "P0",
+      "title": "Tracked secret scan"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:667ab0d2bc83f8f6347976548f30f5a1ccf6b12a:a7-a8-static-syntax-census-v3"
+        }
+      ],
+      "id": "A8-05",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 0,
+        "allowedLiteralPrefixes": 4,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unapprovedRemoteCalls": 0,
+        "unresolvedDynamicTargets": 0
+      },
+      "notes": "Block comments, licence-only URLs, SVG namespaces, data/blob URLs, localhost and approved literals are excluded.",
+      "result": "pass",
+      "rule": "Shipped runtime must not contain a reachable literal external request, remote asset, navigation or message target outside approved contexts; dynamic targets must be resolved before pass.",
+      "severity": "P0",
+      "title": "Unapproved remote runtime behavior"
+    }
+  ],
+  "metrics": {
+    "authFailOpenPaths": 0,
+    "authUnresolvedPaths": 0,
+    "exportBypasses": 0,
+    "exportUnresolvedPaths": 0,
+    "piiFlowFindings": 0,
+    "remoteFindings": 0,
+    "remoteUnresolved": 0,
+    "secretFindings": 0,
+    "secretScanUnresolved": 0
+  },
+  "title": "Security and privacy"
+}

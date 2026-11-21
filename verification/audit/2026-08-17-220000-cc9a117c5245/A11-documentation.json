@@ -1,0 +1,112 @@
+{
+  "auditId": "A11",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A11-01",
+      "mandatory": true,
+      "metric": {
+        "authorityDocuments": 7,
+        "citedRepositoryPaths": 50,
+        "missingAuthorityDocuments": 0,
+        "unresolvedPaths": 0
+      },
+      "notes": "External absolute paths and template placeholders are not treated as repository-path claims; explicitly historical sections are excluded.",
+      "result": "pass",
+      "rule": "Every repository path cited by a current-authority scope must resolve in the audited snapshot.",
+      "severity": "P1",
+      "title": "Current-authority cited paths resolve"
+    },
+    {
+      "evidence": [],
+      "id": "A11-02",
+      "mandatory": true,
+      "metric": {
+        "citedCommitOccurrences": 40,
+        "missingCommits": 0,
+        "uniqueCommits": 23
+      },
+      "notes": "SHA-256 evidence hashes and explicitly historical tail sections are not interpreted as Git commit claims.",
+      "result": "pass",
+      "rule": "Every Git commit SHA cited by current-authority scope must resolve as a commit in the repository.",
+      "severity": "P1",
+      "title": "Current-authority cited commits exist"
+    },
+    {
+      "evidence": [],
+      "id": "A11-03",
+      "mandatory": true,
+      "metric": {
+        "claims": 0,
+        "comparableClaims": 0,
+        "excludedExternalClaims": 0,
+        "measuredCancelled": 0,
+        "measuredCounts": {
+          "c1": 12,
+          "completeOffline": 513,
+          "etp": 129,
+          "language": 10,
+          "mainOffline": 262,
+          "mobile": 6,
+          "modular": 86,
+          "settings": 8
+        },
+        "measuredFailures": 0,
+        "measuredPassed": 513,
+        "measuredSkipped": 0,
+        "measuredSuites": 7,
+        "measuredTodo": 0,
+        "measuredTotal": 513,
+        "mismatches": 0,
+        "supportedClaims": 0,
+        "unsupportedClaims": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Current-authority test-count claims must equal the identity-bound measured suite counts for this exact target, with zero failures, cancellations, skips or TODO tests.",
+      "severity": "P1",
+      "title": "Current-authority test counts match measured counts"
+    },
+    {
+      "evidence": [],
+      "id": "A11-04",
+      "mandatory": true,
+      "metric": {
+        "declarations": 2,
+        "mismatches": 0,
+        "requestedProductBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+        "runnerProductBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "The audit program, current handoff, runner constant and requested baseline must declare the exact same 40-character product anchor.",
+      "severity": "P1",
+      "title": "Controlling product baseline identity"
+    },
+    {
+      "evidence": [],
+      "id": "A11-05",
+      "mandatory": true,
+      "metric": {
+        "claimFamilies": 4,
+        "claimSetSha256": "d80701025f7b7793169f18b473b6fb84a9a838be72e0e714a0558600850e7aa5",
+        "conflictingClaims": 0,
+        "conflictingFamilies": 0,
+        "typedClaims": 7
+      },
+      "notes": "Starting SHAs, superseded decision-register sections, prior APK evidence and explicitly historical sections are excluded from present-state comparison.",
+      "result": "pass",
+      "rule": "Typed present-state claims among current-authority scopes must not assign different values to the same fact.",
+      "severity": "P1",
+      "title": "Current-authority contradictions"
+    }
+  ],
+  "metrics": {
+    "authorityDocuments": 7,
+    "contradictionFamilies": 0,
+    "missingCommits": 0,
+    "testCountMismatches": 0,
+    "unresolvedPaths": 0
+  },
+  "title": "Documentation currency"
+}

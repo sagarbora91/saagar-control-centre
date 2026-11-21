@@ -1,0 +1,74 @@
+/* Phase 6G shell contract: physical tiers remain observable even when a user pins Mobile/Desktop. */
+html,body{overflow-x:hidden}
+html,body,.app,.main,.view{min-width:0;max-width:100%}
+.topbar,.main,.botnav,.module-screen,.module-bar,.frame-wrap{min-width:0}
+.main{overscroll-behavior-x:none}
+.view,.card,.hero,.module-grid,.quick-grid,.kpi-grid{word-wrap:break-word;overflow-wrap:break-word;overflow-wrap:anywhere}
+button,input:not([type="hidden"]),select,textarea,.btn,[role="button"]{min-height:44px}
+.top-actions,.brand,.brand-meta,.home-store-context,.section-head{min-width:0}
+.top-actions{max-width:100%}
+.etp-e2-home{margin-top:12px}.etp-e2-heading{font-weight:800;color:var(--navy,#0d2340)}.etp-e2-note{margin:5px 0;color:var(--gray-600,#667085);font-size:12px}.etp-e2-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:8px;margin-top:9px}.etp-e2-metric{-webkit-flex:1 1 92px;flex:1 1 92px;min-width:0;border:1px solid var(--gray-200,#e5e7eb);border-radius:9px;padding:8px}.etp-e2-metric span,.etp-e2-metric strong{display:block}.etp-e2-metric span{font-size:11px;color:var(--gray-600,#667085)}.etp-e2-open{min-height:44px;margin-top:8px;border:1px solid var(--gold,#b8922a);border-radius:9px;background:#fff;color:var(--navy,#0d2340);padding:0 12px;font-weight:700}
+.etp-e6-home{display:grid;gap:4px;margin-top:12px;border-left:4px solid var(--gold,#b8922a)}.etp-e6-home span{color:var(--gray-600,#667085);font-size:13px}
+
+@media(max-width:639px){
+  html[data-shell-tier="mobile"],html[data-shell-tier="mobile"] body{overflow-x:hidden}
+  html[data-shell-tier="mobile"] .topbar{padding-left:10px;padding-right:10px;gap:8px}
+  html[data-shell-tier="mobile"] .main{padding-left:10px;padding-right:10px}
+  html[data-shell-tier="mobile"] .top-actions{gap:4px}
+  html[data-shell-tier="mobile"] .role-select{max-width:104px}
+  html[data-shell-tier="mobile"] .module-grid,
+  html[data-shell-tier="mobile"] .quick-grid,
+  html[data-shell-tier="mobile"] .kpi-grid{grid-template-columns:minmax(0,1fr)}
+  html[data-shell-tier="mobile"] .botnav .tab{min-height:56px}
+}
+
+@media(min-width:640px) and (max-width:899px){
+  html[data-shell-tier="compact"] .main{padding:18px 24px 24px;padding:18px clamp(18px,4vw,34px) 24px}
+  html[data-shell-tier="compact"] .module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-shell-tier="compact"] .quick-grid,
+  html[data-shell-tier="compact"] .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-shell-tier="compact"] .top-actions{flex-wrap:wrap;justify-content:flex-end}
+}
+
+@media(min-width:900px){
+  html[data-shell-ui-mode="desktop"] .app{
+    display:-webkit-grid;display:grid;
+    grid-template-columns:224px minmax(0,1fr);
+    grid-template-rows:auto minmax(0,1fr);
+  }
+  html[data-shell-ui-mode="desktop"] .topbar{grid-column:1 / -1;grid-row:1}
+  html[data-shell-ui-mode="desktop"] .main{grid-column:2;grid-row:2;padding:24px 32px 30px;padding:24px clamp(24px,3vw,46px) 30px}
+  html[data-shell-ui-mode="desktop"] .botnav{
+    grid-column:1;grid-row:2;display:-webkit-flex;display:flex;flex-direction:column;
+    align-items:stretch;justify-content:flex-start;padding:14px 10px;
+    box-shadow:2px 0 14px rgba(13,35,64,.14);overflow-y:auto;
+  }
+  html[data-shell-ui-mode="desktop"] .botnav .tab{
+    min-height:52px;flex-direction:row;justify-content:flex-start;gap:12px;
+    padding:10px 14px;font-size:13px;text-align:left;
+  }
+  html[data-shell-ui-mode="desktop"] .botnav .tab.active::before{
+    top:20%;bottom:20%;left:2px;right:auto;width:3px;height:auto;border-radius:0 4px 4px 0;
+  }
+  html[data-shell-ui-mode="desktop"] .module-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-shell-ui-mode="desktop"] .quick-grid,
+  html[data-shell-ui-mode="desktop"] .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-shell-ui-mode="desktop"] .module-screen{grid-column:1 / -1;grid-row:1 / -1}
+}
+
+@media(min-width:1200px){
+  html[data-shell-tier="desktop"][data-shell-ui-mode="desktop"] .app{grid-template-columns:248px minmax(0,1fr)}
+  html[data-shell-tier="desktop"][data-shell-ui-mode="desktop"] .main{padding-left:48px;padding-right:48px;padding-left:clamp(36px,5vw,72px);padding-right:clamp(36px,5vw,72px)}
+  html[data-shell-tier="desktop"][data-shell-ui-mode="desktop"] .module-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  html[data-shell-tier="desktop"][data-shell-ui-mode="desktop"] .quick-grid,
+  html[data-shell-tier="desktop"][data-shell-ui-mode="desktop"] .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+/* Chrome 44 / Android API 23: use the existing flex shell when Grid is unavailable. */
+@supports not (display:grid){
+  .app{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column}
+  .topbar,.botnav{-webkit-flex:0 0 auto;flex:0 0 auto}
+  .main{-webkit-flex:1 1 auto;flex:1 1 auto;min-height:0}
+  .module-grid,.quick-grid,.kpi-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+  .module-grid>* ,.quick-grid>* ,.kpi-grid>*{-webkit-flex:1 1 280px;flex:1 1 280px;min-width:0}
+}

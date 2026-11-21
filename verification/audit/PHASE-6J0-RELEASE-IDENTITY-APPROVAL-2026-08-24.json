@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "gate": "Phase 6J.0 release identity",
+  "approvedAt": "2026-08-24",
+  "approver": "Sagar",
+  "approvalSource": "owner instruction in the controlling Codex task",
+  "identity": {
+    "packageId": "com.saagartraders.bcc",
+    "appVersion": "V6",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "minSdk": 23,
+    "targetSdk": 34
+  },
+  "interpretation": "Display version changes to V6; versionName and versionCode remain at the owner-stated current values.",
+  "releaseConstraint": "No store or channel publication may proceed if it requires a versionCode greater than 209; obtain a new owner-approved versionCode instead.",
+  "productionSigningAuthorized": false,
+  "publicationAuthorized": false
+}

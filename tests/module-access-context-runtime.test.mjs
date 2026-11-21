@@ -77,25 +77,10 @@ function decodedModule(id) {
 }
 
 function injectedAccessScript(moduleId) {
-  const context = vm.createContext({
-    input: decodedModule(moduleId),
-    moduleId,
-    output: null,
-    __injBeforeBodyEnd(html, fragment) {
-      const at = html.toLowerCase().lastIndexOf('</body>');
-      return at >= 0 ? html.slice(0, at) + fragment + '\n' + html.slice(at) : html + fragment;
-    }
-  });
-  vm.runInContext(
-    `${extractFunction('injectModuleAccessBridge')}\n` +
-      'output = injectModuleAccessBridge(input, moduleId);',
-    context,
-    { filename: 'injectModuleAccessBridge.runtime-test.js' }
-  );
-  const match = context.output.match(
+  const match = decodedModule(moduleId).match(
     /<script id="st-v5-module-access-bridge">([\s\S]*?)<\/script>/
   );
-  assert.ok(match, `expected injected access bridge for ${moduleId}`);
+  assert.ok(match, `expected canonical access runtime stage for ${moduleId}`);
   return match[1];
 }
 
@@ -134,6 +119,7 @@ function moduleHarness(moduleId, initialContext) {
   };
   const sandbox = {
     console,
+    location: { origin: 'https://app.local' },
     parent: parentWindow,
     document: {
       getElementById: id => elements[id] || null,
@@ -155,6 +141,12 @@ function moduleHarness(moduleId, initialContext) {
   sandbox.window = sandbox;
 
   const context = vm.createContext(sandbox);
+  vm.runInContext(fs.readFileSync(new URL('../www/shared/module-bridge.js', import.meta.url), 'utf8'), context, {
+    filename: 'shared/module-bridge.js'
+  });
+  vm.runInContext(fs.readFileSync(new URL('../www/shared/module-runtime.js', import.meta.url), 'utf8'), context, {
+    filename: 'shared/module-runtime.js'
+  });
   vm.runInContext(injectedAccessScript(moduleId), context, {
     filename: `${moduleId}.access-context-runtime.js`
   });
@@ -169,6 +161,7 @@ function moduleHarness(moduleId, initialContext) {
       assert.equal(typeof listeners.message, 'function');
       listeners.message({
         source: parentWindow,
+        origin: 'https://app.local',
         data: { type: 'ST_ACCESS_CONTEXT' }
       });
     }

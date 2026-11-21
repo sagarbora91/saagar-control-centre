@@ -97,8 +97,8 @@ export function validateBaseline(root = defaultRoot, profilePath = defaultProfil
   if (JSON.stringify(profile.matrix.languages) !== JSON.stringify(EXPECTED_LANGUAGES) ||
       JSON.stringify(profile.matrix.viewports) !== JSON.stringify(EXPECTED_VIEWPORTS) ||
       JSON.stringify(profile.matrix.surfaces) !== JSON.stringify(expectedSurfaces) ||
-      profile.matrix.minimumVisualCases !== 168) {
-    throw new Error('MAH-3 evidence matrix must match the exact 168-case contract');
+      profile.matrix.minimumVisualCases !== 180) {
+    throw new Error('MAH-3 evidence matrix must match the exact 180-case contract');
   }
   for (const module of manifest.modules) {
     if (module.src !== `modules/${module.id}/index.html`) throw new Error(`Unexpected module route: ${module.id}`);

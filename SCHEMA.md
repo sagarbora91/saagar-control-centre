@@ -259,9 +259,9 @@ Owner: `expense.html`. This module keeps the legacy `gm_` prefix and the outlier
 | `tanishq_statements` | object keyed by **date** | Daily cash statements (date is the *inner* key). See below. |
 | `gm_petty` | `{ float, history[] }` | Petty-cash float; `history[] = { at, by, add }`. |
 | `gm_budgets` | object keyed by **`YYYY-MM`** | Per-month category budgets `{ Inventory, Rent, … }`. |
-| `gm_tax_feed` | object keyed by **`YYYY-MM`** | Monthly tax feed `{ month, income, expense, net, gstRate, gstEstimate, byCategory, generatedAt, by }`. Bridge reads `gstEstimate`. |
+| `gm_tax_feed` | object keyed by **`YYYY-MM`** | Monthly tax feed `{ month, income, expense, net, gstRate, gstEstimate, incomeGstBasis, byCategory, generatedAt, by }`. Bridge reads `gstEstimate`. `incomeGstBasis` (`inclusive` or `exclusive`, fix wave 2026-11-12) records the basis the estimate was built on. |
 | `gm_audit` | array | `{ id, at, by, action, detail }`. |
-| `gm_settings` | object | `{ migratedV2, gstRate }`. |
+| `gm_settings` | object | `{ migratedV2, gstRate, gstIncomeBasis }`. `gstIncomeBasis` (`inclusive` default, or `exclusive`; Owner-only switch; fix wave 2026-11-12) says whether typed income amounts already include GST. |
 | `gm_vendors` | array | `{ name, gstin }` (mirror of vendor master). |
 | `gm_role` | string | Active role (shared with shell). |
 
@@ -394,7 +394,7 @@ of the server schema.
 | `saagar_bridge_qms2dsr` | object | De-dup tracker: `{ <qmsCustomerId>: { dsr, at, cro, kind } }`. |
 | `saagar_payroll_attendance_feed` | object keyed by `YYYY-MM` | Derived attendance: `{ <name>: { present, leave, half, dsrDays, scoreSum, scoreN, avgScore } }` + `_generatedAt/_note`. Payroll maker reconciles before lock. |
 | `saagar_cro_audit_feed` | object keyed by **date → kk(name)** | Derived CRO-audit inputs: `{ cro, date, groomingPct, qmsSales, qmsSalesAmt, qmsNonPurch, dsrSubmitted, dsrScore, dsrSalesCount?, dsrSalesAmt?, dsrNonPurch? }`. |
-| `saagar_tax_payable` | object keyed by `YYYY-MM` | `{ month, pf, esic, pt, gstEstimate, sources[], at }` — PF/ESIC/PT summed from Payroll rows + GST from `gm_tax_feed`. |
+| `saagar_tax_payable` | object keyed by `YYYY-MM` (the Payroll sheet month) | `{ month, pf, esic, pt, gstEstimate, sources[], at }` — PF/ESIC/PT summed from Payroll rows + GST from `gm_tax_feed`. |
 | `saagar_exceptions` | object | Aggregated red-flag feed for *today*: `{ date, items[ {sev (high|med|low), area, msg, at} ], generatedAt }`. |
 | `saagar_bridge_config` | object | `{ failPct, leaveGates, voucherThreshold }` (tunables; defaults 60 / true / 2000). |
 
@@ -487,3 +487,49 @@ Index **`byKey`** on `itemKey` (a single `itemKey` may map to **multiple** file 
 5. **The event bus is the intended server backbone** — model `saagar_bus` (events + per-consumer
    idempotency) plus the derived feeds (`saagar_*_feed`, `saagar_tax_payable`, `saagar_exceptions`,
    `saagar_gate_status`) as first-class server constructs rather than reverse-engineering pairwise links.
+
+## Fix wave 2026-11-12: declared new stored items
+
+Declared in the fix-wave plan (G5) and accepted by the owner decision given in chat, 2026-11-12. The last row is not on that list and still waits for a declaration.
+
+| Key | Owner | Shape | Meaning |
+|---|---|---|---|
+| `saagar_stk_clearlog_v1` | Stock | array | Log of Clear Everything and Clear Day actions. Kept inside the shell backup and wipe rules (`STORAGE_RULES.stock.exact`). |
+| `saagar_brands_hidden` | Stock | object | Brands hidden from Stock by Brand Master removal; the shell master list is not changed. |
+| `st_v4_restore_rollback_module_reset_payroll_<stamp>` | Payroll | object | Recovery copy written before Payroll Reset All, so the shell Undo can restore it. |
+| `st_v2_last_module_reset_v1` | Payroll | object | Pointer to the latest module-reset recovery copy: `{ rollbackKey, module, title, createdAt, undone }`. |
+| `saagar_wsf_settings_v1` (new fields) | Service | object | `idHigh` (highest job id ever issued), `deleted[]` (deletion tombstones, newest last, capped at 2,000), `invoiceSeq` (one counter per April to March year, for example `{ "2026-27": 12 }`). It replaces the old separate invoice counter key. |
+| `bcc_autobackup_log` (new entry fields) | Automatic backup | array | Existing device-local log. A good run's entry carries `good: {date, keys, bytes}`; a too-small run's entry carries `suspectOf: {date, keys, bytes}`. Trimming the log to 30 entries never drops the newest of each. No new storage key. Never part of a backup file. |
+
+## Service Stores (Phase 1): declared new stored items
+
+Service wave 1, built on the owner decisions given in chat, 2026-11-12 (design answers) and 2026-11-13 (go-ahead to build). New capabilities are recorded as pending owner reconfirmation. Every key is a JSON array, so the shell restore check "Service data must be an array" accepts them. Every key starts with `saagar_svcs_` and belongs to the Service module in the shell backup and wipe rules (`STORAGE_RULES.service.prefix`). The only code that writes any of them is `SaagarServiceStoresStore.adapterFromWindow` in `www/service-stores-store.js`. Records are append-only and hash-chained: one posted document is one record, and nothing is edited in place. Money is whole paise and GST is basis points, so no record holds a decimal. Stock is valued FIFO (cost layers); accountant confirmation is still outstanding. No customer name, mobile or address is stored: jobs are linked by job id only.
+
+`_pNN` is the shard part from 2 to 999 (the first part has no suffix). `YYYY-MM` is the India (IST) month of the record. `FYyyyy-yy` is the India financial year (1 April to 31 March).
+
+| Key | Owner | Shape | Meaning |
+|---|---|---|---|
+| `saagar_svcs_head_v1` | Service Stores | array | Control rows, one per stream: revision, record count, last hash, last time and key. |
+| `saagar_svcs_parts_v1[_pNN]` | Service Stores | array | Parts master versions (create, edit, deactivate, reactivate, remove), each with the full row and the changed fields. |
+| `saagar_svcs_labour_v1[_pNN]` | Service Stores | array | Labour master versions, same record kinds as parts. |
+| `saagar_svcs_config_v1[_pNN]` | Service Stores | array | Stores settings: the Store Manager adjustment limit (default 0) and the shell roles treated as store staff. |
+| `saagar_svcs_ledger_v1_YYYY-MM[_pNN]` | Service Stores | array | Posted stock documents with their FIFO movements: opening (OPN), goods receipt (GRN), issue to job (ISS), return from job (RET), counter sale (CSL), adjustment (ADJ) and reversal (REV). Numbers look like `GRN/26-27/0001` and restart on 1 April. |
+| `saagar_svcs_docs_v1_FYyyyy-yy[_pNN]` | Service Stores | array | Workflow events: opening and adjustment proposals, rejections and withdrawals. A proposal's state is worked out from these and the ledger. |
+| `saagar_svcs_defective_v1[_pNN]` | Service Stores | array | Old and defective part register (OLD) and the monthly scrap sign-off (SCR). |
+| `saagar_svcs_audit_v1_YYYY-MM[_pNN]` | Service Stores | array | Watermark resets, written when the Owner accepts a restore of older data. |
+| `st_v2_svcs_watermark_v1` | Service Stores | object | Device-local restore fence: the newest record seen on this device per stream. It is NOT in `STORAGE_RULES`, so it is never part of a backup file and is not cleared by a restore. An older backup restored onto this device blocks Stores posting until the Owner acknowledges it with the PIN and a reason. |
+
+Not created in this wave: any change to `saagar_wsf_v2` (cases carry no stock field; the job parts list is read from the ledger by job id), and any key for estimates, invoices, receipts, imports, reconciliation, claims or dispatch (later phases).
+
+## Service Billing (Phase 2): declared new stored items
+
+Service wave 2, built on the owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2) and the owner decision given in chat, 2026-11-19 (the amended Phase 1 checks and the cash-book route). New capabilities are recorded as pending owner reconfirmation. Phase 2 adds two new streams to the Service store that Phase 1 built. Both keys are JSON arrays, so the shell restore check "Service data must be an array" accepts them. Both start with `saagar_svcs_`, so they already belong to the Service module in the shell backup and wipe rules (`STORAGE_RULES.service.prefix`); no rule was changed. The only code that writes either of them is `SaagarServiceStoresStore.adapterFromWindow` in `www/service-stores-store.js`. Records are append-only and hash-chained: one business document is one record, and nothing is edited in place. Money is whole paise and GST is basis points, so no record holds a decimal. No customer name, mobile number or address is stored: a record holds the job id, and only the buyer GSTIN and state code where a tax invoice needs them.
+
+`_pNN` is the shard part from 2 to 999 (the first part has no suffix). `FYyyyy-yy` is the India financial year (1 April to 31 March).
+
+| Key | Owner | Shape | Meaning |
+|---|---|---|---|
+| `saagar_svcs_invoices_v1_FYyyyy-yy[_pNN]` | Service Billing | array | Estimate versions and approvals, bills (tax invoices), cancels, CCPT links, credit notes, no-charge sheets, job voids, billing settings, old bills brought in from the earlier invoice record, and the number seed. Numbers look like `SV/2026-27/0001` and restart on 1 April. |
+| `saagar_svcs_receipts_v1_FYyyyy-yy[_pNN]` | Service Billing | array | Advance, balance and counter receipts, refund vouchers and reversals. The cash book reads this stream, through the integration bridge, to show Service money. |
+
+No new device-local key was created. The existing device-local fence `st_v2_svcs_watermark_v1` (see the Service Stores block above) now also keeps, per number series and financial year, the highest number this device has given (field `hi`), so that putting back an older backup cannot make a number repeat; it is still never part of a backup. When the Owner accepts an older backup or a module reset, the audit record `WATERMARK_RESET` in `saagar_svcs_audit_v1_YYYY-MM[_pNN]` may carry a field `numbers` (per series, the highest number given and how many records the stream held); the store reads these floors first, and the next number continues above them. The head row of the Phase 1 store (`saagar_svcs_head_v1`) now also carries the two new streams. Not created in this wave: any change to `saagar_wsf_v2` (the case records and the settings text are left byte for byte as they were), and any key for imports, reconciliation, claims or dispatch (later phases).

@@ -110,15 +110,9 @@ test('MAH-4 listener trust is local and must precede the handled type', () => {
   assert.equal(guarded.messageListenerDetails[0].sourceGuard, true);
 });
 
-test('MAH-4 shell dormant boundaries fail closed on marker drift', () => {
-  const start = 'function injectModuleHideCSS';
-  const end = 'function openModal()';
-  const split = splitShellInlinePrograms(`activeA\n${start}{}\ndormant\n${end}{}\nactiveB`);
-  assert.match(split.active, /activeA[\s\S]*activeB/);
-  assert.doesNotMatch(split.active, /dormant/);
-  assert.match(split.dormant, /injectModuleHideCSS[\s\S]*dormant/);
-
-  assert.throws(() => splitShellInlinePrograms(`${start}{} only`), /exactly once/);
-  assert.throws(() => splitShellInlinePrograms(`${start}{} ${start}{} ${end}{}`), /exactly once/);
-  assert.throws(() => splitShellInlinePrograms(`${end}{} ${start}{}`), /reversed/);
+test('MAH-4 treats the retired-injection shell as one active program', () => {
+  const inline = 'activeA\nfunction openModal(){}\nactiveB';
+  const split = splitShellInlinePrograms(inline);
+  assert.equal(split.active, inline);
+  assert.equal(split.dormant, '');
 });

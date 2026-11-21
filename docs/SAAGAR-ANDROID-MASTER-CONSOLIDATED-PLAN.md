@@ -14,7 +14,7 @@
 | Prepared | 2026-07-29 |
 | Scope | Saagar Control Centre Android application |
 | Current baseline | v2.9 / versionCode 209 |
-| Baseline source | `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798` |
+| Baseline source | `8f96480ec6ddfc99016af43a7369f57a06cb9fd6` |
 | Automated baseline | 54 of 54 permanent offline tests passing |
 | Device catalogue | 69 module-wise cases plus four recovery/device drills |
 | Core improvement scope | D1-D12 and E1-E6; C1 non-ETP engineering complete 2026-08-04 |
@@ -103,8 +103,8 @@ controlled handoff’s requirement to prove the current baseline first.
 
 ## 3. Current controlled position
 
-- `main` and `origin/main` are recorded at
-  `49d531bfff27e30dc1c1fcd06cc6b26dde1ff798`.
+- The governed pre-migration product baseline is recorded at
+  `8f96480ec6ddfc99016af43a7369f57a06cb9fd6`.
 - The current application is v2.9/versionCode 209, minSdk 23, target API 34.
 - API 22 is unsupported; it is not a partial-support or fail-open exception.
 - The permanent offline suite is green at 54 of 54 tests.
@@ -1890,3 +1890,102 @@ the Capacitor bridge and `SaagarNativeStore` active. Chrome 44 lacks WebAssembly
 the supported evidence is the native-storage fallback, not WebAssembly support.
 Physical-device, owner UAT and production-signing gates remain open. See
 `verification/CODE-CLOSURE-API23-COMPATIBILITY-2026-08-07.md`.
+
+## ETP-A0 no-write import policy — 2026-08-08
+
+The first C2/ETP-A internal gate is implemented as a pure, unintegrated policy
+module. It resolves the prior five policy-review findings: approved PII is
+dropped before persistable output while unknown fields fail closed; bare
+`ENCIRCLE` is distinct from identifier aliases; report-specific identifiers and
+measures are mandatory and rows bind to their exact detected signatures; date
+plausibility is deterministic; and reduced synthetic R013/R003/R022/R025 tests
+do not overclaim real-source acceptance. Deterministic PII-free batch lineage
+is retained.
+
+This does not start parsing, schema freeze, sealed persistence, import UI or
+verified metrics. Those remain blocked by missing HEMW exports, unapproved
+both-store dictionaries and reconciliation semantics, and parser-specific
+licence/security/APK-size/memory/API-23 evidence. See
+`verification/ETP-A0-IMPORT-POLICY-CHECKPOINT-2026-08-08.md`.
+
+## ETP-A1 parser evaluation foundation — 2026-08-08
+
+The first parser candidate (`read-excel-file@9.3.7`, MIT) is pinned for
+development-only evaluation behind an independent bounded OOXML preflight. A
+private aggregate-only run matched all four WLMHW report structures in under
+one second each, and a generated 5,000-row workbook passed on stock API-23 / Chrome
+44 in 537 ms with a 1 ms maximum heartbeat delay. The generated evaluation
+payload was then removed and is not part of the application runtime.
+
+The candidate is **not approved**: every tested required identifier in the real
+WLMHW files arrived as a numeric cell, so text fidelity and leading zeros cannot
+be proven. Numeric required identifiers now fail the evaluation gate pending an
+approved dictionary rule and both-store evidence. Malicious XML/relationship
+coverage, repeat-run memory/stress evidence and physical-device evidence also
+remain open. See
+`verification/ETP-A1-PARSER-EVALUATION-CHECKPOINT-2026-08-08.md`.
+
+## Consolidated Retail Verified Data Path — active 2026-08-08
+
+The safe pre-production contracts now extend through bounded OOXML/XML threat
+inspection, lexical numeric-type preservation/refusal, isolated store/FY/period
+lifecycle, exact four-report manifests, deterministic source-hash idempotency,
+restore-to-reimport fencing, explicit reconciliation-rule validation,
+scaled-integer comparison, coverage states and verified-view publication
+refusal. The policies remain deterministic; the bounded runtime and UI are now
+loaded but cannot publish real WLMHW data while required numeric identifiers
+remain unapproved.
+
+The mandatory internal gate has not been waived. The supplied Retail dictionary
+and REC-002 rule now drive one shared WLMHW/HEMW profile, parser, encrypted store
+and responsive import UI. E2-E6 figures cannot publish until numeric identifier
+semantics, real HEMW conformance and remaining acceptance evidence close. The
+open evidence and decision register is
+`docs/ETP-RETAIL-VERIFIED-DATA-PATH-DECISION-REGISTER-2026-08-08.md`; resume from
+`verification/ETP-RETAIL-VERIFIED-DATA-PATH-CHECKPOINT-2026-08-08.md`.
+
+### Native ETP generation-store scaffold
+
+A separate native `saagar-etp.db` and matching bounded adapter now implement
+scope-keyed staging, native hash verification, atomic active-generation pointers,
+restore fencing and reset primitives without freezing report-specific fact
+columns. It uses a dedicated non-exportable Android Keystore AES-256-GCM key for
+versioned authenticated chunk envelopes and a bounded generation seal for status
+verification. Authenticated dictionary-projected reads and verified
+restore/factory-reset fencing are wired. API-23 emulator crypto/tamper/reset
+evidence passed; physical-device, true process-death, disk-full/corruption and
+real HEMW evidence remain open. SQLite contains no plaintext fact payload column.
+
+## Retail ETP Core Contract Closure — 2026-08-09
+
+The bounded pre-Modular-HTML ETP core is now frozen as
+`retail-etp-core-v1` for R003, R013, R022 and R025. WLMHW and HEMW share the
+same exact report signatures and one versioned profile. Numeric identifiers are
+accepted only as exact non-negative integer lexical values of at most 15 digits;
+the app never pads, rounds or reconstructs leading zeroes. India business dates,
+store/FY/period scope, explicit complete-period declarations, manager
+reauthorization, source identities, receipts, bounded history and report-specific
+verified reads are part of the contract.
+
+Blocking REC-002 is frozen at invoice/date grain with INV `+1`, SR `-1` and BC
+`-1`. It compares signed R022 invoice quantity/net value with aggregated R025
+quantity/net amount, using exact quantity and ₹1-per-invoice money tolerance.
+Both real history packs passed with zero REC-002 differences: 4,658 WLMHW invoice
+groups and 708 HEMW invoice groups. R013 attribution and R003 discount checks are
+non-revenue enrichment controls; their real-pack differences remain visible
+exceptions rather than being converted into sales. Unresolved PAYMENTTYPE25 is
+quarantined and excluded from persisted/verified facts (2,802 WLMHW rows and 18
+HEMW rows in the evaluated packs).
+
+The runtime uses an offline bounded worker, rejects unsafe OOXML before parsing,
+drops approved PII before persistence, stages facts into the separate encrypted
+native ETP store, reconciles before atomic publication, keeps current plus one
+previous generation, writes a metadata-only verified receipt, and fences restored
+scopes until re-import. Portable backups contain the receipt/scope registry but no
+ETP facts, workbook bytes or raw PII.
+
+This closes the engineering contract needed before completing Modular HTML. It
+does not claim physical-device acceptance, a successful real production batch,
+E2–E6 presentation/analytics, Service ETP, PHP/server work, production signing,
+or release acceptance. The real-source evidence is aggregate-only in
+`verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json`.

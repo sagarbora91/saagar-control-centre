@@ -1,0 +1,417 @@
+{
+  "auditArtifacts": [
+    {
+      "bytes": 53779,
+      "file": "A1-architecture.json",
+      "sha256": "3cd83eb58936095d13f527b2294fe486aa9a7fc15b0b46ed3d1ba5136a5ddaf0"
+    },
+    {
+      "bytes": 177147,
+      "file": "A2-duplication.json",
+      "sha256": "be71312e705a441a8b9cf7a956fac4656a58445a25331f2a6988d92ff79651cc"
+    },
+    {
+      "bytes": 1649694,
+      "file": "A3-capabilities.json",
+      "sha256": "be4280c6f69a47c0de7a0c62f4b08bf484aebc601e4be03d8d3ef252b9fc9a8c"
+    },
+    {
+      "bytes": 117015,
+      "file": "A4-storage.json",
+      "sha256": "d5884e3cf1d4fa6f3fa2adebe33e69cbcf320bec70a29fdb2bad6e396713427f"
+    },
+    {
+      "bytes": 24526,
+      "file": "A5-tests.json",
+      "sha256": "534922083468bb6a40f87b4f3f075414367002b3dcc8ce8e108fb0a61238f064"
+    },
+    {
+      "bytes": 56772,
+      "file": "A6-ui.json",
+      "sha256": "177ca89c131ab13437c53c3d2a209cba1fe2966a8d74f821832720be332925d6"
+    },
+    {
+      "bytes": 75195,
+      "file": "A7-protocol.json",
+      "sha256": "a2a9cdcab050ede8dac8c989efed11baa0945275158a3096efcbc58de23ad8d4"
+    },
+    {
+      "bytes": 13665,
+      "file": "A8-security.json",
+      "sha256": "9f15e21d87d49f1b92b2a969417902abf30fff3f10409ab19d1cf26d0ae7e3b1"
+    },
+    {
+      "bytes": 3501,
+      "file": "A9-build.json",
+      "sha256": "d75ca09c1c0f30f8dea89c544cc613a74288c1474df30dbb0a2a45a3e54e79f2"
+    },
+    {
+      "bytes": 9480,
+      "file": "A10-performance.json",
+      "sha256": "9590fa2e077e39dccb3aa53ad63aa5b26adedd0ad874132d7da963ac9b9b993d"
+    },
+    {
+      "bytes": 7463,
+      "file": "A11-documentation.json",
+      "sha256": "88ce1e481fd0017e778776efdb7e49b0e2b4d7fe95621afcfa8ed441a0880664"
+    }
+  ],
+  "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+  "auditToolingFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 28,
+    "totalBytes": 646450,
+    "treeSha256": "5ea63e3193f148e842afa4f4c12cd6c1206faae20f987b2ebd17710285537116"
+  },
+  "auditToolingSha": "57507ef655bb1b712e297f9526e2a1afaa4fcae5",
+  "audits": [
+    {
+      "auditId": "A1",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 5,
+        "unmeasured": 0
+      },
+      "title": "Architecture and coupling"
+    },
+    {
+      "auditId": "A2",
+      "counts": {
+        "fail": 5,
+        "na": 0,
+        "pass": 0,
+        "unmeasured": 0
+      },
+      "title": "Duplication and ownership"
+    },
+    {
+      "auditId": "A3",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 4,
+        "unmeasured": 1
+      },
+      "title": "Semantic capability inventory"
+    },
+    {
+      "auditId": "A4",
+      "counts": {
+        "fail": 3,
+        "na": 0,
+        "pass": 3,
+        "unmeasured": 0
+      },
+      "title": "Data and storage integrity"
+    },
+    {
+      "auditId": "A5",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 4,
+        "unmeasured": 1
+      },
+      "title": "Tests and guard rails"
+    },
+    {
+      "auditId": "A6",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 2
+      },
+      "title": "UI, responsive behavior, i18n and accessibility"
+    },
+    {
+      "auditId": "A7",
+      "counts": {
+        "fail": 2,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 2
+      },
+      "title": "Protocol stability"
+    },
+    {
+      "auditId": "A8",
+      "counts": {
+        "fail": 3,
+        "na": 0,
+        "pass": 0,
+        "unmeasured": 2
+      },
+      "title": "Security and privacy"
+    },
+    {
+      "auditId": "A9",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 2,
+        "unmeasured": 3
+      },
+      "title": "Build and release reproducibility"
+    },
+    {
+      "auditId": "A10",
+      "counts": {
+        "fail": 0,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 4
+      },
+      "title": "Performance and resources"
+    },
+    {
+      "auditId": "A11",
+      "counts": {
+        "fail": 4,
+        "na": 0,
+        "pass": 1,
+        "unmeasured": 0
+      },
+      "title": "Documentation currency"
+    }
+  ],
+  "baselineProductFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 295,
+    "totalBytes": 10516780,
+    "treeSha256": "92a06d052a0a81d193f0a8461253b13eef503336d10d0b8474c21953687f46e6"
+  },
+  "comparison": {
+    "approval": {
+      "identityBound": false,
+      "provided": false
+    },
+    "failed": [],
+    "gates": [],
+    "mandatoryUnmeasured": [],
+    "schemaVersion": 1,
+    "status": "not-applicable-baseline"
+  },
+  "elapsedMs": 182741,
+  "endedAt": "2026-08-10T13:09:46.363Z",
+  "findingCount": 21,
+  "format": "SAAGAR_WHOLE_APP_AUDIT_RUN",
+  "invocation": {
+    "command": "node scripts/audit/run.mjs",
+    "options": {
+      "auditToolingSha": "57507ef655bb1b712e297f9526e2a1afaa4fcae5",
+      "baselineEvidence": {
+        "provided": false
+      },
+      "comparisonApproval": {
+        "provided": false
+      },
+      "controlledBuildProbe": {
+        "artifact": "A9-BUILD-COMPARISON.json",
+        "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE",
+        "source": "runner-controlled",
+        "status": "unmeasured"
+      },
+      "controlledMutationProbe": {
+        "artifact": "A5-MUTATIONS.json",
+        "reason": "",
+        "source": "runner-controlled",
+        "status": "measured"
+      },
+      "mode": "baseline",
+      "output": "<OUTPUT>",
+      "performanceEvidence": {
+        "provided": false
+      },
+      "productBaseline": "f4da822378047b2fca5178953de079fa60d2d894",
+      "root": "<TARGET>",
+      "runTests": true,
+      "targetSha": "57507ef655bb1b712e297f9526e2a1afaa4fcae5",
+      "uiEvidence": {
+        "provided": false
+      }
+    }
+  },
+  "mandatoryUnmeasured": [
+    "A10-04",
+    "A10-05",
+    "A3-05",
+    "A5-05",
+    "A6-04",
+    "A6-05",
+    "A7-01",
+    "A7-03",
+    "A8-01",
+    "A8-04",
+    "A9-01",
+    "A9-02",
+    "A9-05"
+  ],
+  "manifest": {
+    "moduleCount": 11,
+    "path": "www/module-manifest.js",
+    "sha256": "a2ff9c8e6c4de4c808ccdeb9e3931f97a95c5a1e860016ef30c26ca8d0674f16",
+    "sharedAssetCount": 2
+  },
+  "mode": "baseline",
+  "openGateCount": 10,
+  "productBaselineSha": "f4da822378047b2fca5178953de079fa60d2d894",
+  "productFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 295,
+    "totalBytes": 10516780,
+    "treeSha256": "92a06d052a0a81d193f0a8461253b13eef503336d10d0b8474c21953687f46e6"
+  },
+  "runner": {
+    "bytes": 25957,
+    "path": "scripts/audit/run.mjs",
+    "sha256": "9d511ab6ab865f8add8e678ed3c945ac0c22ea82b4e1a05adc2c56f2ab1408d6"
+  },
+  "schemaVersion": 1,
+  "startedAt": "2026-08-10T13:06:43.622Z",
+  "status": "complete-with-findings-or-gaps",
+  "supportingArtifacts": {
+    "buildProbe": {
+      "bytes": 387,
+      "file": "A9-BUILD-COMPARISON.json",
+      "sha256": "b083ffde1bee9d520f31135e3f792c5117102fcf13f18a02eca653e8e77e53f7"
+    },
+    "mutationProbe": {
+      "bytes": 5143,
+      "file": "A5-MUTATIONS.json",
+      "sha256": "9f49b27eec7ebfa3b6c47eb43e73ecd58e358a2bd269e76c738c56b326c8cac9"
+    },
+    "openGates": {
+      "bytes": 1611,
+      "file": "OPEN-GATES.json",
+      "sha256": "bca0078de43fd4e4b33ed795b5be68093605d1f57a07ff1333cc3e20ce049bd6"
+    }
+  },
+  "target": {
+    "cleanAfter": true,
+    "cleanBefore": true,
+    "detachedHead": true,
+    "linkedWorktree": true,
+    "repositoryRootVerified": true,
+    "rootKind": "detached-linked-worktree"
+  },
+  "targetSha": "57507ef655bb1b712e297f9526e2a1afaa4fcae5",
+  "tests": {
+    "command": "npm run test:offline",
+    "counts": {
+      "c1": 12,
+      "cancelled": 0,
+      "completeOffline": 492,
+      "etp": 128,
+      "fail": 0,
+      "language": 4,
+      "mainOffline": 262,
+      "mobile": 6,
+      "modular": 72,
+      "pass": 492,
+      "settings": 8,
+      "skipped": 0,
+      "todo": 0
+    },
+    "elapsedMs": 15555,
+    "exitCode": 0,
+    "outputSha256": "3c57bc59126a7e23a349812d39b7c0752dde3bf16b027e478b6f3fbc492952e5",
+    "passed": true,
+    "passedCount": 492,
+    "suites": {
+      "test:c1": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 12,
+        "skipped": 0,
+        "tests": 12,
+        "todo": 0
+      },
+      "test:etp": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 128,
+        "skipped": 0,
+        "tests": 128,
+        "todo": 0
+      },
+      "test:language": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 4,
+        "skipped": 0,
+        "tests": 4,
+        "todo": 0
+      },
+      "test:mobile": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 6,
+        "skipped": 0,
+        "tests": 6,
+        "todo": 0
+      },
+      "test:modular": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 72,
+        "skipped": 0,
+        "tests": 72,
+        "todo": 0
+      },
+      "test:offline": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 262,
+        "skipped": 0,
+        "tests": 262,
+        "todo": 0
+      },
+      "test:settings": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 8,
+        "skipped": 0,
+        "tests": 8,
+        "todo": 0
+      }
+    },
+    "totalCount": 492
+  },
+  "toolchain": {
+    "arch": "x64",
+    "browserEvidenceProvided": false,
+    "buildProbeStatus": "unmeasured",
+    "gradle": {
+      "available": false,
+      "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE"
+    },
+    "java": {
+      "available": false,
+      "reason": "AUDIT_BUILD_GRADLE_UNAVAILABLE"
+    },
+    "mutationProbeStatus": "measured",
+    "node": "v25.9.0",
+    "npm": {
+      "available": true,
+      "exitCode": 0,
+      "version": "11.12.1"
+    },
+    "osRelease": "10.0.19045",
+    "performanceEvidenceProvided": false,
+    "platform": "win32"
+  },
+  "trackedFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n)",
+    "fileCount": 353,
+    "totalBytes": 13752599,
+    "treeSha256": "fa831f84d5b470f8ebab90ea5e89641efe56dbe7fbb0bf463384f9470abe3cac"
+  },
+  "worktreeFingerprint": {
+    "algorithm": "sha256(path\\0bytes\\0sha256\\n):worktree",
+    "fileCount": 353,
+    "totalBytes": 13767840,
+    "treeSha256": "d2b0a37d1dba8735cf31f57a8015f0da800120acd9d1f48a5e1c8d6a74209277"
+  }
+}

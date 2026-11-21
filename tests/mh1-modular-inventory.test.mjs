@@ -9,8 +9,8 @@ const inventory = createInventory(root);
 
 test('MH1 architecture inventory is complete, reproducible, and payload-free', () => {
   assert.equal(inventory.schemaVersion, 1);
-  assert.equal(inventory.modules.length, 11);
-  assert.equal(new Set(inventory.modules.map(module => module.id)).size, 11);
+  assert.equal(inventory.modules.length, 12);
+  assert.equal(new Set(inventory.modules.map(module => module.id)).size, 12);
   assert.match(inventory.shell.sha256, /^[a-f0-9]{64}$/);
   for (const module of inventory.modules) {
     assert.equal(module.bytes, module.registryBytes, `${module.id} bytes`);
@@ -19,9 +19,17 @@ test('MH1 architecture inventory is complete, reproducible, and payload-free', (
     assert.ok(module.assets.includes('../../mobile-layout.css'), `${module.id} mobile layout`);
     assert.ok(module.assets.includes('../../app-i18n.js'), `${module.id} language runtime`);
     assert.ok(module.inlineScripts > 0, `${module.id} inline script inventory`);
-    assert.ok(module.inlineStyles > 0, `${module.id} inline style inventory`);
+    assert.ok(module.inlineStyles >= 0, `${module.id} inline style inventory`);
     assert.equal(Object.hasOwn(module, 'html'), false, `${module.id} must not duplicate source payload`);
   }
+  assert.equal(inventory.modules.find(module => module.id === 'grooming').inlineStyles, 0,
+    'Grooming intentionally extracts its complete Phase 6F cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'cro_audit').inlineStyles, 0,
+    'CRO Audit intentionally extracts its complete Phase 6G cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'tax').inlineStyles, 0,
+    'Tax intentionally extracts its complete Phase 6G cascade');
+  assert.equal(inventory.modules.find(module => module.id === 'qms').inlineStyles, 2,
+    'QMS retains only its two governed inline deltas after Phase 6G extraction');
 });
 
 test('MH1 inventory pins shared-control and live-access differences', () => {

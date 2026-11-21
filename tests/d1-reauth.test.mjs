@@ -28,10 +28,14 @@ test('D1 reauthentication produces distinct cancellation, denial, and lockout gu
   assert.match(policy.outcomeText('locked', 19.2), /20s/);
 });
 
-test('shell integrates detailed outcomes without changing the boolean compatibility wrapper', () => {
+test('shell integrates the DOM keypad and asynchronous fail-closed wrapper', () => {
   assert.match(shell, /<script src="reauth-policy\.js"><\/script>/);
   assert.match(shell, /function promptVerifyOnlyResult\(msg\)/);
   assert.match(shell, /function promptVerifyOnly\(msg\)/);
-  assert.match(shell, /outcome:status,attempts:attempt/);
+  assert.match(shell, /function raEl\(\)\{return document\.getElementById\('st-v5-launch-lock'\);\}/);
+  assert.match(shell, /cancel\.onclick=raCancel/);
+  assert.match(shell, /async function SaagarReauth\(reason\)/);
+  assert.match(shell, /await reauthKeypadResult\(__r\)/);
+  assert.match(shell, /outcome:status,attempts:result\.attempts/);
   assert.match(shell, /window\.SaagarReauth = SaagarReauth/);
 });

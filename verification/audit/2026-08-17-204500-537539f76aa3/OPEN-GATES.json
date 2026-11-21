@@ -1,0 +1,59 @@
+{
+  "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a",
+  "format": "SAAGAR_WHOLE_APP_AUDIT_OPEN_GATES",
+  "gates": [
+    {
+      "id": "GATE-UPDATE-PHYSICAL",
+      "state": "open",
+      "title": "Owner physical update-in-place smoke for final APK hash"
+    },
+    {
+      "id": "GATE-UPDATE-API23",
+      "state": "open",
+      "title": "Install-replace evidence for final APK hash"
+    },
+    {
+      "id": "GATE-ETP-PHYSICAL",
+      "state": "open",
+      "title": "Physical API-23/OEM ETP import and document-provider evidence"
+    },
+    {
+      "id": "GATE-ETP-INTERRUPTION",
+      "state": "open",
+      "title": "ETP process-death, disk-full, corruption, rotation and low-storage evidence"
+    },
+    {
+      "id": "GATE-ETP-PRODUCTION",
+      "state": "open",
+      "title": "Real production native ETP publication acceptance"
+    },
+    {
+      "id": "GATE-ETP-EXCEPTIONS",
+      "state": "open",
+      "title": "User-facing R003/R013 exception presentation"
+    },
+    {
+      "id": "GATE-PAYMENTTYPE25",
+      "state": "open",
+      "title": "Approved PAYMENTTYPE25 mapping"
+    },
+    {
+      "id": "GATE-NATIVE-LANGUAGE",
+      "state": "open",
+      "title": "Fluent Marathi/Hindi review"
+    },
+    {
+      "id": "GATE-UAT",
+      "state": "open",
+      "title": "Staff/owner UAT and legal review"
+    },
+    {
+      "id": "GATE-RELEASE",
+      "state": "open",
+      "title": "Production signing and release acceptance"
+    }
+  ],
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "schemaVersion": 1,
+  "targetSha": "537539f76aa333f760431acb9cb21cf3bedeab7d"
+}

@@ -1,0 +1,59 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "decision": "approve",
+  "receivedAt": "2026-08-22T20:06:30+05:30",
+  "gateId": "GATE-NATIVE-LANGUAGE",
+  "state": "closed",
+  "reviewer": {
+    "displayName": "Sagar",
+    "githubIdentity": "sagarbora91",
+    "role": "fluent-marathi-hindi-reviewer"
+  },
+  "package": {
+    "path": "verification/audit/PHASE-5C-RENDERED-LANGUAGE-OWNER-REVIEW-2026-08-22.md",
+    "sha256": "0228fddb8ed2465d73a4bddcf5b104f2162c97bcf6da7e711e7976695a1b897e"
+  },
+  "productCommit": "c809d04e4b67c6239218d5707908ac64f25fc94a",
+  "productFingerprintSha256": "3527503aa332c01f5c1c0ecb669f36a2d79a930f1fe0e106054db527067823a2",
+  "auditToolingSha": "aae4310bafb038e3eba77271124c1ca0649e7f84",
+  "renderedEvidenceRecord": "verification/audit/attested/rendered-ui/phase5c-a6-rendered-c809d04-aae4310-20260822.json",
+  "renderedEvidenceSha256": "f086db579c2fa4bbefaeee40ecdfbdb6f3377de5964382a3dc53b2d9a5ee8cc7",
+  "renderedEvidenceFileSha256": "6d67109e8e2a20f2b7aa17b1ae81c9c0397b4c8a4b2638524bce6d3fd9ff303d",
+  "matrixSha256": "9566d92d3cddc60ee5bb4eaa946e95a75f8f1c2049bfca67fe16c48a28fd09d5",
+  "matrix": {
+    "cells": 78,
+    "marathiHindiCells": 52,
+    "measuredTargets": 2463,
+    "measuredContrastSamples": 6303,
+    "targetViolations": 0,
+    "contrastViolations": 0,
+    "a6_02": "pass",
+    "a6_04": "pass",
+    "a6_05": "pass"
+  },
+  "independentVerification": {
+    "performedBy": "assistant, read-only, 2026-08-22",
+    "signatureValid": true,
+    "signatureAuthorized": true,
+    "signerKeyId": "phase4a-renderer-ed25519-9ec3b61bbbdb245f",
+    "measurementsRecounted": "2,463 targets and 6,303 contrasts, zero violations",
+    "allCitedHashesVerified": true
+  },
+  "approvalText": "I, Sagar (sagarbora91), reviewed all 78 rendered UI matrix cells, including all 52 Marathi/Hindi cells, for product commit c809d04e4b67c6239218d5707908ac64f25fc94a, product fingerprint SHA-256 3527503aa332c01f5c1c0ecb669f36a2d79a930f1fe0e106054db527067823a2, audit tooling aae4310bafb038e3eba77271124c1ca0649e7f84, rendered-evidence SHA-256 f086db579c2fa4bbefaeee40ecdfbdb6f3377de5964382a3dc53b2d9a5ee8cc7, evidence-file SHA-256 6d67109e8e2a20f2b7aa17b1ae81c9c0397b4c8a4b2638524bce6d3fd9ff303d, and matrix SHA-256 9566d92d3cddc60ee5bb4eaa946e95a75f8f1c2049bfca67fe16c48a28fd09d5. I confirm the Marathi and Hindi wording renders legibly and retains the intended meaning, with no unresolved mistranslation, clipping, overlap, or truncation, and I approve closure of GATE-NATIVE-LANGUAGE for this exact identity. This approval does not substitute for physical-device acceptance, UAT, production signing, or release approval.",
+  "supersedes": {
+    "priorApproval": "verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json",
+    "reason": "The prior approval is bound to superseded product fingerprint 08734dfb. This approval rebinds GATE-NATIVE-LANGUAGE to the current identity and resolves its rebindingRequired flag."
+  },
+  "scope": {
+    "closes": [
+      "GATE-NATIVE-LANGUAGE"
+    ],
+    "doesNotClose": [
+      "physical-device acceptance",
+      "staff UAT",
+      "production signing",
+      "release approval"
+    ]
+  }
+}

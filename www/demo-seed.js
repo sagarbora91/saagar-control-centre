@@ -73,7 +73,7 @@
     ['Kavya Iyer', 'F', 'Store Manager', FIRM_H, 20000, 'S'],
     ['Manish Jain', 'M', 'Store Manager', FIRM_T, 22000, 'S']
   ].map(function (e, i) {
-    return { name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
+    return { id: 'emp_demo_' + String(i + 1).padStart(3, '0'), name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
       employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' || e[2] === 'Greeter' ? 'Sales' : (e[2] === 'Technician' || e[2] === 'Assistant Technician' ? 'Service' : 'Admin')),
       bankName: ['HDFC', 'SBI', 'ICICI', 'Axis'][i % 4], accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i),
       active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: demoMobile('employee', i * 137) };
@@ -88,7 +88,7 @@
   // Brands (subset is enough for a believable demo)
   var BR_T = ['CLASSIC', 'RAGA', 'EDGE', 'XYLYS', 'FASTTRACK', 'SONATA', 'NEBULA', 'OCTANE'];
   var BR_H = ['SEIKO', 'CITIZEN', 'FOSSIL', 'GUESS', 'POLICE', 'G-SHOCK'];
-  set('saagar_master_brands', BR_T.concat(BR_H).map(function (n) { return { name: n }; }));
+  set('saagar_master_brands', BR_T.map(function (n) { return { name: n, store: 'titanworld' }; }).concat(BR_H.map(function (n) { return { name: n, store: 'helios' }; })));
   set('saagar_brands', { titanworld: BR_T.slice(), helios: BR_H.slice() });
   set('saagar_cros', CRO_NAMES.slice());
 
@@ -115,7 +115,7 @@
   });
 
   /* ════════════════════ QMS  (retail_queue_management_v1) ════════════════════ */
-  function uid(p) { return p + '_' + (_s = (_s * 16807) % 2147483647).toString(36); }
+  var _uidN = 0; function uid(p) { var s = (_s = (_s * 16807) % 2147483647).toString(36); return p + '_' + s + '_' + (++_uidN).toString(36); }
   var qCros = CRO_EMP.map(function (e, i) { return { id: 'cro_' + (i + 1), name: e.name, code: 'CRO-' + String(i + 1).padStart(2, '0'), active: true }; });
   var CATS = ['Watch', 'Smart Watch', 'Wall Clock', 'Accessory'];
   var PAYM = ['Cash', 'Card', 'UPI', 'Mixed'];
@@ -246,7 +246,7 @@
   /* ════════════════════ EXPENSE  (all tabs) ════════════════════ */
   set('gm_settings', { migratedV2: true, gstRate: 3 });
   var FIRMS_EXP = ['Saagar Traders', 'Helios by Saagar'];
-  var gmExp = []; var stmts = {}; var prevClosePhys = 0;
+  var gmExp = []; var stmts = {}; var prevClosePhys = 0; var pettyTotal = 0;
   var EXP_CATS = ['Inventory', 'Rent', 'Utilities', 'Marketing', 'Transport', 'Repairs', 'Miscellaneous'];
   function deno(total) { var D = [2000, 500, 200, 100, 50, 20, 10]; var o = {}, r = total; D.forEach(function (x) { var n = Math.floor(r / x); if (n > 0) { o[x] = n; r -= n * x; } }); if (r > 0) o['10'] = (o['10'] || 0) + Math.ceil(r / 10); return o; }
   function denoTotal(o) { var t = 0; for (var k in o) t += (+k) * o[k]; return t; }
@@ -260,19 +260,19 @@
     var cashOut = ri(3, 12) * 100;
     gmExp.push({ id: uid('e'), type: 'expense', date: ds, amount: cashOut, category: pick(['Utilities', 'Transport', 'Miscellaneous']), mode: 'Cash', vendor: pick(VEND).name, firm: 'Saagar Traders', description: pick(['Tea/snacks', 'Auto fare', 'Cleaning', 'Sundry']), notes: '', billPhoto: null, source: null, sourceRef: null, void: false, createdAt: ds + 'T18:00:00.000Z', createdBy: 'cashier', editLog: [] });
     // petty disbursement (Cash expense, source petty)
-    var pettyOut = ri(1, 5) * 100;
+    var pettyOut = ri(1, 5) * 100; pettyTotal += pettyOut;
     gmExp.push({ id: uid('e'), type: 'expense', date: ds, amount: pettyOut, category: 'Miscellaneous', mode: 'Cash', vendor: '', firm: 'Saagar Traders', description: 'Petty: ' + pick(['stationery', 'courier', 'refreshments']), notes: '', billPhoto: null, source: 'petty', sourceRef: uid('pty'), void: false, createdAt: ds + 'T16:00:00.000Z', createdBy: 'cashier', editLog: [] });
     // cash statement for the day (balanced, closed, approved). Carry-forward chain.
     var opening = di === 0 ? 10000 : prevClosePhys;
     var expectedClose = opening + cashIn - cashOut - pettyOut;
     if (expectedClose < 0) expectedClose = ri(2, 8) * 1000;
-    var phys = deno(expectedClose); prevClosePhys = denoTotal(phys);
-    stmts[ds] = { date: ds, openingBalance: opening, physDeno: phys, bankDeno: {}, closed: true, closedAt: ds + 'T21:00:00.000Z', closedBy: 'cashier', approved: true, approvedBy: 'owner', approvedAt: ds + 'T21:05:00.000Z', reopenReason: null, mismatchReason: null, monthLocked: false,
+    var CASH_FLOAT = 5000, phys = deno(expectedClose), closeTotal = denoTotal(phys), bankDep = Math.floor(Math.max(closeTotal - CASH_FLOAT, 0) / 10) * 10, bankPhys = deno(bankDep); prevClosePhys = closeTotal - bankDep;
+    stmts[ds] = { date: ds, openingBalance: opening, physDeno: phys, bankDeno: bankPhys, closed: true, closedAt: ds + 'T21:00:00.000Z', closedBy: 'cashier', approved: true, approvedBy: 'owner', approvedAt: ds + 'T21:05:00.000Z', reopenReason: null, mismatchReason: null, monthLocked: false,
       filledBy: 'cashier', total: expectedClose };   // legacy-compat fields for shell readers
   });
   set('gm_expenses', gmExp);
   set('tanishq_statements', stmts);
-  set('gm_petty', { float: 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: 5000 }] });
+  set('gm_petty', { float: pettyTotal + 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: pettyTotal + 5000 }] });
   set('gm_budgets', (function () { var b = {}; b[curYM] = { Inventory: 600000, Rent: 60000, Utilities: 25000, Marketing: 30000, Transport: 15000, Miscellaneous: 10000 }; return b; })());
   // tax feed for the PREVIOUS month (Wave-10: a current-month feed would tax-lock the demo's
   // live month out of the box — every entry would demand an owner override from first launch.
@@ -284,8 +284,8 @@
   set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: prevM + ' tax feed generated' }]);
 
   /* ════════════════════ GROOMING  (saagar_grooming_<date>) ════════════════════ */
-  var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied—no oil', 'Sideburns ≤ mid-ear', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Sleeves not rolled', 'Name badge visible', 'Hand gloves worn', 'Shoes black & polished', 'Belt black & visible', 'Watch simple', 'Max one ring/hand', 'Nails clean & trimmed'];
-  var CRIT_F = ['Neat bun', 'Black band & pins', 'Hair off face', 'Natural colour—no oil', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Name badge visible', 'Shoes black & polished', 'Belt black & visible', 'One pair studs/small hoops', 'Watch simple', 'Nails clean & trimmed', 'Lipstick nude only', 'Nail polish nude only'];
+  var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied — no oil', 'Sideburns do not cross the middle of the ear', 'Well-fitted — not too tight or too loose', 'Clean and properly ironed', 'No loose threads, missing buttons, or faded colour', 'Shirt sleeves as per standard — not rolled up', 'Name badge worn and clearly visible', 'Hand gloves worn during store hours', 'Shoes are black and polished — no tan or brown', 'Belt is black and clearly visible — no tan or brown', 'Watch: gold/silver or black/brown strap, simple dial', 'Max one ring per hand — gold or silver only', 'Nails clean, dry, and trimmed'];
+  var CRIT_F = ['Hair styled in a neat bun', 'Black rubber band and pins used to secure hair', 'Hair kept off the face — pins if needed', 'Natural hair colour only — no styling oil', 'Well-fitted — not too tight or too loose', 'Clean and properly ironed at all times', 'No loose threads, missing buttons, or faded colour', 'Name badge worn and clearly visible at all times', 'Shoes are black and polished — no tan or brown', 'Belt is black and clearly visible — no tan or brown', 'Only one pair of studs or small hoops', 'Watch: gold/silver or black/brown strap, simple dial', 'Nails clean, dry, and trimmed', 'Lipstick shade — nude only', 'Nail polish — nude shades only, no bright colours'];
   DSTR.forEach(function (ds, di) {
     if (isWeekend(new Date(ds + 'T12:00:00')) || di % 2) return;   // grooming audited ~every other working day
     var arr = EMP.filter(function (e) { return e.role === 'CRO'; }).map(function (e) {
@@ -309,7 +309,7 @@
         t5: (function () { var bills = ri(30, 60), coll = Math.round(bills * 0.4), rate = Math.round(coll / bills * 100), nps = ri(80, 92); var rp = Math.min(Math.round(rate / 40 * 5), 5), sp = Math.min(Math.round(nps / 85 * 5), 5); return { billsCount: bills, npsCollected: coll, responseRate: rate, npsScore: nps, pts: rp + sp }; })(),
         t6: { reviewsCount: ri(1, 3), pts: pick([7, 10]) }, t7: { activityCount: ri(3, 6), pts: pick([8, 10]) }, t8: { pts: pick([4, 7, 10]) },
         t9: (function () { var p = ri(70, 95); return { groomingPct: p, pts: Math.round(p / 10) }; })(), t10: { pts: pick([7, 10]) } };
-      var total = 0; for (var key in t) total += t[key].pts || 0;
+      t.t6.pts = Math.min(Math.round(t.t6.reviewsCount / 2 * 10), 10); t.t7.pts = Math.min(Math.round(t.t7.activityCount / 5 * 10), 10); var total = 0; for (var key in t) total += t[key].pts || 0;
       var grade = total >= 90 ? 'Outstanding' : total >= 75 ? 'Good' : total >= 60 ? 'Satisfactory' : total >= 45 ? 'Below Exp.' : 'Poor';
       audits.unshift({ id: 'a' + (1748000000000 + audits.length), date: ds, store: e.firm === FIRM_H ? 'Helios, Latur' : 'Titan World, Latur', cro: e.name, sm: SM_NAME, total: total, grade: grade, tasks: t, submittedAt: ds + 'T20:00:00.000Z' });
     });
@@ -406,7 +406,7 @@
   });
 
   /* ════════════════════ misc shell state ════════════════════ */
-  set('gm_role', 'owner');
+  set('gm_role', 'cashier');
   set('saagar_owner_name', 'Sagar');
   // mark seeded LAST so a crash mid-seed re-runs cleanly next launch
   set('saagar_demo_seeded', 'v2_6mo');
@@ -453,7 +453,7 @@
     function ri(a, b) { return a + Math.floor(rnd() * (b - a + 1)); }
     function pick(a) { return a[Math.floor(rnd() * a.length)]; }
     function r2(n) { return Math.round(n * 100) / 100; }
-    function uid(p) { return p + '_' + (_s = (_s * 16807) % 2147483647).toString(36); }
+    var _uidN = 0; function uid(p) { var s = (_s = (_s * 16807) % 2147483647).toString(36); return p + '_' + s + '_' + (++_uidN).toString(36); }
     var FIRSTN = ['Amol', 'Sunita', 'Rohit', 'Sneha', 'Prakash', 'Vaishali', 'Ganesh', 'Pooja', 'Nilesh', 'Swati', 'Sachin', 'Rupali', 'Mahesh', 'Anita', 'Kiran', 'Deepak', 'Manisha', 'Suraj', 'Jyoti', 'Ramesh', 'Vandana', 'Sagar', 'Komal', 'Vishal'];
     var LASTN = ['Patil', 'Deshmukh', 'Kulkarni', 'Jadhav', 'Pawar', 'Shinde', 'Bora', 'Joshi', 'Kale', 'Gaikwad', 'More', 'Salunke', 'Mane', 'Chavan', 'Sawant', 'Nikam'];
     var DAYS = (window.__SEED_DAYS) || 365, WALK = (window.__SEED_WALK) || 50, KEEP_DAYS = 90;
@@ -476,7 +476,7 @@
       ['Sandeep Gaikwad', 'M', 'Technician', FIRM_H, 17000, 'S'], ['Meera Nair', 'F', 'Technician', FIRM_T, 16500, 'S'], ['Nisha Bora', 'F', 'Cashier', FIRM_T, 12000, 'B'],
       ['Arjun Pawar', 'M', 'Cashier', FIRM_H, 11500, 'B'], ['Kavya Iyer', 'F', 'Store Manager', FIRM_H, 20000, 'S'], ['Manish Jain', 'M', 'Store Manager', FIRM_T, 22000, 'S']
     ].map(function (e, i) {
-      return { name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
+      return { id: 'emp_demo_' + String(i + 1).padStart(3, '0'), name: e[0], gender: e[1], role: e[2], firm: 'Saagar Traders', store: e[3], monthlySalary: e[4], salaryType: e[5],
         employeeId: 'EMP' + String(i + 1).padStart(3, '0'), department: (e[2] === 'CRO' || e[2] === 'Greeter' ? 'Sales' : (e[2] === 'Technician' || e[2] === 'Assistant Technician' ? 'Service' : 'Admin')),
         bankName: ['HDFC', 'SBI', 'ICICI', 'Axis'][i % 4], accountNo: '5010' + String(100000000 + i * 7654321).slice(0, 10), ifsc: 'HDFC000' + (1000 + i),
         active: true, joiningDate: '2024-0' + ((i % 8) + 1) + '-10', phone: demoMobile('employee', i * 137) };
@@ -491,7 +491,7 @@
     var qCros = CRO_EMP.map(function (e, i) { return { id: 'cro_' + (i + 1), name: e.name, code: 'CRO-' + String(i + 1).padStart(2, '0'), active: true }; });
     await writeBulk(function () {
       set('saagar_employee_master_v1', EMP);
-      set('saagar_master_brands', BR_T.concat(BR_H).map(function (n) { return { name: n }; }));
+      set('saagar_master_brands', BR_T.map(function (n) { return { name: n, store: 'titanworld' }; }).concat(BR_H.map(function (n) { return { name: n, store: 'helios' }; })));
       set('saagar_brands', { titanworld: BR_T.slice(), helios: BR_H.slice() });
       set('saagar_cros', CRO_NAMES.slice());
       set('saagar_master_vendors', VEND);
@@ -628,7 +628,7 @@
     WSC = null; prog(66, 'service book done'); await yieldUI();
 
     /* ════════ EXPENSE (all tabs) — full-year ledger + daily cash statements ════════ */
-    var gmExp = [], stmts = {}, prevClosePhys = 0, FIRMS_EXP = ['Saagar Traders', 'Helios by Saagar'];
+    var gmExp = [], stmts = {}, prevClosePhys = 0, pettyTotal = 0, FIRMS_EXP = ['Saagar Traders', 'Helios by Saagar'];
     function deno(t) { var D = [2000, 500, 200, 100, 50, 20, 10], o = {}, r = t; D.forEach(function (x) { var n = Math.floor(r / x); if (n > 0) { o[x] = n; r -= n * x; } }); if (r > 0) o['10'] = (o['10'] || 0) + Math.ceil(r / 10); return o; }
     function denoTotal(o) { var t = 0; for (var kk in o) t += (+kk) * o[kk]; return t; }
     for (var ei = 0; ei < DSTR.length; ei++) {
@@ -639,12 +639,12 @@
       if (ei % 3 === 0) gmExp.push({ id: uid('e'), type: 'expense', date: ds, amount: ri(10, 50) * 1000, category: 'Inventory', mode: 'Bank', vendor: pick(VEND).name, firm: 'Saagar Traders', description: 'Stock purchase', notes: '', billPhoto: 'data:image/png;base64,iVBORw0KGgo=', source: null, sourceRef: null, void: false, createdAt: ds + 'T11:00:00.000Z', createdBy: 'owner', editLog: [] });
       var cashOut = ri(3, 12) * 100;
       gmExp.push({ id: uid('e'), type: 'expense', date: ds, amount: cashOut, category: pick(['Utilities', 'Transport', 'Miscellaneous']), mode: 'Cash', vendor: pick(VEND).name, firm: 'Saagar Traders', description: pick(['Tea/snacks', 'Auto fare', 'Cleaning', 'Sundry']), notes: '', billPhoto: null, source: null, sourceRef: null, void: false, createdAt: ds + 'T18:00:00.000Z', createdBy: 'cashier', editLog: [] });
-      var pettyOut = ri(1, 5) * 100;
+      var pettyOut = ri(1, 5) * 100; pettyTotal += pettyOut;
       gmExp.push({ id: uid('e'), type: 'expense', date: ds, amount: pettyOut, category: 'Miscellaneous', mode: 'Cash', vendor: '', firm: 'Saagar Traders', description: 'Petty: ' + pick(['stationery', 'courier', 'refreshments']), notes: '', billPhoto: null, source: 'petty', sourceRef: uid('pty'), void: false, createdAt: ds + 'T16:00:00.000Z', createdBy: 'cashier', editLog: [] });
       var opening = ei === 0 ? 10000 : prevClosePhys, expectedClose = opening + cashIn - cashOut - pettyOut;
       if (expectedClose < 0) expectedClose = ri(2, 8) * 1000;
-      var phys = deno(expectedClose); prevClosePhys = denoTotal(phys);
-      stmts[ds] = { date: ds, openingBalance: opening, physDeno: phys, bankDeno: {}, closed: true, closedAt: ds + 'T21:00:00.000Z', closedBy: 'cashier', approved: true, approvedBy: 'owner', approvedAt: ds + 'T21:05:00.000Z', reopenReason: null, mismatchReason: null, monthLocked: false, filledBy: 'cashier', total: expectedClose };
+      var CASH_FLOAT = 5000, phys = deno(expectedClose), closeTotal = denoTotal(phys), bankDep = Math.floor(Math.max(closeTotal - CASH_FLOAT, 0) / 10) * 10, bankPhys = deno(bankDep); prevClosePhys = closeTotal - bankDep;
+      stmts[ds] = { date: ds, openingBalance: opening, physDeno: phys, bankDeno: bankPhys, closed: true, closedAt: ds + 'T21:00:00.000Z', closedBy: 'cashier', approved: true, approvedBy: 'owner', approvedAt: ds + 'T21:05:00.000Z', reopenReason: null, mismatchReason: null, monthLocked: false, filledBy: 'cashier', total: expectedClose };
       if (ei % 60 === 59) await yieldUI();
     }
     /* Wave-10: feed under the PREVIOUS month (see the small-path comment) — keeps the live month unlocked. */
@@ -656,15 +656,15 @@
       var mt = monthTotals[ym]; taxFeed[ym] = { month: ym, income: mt.income, expense: mt.expense, net: mt.income - mt.expense, gstRate: 3, gstEstimate: Math.round(mt.income * 0.03), byCategory: {}, generatedAt: ym + '-28T21:10:00.000Z', by: 'Synthetic seed' };
     });    await writeBulk(function () {
       set('gm_settings', { migratedV2: true, gstRate: 3 }); set('gm_expenses', gmExp); set('tanishq_statements', stmts);
-      set('gm_petty', { float: 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: 5000 }] });
+      set('gm_petty', { float: pettyTotal + 5000, history: [{ at: DSTR[0] + 'T09:00:00.000Z', by: 'owner', add: pettyTotal + 5000 }] });
       set('gm_budgets', budgets);
       set('gm_tax_feed', taxFeed); set('gm_audit', [{ id: uid('a'), at: TODAY + 'T21:10:00.000Z', by: 'owner', action: 'month.lock', detail: Object.keys(taxFeed).length + ' synthetic monthly tax feeds generated' }]);
     });
     gmExp = null; stmts = null; prog(76, 'expense ledger done'); await yieldUI();
 
     /* ════════ GROOMING (saagar_grooming_<date>) ════════ */
-    var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied—no oil', 'Sideburns ≤ mid-ear', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Sleeves not rolled', 'Name badge visible', 'Hand gloves worn', 'Shoes black & polished', 'Belt black & visible', 'Watch simple', 'Max one ring/hand', 'Nails clean & trimmed'];
-    var CRIT_F = ['Neat bun', 'Black band & pins', 'Hair off face', 'Natural colour—no oil', 'Uniform well-fitted', 'Clean & ironed', 'No loose threads/buttons/fade', 'Name badge visible', 'Shoes black & polished', 'Belt black & visible', 'One pair studs/small hoops', 'Watch simple', 'Nails clean & trimmed', 'Lipstick nude only', 'Nail polish nude only'];
+    var CRIT_M = ['Short / well-trimmed hair', 'Natural hair colour only', 'Hair gel applied — no oil', 'Sideburns do not cross the middle of the ear', 'Well-fitted — not too tight or too loose', 'Clean and properly ironed', 'No loose threads, missing buttons, or faded colour', 'Shirt sleeves as per standard — not rolled up', 'Name badge worn and clearly visible', 'Hand gloves worn during store hours', 'Shoes are black and polished — no tan or brown', 'Belt is black and clearly visible — no tan or brown', 'Watch: gold/silver or black/brown strap, simple dial', 'Max one ring per hand — gold or silver only', 'Nails clean, dry, and trimmed'];
+    var CRIT_F = ['Hair styled in a neat bun', 'Black rubber band and pins used to secure hair', 'Hair kept off the face — pins if needed', 'Natural hair colour only — no styling oil', 'Well-fitted — not too tight or too loose', 'Clean and properly ironed at all times', 'No loose threads, missing buttons, or faded colour', 'Name badge worn and clearly visible at all times', 'Shoes are black and polished — no tan or brown', 'Belt is black and clearly visible — no tan or brown', 'Only one pair of studs or small hoops', 'Watch: gold/silver or black/brown strap, simple dial', 'Nails clean, dry, and trimmed', 'Lipstick shade — nude only', 'Nail polish — nude shades only, no bright colours'];
     for (var gp = 0; gp < DSTR.length; gp += 30) {
       await writeBulk(function () {
         for (var j = gp; j < Math.min(gp + 30, DSTR.length); j++) {
@@ -688,7 +688,7 @@
       CRO_EMP.forEach(function (e, ci) {
         if ((ci + ai) % 2 !== 0) return;
         var t = { t1: { pts: pick([4, 7, 10]) }, t2: { pts: pick([7, 10]) }, t3: { pts: pick([4, 7, 10]) }, t4: { pts: pick([4, 7, 10]) }, t5: (function () { var bills = ri(30, 60), coll = Math.round(bills * 0.4), rate = Math.round(coll / bills * 100), nps = ri(80, 92), rp = Math.min(Math.round(rate / 40 * 5), 5), sp = Math.min(Math.round(nps / 85 * 5), 5); return { billsCount: bills, npsCollected: coll, responseRate: rate, npsScore: nps, pts: rp + sp }; })(), t6: { reviewsCount: ri(1, 3), pts: pick([7, 10]) }, t7: { activityCount: ri(3, 6), pts: pick([8, 10]) }, t8: { pts: pick([4, 7, 10]) }, t9: (function () { var p = ri(70, 95); return { groomingPct: p, pts: Math.round(p / 10) }; })(), t10: { pts: pick([7, 10]) } };
-        var tot = 0; for (var key in t) tot += t[key].pts || 0;
+        t.t6.pts = Math.min(Math.round(t.t6.reviewsCount / 2 * 10), 10); t.t7.pts = Math.min(Math.round(t.t7.activityCount / 5 * 10), 10); var tot = 0; for (var key in t) tot += t[key].pts || 0;
         var grade = tot >= 90 ? 'Outstanding' : tot >= 75 ? 'Good' : tot >= 60 ? 'Satisfactory' : tot >= 45 ? 'Below Exp.' : 'Poor';
         audits.unshift({ id: 'a' + (1748000000000 + audits.length), date: ds, store: e.firm === FIRM_H ? 'Helios, Latur' : 'Titan World, Latur', cro: e.name, sm: SM_NAME, total: tot, grade: grade, tasks: t, submittedAt: ds + 'T20:00:00.000Z' });
       });
@@ -732,7 +732,7 @@
         var esicEE = row.esicApplicable && grossPayable <= 21000 ? 0.0075 * (grossPayable - washing) : 0;
         var esicER = row.esicApplicable && grossPayable <= 21000 ? 0.0325 * (grossPayable - washing) : 0;
         var finalPay = grossPayable - pt - pfEE - esicEE;
-        var calc = { totalSalaryDays: salaryDays, grossPayable: r2(grossPayable), otAmount: 0, pt: pt, pfEE: r2(pfEE), pfEmpr: r2(pfER), esicEE: r2(esicEE), esicEmpr: r2(esicER), advance: 0, finalPay: r2(finalPay) };
+        var hra = row.salaryType === 'S' ? basic * 0.8 : 0, specAllow = row.salaryType === 'S' ? grossPayable - basic - hra - washing : 0, pfWages = row.pfApplicable ? Math.min(basic, 15000) : 0, absentDays = periodDays - salaryDays; var calc = { totalDays: periodDays, lateDeduction: 0, absentDeduction: absentDays, halfDayDeduction: 0, noThumbDeduction: 0, totalDeduction: absentDays, extraDays: 0, finalPresent: salaryDays, totalSalaryDays: salaryDays, otDays: 0, grossPayable: r2(grossPayable), basic: r2(basic), hra: r2(hra), washing: r2(washing), specAllow: r2(specAllow), pt: pt, pfWages: r2(pfWages), pfEE: r2(pfEE), esicEE: r2(esicEE), pfEmpr: r2(pfER), esicEmpr: r2(esicER), netPayable: r2(finalPay), otAmount: 0, totalCTC: r2(grossPayable + pfER + esicER), advance: 0, finalPay: r2(finalPay) };
         snapshot[String(row.empId || row.name || '').trim().toLowerCase()] = calc;
         statTotals.emp++; statTotals.pt += pt; statTotals.pfEE += pfEE; statTotals.pfER += pfER; statTotals.esEE += esicEE; statTotals.esER += esicER; statTotals.net += finalPay;
       });
@@ -784,7 +784,7 @@
 
     /* ════════ misc + mark seeded ════════ */
     var demoProfile = { id: DAYS >= 700 ? 'two-year-review-v1' : 'large-review-v1', syntheticOnly: true, daysBack: DAYS, calendarDays: DSTR.length, walkInsPerWorkingDay: WALK, startDate: DSTR[0], endDate: TODAY, stores: ['WLMHW', 'HEMW'], qmsLive: qLive.length, qmsArchived: archived, serviceCases: SVC_TOTAL, payrollLockedMonths: Object.keys(payRuns).length };
-    await writeBulk(function () { set('gm_role', 'owner'); set('saagar_owner_name', 'Sagar'); set('saagar_demo_profile_v1', demoProfile); set('saagar_demo_seeded', 'v4_' + DAYS + 'd_' + WALK + 'w'); });
+    await writeBulk(function () { set('gm_role', 'cashier'); set('saagar_owner_name', 'Sagar'); set('saagar_demo_profile_v1', demoProfile); set('saagar_demo_seeded', 'v4_' + DAYS + 'd_' + WALK + 'w'); });
     try { console.log('[demo-seed] BIG ' + DSTR.length + ' days · ' + qLive.length + ' live + ' + archived + ' archived QMS · ' + SVC_TOTAL + ' service · ' + payRows.length + ' payroll'); } catch (e) {}
     prog(100, 'done'); await yieldUI();
     try { if (ov && ov.parentNode) { ov.style.transition = 'opacity .3s'; ov.style.opacity = '0'; setTimeout(function () { try { ov.parentNode.removeChild(ov); } catch (e) {} }, 320); } } catch (e) {}

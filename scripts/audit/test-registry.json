@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "discovery": "Every tracked tests/*.test.mjs file must occur literally in at least one package.json test command or in approvedExclusions.",
+  "approvedExclusions": {
+    "tests/api23-compatibility-build.test.mjs": {
+      "command": "node --test tests/api23-compatibility-build.test.mjs",
+      "environment": "generated API-23 assets",
+      "reason": "Runs after prepare:api23 because it validates generated output."
+    },
+    "tests/whole-app-audit-runner.test.mjs": {
+      "command": "node --test tests/whole-app-audit-runner.test.mjs",
+      "environment": "audit-tooling self-test",
+      "reason": "Validates the audit runner itself and is frozen with tooling, outside the product regression command."
+    }
+  }
+}

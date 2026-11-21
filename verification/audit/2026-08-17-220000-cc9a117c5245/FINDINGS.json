@@ -1,0 +1,53 @@
+{
+  "auditToolingSha": "667ab0d2bc83f8f6347976548f30f5a1ccf6b12a",
+  "comparison": {
+    "failed": [
+      "C-08"
+    ],
+    "mandatoryUnmeasured": [],
+    "status": "comparison-failed-or-unmeasured"
+  },
+  "findings": [
+    {
+      "auditId": "A10",
+      "evidence": [
+        {
+          "code": "SHELL_PARSE_REGRESSION",
+          "p95Ms": 1151.1,
+          "path": "www/index.html",
+          "samples": 30
+        }
+      ],
+      "id": "A10-01",
+      "mandatory": false,
+      "metric": {
+        "baselineShellBytes": 711857,
+        "baselineShellParseMs": 1070.2,
+        "byteDeltaPercent": -19.079,
+        "captureIdentitySha256": "adf7b89381ac55908f92073e557fe1231009f580ea16796e402bc854d3dfbc79",
+        "mode": "comparison",
+        "parseDeltaPercent": 7.559,
+        "shellBytes": 576043,
+        "shellLines": 7904,
+        "shellParseMs": 1151.1,
+        "shellTimingSamples": 30,
+        "thresholds": {
+          "shellBytesMustDecrease": true,
+          "shellParseMaxIncreasePercent": 5
+        },
+        "timingEvidenceSha256": "db2da8172d2a68241a6f3b2fe35992b751d53fa38bc9d1dc988b267f4aec9814",
+        "timingIdentityStatus": "BROWSER_TIMING_COMMITTED_ATTESTATION_VERIFIED",
+        "timingRecordPath": "verification/audit/attested/browser-timing/phase4c1-a10-current-ad2d643-run2-667ab0d-20260817.json"
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Record shell bytes and identity-bound parse samples; comparison bytes must decrease and parse p95 may not increase by more than five percent.",
+      "severity": "P2",
+      "title": "Shell size and parse performance"
+    }
+  ],
+  "format": "SAAGAR_WHOLE_APP_AUDIT_FINDINGS",
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "schemaVersion": 1,
+  "targetSha": "cc9a117c5245f352922da5c9f699daa16226bbf3"
+}

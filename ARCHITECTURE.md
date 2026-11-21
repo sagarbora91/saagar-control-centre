@@ -1,9 +1,9 @@
 # Saagar Traders — Business Control Centre — Architecture
 
-This document describes how the offline Android app is actually built, as of `main`. It
+This document describes how the offline Android app is actually built at the Phase 6I
+source freeze. It
 complements `README.md` (which covers building/installing the APK). It documents reality;
-it does not propose changes. Storage **code** work is deferred — this only describes the
-current behaviour.
+it does not propose changes.
 
 The whole app is a single offline WebView page, `www/index.html` ("the shell"), wrapped by
 Capacitor. There is no server, no network, no bundler — every script is a plain `<script
@@ -11,15 +11,13 @@ src>` loaded from `www/`.
 
 ---
 
-## 1. The shell + base64-embedded modules
+## 1. The shell + twelve external iframe modules
 
-The app is **one shell that hosts 10 independent business modules**. Each module is a
-complete, standalone HTML application that was authored separately; the build pipeline
-base64-encodes each module's HTML and injects it into a `MODULES` array in `index.html`
-(each entry: `{ id, title, short, category, icon, priority, file, subtitle, summary,
-bytes, sha256, html_b64 }`).
+The app is **one shell that hosts 12 independent business modules**. `www/module-manifest.js`
+is the synchronous, immutable authority for each module's external local route and exact
+byte/SHA-256 identity. No module HTML is base64-embedded in the shell.
 
-The 10 modules (`id` → `title`):
+The 12 modules (`id` → `title`):
 
 | `id`       | `title`                            |
 |------------|------------------------------------|
@@ -33,8 +31,10 @@ The 10 modules (`id` → `title`):
 | `payroll`  | Saagar Traders — Payroll           |
 | `leave`    | Staff Leave Calendar               |
 | `tax`      | Tax Compliance Calendar            |
+| `planning` | Business Planning                   |
+| `etp`      | Retail ETP Verification             |
 
-### One srcdoc iframe
+### One same-origin route iframe
 
 There is exactly **one** module host element in the shell:
 
@@ -42,43 +42,23 @@ There is exactly **one** module host element in the shell:
 <iframe id="moduleFrame" class="module-frame" title="Business module"></iframe>
 ```
 
-Opening a module (`openModule(id)` in `index.html`) decodes that module's `html_b64`, runs
-it through an **injection pipeline**, and assigns the result to the iframe's **`srcdoc`**.
-The iframe is **same-origin and not sandboxed**, so injected scripts run with a real
-`parent` reference and full access to the shared `localStorage` origin. Closing a module
-sets `srcdoc = ''`.
+`SaagarShellModuleFrameController.open()` resolves the manifest entry and assigns its
+same-origin local `mod.src` route to `moduleFrame.src`. Each external module declares its
+own shared CSS and classic-script dependencies, including the storage, mobile, safety,
+access and MAH-4 lifecycle runtimes. Closing removes `src` and clears the fallback `srcdoc`.
+The only normal use of `srcdoc` is the escaped fail-safe error page when a route cannot be
+opened.
 
-`buildModuleSrc(mod)` memoises the fully-injected HTML per module id (`__moduleSrcCache`),
-so the first open pays the decode+inject cost and every later open/switch/reload is a cache
-hit. The iframe still re-mounts on each open, so each module boots fresh against current
-data.
-
-### The injection pipeline
-
-`buildModuleSrc` composes several string transforms over the decoded module HTML (each
-named `inject*` in `index.html`). In composition order they add, among other things:
-
-- **`injectBackHome`** — a boot script exposing a "back to home" affordance that posts
-  `ST_BACK_HOME` to the shell.
-- **`injectModuleHideCSS`** — CSS that hides each module's own "add employee / brand /
-  vendor" entry points, because those masters are now created centrally (Settings) and
-  flow in via the integration bridge.
-- **`injectEmployeeAssist`**, **`injectModuleAuditBridge`** — module audit/event wiring
-  (the audit bridge posts `ST_AUDIT` to the shell).
-- **`injectUniformCSS`**, **`injectMobileMode`** — shared styling plus a `st-v5-mobile-boot`
-  script that toggles a `bcc-mobile` class and **hosts the date/UI-mode receiver** (see
-  the postMessage rail below).
-- **`injectSafetyNet`**, **`injectIframeShim`** — storage/error safety wiring for the
-  in-iframe context.
-
-Net effect: the module's own code is unchanged, but each frame boots with shared chrome,
-the shell↔module message rail, and the storage shim already in place.
+The ETP module is deliberately hybrid: its presentation runs in the twelfth iframe, while
+privileged import, sealed-fact persistence, verified reads, analytics and operational
+projections are exposed through the bounded parent-owned `SaagarEtpModuleGateway`. The
+iframe never receives the native plugin or unrestricted fact-store authority.
 
 ---
 
 ## 2. The postMessage rail (shell ↔ module iframe)
 
-Because the module runs inside the `srcdoc` iframe, shell and module talk over
+Because each module runs inside the external iframe, shell and module talk over
 `window.postMessage`. The shell's listener is `window.addEventListener('message', …)` in
 `index.html`. The rail is small and one-purpose-per-message:
 
@@ -104,8 +84,8 @@ Because the module runs inside the `srcdoc` iframe, shell and module talk over
 - **`ST_WA`** `{ module?, recordId }` → `openWAComposer(...)`. Opens the shell's WhatsApp
   composer for a module record.
 
-These three exist mainly to work around the `srcdoc` **opaque origin**: a framed module can't
-reliably trigger a file download or open the OS share sheet itself, so it asks the shell to do it.
+These messages keep OS-integrated and policy-controlled actions parent-owned: a framed
+module asks the shell to print, share or compose rather than acquiring native authority.
 
 ### Shell → module (posted into `moduleFrame.contentWindow`)
 
@@ -214,6 +194,18 @@ synchronously sets `enabled = true`, only one engine ever owns `Storage.prototyp
 single `bcc.sqlite` file. When the flag is OFF, `SaagarStore` is undefined and this file is
 the active mirror engine.
 
+### ETP sealed facts and parent gateway — LIVE, bounded hybrid
+
+Retail ETP facts are not stored in the operational `bcc.sqlite` key/value database. The
+native ETP plugin owns a separate sealed store and generation lifecycle. The shell creates
+the parent gateway with explicit access checks, exact request shapes, bounded row/page
+limits, opaque cursors and sanitized failures. Only an accepted, reconciled generation can
+produce verified reads. Portable restore deliberately excludes re-derivable ETP facts and
+raises a restore fence until the scope is re-imported. Non-re-derivable declarations,
+targets, dispositions, reconciliation state and incentive/clawback controls remain in the
+operational persistence boundary. E7 service-centre ETP verification is explicitly deferred
+and is not part of this frozen source candidate.
+
 ### `photo-store.js` — WIRED for Expense bills (plus two more photo stores)
 
 Provides a Filesystem-backed photo API (photos as `DATA/saagar-photos/{id}.{ext}` files,
@@ -253,7 +245,7 @@ before storage-core so the engine's async boot (on DOM-ready) can find it. Both 
 
 ## 4. `integration-bridge.js` — the cross-module event bus (previously undocumented)
 
-The 10 modules each persist into their own `localStorage` keys and do **not** call each other
+The twelve modules retain bounded module-specific operational keys and do **not** call each other
 directly. `integration-bridge.js` is the glue: an **append-only event bus** that reconciles
 data across modules. It was previously undocumented; this section is the reference.
 
@@ -374,11 +366,11 @@ new phone, then restored via the shell's Configuration → Data & Backup → Res
    its `Storage.prototype` override (LIVE on `main`), so all `localStorage` access is backed
    by an in-memory `MEM` map + a `bcc.sqlite` file (WAL-journaled, atomic writes, recovery
    chain). `sqlite-store.js` and `photo-store.js` stand down / stay dormant.
-3. The shell renders home; opening a module decodes its base64 HTML, runs the injection
-   pipeline, and mounts it in the single `#moduleFrame` `srcdoc` iframe.
+3. The shell renders home; opening a module resolves its frozen manifest route and mounts
+   that external local HTML in the single `#moduleFrame` iframe.
 4. Shell and module communicate over the `postMessage` rail (`ST_BACK_HOME`, `ST_OPEN_MODULE`,
    `ST_AUDIT` upward; `ST_SET_DATE`/`window.__stAsOf`/`st-date` and `ST_UI_MODE` downward).
-5. `integration-bridge.js` continuously reconciles the 10 modules through the append-only
+5. `integration-bridge.js` continuously reconciles operational modules through the append-only
    `saagar_bus` event log (60 s tick + on storage event + on iframe load).
 6. `auto-backup.js` writes a dated JSON snapshot to Documents daily as the recover-after-wipe
    safety net.

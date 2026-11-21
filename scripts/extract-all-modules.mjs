@@ -53,17 +53,14 @@ function build(context, module) {
 const index = fs.readFileSync(indexPath, 'utf8');
 const bundle = readModuleManifestSource(repoDir);
 const modules = bundle.data.modules;
-const runtime = injectionRuntime(index);
 const golden = JSON.parse(fs.readFileSync(goldenPath, 'utf8'));
 const outputs = [];
 const updatedModules = modules.map(module => {
   const outputPath = path.join(repoDir, 'www', 'modules', module.id, 'index.html');
   let html;
-  if (module.html_b64) html = normalizeOffline(build(runtime.context, module));
-  else {
-    if (!module.src || !fs.existsSync(outputPath)) throw new Error(`external module missing: ${module.id}`);
-    html = normalizeOffline(fs.readFileSync(outputPath, 'utf8'));
-  }
+  if (module.html_b64) throw new Error(`embedded module payload is no longer supported: ${module.id}`);
+  if (!module.src || !fs.existsSync(outputPath)) throw new Error(`external module missing: ${module.id}`);
+  html = normalizeOffline(fs.readFileSync(outputPath, 'utf8'));
   const bytes = Buffer.from(html, 'utf8');
   const hash = sha256(bytes);
   outputs.push({ id:module.id, path:`modules/${module.id}/index.html`, bytes:bytes.length, sha256:hash });
@@ -75,7 +72,8 @@ const updatedModules = modules.map(module => {
 
 const updatedManifest = { ...bundle.data, modules: updatedModules };
 manifestApi.validate(updatedManifest);
-golden._profile = { ...(golden._profile||{}), uiMode:'mobile', offlineAssetsOnly:true, allModulesExternal:true, injectionSourceSha256:sha256(runtime.source) };
+golden._profile = { ...(golden._profile||{}), uiMode:'mobile', offlineAssetsOnly:true, allModulesExternal:true };
+delete golden._profile.injectionSourceSha256;
 if (write) {
   fs.writeFileSync(goldenPath, `${JSON.stringify(golden, null, 2)}\n`, 'utf8');
   fs.writeFileSync(bundle.filePath, renderModuleManifestSource(bundle, updatedManifest), 'utf8');

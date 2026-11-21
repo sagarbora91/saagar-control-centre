@@ -1,0 +1,433 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { run as auditA3 } from './audit/audits/a3.mjs';
+import { buildContext, compareText, sha256 } from './audit/lib.mjs';
+import {
+  LEGACY_ASSET,
+  LEGACY_MODULE_ALLOWLIST,
+  restoreMigratedLegacySource
+} from './prepare-phase6c-mobile-legacy-css.mjs';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const BASELINE_PATH = 'verification/audit/2026-08-11-113428-b9f04b5/A3-capabilities.json';
+export const LEDGER_PATH = 'verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json';
+
+/* Owner-approved 2026-08-22; see verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json */
+const APPROVED_ETP_DELTA_IDS = Object.freeze(new Set([
+  "etp:action:etpimportform:1953c5a58d",
+  "etp:action:etpvalidate:b07d709f31",
+  "etp:action:etpconfirm:4d548862d9",
+  "etp:action:etpcoverageconfirmed:696a80d1fc",
+  "etp:action:etphistoryrefresh:04874c0f68",
+  "etp:action:tab-import:072653f2e1",
+  "etp:action:tab-coverage:3ecf856d2c",
+  "etp:action:tab-reconciliation:2b8b192693",
+  "etp:action:tab-verified:0711690845",
+  "etp:action:refresh-verified-views:df04d92f87",
+  "etp:action:refresh-exceptions:47fdf2b89f",
+  "etp:action:loading-published-scopes:10e05bdcbf",
+  "etp:action:loading-published-scopes:f833acd821",
+  "etp:route:entry",
+]));
+
+/* ETP report-engine bridge, tablet side (Wave 6): the five compare-only controls of the
+   "Engine pack" tab. Owner decision given in chat, 2026-11-12; see
+   verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json */
+const APPROVED_BRIDGE_DELTA_IDS = Object.freeze(new Set([
+  'etp:action:etpbridgecheck:3935d6d5a2',
+  'etp:action:etpbridgecomparebtn:866f00d73b',
+  'etp:action:etpbridgediscard:0dda52c502',
+  'etp:action:etpbridgeform:226df48c80',
+  'etp:action:tab-bridge:319abff657'
+]));
+
+/* Fix wave 2026-11-12: the persisted keys the plan declares in G5 (items 2 and 3). Each id is
+   sha256(<key text>).slice(0, 20) of the A3 key identity: payroll 'key' and 'ST_LAST_RESET_KEY' (the Reset All
+   recovery copy), stock 'saagar_stk_clearlog_v1' and 'saagar_brands_hidden'. Owner decision given in chat,
+   2026-11-12 (OD-3); see verification/audit/approvals/FIX-WAVE-2026-11-12-IDENTITY-AND-CAPABILITY-RECORD.json. */
+const APPROVED_FIXWAVE_STORAGE_KEY_IDS = Object.freeze(new Set([
+  'payroll:persist:2c70e12b7a0646f92279',
+  'payroll:persist:dd25a3198b0013d1d7c3',
+  'stock:persist:33b94f3f822ff4adb51a',
+  'stock:persist:449d73e56af4d2b66503'
+]));
+
+/* Fix wave 2026-11-12: the one retired persisted write. Service key 'saagar_invoice_seq_v1' is replaced by
+   saagar_wsf_settings_v1.invoiceSeq (plan section 2.1, interface C). Exact id only; any other removal still throws. */
+const FIXWAVE_RETIRED_INVOICE_COUNTER_ID = 'service:persist:556fd13bc825db2d2664';
+
+/* Service wave 1 (Phase 1, Stores): the seven new first-party script surfaces script-service-stores-*. Seven
+   failure-posture rows (one per file) and one persisted-outcome row (the store adapter, the ONLY storage write of the
+   wave). No permission row and no visible action is added. These rows exist only while the seven files are tracked by
+   git; while they are untracked the analyser cannot see them (see the integration overlay). Exact ids only: any other
+   id on these surfaces, or any other added persisted key, still throws. Owner decisions given in chat, 2026-11-12
+   (design answers) and 2026-11-13 (go-ahead to build); owner reconfirmation pending. */
+const APPROVED_SERVICE_W1_DELTA_IDS = Object.freeze(new Set([
+  'script-service-stores-core:failure:posture',
+  'script-service-stores-docs:failure:posture',
+  'script-service-stores-fifo:failure:posture',
+  'script-service-stores-masters-ui:failure:posture',
+  'script-service-stores-masters:failure:posture',
+  'script-service-stores-store:failure:posture',
+  'script-service-stores-ui:failure:posture',
+  'script-service-stores-store:persist:8254c329a92850f6d539'
+]));
+
+/* Service wave 2 (Phase 2, Billing): the seven new first-party script surfaces script-service-billing-*. One
+   failure-posture row per file, no persisted-outcome row, no permission row and no visible action. These rows exist only
+   while the seven files are tracked by git; while they are untracked the analyser cannot see them (see the integration
+   overlay). Exact ids only: any other id on these surfaces still throws. Owner decision given in chat, 2026-11-18;
+   owner reconfirmation pending. */
+const APPROVED_SERVICE_W2_DELTA_IDS = Object.freeze(new Set([
+  'script-service-billing-area-ui:failure:posture',
+  'script-service-billing-calc:failure:posture',
+  'script-service-billing-core:failure:posture',
+  'script-service-billing-docs:failure:posture',
+  'script-service-billing-migrate:failure:posture',
+  'script-service-billing-money:failure:posture',
+  'script-service-billing-ui:failure:posture'
+]));
+
+const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
+  'dsr:action:st-v5-home-fab:c05eb3ddb3',
+  'qms:action:st-v5-home-fab:c05eb3ddb3',
+  'tax:action:st-v5-home-fab:c05eb3ddb3'
+].sort(compareText));
+
+const PHASE6B_IDENTITY_SURFACES = Object.freeze(new Set([
+  'cro_audit', 'dsr', 'etp', 'expense', 'grooming', 'leave', 'payroll', 'planning',
+  'qms', 'service', 'shell', 'stock', 'tax'
+]));
+
+function stableValue(value) {
+  if (Array.isArray(value)) return value.map(stableValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.keys(value).sort(compareText)
+    .filter(key => value[key] !== undefined)
+    .map(key => [key, stableValue(value[key])]));
+}
+
+function stableSha256(value) {
+  return sha256(JSON.stringify(stableValue(value)));
+}
+
+function check(audit, id) {
+  const result = audit.checks.find(item => item.id === id);
+  assert.ok(result, `${id} is missing`);
+  return result;
+}
+
+function comparisonValue(capability) {
+  return stableValue({ category: capability.category, surface: capability.surface, outcome: capability.outcome });
+}
+
+function withoutHandlerBodyHashes(value) {
+  if (Array.isArray(value)) return value.map(withoutHandlerBodyHashes);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => key !== 'bodySha256')
+    .map(([key, item]) => [key, withoutHandlerBodyHashes(item)]));
+}
+
+function actionBindingSummary(capability) {
+  const bindings = capability?.outcome?.bindings || [];
+  return {
+    bindings: bindings.length,
+    expressionSha256: [...new Set(bindings.map(item => item.expressionSha256).filter(Boolean))].sort(compareText),
+    handlerNames: [...new Set(bindings.flatMap(item => item.referencedHandlers || []).map(item => item.name))].sort(compareText),
+    referencedHandlerBodies: bindings.flatMap(item => item.referencedHandlers || []).length
+  };
+}
+
+function classification(change, before, after) {
+  const capability = after || before;
+  /* Search v1 entry button: a genuinely new control, not a Phase 6B identity annotation.
+     Owner decision given in chat, 2026-11-12; see
+     verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json */
+  if (change === 'added' && capability.capabilityId === 'shell:action:open-global-search:0c573f26c9') {
+    return {
+      reviewClass: 'shell-global-search-v1-entry-button',
+      reason: 'New top-bar search button for Search v1 (places only); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if (change === 'added' && APPROVED_FIXWAVE_STORAGE_KEY_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'fix-wave-2026-11-new-storage-key',
+      reason: 'New persisted key declared in the fix-wave plan (G5 items 2 and 3); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if (change === 'removed' && capability.capabilityId === FIXWAVE_RETIRED_INVOICE_COUNTER_ID) {
+    return {
+      reviewClass: 'fix-wave-2026-11-retired-storage-key',
+      reason: 'Service no longer writes saagar_invoice_seq_v1: the invoice counter moved into saagar_wsf_settings_v1.invoiceSeq (per financial year), as fix-wave plan interface C requires. Owner reconfirmation pending.'
+    };
+  }
+  if (change === 'added' && APPROVED_SERVICE_W1_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'service-wave-1-2026-11-stores-surface',
+      reason: 'New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.'
+    };
+  }
+  if (change === 'added' && APPROVED_SERVICE_W2_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'service-wave-2-2026-11-billing-surface',
+      reason: 'New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.'
+    };
+  }
+  if (change === 'added' && APPROVED_BRIDGE_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'etp-engine-bridge-compare-v1-capability',
+      reason: 'New compare-only control for the ETP report-engine bridge (tablet side, Wave 6); owner decision given in chat, 2026-11-12.'
+    };
+  }
+  if ((change === 'added' || change === 'removed') && capability.category === 'visible-action' &&
+      PHASE6B_IDENTITY_SURFACES.has(String(capability.surface || '').split(':')[0])) {
+    return {
+      reviewClass: 'phase6b-stable-identity-annotation',
+      reason: 'Phase 6B replaced an analyser-inferred control identity with a stable semantic identity; the module-specific restoration test removes only the annotation and reproduces the frozen pre-annotation bytes.'
+    };
+  }
+  /* Retail ETP became the twelfth modular module. The exact deltas below are
+     owner-approved in verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json
+     (package SHA-256 cf0b9085...). Anything outside these exact ids stays
+     unclassified and fail-closed. */
+  if (change === 'added' && APPROVED_ETP_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'etp-twelfth-module-capability-owner-approved',
+      reason: 'New Retail ETP module capability, owner-approved 2026-08-22 as part of the exact 17-delta set.'
+    };
+  }
+  if (change === 'added' && capability.capabilityId ===
+    'script-etp-module-gateway:permission:reauthentication') {
+    return {
+      reviewClass: 'bounded-etp-reauthentication-authority',
+      reason: 'The fixed gateway now exposes its explicit action-bound reauthentication contract to the frozen analyser; final owner approval remains identity-bound.'
+    };
+  }
+  if (change === 'added' && capability.capabilityId === 'etp:action:st-v5-home-fab:c05eb3ddb3') {
+    return {
+      reviewClass: 'shared-runtime-home-fab-binding',
+      reason: 'Structural back-to-home control restored to the ETP module; identical stable binding hash to the home-FAB already present in every other module.'
+    };
+  }
+  if (capability.capabilityId === 'shell:action:open-retail-etp:60a39c8e5d' && change === 'added') {
+    return {
+      reviewClass: 'etp-shell-route-relocation',
+      reason: 'ETP entry moved from a direct shell button to the Reports-owned module route; owner-approved 2026-08-22.'
+    };
+  }
+  if (capability.capabilityId === 'shell:action:open-etp-import:8cb1d3b022' && change === 'removed') {
+    return {
+      reviewClass: 'etp-shell-route-relocation',
+      reason: 'The legacy direct ETP import button was retired by the same approved relocation.'
+    };
+  }
+  if (change === 'added' && capability.category === 'permission' && capability.surface.startsWith('script-shared-')) {
+    return {
+      reviewClass: 'shared-permission-authority-extraction',
+      reason: 'Existing owner-session or reauthentication authority moved from module-local code to a shared runtime boundary.'
+    };
+  }
+  if (change === 'added' && capability.category === 'permission') {
+    return {
+      reviewClass: 'declared-module-access-context',
+      reason: 'The module now exposes its existing shared-stage access-context participation to the frozen analyser.'
+    };
+  }
+  if (change === 'added' && capability.category === 'failure-posture') {
+    return {
+      reviewClass: 'extracted-first-party-failure-surface',
+      reason: 'A newly extracted first-party JavaScript boundary now has its own measured failure-posture surface.'
+    };
+  }
+  if (change === 'removed' && capability.category === 'permission') {
+    return {
+      reviewClass: 'module-permission-authority-relocation',
+      reason: 'The module-local authority attribution disappeared when the access or reauthentication decision moved behind the shared bridge/runtime.'
+    };
+  }
+  if (change === 'changed' && capability.category === 'visible-action') {
+    const bodyAgnosticBefore = stableValue(withoutHandlerBodyHashes(comparisonValue(before)));
+    const bodyAgnosticAfter = stableValue(withoutHandlerBodyHashes(comparisonValue(after)));
+    if (JSON.stringify(bodyAgnosticBefore) === JSON.stringify(bodyAgnosticAfter)) {
+      return {
+        reviewClass: 'handler-body-hash-only',
+        reason: 'The stable visible-action binding is unchanged; only the referenced handler implementation hash changed during extraction.'
+      };
+    }
+    if (capability.capabilityId.includes(':action:st-v5-home-fab:')) {
+      return {
+        reviewClass: 'retired-duplicate-injection-binding',
+        reason: 'Retiring duplicated module injection removed repeated home-FAB bindings while preserving the stable action ID and destination expression.'
+      };
+    }
+    return {
+      reviewClass: 'reduced-ambiguous-go-handler-set',
+      reason: 'Shared delivery removed duplicate ambiguous go() handler bodies while preserving the stable Expense navigation action ID and expression.'
+    };
+  }
+  if (change === 'changed' && capability.category === 'failure-posture') {
+    if (capability.capabilityId === 'script-etp-import-ui:failure:posture' &&
+      before?.outcome?.explicitFallbackSites === 0 && after?.outcome?.explicitFallbackSites === 1 &&
+      before?.outcome?.catchBlocks === after?.outcome?.catchBlocks &&
+      before?.outcome?.swallowedCatchBlocks === after?.outcome?.swallowedCatchBlocks &&
+      before?.outcome?.throwSites === after?.outcome?.throwSites &&
+      before?.outcome?.userVisibleErrorSites === after?.outcome?.userVisibleErrorSites) {
+      return {
+        reviewClass: 'report-presentation-enrichment-fallback-added',
+        reason: 'R003/R013 exception presentation now reads validated enrichments from the receipt or reconciliation result, adding one explicit data-source fallback without changing catch, throw or user-visible-error sites.'
+      };
+    }
+    return {
+      reviewClass: 'failure-posture-source-boundary-change',
+      reason: 'Catch, throw, visible-error or fallback sites moved as logic was extracted across module and shared-script boundaries.'
+    };
+  }
+  throw new Error(`UNCLASSIFIED_CAPABILITY_DELTA:${capability.capabilityId}:${change}`);
+}
+
+function categoryCounts(inventory) {
+  return Object.fromEntries(['route', 'visible-action', 'permission', 'persisted-outcome', 'failure-posture']
+    .map(category => [category, inventory.filter(item => item.category === category).length]));
+}
+
+export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
+  const baselineAudit = JSON.parse(fs.readFileSync(path.join(workspaceRoot, BASELINE_PATH), 'utf8'));
+  const rawContext = buildContext(workspaceRoot);
+  const authority = fs.readFileSync(path.join(workspaceRoot, 'tests/fixtures/phase6c/module-mobile-legacy.css'), 'utf8');
+  const legacyByFile = new Map(LEGACY_MODULE_ALLOWLIST.map(moduleId =>
+    [`www/modules/${moduleId}/index.html`, moduleId]));
+  const normalize = (file, source) => legacyByFile.has(file)
+    ? restoreMigratedLegacySource(legacyByFile.get(file), source, authority)
+    : source;
+  const currentContext = Object.freeze({
+    ...rawContext,
+    // Phase 6I consolidated the historical responsive authority into the
+    // canonical common sheet. Keep the frozen capability comparison scoped to
+    // the pre-consolidation common bytes so a packaging-only move cannot appear
+    // as five new product capabilities.
+    modules: rawContext.modules.map(module => Object.freeze({
+      ...module,
+      html: normalize(module.file, module.html)
+    })),
+    read: file => normalize(file, file === 'www/shared/module-mobile-common.css'
+      ? rawContext.read(file).split('/* Phase 6I: consolidated responsive migration authority (from Phase 6C) */')[0]
+      : rawContext.read(file))
+  });
+  const currentAudit = await auditA3(currentContext);
+  const baselineCheck = check(baselineAudit, 'A3-02');
+  const currentCheck = check(currentAudit, 'A3-02');
+  const baseline = baselineCheck.metric.inventory;
+  const current = currentCheck.metric.inventory;
+  const before = new Map(baseline.map(item => [item.capabilityId, item]));
+  const after = new Map(current.map(item => [item.capabilityId, item]));
+  const ids = [...new Set([...before.keys(), ...after.keys()])].sort(compareText);
+  const deltas = [];
+
+  for (const capabilityId of ids) {
+    const left = before.get(capabilityId);
+    const right = after.get(capabilityId);
+    let change = '';
+    if (!left) change = 'added';
+    else if (!right) change = 'removed';
+    else if (JSON.stringify(comparisonValue(left)) !== JSON.stringify(comparisonValue(right))) change = 'changed';
+    if (!change) continue;
+    const review = classification(change, left, right);
+    deltas.push(stableValue({
+      capabilityId,
+      change,
+      category: (right || left).category,
+      reviewClass: review.reviewClass,
+      reason: review.reason,
+      ownerApproval: 'pending',
+      baseline: left ? comparisonValue(left) : null,
+      current: right ? comparisonValue(right) : null,
+      baselineOutcomeSha256: left ? stableSha256(comparisonValue(left)) : null,
+      currentOutcomeSha256: right ? stableSha256(comparisonValue(right)) : null,
+      bindingReview: (right || left).category === 'visible-action' ? {
+        baseline: actionBindingSummary(left), current: actionBindingSummary(right)
+      } : undefined
+    }));
+  }
+
+  const count = change => deltas.filter(item => item.change === change).length;
+  const classCount = reviewClass => deltas.filter(item => item.reviewClass === reviewClass).length;
+  const structuralIds = deltas.filter(item => item.change === 'changed' && item.category === 'visible-action' &&
+    item.reviewClass !== 'handler-body-hash-only').map(item => item.capabilityId).sort(compareText);
+
+  assert.equal(baseline.length, 655);
+  assert.equal(current.length, 767);
+  assert.deepEqual(categoryCounts(baseline), { route: 12, 'visible-action': 469, permission: 22, 'persisted-outcome': 86, 'failure-posture': 66 });
+  assert.deepEqual(categoryCounts(current), { route: 13, 'visible-action': 496, permission: 32, 'persisted-outcome': 90, 'failure-posture': 136 });
+  assert.equal(count('added'), 464);
+  assert.equal(count('removed'), 352);
+  assert.equal(count('changed'), 60);
+  assert.equal(classCount('handler-body-hash-only'), 35);
+  assert.equal(classCount('failure-posture-source-boundary-change'), 21);
+  assert.equal(classCount('report-presentation-enrichment-fallback-added'), 1);
+  assert.equal(classCount('shell-global-search-v1-entry-button'), 1);
+  assert.equal(classCount('etp-engine-bridge-compare-v1-capability'), 5);
+  assert.equal(classCount('fix-wave-2026-11-new-storage-key'), 4);
+  assert.equal(classCount('fix-wave-2026-11-retired-storage-key'), 1);
+  /* 0 while the seven service-stores-*.js files are untracked (the analyser reads tracked files only); 8 once they are
+     committed, together with the tracked-state totals in the Service wave 1 ledger overlay. */
+  assert.equal(classCount('service-wave-1-2026-11-stores-surface'), 8);
+  /* 0 while the seven service-billing-*.js files are untracked (the analyser reads tracked files only); 7 once they are
+     committed, together with the tracked-state totals in the Service wave 2 ledger overlay. */
+  assert.equal(classCount('service-wave-2-2026-11-billing-surface'), 7);
+  assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
+  assert.equal(currentCheck.metric.conflictingIds, 0);
+
+  const comparisonDeltas = deltas.map(({ capabilityId, change }) => ({ capabilityId, change }));
+  return stableValue({
+    format: 'SAAGAR_MODULAR_CAPABILITY_DELTA_REVIEW',
+    schemaVersion: 1,
+    approvalStatus: 'pending-owner-approval',
+    frozenAnalyserRestoration: {
+      status: 'complete',
+      reason: 'Removed the candidate-only access-context suppression so current A3 uses the Gate 0 analyser semantics.'
+    },
+    baseline: {
+      auditArtifact: BASELINE_PATH,
+      capabilities: baseline.length,
+      conflicts: baselineCheck.metric.conflictingIds,
+      categories: categoryCounts(baseline),
+      inventorySha256: baselineCheck.metric.inventorySha256
+    },
+    current: {
+      capabilities: current.length,
+      conflicts: currentCheck.metric.conflictingIds,
+      categories: categoryCounts(current),
+      inventorySha256: currentCheck.metric.inventorySha256
+    },
+    summary: {
+      added: count('added'),
+      removed: count('removed'),
+      changed: count('changed'),
+      netCapabilities: current.length - baseline.length,
+      capabilityApprovalsRequired: deltas.length,
+      changedVisibleActions: deltas.filter(item => item.change === 'changed' && item.category === 'visible-action').length,
+      handlerBodyHashOnly: classCount('handler-body-hash-only'),
+      bindingStructureChanged: structuralIds.length,
+      changedFailurePostures: deltas.filter(item => item.change === 'changed' && item.category === 'failure-posture').length,
+      reportPresentationFallbacks: classCount('report-presentation-enrichment-fallback-added'),
+      comparisonDeltaSha256: stableSha256(comparisonDeltas)
+    },
+    deltas
+  });
+}
+
+async function main() {
+  const ledger = await buildCapabilityDeltaLedger();
+  const serialized = `${JSON.stringify(ledger, null, 2)}\n`;
+  if (process.argv.includes('--write')) {
+    fs.writeFileSync(path.join(root, LEDGER_PATH), serialized);
+    process.stdout.write(`${LEDGER_PATH}\n`);
+  } else process.stdout.write(serialized);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  await main();
+}

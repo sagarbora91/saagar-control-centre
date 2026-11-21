@@ -17,6 +17,7 @@
      • DSR → Stock roll-up (feed) ....... DSR_SUBMITTED
      • DSR/Leave → Payroll (feed) ....... DSR_SUBMITTED + LEAVE_APPROVED
      • WSC delivery → Expense income .... SERVICE_DELIVERED (central ledger)
+     * Service receipts / refunds ..... Service money stream -> Expense (state based, ref wscr_<no>)
      • Organisation publish ............. seeds Payroll firm + Tax firms
    Honest boundary: best-effort offline reconciliation; true transactional
    enforcement is the server rebuild. Every write is idempotent, labelled,
@@ -40,6 +41,15 @@
   var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
   var CFG='saagar_bridge_config';
+  /* Service money (Phase 2): receipts and refunds of the Service module become Expense rows. State based, no event, no message.
+     READ ONLY on the Service side: this file never writes a Service key. */
+  var SVCM_PREFIX='saagar_svcs_';
+  var SVCM_RE=new RegExp('^'+SVCM_PREFIX+'receipts_v1_FY(\\d{4})-(\\d{2})(_p([2-9]|[1-9]\\d{1,2}))?$');
+  var SVCM_NO_RE=/^(SAR|SRC|SRF)\/\d{2}-\d{2}\/\d{4,9}$/, SVCM_MAX=100000000;   /* paise: Rs 10,00,000, the same ceiling as the Service page */
+  var _svcmCache=Object.create(null);
+  var _svcm={ok:true,recs:[],jobs:Object.create(null),hold:Object.create(null),reversed:Object.create(null),bad:0};
+  var _svcmStat={receipts:0,posted:0,held:0,failed:0,revHeld:0,drift:0,twice:0,reused:0,bad:0};
+  var _svcmLedBad=false;   /* the cash book (Expense ledger) could not be read this cycle: nothing was written to it */
   var MK_BRANDS='saagar_master_brands', MK_VENDORS='saagar_master_vendors', MK_CUSTOMERS='saagar_master_customers';
   var CUST_MASTER='saagar_customer_master_v1';   // Wave 3: derived mobile-keyed identity index (Customer 360 / Udhaar foundation)
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
@@ -67,6 +77,19 @@
   function nm(n){return String(n||'').trim();}
   function kk(n){return nm(n).toLowerCase();}
   function blog(m){try{var a=L(LOGK,[]);a.unshift({at:new Date().toISOString(),m:m});if(a.length>250)a=a.slice(0,250);S(LOGK,a);}catch(e){}}
+
+  /* S03b helpers */
+  var SVC_SET='saagar_wsf_settings_v1', _heldVoids=0;
+  function moduleOpen(id){ try{ return typeof activeModuleId!=='undefined' && activeModuleId===id; }catch(e){ return false; } }
+  /* S03-N02: nothing runs before storage is open. authoritative() when the store has it, else ready(). */
+  function storeOk(){ try{ var s=window.SaagarStore; if(!s) return true; if(typeof s.authoritative==='function') return !!s.authoritative(); if(typeof s.ready==='function') return !!s.ready(); }catch(e){ return false; } return true; }
+  var MON3=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'], MONL=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function payrollYm(pb){   /* 'YYYY-MM' of the Payroll sheet, or '' when unknown (never guess from today) */
+    try{ var mt=pb&&pb.meta; if(!mt) return ''; var y=parseInt(mt.year,10); if(!(y>1999&&y<2200)) return '';
+      var mv=mt.month, ix=(typeof mv==='number'||/^\d{1,2}$/.test(String(mv)))?parseInt(mv,10)-1:MON3.indexOf(String(mv||'').trim().slice(0,3).toLowerCase());
+      if(ix<0||ix>11) return ''; return y+'-'+(ix<9?'0':'')+(ix+1); }catch(e){ return ''; }
+  }
+  function monthShift(base,delta){ var p=String(base).split('-'), y=+p[0], mo=(+p[1])-1+delta; y+=Math.floor(mo/12); mo=((mo%12)+12)%12; return y+'-'+(mo<9?'0':'')+(mo+1); }
 
   /* ── EVENT BUS ─────────────────────────────────────────────────────── */
   function busLoad(){var b=L(BUS,null);return Array.isArray(b)?b:[];}
@@ -178,12 +201,15 @@
     try{ var wl=L(WSC,null);
       if(Array.isArray(wl)) wl.forEach(function(c){
         if(!c||c.status!=='closed'||!c.id||!c.delivery) return;
+        if(!_svcm.ok||svcmHas(c.id)||svcmHold(c.id)) return;   /* Phase 2: a job paid by receipts never posts the old delivery income; unreadable money records: wait, never guess */
         var wrc=String(c.closedAt||'').slice(0,10);
         if(!wrc||wrc<rc) return;
         var wamt=parseFloat(c.delivery.finalAmt); if(!(wamt>0)) return;
         var wfd=String(c.delivery.collectDate||'').slice(0,10);
         if(!/^\d{4}-\d{2}-\d{2}$/.test(wfd)) wfd=wrc;   // file under the collection day; fall back to the close day
-        emitted+=emit(bus,'SERVICE_DELIVERED',String(c.id),{cid:String(c.id),date:wfd,amount:wamt,mode:c.delivery.payMode||'',ref:c.delivery.payRef||'',cust:c.custName||'',brand:c.brand||'',model:c.model||'',advisor:c.advisor||''},'wsc',wrc)?1:0;
+        var wlegacy=null; for(var wk=bus.length-1;wk>=0;wk--){ if(bus[wk].id==='SERVICE_DELIVERED:'+c.id){ wlegacy=bus[wk]; break; } }
+        if(wlegacy && String(c.closedAt||'')<=String(wlegacy.at||'')) return;   // this close was already emitted in the old id format (same case, not a re-used id)
+        emitted+=emit(bus,'SERVICE_DELIVERED',String(c.id)+'@'+String(c.closedAt),{cid:String(c.id),closedAt:String(c.closedAt),date:wfd,amount:wamt,mode:c.delivery.payMode||'',ref:c.delivery.payRef||'',cust:c.custName||'',brand:c.brand||'',model:c.model||'',advisor:c.advisor||''},'wsc',wrc)?1:0;
       });
     }catch(e){}
     // payroll month present → PAYROLL_MONTH
@@ -368,116 +394,87 @@
     });
   }
 
-  function consumeAttendanceFeed(bus){
-    /* W2-1 FIX: bucket each event by ITS OWN month (payload.date), not ym(today()).
-       The old code returned true (consumed) on ANY month mismatch, so a leave approved
-       28-Jun for 3-Jul was marked consumed['payroll'] in June and never reached July's
-       feed; a late DSR/leave straggler dated last month was silently dropped too.
-       Chosen predicate: CONSUME EVERY DATED EVENT EXACTLY ONCE into feed[<its month>].
-       - future-dated leave lands in its target month's bucket immediately (payroll
-         reads it when that month is selected) — consumed once, never retried;
-       - past-month stragglers land in their own month (advisory only if locked);
-       - nothing is ever left unconsumed to churn every cycle or be evicted by the
-         BUS_CAP slice while still pending (which 'return false for future periods'
-         would risk: rd=payload.date is future, so busPrune never ages it out).
-       Idempotency unchanged: deterministic event ids + consumed['payroll'] flag. */
-    var feed=L(ATT,{}); if(typeof feed!=='object'||!feed)feed={};
-    /* One-time repair: pre-fix builds wrongly consumed future-month LEAVE_APPROVED
-       events. Any such event dated in a month AFTER the current month that is already
-       consumed can only have been DROPPED (its month has never been current), so
-       un-consume it for re-processing. Guarded by a persisted flag so it runs once —
-       post-fix future events that WERE bucketed are never un-consumed (double-count safe:
-       flag and buckets live in the same blob/write). */
-    var repaired=false;
-    if(!feed._futureLeaveRepaired){
-      var curM=ym(today());
-      bus.forEach(function(e){
-        if(e.type==='LEAVE_APPROVED'&&e.consumed&&e.consumed.payroll&&e.payload&&e.payload.date&&String(e.payload.date).slice(0,7)>curM){ delete e.consumed.payroll; _busDirty=true; }
-      });
-      feed._futureLeaveRepaired=true; repaired=true;
+  /* Payroll attendance feed: REBUILT whenever the source records change (S03b: U14-03, U09-F04, U09-F03).
+     Sources: leavedesk_v3 (approved or legacy no-status leave) and every submitted saagar_dsr_<date>_<name>.
+     Scope: the last FEED_SCOPE_MONTHS months plus the Payroll sheet month; older months are left as they are.
+     Same record shape as before: feed['YYYY-MM'][kk(name)] = {present,leave,half,dsrDays,scoreSum,scoreN,avgScore,display,_dsrDays}.
+     A cheap fingerprint of the raw source strings means an idle cycle parses and writes nothing. */
+  var FEED_SCOPE_MONTHS=3;
+  function rebuildAttendanceFeed(){
+    var feed=L(ATT,{}); if(typeof feed!=='object'||!feed||Array.isArray(feed)) feed={};
+    var cur=ym(today()), lo=monthShift(cur,-FEED_SCOPE_MONTHS), pm=payrollYm(L(PAYROLL,null));
+    function inScope(mo){ return mo>=lo || mo===pm; }
+    function hash(s){ var h=2166136261; for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul?Math.imul(h,16777619)>>>0:((h*16777619)>>>0); } return h; }
+    var acc=0, cnt=0, lraw=null, srcs=[];
+    try{ lraw=localStorage.getItem(LEAVE); }catch(e){}
+    if(lraw) acc=(acc+hash('L'+lraw))>>>0;
+    for(var i=0;i<localStorage.length;i++){
+      var lk=localStorage.key(i); if(!lk||lk.indexOf(DSR)!==0) continue;
+      var m=lk.match(/^saagar_dsr_(\d{4}-\d{2}-\d{2})_(.+)$/); if(!m) continue;
+      if(!inScope(m[1].slice(0,7))) continue;
+      var raw=localStorage.getItem(lk); if(!raw) continue;
+      acc=(acc+hash(lk+'\u0001'+raw))>>>0; cnt++; srcs.push({m:m,raw:raw});
     }
-    /* bug bridge-02 one-time migration: collapse any existing case-variant name buckets in each month into
-       a single lowercased key (summing counts), so switching the bucket key to kk (below) never splits a
-       person's present/leave days mid-month. Runs exactly once (guarded); avgScore recomputed after. */
-    if(!feed._nameKeyKk){
-      Object.keys(feed).forEach(function(em){
-        if(em.charAt(0)==='_') return; var mo=feed[em]; if(!mo||typeof mo!=='object') return;
-        var merged={};
-        Object.keys(mo).forEach(function(k2){
-          var o2=mo[k2]; if(!o2||typeof o2!=='object') return;
-          var lk=kk(k2), t=merged[lk];
-          if(!t){ t={present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0,display:nm(k2)}; merged[lk]=t; }
-          t.present+=Number(o2.present)||0; t.leave+=Number(o2.leave)||0; t.half+=Number(o2.half)||0;
-          t.dsrDays+=Number(o2.dsrDays)||0; t.scoreSum+=Number(o2.scoreSum)||0; t.scoreN+=Number(o2.scoreN)||0;
-        });
-        Object.keys(merged).forEach(function(lk){ var t=merged[lk]; t.avgScore=t.scoreN?Math.round(t.scoreSum/t.scoreN):null; });
-        feed[em]=merged;
-      });
-      feed._nameKeyKk=true; repaired=true;   // reuse the "changed" flag so the migrated feed is persisted this cycle
+    var fp=lo+'|'+pm+'|'+acc+'|'+cnt;
+    if(feed._fp===fp && feed._rebuilt===2) return;   // idle cycle: nothing changed, nothing parsed, nothing written
+    var fresh={};
+    function slot(mo,name){ var b=fresh[mo]; if(!b){ b={}; fresh[mo]=b; } var key=kk(name), o=b[key];
+      if(!o){ o={present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0,display:nm(name),_dsrDays:{}}; b[key]=o; } return o; }
+    if(lraw){
+      try{ var lv=JSON.parse(lraw), seenL={};
+        if(lv&&lv.leaves&&typeof lv.leaves==='object') Object.keys(lv.leaves).forEach(function(dk){
+          var mo=String(dk).slice(0,7); if(!/^\d{4}-\d{2}$/.test(mo)||!inScope(mo)) return;
+          var arr=lv.leaves[dk]; if(!Array.isArray(arr)) return;
+          arr.forEach(function(l){ if(!l||(l.status&&l.status!=='approved')) return;   /* pending/rejected never count; no status = legacy approved */
+            var n=nm(l.staffName||l.name||l.empId||''); if(!n) return;
+            var id=String(dk).slice(0,10)+'|'+kk(n); if(seenL[id]) return; seenL[id]=1;   /* one leave per person per day, as the event id did */
+            var o=slot(mo,n); if((l.type||'full_day')==='full_day') o.leave++; else o.half++; }); });
+      }catch(e){}
     }
-    var touched={};
-    /* bug bridge-02: bucket by the LOWERCASED name (kk). DSR and LeaveDesk store the same person with
-       independent casing, so keying by the raw name split 'Amit Kumar'/'amit kumar' into two buckets and
-       payroll (which lowercases feed keys on read, last-wins) then under-counted. Carry a display name. */
-    function slot(em,name){
-      var mo=feed[em]; if(!mo||typeof mo!=='object'){mo={};feed[em]=mo;}
-      touched[em]=1;
-      var key=kk(name), o=mo[key]||{present:0,leave:0,half:0,dsrDays:0,scoreSum:0,scoreN:0};
-      if(!o.display) o.display=nm(name);
-      mo[key]=o; return o;
-    }
-    consume(bus,'DSR_SUBMITTED','payroll',function(e){
-      var p=e.payload||{}; if(!p.date) return true;   // undated — consume & drop (unchanged behaviour)
-      var o=slot(String(p.date).slice(0,7),nm(p.name));
-      /* P1-12: a corrected re-submit (new :v<rev> id) posts a SECOND DSR_SUBMITTED for the same day.
-         Guard by a per-(date:name) map so presence is counted ONCE; a re-submit only REPLACES the score. */
-      o._dsrDays=o._dsrDays||{};
-      var dayKey=String(p.date).slice(0,10)+'|'+kk(p.name);
-      var sc=(p.score!=null)?(Number(p.score)||0):null;
-      if(!(dayKey in o._dsrDays)){                        // FIRST submit for this day → count presence once
-        o.present++; o.dsrDays++;
-        if(sc!=null){o.scoreSum+=sc;o.scoreN++;}
-        o._dsrDays[dayKey]=sc;
-      } else {                                            // corrected RE-submit → replace score, do NOT re-count presence
-        var prev=o._dsrDays[dayKey];
-        if(prev!=null){o.scoreSum-=prev;o.scoreN--;}
-        if(sc!=null){o.scoreSum+=sc;o.scoreN++;}
-        o._dsrDays[dayKey]=sc;
-      }
-      return true;
+    srcs.forEach(function(s){
+      var m=s.m, mo2=m[1].slice(0,7), r; try{ r=JSON.parse(s.raw); }catch(e){ return; }
+      if(!(r&&r.submitted)) return;
+      var name=nm(r.staffName||m[2].replace(/_/g,' '));
+      var sc=(r.audit&&r.audit.score)||null; sc=(sc!=null)?(Number(sc)||0):null;
+      var o2=slot(mo2,name), dkey=m[1]+'|'+kk(name);
+      if(dkey in o2._dsrDays){ var pv=o2._dsrDays[dkey]; if(pv!=null){ o2.scoreSum-=pv; o2.scoreN--; } }
+      else { o2.present++; o2.dsrDays++; }
+      if(sc!=null){ o2.scoreSum+=sc; o2.scoreN++; }
+      o2._dsrDays[dkey]=sc;
     });
-    consume(bus,'LEAVE_APPROVED','payroll',function(e){
-      var p=e.payload||{}; if(!p.date) return true;
-      var o=slot(String(p.date).slice(0,7),nm(p.name));
-      if((p.type||'full_day')==='full_day') o.leave++; else o.half++;
-      return true;
-    });
-    Object.keys(touched).forEach(function(em){
-      var mo=feed[em];
-      Object.keys(mo).forEach(function(n){ var o=mo[n]; if(o&&typeof o==='object'){ o.avgScore=o.scoreN?Math.round(o.scoreSum/o.scoreN):null; } });
-    });
-    if(Object.keys(touched).length||repaired){
-      feed._generatedAt=new Date().toISOString();
-      feed._note='DSR present-days + SM avgScore + LeaveDesk leave-days, bucketed by event month. Payroll maker reconciles before lock.';
-      S(ATT,feed);   // write only when something changed — idle cycles no longer rewrite the feed blob
-    }
+    var changed=false;
+    Object.keys(fresh).forEach(function(mo){
+      Object.keys(fresh[mo]).forEach(function(k){ var o=fresh[mo][k]; o.avgScore=o.scoreN?Math.round(o.scoreSum/o.scoreN):null; });
+      if(JSON.stringify(feed[mo])!==JSON.stringify(fresh[mo])){ feed[mo]=fresh[mo]; changed=true; } });
+    Object.keys(feed).forEach(function(mo){ if(/^\d{4}-\d{2}$/.test(mo) && mo>=lo && !fresh[mo]){ delete feed[mo]; changed=true; } });   // every source record of that month is gone
+    feed._rebuilt=2; feed._fp=fp; feed._futureLeaveRepaired=true; feed._nameKeyKk=true;
+    if(changed||!feed._generatedAt) feed._generatedAt=new Date().toISOString();
+    feed._note='DSR present-days + SM avgScore + LeaveDesk leave-days, rebuilt from the source records for the last '+FEED_SCOPE_MONTHS+' months and the Payroll sheet month. Payroll maker reconciles before lock.';
+    S(ATT,feed);
   }
 
   /* ── LINK 1: DSR/QMS/Grooming → CRO Daily Audit (derived-inputs feed) ── */
+  /* U14-06: DSR sales = billed product rows only (amount>0, not a QMS service job), the same predicate as dsrDaySales */
+  function fillDsrSales(s,rr){ var sc=0,sa=0,sv=0; (rr.sales||[]).forEach(function(x){ if(!x) return; if(x.type==='service'){ sv++; return; } var a=Number(x.amount)||0; if(a>0){ sc++; sa+=a; } });
+    s.dsrSalesCount=sc; s.dsrSalesAmt=sa; s.dsrServiceJobs=sv; s.dsrNonPurch=(rr.nonpurch||[]).length; }
   function consumeCroAuditFeed(bus){
     var feed=L(CRO_FEED,{}); if(typeof feed!=='object'||!feed)feed={};
+    var repaired=false;
+    if(!feed._salesV2){ Object.keys(feed).forEach(function(dd){ if(!/^\d{4}-\d{2}-\d{2}$/.test(dd)) return; var day=feed[dd]; if(!day||typeof day!=='object') return;
+        Object.keys(day).forEach(function(kx){ var s=day[kx]; if(!s||!s.dsrSubmitted||!s.cro) return; var rr=L(dsrKey(dd,s.cro),null); if(rr) fillDsrSales(s,rr); }); });
+      feed._salesV2=true; repaired=true; }
     function slot(date,name){ feed[date]=feed[date]||{}; var k=kk(name); feed[date][k]=feed[date][k]||{cro:nm(name),date:date,groomingPct:null,qmsSales:0,qmsSalesAmt:0,qmsNonPurch:0,dsrSubmitted:false,dsrScore:null}; return feed[date][k]; }
     var n=0;
     n+=consume(bus,'GROOMING_RESULT','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;slot(p.date,p.name).groomingPct=Math.round(p.pct||0);return true;});
     n+=consume(bus,'SALE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;var s=slot(p.date,p.cro);s.qmsSales++;s.qmsSalesAmt+=p.amount||0;return true;});
     n+=consume(bus,'NONPURCHASE_CLOSED','croaudit',function(e){var p=e.payload||{};if(!p.cro||!p.date)return true;slot(p.date,p.cro).qmsNonPurch++;return true;});
     n+=consume(bus,'DSR_SUBMITTED','croaudit',function(e){var p=e.payload||{};if(!p.name||!p.date)return true;var s=slot(p.date,p.name);s.dsrSubmitted=true;if(p.score!=null)s.dsrScore=p.score;
-      try{ var rr=L(dsrKey(p.date,p.name),null); if(rr){ var sc=0,sa=0; (rr.sales||[]).forEach(function(x){ sc++; sa+=Number(x.amount)||0; }); s.dsrSalesCount=sc; s.dsrSalesAmt=sa; s.dsrNonPurch=(rr.nonpurch||[]).length; } }catch(_e){}
+      try{ var rr=L(dsrKey(p.date,p.name),null); if(rr) fillDsrSales(s,rr); }catch(_e){}
       return true;});
     // Prune day-slots older than FEED_KEEP_DAYS. Explicit YYYY-MM-DD test so _note/_generatedAt survive.
     var fcut=cutoffIso(FEED_KEEP_DAYS), removed=0;
     Object.keys(feed).forEach(function(k){ if(/^\d{4}-\d{2}-\d{2}$/.test(k) && k<fcut){ delete feed[k]; removed++; } });
-    if(n>0 || removed>0){   // write only when the feed actually changed (idle cycle = no write = no forced persist)
+    if(n>0 || removed>0 || repaired){   // write only when the feed actually changed (idle cycle = no write = no forced persist)
       feed._note='Auto-derived CRO audit inputs (grooming %, QMS sales/non-purchase, DSR submit/score). SM confirms in CRO Daily Audit.';
       feed._generatedAt=new Date().toISOString();
       S(CRO_FEED,feed);
@@ -486,11 +483,12 @@
 
   /* ── LINK 2: QMS service lead → Watch Service Centre stub case ── */
   function consumeQmsServiceToWsc(bus){
+    if(moduleOpen('service')) return;                        // S03b U14-01: Service holds its list in memory and saves it whole; wait until it is closed (events stay unconsumed)
     var cur=L(WSC,null);
     if(cur!=null && !Array.isArray(cur)) return;            // unknown shape — never corrupt
     var arr=Array.isArray(cur)?cur:[];
     var have={}; arr.forEach(function(c){ if(c&&c.sourceRef) have[c.sourceRef]=1; });
-    var added=0;
+    var added=0, done=[];
     consume(bus,'SERVICE_CLOSED','wsc',function(e){
       var p=e.payload||{}; if(!p.cid) return true;
       if(have[p.cid]) return true;
@@ -498,10 +496,61 @@
         custName:p.cust||'',custMobile:p.mobile||'',dateRec:(p.date||today()),
         advisor:p.cro||'',brand:'',model:'',_bridgeStub:true,
         note:'Auto-created from a QMS service lead — open and complete the intake.'});
-      have[p.cid]=1; added++; return true;
+      have[p.cid]=1; added++; done.push(e); return true;
     });
-    if(added){ S(WSC,arr); blog('QMS→WSC stub +'+added); }
+    if(added){ if(S(WSC,arr)) blog('QMS→WSC stub +'+added); else { done.forEach(function(e){ if(e.consumed) delete e.consumed.wsc; }); _busDirty=true; } }   /* a failed write must not mark the events consumed */
   }
+
+  /* -- SERVICE MONEY: read the Service receipts stream (read only) --
+     Shards are append-only JSON arrays. A parsed shard is cached by key+length, so an idle cycle parses nothing.
+     ok=false means "cannot be sure": the caller must not guess (nothing is posted, nothing is emitted for Service).
+     jobs = jobs with a live receipt (SAR/SRC not reversed, in-book ones included). hold = jobs named by a record that
+     could not be read: the old delivery path waits for them (never posts, never consumes). */
+  function svcmNorm(r){
+    if(!r||typeof r!=='object'||!r.b||typeof r.b!=='object') return null;
+    var b=r.b, k=r.k, at=String(r.at||'');
+    if(k==='RRV'){
+      if(typeof b.reverses!=='string'||!SVCM_NO_RE.test(b.reverses)) return null;
+      return {k:'RRV',reverses:b.reverses,reason:String(b.reason||'').slice(0,60),at:at};
+    }
+    if(k!=='SAR'&&k!=='SRC'&&k!=='SRF') return null;
+    var no=b.no, amt=b.amountPaise, dd=b.docDate;
+    if(typeof no!=='string'||!SVCM_NO_RE.test(no)||no.slice(0,3)!==k) return null;
+    if(typeof amt!=='number'||Math.floor(amt)!==amt||amt<1||amt>SVCM_MAX) return null;
+    if(typeof dd!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(dd)) return null;
+    return {k:k,no:no,amt:amt,date:dd,mode:String(b.payMode||''),ref:String(b.payRef||'').slice(0,40),
+      job:String(b.jobId||''),sale:String(b.saleNo||''),inv:String(b.invoiceNo||''),reason:String(b.reason||'').slice(0,60),
+      inBook:b.inBook===true,legacy:b.legacy===true,at:at};
+  }
+  function svcmBadJob(r){ return (r&&typeof r==='object'&&(r.k==='SAR'||r.k==='SRC')&&r.b&&typeof r.b==='object'&&typeof r.b.jobId==='string'&&r.b.jobId)?r.b.jobId:''; }
+  function svcmLoad(){
+    var out={ok:true,recs:[],jobs:Object.create(null),hold:Object.create(null),reversed:Object.create(null),bad:0}, keys=[], i, k;
+    try{ for(i=0;i<localStorage.length;i++){ k=localStorage.key(i); if(k&&SVCM_RE.test(k)) keys.push(k); } }catch(e){ out.ok=false; _svcm=out; return out; }
+    keys.sort(function(a,b){ var x=SVCM_RE.exec(a), y=SVCM_RE.exec(b), fx=x[1]+x[2], fy=y[1]+y[2];
+      if(fx!==fy) return fx<fy?-1:1; return (x[4]?+x[4]:1)-(y[4]?+y[4]:1); });
+    for(i=0;i<keys.length&&out.ok;i++){
+      var raw=null; try{ raw=localStorage.getItem(keys[i]); }catch(e2){ out.ok=false; break; }
+      if(raw===null||raw==='') continue;
+      var c=_svcmCache[keys[i]];
+      if(!c||c.len!==raw.length){
+        var arr; try{ arr=JSON.parse(raw); }catch(e3){ arr=null; }
+        if(!Array.isArray(arr)){ out.ok=false; break; }
+        var norm=[], bad=0, badJobs=[]; arr.forEach(function(r){ var n=svcmNorm(r); if(n) norm.push(n); else { bad++; var bj=svcmBadJob(r); if(bj) badJobs.push(bj); } });
+        c=_svcmCache[keys[i]]={len:raw.length,recs:norm,bad:bad,badJobs:badJobs};
+      }
+      out.bad+=c.bad;
+      c.badJobs.forEach(function(j){ out.hold[j]=true; });
+      c.recs.forEach(function(n){ out.recs.push(n); });
+    }
+    if(out.ok){
+      out.recs.forEach(function(n){ if(n.k==='RRV') out.reversed[n.reverses]=true; });
+      out.recs.forEach(function(n){ if((n.k==='SAR'||n.k==='SRC')&&n.job&&!out.reversed[n.no]) out.jobs[n.job]=true; });
+    }
+    _svcm=out; return out;
+  }
+  function svcmHas(jobId){ return _svcm.jobs[String(jobId)]===true; }
+  function svcmHold(jobId){ return _svcm.hold[String(jobId)]===true; }
+  function svcmMode(m){ m=String(m||'Cash'); if(m==='Cash'||m==='UPI'||m==='Card'||m==='Bank') return m; return /bank/i.test(m)?'Bank':/upi/i.test(m)?'UPI':/card/i.test(m)?'Card':/cash/i.test(m)?'Cash':'Bank'; }
 
   /* ── LINK 6: WSC delivered case → Expense central ledger (service income) ──
      Consumes SERVICE_DELIVERED as exactly ONE gm_expenses income row (the shape Expense's own
@@ -513,15 +562,19 @@
      event unconsumed and retry next cycle (it posts on the next open day). */
   function consumeServiceIncomeToLedger(bus){
     var cur=L(EXP_LEDGER,null);
+    _svcmLedBad=false; if(cur==null){ try{ var __lr=localStorage.getItem(EXP_LEDGER); if(__lr&&JSON.parse(__lr)!==null) throw 0; }catch(eL){ _svcmLedBad=true; return; } }   /* wave 2: unreadable text is never treated as an empty cash book (it would be overwritten); the events wait */
     if(cur!=null && !Array.isArray(cur)) return;            // unknown shape — never corrupt
     var arr=Array.isArray(cur)?cur:[];
-    var have={}; arr.forEach(function(x){ if(x&&x.sourceRef) have[x.sourceRef]=1; });
+    var have={}, ids={}; arr.forEach(function(x){ if(!x) return; if(x.id) ids[x.id]=1; if(x.sourceRef && !x.void) have[x.sourceRef]=1; });   /* a voided row no longer counts as posted */
     var stmts=L(EXP_STMT,null)||{}; if(typeof stmts!=='object') stmts={};
-    var d=today(), added=0;
+    var d=today(), added=0, done=[], tombs=deletedTombMap();
     consume(bus,'SERVICE_DELIVERED','expense',function(e){
       var p=e.payload||{}; if(!p.cid) return true;
       var ref='wsc_'+p.cid;
+      if(!_svcm.ok||svcmHold(p.cid)) return false;          /* Phase 2: money records unreadable: keep the event, retry next cycle */
+      if(svcmHas(p.cid)) return true;                       /* Phase 2: this job is paid by receipts; the old entry must never post */
       if(have[ref]) return true;                            // already in the ledger (bridge OR manual Sync) — mark done
+      var tb=tombs[ref], tca=p.closedAt||e.at; if(tb&&tca&&String(tca)<=String(tb.at||'')) return true;   // that close belongs to a case the Owner deleted before it was posted: never post it (old-format events carry no closedAt: their emit time is used)
       var amt=Number(p.amount)||0; if(!(amt>0)) return true;
       var fd=String(p.date||'').slice(0,10)||d;
       if(stmts[fd]&&stmts[fd].closed) fd=d;
@@ -529,30 +582,162 @@
       var md=p.mode||'Cash';                                // counter default = Cash (same as Sync tab)
       if(md!=='Cash'&&md!=='UPI'&&md!=='Card'&&md!=='Bank') md=(/bank/i.test(md)?'Bank':/upi/i.test(md)?'UPI':/card/i.test(md)?'Card':'Cash');
       var desc='Service delivered '+p.cid+(p.cust?' — '+p.cust:'')+(p.brand?' ('+p.brand+(p.model?' '+p.model:'')+')':'')+((p.date&&fd!==String(p.date).slice(0,10))?' · collected '+String(p.date).slice(0,10):'');
-      arr.push({id:'e_wsc_'+String(p.cid).replace(/[^A-Za-z0-9_-]/g,''),type:'income',date:fd,amount:amt,
+      var base='e_wsc_'+String(p.cid).replace(/[^A-Za-z0-9_-]/g,''), eid=base, en=2; while(ids[eid]){ eid=base+'_'+(en++); } ids[eid]=1;   /* unique even if a voided row of an earlier case with the same id is still there */
+      arr.push({id:eid,type:'income',date:fd,amount:amt,
         category:'Service Income',mode:md,vendor:'',firm:'',description:desc,
         notes:p.ref?('Pay ref: '+p.ref):'',billPhoto:null,source:'wsc',sourceRef:ref,void:false,
         createdAt:new Date().toISOString(),createdBy:'bridge',editLog:[]});
-      have[ref]=1; added++; return true;
+      have[ref]=1; added++; done.push(e); return true;
     });
-    if(added){ S(EXP_LEDGER,arr); blog('WSC delivered → ledger income +'+added); }
+    if(added){ if(S(EXP_LEDGER,arr)) blog('WSC delivered → ledger income +'+added); else { done.forEach(function(e){ if(e.consumed) delete e.consumed.expense; }); _busDirty=true; } }   /* a failed write must not mark the events consumed */
+  }
+
+  /* -- SERVICE MONEY: keep the Expense ledger in step with the Service receipts stream --
+     One income row per receipt (SAR, SRC), one outflow row per refund (SRF), key sourceRef 'wscr_<number>', dated the day
+     it was taken. A row that is void still counts as posted: the ledger row itself is the only dedupe record. No event,
+     no consumed flag: a failed write simply repeats next cycle. A reversal (RRV) voids the row. For every job with a live
+     receipt one void, zero-amount marker row 'wsc_<jobId>' is added (never over an existing wsc_ row) so the Expense Sync
+     tab sees the job as already posted. Rows are never edited except the void of a reversed receipt. */
+  function svcmDescHas(row,r){
+    var d=String(row&&row.description||''), tok=r.sale?(' sale '+r.sale):(r.job?(' job '+r.job):''), at;
+    if(!tok) return true;
+    at=d.indexOf(tok); if(at<0) return false;
+    var nx=d.charAt(at+tok.length); return nx===''||nx===' ';
+  }
+  function reconcileServiceMoney(){
+    var st={receipts:0,posted:0,held:0,failed:0,revHeld:0,drift:0,twice:0,reused:0,bad:_svcm.bad||0}; _svcmStat=st;
+    if(!_svcm.ok||!_svcm.recs.length) return;
+    function ledgerBad(){ _svcm.recs.forEach(function(r){ if(r.k!=='RRV'&&!r.inBook&&!_svcm.reversed[r.no]) st.failed++; }); }   /* ledger unreadable: nothing can be posted; Home says so (never silent) */
+    var raw=null; try{ raw=localStorage.getItem(EXP_LEDGER); }catch(e0){ ledgerBad(); return; }
+    var arr=[]; if(raw){ try{ arr=JSON.parse(raw); }catch(e1){ ledgerBad(); return; } if(!Array.isArray(arr)){ ledgerBad(); return; } }   /* unreadable or unknown shape: never overwrite the ledger */
+    var byRef=Object.create(null), ids=Object.create(null), oldRow=Object.create(null), anyOld=Object.create(null), dupRef=0;
+    arr.forEach(function(x){ if(!x) return; if(x.id) ids[x.id]=1;
+      var sr=x.sourceRef; if(typeof sr!=='string') return;
+      if(sr.indexOf('wscr_')===0){ if(byRef[sr]) dupRef++; else byRef[sr]=x; }
+      else if(sr.indexOf('wsc_')===0){ anyOld[sr]=1; if(!x.void) oldRow[sr]=1; } });
+    var stm=L(EXP_STMT,null)||{}; if(typeof stm!=='object') stm={};
+    var tf=L(EXP_TAXFEED,null)||{}; if(typeof tf!=='object') tf={};
+    var d=today(), added=0, changed=0, marked=0, jobs=null;
+    function dayClosed(dt){ return !!(stm[dt]&&stm[dt].closed); }
+    function monthLocked(dt){ var mo=ym(dt); if(tf[mo]) return true; for(var k in stm){ if(k.slice(0,7)===mo&&stm[k]&&stm[k].monthLocked===true) return true; } return false; }
+    function jobInfo(id){ if(!jobs){ jobs=Object.create(null); var w=L(WSC,null); if(Array.isArray(w)) w.forEach(function(c){ if(c&&c.id) jobs[String(c.id)]=c; }); } return jobs[String(id)]||null; }
+    function freeId(base){ var eid=base, en=2; while(ids[eid]){ eid=base+'_'+(en++); } ids[eid]=1; return eid; }
+    _svcm.recs.forEach(function(r){
+      if(r.k==='RRV') return;
+      if(r.inBook) return;                                   /* Owner said it is already in the cash book: never posted */
+      st.receipts++;
+      if(_svcm.reversed[r.no]) return;                       /* reversed: never post (a posted row is voided below) */
+      var ref='wscr_'+r.no;
+      if(byRef[ref]) return;                                 /* posted already (a void row counts) */
+      var fd=r.date; if(dayClosed(fd)) fd=d;
+      if(dayClosed(fd)){ st.held++; return; }                /* every day is closed: wait, retry next cycle */
+      var out=(r.k==='SRF'), job=r.job?jobInfo(r.job):null, cust=job&&job.custName?String(job.custName):'', watch=job&&job.brand?(String(job.brand)+(job.model?' '+String(job.model):'')):'';
+      var desc=(out?'Service refund ':(r.sale?'Counter sale receipt ':(r.k==='SAR'?'Service advance ':'Service receipt ')))+r.no
+        +(r.legacy?' (earlier advance, confirmed)':'')+(r.sale?' - sale '+r.sale:(r.job?' - job '+r.job:''))+(r.inv?' - invoice '+r.inv:'')
+        +(cust?' - '+cust:'')+(watch?' ('+watch+')':'')+(out&&r.reason?' - '+r.reason.slice(0,40):'')+(fd!==r.date?' - taken '+r.date:'');
+      var eid=freeId('e_wscr_'+r.no.replace(/[^A-Za-z0-9_-]/g,'_'));
+      var row={id:eid,type:out?'expense':'income',date:fd,amount:Math.round(r.amt)/100,
+        category:out?'Miscellaneous':'Service Income',mode:svcmMode(r.mode),vendor:'',firm:'',description:desc,
+        notes:r.ref?('Pay ref: '+r.ref):'',billPhoto:null,source:'wsc',sourceRef:ref,void:false,
+        createdAt:new Date().toISOString(),createdBy:'bridge',editLog:[]};
+      arr.push(row); byRef[ref]=row; added++;
+    });
+    _svcm.recs.forEach(function(r){                          /* reversals: void the row, or hold when its day is closed or its month is tax-locked */
+      if(r.k!=='RRV') return;
+      var row=byRef['wscr_'+r.reverses]; if(!row||row.void) return;
+      var dt=String(row.date||'').slice(0,10);
+      if(dayClosed(dt)||monthLocked(dt)){ st.revHeld++; return; }
+      row.void=true; row.voidReason='Service '+(r.reverses.indexOf('SRF')===0?'refund ':'receipt ')+r.reverses+' was reversed'+(r.reason?' - '+r.reason:'');
+      if(!Array.isArray(row.editLog)) row.editLog=[];
+      row.editLog.push({at:new Date().toISOString(),by:'bridge',old:{void:false},new:{void:true},reason:row.voidReason}); changed++;
+    });
+    /* marker rows: one void, zero-amount row 'wsc_<jobId>' per job with a live receipt, so the Expense Sync tab cannot post the job again.
+       Never over an existing wsc_ row (void or not). Written only on an open day (today); otherwise it waits. */
+    if(!dayClosed(d)) Object.keys(_svcm.jobs).forEach(function(job){
+      var wref='wsc_'+job; if(anyOld[wref]) return;
+      var iso=new Date().toISOString(), mid=freeId('e_wscg_'+String(job).replace(/[^A-Za-z0-9_-]/g,''));
+      arr.push({id:mid,type:'income',date:d,amount:0,category:'Service Income',mode:'Cash',vendor:'',firm:'',
+        description:'Paid by Service receipts (see the wscr_ rows). Not income.',notes:'',billPhoto:null,source:'wsc',sourceRef:wref,
+        void:true,voidReason:'Marker: this job is paid by Service receipts',createdAt:iso,createdBy:'bridge',editLog:[]});
+      anyOld[wref]=1; marked++;
+    });
+    if(added||changed||marked){ if(S(EXP_LEDGER,arr)){ st.posted=added; blog('Service money -> ledger +'+added+' / voided '+changed+' / markers '+marked); } else { st.failed=added+changed; } }   /* markers alone failing is silent: they are tried again */
+    if(st.failed) return;                                    /* nothing was saved: report only the failure */
+    /* read-only checks: never change a row */
+    var twice=dupRef, seenJob=Object.create(null);
+    _svcm.recs.forEach(function(r){
+      if(r.k==='RRV'||r.inBook) return;
+      var row=byRef['wscr_'+r.no], rev=_svcm.reversed[r.no];
+      if(row && !rev){ var want=(r.k==='SRF')?'expense':'income', amtBad=Math.abs(Number(row.amount)-r.amt/100)>0.004;
+        if(row.void===true||String(row.type||'').toLowerCase()!==want||amtBad) st.drift++;
+        if(amtBad||!svcmDescHas(row,r)) st.reused++; }       /* the number is already used by a row that is not this receipt */
+      if(row && rev && !row.void){ var dt2=String(row.date||'').slice(0,10); if(!(dayClosed(dt2)||monthLocked(dt2))) st.drift++; }
+      if(!rev && r.k!=='SRF' && r.job && oldRow['wsc_'+r.job] && !seenJob[r.job]){ seenJob[r.job]=1; twice++; }
+    });
+    st.twice=twice;
+  }
+
+  /* S03b U07-F11 (interface C): Service records an Owner deletion in saagar_wsf_settings_v1.deleted
+     ([{id,at,by,was,ownerPin,reason,finalAmt,payMode,collectDate,ledgerRef}], newest last). Only a tombstone with
+     was==='closed' && ownerPin===true voids the case's ledger income row (void:true + voidReason + editLog line),
+     matched on sourceRef===(ledgerRef||'wsc_'+id) and createdAt<=at. One map from ref to the newest such tombstone
+     is built per cycle. A row on a closed day or in a tax-locked month is NOT touched; it is counted for the
+     Home exceptions list instead (changing a closed day silently is not allowed). */
+  function deletedTombMap(){
+    var set=L(SVC_SET,null), del=(set&&Array.isArray(set.deleted))?set.deleted:null, byRef={}; if(!del) return byRef;
+    del.forEach(function(t){ if(!t||!t.id||t.was!=='closed'||t.ownerPin!==true) return;
+      var ref=t.ledgerRef||('wsc_'+t.id), o=byRef[ref]; if(!o||String(t.at||'')>=String(o.at||'')) byRef[ref]=t; });
+    return byRef;
+  }
+  function voidDeletedServiceIncome(){
+    _heldVoids=0;
+    var byRef=deletedTombMap(); if(!Object.keys(byRef).length) return;
+    var led=L(EXP_LEDGER,null); if(!Array.isArray(led)) return;
+    var stm=L(EXP_STMT,null)||{}, tf=L(EXP_TAXFEED,null)||{}, changed=0;
+    function locked(dt){ var mo=ym(dt); if(tf[mo]) return true; if(stm[dt]&&stm[dt].closed) return true;
+      for(var k in stm){ if(k.slice(0,7)===mo&&stm[k]&&stm[k].monthLocked===true) return true; } return false; }
+    led.forEach(function(x){ if(!x||x.void||!x.sourceRef) return; var t=byRef[x.sourceRef]; if(!t) return;
+      if(t.at&&x.createdAt&&String(x.createdAt)>String(t.at)) return;   // posted after the deletion: belongs to a later case
+      var dt=String(x.date||'').slice(0,10);
+      if(locked(dt)){ _heldVoids++; return; }
+      x.void=true; x.voidReason='Service case '+t.id+' was deleted'+(t.reason?(' — '+String(t.reason).slice(0,80)):'');
+      if(!Array.isArray(x.editLog)) x.editLog=[];
+      x.editLog.push({at:new Date().toISOString(),by:'bridge',old:{void:false},new:{void:true},reason:x.voidReason}); changed++; });
+    if(changed){ if(S(EXP_LEDGER,led)) blog('WSC case deleted → voided '+changed+' ledger row(s)'); }
   }
 
   /* ── LINK 4: Payroll statutory + Expense GST → Tax "amount payable" ── */
   function buildTaxPayable(){
     try{
-      var m=ym(today()), out=L(TAXPAY,{}); if(typeof out!=='object'||!out)out={};
-      var rec={month:m,pf:0,esic:0,pt:0,gstEstimate:0,sources:[],at:new Date().toISOString()};
-      var pb=L(PAYROLL,null);
-      if(pb&&Array.isArray(pb.rows)&&pb.meta){
-        var py=pb.meta.year+'-'+String(pb.meta.month||'').slice(0,3);
-        pb.rows.forEach(function(r){ rec.pf+=Number(r.pf||r.pfAmt||0)||0; rec.esic+=Number(r.esic||r.esicAmt||0)||0; rec.pt+=Number(r.pt||r.ptAmt||0)||0; });
-        if(rec.pf||rec.esic||rec.pt) rec.sources.push('payroll('+py+')');
+      var T=ym(today()), out=L(TAXPAY,{}); if(typeof out!=='object'||!out||Array.isArray(out))out={};
+      var nowS=new Date().toISOString(), pb=L(PAYROLL,null), P=payrollYm(pb), ef=L(EXP_TAXFEED,null);
+      /* repair: entries written by older builds under the WRONG month (payroll figures of another month filed under today's month) */
+      Object.keys(out).forEach(function(k){ var r=out[k]; if(!/^\d{4}-\d{2}$/.test(k)||!r||typeof r!=='object'||!Array.isArray(r.sources)) return;
+        var bad=false, keep=[];
+        r.sources.forEach(function(s){ var mm=/^payroll\((\d{4})-([A-Za-z]{3})/.exec(String(s)); if(!mm){ keep.push(s); return; }
+          var ix=MON3.indexOf(mm[2].toLowerCase()); var sm=ix<0?'':(mm[1]+'-'+(ix<9?'0':'')+(ix+1)); if(sm&&sm!==k){ bad=true; } else keep.push(s); });
+        if(bad){ r.pf=0; r.esic=0; r.pt=0; delete r.pfEmployee; delete r.pfEmployer; delete r.esicEmployee; delete r.esicEmployer;
+          var left=keep.length; r.sources=keep; r.sources.push('payroll figures removed: they belonged to another month'); r.at=nowS;
+          if(!(Number(r.gstEstimate)>0) && left===0) delete out[k]; } });
+      function withGst(m,rec){ if(ef&&ef[m]&&typeof ef[m].gstEstimate!=='undefined'){ rec.gstEstimate=Number(ef[m].gstEstimate)||0; rec.sources.push('expense.gm_tax_feed'); } }
+      if(P&&pb&&Array.isArray(pb.rows)){
+        var rec={month:P,pf:0,esic:0,pt:0,gstEstimate:0,sources:[],at:nowS}, pfE=0,pfR=0,esE=0,esR=0, haveEr=false;
+        pb.rows.forEach(function(r){ if(!r||r.active===false) return;   /* U10-F05: retired staff are not payable */
+          var a=Number(r.pf||r.pfAmt||0)||0, b=Number(r.esic||r.esicAmt||0)||0;
+          pfE+=a; esE+=b; rec.pt+=Number(r.pt||r.ptAmt||0)||0;
+          if(r.pfER!=null||r.esicER!=null){ haveEr=true; pfR+=Number(r.pfER)||0; esR+=Number(r.esicER)||0; } });   /* CR-F1: employer share (interface E: pfER, esicER) */
+        rec.pf=pfE+pfR; rec.esic=esE+esR;
+        if(haveEr){ rec.pfEmployee=pfE; rec.pfEmployer=pfR; rec.esicEmployee=esE; rec.esicEmployer=esR; }
+        var lbl=P.slice(0,4)+'-'+MONL[parseInt(P.slice(5,7),10)-1];
+        if(rec.pf||rec.esic||rec.pt) rec.sources.push('payroll('+lbl+')'+(haveEr?' employee+employer':' employee share only'));
         else rec.sources.push('payroll(no statutory fields — see Payroll module)');
+        withGst(P,rec); out[P]=rec;
       }
-      var ef=L(EXP_TAXFEED,null);  // Expense Manager v2 already writes this (read-only here)
-      if(ef&&ef[m]&&typeof ef[m].gstEstimate!=='undefined'){ rec.gstEstimate=Number(ef[m].gstEstimate)||0; rec.sources.push('expense.gm_tax_feed'); }
-      out[m]=rec; out._note='Best-effort: PF/ESIC/PT from Payroll rows + GST estimate from Expense Manager. Verify with CA before filing.';
+      if(T!==P){   /* today's month: GST estimate only; never payroll figures of another month */
+        var et=out[T]; if(ef&&ef[T]&&typeof ef[T].gstEstimate!=='undefined'){
+          if(!et||typeof et!=='object'||!Array.isArray(et.sources)){ et={month:T,pf:0,esic:0,pt:0,gstEstimate:0,sources:[],at:nowS}; out[T]=et; }
+          et.gstEstimate=Number(ef[T].gstEstimate)||0; if(et.sources.indexOf('expense.gm_tax_feed')<0) et.sources.push('expense.gm_tax_feed'); et.at=nowS; } }
+      out._note='Best-effort: PF/ESIC/PT from Payroll rows + GST estimate from Expense Manager. Verify with CA before filing.';
       S(TAXPAY,out);
     }catch(e){}
   }
@@ -675,6 +860,29 @@
         var mv=led.filter(function(x){return x&&!x.void&&(x.date||'')===d&&(x.type||'expense')!=='income'&&Number(x.amount)>vth&&!x.billPhoto;}).length;
         if(mv) ex.push({sev:'low',area:'Expense',msg:mv+' expense(s) >₹'+vth+' today without a bill photo',at:d});
       } }catch(e){}
+      /* S03b U07-F11: service income rows of Owner-deleted cases that sit on a closed or tax-locked day (cannot be voided silently) */
+      try{ if(_heldVoids) ex.push({sev:'high',area:'Expense',msg:_heldVoids+' service income row(s) belong to deleted service cases but sit on a closed or tax-locked day — review and void in Expense',at:d}); }catch(e){}
+      /* S03b U14-07: delivery income waiting because the cash statement is closed */
+      try{ var held=0; bus.forEach(function(e){ if(e&&e.type==='SERVICE_DELIVERED'&&!(e.consumed&&e.consumed.expense)) held++; });
+        if(held) ex.push({sev:'med',area:'Cash',msg:held+' service delivery income(s) are waiting to be posted — the cash statement is closed; reopen the day or post from Expense > Sync',at:d}); }catch(e){}
+      /* Phase 2 Service money: read-only reports from the last reconcile */
+      try{ var __sm=_svcmStat;
+        if(__sm.held) ex.push({sev:'med',area:'Cash',msg:__sm.held+' service receipt(s) are waiting to be posted - the cash statement is closed. They post by themselves when a day is open. Do not add them by hand.',at:d});
+        if(__sm.failed) ex.push({sev:'high',area:'Cash',msg:__sm.failed+' service receipt(s) could not be saved to the cash book - they will be tried again',at:d});
+        if(__sm.drift) ex.push({sev:'high',area:'Cash',msg:__sm.drift+' service receipt(s) differ from the cash book (changed or voided in Expense) - review them',at:d});
+        if(__sm.revHeld) ex.push({sev:'high',area:'Expense',msg:__sm.revHeld+' service reversal(s) cannot change a row on a closed day or a tax-locked month - reopen the day or void the row in Expense',at:d});
+        if(__sm.twice) ex.push({sev:'high',area:'Expense',msg:__sm.twice+' service job(s) are in the cash book twice (old delivery entry and receipts) - review in Expense',at:d});
+        if(__sm.reused) ex.push({sev:'high',area:'Expense',msg:'Service receipt number seen twice - review in Expense ('+__sm.reused+')',at:d});
+        if(_svcmLedBad) ex.push({sev:'high',area:'Expense',msg:'The cash book (Expense) could not be read - service income was not posted to it and nothing was overwritten. Ask support before adding entries in Expense.',at:d});
+        if(__sm.bad||!_svcm.ok) ex.push({sev:'high',area:'Expense',msg:(__sm.bad||1)+' service money record(s) could not be read and were not posted - ask support',at:d});
+      }catch(e){}
+      /* S03b U14-08: the staff master does not reach Payroll (Payroll keeps its own roster); show a notice, never write into Payroll */
+      try{ var __pb2=L(PAYROLL,null), __em2=L(EMP_MASTER,[]);
+        if(__pb2&&Array.isArray(__pb2.rows)&&Array.isArray(__em2)){
+          var __hp={}; __pb2.rows.forEach(function(r){ if(r&&r.name) __hp[kk(r.name)]=1; });
+          var __miss=[]; __em2.forEach(function(e){ if(e&&e.name&&e.active!==false&&!__hp[kk(e.name)]) __miss.push(nm(e.name)); });
+          if(__miss.length) ex.push({sev:'low',area:'Payroll',msg:__miss.length+' active staff in the staff master have no Payroll row — '+__miss.slice(0,3).join(', ')+(__miss.length>3?' +'+(__miss.length-3)+' more':''),at:d});
+        } }catch(e){}
       // Tax payable due (from our own feed)
       try{ var tp=L(TAXPAY,{})[ym(d)]; if(tp&&(tp.pf||tp.esic||tp.pt||tp.gstEstimate)) ex.push({sev:'low',area:'Tax',msg:'Statutory payable accruing this month (PF/ESIC/PT/GST) — see Tax',at:d}); }catch(e){}
       // Wave4: staff logged into DSR but not submitted, after the store closing time (cfg.dsrClosingTime, default
@@ -751,11 +959,14 @@
       // the roster from here is both redundant and unsafe. (The DSR list + saagar_cros writes below target
       // plain standalone keys, not an in-memory-wholesale-saved blob, so they carry no such race and stay.)
       // master → DSR staff list (dedupe by name)
+      var off={}; union.forEach(function(u){ if(u.active===false) off[kk(u.name)]=1; });
       var ds=L(DSR_STAFF,null), da=Array.isArray(ds)?ds.slice():[],dh={};
-      da.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
-      union.forEach(function(u){if(!dh[kk(u.name)]){da.push(u.name);dadd++;}});
-      if(dadd){S(DSR_STAFF,da);blog('seeded '+dadd+' → DSR list');}
-      try{ S('saagar_cros', union.map(function(u){return u.name;})); }catch(e){}
+      var dkeep=da.filter(function(n){ return !off[kk(n)]; }), drem=da.length-dkeep.length;   /* U14-05: a deactivated employee leaves the DSR list (names not in the master at all are kept) */
+      dkeep.forEach(function(n){dh[kk(n)]=1;});var dadd=0;
+      union.forEach(function(u){if(u.active!==false&&!dh[kk(u.name)]){dkeep.push(u.name);dadd++;}});
+      if(dadd||drem){S(DSR_STAFF,dkeep);blog('DSR list: +'+dadd+' / -'+drem);}
+      try{ var cr=union.filter(function(u){return u.active!==false;}).map(function(u){return u.name;});
+        var crOld=L('saagar_cros',null); if(JSON.stringify(crOld)!==JSON.stringify(cr)) S('saagar_cros', cr); }catch(e){}   /* active names only; written only when it changes */
     }catch(e){}
   }
 
@@ -772,7 +983,10 @@
         if(lv&&typeof lv==='object'){ if(!Array.isArray(lv.employees))lv.employees=[];
           var lh={}; lv.employees.forEach(function(x){var n=x&&(x.name||x); if(n)lh[kk(n)]=1;});
           var ladd=0; empNames.forEach(function(e){ if(!lh[kk(e.name)]){ lv.employees.push({id:'emp_'+kk(e.name).replace(/[^a-z0-9]/g,''),name:e.name,employeeId:e.empId||'',department:e.dept||'',store:e.store||''}); ladd++; } });   /* Wave-12 P1-28: carry store onto newly-seeded leave employees (advisory only; the leave module resolves store authoritatively from the central master) */
-          if(ladd){ S(LEAVE,lv); blog('seeded '+ladd+' → Leave staff'); } } }catch(e){}
+          var lstate={}; emp.forEach(function(e){ if(e&&e.name) lstate[kk(e.name)]=(e.active===false)?'off':'on'; });
+          var lch=0; lv.employees.forEach(function(x){ if(!x||typeof x!=='object') return; var st=lstate[kk(x.name)];
+            if(st==='off'&&x.active!==false){ x.active=false; lch++; } else if(st==='on'&&x.active===false){ delete x.active; lch++; } });   /* U14-05: flag, never delete (leave history keeps its names) */
+          if((ladd||lch)&&!moduleOpen('leave')){ S(LEAVE,lv); blog('Leave staff: +'+ladd+' added, '+lch+' flag change(s)'); } } }catch(e){}   /* deferred while Leave is open: it saves its list whole from memory */
       // brands: union master ↔ saagar_brands {store:[names]}
       try{ var mb=L(MK_BRANDS,[]); if(!Array.isArray(mb))mb=[];
         var sb=L('saagar_brands',null); if(!sb||typeof sb!=='object')sb={};
@@ -862,6 +1076,7 @@
      burst of writes could re-enter cycle() repeatedly and freeze the app. */
   var _running=false, _lastCycle=0;
   function safeCycle(fromStorage){
+    if(!storeOk()) return;   // S03-N02: no reconcile before storage is open
     var now=Date.now();
     if(_running) return;
     if(fromStorage && (now-_lastCycle)<4000) return;   // debounce storm
@@ -873,15 +1088,18 @@
     _lastCycle=Date.now();   // rec #18: stamp every reconcile (all entry paths) for the freshness indicator
     _busDirty=false;
     var bus=busLoad();
+    svcmLoad();
     produce(bus);
     consumeQmsToDsr(bus);
     consumeQmsAllocatedToDsr(bus);
     consumeDsrPurchaseAck(bus);
     consumeDsrToStock(bus);
-    consumeAttendanceFeed(bus);
+    rebuildAttendanceFeed();
     consumeCroAuditFeed(bus);
     consumeQmsServiceToWsc(bus);
     consumeServiceIncomeToLedger(bus);
+    reconcileServiceMoney();
+    voidDeletedServiceIncome();
     computeGate(bus);
     var pruned=busPrune(bus);
     if(_busDirty || pruned>0) busSave(bus);   // write the bus ONLY when it changed — an idle reconcile writes nothing (no forced whole-DB persist → no ANR)
@@ -893,7 +1111,7 @@
   }
 
   window.SaagarBridge={
-    runNow:function(){cycle();return this.status();},
+    runNow:function(){if(!storeOk())return this.status();cycle();return this.status();},
     publishOrg:function(){var r=publishOrg();blog('manual org publish');return r;},
     bus:function(){return busLoad();},
     events:function(type){var b=busLoad();return type?b.filter(function(e){return e.type===type;}):b;},
@@ -901,6 +1119,7 @@
     croAuditFeed:function(){return L(CRO_FEED,{});},
     taxPayable:function(){return L(TAXPAY,{});},
     config:function(){return cfg();},
+    serviceMoney:function(){ return {ok:_svcm.ok,receipts:_svcmStat.receipts,posted:_svcmStat.posted,held:_svcmStat.held,failed:_svcmStat.failed,revHeld:_svcmStat.revHeld,drift:_svcmStat.drift,twice:_svcmStat.twice,reused:_svcmStat.reused,bad:_svcmStat.bad}; },
     status:function(){var b=busLoad();var byType={};b.forEach(function(e){byType[e.type]=(byType[e.type]||0)+1;});
       var exc=L(EXC,{items:[]});
       return {busEvents:b.length,byType:byType,employeeMaster:(L(EMP_MASTER,[])||[]).length,
@@ -952,13 +1171,26 @@
       setTimeout(function(){ safeCycle(true); }, 50);
     }catch(e){} });
   }
+  var _started=false;
+  function started(){
+    if(_started) return; _started=true;
+    cycle();
+    blog('integration bridge v2 (event bus) ready');
+    console.log('[integration-bridge] event-bus ready');
+  }
+  /* S03-N02: the first reconcile waits for an open store (whenReady, plus a 1 s poll while it is still not authoritative) */
+  function startWhenOpen(tries){
+    if(_started) return;
+    if(storeOk()){ started(); return; }
+    if(tries===0){ try{ window.SaagarStore.whenReady(function(){ if(!_started&&storeOk()) started(); }); }catch(e){} }   /* no second poll chain */
+    if(tries<600) setTimeout(function(){ startWhenOpen(tries+1); },1000);
+  }
   function init(){
-    cycle(); hookFrame();
+    hookFrame();
     var n=0,iv=setInterval(function(){hookFrame();if(++n>20)clearInterval(iv);},500);
     setInterval(function(){safeCycle(false);},TICK);
     window.addEventListener('storage',function(){safeCycle(true);});
-    blog('integration bridge v2 (event bus) ready');
-    console.log('[integration-bridge] event-bus ready');
+    startWhenOpen(0);
   }
   if(document.readyState==='complete'||document.readyState==='interactive') init();
   else document.addEventListener('DOMContentLoaded',init);

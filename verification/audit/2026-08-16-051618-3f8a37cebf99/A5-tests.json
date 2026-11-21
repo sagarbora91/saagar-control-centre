@@ -1,0 +1,899 @@
+{
+  "auditId": "A5",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:language"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/a6-analyzer-noise-source-regression.test.mjs"
+        },
+        {
+          "code": "APPROVED_EXCLUSION",
+          "commands": [],
+          "coverage": "source-text-only",
+          "environment": "generated API-23 assets",
+          "path": "tests/api23-compatibility-build.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/backdate-crash-regression.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:phase0"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/build-identity.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:c1"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/c1-controls-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:c1"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/c1-operations-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d1-attention-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d1-dashboard-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d1-reauth.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d1-store-context.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d2-qms-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d2-qms-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d3-service-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d3-service-workboard-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d4-dsr-completion-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d4-dsr-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/d5-stock-controls-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d5-stock-modular-extraction.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/d5-stock-variance-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/e1-etp-import-foundation.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/eng04-security.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-core-contract.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-import-coordinator.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-import-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-import-ui.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/etp-native-api23-evidence-contract.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/etp-native-store-contract.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-native-store.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-reconciliation-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-recovery-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/etp-recovery-shell-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-retail-profile-parser.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-retail-xlsx-loader.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-store-lifecycle-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-worker-client.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-xlsx-parser-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:etp"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/etp-xlsx-preflight.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/export-sinks.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:phase0",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/failure-injection.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:reports"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/financial-golden.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:language"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/language-localization.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/legal-intake-idempotency.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/legal-minimum.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah3"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/mah-runtime-canaries.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:manifest",
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/mah2-module-manifest.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah3",
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/mah3-shared-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah3",
+            "npm run test:modular"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/mah3-visual-review-server.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah3",
+            "npm run test:modular"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/mah3-visual-review.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah4",
+            "npm run test:modular"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/mah4-contract-source.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah4",
+            "npm run test:modular"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/mah4-message-lifecycle-baseline.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah4",
+            "npm run test:modular"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/mah4-protocol-contract.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mah4",
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/mah4-stage-b-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:modular"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/mh1-modular-inventory.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/mh1-modular-protection.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:mobile"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/mobile-layout-remediation.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:modular"
+          ],
+          "coverage": "other",
+          "environment": "node-host",
+          "path": "tests/modular-capability-delta.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/module-access-context-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/module-pin-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/module-pin-security-regression.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/module-pin-shell-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/native-incremental-storage-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/native-incremental-storage.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/native-storage-info-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/native-storage-large-record-upgrade.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/native-storage-recovery-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/offdevice-backup.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/persistence-acceptance.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/phase1-shared-spine.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/portable-backup.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:reports"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/report-csv.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/seeded-apk-profile.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:seeded-runtime"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/seeded-apk-runtime.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:security"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/service-owner-setting-guard.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:settings"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/settings-navigation-architecture.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:modular"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/shell-module-frame-controller.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline",
+            "npm run test:phase0",
+            "npm run test:security"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/source-integrity.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/storage-capacity-policy.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "source-text-only",
+          "environment": "node-host",
+          "path": "tests/storage-capacity-shell-integration.test.mjs"
+        },
+        {
+          "code": "PACKAGE_COMMAND",
+          "commands": [
+            "npm run test:offline"
+          ],
+          "coverage": "behavioral",
+          "environment": "node-host",
+          "path": "tests/storage-recovery-policy.test.mjs"
+        },
+        {
+          "code": "APPROVED_EXCLUSION",
+          "commands": [],
+          "coverage": "behavioral",
+          "environment": "audit-tooling self-test",
+          "path": "tests/whole-app-audit-runner.test.mjs"
+        }
+      ],
+      "id": "A5-01",
+      "mandatory": false,
+      "metric": {
+        "approvedExclusions": 2,
+        "packageRegistered": 78,
+        "packageTestCommands": 15,
+        "testFiles": 80,
+        "unregistered": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Inventory every tracked test and its exact package-command or approved-exclusion membership",
+      "severity": "INFO",
+      "title": "Test inventory and registry membership"
+    },
+    {
+      "evidence": [],
+      "id": "A5-02",
+      "mandatory": true,
+      "metric": {
+        "criticalDomains": 6,
+        "sourceTextOnlyDomains": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "A critical domain covered only by source-text assertions is P1",
+      "severity": "INFO",
+      "title": "Critical paths require behavioral assertions"
+    },
+    {
+      "evidence": [],
+      "id": "A5-03",
+      "mandatory": true,
+      "metric": {
+        "malformedExclusions": 0,
+        "staleExclusions": 0,
+        "unregisteredFiles": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Every test file must have a package command and environment class, or a complete approved exclusion",
+      "severity": "INFO",
+      "title": "Committed test registry completeness"
+    },
+    {
+      "evidence": [
+        {
+          "behavioralTests": 2,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "auth",
+          "sourceTextOnlyTests": 0,
+          "testFiles": 2
+        },
+        {
+          "behavioralTests": 3,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "backupRestore",
+          "sourceTextOnlyTests": 0,
+          "testFiles": 3
+        },
+        {
+          "behavioralTests": 3,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "etpPublication",
+          "sourceTextOnlyTests": 1,
+          "testFiles": 4
+        },
+        {
+          "behavioralTests": 2,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "export",
+          "sourceTextOnlyTests": 0,
+          "testFiles": 2
+        },
+        {
+          "behavioralTests": 3,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "money",
+          "sourceTextOnlyTests": 0,
+          "testFiles": 3
+        },
+        {
+          "behavioralTests": 2,
+          "code": "BEHAVIORAL_COVERAGE_PRESENT",
+          "domain": "storage",
+          "sourceTextOnlyTests": 0,
+          "testFiles": 2
+        }
+      ],
+      "id": "A5-04",
+      "mandatory": true,
+      "metric": {
+        "criticalDomains": 6,
+        "domainsWithoutBehavioralTest": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Money, storage, auth, backup/restore, export and ETP publication each require a behavioral test",
+      "severity": "INFO",
+      "title": "Critical-domain behavioral coverage"
+    },
+    {
+      "evidence": [
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "auth"
+        },
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "backupRestore"
+        },
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "etpPublication"
+        },
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "export"
+        },
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "money"
+        },
+        {
+          "code": "MUTATION_DETECTED",
+          "invariantId": "storage"
+        }
+      ],
+      "id": "A5-05",
+      "mandatory": true,
+      "metric": {
+        "measuredMutations": 6,
+        "requiredMutations": 6,
+        "undetectedMutations": 0
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "One deterministic mutation per critical invariant must be detected in a disposable worktree",
+      "severity": "INFO",
+      "title": "Critical-invariant mutation detection"
+    }
+  ],
+  "metrics": {
+    "criticalDomains": 6,
+    "testCommands": 15,
+    "testFiles": 80
+  },
+  "title": "Tests and guard rails"
+}

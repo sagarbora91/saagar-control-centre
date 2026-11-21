@@ -1,0 +1,2982 @@
+{
+  "auditToolingSha": "b9f04b5e33d045ad0ca6b7cc9acd25e2d5a186cb",
+  "comparison": {
+    "failed": [
+      "C-01",
+      "C-03"
+    ],
+    "mandatoryUnmeasured": [
+      "C-04",
+      "C-07"
+    ],
+    "status": "comparison-failed-or-unmeasured"
+  },
+  "findings": [
+    {
+      "auditId": "A11",
+      "evidence": [
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "docs/audit/AUDIT-PROGRAM-v1.md",
+          "line": 250,
+          "path": "android/**"
+        },
+        {
+          "code": "CITED_PATH_UNRESOLVED",
+          "document": "verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md",
+          "line": 49,
+          "path": "android/app/build/outputs/apk/debug/app-debug.apk"
+        }
+      ],
+      "id": "A11-01",
+      "mandatory": true,
+      "metric": {
+        "authorityDocuments": 7,
+        "citedRepositoryPaths": 41,
+        "missingAuthorityDocuments": 0,
+        "unresolvedPaths": 2
+      },
+      "notes": "External absolute paths and template placeholders are not treated as repository-path claims; explicitly historical sections are excluded.",
+      "result": "fail",
+      "rule": "Every repository path cited by a current-authority scope must resolve in the audited snapshot.",
+      "severity": "P1",
+      "title": "Current-authority cited paths resolve"
+    },
+    {
+      "auditId": "A11",
+      "evidence": [
+        {
+          "code": "MEASURED_TEST_BASELINE_MISMATCH",
+          "domain": "completeOffline",
+          "measured": 506,
+          "required": 492
+        },
+        {
+          "code": "MEASURED_TEST_BASELINE_MISMATCH",
+          "domain": "modular",
+          "measured": 86,
+          "required": 72
+        },
+        {
+          "claimedPassed": 54,
+          "claimedTotal": 54,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 110,
+          "measuredPassed": 506,
+          "measuredTotal": 506,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md"
+        },
+        {
+          "claimedPassed": 54,
+          "claimedTotal": 54,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 18,
+          "measuredPassed": 506,
+          "measuredTotal": 506,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md"
+        },
+        {
+          "claimedPassed": 492,
+          "claimedTotal": 492,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 44,
+          "measuredPassed": 506,
+          "measuredTotal": 506,
+          "path": "verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md"
+        },
+        {
+          "claimedPassed": 72,
+          "claimedTotal": 72,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "modular",
+          "line": 46,
+          "measuredPassed": 86,
+          "measuredTotal": 86,
+          "path": "verification/ETP-CORE-CONTRACT-CLOSURE-HANDOFF-2026-08-09.md"
+        },
+        {
+          "claimedPassed": 492,
+          "claimedTotal": 492,
+          "code": "CURRENT_TEST_COUNT_MISMATCH",
+          "domain": "completeOffline",
+          "line": 60,
+          "measuredPassed": 506,
+          "measuredTotal": 506,
+          "path": "verification/STORAGE-UPDATE-LARGE-RECORD-HOTFIX-HANDOFF-2026-08-08.md"
+        }
+      ],
+      "id": "A11-03",
+      "mandatory": true,
+      "metric": {
+        "claims": 13,
+        "measuredCancelled": 0,
+        "measuredCounts": {
+          "c1": 12,
+          "completeOffline": 506,
+          "etp": 128,
+          "language": 4,
+          "mainOffline": 262,
+          "mobile": 6,
+          "modular": 86,
+          "settings": 8
+        },
+        "measuredFailures": 0,
+        "measuredPassed": 506,
+        "measuredSkipped": 0,
+        "measuredSuites": 7,
+        "measuredTodo": 0,
+        "measuredTotal": 506,
+        "mismatches": 7,
+        "requiredCurrentCounts": {
+          "completeOffline": 492,
+          "etp": 128,
+          "mainOffline": 262,
+          "modular": 72
+        },
+        "supportedClaims": 8,
+        "unsupportedClaims": 5
+      },
+      "notes": "At least one current claim belongs to an external/focused suite not measured by this audit invocation.",
+      "result": "fail",
+      "rule": "Current-authority test-count claims must equal the identity-bound measured suite counts, including 492 complete offline, 128 ETP, 72 modular and 262 main-offline tests with zero failures.",
+      "severity": "P1",
+      "title": "Current-authority test counts match measured counts"
+    },
+    {
+      "auditId": "A11",
+      "evidence": [
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 106,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 17,
+          "path": "docs/SAAGAR-ANDROID-MASTER-CONSOLIDATED-PLAN.md",
+          "value": "49d531bfff27e30dc1c1fcd06cc6b26dde1ff798"
+        },
+        {
+          "code": "CURRENT_AUTHORITY_CONTRADICTION",
+          "family": "current-product-sha",
+          "line": 11,
+          "path": "docs/audit/AUDIT-PROGRAM-v1.md",
+          "value": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6"
+        }
+      ],
+      "id": "A11-05",
+      "mandatory": true,
+      "metric": {
+        "claimFamilies": 4,
+        "claimSetSha256": "d94c40712f342fe92a5c7cd9fb816828c1e0c9052eb2ec55c2eb4a1ffcf6e8b4",
+        "conflictingClaims": 3,
+        "conflictingFamilies": 1,
+        "typedClaims": 7
+      },
+      "notes": "Starting SHAs, superseded decision-register sections, prior APK evidence and explicitly historical sections are excluded from present-state comparison.",
+      "result": "fail",
+      "rule": "Typed present-state claims among current-authority scopes must not assign different values to the same fact.",
+      "severity": "P1",
+      "title": "Current-authority contradictions"
+    },
+    {
+      "auditId": "A2",
+      "evidence": [
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "boot",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 27,
+          "normalizedChars": 383,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "create",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 4,
+          "normalizedChars": 1428,
+          "path": "www/etp-control-registry.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 2,
+          "normalizedChars": 10536,
+          "path": "www/etp-import-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 8,
+          "normalizedChars": 11359,
+          "path": "www/etp-native-store.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "4aa0e4ea1866e1e5cdbe87e9660705740a926fda16393afd738a621fc8120c92",
+          "line": 7,
+          "normalizedChars": 11280,
+          "path": "www/etp-reconciliation-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "load",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 25,
+          "normalizedChars": 1344,
+          "path": "www/etp-retail-xlsx-loader.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 7,
+          "normalizedChars": 9553,
+          "path": "www/etp-store-lifecycle-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "create",
+          "groupSha256": "cc8e2121cb63350bface825778cb4d89e4fbc6b3f07c4566ed7a0ef904dfd699",
+          "line": 6,
+          "normalizedChars": 1310,
+          "path": "www/etp-verified-reader.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1680",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 2,
+          "normalizedChars": 374,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "tt",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 2,
+          "normalizedChars": 727,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "n",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 2,
+          "normalizedChars": 242,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1744",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 2,
+          "normalizedChars": 403,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "w",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 2,
+          "normalizedChars": 829,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1699",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 2,
+          "normalizedChars": 360,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1688",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 2,
+          "normalizedChars": 3879,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1701",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 2,
+          "normalizedChars": 3207,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "st",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 2,
+          "normalizedChars": 310,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1707",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 2,
+          "normalizedChars": 577,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1708",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 2,
+          "normalizedChars": 331,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1847",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 2,
+          "normalizedChars": 536,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1700",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 2,
+          "normalizedChars": 2526,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "_t",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 2,
+          "normalizedChars": 1834,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1692",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 2,
+          "normalizedChars": 1928,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1696",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 2,
+          "normalizedChars": 836,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1712",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 2,
+          "normalizedChars": 710,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1714",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 2,
+          "normalizedChars": 390,
+          "path": "www/html2pdf.bundle.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-812",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 118,
+          "normalizedChars": 374,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-839",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 118,
+          "normalizedChars": 403,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "ne",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 118,
+          "normalizedChars": 829,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-829",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 118,
+          "normalizedChars": 360,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "Ce",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 118,
+          "normalizedChars": 4446,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-841",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 118,
+          "normalizedChars": 3881,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-834",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 118,
+          "normalizedChars": 3703,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-835",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 118,
+          "normalizedChars": 3207,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-831",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 118,
+          "normalizedChars": 577,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-832",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 118,
+          "normalizedChars": 331,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-830",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 118,
+          "normalizedChars": 2526,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-822",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 118,
+          "normalizedChars": 1928,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-826",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 118,
+          "normalizedChars": 836,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "e",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 52,
+          "normalizedChars": 242,
+          "path": "www/jspdf.umd.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-97",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 2345,
+          "normalizedChars": 324,
+          "path": "www/modules/leave/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "renderFnfPreview",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 3212,
+          "normalizedChars": 901,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "calcDeno",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 2631,
+          "normalizedChars": 864,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "renderActionCenter",
+          "groupSha256": "580b11b67730ce17d95bec076397072a6a97beda578f00c778d126396573b1ca",
+          "line": 3045,
+          "normalizedChars": 920,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 5,
+          "normalizedChars": 9601,
+          "path": "www/qms-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-2",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 5,
+          "normalizedChars": 10089,
+          "path": "www/service-workboard-policy.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-1",
+          "groupSha256": "c0659b1dc120d968f0660144f470b8417bd50bd9fbb674bbd680d04bbb217779",
+          "line": 1,
+          "normalizedChars": 9085,
+          "path": "www/shared/mah4-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-46",
+          "groupSha256": "b06342c6c0844b8f03a1213e93a9b56c1907974061b510c23dc892daea223193",
+          "line": 30,
+          "normalizedChars": 344,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-15",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 1,
+          "normalizedChars": 374,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "$t",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 1,
+          "normalizedChars": 713,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-77",
+          "groupSha256": "2a5a076d0d7e1db3c5662c1c835a0797de0f3bf344085c0649a649c3882497c2",
+          "line": 1,
+          "normalizedChars": 403,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "y",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 1,
+          "normalizedChars": 829,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-34",
+          "groupSha256": "71b515dcba337b3f6b4c3c08450d35da90d2549645490a248fa9802b8cc4b5d5",
+          "line": 1,
+          "normalizedChars": 360,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-23",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 1,
+          "normalizedChars": 3877,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-36",
+          "groupSha256": "7413f96c790cb019ca6857fa123f0ebc72e3cc27ddee07db821f29ffc47ab932",
+          "line": 1,
+          "normalizedChars": 3207,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "rn",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 1,
+          "normalizedChars": 310,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-42",
+          "groupSha256": "7d55b2f70229c5c0311272c9e0b8423d892b4117693890d8dce69dc7ad78dffd",
+          "line": 1,
+          "normalizedChars": 577,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-43",
+          "groupSha256": "9d1ea0e1d819dad09f43fcedb9d246abde218c48e5f49a70b34617e6b4b7634f",
+          "line": 1,
+          "normalizedChars": 331,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-180",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 1,
+          "normalizedChars": 520,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-35",
+          "groupSha256": "b7c2469d8763471631d178ce8fb858fd5122125478905a121825b1f8e7e5904d",
+          "line": 1,
+          "normalizedChars": 2522,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "zn",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 1,
+          "normalizedChars": 1820,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-27",
+          "groupSha256": "c032dab20c45558e80d95d7cdb14c3dc083a5b8676bd3ce14d0a5603fe09653d",
+          "line": 1,
+          "normalizedChars": 1920,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-31",
+          "groupSha256": "d07565d97a4bd75b543fb3b3a10bcbb346a6b0be3faa240bb8f808771da5dd10",
+          "line": 1,
+          "normalizedChars": 836,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-47",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 1,
+          "normalizedChars": 700,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "default",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 1,
+          "normalizedChars": 386,
+          "path": "www/vendor/fflate-0.8.3.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-111",
+          "groupSha256": "073a16adb7087463839254a27468d01f93a6ca7af7d2bdfbbb3f9bca488abffb",
+          "line": 1,
+          "normalizedChars": 374,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "pt",
+          "groupSha256": "14f651b01a45b36977d7a3e07a60535cbe81b951b86abb86a6c8017fe6978451",
+          "line": 1,
+          "normalizedChars": 727,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "_r",
+          "groupSha256": "2204330c7ab9587cf38f287e1f9a7afe8399fec50e496fa2dec9b39dd1ded77e",
+          "line": 1,
+          "normalizedChars": 244,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "$",
+          "groupSha256": "7185500a05b08cf6963d7dcc728ebc030fa4e6440b1aa8ec9bf2878f45f37799",
+          "line": 1,
+          "normalizedChars": 829,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-119",
+          "groupSha256": "724319473a85488a21ea435cf94904d39b65da18b6addcc54168af8b17b8e377",
+          "line": 1,
+          "normalizedChars": 3881,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "bt",
+          "groupSha256": "743e6ee313a446a28366f3213b5f1d97bc9369db6cb570b5f4cf0b875c4cb275",
+          "line": 1,
+          "normalizedChars": 310,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-140",
+          "groupSha256": "b12175b779880f34c83031a66da20e6c8d876665c4d3c876200a4aca53534bdd",
+          "line": 1,
+          "normalizedChars": 520,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "ht",
+          "groupSha256": "b98f5572de1d2879daf9b9417e4bb4593ade7f7dc14153b2fa7d7afbc8a3d865",
+          "line": 1,
+          "normalizedChars": 2102,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-121",
+          "groupSha256": "e7aeb6bc900adaf4e15f763b2225715b97a2f3ac4e85b0999b38a495aa2da3c3",
+          "line": 1,
+          "normalizedChars": 710,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        },
+        {
+          "code": "NEAR_COPY_FUNCTION",
+          "functionName": "anonymous-124",
+          "groupSha256": "f6e7feacd96b4d10be24da0fffb1f29180b2893a85af3854b87e63774acb7b7a",
+          "line": 1,
+          "normalizedChars": 390,
+          "path": "www/vendor/read-excel-file-9.3.7.min.js"
+        }
+      ],
+      "id": "A2-02",
+      "mandatory": true,
+      "metric": {
+        "candidateFunctions": 4214,
+        "candidateLimit": 5000,
+        "nearCopyGroups": 23,
+        "similarityEdges": 1075,
+        "similarityThreshold": 0.9
+      },
+      "notes": "Similarity is multiset Dice similarity over normalized lexical tokens; SHA-256 identities are emitted for each cluster.",
+      "result": "fail",
+      "rule": "After comment/whitespace removal and identifier/literal normalization, bodies of at least 240 normalized characters with at least 90% token similarity must not span three or more product files.",
+      "severity": "P2",
+      "title": "Near-copy function bodies"
+    },
+    {
+      "auditId": "A4",
+      "evidence": [
+        {
+          "artifact": "file:computed-a0af9f865bf6",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 992,
+          "path": "www/storage-core.js"
+        },
+        {
+          "artifact": "file:computed-c63739dde7a9",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 100,
+          "path": "www/photo-store.js"
+        },
+        {
+          "artifact": "file:saagar-photos*",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 96,
+          "path": "www/photo-store.js"
+        },
+        {
+          "artifact": "local-storage:In",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 67,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:Old",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2460,
+          "path": "www/modules/service/index.html"
+        },
+        {
+          "artifact": "local-storage:This",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 16,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:computed-0184ed865cb9",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 139,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:computed-03128135045a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4759,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0701dc44c392",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1888,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-0821f8c29cdb",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 765,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-1dca44cc5cf8",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1462,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-254870e3b244",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4183,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-27b634ebbbbd",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1987,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-2c70e12b7a06",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 7,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-2ec26f19b0ce",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1866,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-352c3af4e6fd",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6361,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-358c72ff1acf",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2859,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-37fecfa0a885",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6558,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-3e03f1bf91bb",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3168,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-3fbcd32024c7",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2131,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-4e7697043850",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6344,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-55b85cae3463",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1987,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-583f56458c26",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 863,
+          "path": "www/modules/grooming/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-5879786699bf",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 28,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "artifact": "local-storage:computed-5cf144e10804",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2827,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-61ed4d0d8608",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1456,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-63d08515ab9f",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1336,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-713c95448142",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2294,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-73b043cf2586",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 147,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-790ba55f4ef9",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3559,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-79a5a7522f5b",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3161,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-8254c329a928",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 76,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:computed-867b4bf4357a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 128,
+          "path": "www/sqlite-store.js"
+        },
+        {
+          "artifact": "local-storage:computed-89d0acd12330",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 19,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-92dbd5fe4b59",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6273,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-99cdc16475c9",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2093,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-9c0ca42b9bac",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 19,
+          "path": "www/c1-control-desk.js"
+        },
+        {
+          "artifact": "local-storage:computed-9dbadeea44ab",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 166,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-a5b46b86183d",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1858,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-a77e6163c761",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 685,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-ba28e95bfd1e",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1000,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-bbbe7d385b4f",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 32,
+          "path": "www/shared/module-runtime.js"
+        },
+        {
+          "artifact": "local-storage:computed-bf53b97ebe11",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 223,
+          "path": "www/integration-bridge.js"
+        },
+        {
+          "artifact": "local-storage:computed-c8b2d1fd2f82",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4299,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-d1388d4c9249",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 73,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "artifact": "local-storage:computed-d3358fb54abe",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 1972,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-d94b5255aff3",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 4308,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-dfc6cdab12f6",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3394,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-e06ec182c590",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3252,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-e1499f56f49a",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6875,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-e371bd8e9ee8",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3195,
+          "path": "www/modules/stock/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-f113d50ba206",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 6508,
+          "path": "www/index.html"
+        },
+        {
+          "artifact": "local-storage:computed-f8dee5330c16",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 296,
+          "path": "www/saagar-report.js"
+        },
+        {
+          "artifact": "local-storage:computed-fad1cc7df664",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 709,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_bus",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 764,
+          "path": "www/modules/qms/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_cro_audit_feed",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2392,
+          "path": "www/modules/cro_audit/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_payroll_attendance_feed",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 3637,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "artifact": "local-storage:saagar_tax_payable",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 2870,
+          "path": "www/modules/tax/index.html"
+        },
+        {
+          "artifact": "local-storage:st_v2_offdevice_backup_config_v1",
+          "code": "UNCLASSIFIED_STORAGE",
+          "line": 17,
+          "path": "www/offdevice-backup.js"
+        }
+      ],
+      "id": "A4-02",
+      "mandatory": true,
+      "metric": {
+        "device-local": 54,
+        "forbidden": 0,
+        "portable": 49,
+        "re-derivable-excluded": 10,
+        "unclassifiedArtifacts": 59
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Every persistent artifact has exactly one authoritative classification, owner, restore behavior and reset behavior",
+      "severity": "P0",
+      "title": "Persistent-artifact classification"
+    },
+    {
+      "auditId": "A6",
+      "evidence": [
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 269,
+          "path": "www/modules/cro_audit/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 286,
+          "path": "www/modules/dsr/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "52cca7c6db6661e5",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "92cef0afb6e7a778",
+          "line": 296,
+          "path": "www/modules/dsr/index.html",
+          "token": "--green-mid"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 272,
+          "path": "www/modules/expense/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 271,
+          "path": "www/modules/grooming/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 275,
+          "path": "www/modules/grooming/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 333,
+          "path": "www/modules/payroll/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "4a08e4d0db13be9b",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "13b406d84d601195",
+          "line": 262,
+          "path": "www/modules/planning/index.html",
+          "token": "--amber"
+        },
+        {
+          "actualFingerprint": "3c5c1ab6c5fd2f50",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "e21c21ccc26757fa",
+          "line": 262,
+          "path": "www/modules/planning/index.html",
+          "token": "--green"
+        },
+        {
+          "actualFingerprint": "3871da342003cbdb",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "59dbd125956e62e1",
+          "line": 262,
+          "path": "www/modules/planning/index.html",
+          "token": "--red"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 272,
+          "path": "www/modules/service/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 281,
+          "path": "www/modules/service/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 271,
+          "path": "www/modules/stock/index.html",
+          "token": "--radius"
+        },
+        {
+          "actualFingerprint": "f5b0847cfc17b05c",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "f2074b6cef37b673",
+          "line": 275,
+          "path": "www/modules/stock/index.html",
+          "token": "--white"
+        },
+        {
+          "actualFingerprint": "7769e817028f33dc",
+          "code": "DESIGN_TOKEN_DIVERGENCE",
+          "expectedFingerprint": "38cb6b4a22ffdadc",
+          "line": 271,
+          "path": "www/modules/tax/index.html",
+          "token": "--radius"
+        }
+      ],
+      "id": "A6-01",
+      "mandatory": true,
+      "metric": {
+        "canonicalTokens": 16,
+        "definitions": 100,
+        "divergences": 15,
+        "filesWithDefinitions": 9
+      },
+      "notes": "Absence of a token is not called divergence; this check compares only definitions of the canonical shared names.",
+      "result": "fail",
+      "rule": "Every definition of a shared SAAGAR design token must equal its canonical normalized value.",
+      "severity": "P2",
+      "title": "Shared design-token divergence"
+    },
+    {
+      "auditId": "A6",
+      "evidence": [
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 26,
+          "path": "www/c1-control-desk.js",
+          "textFingerprint": "3e29d2ddc9c0012029d0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-property:textcontent",
+          "line": 27,
+          "path": "www/c1-control-desk.js",
+          "textFingerprint": "4a7341f2ba5996096142"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 185,
+          "path": "www/export-control.js",
+          "textFingerprint": "2e01e1d1062be94e1a05"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 189,
+          "path": "www/export-control.js",
+          "textFingerprint": "bc477194224da42a8bfd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 194,
+          "path": "www/export-control.js",
+          "textFingerprint": "66adc844a21ec26d6565"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 198,
+          "path": "www/export-control.js",
+          "textFingerprint": "8c8d687fe474ad8d9568"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 202,
+          "path": "www/export-control.js",
+          "textFingerprint": "37ec20f11be525207019"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 206,
+          "path": "www/export-control.js",
+          "textFingerprint": "2086fa0627a5b2e3076a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 211,
+          "path": "www/export-control.js",
+          "textFingerprint": "77fd4ff9c8a0e4be85ed"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 241,
+          "path": "www/export-control.js",
+          "textFingerprint": "b84ae1f759207009c86b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 246,
+          "path": "www/export-control.js",
+          "textFingerprint": "95e6d39ae0c1db8fb43d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 252,
+          "path": "www/export-control.js",
+          "textFingerprint": "6155b3b06b60d1c8a5b3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 255,
+          "path": "www/export-control.js",
+          "textFingerprint": "bf31edb977bb925c9384"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 256,
+          "path": "www/export-control.js",
+          "textFingerprint": "ae50795dd85a210c3054"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 265,
+          "path": "www/export-control.js",
+          "textFingerprint": "b878a3a8adbb585f7536"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 286,
+          "path": "www/export-control.js",
+          "textFingerprint": "1d29ea08cb110ea109e8"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 288,
+          "path": "www/export-control.js",
+          "textFingerprint": "f2d4f935062bf2c809a6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 321,
+          "path": "www/export-control.js",
+          "textFingerprint": "2ce3d7778dfea1893f77"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 327,
+          "path": "www/export-control.js",
+          "textFingerprint": "9d661c47c24c3db06eb7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1272,
+          "path": "www/index.html",
+          "textFingerprint": "84b01ad2cfe2b126a7cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1333,
+          "path": "www/index.html",
+          "textFingerprint": "0cfe967bb187cbc619cf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1349,
+          "path": "www/index.html",
+          "textFingerprint": "4a4ee64fb1ee4d881941"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 141,
+          "path": "www/index.html",
+          "textFingerprint": "565339bc4d33d72817b5"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1453,
+          "path": "www/index.html",
+          "textFingerprint": "0abce05e37b276a14470"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1660,
+          "path": "www/index.html",
+          "textFingerprint": "edadd6c162ec45923297"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1683,
+          "path": "www/index.html",
+          "textFingerprint": "efbd15cbf3493922a4dd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1697,
+          "path": "www/index.html",
+          "textFingerprint": "d6bb0a39cb64f672bb70"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1699,
+          "path": "www/index.html",
+          "textFingerprint": "0cb4fb581433ba0e3eaf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1719,
+          "path": "www/index.html",
+          "textFingerprint": "84a3aad6403e7ffa2f65"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1728,
+          "path": "www/index.html",
+          "textFingerprint": "cda3e762d7bc593e714e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1730,
+          "path": "www/index.html",
+          "textFingerprint": "f76f82ec1faaeeced40b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1733,
+          "path": "www/index.html",
+          "textFingerprint": "7fb9066639bf6a0aa1cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1734,
+          "path": "www/index.html",
+          "textFingerprint": "a83dc0ca222cb0b4e088"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1737,
+          "path": "www/index.html",
+          "textFingerprint": "14c4029c115ccdbc99bc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1744,
+          "path": "www/index.html",
+          "textFingerprint": "8dc7b95f266e5b38657e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1746,
+          "path": "www/index.html",
+          "textFingerprint": "39bf86d9bf7fbddcc050"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 1746,
+          "path": "www/index.html",
+          "textFingerprint": "d05969262d8d0dedac1a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 176,
+          "path": "www/index.html",
+          "textFingerprint": "610e48180a3f77aa026d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 178,
+          "path": "www/index.html",
+          "textFingerprint": "85603424b4bf6591bde6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1864,
+          "path": "www/index.html",
+          "textFingerprint": "71eb4b82861abd3b7155"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1899,
+          "path": "www/index.html",
+          "textFingerprint": "fe2e79f9328ce106a7d0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1910,
+          "path": "www/index.html",
+          "textFingerprint": "cca3d7e72b3927609e45"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1916,
+          "path": "www/index.html",
+          "textFingerprint": "49cfc02c9057f00a5e0d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1918,
+          "path": "www/index.html",
+          "textFingerprint": "4fefaf9dac074059585b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1919,
+          "path": "www/index.html",
+          "textFingerprint": "bd249a9a3189a9ad67a1"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1922,
+          "path": "www/index.html",
+          "textFingerprint": "2eb9ca30d7bdf8a72e8b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1924,
+          "path": "www/index.html",
+          "textFingerprint": "e0222ef4dc029d4e9dfc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 1933,
+          "path": "www/index.html",
+          "textFingerprint": "e2212cae45427821c7fc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2123,
+          "path": "www/index.html",
+          "textFingerprint": "8dc7b95f266e5b38657e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2125,
+          "path": "www/index.html",
+          "textFingerprint": "e21a87ea7e4ab987fd9c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2131,
+          "path": "www/index.html",
+          "textFingerprint": "dd5c3411a51f65601f96"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2136,
+          "path": "www/index.html",
+          "textFingerprint": "6295115dfc1c72d4eb51"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2136,
+          "path": "www/index.html",
+          "textFingerprint": "8674027843ffcf1756fd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2141,
+          "path": "www/index.html",
+          "textFingerprint": "df2fe857cad55c8e33fa"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2145,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2148,
+          "path": "www/index.html",
+          "textFingerprint": "6a7a6efc055db6201a2b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2150,
+          "path": "www/index.html",
+          "textFingerprint": "ef5b5c8daa7926cd4779"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2161,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2162,
+          "path": "www/index.html",
+          "textFingerprint": "31a8eac11f2688ebaf55"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2184,
+          "path": "www/index.html",
+          "textFingerprint": "92f7f657a312045ad8a0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2191,
+          "path": "www/index.html",
+          "textFingerprint": "1cf46553d116df620e00"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2212,
+          "path": "www/index.html",
+          "textFingerprint": "b294b3919c22e4c7b552"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2213,
+          "path": "www/index.html",
+          "textFingerprint": "ef5b5c8daa7926cd4779"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2214,
+          "path": "www/index.html",
+          "textFingerprint": "cdd770f586940d5f9a3f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2658,
+          "path": "www/index.html",
+          "textFingerprint": "ce6ae4980b6b2485997c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2659,
+          "path": "www/index.html",
+          "textFingerprint": "b76a50fb9937df48ef9b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2767,
+          "path": "www/index.html",
+          "textFingerprint": "60672af76621ab1bbc68"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2768,
+          "path": "www/index.html",
+          "textFingerprint": "5dd3861267e8af3dca8c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 2830,
+          "path": "www/index.html",
+          "textFingerprint": "624d2558b85d6f7d408e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 2830,
+          "path": "www/index.html",
+          "textFingerprint": "77dddca03ae264a26e92"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2851,
+          "path": "www/index.html",
+          "textFingerprint": "b5ff5b7c14196325bb4a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2891,
+          "path": "www/index.html",
+          "textFingerprint": "ef78e9f822956828aa1f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2892,
+          "path": "www/index.html",
+          "textFingerprint": "82e5ea0145203903804c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2893,
+          "path": "www/index.html",
+          "textFingerprint": "cfe7f2109dc087131613"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2897,
+          "path": "www/index.html",
+          "textFingerprint": "d53c8278915df5a25c01"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 290,
+          "path": "www/index.html",
+          "textFingerprint": "ad0353dfc98d4a6a27cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 2919,
+          "path": "www/index.html",
+          "textFingerprint": "fe999d8bd400fc3fb269"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3202,
+          "path": "www/index.html",
+          "textFingerprint": "aef156a358743c6f2cf0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 3203,
+          "path": "www/index.html",
+          "textFingerprint": "19cb2e8e97c787f9eaaf"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 353,
+          "path": "www/index.html",
+          "textFingerprint": "895fab421e0f42cb85cb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 3531,
+          "path": "www/index.html",
+          "textFingerprint": "ab7b7a04808bf9206152"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 3533,
+          "path": "www/index.html",
+          "textFingerprint": "ee170985ae6d0d3e1877"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 362,
+          "path": "www/index.html",
+          "textFingerprint": "d7e4099ef2640cfbec31"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:a",
+          "line": 3625,
+          "path": "www/index.html",
+          "textFingerprint": "d6e645b7d2b2da646d44"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:a",
+          "line": 3651,
+          "path": "www/index.html",
+          "textFingerprint": "d6e645b7d2b2da646d44"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 367,
+          "path": "www/index.html",
+          "textFingerprint": "1b28a029cd6feef53d18"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 372,
+          "path": "www/index.html",
+          "textFingerprint": "1262fc853626f2d9f278"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 381,
+          "path": "www/index.html",
+          "textFingerprint": "d6c8c113c6698af42c51"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 386,
+          "path": "www/index.html",
+          "textFingerprint": "fac5cc00906d84aad974"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 3861,
+          "path": "www/index.html",
+          "textFingerprint": "4d4474dd0a4462e6779d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 395,
+          "path": "www/index.html",
+          "textFingerprint": "6874f1a17ed072ee1554"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 3962,
+          "path": "www/index.html",
+          "textFingerprint": "ef6cf020c771d9a322c2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 3973,
+          "path": "www/index.html",
+          "textFingerprint": "b0ac9cea86878b84b241"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 3989,
+          "path": "www/index.html",
+          "textFingerprint": "5737b8b8ec722fd134fe"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 400,
+          "path": "www/index.html",
+          "textFingerprint": "87c71c0b24bb7f0e90b7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 4006,
+          "path": "www/index.html",
+          "textFingerprint": "bae6cdda6a6a41753878"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4013,
+          "path": "www/index.html",
+          "textFingerprint": "1ecb361a0a117393d135"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4013,
+          "path": "www/index.html",
+          "textFingerprint": "c66107009c8ae3526ae7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 405,
+          "path": "www/index.html",
+          "textFingerprint": "7a149e3ffcf155e18a7f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4064,
+          "path": "www/index.html",
+          "textFingerprint": "663b59b475791ed3bcf9"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4107,
+          "path": "www/index.html",
+          "textFingerprint": "2feab4bb1fa182f2b729"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4107,
+          "path": "www/index.html",
+          "textFingerprint": "511ddba7d4b5d81f682d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4107,
+          "path": "www/index.html",
+          "textFingerprint": "ff6b60d222c217da2a2b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h5",
+          "line": 4129,
+          "path": "www/index.html",
+          "textFingerprint": "ec41343a0ff39cefd22e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4129,
+          "path": "www/index.html",
+          "textFingerprint": "ad617a0fdd57e3f4b8eb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4129,
+          "path": "www/index.html",
+          "textFingerprint": "fd1331d7a6cd0309f811"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h5",
+          "line": 4139,
+          "path": "www/index.html",
+          "textFingerprint": "a84a828b7ad782b3c36d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4139,
+          "path": "www/index.html",
+          "textFingerprint": "652bcc3a478428893cc5"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 414,
+          "path": "www/index.html",
+          "textFingerprint": "cbeadea373405d6ae73e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 419,
+          "path": "www/index.html",
+          "textFingerprint": "c85e502b7cb3216419b2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:summary",
+          "line": 4322,
+          "path": "www/index.html",
+          "textFingerprint": "ec5b3ac7480e5f1fead4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4325,
+          "path": "www/index.html",
+          "textFingerprint": "6f0f415dec910c547a8d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 4325,
+          "path": "www/index.html",
+          "textFingerprint": "f72338465fc2cf2f1a63"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:summary",
+          "line": 4330,
+          "path": "www/index.html",
+          "textFingerprint": "8c8063fa193a8cdda569"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4337,
+          "path": "www/index.html",
+          "textFingerprint": "d37078fe6a1faa15fc48"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4338,
+          "path": "www/index.html",
+          "textFingerprint": "8d525e5f158b9afe05f3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4339,
+          "path": "www/index.html",
+          "textFingerprint": "075b8c67cc57bfc5ff78"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 459,
+          "path": "www/index.html",
+          "textFingerprint": "a26b05e06f811203c0a2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 460,
+          "path": "www/index.html",
+          "textFingerprint": "1a196eaf2c1548366740"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 468,
+          "path": "www/index.html",
+          "textFingerprint": "3af4da94e2372fc3910f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 473,
+          "path": "www/index.html",
+          "textFingerprint": "84545b090421dc4d9d1d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 473,
+          "path": "www/index.html",
+          "textFingerprint": "dd336522354f6e613f4d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 474,
+          "path": "www/index.html",
+          "textFingerprint": "0c0eed7f7ab5877b2623"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 484,
+          "path": "www/index.html",
+          "textFingerprint": "1a1ff83fd240fcdc1f7c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 486,
+          "path": "www/index.html",
+          "textFingerprint": "3ebcd3cc596ba28874df"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 486,
+          "path": "www/index.html",
+          "textFingerprint": "f3d8c96e71944625b04e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 4942,
+          "path": "www/index.html",
+          "textFingerprint": "23cd9cf85b3ff4016934"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 4954,
+          "path": "www/index.html",
+          "textFingerprint": "373de524868923ca3566"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 496,
+          "path": "www/index.html",
+          "textFingerprint": "63214131c2b05e46f798"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 4960,
+          "path": "www/index.html",
+          "textFingerprint": "2f77668a9dfbf8d5848b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 4961,
+          "path": "www/index.html",
+          "textFingerprint": "9304bce26d2c92570fbc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 4992,
+          "path": "www/index.html",
+          "textFingerprint": "51fac985e95345d90b3c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 4998,
+          "path": "www/index.html",
+          "textFingerprint": "68854ae3a1c58674e36d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:placeholder",
+          "line": 4999,
+          "path": "www/index.html",
+          "textFingerprint": "0f485ce91ea59eefa461"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 5033,
+          "path": "www/index.html",
+          "textFingerprint": "55d10bfdc82530192a1d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 5034,
+          "path": "www/index.html",
+          "textFingerprint": "4f36612ecc081b9b7c7b"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 5042,
+          "path": "www/index.html",
+          "textFingerprint": "e64d7ee1104485a31768"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 505,
+          "path": "www/index.html",
+          "textFingerprint": "ca6fe69a401655c43c14"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5056,
+          "path": "www/index.html",
+          "textFingerprint": "278a7666b3683101644a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 511,
+          "path": "www/index.html",
+          "textFingerprint": "a1808aeda66ab0549b14"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5157,
+          "path": "www/index.html",
+          "textFingerprint": "1c26d0ce7773244eb8e7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5160,
+          "path": "www/index.html",
+          "textFingerprint": "70d7a9c260782c18a75e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5170,
+          "path": "www/index.html",
+          "textFingerprint": "328587d2fef3df370487"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 525,
+          "path": "www/index.html",
+          "textFingerprint": "5f5e79b3e114f6af1749"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 529,
+          "path": "www/index.html",
+          "textFingerprint": "1ea7cdf41d9b198398ae"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 530,
+          "path": "www/index.html",
+          "textFingerprint": "1a6bd2c84e26b8ce1024"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 534,
+          "path": "www/index.html",
+          "textFingerprint": "55bc0f22fd87291165fd"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 539,
+          "path": "www/index.html",
+          "textFingerprint": "ec7e728965681412ad74"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5463,
+          "path": "www/index.html",
+          "textFingerprint": "eae39e6d674207806ee6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:th",
+          "line": 5505,
+          "path": "www/index.html",
+          "textFingerprint": "1b2d7344da44727407be"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:title",
+          "line": 5521,
+          "path": "www/index.html",
+          "textFingerprint": "1e6ed3cc912e4ef7c734"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 553,
+          "path": "www/index.html",
+          "textFingerprint": "10a5cf589c0c9f0f3422"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5547,
+          "path": "www/index.html",
+          "textFingerprint": "604fd1b2e29c688a7efb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5550,
+          "path": "www/index.html",
+          "textFingerprint": "65c704ea14f5c0f12266"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5592,
+          "path": "www/index.html",
+          "textFingerprint": "b2e29ddbb5cc7555cbe1"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5593,
+          "path": "www/index.html",
+          "textFingerprint": "65c704ea14f5c0f12266"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5596,
+          "path": "www/index.html",
+          "textFingerprint": "1a7daf8cc1126319f8c3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 5642,
+          "path": "www/index.html",
+          "textFingerprint": "79eb3e8ec1a1e438fea7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5655,
+          "path": "www/index.html",
+          "textFingerprint": "f483d893b67f6e758900"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 568,
+          "path": "www/index.html",
+          "textFingerprint": "1d97b98b10068a16857e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5689,
+          "path": "www/index.html",
+          "textFingerprint": "59c61084929292b23abc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5694,
+          "path": "www/index.html",
+          "textFingerprint": "54f9a7e0b44364eccf81"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5705,
+          "path": "www/index.html",
+          "textFingerprint": "93685b8d08d9fe193ed2"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5706,
+          "path": "www/index.html",
+          "textFingerprint": "1a898d092a017bc1284c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5707,
+          "path": "www/index.html",
+          "textFingerprint": "f0f4ae57c875ac7c9f6a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5708,
+          "path": "www/index.html",
+          "textFingerprint": "c1be8eef4b9c2ec29a20"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5712,
+          "path": "www/index.html",
+          "textFingerprint": "a66abc55d5bf9916ebbb"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5713,
+          "path": "www/index.html",
+          "textFingerprint": "39d24e7a06ff9f58d8c4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5715,
+          "path": "www/index.html",
+          "textFingerprint": "90f5425148e0db9425dc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5719,
+          "path": "www/index.html",
+          "textFingerprint": "6f139ec0e20209a11095"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5720,
+          "path": "www/index.html",
+          "textFingerprint": "50fcf6f3a7381813d39c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5721,
+          "path": "www/index.html",
+          "textFingerprint": "048fc9aca58391a41c53"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5725,
+          "path": "www/index.html",
+          "textFingerprint": "4f170c24fefa610ffa81"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5726,
+          "path": "www/index.html",
+          "textFingerprint": "b81a9469eed3db96537a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5727,
+          "path": "www/index.html",
+          "textFingerprint": "1f8b914dbb5847b50b52"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:label",
+          "line": 573,
+          "path": "www/index.html",
+          "textFingerprint": "388cad7c0e615eeada8c"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:option",
+          "line": 573,
+          "path": "www/index.html",
+          "textFingerprint": "5a67a08577a2db8a84e6"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5731,
+          "path": "www/index.html",
+          "textFingerprint": "e07505166bba134dca86"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:button",
+          "line": 575,
+          "path": "www/index.html",
+          "textFingerprint": "e5dbdffb881648171031"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5759,
+          "path": "www/index.html",
+          "textFingerprint": "484b5b30a69c77ac9042"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 578,
+          "path": "www/index.html",
+          "textFingerprint": "8db296ef5695c5ce2c29"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5803,
+          "path": "www/index.html",
+          "textFingerprint": "8fc8833aba5755c7854d"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5824,
+          "path": "www/index.html",
+          "textFingerprint": "9338c41ba46a630e7ce8"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5827,
+          "path": "www/index.html",
+          "textFingerprint": "80ab5735d0d1f229f40a"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 583,
+          "path": "www/index.html",
+          "textFingerprint": "729eef0541a6a51a0ecc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5841,
+          "path": "www/index.html",
+          "textFingerprint": "e433e9d0640103d2e60e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5846,
+          "path": "www/index.html",
+          "textFingerprint": "e433e9d0640103d2e60e"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5882,
+          "path": "www/index.html",
+          "textFingerprint": "a7f3bbff6b95420bf1a4"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5887,
+          "path": "www/index.html",
+          "textFingerprint": "bfdf000d8c43c3008fc0"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5904,
+          "path": "www/index.html",
+          "textFingerprint": "af24b3ec5b3e8e787219"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5912,
+          "path": "www/index.html",
+          "textFingerprint": "4e9157419ad727e2c4b3"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5916,
+          "path": "www/index.html",
+          "textFingerprint": "66dcd15eb10b4fc37825"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5922,
+          "path": "www/index.html",
+          "textFingerprint": "6b2cb6f4ac203c8e7aad"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 5926,
+          "path": "www/index.html",
+          "textFingerprint": "585434ebb089f9d32e6f"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "element:h4",
+          "line": 596,
+          "path": "www/index.html",
+          "textFingerprint": "b2ca4043ebf7dac9bcc7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 6002,
+          "path": "www/index.html",
+          "textFingerprint": "56b8af2e25f006831dfc"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 6004,
+          "path": "www/index.html",
+          "textFingerprint": "59d856a9caab72450851"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 6006,
+          "path": "www/index.html",
+          "textFingerprint": "dffaab8dd6834b103915"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "script-message",
+          "line": 6009,
+          "path": "www/index.html",
+          "textFingerprint": "9f367ddf4cc7a78b76c7"
+        },
+        {
+          "code": "STATIC_LOCALIZATION_BYPASS",
+          "kind": "attribute:aria-label",
+          "line": 601,
+          "path": "www/index.html",
+          "textFingerprint": "3a17f80f7ff7b17637c1"
+        }
+      ],
+      "id": "A6-03",
+      "mandatory": true,
+      "metric": {
+        "dictionaryAvailable": true,
+        "dictionaryPhrases": 855,
+        "highConfidenceBypasses": 1307,
+        "scannedFirstPartyJavaScript": 53,
+        "scannedSurfaces": 12
+      },
+      "notes": "Evidence stores only source location, kind and a one-way text fingerprint; rendered/dynamic completeness is decided by A6-05.",
+      "result": "fail",
+      "rule": "Static text on controls, control labels, accessibility attributes, literal notification calls and first-party shared JavaScript DOM-label sinks must be covered by the shared localization dictionary unless it is business data, a proper name or an approved technical label.",
+      "severity": "P1",
+      "title": "Static localization bypass"
+    },
+    {
+      "auditId": "A7",
+      "evidence": [
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_AUDIT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_BACK_HOME"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_DISPOSED"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_ERROR"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_LANG"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_OPEN_MODULE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_PRINT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_READY"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_REPORT"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_REPORT_BATCH"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_SET_DATE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_SHARE"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_UI_MODE"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_WA"
+        },
+        {
+          "code": "MESSAGE_SENT_NEVER_HANDLED",
+          "type": "ST_WA_LINK"
+        },
+        {
+          "code": "MESSAGE_HANDLED_NEVER_SENT",
+          "type": "ST_WA_SENT"
+        }
+      ],
+      "id": "A7-02",
+      "mandatory": true,
+      "metric": {
+        "handledNeverSent": 4,
+        "sentNeverHandled": 12,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedContracts": 28
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "A definite unpaired shipped ST_* message is P1; heuristic absence of unpaired messages is unmeasured, never pass",
+      "severity": "P1",
+      "title": "Message lifecycle pairing"
+    },
+    {
+      "auditId": "A7",
+      "evidence": [
+        {
+          "code": "MODULE_ROUTE_NOT_MANIFEST_BOUND",
+          "path": "www/index.html"
+        }
+      ],
+      "id": "A7-04",
+      "mandatory": true,
+      "metric": {
+        "bindingMismatches": 1,
+        "modules": 11,
+        "rejectsUnsupportedVersion": true,
+        "sharedAssets": 9
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "Packaged shell, modules and shared runtimes must be byte/hash bound and reject unsupported protocol versions",
+      "severity": "P1",
+      "title": "Packaged protocol and manifest binding"
+    },
+    {
+      "auditId": "A7",
+      "evidence": [
+        {
+          "code": "UNDECLARED_GLOBAL_CONTRACT",
+          "contract": "window.SaagarStockVariancePolicy",
+          "line": 1521,
+          "path": "www/modules/stock/index.html"
+        }
+      ],
+      "id": "A7-05",
+      "mandatory": true,
+      "metric": {
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "undeclaredContractSites": 1
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "A definite undeclared parent/global contract use is P1; heuristic absence is unmeasured, never pass, because alias and computed access can evade the scan",
+      "severity": "P1",
+      "title": "Declared parent and global contracts"
+    },
+    {
+      "auditId": "A8",
+      "evidence": [
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "onsuccess",
+          "line": 5276,
+          "path": "www/index.html",
+          "sink": "POPUP"
+        },
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "sendPrint",
+          "line": 4272,
+          "path": "www/modules/service/index.html",
+          "sink": "PRINT"
+        }
+      ],
+      "id": "A8-02",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 4,
+        "bypasses": 2,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedPaths": 6
+      },
+      "notes": "Names such as token, SaagarExportControl or beginDelivery do not authorize a sink unless the control is invoked and denial returns or throws before delivery.",
+      "result": "fail",
+      "rule": "Every reachable download, print, popup, browser share or native share delivery must have a structural fail-closed begin-delivery guard, or be a helper whose every call site has that guard.",
+      "severity": "P0",
+      "title": "Export policy bypass"
+    },
+    {
+      "auditId": "A8",
+      "evidence": [
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "runBackupInner",
+          "line": 438,
+          "path": "www/auto-backup.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "authorizePublication",
+          "line": 74,
+          "path": "www/etp-import-runtime.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "promptVerifyOnlyResult",
+          "line": 1690,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 1720,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2306,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2465,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2531,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "verifyStaffPin",
+          "line": 2941,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "authorizeMessage",
+          "line": 562,
+          "path": "www/legal-control.js"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "applyCroLeaveFilter",
+          "line": 2506,
+          "path": "www/modules/cro_audit/index.html"
+        }
+      ],
+      "id": "A8-03",
+      "mandatory": true,
+      "metric": {
+        "affectedFunctions": 81,
+        "failOpenPaths": 10,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": false,
+        "unresolvedPaths": 237
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "An authentication, authorization or PIN control must deny when its required control is absent or throws.",
+      "severity": "P0",
+      "title": "Fail-open authentication and PIN controls"
+    }
+  ],
+  "format": "SAAGAR_WHOLE_APP_AUDIT_FINDINGS",
+  "productBaselineSha": "8f96480ec6ddfc99016af43a7369f57a06cb9fd6",
+  "schemaVersion": 1,
+  "targetSha": "11bb84abc74c5dd3073df6074b45f67b3fbb9597"
+}

@@ -1,0 +1,125 @@
+{
+  "format": "SAAGAR_PHASE4C_FINAL_SEEDED_APK_EVIDENCE",
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-17T04:07:37.2873791+05:30",
+  "identity": {
+    "auditedTargetSha": "3f8a37cebf998cf6dd006e3a33de95600d3808f3",
+    "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+    "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308",
+    "auditProgramVersion": "saagar-whole-app-audit-v1.0.0",
+    "buildWorktree": "detached-linked-worktree",
+    "cleanBeforeBuild": true,
+    "cleanAfterBuild": true
+  },
+  "artifact": {
+    "file": "V:\\Co work\\Projects\\Retail\\SaagarCC-Phase4C-Seeded-2Y-v2.9-3f8a37ce-F4DDBC1D.apk",
+    "bytes": 7010282,
+    "sha256": "F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED",
+    "package": "com.saagartraders.bcc",
+    "applicationLabel": "Saagar Control Centre",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "compileSdk": 34,
+    "minSdk": 23,
+    "targetSdk": 34,
+    "profile": {
+      "id": "two-year-review-v1",
+      "daysBack": 730,
+      "walkInsPerWorkingDay": 25,
+      "syntheticOnly": true,
+      "stores": [
+        "WLMHW",
+        "HEMW"
+      ]
+    },
+    "packagedControls": {
+      "demoSeedEnabled": true,
+      "daysBackIs730": true,
+      "walkInsPerWorkingDayIs25": true,
+      "profileMarkerPresent": true,
+      "syntheticBannerPresent": true
+    },
+    "sourceRestoredAfterBuild": {
+      "wwwDemoSeedEnabled": false,
+      "generatedAndroidDemoSeedEnabled": false,
+      "defaultDaysBack": 365,
+      "defaultWalkInsPerWorkingDay": 50
+    },
+    "signing": {
+      "certificateType": "Android debug certificate",
+      "signerCount": 1,
+      "v1Verified": true,
+      "v2Verified": true,
+      "v3Verified": false,
+      "v31Verified": false,
+      "v4Verified": false,
+      "certificateSha256": "faae9739c054b88b4c9cee8f62bf1dfa103807b7a45a835d901467cb26fe05dc"
+    }
+  },
+  "buildVerification": {
+    "command": "npm run build:apk:seeded-2y",
+    "gradleTask": "assembleDebug",
+    "result": "pass",
+    "tests": {
+      "command": "node --test tests/seeded-apk-profile.test.mjs tests/seeded-apk-runtime.test.mjs tests/api23-compatibility-build.test.mjs",
+      "passed": 12,
+      "failed": 0
+    }
+  },
+  "api23Emulator": {
+    "avd": "saagar_api23_evidence",
+    "serial": "emulator-5554",
+    "deviceModel": "Android SDK built for x86_64",
+    "androidVersion": "6.0",
+    "apiLevel": 23,
+    "installReplace": {
+      "command": "adb -s emulator-5554 install -r <exact-apk>",
+      "result": "success",
+      "elapsedMs": 2215,
+      "uidBefore": 10056,
+      "uidAfter": 10056,
+      "firstInstallTimePreserved": "2026-08-12 09:46:52",
+      "dataKiBBefore": 28036,
+      "dataKiBAfter": 28036
+    },
+    "installedArtifact": {
+      "packagePath": "/data/app/com.saagartraders.bcc-2/base.apk",
+      "bytes": 7010282,
+      "sha256": "F4DDBC1D210AC0FB722333741085FF81B4D20C5B2523DB72ED6ACF2F1B510AED",
+      "matchesFrozenArtifact": true
+    },
+    "preservedState": {
+      "bccDekMd5Before": "32bf42785c9c3be1adc3d5299f809c11",
+      "bccDekMd5AfterReplaceAndRecreation": "32bf42785c9c3be1adc3d5299f809c11",
+      "qmsArchiveMd5Before": "d44304a2c3ab7b58245ca89926fab2c5",
+      "qmsArchiveMd5AfterReplaceAndRecreation": "d44304a2c3ab7b58245ca89926fab2c5",
+      "preserved": true
+    },
+    "launch": {
+      "activity": "com.saagartraders.bcc/.MainActivity",
+      "status": "ok",
+      "thisTimeMs": 680,
+      "focused": true,
+      "processLive": true
+    },
+    "processRecreation": {
+      "backgroundedThenKilled": true,
+      "status": "ok",
+      "thisTimeMs": 411,
+      "focused": true,
+      "processLive": true,
+      "dataKiBAfter": 28052
+    },
+    "fatalLogMatches": 0,
+    "result": "pass"
+  },
+  "claimsBoundary": {
+    "reviewArtifactOnly": true,
+    "productionSigned": false,
+    "physicalDeviceAcceptanceClosed": false,
+    "a10_04Closed": false,
+    "a10_05Closed": false,
+    "uatClosed": false,
+    "releaseApproved": false
+  }
+}

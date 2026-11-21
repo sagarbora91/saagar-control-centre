@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = fs.readFileSync(path.join(root, 'www/shared/mah4-runtime.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'www/index.html'), 'utf8');
-const moduleIds = ['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning'];
+const moduleIds = ['stock','service','qms','dsr','expense','grooming','cro_audit','payroll','leave','tax','planning','etp'];
 
 test('Stage B runtime is one synchronous offline immutable browser global', () => {
   assert.doesNotMatch(source, /\b(?:import|export)\b|https?:\/\//);
@@ -17,7 +17,7 @@ test('Stage B runtime is one synchronous offline immutable browser global', () =
   new vm.Script(source);
 });
 
-test('Stage B runtime loads in the shell and all eleven modules', () => {
+test('Stage B runtime loads in the shell and all twelve modules', () => {
   assert.equal((shell.match(/shared\/mah4-runtime\.js/g) || []).length, 1);
   assert.doesNotMatch(shell, /id==='planning'/);
   for (const id of moduleIds) {
@@ -129,8 +129,9 @@ test('metadata audit hashes repeated storage keys with canonical SHA-256 and que
   } });
   await Promise.all([firstAudit, secondAudit]);
   const audits = posted.filter(item => item.message.type === 'ST_AUDIT').map(item => item.message.payload);
+  const auditsByAction = Object.fromEntries(audits.map(audit => [audit.action, audit]));
   assert.equal(audits.length, 2);
-  assert.equal(audits[0].storageKeyHash, crypto.createHash('sha256').update('customer-key').digest('hex'));
-  assert.equal(audits[1].storageKeyHash, crypto.createHash('sha256').update('second-key').digest('hex'));
+  assert.equal(auditsByAction['module.storage.set'].storageKeyHash, crypto.createHash('sha256').update('customer-key').digest('hex'));
+  assert.equal(auditsByAction['module.storage.remove'].storageKeyHash, crypto.createHash('sha256').update('second-key').digest('hex'));
   assert.deepEqual(Object.keys(audits[0]).sort(), ['action','afterBytes','beforeBytes','storageKeyHash']);
 });

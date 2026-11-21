@@ -30,7 +30,7 @@
 
   var DB_FILE = 'bcc.sqlite';
   var SAVE_DEBOUNCE = 3000;
-  var LOG_KEY = 'saagar_sqlite_log';
+  var SQLITE_LOG_KEY = 'saagar_sqlite_log';
 
   var SQL = null, db = null, ready = false, dirty = false, saveTimer = null, lastSavedAt = null, lastError = '';
 
@@ -48,7 +48,7 @@
   }
 
   function log(m) {
-    try { var a = JSON.parse(nGet(LOG_KEY) || '[]'); a.unshift({ at: new Date().toISOString(), m: String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet(LOG_KEY, JSON.stringify(a)); } catch (e) {}
+    try { var a = JSON.parse(nGet(SQLITE_LOG_KEY) || '[]'); a.unshift({ at: new Date().toISOString(), m: String(m) }); if (a.length > 60) a = a.slice(0, 60); nSet(SQLITE_LOG_KEY, JSON.stringify(a)); } catch (e) {}
     try { console.log('[sqlite-store] ' + m); } catch (e) {}
   }
 
@@ -103,8 +103,8 @@
   function installWriteThrough() {
     var SP = (window.Storage && window.Storage.prototype) || null;
     if (!SP) { log('Storage.prototype unavailable — write-through skipped'); return; }
-    SP.setItem = function (k, v) { var r = nSet(k, v); if (ready && String(k) !== LOG_KEY) kvUpsert(k, v); return r; };
-    SP.removeItem = function (k) { var r = nRemove(k); if (ready && String(k) !== LOG_KEY) kvDelete(k); return r; };
+    SP.setItem = function (k, v) { var r = nSet(k, v); if (ready && String(k) !== SQLITE_LOG_KEY) kvUpsert(k, v); return r; };
+    SP.removeItem = function (k) { var r = nRemove(k); if (ready && String(k) !== SQLITE_LOG_KEY) kvDelete(k); return r; };
     SP.clear = function () { var r = nClear(); if (ready && db) { try { db.run('DELETE FROM kv'); dirty = true; scheduleSave(); } catch (e) {} } return r; };
   }
 
@@ -125,7 +125,7 @@
     // boot, so a count-based guard (old lsCount<=2) never fired and recovery was effectively dead.
     // Deliberately-deleted data is removed from the DB too (write-through), so it won't resurrect.
     var missing = [];
-    for (var qi = 0; qi < dbKeys.length; qi++) { var dk = dbKeys[qi]; if (dk === LOG_KEY) continue; try { if (nGet(dk) == null) missing.push(dk); } catch (e) {} }
+    for (var qi = 0; qi < dbKeys.length; qi++) { var dk = dbKeys[qi]; if (dk === SQLITE_LOG_KEY) continue; try { if (nGet(dk) == null) missing.push(dk); } catch (e) {} }
     if (missing.length > 3) {
       missing.forEach(function (k) { try { nSet(k, dbRows[k]); } catch (e) {} });
       log('recovery: hydrated ' + missing.length + ' missing key(s) from DB -> reloading');
@@ -136,7 +136,7 @@
     var n = 0;
     try {
       for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i); if (k == null || k === LOG_KEY) continue;
+        var k = localStorage.key(i); if (k == null || k === SQLITE_LOG_KEY) continue;
         var v = nGet(k); if (dbRows[k] !== v) { kvUpsert(k, v); n++; }
       }
     } catch (e) {}

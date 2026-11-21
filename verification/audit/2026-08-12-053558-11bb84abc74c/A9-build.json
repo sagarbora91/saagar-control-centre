@@ -1,0 +1,109 @@
+{
+  "auditId": "A9",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "TWO_BUILD_EVIDENCE_ABSENT"
+        }
+      ],
+      "id": "A9-01",
+      "mandatory": true,
+      "metric": {
+        "available": false,
+        "source": "none",
+        "valid": false
+      },
+      "notes": "No runner-controlled two-build comparison was captured.",
+      "result": "unmeasured",
+      "rule": "Two runner-controlled isolated builds under the same recorded toolchain must have equal normalized entry-name/content hashes; raw APK hashes are compared separately.",
+      "severity": "INFO",
+      "title": "Isolated APK reproducibility"
+    },
+    {
+      "evidence": [
+        {
+          "code": "TWO_BUILD_EVIDENCE_ABSENT"
+        }
+      ],
+      "id": "A9-02",
+      "mandatory": true,
+      "metric": {
+        "canonical": {
+          "appVersion": "V5.5",
+          "minSdk": 23,
+          "packageId": "com.saagartraders.bcc",
+          "versionCode": 209,
+          "versionName": "2.9"
+        },
+        "comparedTrackedSources": 5,
+        "generatedBuilds": 0,
+        "generatedMismatches": 0,
+        "trackedMismatches": 0
+      },
+      "notes": "Tracked identity sources were checked, but no trusted generated Android receipt was available.",
+      "result": "unmeasured",
+      "rule": "Tracked centralized identity consumers and both runner-generated Android receipts must agree on package, version, minimum SDK and generated source identities.",
+      "severity": "INFO",
+      "title": "Version and build identity agreement"
+    },
+    {
+      "evidence": [],
+      "id": "A9-03",
+      "mandatory": true,
+      "metric": {
+        "committedProductionEntries": 1,
+        "disabledDeclarations": 1,
+        "enablementFindings": 0
+      },
+      "notes": "The explicit test-harness force flag and the separate seeded-build transformer are not production enablement.",
+      "result": "pass",
+      "rule": "Every committed production entry asset must contain exactly one disabled demo-seed declaration and no unconditional enabled declaration.",
+      "severity": "P0",
+      "title": "Production seed enablement"
+    },
+    {
+      "evidence": [],
+      "id": "A9-04",
+      "mandatory": true,
+      "metric": {
+        "boundEntries": 20,
+        "mismatches": 0,
+        "modules": 11,
+        "sharedAssets": 9
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Every manifest-bound module and shared runtime must match its declared byte count and SHA-256.",
+      "severity": "P0",
+      "title": "Module manifest byte and hash integrity"
+    },
+    {
+      "evidence": [
+        {
+          "code": "TWO_BUILD_EVIDENCE_ABSENT"
+        }
+      ],
+      "id": "A9-05",
+      "mandatory": true,
+      "metric": {
+        "generatedBuilds": 0,
+        "generatedReceiptFindings": 0,
+        "requiredEnvironmentInputs": 4,
+        "trackedSourceFindings": 0
+      },
+      "notes": "Tracked signing enforcement was checked, but no trusted post-override signing receipt was available.",
+      "result": "unmeasured",
+      "rule": "Tracked signing enforcement and both post-override generated receipts must prove non-debuggable fail-closed release signing without committed secrets.",
+      "severity": "INFO",
+      "title": "Fail-closed release signing"
+    }
+  ],
+  "metrics": {
+    "identityMismatches": 0,
+    "manifestMismatches": 0,
+    "signingMismatches": 0,
+    "twoBuildEvidence": false
+  },
+  "title": "Build and release reproducibility"
+}

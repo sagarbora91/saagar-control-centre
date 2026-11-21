@@ -7,6 +7,16 @@ import { readModuleManifestSource, renderModuleManifestSource } from './lib/modu
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const definitions = Object.freeze({
+  stock: Object.freeze({
+    nextSteps: Object.freeze([]),
+    customerSelectors: Object.freeze([]),
+    accessContext: true
+  }),
+  service: Object.freeze({
+    nextSteps: Object.freeze([{ id: 'qms', label: 'Back to Queue →' }]),
+    customerSelectors: Object.freeze(['#f-cn', '#f-an', '#f-dcs']),
+    accessContext: true
+  }),
   dsr: Object.freeze({
     nextSteps: Object.freeze([{ id: 'stock', label: 'Update Stock →' }]),
     customerSelectors: Object.freeze([]),
@@ -15,6 +25,25 @@ const definitions = Object.freeze({
   qms: Object.freeze({
     nextSteps: Object.freeze([{ id: 'dsr', label: 'Record in DSR →' }]),
     customerSelectors: Object.freeze(['#custName']),
+    accessContext: false
+  }),
+  expense: Object.freeze({
+    nextSteps: Object.freeze([{ id: 'tax', label: 'Check Tax →' }]),
+    customerSelectors: Object.freeze([]),
+    accessContext: true
+  }),
+  grooming: Object.freeze({
+    nextSteps: Object.freeze([{ id: 'qms', label: 'Open Queue →' }]),
+    customerSelectors: Object.freeze([]),
+    accessContext: false
+  }),
+  cro_audit: Object.freeze({ nextSteps: Object.freeze([]), customerSelectors: Object.freeze([]), accessContext: false }),
+  payroll: Object.freeze({ nextSteps: Object.freeze([]), customerSelectors: Object.freeze([]), accessContext: false }),
+  leave: Object.freeze({ nextSteps: Object.freeze([]), customerSelectors: Object.freeze([]), accessContext: false }),
+  tax: Object.freeze({ nextSteps: Object.freeze([]), customerSelectors: Object.freeze([]), accessContext: false }),
+  planning: Object.freeze({
+    nextSteps: Object.freeze([]),
+    customerSelectors: Object.freeze([]),
     accessContext: false
   })
 });
@@ -38,9 +67,8 @@ function apply(moduleId) {
   const modulePath = path.join(root, 'www', 'modules', moduleId, 'index.html');
   let html = fs.readFileSync(modulePath, 'utf8');
   const config = literal({ schemaVersion: 1, moduleId, ...definition });
-  if (!html.includes('../../shared/module-runtime.js')) {
-    html = html.replace(/<head>(\r?\n)/, `<head>$1<script src="../../shared/module-runtime.js"></script>$1`);
-  }
+  if (!html.includes('../../shared/module-bridge.js')) html = html.replace(/<head>(\r?\n)/, `<head>$1<script src="../../shared/module-bridge.js"></script>$1`);
+  if (!html.includes('../../shared/module-runtime.js')) html = html.replace(/<head>(\r?\n)/, `<head>$1<script src="../../shared/module-runtime.js"></script>$1`);
   for (const [id, stage] of stages) {
     const expression = new RegExp(`(<script\\b[^>]*id=["']${id}["'][^>]*>)[\\s\\S]*?(<\\/script>)`, 'i');
     if (!expression.test(html)) throw new Error(`Missing ${moduleId} helper: ${id}`);
@@ -63,5 +91,5 @@ function apply(moduleId) {
 }
 
 const requested = process.argv.slice(2);
-if (requested.length !== 1) throw new Error('Usage: node scripts/apply-mah-runtime-canary.mjs <dsr|qms>');
-process.stdout.write(`${JSON.stringify(apply(requested[0]))}\n`);
+if (!requested.length) throw new Error('Usage: node scripts/apply-mah-runtime-canary.mjs <module-id> [module-id ...]');
+process.stdout.write(`${JSON.stringify(requested.map(apply))}\n`);

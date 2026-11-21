@@ -1,0 +1,174 @@
+{
+  "auditId": "A8",
+  "checks": [
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:29a094757fbc5386d379ee73e71a30228b348308:a7-a8-static-syntax-census-v3"
+        }
+      ],
+      "id": "A8-01",
+      "mandatory": true,
+      "metric": {
+        "highConfidenceFlows": 0,
+        "runtimeFiles": 78,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true
+      },
+      "notes": "A definite static flow fails. Regex absence cannot prove end-to-end non-flow and remains unmeasured; evidence never includes values or call text.",
+      "result": "pass",
+      "rule": "A PII-bearing identifier must not reach console, network or direct share sinks outside an export-controlled delivery function.",
+      "severity": "P0",
+      "title": "PII flow to unapproved sinks"
+    },
+    {
+      "evidence": [
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "onsuccess",
+          "line": 6359,
+          "path": "www/index.html",
+          "sink": "POPUP"
+        },
+        {
+          "code": "EXPORT_POLICY_BYPASS",
+          "function": "sendPrint",
+          "line": 4383,
+          "path": "www/modules/service/index.html",
+          "sink": "PRINT"
+        }
+      ],
+      "id": "A8-02",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 2,
+        "bypasses": 2,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unresolvedPaths": 0
+      },
+      "notes": "Names such as token, SaagarExportControl or beginDelivery do not authorize a sink unless the control is invoked and denial returns or throws before delivery.",
+      "result": "fail",
+      "rule": "Every reachable download, print, popup, browser share or native share delivery must have a structural fail-closed begin-delivery guard, or be a helper whose every call site has that guard.",
+      "severity": "P0",
+      "title": "Export policy bypass"
+    },
+    {
+      "evidence": [
+        {
+          "code": "AUTH_FAIL_OPEN_ABSENT_CONTROL",
+          "function": "SaagarReauth",
+          "line": 3061,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "SaagarReauth",
+          "line": 3077,
+          "path": "www/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "stReauth",
+          "line": 1734,
+          "path": "www/modules/dsr/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "stReauth",
+          "line": 771,
+          "path": "www/modules/expense/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "stReauth",
+          "line": 1840,
+          "path": "www/modules/payroll/index.html"
+        },
+        {
+          "code": "AUTH_FAIL_OPEN_EXCEPTION",
+          "function": "stReauth",
+          "line": 1449,
+          "path": "www/modules/stock/index.html"
+        }
+      ],
+      "id": "A8-03",
+      "mandatory": true,
+      "metric": {
+        "affectedFunctions": 5,
+        "failOpenPaths": 6,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unresolvedPaths": 0
+      },
+      "notes": "",
+      "result": "fail",
+      "rule": "An authentication, authorization or PIN control must deny when its required control is absent or throws.",
+      "severity": "P0",
+      "title": "Fail-open authentication and PIN controls"
+    },
+    {
+      "evidence": [
+        {
+          "code": "STATIC_DISCOVERY_COVERAGE_COMPLETE",
+          "source": "frozen-audit-tooling:29a094757fbc5386d379ee73e71a30228b348308:a8-tracked-secret-census-v1"
+        }
+      ],
+      "id": "A8-04",
+      "mandatory": true,
+      "metric": {
+        "binaryFilesSkipped": 3,
+        "scannedBytes": 15689935,
+        "scannedTextFiles": 372,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "trackedFiles": 375,
+        "unresolvedFiles": 0,
+        "verifiedSecretPatterns": 0
+      },
+      "notes": "The report emits only rule identifier, file, line and one-way fingerprint; suspected values are never emitted.",
+      "result": "pass",
+      "rule": "Every tracked nonbinary text file must be bounded-scanned for private keys, secret-bearing files and high-confidence credential formats.",
+      "severity": "P0",
+      "title": "Tracked secret scan"
+    },
+    {
+      "evidence": [
+        {
+          "code": "REMOTE_TARGET_POLICY_NOT_CLOSED",
+          "definiteRemoteCalls": 24,
+          "siteInventorySha256": "1712bfcadeeb51c98c630fa93ab6826fa260546ab382039f5c207991b1944990",
+          "unresolvedDynamicTargets": 1
+        }
+      ],
+      "id": "A8-05",
+      "mandatory": true,
+      "metric": {
+        "affectedFiles": 8,
+        "allowedLiteralPrefixes": 4,
+        "staticAbsenceIsProof": false,
+        "staticDiscoveryComplete": true,
+        "unapprovedRemoteCalls": 24,
+        "unresolvedDynamicTargets": 1
+      },
+      "notes": "Every unresolved dynamic target is a fail-closed policy violation until it is structurally resolved.",
+      "result": "fail",
+      "rule": "Shipped runtime must not contain a reachable literal external request, remote asset, navigation or message target outside approved contexts; dynamic targets must be resolved before pass.",
+      "severity": "P0",
+      "title": "Unapproved remote runtime behavior"
+    }
+  ],
+  "metrics": {
+    "authFailOpenPaths": 6,
+    "authUnresolvedPaths": 0,
+    "exportBypasses": 2,
+    "exportUnresolvedPaths": 0,
+    "piiFlowFindings": 0,
+    "remoteFindings": 24,
+    "remoteUnresolved": 1,
+    "secretFindings": 0,
+    "secretScanUnresolved": 0
+  },
+  "title": "Security and privacy"
+}

@@ -12,9 +12,16 @@
 www/** text eol=lf
 verification/** text eol=lf
 
+# Evidence images under verification must remain binary after the recursive rule.
+verification/**/*.png binary
+verification/**/*.jpg binary
+verification/**/*.jpeg binary
+
 # Reassert binary handling after the recursive source rules above.
 www/**/*.wasm binary
 www/**/*.apk binary
 www/**/*.png binary
 www/**/*.jpg binary
 www/**/*.ico binary
+# Phase 6I identity: this sheet carries 3 CRs (lines 6-8) that the manifest expects; store it byte-exact (stage with git add --renormalize).
+www/shared/module-mobile-common.css -text

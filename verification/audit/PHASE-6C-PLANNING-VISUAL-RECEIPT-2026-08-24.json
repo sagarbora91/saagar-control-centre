@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "phase6c-planning-visual-2026-08-24",
+  "capturedAt": "2026-08-24T08:16:03.315Z",
+  "browserIdentity": "Codex In-app Browser",
+  "userAgentCaptured": false,
+  "userAgent": null,
+  "capturedProductCommit": "332bf3e",
+  "applicabilityProductCommit": "332bf3e",
+  "legacyAssetSha256": "acc970dbe54fb99b0dfa25a2807fb3626ba11130fcd87969ca336d8000efa443",
+  "module": "planning",
+  "htmlClass": "bcc-mobile",
+  "readyState": "complete",
+  "comparison": "current-extracted-versus-reconstructed-inline-baseline",
+  "allPngBytesIdentical": true,
+  "allLayoutDimensionsIdentical": true,
+  "captures": [
+    { "viewport": [360, 800], "extractedPngBytes": 33590, "reconstructedPngBytes": 33590, "extractedPngSha256": "579b30df8e56c634752d78322fb15dda48902415eb20b9ffb1569d83199e0f24", "reconstructedPngSha256": "579b30df8e56c634752d78322fb15dda48902415eb20b9ffb1569d83199e0f24", "layout": [345, 1064] },
+    { "viewport": [412, 915], "extractedPngBytes": 38651, "reconstructedPngBytes": 38651, "extractedPngSha256": "5b0e843398b3824cbff4035194370fdc5e6b20798d2e0794be1b9853fd21e614", "reconstructedPngSha256": "5b0e843398b3824cbff4035194370fdc5e6b20798d2e0794be1b9853fd21e614", "layout": [397, 1032] },
+    { "viewport": [800, 600], "extractedPngBytes": 39901, "reconstructedPngBytes": 39901, "extractedPngSha256": "b9cdc5c5f23500ada08a7cbbdbb17d602c2f7e36e16d47ff328286ef81ae408c", "reconstructedPngSha256": "b9cdc5c5f23500ada08a7cbbdbb17d602c2f7e36e16d47ff328286ef81ae408c", "layout": [785, 745] },
+    { "viewport": [1365, 768], "extractedPngBytes": 55976, "reconstructedPngBytes": 55976, "extractedPngSha256": "0e9d0a973161814a1422517d14cd8db42b994688655811d6613c1eb3ce4c39d6", "reconstructedPngSha256": "0e9d0a973161814a1422517d14cd8db42b994688655811d6613c1eb3ce4c39d6", "layout": [1350, 798] },
+    { "viewport": [639, 800], "extractedPngBytes": 41761, "reconstructedPngBytes": 41761, "extractedPngSha256": "4ef0ec819574aa89fa09f7e28ac45febf2f72b26f2a7b9e546fd654c453b6001", "reconstructedPngSha256": "4ef0ec819574aa89fa09f7e28ac45febf2f72b26f2a7b9e546fd654c453b6001", "layout": [624, 954] },
+    { "viewport": [640, 800], "extractedPngBytes": 41871, "reconstructedPngBytes": 41871, "extractedPngSha256": "8c7a82343e8240009622e0e44c42341c715033f34b9afce98b4536853e8c4ab8", "reconstructedPngSha256": "8c7a82343e8240009622e0e44c42341c715033f34b9afce98b4536853e8c4ab8", "layout": [625, 954] },
+    { "viewport": [899, 800], "extractedPngBytes": 46791, "reconstructedPngBytes": 46791, "extractedPngSha256": "f896e7ac39a951a5d7fe33c940cfa849f6730f86f954fe6a0f2d0dfd57ffb28c", "reconstructedPngSha256": "f896e7ac39a951a5d7fe33c940cfa849f6730f86f954fe6a0f2d0dfd57ffb28c", "layout": [899, 728] },
+    { "viewport": [900, 800], "extractedPngBytes": 48485, "reconstructedPngBytes": 48485, "extractedPngSha256": "96829d9d95c2ffcc2641177af5bc83e3daa9e6d5ec712689c876c495fbb1a351", "reconstructedPngSha256": "96829d9d95c2ffcc2641177af5bc83e3daa9e6d5ec712689c876c495fbb1a351", "layout": [900, 728] },
+    { "viewport": [1199, 800], "extractedPngBytes": 50862, "reconstructedPngBytes": 50862, "extractedPngSha256": "697eeb8b85cea40dabe3aed4abe6c4d93c4520164c9fb1eeccd8bcd1a65222c3", "reconstructedPngSha256": "697eeb8b85cea40dabe3aed4abe6c4d93c4520164c9fb1eeccd8bcd1a65222c3", "layout": [1199, 798] },
+    { "viewport": [1200, 800], "extractedPngBytes": 50688, "reconstructedPngBytes": 50688, "extractedPngSha256": "25c44538ffe6925c67f32de2993b969bfd7e76f663161a268f429ff49af6ab94", "reconstructedPngSha256": "25c44538ffe6925c67f32de2993b969bfd7e76f663161a268f429ff49af6ab94", "layout": [1200, 798] }
+  ]
+}

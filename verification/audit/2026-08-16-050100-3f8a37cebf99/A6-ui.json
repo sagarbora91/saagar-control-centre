@@ -1,0 +1,1836 @@
+{
+  "auditId": "A6",
+  "checks": [
+    {
+      "evidence": [],
+      "id": "A6-01",
+      "mandatory": true,
+      "metric": {
+        "canonicalTokens": 16,
+        "definitions": 100,
+        "divergences": 0,
+        "filesWithDefinitions": 9
+      },
+      "notes": "Absence of a token is not called divergence; this check compares only definitions of the canonical shared names.",
+      "result": "pass",
+      "rule": "Every definition of a shared SAAGAR design token must equal its canonical normalized value.",
+      "severity": "P2",
+      "title": "Shared design-token divergence"
+    },
+    {
+      "evidence": [
+        {
+          "code": "UI_SURFACE",
+          "path": "www/index.html",
+          "requiredCells": 6,
+          "surfaceId": "shell"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/cro_audit/index.html",
+          "requiredCells": 6,
+          "surfaceId": "cro_audit"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/dsr/index.html",
+          "requiredCells": 6,
+          "surfaceId": "dsr"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/expense/index.html",
+          "requiredCells": 6,
+          "surfaceId": "expense"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/grooming/index.html",
+          "requiredCells": 6,
+          "surfaceId": "grooming"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/leave/index.html",
+          "requiredCells": 6,
+          "surfaceId": "leave"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/payroll/index.html",
+          "requiredCells": 6,
+          "surfaceId": "payroll"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/planning/index.html",
+          "requiredCells": 6,
+          "surfaceId": "planning"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/qms/index.html",
+          "requiredCells": 6,
+          "surfaceId": "qms"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/service/index.html",
+          "requiredCells": 6,
+          "surfaceId": "service"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/stock/index.html",
+          "requiredCells": 6,
+          "surfaceId": "stock"
+        },
+        {
+          "code": "UI_SURFACE",
+          "path": "www/modules/tax/index.html",
+          "requiredCells": 6,
+          "surfaceId": "tax"
+        }
+      ],
+      "id": "A6-02",
+      "mandatory": false,
+      "metric": {
+        "languageInventory": [
+          "en",
+          "mr",
+          "hi"
+        ],
+        "languages": 3,
+        "matrixCells": 72,
+        "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+        "surfaceInventory": [
+          {
+            "id": "cro_audit",
+            "path": "www/modules/cro_audit/index.html"
+          },
+          {
+            "id": "dsr",
+            "path": "www/modules/dsr/index.html"
+          },
+          {
+            "id": "expense",
+            "path": "www/modules/expense/index.html"
+          },
+          {
+            "id": "grooming",
+            "path": "www/modules/grooming/index.html"
+          },
+          {
+            "id": "leave",
+            "path": "www/modules/leave/index.html"
+          },
+          {
+            "id": "payroll",
+            "path": "www/modules/payroll/index.html"
+          },
+          {
+            "id": "planning",
+            "path": "www/modules/planning/index.html"
+          },
+          {
+            "id": "qms",
+            "path": "www/modules/qms/index.html"
+          },
+          {
+            "id": "service",
+            "path": "www/modules/service/index.html"
+          },
+          {
+            "id": "shell",
+            "path": "www/index.html"
+          },
+          {
+            "id": "stock",
+            "path": "www/modules/stock/index.html"
+          },
+          {
+            "id": "tax",
+            "path": "www/modules/tax/index.html"
+          }
+        ],
+        "surfaces": 12,
+        "viewportInventory": [
+          {
+            "height": 844,
+            "id": "mobile-390x844",
+            "width": 390
+          },
+          {
+            "height": 768,
+            "id": "desktop-1366x768",
+            "width": 1366
+          }
+        ],
+        "viewports": 2
+      },
+      "notes": "",
+      "result": "pass",
+      "rule": "Enumerate every discovered shell/module surface across the frozen mobile/desktop viewports and English, Marathi and Hindi.",
+      "severity": "INFO",
+      "title": "Surface, viewport and language matrix"
+    },
+    {
+      "evidence": [],
+      "id": "A6-03",
+      "mandatory": true,
+      "metric": {
+        "dictionaryAvailable": true,
+        "dictionaryPhrases": 2004,
+        "highConfidenceBypasses": 0,
+        "scannedFirstPartyJavaScript": 53,
+        "scannedSurfaces": 12
+      },
+      "notes": "Evidence stores only source location, kind and a one-way text fingerprint; rendered/dynamic completeness is decided by A6-05.",
+      "result": "pass",
+      "rule": "Static text on controls, control labels, accessibility attributes, literal notification calls and first-party shared JavaScript DOM-label sinks must be covered by the shared localization dictionary unless it is business data, a proper name or an approved technical label.",
+      "severity": "P1",
+      "title": "Static localization bypass"
+    },
+    {
+      "evidence": [
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "6f8d647e15946a113e906cf32f48acf2d51ed2f798941b5e00adee83aa579d1f",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "e8d76183acd8b65c3e64ef774e2a96eb1791429a79d29b9a9d6ca188fb1fac97",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "2c8782a7a86c1cc8f32026dc97541e84d82a486662e13d6c0b8671dfdae55065",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "f41d081bad85e9e688651e359036aa55780c67377c45c4212176de6bcba63dad",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "204f43d0957b286c4af3deb380636ed71e62548da5af5def86c47db735e900c5",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "0c8855e29d0cc4c63caf44ae4dd632738089d41f347c37b45e55134c35394c7b",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "6e90b95e1735e802b7dc416d557ea35ede9e6b4fc765aaa93f0bddb777e8ed01",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "ae8869424f70edb3f248072ec9b46f2e76119458f79b0409cd827771f5d73ff5",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "04b9bd55f39013e5e9cb2a1fe5e6507535059e600d89358a9a8f88bff697499e",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "bf8b464e2fe7b95e312c2d55ddc8c315548bbe1323fdc8b23ab242077497fed4",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "eb7528ca852e7333265c09e6ef1ca0549347cc9af3a21e822faee5c3b32979d1",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "b3400cde3d386c17b1921838368e7f3a4e648e974a09ff372f0157eeee5b8ea3",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "bfc689e4638907faf9ff1547ddda42adf1f0f43d0de3712b835568afb03f1d09",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "e247178f65be0f821de3abf86de80d604bf0f0ea0f69b7fb2632ca5e404f70b5",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "7d44bd756cad491dd5ddce386c3271c5cc7216db6e6d0a1c659fd47b426f28e7",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "0ebe17bf06e05cc6701f1f91f2e92c60d147d91d758912fb497e743fff241eb3",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "715a27ae6934146fe2a9fe7e2a3626f1b3957f36015f8af51ef290f63d190531",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "cc3a82a4c4033ad2d17120aa179b6ce6a1c33d488eff55a9fb343802e15cf263",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "7e1dca26085093b250dc61465f04d0f9f821cbdf94da2642a0ec9ffa2021e3b1",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "1fb6b622fa410ad7953c14b4435064234113a4242c90bb830cd3f977de2c08c6",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "8d1f611c1b63e330c3f0435d12b6ea9bd86ab97c3668eb9267666560c90e8667",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "e9c6139d0fbe3241830b89a12e005f2b590ccf5782cae18afffed150c364bc84",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "f019eca757693186adecf0cfd3ead9fe1d18764f43a6ccd803d1ed985cd7aae1",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "06fd7a4c6fe83ba13e9649742d28145b94bf2127d408f7184576534be2d005d9",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "2fb2192682fcf3f6e34cf7a04a42049c92ed5bb11b90bc9f0b48fff718ab7c0f",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "2290f9930d910b4a7bf8cd33e7f91e7252815941438b8f27c518450a299ab462",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "38f918714c339d3cffa82da8f49ccd601e2d553eda5ca8decd89fba0e7a54f36",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "d0853837f5870ad0ee1c6217c541e666eafe8b5c80bccd212ad009680eb80600",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "820ad9ba949181885f39420697983337d877ef7c3a42f8157c14bcdfaed0ad9a",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "dc6f935f233a1270ed25d365fe585ecb37b5eeaa451e948a6180518647387b5c",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "a5fe6e63bce567f284141dd6f215661bb12b0f0991bb0c824281f0f87d8fe3b5",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "2256cf95a641bfb4f18c3dba78c986c8c95b7322625a4418f575966b30b61f13",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "67107d91ca27d117d269b787e3e239fba881fcee5127d34140f0b029cf12c3bb",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "84af494ea56e6618df30254143f802e675d19687aa53fc114151d0167aef75cd",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "7f0933d17dc10f08fd21931e74313888c9343a9678af55ef17e6e104fda66117",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "2d7e50a82afd9c298806c87a559ea1a6768473f51b5b986e6b6f00727c195668",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "7b5f45c52f8bdb48af851963cff7d063e0f196e6fadf1a85435d4b516305cf1d",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "5a3f6bd671af9eedfd3922af0a243dcb5f33aed4967f193cc7e1f8b5e8fa19d6",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "ede183efbb78bb65880d51552ff06eb389f4825daaf6d7c48f06e83b5faf1ff0",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "a26ed82247aa9ac9fcd5fb1e8efad8e7da2bb38ac75ead2775f6bf3605bcdcca",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "b2f56be1121ff2278e36ac5492f6790926985edacfea28b254826cc2f7fe1d1a",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "c1ff714d990a3be6f07ba46a70f7f03600a492a5c90d31a56ca088f38b03c0b7",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "8e35e699d6bac6675cc5b07b3c20c43786a7a8338c613203384c25a1be702fba",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "8f1916c236adc0ed892b927776cc325478fb9abbb3901275348822b97e734712",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "2d463c4c765ef29c6b940a9778d51c25c97745e34acbd209e3abdf347c9e9305",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "40a2c74cd155e269c9d7108cc794ba40231a75f5bc5736fe38a0cac665c1d8cb",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "b126728c3c423d0a8a13940cfe0de37017bdcea449a5b86277a83647a1ee8a2a",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "5b15fabb55505e45769750dfa042ad795d4c3bc2ed8bc2767a263ec5de43517f",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "117f2c957b60a50c07b5cdc9cecd63271aefee70abf879dd164819428e9dd012",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "d3d3d6c2a348deb127060feeaedfdb282e82af7e09d4c81ad8cd7b2db18938ad",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "f05bec1980f13290d7b2f12accb207b7e34d129277ebf81682a5b79cec8c4af1",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "fd8faf642983617598b2f9fa7d4adc2af4df3124da9d2bbdf4bfc520de569116",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "b829836785a9ededf10c42b0544358444e86f4ddaad4ebeb648b60ca41a723d0",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "1d61719edf5a13252586325cd98ac46cf588957bf06cdfa599e69666d8f750cb",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "b2a1be9b436708feb867cb44e419591b1715cc3a5133005b2e0c2fd5243ea254",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "13c061e6124733caf9ba446a8da188872719f1edb3cd70b223d8540546cb8ca3",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "6235c6c71e48c25d3536d55073f271d18754569bb8f615c3d4d9e62ce0845bdc",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "2081553a4777e225179fb4667120681b1c17f1c666111028b7905ad0842cd311",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "0fa56db9a4cc7838f0b193e6f7a80f4bda876c933366fb92229fcb0acc9315fe",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "d4e684e976b92bf990b09321c7417461e8ad550b3292bad5c15b76853a1aba1d",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "14b1ff9bf4d85fd436a15b4e738251fe4ff67d873e9e05b2d17ab0ccf2387221",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "a5b58661e3a58ce48def37c4d159cae4cfc731cc217b54d9860d37761354ebf6",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "9958131fc5bfc7f0843c90007cb42cab63807c224e12f255c8adb249aff82fb1",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "6cc96abde6db14b3ac122430da831595b8900e8559c0ae96e4540c727d38e39a",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "7badedb465dcef41ece8dae14c67cb48d8f97edd3628853f1061d2d53efd56da",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "e605e361167b9e65ed5197d1fbaba12cdad582e45089c972bbb7589549509942",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "f86bb1a8c05f65c8d3ba4b6a7b781a7706fb8bd0da0a70e50a3f3098e94b66b1",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "142ac249d41945f4fd79f4242ba9ad226ab5572891634510c776d05b4ceeb156",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "74184bfac0c8fed0b1f0b5819b5acff805963520e3237ca630517c064ddbb9b1",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "dd58a2a5d5f090724dc8fe1937c7cba4049bf87f070b78d5f729970370f11e88",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "a3f71195bb3d3ed1f2a5a0f57ef98bf5057736005b721084da0cb4c59ea50edd",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_UI_CELL_PASS",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "5a7b3bc22320266529fcba9d001dca55f6be7fb0e69a76490788b3b7a4512b83",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        }
+      ],
+      "id": "A6-04",
+      "mandatory": true,
+      "metric": {
+        "contrastViolations": 0,
+        "evidenceProvided": true,
+        "identityBound": true,
+        "largeTextContrast": 3,
+        "measuredCells": 72,
+        "measuredContrastSamples": 6105,
+        "measuredTargets": 2394,
+        "minimumTargetCssPixels": 44,
+        "normalTextContrast": 4.5,
+        "targetViolations": 0
+      },
+      "notes": "Computed target and contrast outcomes were supplied by the identity-bound external renderer; physical-device acceptance remains separate.",
+      "result": "pass",
+      "rule": "Rendered interactive targets must be at least 44 by 44 CSS pixels; normal text contrast must be at least 4.5:1 and large text at least 3:1.",
+      "severity": "P1",
+      "title": "Rendered target size and contrast"
+    },
+    {
+      "evidence": [
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "6f8d647e15946a113e906cf32f48acf2d51ed2f798941b5e00adee83aa579d1f",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "e8d76183acd8b65c3e64ef774e2a96eb1791429a79d29b9a9d6ca188fb1fac97",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 254,
+          "measuredTargets": 23,
+          "renderedEvidenceSha256": "2c8782a7a86c1cc8f32026dc97541e84d82a486662e13d6c0b8671dfdae55065",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "f41d081bad85e9e688651e359036aa55780c67377c45c4212176de6bcba63dad",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "204f43d0957b286c4af3deb380636ed71e62548da5af5def86c47db735e900c5",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 253,
+          "measuredTargets": 24,
+          "renderedEvidenceSha256": "0c8855e29d0cc4c63caf44ae4dd632738089d41f347c37b45e55134c35394c7b",
+          "surfaceId": "cro_audit",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "6e90b95e1735e802b7dc416d557ea35ede9e6b4fc765aaa93f0bddb777e8ed01",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "ae8869424f70edb3f248072ec9b46f2e76119458f79b0409cd827771f5d73ff5",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 12,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "04b9bd55f39013e5e9cb2a1fe5e6507535059e600d89358a9a8f88bff697499e",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "bf8b464e2fe7b95e312c2d55ddc8c315548bbe1323fdc8b23ab242077497fed4",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "eb7528ca852e7333265c09e6ef1ca0549347cc9af3a21e822faee5c3b32979d1",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 13,
+          "measuredTargets": 7,
+          "renderedEvidenceSha256": "b3400cde3d386c17b1921838368e7f3a4e648e974a09ff372f0157eeee5b8ea3",
+          "surfaceId": "dsr",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "bfc689e4638907faf9ff1547ddda42adf1f0f43d0de3712b835568afb03f1d09",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "e247178f65be0f821de3abf86de80d604bf0f0ea0f69b7fb2632ca5e404f70b5",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "7d44bd756cad491dd5ddce386c3271c5cc7216db6e6d0a1c659fd47b426f28e7",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "0ebe17bf06e05cc6701f1f91f2e92c60d147d91d758912fb497e743fff241eb3",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "715a27ae6934146fe2a9fe7e2a3626f1b3957f36015f8af51ef290f63d190531",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 64,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "cc3a82a4c4033ad2d17120aa179b6ce6a1c33d488eff55a9fb343802e15cf263",
+          "surfaceId": "expense",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "7e1dca26085093b250dc61465f04d0f9f821cbdf94da2642a0ec9ffa2021e3b1",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "1fb6b622fa410ad7953c14b4435064234113a4242c90bb830cd3f977de2c08c6",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 19,
+          "measuredTargets": 3,
+          "renderedEvidenceSha256": "8d1f611c1b63e330c3f0435d12b6ea9bd86ab97c3668eb9267666560c90e8667",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "e9c6139d0fbe3241830b89a12e005f2b590ccf5782cae18afffed150c364bc84",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "f019eca757693186adecf0cfd3ead9fe1d18764f43a6ccd803d1ed985cd7aae1",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 5,
+          "renderedEvidenceSha256": "06fd7a4c6fe83ba13e9649742d28145b94bf2127d408f7184576534be2d005d9",
+          "surfaceId": "grooming",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "2fb2192682fcf3f6e34cf7a04a42049c92ed5bb11b90bc9f0b48fff718ab7c0f",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "2290f9930d910b4a7bf8cd33e7f91e7252815941438b8f27c518450a299ab462",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 110,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "38f918714c339d3cffa82da8f49ccd601e2d553eda5ca8decd89fba0e7a54f36",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "d0853837f5870ad0ee1c6217c541e666eafe8b5c80bccd212ad009680eb80600",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "820ad9ba949181885f39420697983337d877ef7c3a42f8157c14bcdfaed0ad9a",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 61,
+          "measuredTargets": 13,
+          "renderedEvidenceSha256": "dc6f935f233a1270ed25d365fe585ecb37b5eeaa451e948a6180518647387b5c",
+          "surfaceId": "leave",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "a5fe6e63bce567f284141dd6f215661bb12b0f0991bb0c824281f0f87d8fe3b5",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "2256cf95a641bfb4f18c3dba78c986c8c95b7322625a4418f575966b30b61f13",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 117,
+          "measuredTargets": 25,
+          "renderedEvidenceSha256": "67107d91ca27d117d269b787e3e239fba881fcee5127d34140f0b029cf12c3bb",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "84af494ea56e6618df30254143f802e675d19687aa53fc114151d0167aef75cd",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "7f0933d17dc10f08fd21931e74313888c9343a9678af55ef17e6e104fda66117",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 113,
+          "measuredTargets": 35,
+          "renderedEvidenceSha256": "2d7e50a82afd9c298806c87a559ea1a6768473f51b5b986e6b6f00727c195668",
+          "surfaceId": "payroll",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "7b5f45c52f8bdb48af851963cff7d063e0f196e6fadf1a85435d4b516305cf1d",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "5a3f6bd671af9eedfd3922af0a243dcb5f33aed4967f193cc7e1f8b5e8fa19d6",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 10,
+          "renderedEvidenceSha256": "ede183efbb78bb65880d51552ff06eb389f4825daaf6d7c48f06e83b5faf1ff0",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "a26ed82247aa9ac9fcd5fb1e8efad8e7da2bb38ac75ead2775f6bf3605bcdcca",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "b2f56be1121ff2278e36ac5492f6790926985edacfea28b254826cc2f7fe1d1a",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 20,
+          "measuredTargets": 11,
+          "renderedEvidenceSha256": "c1ff714d990a3be6f07ba46a70f7f03600a492a5c90d31a56ca088f38b03c0b7",
+          "surfaceId": "planning",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "8e35e699d6bac6675cc5b07b3c20c43786a7a8338c613203384c25a1be702fba",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "8f1916c236adc0ed892b927776cc325478fb9abbb3901275348822b97e734712",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 59,
+          "measuredTargets": 16,
+          "renderedEvidenceSha256": "2d463c4c765ef29c6b940a9778d51c25c97745e34acbd209e3abdf347c9e9305",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "40a2c74cd155e269c9d7108cc794ba40231a75f5bc5736fe38a0cac665c1d8cb",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "b126728c3c423d0a8a13940cfe0de37017bdcea449a5b86277a83647a1ee8a2a",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 41,
+          "measuredTargets": 9,
+          "renderedEvidenceSha256": "5b15fabb55505e45769750dfa042ad795d4c3bc2ed8bc2767a263ec5de43517f",
+          "surfaceId": "qms",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "117f2c957b60a50c07b5cdc9cecd63271aefee70abf879dd164819428e9dd012",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "d3d3d6c2a348deb127060feeaedfdb282e82af7e09d4c81ad8cd7b2db18938ad",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 42,
+          "measuredTargets": 15,
+          "renderedEvidenceSha256": "f05bec1980f13290d7b2f12accb207b7e34d129277ebf81682a5b79cec8c4af1",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "fd8faf642983617598b2f9fa7d4adc2af4df3124da9d2bbdf4bfc520de569116",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "b829836785a9ededf10c42b0544358444e86f4ddaad4ebeb648b60ca41a723d0",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 43,
+          "measuredTargets": 17,
+          "renderedEvidenceSha256": "1d61719edf5a13252586325cd98ac46cf588957bf06cdfa599e69666d8f750cb",
+          "surfaceId": "service",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "b2a1be9b436708feb867cb44e419591b1715cc3a5133005b2e0c2fd5243ea254",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "13c061e6124733caf9ba446a8da188872719f1edb3cd70b223d8540546cb8ca3",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 118,
+          "measuredTargets": 52,
+          "renderedEvidenceSha256": "6235c6c71e48c25d3536d55073f271d18754569bb8f615c3d4d9e62ce0845bdc",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "2081553a4777e225179fb4667120681b1c17f1c666111028b7905ad0842cd311",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "0fa56db9a4cc7838f0b193e6f7a80f4bda876c933366fb92229fcb0acc9315fe",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 63,
+          "measuredTargets": 33,
+          "renderedEvidenceSha256": "d4e684e976b92bf990b09321c7417461e8ad550b3292bad5c15b76853a1aba1d",
+          "surfaceId": "shell",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "14b1ff9bf4d85fd436a15b4e738251fe4ff67d873e9e05b2d17ab0ccf2387221",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "a5b58661e3a58ce48def37c4d159cae4cfc731cc217b54d9860d37761354ebf6",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 130,
+          "measuredTargets": 196,
+          "renderedEvidenceSha256": "9958131fc5bfc7f0843c90007cb42cab63807c224e12f255c8adb249aff82fb1",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "6cc96abde6db14b3ac122430da831595b8900e8559c0ae96e4540c727d38e39a",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "7badedb465dcef41ece8dae14c67cb48d8f97edd3628853f1061d2d53efd56da",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 112,
+          "measuredTargets": 197,
+          "renderedEvidenceSha256": "e605e361167b9e65ed5197d1fbaba12cdad582e45089c972bbb7589549509942",
+          "surfaceId": "stock",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "f86bb1a8c05f65c8d3ba4b6a7b781a7706fb8bd0da0a70e50a3f3098e94b66b1",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "142ac249d41945f4fd79f4242ba9ad226ab5572891634510c776d05b4ceeb156",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 30,
+          "renderedEvidenceSha256": "74184bfac0c8fed0b1f0b5819b5acff805963520e3237ca630517c064ddbb9b1",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "desktop-1366x768"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "en",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "dd58a2a5d5f090724dc8fe1937c7cba4049bf87f070b78d5f729970370f11e88",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "hi",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "a3f71195bb3d3ed1f2a5a0f57ef98bf5057736005b721084da0cb4c59ea50edd",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        },
+        {
+          "code": "RENDERED_MATRIX_CELL_VERIFIED",
+          "contrastViolations": 0,
+          "language": "mr",
+          "measuredContrastSamples": 144,
+          "measuredTargets": 31,
+          "renderedEvidenceSha256": "5a7b3bc22320266529fcba9d001dca55f6be7fb0e69a76490788b3b7a4512b83",
+          "surfaceId": "tax",
+          "targetViolations": 0,
+          "viewportId": "mobile-390x844"
+        }
+      ],
+      "id": "A6-05",
+      "mandatory": true,
+      "metric": {
+        "browserIdentitySha256": "ad8b8313329b7f311733",
+        "duplicateCells": 0,
+        "extraCells": 0,
+        "malformedCells": 0,
+        "matrixSha256": "db8872543dbe55ce461835bc4288946822dd21c8406adab86d75e046558431ff",
+        "measuredCells": 72,
+        "missingCells": 0,
+        "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+        "productIdentityBound": true,
+        "requiredCells": 72,
+        "toolingIdentityBound": true
+      },
+      "notes": "Rendered evidence establishes browser matrix coverage only; it does not establish physical-device or fluent-language acceptance.",
+      "result": "pass",
+      "rule": "Exactly 72 unique mandatory surface, viewport and language cells must carry rendered evidence hashes bound to the exact product SHA, product fingerprint, tooling SHA, browser identity and matrix hash.",
+      "severity": "P1",
+      "title": "Identity-bound rendered matrix evidence"
+    }
+  ],
+  "metrics": {
+    "matrixCells": 72,
+    "renderedContrastViolations": 0,
+    "renderedEvidenceProvided": true,
+    "renderedMatrixValid": true,
+    "renderedTargetViolations": 0,
+    "staticLocalizationBypasses": 0,
+    "surfaceCount": 12
+  },
+  "title": "UI, responsive behavior, i18n and accessibility"
+}

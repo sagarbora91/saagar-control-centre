@@ -1,0 +1,232 @@
+{
+  "format": "SAAGAR_PHASE4C_FINAL_CLOSURE_REGISTER",
+  "schemaVersion": 1,
+  "registerState": "draft-open",
+  "preparedAt": "2026-08-17T04:20:00+05:30",
+  "identity": {
+    "productCommit": "3f8a37cebf998cf6dd006e3a33de95600d3808f3",
+    "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+    "apkFilename": "SaagarCC-Phase4C-Seeded-2Y-v2.9-3f8a37ce-F4DDBC1D.apk",
+    "apkSha256": "f4ddbc1d210ac0fb722333741085ff81b4d20c5b2523db72ed6acf2f1b510aed",
+    "apkBytes": 7010282,
+    "package": "com.saagartraders.bcc",
+    "versionName": "2.9",
+    "versionCode": 209,
+    "signingClass": "debug-UAT",
+    "signingCertificateSha256": "faae9739c054b88b4c9cee8f62bf1dfa103807b7a45a835d901467cb26fe05dc",
+    "auditToolingSha": "29a094757fbc5386d379ee73e71a30228b348308"
+  },
+  "rowValidationPolicy": {
+    "placeholderTokensForbidden": [
+      "<",
+      ">",
+      "TBD",
+      "TODO",
+      "FILL_ME",
+      "UNKNOWN"
+    ],
+    "closedRowsRequire": [
+      "decision=pass-or-approve",
+      "closedAt",
+      "authority.kind",
+      "authority.identity",
+      "evidence[0].path",
+      "evidence[0].sha256",
+      "identityBinding",
+      "nonClaims"
+    ],
+    "openRowsRequire": [
+      "decision=pending-external-authority",
+      "reason",
+      "requiredAuthority",
+      "requiredEvidence"
+    ],
+    "blankStringsAllowed": false,
+    "closedWithoutEvidenceAllowed": false,
+    "historicalOpenGatesMutationAllowed": false
+  },
+  "summary": {
+    "total": 10,
+    "closed": 2,
+    "open": 8,
+    "allClosed": false
+  },
+  "gates": [
+    {
+      "id": "GATE-UPDATE-PHYSICAL",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "The exact final debug-UAT APK has not received owner update-in-place acceptance on Samsung SM-T875 / Android 13.",
+      "requiredAuthority": "Sagar (sagarbora91), business owner and physical-device tester",
+      "requiredEvidence": [
+        "Exact APK SHA-256 and device/Android identity",
+        "Update-in-place without uninstall or data clear",
+        "Preserved state and module smoke result",
+        "No unresolved crash, ANR or blank screen"
+      ],
+      "supportingEvidence": []
+    },
+    {
+      "id": "GATE-UPDATE-API23",
+      "state": "closed",
+      "decision": "pass",
+      "closedAt": "2026-08-17T04:07:37.2873791+05:30",
+      "authority": {
+        "kind": "controlled-engineering-evidence",
+        "identity": "saagar_api23_evidence/emulator-5554"
+      },
+      "identityBinding": "The installed base.apk SHA-256 and byte count exactly match the final seeded candidate; package UID, first-install time, BCC key and QMS archive state were preserved across adb install -r and process recreation.",
+      "evidence": [
+        {
+          "path": "verification/audit/PHASE-4C-FINAL-SEEDED-APK-2026-08-17.json",
+          "sha256": "2692159950f109c9f8b41a9df29da88356f135ce655874b0f7827fcc7966e836",
+          "result": "pass"
+        }
+      ],
+      "nonClaims": [
+        "Not physical-device acceptance",
+        "Not OEM document-provider evidence",
+        "Not production signing or release approval"
+      ]
+    },
+    {
+      "id": "GATE-ETP-PHYSICAL",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "No physical Android API-23/OEM document-provider import record exists for the exact final APK.",
+      "requiredAuthority": "Named tester using a real Android API-23-class device and relevant OEM document provider",
+      "requiredEvidence": [
+        "Physical device/API/OEM WebView identity",
+        "Document-provider identity without account details",
+        "Four-file selection and persisted URI permission",
+        "Import, relaunch and verified readback PASS"
+      ],
+      "supportingEvidence": []
+    },
+    {
+      "id": "GATE-ETP-INTERRUPTION",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "Contract tests pass, but exact-candidate physical/OEM process-death, disk-full, corruption, rotation and low-storage results are incomplete.",
+      "requiredAuthority": "Named physical API-23/OEM tester",
+      "requiredEvidence": [
+        "Process-death PASS",
+        "Disk-full PASS",
+        "Authenticated-corruption refusal PASS",
+        "Rotation PASS",
+        "Low-storage PASS",
+        "No partial generation or plaintext publication"
+      ],
+      "supportingEvidence": [
+        "npm run test:etp passed 129/129 at ca11daa78f755d4993c432d43d733edb2b3782e4"
+      ]
+    },
+    {
+      "id": "GATE-ETP-PRODUCTION",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "Real-source conformance exists, but no Owner/Admin-approved production native generation was published with the exact final APK.",
+      "requiredAuthority": "Sagar (sagarbora91), acting as Owner/Admin",
+      "requiredEvidence": [
+        "Untouched WLMHW and HEMW R003/R013/R022/R025 source hashes and bounded counts",
+        "Complete-period declaration",
+        "Manager reauthorization",
+        "REC-002 PASS",
+        "Active generation and metadata-only receipt",
+        "Previous-generation retention and no partial publication"
+      ],
+      "supportingEvidence": [
+        "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json"
+      ]
+    },
+    {
+      "id": "GATE-ETP-EXCEPTIONS",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "The bounded R003/R013 UI contract is tested, but the owner has not accepted the exact-final-APK exception screens.",
+      "requiredAuthority": "Sagar (sagarbora91), business owner",
+      "requiredEvidence": [
+        "Exact-final-APK screen evidence and hashes",
+        "R013 attribution exceptions remain visible and intelligible",
+        "R003 discount exceptions remain visible and intelligible",
+        "Owner confirms neither changes revenue or sales totals"
+      ],
+      "supportingEvidence": [
+        "npm run test:etp passed the exact bounded non-revenue presentation contract"
+      ]
+    },
+    {
+      "id": "GATE-PAYMENTTYPE25",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "Non-zero PAYMENTTYPE25 values remain safely quarantined, but the owner has not approved a mapping or continued quarantine disposition.",
+      "requiredAuthority": "Sagar (sagarbora91), business owner",
+      "requiredEvidence": [
+        "Explicit mapping identifier and SHA-256 or explicit continued-quarantine decision",
+        "Decision covers 2,802 WLMHW and 18 HEMW R022 rows",
+        "No guessed tender mapping"
+      ],
+      "supportingEvidence": [
+        "verification/ETP-CORE-REAL-CONFORMANCE-2026-08-09.json",
+        "npm run test:etp passed PAYMENTTYPE25 quarantine behavior"
+      ]
+    },
+    {
+      "id": "GATE-NATIVE-LANGUAGE",
+      "state": "closed",
+      "decision": "approve",
+      "closedAt": "2026-08-16T04:59:11.4756881+05:30",
+      "authority": {
+        "kind": "fluent-marathi-hindi-reviewer",
+        "identity": "Sagar (sagarbora91)"
+      },
+      "identityBinding": "The approval product fingerprint SHA-256 exactly equals the final candidate product fingerprint SHA-256; the later target commit contains administrative evidence without changing the governed product fingerprint.",
+      "evidence": [
+        {
+          "path": "verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+          "sha256": "2da51e5ca86db35c2cc112fd0bfd8fec1256917b3111aa4e999ae08b60055978",
+          "approvalProductCommit": "5fc59e1cf09898e4e5fc030a8097f74736387ec6",
+          "productFingerprintSha256": "47c1e9c04bd94829f8a1987bd49b8466032e12ca6a9248aef9a19dd826a12a06",
+          "result": "approve"
+        }
+      ],
+      "nonClaims": [
+        "Not physical-device acceptance",
+        "Not staff UAT or legal approval",
+        "Not production signing or release approval"
+      ]
+    },
+    {
+      "id": "GATE-UAT",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "Named representative staff UAT and an authorized privacy/legal review have not been received for the exact candidate.",
+      "requiredAuthority": "Named representative staff, business owner and authorized privacy/legal reviewer",
+      "requiredEvidence": [
+        "Completed role/store UAT matrix with expected and actual outcomes",
+        "Owner acceptance with no unresolved P0/P1 issue",
+        "Separate privacy/legal checklist and approval"
+      ],
+      "supportingEvidence": []
+    },
+    {
+      "id": "GATE-RELEASE",
+      "state": "open",
+      "decision": "pending-external-authority",
+      "reason": "The frozen candidate is debug-signed; production signing and independent final release acceptance do not exist.",
+      "requiredAuthority": "Named production-key custodian and independent release authority",
+      "requiredEvidence": [
+        "Production-signed APK SHA-256 and signing certificate SHA-256",
+        "Fail-closed signing receipt without private material",
+        "debuggable=false and debug certificate absent",
+        "Post-sign install and launch PASS",
+        "All prerequisite gates closed",
+        "Independent PR #5 merge and exact-artifact release decision"
+      ],
+      "supportingEvidence": [
+        "verification/audit/PHASE-4C-FINAL-SEEDED-APK-2026-08-17.json proves debug-UAT identity only"
+      ]
+    }
+  ],
+  "historicalRegistryBoundary": "The frozen audit-v1 OPEN-GATES.json remains immutable and is not overwritten by this supplemental identity-bound closure register."
+}

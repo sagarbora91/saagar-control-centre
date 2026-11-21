@@ -32,9 +32,9 @@
   function audit(action, detail) {
     try { if (typeof root.auditLog === 'function') root.auditLog(action, detail || {}); } catch (e) {}
   }
-  function reauth(reason) {
+  async function reauth(reason) {
     try {
-      if (typeof root.SaagarReauth === 'function') return root.SaagarReauth(reason) !== false;
+      if (typeof root.SaagarReauth === 'function') return (await root.SaagarReauth(reason)) === true;
     } catch (e) { return false; }
     return false;
   }
@@ -173,8 +173,8 @@
       + scheduleRows + '</tbody></table></div></div>';
   }
 
-  function saveContact() {
-    if (!reauth('Change privacy contact information')) return;
+  async function saveContact() {
+    if (!await reauth('Change privacy contact information')) return;
     var patch = {
       privacyContact: {
         name: (el('legalContactName') || {}).value || '',
@@ -187,8 +187,8 @@
     toast('Privacy contact saved');
     render();
   }
-  function recordGate(key, label) {
-    if (!reauth(label)) return;
+  async function recordGate(key, label) {
+    if (!await reauth(label)) return;
     if (!root.confirm('Record this human gate as completed?\n\n' + label
       + '\n\nOnly continue if the review, approval, signature or rehearsal actually happened.')) return;
     var patch = {};
@@ -247,8 +247,8 @@
       render();
     } catch (e) { toast(e.message || String(e)); }
   }
-  function verifyRight(id) {
-    if (!reauth('Verify identity for a privacy request')) return;
+  async function verifyRight(id) {
+    if (!await reauth('Verify identity for a privacy request')) return;
     var method = root.prompt('Identity verification method used (do not enter document numbers):', 'Existing customer/employee record checked');
     if (!method) return;
     try {
@@ -257,8 +257,8 @@
       render();
     } catch (e) { toast(e.message || String(e)); }
   }
-  function setHold(id, active) {
-    if (!reauth('Record legal-hold decision for a privacy request')) return;
+  async function setHold(id, active) {
+    if (!await reauth('Record legal-hold decision for a privacy request')) return;
     var reason = root.prompt(active ? 'Legal-hold reason:' : 'Reason no legal hold applies:', active ? '' : 'No open warranty, tax, employment, dispute or legal matter found');
     if (reason == null) return;
     try {
@@ -267,8 +267,8 @@
       render();
     } catch (e) { toast(e.message || String(e)); }
   }
-  function closeRight(id) {
-    if (!reauth('Issue and close a privacy-rights response')) return;
+  async function closeRight(id) {
+    if (!await reauth('Issue and close a privacy-rights response')) return;
     var outcome = root.prompt('Outcome code (responded / corrected / erased / refused-with-reason):', 'responded');
     if (!outcome) return;
     var ref = root.prompt('Response evidence reference (letter/message/file reference; do not paste the response):', '');
@@ -280,8 +280,8 @@
       render();
     } catch (e) { toast(e.message || String(e)); }
   }
-  function recordDisclosure() {
-    if (!reauth('Record an approved third-party disclosure')) return;
+  async function recordDisclosure() {
+    if (!await reauth('Record an approved third-party disclosure')) return;
     try {
       var row = legal().recordDisclosure({
         recipientCategory: (el('legalDisclosureRecipient') || {}).value,
@@ -297,8 +297,8 @@
       render();
     } catch (e) { toast(e.message || String(e)); }
   }
-  function openIncident() {
-    if (!reauth('Start a personal-data breach response clock')) return;
+  async function openIncident() {
+    if (!await reauth('Start a personal-data breach response clock')) return;
     if (!root.confirm('Start the incident clock now?\n\nUse this only when a suspected or confirmed personal-data breach requires assessment.')) return;
     try {
       var row = legal().openIncident({

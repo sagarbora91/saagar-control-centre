@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "gate": "Release identity V 1.601",
+  "approvedAt": "2026-11-11",
+  "approver": "Sagar (Owner/Admin)",
+  "approvalSource": "owner approval given in chat, 2026-11-11: from this build onwards version naming is V 1.601 and so on",
+  "identity": {
+    "packageId": "com.saagartraders.bcc",
+    "appVersion": "V 1.601",
+    "versionName": "1.601",
+    "versionCode": 601,
+    "minSdk": 33,
+    "minSdkDecision": "verification/audit/SUPPORTED-DEVICES-DECISION-2026-11-11.json (owner decision given in chat, 2026-11-11)",
+    "targetSdk": 34
+  },
+  "interpretation": "From this build onwards the display version is 'V 1.601', Android versionName is '1.601' and versionCode is 601. The next build would be V 1.602 / versionName 1.602 / versionCode 602. This is the working interpretation of the owner's chat instruction 'V 1.601 and so on' and is recorded here so the owner can correct it.",
+  "supersedes": [
+    {
+      "record": "verification/audit/PHASE-6J0-RELEASE-IDENTITY-APPROVAL-2026-08-24.json",
+      "identity": "display V6, versionName 2.9, versionCode 209 (owner approval of 2026-08-24)"
+    },
+    {
+      "record": "docs/audit/V6-ETP-CONTINUOUS-SPRINT-ENGINEERING-RELEASE-EVIDENCE-2026-08-25.md",
+      "identity": "working identity display V6, versionName 6, versionCode 600 (25 Aug 2026)"
+    }
+  ],
+  "signingKeyStatus": "The production signing keystore was lost (it is not in the backup and the folder was deleted). A new signing key will be created later by the owner. No key has been created and no signer certificate has been recorded by this approval.",
+  "expectedSignerCertificate": "NOT UPDATED. The tracked signer policy still expects the old production certificate SHA-256 until the owner creates the new key and approves the new certificate value.",
+  "installNote": "A build signed with a new key cannot update the old production app signed with the lost key. Installing it over the old production app will require uninstall and reinstall on each device, which removes the app's local data unless it is first backed up with the app's own backup export.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "productionSigningAuthorized": false,
+  "publicationAuthorized": false
+}
