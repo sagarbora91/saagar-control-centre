@@ -227,11 +227,11 @@ test('code tables: every code has a message, nothing else is exported by acciden
     'CODES', 'HEAD_KEY', 'KEY_RE', 'LIMITS', 'MESSAGES', 'SERIES', 'STREAMS', 'SVCS_PREFIX', 'VERSION', 'WATERMARK_KEY',
     'adapterFromWindow', 'canonicalText', 'createStore', 'fyLabel', 'fyShort', 'istDate', 'istMonth', 'parseShardKey', 'sha256Hex', 'shardKey'
   ]);
-  assert.deepEqual(Object.keys(Store.SERIES).sort(), ['ADJ', 'CSL', 'GRN', 'ISS', 'OLD', 'OPN', 'RET', 'SCR']);
+  assert.deepEqual(Object.keys(Store.SERIES).sort(), ['ADJ', 'CSL', 'GRN', 'ISS', 'OLD', 'OPN', 'RET', 'SAR', 'SCN', 'SCR', 'SRC', 'SRF', 'SV']);
   assert.equal(Store.SERIES.OLD.stream, 'defective');
   assert.equal(Store.SERIES.SCR.stream, 'defective');
   assert.equal(Store.SERIES.GRN.stream, 'ledger');
-  assert.deepEqual(Object.keys(Store.STREAMS).sort(), ['audit', 'config', 'defective', 'docs', 'labour', 'ledger', 'parts']);
+  assert.deepEqual(Object.keys(Store.STREAMS).sort(), ['audit', 'config', 'defective', 'docs', 'invoices', 'labour', 'ledger', 'parts', 'receipts']);
   assert.equal(Store.STREAMS.config.code, 'CFG');
   assert.equal(Store.VERSION, 'SVCS_STORE_V1');
   assert.equal(Store.SVCS_PREFIX, 'saagar_svcs_');

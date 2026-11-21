@@ -102,7 +102,10 @@
     groomingMonthly: 'grooming', taxReport: 'tax', serviceAging: 'service', serviceJobCard: 'service',
     serviceTaxInvoice: 'service', ownerBrief: '*', ownerMonthly: '*', weeklyBrief: '*',
     svcStockList: 'service', svcPartLedger: 'service', svcReorderList: 'service', svcGoodsReceipt: 'service',
-    svcDefectiveRegister: 'service', svcAdjustmentRegister: '*'
+    svcDefectiveRegister: 'service', svcAdjustmentRegister: '*',
+    serviceBillSummary: 'service', serviceTaxInvoiceV2: 'service', serviceCreditNote: 'service', serviceReceipt: 'service',
+    serviceRefundVoucher: 'service', serviceWarrantySheet: 'service', serviceUnbilledIssues: 'service',
+    serviceDaySummary: '*', serviceAdvancesHeld: '*', serviceRevenue: '*'
   };
   /* S02-1: one-shot preview grant. A closure variable, never a property of the exported object, so no other
      script can set it. Only _payrollPick sets it (after the salary-slip gate) and preview() clears it on first use. */
@@ -1678,6 +1681,16 @@
     svcGoodsReceipt: function (o) { return svcGoodsReceipt(o || {}); },
     svcAdjustmentRegister: function (o) { return svcAdjustmentRegister(o || {}); },
     svcDefectiveRegister: function (o) { return svcDefectiveRegister(o || {}); },
+    serviceBillSummary: function (o) { return svc2BillSummary(o || {}); },
+    serviceTaxInvoiceV2: function (o) { return svc2TaxInvoice(o || {}); },
+    serviceCreditNote: function (o) { return svc2CreditNote(o || {}); },
+    serviceReceipt: function (o) { return svc2Receipt(o || {}); },
+    serviceRefundVoucher: function (o) { return svc2Refund(o || {}); },
+    serviceWarrantySheet: function (o) { return svc2WarrantySheet(o || {}); },
+    serviceUnbilledIssues: function (o) { return svc2Unbilled(o || {}); },
+    serviceDaySummary: function (o) { return svc2DaySummary(o || {}); },
+    serviceAdvancesHeld: function (o) { return svc2AdvancesHeld(o || {}); },
+    serviceRevenue: function (o) { return svc2Revenue(o || {}); },
 
     /* ===== ⭐ OWNER MONTHLY BRIEF (portrait) ===== */
     ownerMonthly: function (o) {
@@ -1838,6 +1851,1001 @@
     }
   };
 
+  /* ---------- Service bills, receipts and money prints (SVC2) ----------
+     Ten reports for Service wave 2. Data arrives ONLY as opts.svcData (the Service page builds it from the bill,
+     receipt and case records and passes it with the preview options). Nothing here reads a store key or any
+     global store reader. The data is deep-copied, shape checked, and printed through an allow-list of fields: a
+     field that is not named below is never printed. Money is integer paise (names end in Paise), tax rates are
+     integer basis points (1800 = 18 percent). Every sum is an integer sum.
+     Bills (bill summary, tax invoice, credit note) are refused, with no figures at all, when their own arithmetic
+     does not hold (RPT_BILL_CHECK). The six customer papers set customerCopy so the page furniture does not say
+     "Confidential" and does not name the owner. No list report prints a customer name or mobile number. */
+  var SVC2_MAX_LINES = 300;
+  var SVC2_TITLE = {
+    serviceBillSummary: 'SERVICE BILL SUMMARY (NOT A TAX INVOICE)', serviceTaxInvoiceV2: 'TAX INVOICE', serviceCreditNote: 'CREDIT NOTE',
+    serviceReceipt: 'RECEIPT', serviceRefundVoucher: 'REFUND VOUCHER', serviceWarrantySheet: 'NO-CHARGE WARRANTY JOB SHEET',
+    serviceUnbilledIssues: 'SERVICE \u2014 PARTS ISSUED, NOT BILLED', serviceDaySummary: 'SERVICE DAY SUMMARY',
+    serviceAdvancesHeld: 'SERVICE \u2014 ADVANCES HELD', serviceRevenue: 'SERVICE \u2014 REVENUE FROM BILLS'
+  };
+  var SVC2_FILE_KEY = { serviceBillSummary: 'invoiceNo', serviceTaxInvoiceV2: 'invoiceNo', serviceCreditNote: 'noteNo', serviceReceipt: 'receiptNo',
+    serviceRefundVoucher: 'voucherNo', serviceWarrantySheet: 'jobId' };
+  var SVC2_CUSTOMER = { serviceBillSummary: 1, serviceTaxInvoiceV2: 1, serviceCreditNote: 1, serviceReceipt: 1, serviceRefundVoucher: 1, serviceWarrantySheet: 1 };
+  var SVC2_LANDSCAPE = { serviceUnbilledIssues: 1, serviceRevenue: 1 };
+  var SVC2_MSG = {
+    NO_DATA: 'Open this document from the Service module.',
+    WRONG_DOC: 'This data is not for this document.',
+    BILL_CHECK: 'The bill figures did not pass the arithmetic check. Do not give this to the customer.',
+    GSTIN_MISSING: 'The shop GSTIN is not set in the organisation details. Enter it there first: a tax invoice cannot be shown without it.'
+  };
+  var SVC2_TAGLINE = 'WATCH SERVICE \u00b7 LATUR', SVC2_FOOTER = 'Computer-generated document';
+  var SVC2_AGE_ADVANCE = 30, SVC2_AGE_ISSUE = 7;
+  var SVC2_MODE_ORDER = ['Cash', 'UPI', 'Card', 'Bank transfer', 'Cheque'];
+
+  function svc2Hdr(type, sub, period, chip, chipKind, customerCopy) {
+    var h = { t: 'header', title: SVC2_TITLE[type] || String(type), sub: sub || '', period: period || '' };
+    if (chip) { h.chip = chip; h.chipKind = chipKind || 'draft'; }
+    if (customerCopy) { h.customerCopy = true; h.tagline = SVC2_TAGLINE; h.footer = SVC2_FOOTER; }
+    return h;
+  }
+  function svc2Fail(type, code, why, orientation) {
+    var msg = (why != null && why !== '') ? why : (SVC2_MSG[code] || SVC_MSG[code] || SVC_MSG.READ_FAILED);
+    return { orientation: orientation || (SVC2_LANDSCAPE[type] ? 'landscape' : 'portrait'),
+      blocks: [svc2Hdr(type, '', '', '', '', SVC2_CUSTOMER[type] === 1), { t: 'empty', text: msg + ' [RPT_' + code + ']' }] };
+  }
+  /* svcTake plus: no data is NO_DATA; a store code that holds HEAD is an integrity failure; a wrong kind is WRONG_DOC */
+  function svc2Take(o, kind) {
+    var raw = o ? o.svcData : undefined;
+    if (raw && typeof raw === 'object' && !Array.isArray(raw) && raw.ok === false && /HEAD/.test(String(raw.code == null ? '' : raw.code))) return { ok: false, code: 'CHAIN_BROKEN' };
+    var t = svcTake(o);
+    if (!t.ok) return { ok: false, code: t.code === 'UNAVAILABLE' ? 'NO_DATA' : t.code };
+    if (t.d.kind !== kind) return { ok: false, code: 'WRONG_DOC' };
+    return t;
+  }
+  function svc2Dmy(iso) { return isIsoDay(iso) ? (iso.slice(8, 10) + '-' + iso.slice(5, 7) + '-' + iso.slice(0, 4)) : ''; }
+  function svc2Rate(bp) {
+    if (!svcIsInt(bp) || bp < 0) return '-';
+    var whole = Math.floor(bp / 100), frac = bp % 100;
+    if (!frac) return whole + '%';
+    return whole + '.' + (frac < 10 ? '0' + frac : String(frac)).replace(/0+$/, '') + '%';
+  }
+  var SVC2_ONES = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen',
+    'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  var SVC2_TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  function svc2Below100(n) { return n < 20 ? SVC2_ONES[n] : (SVC2_TENS[Math.floor(n / 10)] + (n % 10 ? ' ' + SVC2_ONES[n % 10] : '')); }
+  function svc2Below1000(n) {
+    var h = Math.floor(n / 100), r = n % 100, parts = [];
+    if (h) parts.push(SVC2_ONES[h] + ' Hundred');
+    if (r) parts.push(svc2Below100(r));
+    return parts.join(' ');
+  }
+  function svc2WordsInt(n) {           // whole rupees (integer >= 0), Indian grouping
+    if (n === 0) return 'Zero';
+    var parts = [], crore = Math.floor(n / 10000000), rest = n % 10000000;
+    var lakh = Math.floor(rest / 100000); rest = rest % 100000;
+    var thou = Math.floor(rest / 1000), hun = rest % 1000;
+    if (crore) parts.push(svc2WordsInt(crore) + ' Crore');
+    if (lakh) parts.push(svc2Below100(lakh) + ' Lakh');
+    if (thou) parts.push(svc2Below100(thou) + ' Thousand');
+    if (hun) parts.push(svc2Below1000(hun));
+    return parts.join(' ');
+  }
+  function svc2Words(p) {
+    if (!svcIsInt(p) || p < 0) return '';
+    var r = Math.floor(p / 100), c = p % 100;
+    return 'Rupees ' + svc2WordsInt(r) + (c ? ' and ' + svc2Below100(c) + ' Paise' : '') + ' Only';
+  }
+  function svc2Mode(m) {
+    var s = svcCleanOpt(m, 30), u = s.toUpperCase().replace(/[^A-Z]/g, '');
+    if (u === 'CASH') return 'Cash';
+    if (u === 'UPI') return 'UPI';
+    if (u === 'CARD') return 'Card';
+    if (u === 'BANK' || u === 'BANKTRANSFER') return 'Bank transfer';
+    if (u === 'CHEQUE') return 'Cheque';
+    return s;
+  }
+  function svc2Neg(n) { return 0 - n; }
+  function svc2Money(p) { return inr2(p === 0 ? 0 : p); }
+  /* Stage E round 2 (D-tablet-1): a money column of the bill and tax invoice tables fits the largest allowed figure on one line.
+     Measured with jsPDF and DMSans at 9.5 pt: "Rs 5,00,000.00*" normal 61.72, "Rs 9,00,000.00" bold 60.61; plus cell padding 7.5. */
+  var SVC2_AMT_W = 70;
+  function svc2MoneyFmt(idxList) {
+    var f = {};
+    idxList.forEach(function (i) { f[i] = function (p) { return svc2Money(p); }; });
+    return f;
+  }
+  function svc2Cut(s, n) { s = String(s == null ? '' : s); return s.length > n ? (s.slice(0, n - 3) + '...') : s; }
+  function svc2Obj(v) { return (v && typeof v === 'object' && !Array.isArray(v)) ? v : null; }
+  function svc2Gstin(v) { return svcCleanOpt(v, 16).toUpperCase(); }
+  function svc2Supplier(f) {
+    f = svc2Obj(f); if (!f) return null;
+    var name = svcCleanOpt(f.name, 80); if (!name) return null;
+    var g = svc2Gstin(f.gstin); if (g && !/^[0-9A-Z]{15}$/.test(g)) return null;
+    var sc = svcCleanOpt(f.stateCode, 3); if (sc && !/^\d{2}$/.test(sc)) return null;
+    if (!sc && g) sc = g.slice(0, 2);
+    return { name: name, gstin: g, address: svcCleanOpt(f.address, 240), state: svcCleanOpt(f.state, 40), stateCode: sc };
+  }
+  /* billTo copy; null when the customer GSTIN is present but not a GSTIN (never print "Not registered" for a bad number) */
+  function svc2BillTo(b, withMobile) {
+    b = svc2Obj(b) || {};
+    var g = svc2Gstin(b.gstin); if (g && !/^[0-9A-Z]{15}$/.test(g)) return null;
+    var sc = svcCleanOpt(b.stateCode, 3); if (!/^\d{2}$/.test(sc)) sc = '';
+    var m = withMobile ? svcCleanOpt(b.mobile, 16) : ''; if (m && !/^\+?[0-9 ]{10,15}$/.test(m)) m = '';
+    return { name: svcCleanOpt(b.name, 80), address: svcCleanOpt(b.address, 240), gstin: g, state: svcCleanOpt(b.state, 40), stateCode: sc, mobile: m, live: b.live === true };
+  }
+  /* validate a bill or credit-note line array: the cleaned lines, or a failure code string */
+  function svc2Lines(arr, isNote) {
+    if (!Array.isArray(arr) || !arr.length) return 'READ_FAILED';
+    if (arr.length > SVC2_MAX_LINES) return 'TOO_MANY_ROWS';
+    var out = [], i, k;
+    function mm(v, req) { return (v === undefined || v === null) ? (req ? NaN : 0) : v; }
+    for (i = 0; i < arr.length; i++) {
+      var l = svc2Obj(arr[i]);
+      if (!l) return 'READ_FAILED';
+      if (l.kind !== 'PART' && l.kind !== 'LABOUR' && l.kind !== 'OTHER') return 'READ_FAILED';
+      var desc = svcCleanOpt(l.desc, 200); if (!desc) return 'READ_FAILED';
+      if (!svcQ(l.qty) || l.qty < 0 || (!isNote && l.qty <= 0)) return 'READ_FAILED';
+      var hsn = svcCleanOpt(l.hsn, 13); if (hsn.length > 12) return 'READ_FAILED';
+      if (!svcIsInt(l.rateBp) || l.rateBp < 0 || l.rateBp > 10000) return 'READ_FAILED';
+      var f = { unitP: mm(l.unitPricePaise, false), discP: mm(l.discountPaise, false), taxP: mm(l.taxablePaise, true), cgst: mm(l.cgstPaise, false),
+        sgst: mm(l.sgstPaise, false), igst: mm(l.igstPaise, false), tot: mm(l.totalPaise, true) };
+      for (k in f) { if (Object.prototype.hasOwnProperty.call(f, k) && (!svcP(f[k]) || f[k] < 0)) return 'READ_FAILED'; }
+      out.push({ kind: l.kind, code: svcCleanOpt(l.partCode, 64), desc: desc, hsn: hsn, unit: svcCleanOpt(l.unit, 10), qty: l.qty, unitP: f.unitP, discP: f.discP,
+        taxP: f.taxP, rate: l.rateBp, cgst: f.cgst, sgst: f.sgst, igst: f.igst, tot: f.tot, basis: l.priceBasis === 'INCL' ? 'INCL' : (l.priceBasis === 'EXCL' ? 'EXCL' : '') });
+    }
+    return out;
+  }
+  /* one row per GST rate, ascending. n counts the chargeable lines (a line with value or tax) for the rounding allowance. */
+  function svc2RateRows(lines) {
+    var map = {}, rows = [];
+    lines.forEach(function (l) {
+      var g = map[l.rate];
+      if (!g) { g = map[l.rate] = { rateBp: l.rate, taxable: 0, cgst: 0, sgst: 0, igst: 0, tax: 0, n: 0, cnt: 0 }; rows.push(g); }
+      g.taxable += l.taxP; g.cgst += l.cgst; g.sgst += l.sgst; g.igst += l.igst; g.tax += l.cgst + l.sgst + l.igst; g.cnt += 1;
+      if (l.taxP > 0 || (l.cgst + l.sgst + l.igst) > 0) g.n += 1;
+    });
+    rows.sort(function (a, b) { return a.rateBp - b.rateBp; });
+    return rows;
+  }
+  /* The integrity check. c: { isNote, supply, firmCode, posCode, lines, billDisc, roundOff, total, adv:[paise], advSet, balance, refund }.
+     Returns '' when everything holds, else a short reason (never printed: the page shows no figures). Integer sums only. */
+  function svc2Check(c) {
+    var i, l, sumTot = 0, sumDisc = 0;
+    for (i = 0; i < c.lines.length; i++) {
+      l = c.lines[i];
+      if (l.taxP + l.cgst + l.sgst + l.igst !== l.tot) return 'line total';
+      if (c.supply === 'INTRA' && l.igst !== 0) return 'igst in same-state supply';
+      if (c.supply === 'INTER' && (l.cgst !== 0 || l.sgst !== 0)) return 'cgst or sgst in other-state supply';
+      sumTot += l.tot; sumDisc += l.discP;
+    }
+    if (c.supply !== 'INTRA' && c.supply !== 'INTER') return 'supply type';
+    if (c.firmCode && c.posCode && ((c.supply === 'INTRA') !== (c.firmCode === c.posCode))) return 'supply and state';
+    if (!c.isNote) {
+      var groups = svc2RateRows(c.lines);
+      for (i = 0; i < groups.length; i++) {
+        var g = groups[i];
+        if (g.taxable > 900000000000 || g.tax > 900000000000) return 'group too large';
+        if (2 * Math.abs(g.tax * 10000 - g.taxable * g.rateBp) > g.n * (10000 + g.rateBp)) return 'tax rate';
+      }
+      /* no "bill discount <= line discounts" rule: the calc measures the bill discount on the GST-inclusive amount, the line
+         discount (list - net) is GST-exclusive on an EXCL line, so that rule refused real bills. billDiscountPaise is not printed. */
+    }
+    if (!svcIsInt(c.roundOff) || Math.abs(c.roundOff) >= 100) return 'round off';
+    if (c.total !== sumTot + c.roundOff || c.total < 0) return 'total';
+    if (!c.isNote) {
+      var sa = 0;
+      for (i = 0; i < c.adv.length; i++) sa += c.adv[i];
+      if (c.advSet !== sa) return 'advances';
+      if (c.balance !== c.total - c.advSet || c.balance < 0) return 'balance';
+    } else if (c.refund != null && c.refund > c.total) return 'refund';
+    return '';
+  }
+  /* supply type and place of supply from either shape: a plain 'INTRA'|'INTER' with placeOfSupplyCode, or the calc object
+     { type, placeOfSupplyStateCode }. The place of supply is NEVER taken from the recipient state field of the bill input. */
+  function svc2Supply(src) {
+    var s = src.supply, type = '', code = svcCleanOpt(src.placeOfSupplyCode, 3);
+    if (typeof s === 'string') type = s;
+    else if (svc2Obj(s)) { type = String(s.type || s.supplyType || ''); if (!code) code = svcCleanOpt(s.placeOfSupplyStateCode, 3); }
+    if (type !== 'INTRA' && type !== 'INTER') type = '';
+    if (code && !/^\d{2}$/.test(code)) code = '';
+    return { type: type, code: code, state: svcCleanOpt(src.placeOfSupplyState, 40) };
+  }
+  function svc2Names(arr, max) {            // optional list of {receiptNo, date, amountPaise, ...}; null on a malformed list
+    if (arr == null) return [];
+    if (!Array.isArray(arr) || arr.length > max) return null;
+    return arr;
+  }
+
+  /* ----- shared pieces of the customer documents ----- */
+  function svc2Sign(firmName, leftRole) {
+    return { t: 'sign', boxes: [{ role: leftRole || 'Customer', name: '' }, { role: 'For ' + firmName, name: 'Authorised Signatory' }] };
+  }
+  function svc2DocHdr(type, firm, withGstin, no, cancelled, title) {
+    var sub = firm.name + ((withGstin && firm.gstin) ? (' \u00b7 GSTIN ' + firm.gstin) : '');
+    var h = svc2Hdr(type, sub, svc2Cut(firm.address, 70), cancelled ? ('CANCELLED ' + no) : no, cancelled ? 'draft' : 'locked', true);
+    if (title) h.title = title;
+    return h;
+  }
+  function svc2CancelNotes(blocks, cancelledDate) {
+    blocks.push({ t: 'note', text: 'THIS DOCUMENT IS CANCELLED. IT IS NOT VALID.', color: PAL.RED });
+    if (svc2Dmy(cancelledDate)) blocks.push({ t: 'note', text: 'Cancelled on ' + svc2Dmy(cancelledDate) + '.', color: PAL.RED });
+  }
+  function svc2Place(state, code) { return (state && code) ? (state + ' (' + code + ')') : (code ? ('(' + code + ')') : (state || '-')); }
+  function svc2PaymentsBlocks(blocks, receipts) {
+    if (!receipts.length) return;
+    var body = [], raw = [];
+    receipts.forEach(function (r) {
+      body.push([svc2Dmy(r.date) || '-', r.no, r.kind === 'BALANCE' ? 'Balance' : 'Advance', svc2Mode(r.mode) || '-', inr2(r.amt)]);
+      raw.push([0, 0, 0, 0, r.amt]);
+    });
+    blocks.push({ t: 'section', title: 'Payments received' });
+    blocks.push({ t: 'table', head: [['Date', 'Receipt no', 'Type', 'Mode', 'Amount']], body: body, money: [4], raw: raw, fmt: svc2MoneyFmt([4]),
+      colStyles: { 0: { cellWidth: 70, halign: 'left' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 60, halign: 'left' }, 3: { cellWidth: 80, halign: 'left' }, 4: { cellWidth: 80, halign: 'right' } } });
+  }
+  function svc2WarrantyPartsBlocks(blocks, parts) {
+    if (!parts.length) return;
+    blocks.push({ t: 'section', title: 'Parts under warranty (no charge)' });
+    blocks.push({ t: 'table', head: [['Sr', 'Part code', 'Description', 'Qty']],
+      body: parts.map(function (p, i) { return [String(i + 1), p.code || '-', p.desc, fmtQty(p.qty)]; }),
+      numCols: [3], colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 90, halign: 'left' }, 2: { cellWidth: 'auto', halign: 'left' }, 3: { cellWidth: 50, halign: 'right' } } });
+  }
+  /* tax summary table (INTRA: CGST and SGST columns; INTER: IGST column); the foot is the sum of the printed rows */
+  function svc2TaxSummary(blocks, lines, supply) {
+    var groups = svc2RateRows(lines), body = [], raw = [], tt = 0, tc = 0, ts = 0, ti = 0, tx = 0, head, styles, money, foot;
+    groups.forEach(function (g) {
+      var label = svc2Rate(g.rateBp) + ((supply === 'INTRA' && g.rateBp % 2 === 0 && g.rateBp > 0) ? (' (' + svc2Rate(g.rateBp / 2) + ' + ' + svc2Rate(g.rateBp / 2) + ')') : '');
+      tt += g.taxable; tc += g.cgst; ts += g.sgst; ti += g.igst; tx += g.tax;
+      if (supply === 'INTRA') { body.push([label, inr2(g.taxable), inr2(g.cgst), inr2(g.sgst), inr2(g.tax)]); raw.push([0, g.taxable, g.cgst, g.sgst, g.tax]); }
+      else { body.push([label, inr2(g.taxable), inr2(g.igst), inr2(g.tax)]); raw.push([0, g.taxable, g.igst, g.tax]); }
+    });
+    if (supply === 'INTRA') {
+      head = ['GST rate', 'Taxable value', 'CGST', 'SGST', 'Total tax'];
+      styles = { 0: { cellWidth: 120, halign: 'left' }, 1: { cellWidth: 90, halign: 'right' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 80, halign: 'right' }, 4: { cellWidth: 'auto', halign: 'right' } };
+      money = [1, 2, 3, 4]; foot = ['TOTAL', inr2(tt), inr2(tc), inr2(ts), inr2(tx)];
+    } else {
+      head = ['GST rate', 'Taxable value', 'IGST', 'Total tax'];
+      styles = { 0: { cellWidth: 120, halign: 'left' }, 1: { cellWidth: 100, halign: 'right' }, 2: { cellWidth: 100, halign: 'right' }, 3: { cellWidth: 'auto', halign: 'right' } };
+      money = [1, 2, 3]; foot = ['TOTAL', inr2(tt), inr2(ti), inr2(tx)];
+    }
+    blocks.push({ t: 'section', title: 'Tax summary' });
+    blocks.push({ t: 'table', head: [head], body: body, money: money, raw: raw, fmt: svc2MoneyFmt(money), colStyles: styles, foot: [foot] });
+    return { taxable: tt, cgst: tc, sgst: ts, igst: ti, tax: tx };
+  }
+  function svc2BillToBlocks(blocks, bt, firstPairs, watch) {
+    blocks.push({ t: 'section', title: 'Bill To' });
+    var pairs = [['Name', bt.name || '-']];
+    firstPairs.forEach(function (p) { pairs.push(p); });
+    if (bt.mobile) pairs.push(['Mobile', bt.mobile]);
+    if (watch !== undefined) pairs.push(['Watch', watch || '-']);
+    blocks.push({ t: 'kv', cols: 2, pairs: pairs });
+    if (bt.address) blocks.push({ t: 'para', text: bt.address });
+    if (bt.live) blocks.push({ t: 'note', text: 'Customer details are taken from the job as it is now.', color: PAL.AMBER });
+  }
+
+  /* ----- the bill (summary and tax invoice) ----- */
+  function svc2Invoice(o, T) {
+    var t = svc2Take(o, 'INVOICE'); if (!t.ok) return { fail: svc2Fail(T, t.code) };
+    var d = t.d, v = svc2Obj(d.invoice);
+    if (!v) return { fail: svc2Fail(T, 'READ_FAILED') };
+    if (v.v !== 2) return { fail: svc2Fail(T, 'WRONG_DOC') };
+    if (v.rebuilt === true) return { fail: svc2Fail(T, 'WRONG_DOC', 'Open this bill with the old invoice print.') };
+    var billedIn = v.billedIn;
+    if (billedIn !== 'CCPT' && billedIn !== 'SAAGAR') return { fail: svc2Fail(T, 'READ_FAILED') };
+    if (T === 'serviceBillSummary' && billedIn !== 'CCPT') return { fail: svc2Fail(T, 'WRONG_DOC', 'This job is not billed in CCPT. Open the Tax Invoice instead.') };
+    if (T === 'serviceTaxInvoiceV2' && billedIn !== 'SAAGAR') return { fail: svc2Fail(T, 'WRONG_DOC', 'This job is billed in CCPT. Open the Service bill summary instead.') };
+    var firm = svc2Supplier(v.firm); if (!firm) return { fail: svc2Fail(T, 'READ_FAILED') };
+    if (T === 'serviceTaxInvoiceV2' && !firm.gstin) return { fail: svc2Fail(T, 'GSTIN_MISSING') };
+    var no = svcCleanOpt(v.invoiceNo, 40); if (!no) return { fail: svc2Fail(T, 'READ_FAILED') };
+    var status = v.status === 'CANCELLED' ? 'CANCELLED' : (v.status === 'ISSUED' ? 'ISSUED' : '');
+    if (!status) return { fail: svc2Fail(T, 'READ_FAILED') };
+    var lines = svc2Lines(v.lines, false); if (typeof lines === 'string') return { fail: svc2Fail(T, lines) };
+    var advIn = svc2Names(v.advances, SVC2_MAX_LINES), rcIn = svc2Names(d.receipts, SVC2_MAX_LINES), wIn = svc2Names(v.warranty, SVC2_MAX_LINES);
+    if (advIn === null || rcIn === null || wIn === null) return { fail: svc2Fail(T, 'READ_FAILED') };
+    var advances = [], receipts = [], warranty = [], i, a, r, w;
+    for (i = 0; i < advIn.length; i++) {
+      a = svc2Obj(advIn[i]);
+      if (!a || !svcP(a.amountPaise) || a.amountPaise <= 0) return { fail: svc2Fail(T, 'READ_FAILED') };
+      advances.push({ no: svcCleanOpt(a.receiptNo, 40), date: dayOf(a.date), amt: a.amountPaise });
+    }
+    for (i = 0; i < rcIn.length; i++) {
+      r = svc2Obj(rcIn[i]);
+      if (!r || !svcP(r.amountPaise) || r.amountPaise <= 0) return { fail: svc2Fail(T, 'READ_FAILED') };
+      receipts.push({ no: svcCleanOpt(r.receiptNo, 40), kind: r.receiptKind === 'BALANCE' ? 'BALANCE' : 'ADVANCE', date: dayOf(r.date), mode: r.mode, amt: r.amountPaise });
+    }
+    for (i = 0; i < wIn.length; i++) {
+      w = svc2Obj(wIn[i]);
+      var wd = w ? svcCleanOpt(w.desc, 200) : '';
+      if (!w || !wd || !svcQ(w.qty) || w.qty <= 0) return { fail: svc2Fail(T, 'READ_FAILED') };
+      warranty.push({ code: svcCleanOpt(w.partCode, 64), desc: wd, qty: w.qty });
+    }
+    var billDisc = (v.billDiscountPaise == null) ? 0 : v.billDiscountPaise, advSet = (v.advanceSetOffPaise == null) ? 0 : v.advanceSetOffPaise;
+    if (!svcP(billDisc) || billDisc < 0 || !svcP(advSet) || advSet < 0 || !svcIsInt(v.roundOffPaise) || !svcP(v.roundOffPaise) || !svcP(v.totalPaise) || !svcP(v.balancePaise)) return { fail: svc2Fail(T, 'READ_FAILED') };
+    var sup = svc2Supply(v);
+    var bt = svc2BillTo(d.billTo, true); if (!bt) return { fail: svc2Fail(T, 'READ_FAILED') };
+    if (!bt.gstin) bt.gstin = svc2Gstin(v.recipientGstin);
+    if (bt.gstin && !/^[0-9A-Z]{15}$/.test(bt.gstin)) return { fail: svc2Fail(T, 'READ_FAILED') };
+    if (!bt.stateCode) { var rsc = svcCleanOpt(v.recipientStateCode, 3); bt.stateCode = /^\d{2}$/.test(rsc) ? rsc : ''; }
+    if (T === 'serviceTaxInvoiceV2' && !sup.code) return { fail: svc2Fail(T, 'BILL_CHECK') };
+    var why = svc2Check({ isNote: false, supply: sup.type, firmCode: firm.stateCode, posCode: sup.code, lines: lines, billDisc: billDisc, roundOff: v.roundOffPaise,
+      total: v.totalPaise, adv: advances.map(function (x) { return x.amt; }), advSet: advSet, balance: v.balancePaise });
+    if (why) return { fail: svc2Fail(T, 'BILL_CHECK') };
+    var wm = svcIsInt(v.warrantyMonths) && v.warrantyMonths > 0 && v.warrantyMonths <= 120 ? v.warrantyMonths : 0;
+    return { c: { no: no, status: status, cancelledDate: dayOf(v.cancelledDate), date: dayOf(v.invoiceDate), jobId: svcCleanOpt(v.jobId, 40), billedIn: billedIn,
+      ccptNo: svcCleanOpt(v.ccptInvoiceNo, 40), ccptJob: svcCleanOpt(v.ccptJobNo, 40), supply: sup, reverse: v.reverseCharge === true, firm: firm, lines: lines,
+      billDisc: billDisc, roundOff: v.roundOffPaise, total: v.totalPaise, advances: advances, advSet: advSet, balance: v.balancePaise, receipts: receipts,
+      warranty: warranty, warrantyTill: dayOf(v.warrantyTill), warrantyMonths: wm, billTo: bt, watch: svcCleanOpt(d.watch, 80) } };
+  }
+  function svc2WarrantyNote(c) {
+    if (!c.warrantyTill) return null;
+    return { t: 'note', text: 'Service warranty valid until ' + svc2Dmy(c.warrantyTill) + (c.warrantyMonths ? (' (' + c.warrantyMonths + ' months)') : '') + '. Warranty covers only the work carried out.' };
+  }
+  function svc2TotalsTail(blocks, c, balanceLabel) {
+    if (c.advSet > 0) blocks.push({ t: 'kv', cols: 1, pairs: [['Less: advance received', inr2(c.advSet)], [balanceLabel, inr2(c.balance), 'big']] });
+  }
+
+  function svc2BillSummary(o) {
+    var T = 'serviceBillSummary', x = svc2Invoice(o, T); if (x.fail) return x.fail;
+    var c = x.c, cancelled = c.status === 'CANCELLED', blocks = [];
+    blocks.push(svc2DocHdr(T, c.firm, false, c.no, cancelled));
+    if (cancelled) svc2CancelNotes(blocks, c.cancelledDate);
+    blocks.push({ t: 'note', text: 'This is a summary of your bill for your records. It is not a tax invoice.', color: PAL.AMBER });
+    blocks.push({ t: 'note', text: 'The tax invoice for this service is issued by the service centre (CCPT). ' + (c.ccptNo ? ('CCPT invoice no: ' + c.ccptNo + '.') : 'The CCPT invoice number is not recorded yet.'), color: PAL.AMBER });
+    blocks.push({ t: 'kv', cols: 2, pairs: [['Our bill no', c.no], ['Bill date', svc2Dmy(c.date) || '-'], ['CCPT invoice no', c.ccptNo || 'Not recorded'],
+      ['CCPT job order no', c.ccptJob || 'Not recorded'], ['Service order', c.jobId || '-'], ['Watch', c.watch || '-']] });
+    blocks.push({ t: 'section', title: 'Bill To' });
+    var bp = [['Name', c.billTo.name || '-']];
+    if (c.billTo.mobile) bp.push(['Mobile', c.billTo.mobile]);
+    blocks.push({ t: 'kv', cols: 2, pairs: bp });
+    if (c.billTo.address) blocks.push({ t: 'para', text: c.billTo.address });
+    if (c.billTo.live) blocks.push({ t: 'note', text: 'Customer details are taken from the job as it is now.', color: PAL.AMBER });
+    var body = [], raw = [], sd = 0, st = 0, sg = 0, sa = 0, anyIncl = false;
+    c.lines.forEach(function (l, i) {
+      var g = l.cgst + l.sgst + l.igst;
+      if (l.basis === 'INCL') anyIncl = true;
+      body.push([String(i + 1), l.desc, fmtQty(l.qty), inr2(l.unitP) + (l.basis === 'INCL' ? '*' : ''), inr2(l.discP), inr2(l.taxP), inr2(g), inr2(l.tot)]);
+      raw.push([0, 0, 0, 0, l.discP, l.taxP, g, l.tot]);
+      sd += l.discP; st += l.taxP; sg += g; sa += l.tot;
+    });
+    blocks.push({ t: 'section', title: 'Particulars' });
+    blocks.push({ t: 'table', head: [['Sr', 'Description', 'Qty', 'Rate', 'Discount', 'Value before GST', 'GST', 'Amount']], body: body, money: [4, 5, 6, 7], raw: raw, fmt: svc2MoneyFmt([4, 5, 6, 7]),
+      colStyles: { 0: { cellWidth: 20, halign: 'center' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 34, halign: 'right' }, 3: { cellWidth: SVC2_AMT_W, halign: 'right' },
+        4: { cellWidth: SVC2_AMT_W, halign: 'right' }, 5: { cellWidth: SVC2_AMT_W, halign: 'right' }, 6: { cellWidth: SVC2_AMT_W, halign: 'right' }, 7: { cellWidth: SVC2_AMT_W, halign: 'right' } },
+      foot: [['', 'TOTAL (' + c.lines.length + ')', '', '', inr2(sd), inr2(st), inr2(sg), inr2(sa)]] });
+    if (anyIncl) blocks.push({ t: 'note', text: '* This rate includes GST.' });
+    var tp = [['Value before GST', inr2(st)], ['GST', inr2(sg)]];
+    if (sd > 0) tp.push(['Discount given (already deducted above)', inr2(sd)]);
+    if (c.roundOff !== 0) tp.push(['Round off', inr2(c.roundOff)]);
+    blocks.push({ t: 'kv', cols: 2, pairs: tp });
+    blocks.push({ t: 'kv', cols: 1, pairs: [['Bill total', inr2(c.total), 'big']] });
+    svc2TotalsTail(blocks, c, 'Balance');
+    svc2WarrantyPartsBlocks(blocks, c.warranty);
+    svc2PaymentsBlocks(blocks, c.receipts);
+    blocks.push({ t: 'note', text: 'Amount in words: ' + svc2Words(c.total) });
+    var wn = svc2WarrantyNote(c); if (wn) blocks.push(wn);
+    blocks.push(svc2Sign(c.firm.name));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  function svc2TaxInvoice(o) {
+    var T = 'serviceTaxInvoiceV2', x = svc2Invoice(o, T); if (x.fail) return x.fail;
+    var c = x.c, cancelled = c.status === 'CANCELLED', blocks = [], intra = c.supply.type === 'INTRA';
+    blocks.push(svc2DocHdr(T, c.firm, true, c.no, cancelled));
+    if (cancelled) svc2CancelNotes(blocks, c.cancelledDate);
+    blocks.push({ t: 'kv', cols: 2, pairs: [['Invoice No', c.no], ['Invoice Date', svc2Dmy(c.date) || '-'], ['Service Order', c.jobId || '-'],
+      ['Place of supply', svc2Place(c.supply.state, c.supply.code)], ['Reverse charge', c.reverse ? 'Yes' : 'No'],
+      ['Supply', intra ? 'Within state (CGST + SGST)' : 'Inter-state (IGST)']] });
+    blocks.push({ t: 'section', title: 'Supplier' });
+    blocks.push({ t: 'para', text: c.firm.name + ', ' + (c.firm.address || '-') + '. GSTIN: ' + c.firm.gstin + '. State: ' + svc2Place(c.firm.state, c.firm.stateCode) + '.' });
+    svc2BillToBlocks(blocks, c.billTo, [['GSTIN', c.billTo.gstin || 'Not registered'], ['State', svc2Place(c.billTo.state, c.billTo.stateCode)]], c.watch);
+    var body = [], raw = [], sd = 0, st = 0, sg = 0, missing = 0, anyIncl = false;
+    c.lines.forEach(function (l, i) {
+      var g = l.cgst + l.sgst + l.igst;
+      if (!l.hsn) missing += 1;
+      if (l.basis === 'INCL') anyIncl = true;
+      body.push([String(i + 1), (l.kind === 'PART' && l.code) ? (l.code + ' \u00b7 ' + l.desc) : l.desc, l.hsn || '-', fmtQty(l.qty) + (l.unit ? ' ' + l.unit : ''),
+        inr2(l.unitP) + (l.basis === 'INCL' ? '*' : ''), inr2(l.discP), inr2(l.taxP), svc2Rate(l.rate), inr2(g)]);
+      raw.push([0, 0, 0, 0, 0, l.discP, l.taxP, 0, g]);
+      sd += l.discP; st += l.taxP; sg += g;
+    });
+    blocks.push({ t: 'section', title: 'Particulars' });
+    blocks.push({ t: 'table', head: [['Sr', 'Description', 'HSN/SAC', 'Qty', 'Rate', 'Discount', 'Taxable value', 'GST %', 'GST amount']], body: body, money: [5, 6, 8], raw: raw, fmt: svc2MoneyFmt([5, 6, 8]),
+      colStyles: { 0: { cellWidth: 20, halign: 'center' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 46, halign: 'left' }, 3: { cellWidth: 30, halign: 'right' },
+        4: { cellWidth: SVC2_AMT_W, halign: 'right' }, 5: { cellWidth: SVC2_AMT_W, halign: 'right' }, 6: { cellWidth: SVC2_AMT_W, halign: 'right' }, 7: { cellWidth: 32, halign: 'right' }, 8: { cellWidth: SVC2_AMT_W, halign: 'right' } },
+      foot: [['', 'TOTAL (' + c.lines.length + ')', '', '', '', inr2(sd), inr2(st), '', inr2(sg)]] });
+    if (anyIncl) blocks.push({ t: 'note', text: '* This rate includes GST.' });
+    if (missing > 0) blocks.push({ t: 'note', text: 'HSN or SAC is missing on ' + missing + ' line(s). Confirm with your accountant before giving this to the customer.', color: PAL.AMBER });
+    var sum = svc2TaxSummary(blocks, c.lines, c.supply.type);
+    var tp = [['Total taxable value', inr2(sum.taxable)]];
+    if (intra) { tp.push(['Total CGST', inr2(sum.cgst)]); tp.push(['Total SGST', inr2(sum.sgst)]); } else tp.push(['Total IGST', inr2(sum.igst)]);
+    tp.push(['Total tax', inr2(sum.tax)]);
+    if (sd > 0) tp.push(['Discount given (already deducted)', inr2(sd)]);
+    if (c.roundOff !== 0) tp.push(['Round off', inr2(c.roundOff)]);
+    blocks.push({ t: 'kv', cols: 2, pairs: tp });
+    blocks.push({ t: 'kv', cols: 1, pairs: [['Invoice total', inr2(c.total), 'big']] });
+    if (c.advSet > 0) {
+      svc2TotalsTail(blocks, c, 'Balance payable');
+      blocks.push({ t: 'section', title: 'Advances set off' });
+      blocks.push({ t: 'table', head: [['Receipt no', 'Date', 'Amount']], body: c.advances.map(function (a) { return [a.no || '-', svc2Dmy(a.date) || '-', inr2(a.amt)]; }),
+        money: [2], raw: c.advances.map(function (a) { return [0, 0, a.amt]; }), fmt: svc2MoneyFmt([2]),
+        colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 90, halign: 'left' }, 2: { cellWidth: 100, halign: 'right' } } });
+    }
+    blocks.push({ t: 'note', text: 'Amount in words: ' + svc2Words(c.total) });
+    svc2WarrantyPartsBlocks(blocks, c.warranty);
+    svc2PaymentsBlocks(blocks, c.receipts);
+    var wn = svc2WarrantyNote(c); if (wn) blocks.push(wn);
+    blocks.push({ t: 'note', text: 'Computer-generated tax invoice.' });
+    blocks.push(svc2Sign(c.firm.name));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  /* ----- credit note ----- */
+  var SVC2_REASON = { REFUND: 'Refund', PRICE_CORRECTION: 'Price correction', RETURN: 'Return of part', RETURN_OF_PART: 'Return of part', OTHER: 'Other',
+    'Refund': 'Refund', 'Price correction': 'Price correction', 'Return of part': 'Return of part', 'Other': 'Other' };
+  function svc2CreditNote(o) {
+    var T = 'serviceCreditNote', t = svc2Take(o, 'CREDIT_NOTE'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, n = svc2Obj(d.note);
+    if (!n) return svc2Fail(T, 'READ_FAILED');
+    var billedIn = n.billedIn;
+    if (billedIn !== 'CCPT' && billedIn !== 'SAAGAR') return svc2Fail(T, 'READ_FAILED');
+    var firm = svc2Supplier(n.firm); if (!firm) return svc2Fail(T, 'READ_FAILED');
+    if (billedIn === 'SAAGAR' && !firm.gstin) return svc2Fail(T, 'GSTIN_MISSING');
+    var no = svcCleanOpt(n.noteNo, 40); if (!no) return svc2Fail(T, 'READ_FAILED');
+    var lines = svc2Lines(n.lines, true); if (typeof lines === 'string') return svc2Fail(T, lines);
+    if (!svcP(n.totalPaise) || !svcP(n.roundOffPaise)) return svc2Fail(T, 'READ_FAILED');
+    var refund = null;
+    if (n.refund != null) {
+      var rf = svc2Obj(n.refund);
+      if (!rf || !svcP(rf.amountPaise) || rf.amountPaise < 0) return svc2Fail(T, 'READ_FAILED');
+      refund = { no: svcCleanOpt(rf.voucherNo, 40), date: dayOf(rf.date), mode: svc2Mode(rf.mode), amt: rf.amountPaise };
+    }
+    var bt = svc2BillTo(d.billTo, true); if (!bt) return svc2Fail(T, 'READ_FAILED');
+    var sup = svc2Supply(n);
+    if (billedIn === 'SAAGAR' && !sup.code) return svc2Fail(T, 'BILL_CHECK');
+    if (svc2Check({ isNote: true, supply: sup.type, firmCode: firm.stateCode, posCode: sup.code, lines: lines, roundOff: n.roundOffPaise, total: n.totalPaise,
+      refund: refund ? refund.amt : null })) return svc2Fail(T, 'BILL_CHECK');
+    var ccpt = billedIn === 'CCPT', intra = sup.type === 'INTRA', blocks = [];
+    blocks.push(svc2DocHdr(T, firm, !ccpt, no, false, ccpt ? 'SERVICE CREDIT NOTE (NOT A GST CREDIT NOTE)' : 'CREDIT NOTE'));
+    var ccptNo = svcCleanOpt(n.ccptInvoiceNo, 40);
+    if (ccpt) blocks.push({ t: 'note', text: 'This credit note is for our own bill summary. The service centre (CCPT) issues any tax credit note for ' + (ccptNo ? ('CCPT invoice ' + ccptNo + '.') : 'the CCPT invoice (number not recorded yet).'), color: PAL.AMBER });
+    var kp = [['Credit note no', no], ['Date', svc2Dmy(dayOf(n.noteDate)) || '-'], ['Against bill no', svcCleanOpt(n.invoiceNo, 40) || '-'], ['Bill date', svc2Dmy(dayOf(n.invoiceDate)) || '-'],
+      ['Service order', svcCleanOpt(n.jobId, 40) || '-'], ['Reason', SVC2_REASON[svcCleanOpt(n.reasonLabel, 40)] || 'Other']];
+    if (ccpt) kp.push(['CCPT invoice no', ccptNo || 'Not recorded']);
+    blocks.push({ t: 'kv', cols: 2, pairs: kp });
+    blocks.push({ t: 'section', title: 'Supplier' });
+    blocks.push({ t: 'para', text: firm.name + ', ' + (firm.address || '-') + '.' + (firm.gstin ? (' GSTIN: ' + firm.gstin + '.') : '') + ' State: ' + svc2Place(firm.state, firm.stateCode) + '.' });
+    svc2BillToBlocks(blocks, bt, [['GSTIN', bt.gstin || 'Not registered'], ['State', svc2Place(bt.state, bt.stateCode)]]);
+    var body = [], raw = [], st = 0, sg = 0;
+    lines.forEach(function (l, i) {
+      var g = l.cgst + l.sgst + l.igst;
+      body.push([String(i + 1), (l.kind === 'PART' && l.code) ? (l.code + ' \u00b7 ' + l.desc) : l.desc, l.hsn || '-', fmtQty(l.qty) + (l.unit ? ' ' + l.unit : ''), inr2(l.taxP), svc2Rate(l.rate), inr2(g)]);
+      raw.push([0, 0, 0, 0, l.taxP, 0, g]);
+      st += l.taxP; sg += g;
+    });
+    blocks.push({ t: 'section', title: 'Particulars credited' });
+    blocks.push({ t: 'table', head: [['Sr', 'Description', 'HSN/SAC', 'Qty', 'Taxable value credited', 'GST %', 'GST credited']], body: body, money: [4, 6], raw: raw, fmt: svc2MoneyFmt([4, 6]),
+      colStyles: { 0: { cellWidth: 20, halign: 'center' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 46, halign: 'left' }, 3: { cellWidth: 30, halign: 'right' },
+        4: { cellWidth: 70, halign: 'right' }, 5: { cellWidth: 32, halign: 'right' }, 6: { cellWidth: 62, halign: 'right' } },
+      foot: [['', 'TOTAL (' + lines.length + ')', '', '', inr2(st), '', inr2(sg)]] });
+    var sum = svc2TaxSummary(blocks, lines, sup.type);
+    var tp = [['Total taxable value', inr2(sum.taxable)]];
+    if (intra) { tp.push(['Total CGST', inr2(sum.cgst)]); tp.push(['Total SGST', inr2(sum.sgst)]); } else tp.push(['Total IGST', inr2(sum.igst)]);
+    tp.push(['Total tax', inr2(sum.tax)]);
+    if (n.roundOffPaise !== 0) tp.push(['Round off', inr2(n.roundOffPaise)]);
+    blocks.push({ t: 'kv', cols: 2, pairs: tp });
+    blocks.push({ t: 'kv', cols: 1, pairs: [['Credit note total', inr2(n.totalPaise), 'big']] });
+    blocks.push({ t: 'note', text: 'Amount in words: ' + svc2Words(n.totalPaise) });
+    if (n.totalPaise === 0) blocks.push({ t: 'note', text: 'No money is credited by this note.' });
+    blocks.push({ t: 'note', text: 'This credit note reduces the bill shown above by the amount shown.' });
+    if (refund) blocks.push({ t: 'kv', cols: 2, pairs: [['Refund voucher', refund.no || '-'], ['Refund date', svc2Dmy(refund.date) || '-'], ['Paid by', refund.mode || '-'], ['Refunded', inr2(refund.amt)]] });
+    blocks.push(svc2Sign(firm.name));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  /* ----- receipt, refund voucher, no-charge warranty sheet ----- */
+  function svc2Receipt(o) {
+    var T = 'serviceReceipt', t = svc2Take(o, 'RECEIPT'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, r = svc2Obj(d.receipt);
+    if (!r) return svc2Fail(T, 'READ_FAILED');
+    var kind = r.receiptKind;
+    if (kind !== 'ADVANCE' && kind !== 'BALANCE' && kind !== 'COUNTER') return svc2Fail(T, 'READ_FAILED');
+    var no = svcCleanOpt(r.receiptNo, 40); if (!no) return svc2Fail(T, 'READ_FAILED');
+    if (!svcP(r.amountPaise) || r.amountPaise <= 0) return svc2Fail(T, 'READ_FAILED');
+    var firm = svc2Supplier(d.firm) || { name: svcFirmName(), gstin: '', address: '', state: '', stateCode: '' };
+    var bt = svc2BillTo({ name: svc2Obj(d.billTo) ? d.billTo.name : '' }, false);
+    var items = [], i, it, itemSum = 0;
+    if (kind === 'COUNTER') {
+      var arr = svc2Names(r.items, SVC2_MAX_LINES);
+      if (arr === null || !arr.length) return svc2Fail(T, 'READ_FAILED');
+      for (i = 0; i < arr.length; i++) {
+        it = svc2Obj(arr[i]);
+        var idesc = it ? svcCleanOpt(it.desc, 200) : '';
+        if (!it || !idesc || !svcQ(it.qty) || it.qty <= 0 || !svcP(it.amountPaise) || it.amountPaise < 0) return svc2Fail(T, 'READ_FAILED');
+        items.push({ desc: idesc, qty: it.qty, amt: it.amountPaise }); itemSum += it.amountPaise;
+      }
+      if (itemSum !== r.amountPaise) return svc2Fail(T, 'BILL_CHECK');
+    }
+    var inv = {};
+    if (kind === 'BALANCE') {
+      var f3 = [r.invoiceTotalPaise, r.paidEarlierPaise, r.balanceAfterPaise, r.creditedEarlierPaise === undefined ? 0 : r.creditedEarlierPaise];
+      for (i = 0; i < f3.length; i++) { if (!svcP(f3[i]) || f3[i] < 0) return svc2Fail(T, 'READ_FAILED'); }
+      inv = { no: svcCleanOpt(r.invoiceNo, 40), ccpt: r.billedIn === 'CCPT', ccptNo: svcCleanOpt(r.ccptInvoiceNo, 40), total: f3[0], earlier: f3[1], after: f3[2], cred: f3[3] };
+      if (inv.after !== Math.max(0, inv.total - inv.cred - inv.earlier - r.amountPaise)) return svc2Fail(T, 'BILL_CHECK');   /* the printed figures must agree (credit notes before this receipt count) */
+    }
+    var title = kind === 'ADVANCE' ? 'ADVANCE RECEIPT' : (kind === 'COUNTER' ? 'COUNTER SALE RECEIPT' : 'RECEIPT');
+    var hdr = svc2Hdr(T, firm.name, svc2Cut(firm.address, 70), no, 'locked', true); hdr.title = title;
+    var blocks = [hdr], ref = svcCleanOpt(r.ref, 80);
+    var kp = [['Receipt no', no], ['Date', svc2Dmy(dayOf(r.date)) || '-'], ['Received from', bt.name || '-']];
+    if (kind !== 'COUNTER') kp.push(['Service order', svcCleanOpt(r.jobId, 40) || '-']);
+    var watch = svcCleanOpt(r.watch, 80); if (watch) kp.push(['Watch', watch]);
+    kp.push(['Payment mode', svc2Mode(r.mode) || '-']);
+    if (ref) kp.push(['Reference', svc2Cut(ref, 24)]);
+    var by = svcCleanOpt(r.receivedBy, 60); if (by) kp.push(['Received by', by]);
+    blocks.push({ t: 'kv', cols: 2, pairs: kp });
+    if (kind === 'COUNTER') {
+      blocks.push({ t: 'table', head: [['Sr', 'Description', 'Qty', 'Amount']], body: items.map(function (x, k) { return [String(k + 1), x.desc, fmtQty(x.qty), inr2(x.amt)]; }),
+        money: [3], raw: items.map(function (x) { return [0, 0, 0, x.amt]; }), fmt: svc2MoneyFmt([3]),
+        colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 'auto', halign: 'left' }, 2: { cellWidth: 50, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' } },
+        foot: [['', 'TOTAL', '', inr2(itemSum)]] });
+    }
+    if (kind === 'BALANCE') {
+      var bp = [['Bill no', inv.no || '-']];
+      if (inv.ccpt) bp.push(['CCPT invoice no', inv.ccptNo || 'Not recorded']);
+      bp.push(['Bill total', inr2(inv.total)]); if (inv.cred > 0) bp.push(['Less credit notes', inr2(inv.cred)]); bp.push(['Paid earlier', inr2(inv.earlier)]);
+      bp.push(['This receipt', inr2(r.amountPaise)]); bp.push(['Balance after this receipt', inr2(inv.after)]);
+      blocks.push({ t: 'kv', cols: 2, pairs: bp });
+    }
+    blocks.push({ t: 'netbox', label: 'Amount received', value: inr2(r.amountPaise) });
+    blocks.push({ t: 'note', text: 'Amount in words: ' + svc2Words(r.amountPaise) });
+    blocks.push({ t: 'note', text: kind === 'ADVANCE'
+      ? 'This amount is an advance for the service order shown. It will be set off against the final bill. A bill or tax invoice will be given when the work is complete.'
+      : 'This is a receipt for money received. It is not a tax invoice.' });
+    blocks.push({ t: 'sign', boxes: [{ role: 'Received by', name: by }, { role: 'For ' + firm.name, name: '' }] });
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  function svc2Refund(o) {
+    var T = 'serviceRefundVoucher', t = svc2Take(o, 'REFUND'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, r = svc2Obj(d.refund);
+    if (!r) return svc2Fail(T, 'READ_FAILED');
+    var no = svcCleanOpt(r.voucherNo, 40); if (!no) return svc2Fail(T, 'READ_FAILED');
+    if (!svcP(r.amountPaise) || r.amountPaise <= 0) return svc2Fail(T, 'READ_FAILED');
+    if (r.againstKind !== 'CREDIT_NOTE' && r.againstKind !== 'ADVANCE' && r.againstKind !== 'SALE') return svc2Fail(T, 'READ_FAILED');
+    var firm = svc2Supplier(d.firm) || { name: svcFirmName(), gstin: '', address: '', state: '', stateCode: '' };
+    var bt = svc2BillTo({ name: svc2Obj(d.billTo) ? d.billTo.name : '' }, false);
+    var ref = svcCleanOpt(r.ref, 80), by = svcCleanOpt(r.paidBy, 60), against = svcCleanOpt(r.againstNo, 40);
+    var blocks = [svc2Hdr(T, firm.name, svc2Cut(firm.address, 70), no, 'locked', true)];
+    var kp = [['Voucher no', no], ['Date', svc2Dmy(dayOf(r.date)) || '-'], ['Refunded to', bt.name || '-'],
+      ['Against', (r.againstKind === 'CREDIT_NOTE' ? 'Credit note ' : (r.againstKind === 'SALE' ? 'Counter sale ' : 'Advance receipt ')) + (against || '-')], ['Service order', svcCleanOpt(r.jobId, 40) || '-'],
+      ['Payment mode', svc2Mode(r.mode) || '-']];
+    if (ref) kp.push(['Reference', svc2Cut(ref, 24)]);
+    if (by) kp.push(['Paid by', by]);
+    blocks.push({ t: 'kv', cols: 2, pairs: kp });
+    blocks.push({ t: 'netbox', label: 'Amount refunded', value: inr2(r.amountPaise) });
+    blocks.push({ t: 'note', text: 'Amount in words: ' + svc2Words(r.amountPaise) });
+    blocks.push({ t: 'note', text: 'The customer has received the amount shown above in full.' });
+    blocks.push(svc2Sign(firm.name, 'Customer signature (refund received)'));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  function svc2WarrantySheet(o) {
+    var T = 'serviceWarrantySheet', t = svc2Take(o, 'WARRANTY_SHEET'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, s = svc2Obj(d.sheet);
+    if (!s) return svc2Fail(T, 'READ_FAILED');
+    var jobId = svcCleanOpt(s.jobId, 40); if (!jobId) return svc2Fail(T, 'READ_FAILED');
+    var firm = svc2Supplier({ name: svc2Obj(d.firm) ? d.firm.name : '', address: svc2Obj(d.firm) ? d.firm.address : '' });
+    if (!firm) firm = { name: svcFirmName(), gstin: '', address: svc2Obj(d.firm) ? svcCleanOpt(d.firm.address, 240) : '', state: '', stateCode: '' };
+    var bt = svc2BillTo(svc2Obj(d.billTo) ? { name: d.billTo.name, mobile: d.billTo.mobile } : {}, true);
+    var pin = svc2Names(s.parts, SVC2_MAX_LINES); if (pin === null) return svc2Fail(T, 'READ_FAILED');
+    var parts = [], i, p;
+    for (i = 0; i < pin.length; i++) {
+      p = svc2Obj(pin[i]);
+      var pd = p ? svcCleanOpt(p.desc, 200) : '';
+      if (!p || !pd || !svcQ(p.qty) || p.qty <= 0) return svc2Fail(T, 'READ_FAILED');
+      parts.push({ code: svcCleanOpt(p.partCode, 64), desc: pd, qty: p.qty });
+    }
+    var recd = dayOf(s.dateReceived), deliv = dayOf(s.dateDelivered), till = dayOf(s.warrantyTill);
+    var hdr = svc2Hdr(T, firm.name, svc2Dmy(deliv || recd), jobId, 'locked', true);
+    var blocks = [hdr];
+    blocks.push({ t: 'kv', cols: 2, pairs: [['Service order', jobId], ['Date received', svc2Dmy(recd) || '-'], ['Date delivered', svc2Dmy(deliv) || 'Not yet'],
+      ['Watch', svcCleanOpt(s.watch, 80) || '-'], ['Reference no', svcCleanOpt(s.refNo, 40) || '-'], ['Serial no', svcCleanOpt(s.serialNo, 40) || '-'],
+      ['Advisor', svcCleanOpt(s.advisor, 60) || '-'], ['Technician', svcCleanOpt(s.technician, 60) || '-']] });
+    blocks.push({ t: 'section', title: 'Customer' });
+    var cp = [['Name', bt.name || '-']]; if (bt.mobile) cp.push(['Mobile', bt.mobile]);
+    blocks.push({ t: 'kv', cols: 2, pairs: cp });
+    blocks.push({ t: 'section', title: 'Work done' });
+    var diag = svcCleanOpt(s.diagnosis, 400), work = svcCleanOpt(s.workDone, 400);
+    if (diag) blocks.push({ t: 'para', text: 'Fault found: ' + diag });
+    if (work) blocks.push({ t: 'para', text: 'Work carried out: ' + work });
+    blocks.push({ t: 'section', title: 'Parts used (no charge)' });
+    if (parts.length) {
+      blocks.push({ t: 'table', head: [['Sr', 'Part code', 'Description', 'Qty']], body: parts.map(function (x, k) { return [String(k + 1), x.code || '-', x.desc, fmtQty(x.qty)]; }),
+        numCols: [3], colStyles: { 0: { cellWidth: 24, halign: 'center' }, 1: { cellWidth: 90, halign: 'left' }, 2: { cellWidth: 'auto', halign: 'left' }, 3: { cellWidth: 50, halign: 'right' } } });
+    } else blocks.push({ t: 'empty', text: 'No parts were used.' });
+    blocks.push({ t: 'kv', cols: 1, pairs: [['Amount payable', 'No charge', 'big']] });
+    blocks.push({ t: 'note', text: 'The work and parts above were provided under warranty at no charge to the customer.' + (till ? (' Warranty on this repair is valid until ' + svc2Dmy(till) + '.') : '') });
+    blocks.push({ t: 'note', text: 'This is a job sheet. It is not a bill or a tax invoice.', color: PAL.AMBER });
+    blocks.push(svc2Sign(firm.name, 'Customer (received in good order)'));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  /* ----- list reports (no customer name or mobile anywhere) ----- */
+  function svc2ListOf(v) {                 // the array, 'MANY', or null when v is not an array
+    return svcList(v);
+  }
+  function svc2ModeRank(m) { var i = SVC2_MODE_ORDER.indexOf(m); return i < 0 ? 99 : i; }
+  function svc2ModeSort(a, b) { return (svc2ModeRank(a) - svc2ModeRank(b)) || svcCmp(a, b); }
+
+  function svc2DaySummary(o) {
+    var T = 'serviceDaySummary', today = todayIsoSafe(), t = svc2Take(o, 'DAY_SUMMARY'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, date = dayOf(d.date);
+    if (!date || date > today) return svc2Fail(T, 'PERIOD_INVALID');
+    var rl = svc2ListOf(d.receipts), fl = svc2ListOf(d.refunds), i, x;
+    if (rl === null || fl === null) return svc2Fail(T, 'READ_FAILED');
+    if (rl === 'MANY' || fl === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+    var receipts = [], refunds = [], invoices = [], notes = [];
+    for (i = 0; i < rl.length; i++) {
+      x = svc2Obj(rl[i]);
+      if (!x || !svcCleanOpt(x.receiptNo, 40) || !svcP(x.amountPaise) || x.amountPaise <= 0 || (x.receiptKind !== 'ADVANCE' && x.receiptKind !== 'BALANCE' && x.receiptKind !== 'COUNTER')) return svc2Fail(T, 'READ_FAILED');
+      receipts.push({ no: svcCleanOpt(x.receiptNo, 40), kind: x.receiptKind, mode: svc2Mode(x.mode) || 'Not stated', amt: x.amountPaise, job: svcCleanOpt(x.jobId, 40) });
+    }
+    for (i = 0; i < fl.length; i++) {
+      x = svc2Obj(fl[i]);
+      if (!x || !svcCleanOpt(x.voucherNo, 40) || !svcP(x.amountPaise) || x.amountPaise <= 0) return svc2Fail(T, 'READ_FAILED');
+      refunds.push({ no: svcCleanOpt(x.voucherNo, 40), mode: svc2Mode(x.mode) || 'Not stated', amt: x.amountPaise, job: svcCleanOpt(x.jobId, 40) });
+    }
+    var invOk = d.invoicesAvailable !== false, cnOk = d.creditNotesAvailable !== false;
+    if (invOk) {
+      var il = svc2ListOf(d.invoices);
+      if (il === null) return svc2Fail(T, 'READ_FAILED');
+      if (il === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+      for (i = 0; i < il.length; i++) {
+        x = svc2Obj(il[i]);
+        if (!x || !svcCleanOpt(x.invoiceNo, 40) || (x.billedIn !== 'CCPT' && x.billedIn !== 'SAAGAR') || (x.status !== 'ISSUED' && x.status !== 'CANCELLED') || !svcP(x.totalPaise) || x.totalPaise < 0) return svc2Fail(T, 'READ_FAILED');
+        invoices.push({ no: svcCleanOpt(x.invoiceNo, 40), by: x.billedIn, status: x.status, tot: x.totalPaise, job: svcCleanOpt(x.jobId, 40) });
+      }
+    }
+    if (cnOk) {
+      var nl = svc2ListOf(d.creditNotes);
+      if (nl === null) return svc2Fail(T, 'READ_FAILED');
+      if (nl === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+      for (i = 0; i < nl.length; i++) {
+        x = svc2Obj(nl[i]);
+        if (!x || !svcCleanOpt(x.noteNo, 40) || !svcP(x.totalPaise) || x.totalPaise < 0) return svc2Fail(T, 'READ_FAILED');
+        notes.push({ no: svcCleanOpt(x.noteNo, 40), against: svcCleanOpt(x.invoiceNo, 40), tot: x.totalPaise });
+      }
+    }
+    var adv = svc2Obj(d.advancesHeld), advOk = !!adv && adv.available !== false;
+    if (advOk && (!svcIsInt(adv.count) || adv.count < 0 || !svcP(adv.totalPaise) || adv.totalPaise < 0)) return svc2Fail(T, 'READ_FAILED');
+    /* arithmetic, integers only */
+    var recTotal = 0, refTotal = 0, cashNet = 0, modes = {}, modeList = [];
+    function mode(m) { if (!modes[m]) { modes[m] = { ADVANCE: 0, BALANCE: 0, COUNTER: 0, rec: 0, refCount: 0, ref: 0 }; modeList.push(m); } return modes[m]; }
+    receipts.forEach(function (r) { var m = mode(r.mode); m[r.kind] += r.amt; m.rec += r.amt; recTotal += r.amt; });
+    refunds.forEach(function (r) { var m = mode(r.mode); m.refCount += 1; m.ref += r.amt; refTotal += r.amt; });
+    modeList.sort(svc2ModeSort);
+    if (modes.Cash) cashNet = modes.Cash.rec - modes.Cash.ref;
+    var net = recTotal - refTotal, issued = invoices.filter(function (v) { return v.status === 'ISSUED'; });
+    var hdr = svc2Hdr(T, 'Saagar Traders \u00b7 Latur \u00b7 Service', longDate(date), '', '', false);
+    var blocks = [hdr];
+    var advTail = [{ t: 'section', title: 'Advances held at end of day' },
+      { t: 'kv', cols: 1, pairs: advOk ? [['Advances held (count)', String(adv.count)], ['Advances held (amount)', inr2(adv.totalPaise)]] : [['Advances held', 'Not available']] }];
+    if (!receipts.length && !refunds.length && !invoices.length && !notes.length) {
+      blocks.push({ t: 'empty', text: 'No service money was recorded on this day.' });
+      advTail.forEach(function (b) { blocks.push(b); });
+      blocks.push(svcSign(['Counted by', 'Checked by (Store Manager)', 'Owner']));
+      return { orientation: 'portrait', blocks: blocks };
+    }
+    blocks.push({ t: 'kpi', cols: 5, items: [{ label: 'Receipts', value: inr2(recTotal) }, { label: 'Refunds', value: inr2(refTotal) },
+      { label: 'Net money', value: inr2(net), hero: true }, { label: 'Net cash', value: inr2(cashNet) },
+      { label: 'Bills issued', value: invOk ? String(issued.length) : 'Not available' }] });
+    /* receipts by mode */
+    blocks.push({ t: 'section', title: 'Receipts by mode' });
+    if (receipts.length) {
+      var rb = [], rr = [], ta = 0, tb = 0, tc = 0;
+      modeList.forEach(function (m) {
+        var g = modes[m]; if (!g.rec) return;
+        rb.push([m, inr2(g.ADVANCE), inr2(g.BALANCE), inr2(g.COUNTER), inr2(g.rec)]); rr.push([0, g.ADVANCE, g.BALANCE, g.COUNTER, g.rec]);
+        ta += g.ADVANCE; tb += g.BALANCE; tc += g.COUNTER;
+      });
+      blocks.push({ t: 'table', head: [['Mode', 'Advance', 'Balance', 'Counter', 'Total']], body: rb, money: [1, 2, 3, 4], raw: rr, fmt: svc2MoneyFmt([1, 2, 3, 4]),
+        colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 80, halign: 'right' }, 2: { cellWidth: 80, halign: 'right' }, 3: { cellWidth: 80, halign: 'right' }, 4: { cellWidth: 90, halign: 'right' } },
+        foot: [['TOTAL', inr2(ta), inr2(tb), inr2(tc), inr2(recTotal)]] });
+    } else blocks.push({ t: 'empty', text: 'No receipts today.' });
+    /* refunds by mode */
+    blocks.push({ t: 'section', title: 'Refunds by mode' });
+    if (refunds.length) {
+      var fb = [], cnt = 0;
+      modeList.forEach(function (m) { var g = modes[m]; if (!g.refCount) return; fb.push([m, String(g.refCount), inr2(g.ref)]); cnt += g.refCount; });
+      blocks.push({ t: 'table', head: [['Mode', 'Vouchers', 'Amount']], body: fb, money: [2], numCols: [1],
+        raw: modeList.filter(function (m) { return modes[m].refCount; }).map(function (m) { return [0, 0, modes[m].ref]; }), fmt: svc2MoneyFmt([2]),
+        colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 70, halign: 'right' }, 2: { cellWidth: 110, halign: 'right' } },
+        foot: [['TOTAL', String(cnt), inr2(refTotal)]] });
+    } else blocks.push({ t: 'empty', text: 'No refunds today.' });
+    /* net by mode */
+    blocks.push({ t: 'section', title: 'Net by mode' });
+    var nb = [], nr = [], nf = [];
+    modeList.forEach(function (m) { var g = modes[m]; nb.push([m, inr2(g.rec), inr2(g.ref), inr2(g.rec - g.ref)]); nr.push([0, g.rec, g.ref, g.rec - g.ref]); nf.push(m === 'Cash'); });
+    blocks.push({ t: 'table', head: [['Mode', 'Receipts', 'Refunds', 'Net']], body: nb, money: [1, 2, 3], raw: nr, fmt: svc2MoneyFmt([1, 2, 3]), flagRows: nf,
+      colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 90, halign: 'right' }, 2: { cellWidth: 90, halign: 'right' }, 3: { cellWidth: 90, halign: 'right' } },
+      foot: [['TOTAL', inr2(recTotal), inr2(refTotal), inr2(net)]] });
+    blocks.push({ t: 'note', text: 'Net cash is service receipts in cash minus service refunds in cash. It does not include the opening cash or any retail or other cash.' });
+    /* bills and credit notes */
+    blocks.push({ t: 'section', title: 'Bills issued' });
+    if (!invOk) blocks.push({ t: 'empty', text: 'Bills issued: not available.' });
+    else if (!invoices.length) blocks.push({ t: 'empty', text: 'No bills were issued on this day.' });
+    else {
+      var bb = [], br = [], bf = [], bsum = 0;
+      invoices.forEach(function (v) {
+        var live = v.status === 'ISSUED';
+        bb.push([v.no, v.job || '-', v.by === 'CCPT' ? 'Our summary (CCPT bill)' : 'Our tax invoice', live ? 'Issued' : 'Cancelled', inr2(v.tot)]);
+        br.push([0, 0, 0, 0, live ? v.tot : 0]); bf.push(!live); if (live) bsum += v.tot;
+      });
+      blocks.push({ t: 'table', head: [['Bill no', 'Job', 'Issued by', 'Status', 'Total']], body: bb, money: [4], raw: br, fmt: svc2MoneyFmt([4]), flagRows: bf,
+        colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 70, halign: 'left' }, 2: { cellWidth: 120, halign: 'left' }, 3: { cellWidth: 56, halign: 'left' }, 4: { cellWidth: 80, halign: 'right' } },
+        foot: [['TOTAL (' + issued.length + ')', '', '', '', inr2(bsum)]] });
+    }
+    if (!cnOk) { blocks.push({ t: 'section', title: 'Credit notes issued' }); blocks.push({ t: 'empty', text: 'Credit notes issued: not available.' }); }
+    else if (notes.length) {
+      var cb = [], cr = [], csum = 0;
+      notes.forEach(function (v) { cb.push([v.no, v.against || '-', inr2(v.tot)]); cr.push([0, 0, v.tot]); csum += v.tot; });
+      blocks.push({ t: 'section', title: 'Credit notes issued' });
+      blocks.push({ t: 'table', head: [['Credit note no', 'Against', 'Total']], body: cb, money: [2], raw: cr, fmt: svc2MoneyFmt([2]),
+        colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 140, halign: 'left' }, 2: { cellWidth: 90, halign: 'right' } }, foot: [['TOTAL (' + notes.length + ')', '', inr2(csum)]] });
+    }
+    advTail.forEach(function (b) { blocks.push(b); });
+    /* detail list */
+    var ld = [];
+    receipts.forEach(function (r) { ld.push({ no: r.no, type: (r.kind === 'ADVANCE' ? 'Advance receipt' : (r.kind === 'BALANCE' ? 'Balance receipt' : 'Counter receipt')), job: r.job, mode: r.mode, inn: r.amt, out: 0 }); });
+    refunds.forEach(function (r) { ld.push({ no: r.no, type: 'Refund', job: r.job, mode: r.mode, inn: 0, out: r.amt }); });
+    ld = svcStable(ld, function (a, b) { return svcCmp(a.no, b.no); });
+    blocks.push({ t: 'section', title: 'Receipts and refunds list' });
+    blocks.push({ t: 'table', head: [['No', 'Type', 'Job', 'Mode', 'In', 'Out']], money: [4, 5],
+      body: ld.map(function (r) { return [r.no, r.type, r.job || '-', r.mode, r.inn ? inr2(r.inn) : inr2(0), r.out ? inr2(r.out) : inr2(0)]; }),
+      raw: ld.map(function (r) { return [0, 0, 0, 0, r.inn, r.out]; }), fmt: svc2MoneyFmt([4, 5]),
+      colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 90, halign: 'left' }, 2: { cellWidth: 70, halign: 'left' }, 3: { cellWidth: 70, halign: 'left' }, 4: { cellWidth: 70, halign: 'right' }, 5: { cellWidth: 70, halign: 'right' } },
+      foot: [['TOTAL', '', '', '', inr2(recTotal), inr2(refTotal)]] });
+    blocks.push(svcSign(['Counted by', 'Checked by (Store Manager)', 'Owner']));
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  function svc2AdvancesHeld(o) {
+    var T = 'serviceAdvancesHeld', today = todayIsoSafe(), t = svc2Take(o, 'ADVANCES_HELD'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, asOf = dayOf(d.asOf);
+    if (!asOf || asOf > today) return svc2Fail(T, 'PERIOD_INVALID');
+    var list = svc2ListOf(d.rows);
+    if (list === null) return svc2Fail(T, 'READ_FAILED');
+    if (list === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+    var held = [], legacy = [], i, x;
+    for (i = 0; i < list.length; i++) {
+      x = svc2Obj(list[i]);
+      if (!x || (x.origin !== 'RECEIPT' && x.origin !== 'LEGACY') || !dayOf(x.date) || x.date > asOf || !svcP(x.amountPaise) || x.amountPaise <= 0) return svc2Fail(T, 'READ_FAILED');
+      var no = svcCleanOpt(x.receiptNo, 40);
+      if (x.origin === 'RECEIPT' && !no) return svc2Fail(T, 'READ_FAILED');
+      var row = { no: no || '-', date: x.date, job: svcCleanOpt(x.jobId, 40), watch: svcCleanOpt(x.watch, 80), status: svcCleanOpt(x.jobStatus, 40), mode: svc2Mode(x.mode) || '-',
+        amt: x.amountPaise, age: svcDayCount(x.date, asOf) };
+      (x.origin === 'RECEIPT' ? held : legacy).push(row);
+    }
+    var byDate = function (a, b) { return svcCmp(a.date, b.date) || svcCmp(a.no, b.no); };
+    held = svcStable(held, byDate); legacy = svcStable(legacy, byDate);
+    var total = 0, oldest = -1;
+    held.forEach(function (r) { total += r.amt; if (r.age > oldest) oldest = r.age; });
+    var blocks = [svc2Hdr(T, 'Saagar Traders \u00b7 Latur \u00b7 Service', 'as at ' + longDate(asOf), '', '', false)];
+    var legacyOk = d.legacyAvailable !== false;          /* the old-advance list could not be read: say so, never a silent 0 */
+    blocks.push({ t: 'kpi', cols: 4, items: [{ label: 'Advances held', value: String(held.length) }, { label: 'Total held', value: inr2(total), hero: true },
+      { label: 'Oldest (days)', value: held.length ? String(oldest) : '-' }, { label: 'Old advances to confirm', value: legacyOk ? String(legacy.length) : 'Not available' }] });
+    if (!legacyOk) blocks.push({ t: 'note', text: 'Old advances to confirm: not available. The old advances could not be read.', color: PAL.AMBER });
+    var cols = svcCols([{ k: 'no', h: 'Receipt no', w: 74, a: 'left' }, { k: 'date', h: 'Date', w: 58, a: 'left' }, { k: 'job', h: 'Job', w: 70, a: 'left' },
+      { k: 'watch', h: 'Watch', w: 'auto', a: 'left' }, { k: 'mode', h: 'Mode', w: 54, a: 'left' }, { k: 'amt', h: 'Amount', w: 66, a: 'right', m: 'money' },
+      { k: 'age', h: 'Age (days)', w: 44, a: 'right', m: 'num' }, { k: 'status', h: 'Job status', w: 70, a: 'left' }], true);
+    function table(rows, foot) {
+      var tbl = { t: 'table', head: [cols.head], body: rows.map(function (r) { return svcRow(cols, { no: r.no, date: r.date, job: r.job || '-', watch: r.watch || '-', mode: r.mode, amt: inr2(r.amt), age: String(r.age), status: r.status || '-' }); }),
+        colStyles: cols.styles, numCols: cols.num.slice(), money: cols.money.slice(), raw: rows.map(function (r) { return svcRaw(cols, { amt: r.amt }); }), fmt: svcMoneyFmt(cols.idx.amt),
+        flagRows: rows.map(function (r) { return r.age > SVC2_AGE_ADVANCE; }) };
+      if (foot) tbl.foot = [svcRow(cols, { watch: 'TOTAL (' + rows.length + ')', amt: inr2(rows.reduce(function (s, r) { return s + r.amt; }, 0)) })];
+      return tbl;
+    }
+    blocks.push({ t: 'section', title: 'Advances with a receipt' });
+    if (held.length) blocks.push(table(held, true)); else blocks.push({ t: 'empty', text: 'No advances are being held.' });
+    if (legacy.length) {
+      blocks.push({ t: 'section', title: 'Old advances to confirm (not posted)', tag: { txt: 'Not posted', cls: 'warn' } });
+      blocks.push(table(legacy, true));
+      blocks.push({ t: 'note', text: 'These advances were typed on jobs before receipts existed. They may already be in the cash book. Nothing was posted for them. The Owner confirms each one.' });
+    }
+    blocks.push({ t: 'note', text: 'Advances are money held for jobs not yet billed. They are a liability, not income.' });
+    return { orientation: 'portrait', blocks: blocks };
+  }
+
+  function svc2Unbilled(o) {
+    var T = 'serviceUnbilledIssues', showCost = svcCostVisible(), today = todayIsoSafe(), t = svc2Take(o, 'UNBILLED_ISSUES'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, asOf = dayOf(d.asOf);
+    if (!asOf || asOf > today) return svc2Fail(T, 'PERIOD_INVALID');
+    var list = svc2ListOf(d.rows);
+    if (list === null) return svc2Fail(T, 'READ_FAILED');
+    if (list === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+    var open = [], warr = [], i, x;
+    for (i = 0; i < list.length; i++) {
+      x = svc2Obj(list[i]);
+      if (!x || (x.outcome !== 'OPEN' && x.outcome !== 'WARRANTY') || !svcQ(x.qtyOpen) || !dayOf(x.issuedDate) || x.issuedDate > asOf || !svcCleanOpt(x.partCode, 64)) return svc2Fail(T, 'READ_FAILED');
+      if (!(x.qtyOpen > 0)) continue;
+      var cost = 0;
+      if (showCost) { if (!svcP(x.costPaise) || x.costPaise < 0) return svc2Fail(T, 'READ_FAILED'); cost = x.costPaise; }
+      var row = { job: svcCleanOpt(x.jobId, 40), watch: svcCleanOpt(x.watch, 80), status: svcCleanOpt(x.jobStatus, 40), code: svcCleanOpt(x.partCode, 64), desc: svcCleanOpt(x.desc, 200),
+        qty: x.qtyOpen, date: x.issuedDate, age: svcDayCount(x.issuedDate, asOf), cost: cost };
+      (x.outcome === 'OPEN' ? open : warr).push(row);
+    }
+    var byAge = function (a, b) { return (b.age - a.age) || svcCmp(a.job, b.job) || svcCmp(a.code, b.code); };
+    open = svcStable(open, byAge); warr = svcStable(warr, byAge);
+    var jobs = {}, jobN = 0, units = 0, costTotal = 0;
+    open.forEach(function (r) { if (!jobs[r.job]) { jobs[r.job] = 1; jobN += 1; } units += r.qty; costTotal += r.cost; });
+    var blocks = [svc2Hdr(T, 'Saagar Traders \u00b7 Latur \u00b7 Service', 'as at ' + longDate(asOf), '', '', false)];
+    var items = [{ label: 'Jobs affected', value: String(jobN) }, { label: 'Part lines', value: String(open.length) }, { label: 'Units open', value: fmtQty(units) }];
+    if (showCost) items.push({ label: 'Value at cost', value: inr2(costTotal), hero: true });
+    blocks.push({ t: 'kpi', cols: items.length, items: items });
+    var cols = svcCols([{ k: 'sr', h: 'Sr', w: 24, a: 'center' }, { k: 'job', h: 'Job', w: 70, a: 'left' }, { k: 'watch', h: 'Watch', w: 'auto', a: 'left' },
+      { k: 'status', h: 'Job status', w: 70, a: 'left' }, { k: 'code', h: 'Part code', w: 76, a: 'left' }, { k: 'desc', h: 'Description', w: 'auto', a: 'left' },
+      { k: 'qty', h: 'Open qty', w: 50, a: 'right', m: 'num' }, { k: 'date', h: 'Issued on', w: 66, a: 'left' }, { k: 'age', h: 'Age (days)', w: 44, a: 'right', m: 'num' },
+      { k: 'cost', h: 'Cost value', w: 70, a: 'right', m: 'money', cost: true }], showCost);
+    function table(rows) {
+      var sumQ = 0, sumC = 0;
+      rows.forEach(function (r) { sumQ += r.qty; sumC += r.cost; });
+      var tbl = { t: 'table', head: [cols.head], colStyles: cols.styles, numCols: cols.num.slice(),
+        body: rows.map(function (r, k) { return svcRow(cols, { sr: String(k + 1), job: r.job || '-', watch: r.watch || '-', status: r.status || '-', code: r.code, desc: r.desc, qty: fmtQty(r.qty), date: r.date, age: String(r.age), cost: inr2(r.cost) }); }),
+        flagRows: rows.map(function (r) { return r.age > SVC2_AGE_ISSUE; }),
+        foot: [svcRow(cols, { desc: 'TOTAL (' + rows.length + ')', qty: fmtQty(sumQ), cost: inr2(sumC) })] };
+      if (showCost) { tbl.money = cols.money.slice(); tbl.raw = rows.map(function (r) { return svcRaw(cols, { cost: r.cost }); }); tbl.fmt = svcMoneyFmt(cols.idx.cost); }
+      return tbl;
+    }
+    blocks.push({ t: 'section', title: 'Issued and not yet billed, claimed or returned' });
+    if (open.length) blocks.push(table(open)); else blocks.push({ t: 'empty', text: 'Every part issued to a job has been billed, claimed or returned.' });
+    if (warr.length) {
+      blocks.push({ t: 'section', title: 'Parts on no-charge warranty jobs', tag: { txt: 'Warranty', cls: 'warn' } });
+      blocks.push(table(warr));
+      blocks.push({ t: 'note', text: 'Warranty claims are not tracked yet. These parts were issued at no charge.' });
+    }
+    blocks.push({ t: 'note', text: 'Every part issued to a job must end as a bill line, a warranty claim line or a return to stock.' });
+    if (showCost) { var bn = svcBasisNote(svcCostBasis(d.costBasis)); if (bn) blocks.push({ t: 'note', text: bn }); }
+    else blocks.push({ t: 'note', text: SVC_NOCOST_NOTE });
+    blocks.push(svcSign(['Prepared by (Store)', 'Checked by (Store Manager)', 'Owner']));
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
+  /* ----- revenue from bills (landscape; Owner or Store Manager) ----- */
+  var SVC2_KINDS = ['PART', 'LABOUR', 'OTHER'], SVC2_KIND_LABEL = { PART: 'Parts', LABOUR: 'Labour', OTHER: 'Other' };
+  function svc2Share(a, n) {              // integer basis points of a over n, nearest, halves up; text xx.xx%
+    if (!(n > 0)) return '-';
+    var neg = a < 0, s = Math.floor((2 * Math.abs(a) * 10000 + n) / (2 * n)), w = Math.floor(s / 100), f = s % 100;
+    return (neg ? '-' : '') + w + '.' + (f < 10 ? '0' + f : String(f)) + '%';
+  }
+  /* revenue document rows (invoice or credit note): { date, no, billedIn, status, round, lines:[{kind, rate, taxable, cgst, sgst, igst}] } or a failure string */
+  function svc2RevDocs(list, isNote) {
+    var out = [], i, j, x, ls, l;
+    for (i = 0; i < list.length; i++) {
+      x = svc2Obj(list[i]);
+      var no = x ? svcCleanOpt(isNote ? x.noteNo : x.invoiceNo, 40) : '';
+      if (!x || !no || !dayOf(x.date) || (x.billedIn !== 'CCPT' && x.billedIn !== 'SAAGAR') || !svcP(x.roundOffPaise) || Math.abs(x.roundOffPaise) >= 100) return 'READ_FAILED';
+      if (!isNote && x.status !== 'ISSUED' && x.status !== 'CANCELLED') return 'READ_FAILED';
+      if (!Array.isArray(x.lines) || x.lines.length > SVC2_MAX_LINES) return 'READ_FAILED';
+      ls = [];
+      for (j = 0; j < x.lines.length; j++) {
+        l = svc2Obj(x.lines[j]);
+        if (!l || SVC2_KINDS.indexOf(l.kind) < 0 || !svcIsInt(l.rateBp) || l.rateBp < 0 || l.rateBp > 10000) return 'READ_FAILED';
+        var m = [l.taxablePaise, l.cgstPaise == null ? 0 : l.cgstPaise, l.sgstPaise == null ? 0 : l.sgstPaise, l.igstPaise == null ? 0 : l.igstPaise], k;
+        for (k = 0; k < 4; k++) { if (!svcP(m[k]) || m[k] < 0) return 'READ_FAILED'; }
+        ls.push({ kind: l.kind, rate: l.rateBp, taxable: m[0], cgst: m[1], sgst: m[2], igst: m[3] });
+      }
+      out.push({ date: x.date, no: no, by: x.billedIn, status: isNote ? 'ISSUED' : x.status, round: x.roundOffPaise, lines: ls });
+    }
+    return out;
+  }
+  function svc2Revenue(o) {
+    var T = 'serviceRevenue', today = todayIsoSafe(), period = svcPeriod(o, today);
+    if (!period) return svc2Fail(T, 'PERIOD_INVALID');
+    var t = svc2Take(o, 'REVENUE'); if (!t.ok) return svc2Fail(T, t.code);
+    var d = t.d, il = svc2ListOf(d.invoices), nl = svc2ListOf(d.creditNotes);
+    if (il === null || nl === null) return svc2Fail(T, 'READ_FAILED');
+    if (il === 'MANY' || nl === 'MANY') return svc2Fail(T, 'TOO_MANY_ROWS');
+    var inv = svc2RevDocs(il, false); if (typeof inv === 'string') return svc2Fail(T, inv);
+    var cns = svc2RevDocs(nl, true); if (typeof cns === 'string') return svc2Fail(T, cns);
+    var shown = svcDataPeriod(d, period);
+    var cancelledN = 0, billsN = 0, notesN = 0;
+    var days = Object.create(null), dayKeys = [], kinds = Object.create(null), rates = Object.create(null), rateKeys = [], issuers = Object.create(null);
+    SVC2_KINDS.forEach(function (k) { kinds[k] = { billed: 0, credit: 0, taxBilled: 0, taxCredit: 0 }; });
+    issuers.CCPT = { bills: 0, taxable: 0, tax: 0, round: 0 }; issuers.SAAGAR = { bills: 0, taxable: 0, tax: 0, round: 0 };
+    var tot = { billed: 0, credit: 0, taxBilled: 0, taxCredit: 0, roundBilled: 0, roundCredit: 0 };
+    function dayOfRow(dt) {
+      if (!days[dt]) { days[dt] = { bills: 0, notes: 0, PART: 0, LABOUR: 0, OTHER: 0, credit: 0, taxBilled: 0, taxCredit: 0, roundBilled: 0, roundCredit: 0 }; dayKeys.push(dt); }
+      return days[dt];
+    }
+    function rateOfRow(r) {
+      if (!rates[r]) { rates[r] = { billed: 0, credit: 0, cgst: 0, sgst: 0, igst: 0, cgstC: 0, sgstC: 0, igstC: 0 }; rateKeys.push(r); }
+      return rates[r];
+    }
+    inv.forEach(function (v) {
+      if (v.status === 'CANCELLED') { cancelledN += 1; return; }
+      billsN += 1;
+      var dr = dayOfRow(v.date), iss = issuers[v.by], vt = 0, vx = 0;
+      dr.bills += 1; iss.bills += 1;
+      v.lines.forEach(function (l) {
+        var tx = l.cgst + l.sgst + l.igst, rr = rateOfRow(l.rate);
+        dr[l.kind] += l.taxable; dr.taxBilled += tx; kinds[l.kind].billed += l.taxable; kinds[l.kind].taxBilled += tx;
+        rr.billed += l.taxable; rr.cgst += l.cgst; rr.sgst += l.sgst; rr.igst += l.igst; vt += l.taxable; vx += tx;
+      });
+      dr.roundBilled += v.round; iss.taxable += vt; iss.tax += vx; iss.round += v.round;
+      tot.billed += vt; tot.taxBilled += vx; tot.roundBilled += v.round;
+    });
+    cns.forEach(function (v) {
+      notesN += 1;
+      var dr = dayOfRow(v.date), iss = issuers[v.by], vt = 0, vx = 0;
+      dr.notes += 1;
+      v.lines.forEach(function (l) {
+        var tx = l.cgst + l.sgst + l.igst, rr = rateOfRow(l.rate);
+        dr.credit += l.taxable; dr.taxCredit += tx; kinds[l.kind].credit += l.taxable; kinds[l.kind].taxCredit += tx;
+        rr.credit += l.taxable; rr.cgstC += l.cgst; rr.sgstC += l.sgst; rr.igstC += l.igst; vt += l.taxable; vx += tx;
+      });
+      dr.roundCredit += v.round; iss.taxable -= vt; iss.tax -= vx; iss.round -= v.round;
+      tot.credit += vt; tot.taxCredit += vx; tot.roundCredit += v.round;
+    });
+    var netTax = tot.billed - tot.credit, netGst = tot.taxBilled - tot.taxCredit, netRound = tot.roundBilled - tot.roundCredit, netTotal = netTax + netGst + netRound;
+    var blocks = [svc2Hdr(T, 'Saagar Traders \u00b7 Latur \u00b7 Service', longDate(shown.from) + ' to ' + longDate(shown.to), '', '', false)];
+    if (!billsN && !notesN) {
+      blocks.push({ t: 'empty', text: 'No bills were issued in this period.' });
+      if (cancelledN) blocks.push({ t: 'note', text: 'Cancelled bills are not counted (' + cancelledN + ').' });
+      return { orientation: 'landscape', blocks: blocks };
+    }
+    blocks.push({ t: 'kpi', cols: 5, items: [{ label: 'Bills', value: String(billsN) }, { label: 'Credit notes', value: String(notesN) }, { label: 'Net taxable', value: inr2(netTax) },
+      { label: 'Net GST', value: inr2(netGst) }, { label: 'Net billed', value: inr2(netTotal), hero: true }] });
+    /* by day */
+    dayKeys.sort();
+    var db = [], dr0 = [], f = { bills: 0, notes: 0, p: 0, l: 0, o: 0, c: 0, nt: 0, ng: 0, r: 0, tt: 0 };
+    dayKeys.forEach(function (k) {
+      var g = days[k], nt = g.PART + g.LABOUR + g.OTHER - g.credit, ng = g.taxBilled - g.taxCredit, rd = g.roundBilled - g.roundCredit, tt = nt + ng + rd;
+      db.push([k, String(g.bills), String(g.notes), inr2(g.PART), inr2(g.LABOUR), inr2(g.OTHER), inr2(svc2Neg(g.credit)), inr2(nt), inr2(ng), inr2(rd), inr2(tt)]);
+      dr0.push([0, 0, 0, g.PART, g.LABOUR, g.OTHER, svc2Neg(g.credit), nt, ng, rd, tt]);
+      f.bills += g.bills; f.notes += g.notes; f.p += g.PART; f.l += g.LABOUR; f.o += g.OTHER; f.c += svc2Neg(g.credit); f.nt += nt; f.ng += ng; f.r += rd; f.tt += tt;
+    });
+    blocks.push({ t: 'section', title: 'By day' });
+    blocks.push({ t: 'table', head: [['Date', 'Bills', 'Notes', 'Parts', 'Labour', 'Other', 'Credit notes', 'Net taxable', 'Net GST', 'Round off', 'Net total']], body: db,
+      money: [3, 4, 5, 6, 7, 8, 9, 10], numCols: [1, 2], raw: dr0, fmt: svc2MoneyFmt([3, 4, 5, 6, 7, 8, 9, 10]),
+      colStyles: { 0: { cellWidth: 64, halign: 'left' }, 1: { cellWidth: 36, halign: 'right' }, 2: { cellWidth: 36, halign: 'right' }, 3: { cellWidth: 'auto', halign: 'right' }, 4: { cellWidth: 'auto', halign: 'right' },
+        5: { cellWidth: 'auto', halign: 'right' }, 6: { cellWidth: 'auto', halign: 'right' }, 7: { cellWidth: 'auto', halign: 'right' }, 8: { cellWidth: 'auto', halign: 'right' }, 9: { cellWidth: 52, halign: 'right' }, 10: { cellWidth: 'auto', halign: 'right' } },
+      foot: [['TOTAL', String(f.bills), String(f.notes), inr2(f.p), inr2(f.l), inr2(f.o), inr2(f.c), inr2(f.nt), inr2(f.ng), inr2(f.r), inr2(f.tt)]] });
+    /* parts and labour */
+    var kb = [], kr = [], sk = { b: 0, c: 0, n: 0, g: 0 };
+    SVC2_KINDS.forEach(function (k) {
+      var g = kinds[k], nt = g.billed - g.credit, ng = g.taxBilled - g.taxCredit;
+      kb.push([SVC2_KIND_LABEL[k], inr2(g.billed), inr2(svc2Neg(g.credit)), inr2(nt), inr2(ng), svc2Share(nt, netTax)]);
+      kr.push([0, g.billed, svc2Neg(g.credit), nt, ng, 0]);
+      sk.b += g.billed; sk.c += svc2Neg(g.credit); sk.n += nt; sk.g += ng;
+    });
+    kb.push(['Total', inr2(sk.b), inr2(sk.c), inr2(sk.n), inr2(sk.g), svc2Share(sk.n, netTax)]); kr.push([0, sk.b, sk.c, sk.n, sk.g, 0]);
+    blocks.push({ t: 'section', title: 'Parts and labour' });
+    blocks.push({ t: 'table', head: [['Kind', 'Billed (taxable)', 'Credit notes', 'Net taxable', 'Net GST', 'Share of net taxable']], body: kb, money: [1, 2, 3, 4], raw: kr, fmt: svc2MoneyFmt([1, 2, 3, 4]),
+      colStyles: { 0: { cellWidth: 'auto', halign: 'left' }, 1: { cellWidth: 100, halign: 'right' }, 2: { cellWidth: 100, halign: 'right' }, 3: { cellWidth: 100, halign: 'right' }, 4: { cellWidth: 100, halign: 'right' }, 5: { cellWidth: 110, halign: 'right' } } });
+    /* by GST rate */
+    rateKeys.sort(function (a, b) { return a - b; });
+    var rb = [], rr = [], sr = { b: 0, c: 0, n: 0, cg: 0, sg: 0, ig: 0, g: 0 };
+    rateKeys.forEach(function (k) {
+      var g = rates[k], nt = g.billed - g.credit, cg = g.cgst - g.cgstC, sg = g.sgst - g.sgstC, ig = g.igst - g.igstC, ng = cg + sg + ig;
+      rb.push([svc2Rate(+k), inr2(g.billed), inr2(svc2Neg(g.credit)), inr2(nt), inr2(cg), inr2(sg), inr2(ig), inr2(ng)]); rr.push([0, g.billed, svc2Neg(g.credit), nt, cg, sg, ig, ng]);
+      sr.b += g.billed; sr.c += svc2Neg(g.credit); sr.n += nt; sr.cg += cg; sr.sg += sg; sr.ig += ig; sr.g += ng;
+    });
+    blocks.push({ t: 'section', title: 'By GST rate' });
+    blocks.push({ t: 'table', head: [['GST rate', 'Billed (taxable)', 'Credit notes', 'Net taxable', 'CGST', 'SGST', 'IGST', 'Net GST']], body: rb, money: [1, 2, 3, 4, 5, 6, 7], raw: rr, fmt: svc2MoneyFmt([1, 2, 3, 4, 5, 6, 7]),
+      colStyles: { 0: { cellWidth: 'auto', halign: 'left' } }, foot: [['TOTAL', inr2(sr.b), inr2(sr.c), inr2(sr.n), inr2(sr.cg), inr2(sr.sg), inr2(sr.ig), inr2(sr.g)]] });
+    /* by who issued the tax invoice */
+    var ib = [], ir = [], si = { n: 0, t: 0, g: 0, r: 0 };
+    [['CCPT', 'Service centre (CCPT)'], ['SAAGAR', 'Us (not billed in CCPT)']].forEach(function (p) {
+      var g = issuers[p[0]], tt = g.taxable + g.tax + g.round;
+      ib.push([p[1], String(g.bills), inr2(g.taxable), inr2(g.tax), inr2(tt)]); ir.push([0, 0, g.taxable, g.tax, tt]);
+      si.n += g.bills; si.t += g.taxable; si.g += g.tax; si.r += tt;
+    });
+    blocks.push({ t: 'section', title: 'By who issued the tax invoice' });
+    blocks.push({ t: 'table', head: [['Issued by', 'Bills', 'Net taxable', 'Net GST', 'Net total']], body: ib, money: [2, 3, 4], numCols: [1], raw: ir, fmt: svc2MoneyFmt([2, 3, 4]),
+      colStyles: { 0: { cellWidth: 'auto', halign: 'left' } }, foot: [['TOTAL', String(si.n), inr2(si.t), inr2(si.g), inr2(si.r)]] });
+    blocks.push({ t: 'kv', cols: 2, pairs: [['Net taxable', inr2(netTax)], ['Net GST', inr2(netGst)], ['Net round off', inr2(netRound)], ['Net billed', inr2(netTotal)]] });
+    blocks.push({ t: 'note', text: 'Cancelled bills are not counted (' + cancelledN + ').' });
+    blocks.push({ t: 'note', text: 'This report is built from the bill records, not from the cash book. For jobs billed in CCPT the GST shown is from our bill summaries; CCPT issues the tax invoice.' });
+    return { orientation: 'landscape', blocks: blocks };
+  }
+
   var META = {
     ownerBrief: { title: 'Daily Owner Brief', scope: 'daily', icon: '📊' },
     cashStatement: { title: 'Daily Cash Statement', scope: 'daily', icon: '💵' },
@@ -1867,6 +2875,16 @@
     svcGoodsReceipt: { title: 'Service Stores — Goods Receipt Note', scope: 'daily', icon: '📥' },
     svcAdjustmentRegister: { title: 'Service Stores — Adjustment Register', scope: 'monthly', icon: '⚖️' },
     svcDefectiveRegister: { title: 'Service Stores — Old & Defective Parts', scope: 'monthly', icon: '🧰' },
+    serviceBillSummary: { title: 'Service — Bill Summary (not a tax invoice)', scope: 'daily', icon: '🧾' },
+    serviceTaxInvoiceV2: { title: 'Service — Tax Invoice', scope: 'daily', icon: '🧾' },
+    serviceCreditNote: { title: 'Service — Credit Note', scope: 'daily', icon: '↩️' },
+    serviceReceipt: { title: 'Service — Receipt', scope: 'daily', icon: '💵' },
+    serviceRefundVoucher: { title: 'Service — Refund Voucher', scope: 'daily', icon: '💸' },
+    serviceWarrantySheet: { title: 'Service — No-charge Warranty Job Sheet', scope: 'daily', icon: '🛡️' },
+    serviceUnbilledIssues: { title: 'Service — Parts Issued, Not Billed', scope: 'daily', icon: '⚠️' },
+    serviceDaySummary: { title: 'Service — Day Summary', scope: 'daily', icon: '📅' },
+    serviceAdvancesHeld: { title: 'Service — Advances Held', scope: 'daily', icon: '🏦' },
+    serviceRevenue: { title: 'Service — Revenue from Bills', scope: 'monthly', icon: '📈' },
     ownerMonthly: { title: 'Owner Monthly Brief', scope: 'monthly', icon: '📊' },
     weeklyBrief: { title: 'Weekly Business Summary', scope: 'weekly', icon: '📅' },
     lostWalkinCallSheet: { title: 'Lost Walk-in Call Sheet', scope: 'monthly', icon: '📞' }
@@ -1947,22 +2965,22 @@
   function drawRunningHeader(doc, pageW, M, hdr, cont){
     var L=M.left, R=pageW-M.right;
     _setf(doc,'bold',FZ.brandMain); _txt(doc,PAL.NAVY); doc.text('Saagar Traders', L, 44);
-    _setf(doc,'bold',FZ.brandSub); _txt(doc,PAL.GOLD); doc.text('BUSINESS CONTROL CENTRE', L, 54, {charSpace:0.8});
+    _setf(doc,'bold',FZ.brandSub); _txt(doc,PAL.GOLD); doc.text(hdr.customerCopy ? SAN.text(hdr.tagline || '') : 'BUSINESS CONTROL CENTRE', L, 54, {charSpace:0.8});
     if(hdr.addr){ _setf(doc,'normal',FZ.addr); _txt(doc,PAL.MUT); doc.text(SAN.text(hdr.addr), L, 66); }
     else if(hdr.chip){ drawChip(doc, L, 60, hdr.chip, hdr.chipKind); }
     _txt(doc,PAL.NAVY); _setf(doc,'bold',FZ.rTitle);
     doc.text(SAN.text(hdr.title||'') + (cont?'  (continued)':''), R, 40, {align:'right'});
     if(hdr.sub){ _setf(doc,'normal',FZ.rSub); _txt(doc,PAL.MUT); doc.text(SAN.text(hdr.sub), R, 52, {align:'right'}); }
     if(hdr.period){ _setf(doc,'bold',FZ.rSub); _txt(doc,PAL.INK); doc.text(SAN.text(hdr.period), R, 63, {align:'right'}); }
-    _setf(doc,'normal',FZ.rgen); _txt(doc,PAL.FOOT); doc.text(genLine(), R, 74, {align:'right'});
+    _setf(doc,'normal',FZ.rgen); _txt(doc,PAL.FOOT); doc.text(hdr.customerCopy ? ('Printed ' + stamp()) : genLine(), R, 74, {align:'right'});
     _stroke(doc,PAL.GOLD); doc.setLineWidth(1.2); doc.line(L, 84, R, 84);
   }
-  function drawFooter(doc, pageW, M, pg, tot){
+  function drawFooter(doc, pageW, M, pg, tot, hdr){
     var pageH=doc.internal.pageSize.getHeight(), L=M.left, R=pageW-M.right, y=pageH-34;
     _stroke(doc,PAL.LINE); doc.setLineWidth(0.5); doc.line(L, y-10, R, y-10);
     _setf(doc,'normal',FZ.footer); _txt(doc,PAL.FOOT);
-    doc.text('Saagar Traders · Latur · Confidential — for owner review', L, y);
-    doc.text('Business Control Centre · Page ' + pg + ' of ' + tot, R, y, { align:'right' });   // literal total (known at final furniture pass) — no putTotalPages
+    doc.text(hdr && hdr.customerCopy ? SAN.text(hdr.footer || 'Computer-generated document') : 'Saagar Traders · Latur · Confidential — for owner review', L, y);
+    doc.text((hdr && hdr.customerCopy ? '' : 'Business Control Centre · ') + 'Page ' + pg + ' of ' + tot, R, y, { align:'right' });   // literal total (known at final furniture pass) — no putTotalPages
   }
 
   /* ---- raw-draw content primitives ---- */
@@ -2220,7 +3238,7 @@
     for(var p=1;p<=tot;p++){
       doc.setPage(p);
       if(!DRAWN[p]){ DRAWN[p]=true; drawRunningHeader(doc,pageW,M,hdr, p>1 && hdr.cont); }
-      drawFooter(doc,pageW,M,p,tot);
+      drawFooter(doc,pageW,M,p,tot,hdr);
     }
     return doc;
   }
@@ -2267,6 +3285,7 @@
   function filename(type, opts) {
     var d = (opts && opts.date) || curDate();
     var key = type === 'svcPartLedger' ? (opts && opts.partCode) : (type === 'svcGoodsReceipt' ? (opts && opts.grnNo) : '');
+    if (!key && SVC2_FILE_KEY[type]) key = opts && opts[SVC2_FILE_KEY[type]];
     if (key) {
       key = String(key).replace(/[^A-Za-z0-9._-]+/g, '_').slice(0, 40);
       if (key) return 'Saagar_' + type + '_' + key + '_' + d + '.pdf';
@@ -2330,7 +3349,11 @@
     svcPartLedger: true,
     svcReorderList: true,
     svcAdjustmentRegister: true,
-    svcDefectiveRegister: true
+    svcDefectiveRegister: true,
+    serviceUnbilledIssues: true,
+    serviceDaySummary: true,
+    serviceAdvancesHeld: true,
+    serviceRevenue: true
   };
   function csvCell(value) {
     var text = String(value == null ? '' : value);

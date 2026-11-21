@@ -160,10 +160,10 @@ test('T3.9 no function that existed at G0 was removed or renamed, and the page o
     else j++;
   }
   while (i < n) removed.push(oldLines[i++]);
-  const allowed = [/btn-back-dash'\)\.style\.display/, /if \(!cur \|\| svcInvoiceLocked\(cur\)\) return;/];
+  const allowed = [/btn-back-dash'\)\.style\.display/, /if \(!cur \|\| svcInvoiceLocked\(cur\)\) return;/, /if \(!\(parseRupee\(del\.finalAmt\) > 0\)\) \{/];
   const stray = removed.filter((l) => !allowed.some((re) => re.test(l)));
   assert.deepEqual(stray, [], 'G0 lines removed or changed outside the two agreed spots');
-  assert.ok(removed.length <= 2, 'at most the back-button line and the svcFinishDelete line change');
+  assert.ok(removed.length <= 3, 'at most the back-button line, the svcFinishDelete line and the zero-final line change');
 });
 
 test('T3.10 svsBlocksDelete fails CLOSED: any doubt blocks the delete (C-PAGE-3)', () => {

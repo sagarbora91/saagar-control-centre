@@ -1,0 +1,1836 @@
+{
+ "_readme": "Made from the UNEDITED www/saagar-report.js (sha256 5a934abd...1e98) before wave 2 edits. models = _buildModel output of serviceTaxInvoice for the six cases; snapshots = makeInvoiceSnapshot output (issuedAt fixed).",
+ "source": {
+  "bytes": 222090,
+  "sha256": "5a934abd3c3118fd5b46bd3f949cb05100a66439128667b84c548b8ba5a71e98"
+ },
+ "cases": [
+  {
+   "name": "300/18/300",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 300,
+     "payMode": "UPI",
+     "payRef": "R1"
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": -46,
+     "taxable": 254,
+     "gst": 46,
+     "cgst": 23,
+     "sgst": 23,
+     "roundOff": 0,
+     "finalAmt": 300,
+     "total": 300
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "UPI",
+     "payRef": "R1",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Discount",
+        "\u2212 \u20b946"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9254"
+       ],
+       [
+        "Total GST",
+        "\u20b946"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9300",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment via UPI \u00b7 Ref R1. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "300/18/400",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 400
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": 39,
+     "taxable": 339,
+     "gst": 61,
+     "cgst": 31,
+     "sgst": 30,
+     "roundOff": 0,
+     "finalAmt": 400,
+     "total": 400
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "",
+     "payRef": "",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b931"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b930"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Additional charge",
+        "\u20b939"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9339"
+       ],
+       [
+        "Total GST",
+        "\u20b961"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9400",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment received. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "300/18/354.4",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 354.4
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": 0,
+     "taxable": 300,
+     "gst": 54,
+     "cgst": 27,
+     "sgst": 27,
+     "roundOff": 0,
+     "finalAmt": 354.4,
+     "total": 354
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "",
+     "payRef": "",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Taxable Value",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b927"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b927"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9300"
+       ],
+       [
+        "Total GST",
+        "\u20b954"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9354",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment received. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "300/0/250",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 0,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 250
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 0,
+     "listed": 300,
+     "adjustment": -50,
+     "taxable": 250,
+     "gst": 0,
+     "cgst": 0,
+     "sgst": 0,
+     "roundOff": 0,
+     "finalAmt": 250,
+     "total": 250
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "",
+     "payRef": "",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "GST",
+        "Not applicable"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Discount",
+        "\u2212 \u20b950"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9250"
+       ],
+       [
+        "Total GST",
+        "\u20b90"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9250",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment received. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "legacy-no-snapshot",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 300,
+     "payMode": "UPI",
+     "payRef": "R1"
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": -46,
+     "taxable": 254,
+     "gst": 46,
+     "cgst": 23,
+     "sgst": 23,
+     "roundOff": 0,
+     "finalAmt": 300,
+     "total": 300
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "UPI",
+     "payRef": "R1",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Discount",
+        "\u2212 \u20b946"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9254"
+       ],
+       [
+        "Total GST",
+        "\u20b946"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9300",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment via UPI \u00b7 Ref R1. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Reprint of an invoice issued before invoice records were frozen: amounts are read from the current service case, not from the original print.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "draft-no-number",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 300,
+     "payMode": "UPI",
+     "payRef": "R1"
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": -46,
+     "taxable": 254,
+     "gst": 46,
+     "cgst": 23,
+     "sgst": 23,
+     "roundOff": 0,
+     "finalAmt": 300,
+     "total": 300
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "UPI",
+     "payRef": "R1",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "DRAFT - NOT ISSUED",
+      "chipKind": "draft"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "Not issued"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Discount",
+        "\u2212 \u20b946"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9254"
+       ],
+       [
+        "Total GST",
+        "\u20b946"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9300",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment via UPI \u00b7 Ref R1. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "note",
+      "text": "Not issued: preview only. An invoice number is assigned when the invoice is issued from the Service module.",
+      "color": [
+       183,
+       121,
+       31
+      ]
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "snapshot-backed",
+   "input": {
+    "id": "WS-2026-2433",
+    "custName": "Ravi Patil",
+    "custMobile": "9876543210",
+    "custAddr": "Latur",
+    "brand": "Titan",
+    "model": "Edge",
+    "subTotal": 300,
+    "gst": 18,
+    "lineItems": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "invoiceNo": "WS-2026-002",
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "finalAmt": 300,
+     "payMode": "UPI",
+     "payRef": "R1"
+    },
+    "invoiceSnapshot": {
+     "v": 1,
+     "basis": "issue",
+     "invoiceNo": "WS-2026-002",
+     "issuedAt": "2026-11-12T10:00:00.000Z",
+     "invoiceDate": "2026-11-12",
+     "caseId": "WS-2026-2433",
+     "firm": {
+      "name": "Saagar Traders",
+      "gstin": "27ABCDE1234F1Z5",
+      "address": "Station Road, Latur"
+     },
+     "customer": {
+      "name": "Ravi Patil",
+      "mobile": "9876543210",
+      "address": "Latur"
+     },
+     "watch": "Titan Edge",
+     "lines": [
+      {
+       "desc": "Battery change",
+       "qty": 1,
+       "unit": 300,
+       "total": 300
+      }
+     ],
+     "figs": {
+      "gstPct": 18,
+      "listed": 300,
+      "adjustment": -46,
+      "taxable": 254,
+      "gst": 46,
+      "cgst": 23,
+      "sgst": 23,
+      "roundOff": 0,
+      "finalAmt": 300,
+      "total": 300
+     },
+     "delivery": {
+      "collectDate": "2026-11-12",
+      "payMode": "UPI",
+      "payRef": "R1",
+      "warrantyTill": "",
+      "warrantyMonths": ""
+     }
+    }
+   },
+   "snapshot": {
+    "v": 1,
+    "basis": "issue",
+    "invoiceNo": "WS-2026-002",
+    "issuedAt": "2026-11-12T10:00:00.000Z",
+    "invoiceDate": "2026-11-12",
+    "caseId": "WS-2026-2433",
+    "firm": {
+     "name": "Saagar Traders",
+     "gstin": "27ABCDE1234F1Z5",
+     "address": "Station Road, Latur"
+    },
+    "customer": {
+     "name": "Ravi Patil",
+     "mobile": "9876543210",
+     "address": "Latur"
+    },
+    "watch": "Titan Edge",
+    "lines": [
+     {
+      "desc": "Battery change",
+      "qty": 1,
+      "unit": 300,
+      "total": 300
+     }
+    ],
+    "figs": {
+     "gstPct": 18,
+     "listed": 300,
+     "adjustment": -46,
+     "taxable": 254,
+     "gst": 46,
+     "cgst": 23,
+     "sgst": 23,
+     "roundOff": 0,
+     "finalAmt": 300,
+     "total": 300
+    },
+    "delivery": {
+     "collectDate": "2026-11-12",
+     "payMode": "UPI",
+     "payRef": "R1",
+     "warrantyTill": "",
+     "warrantyMonths": ""
+    }
+   },
+   "model": {
+    "orientation": "portrait",
+    "blocks": [
+     {
+      "t": "header",
+      "title": "TAX INVOICE",
+      "sub": "Saagar Traders \u00b7 GSTIN 27ABCDE1234F1Z5",
+      "period": "Station Road, Latur",
+      "chip": "WS-2026-002",
+      "chipKind": "locked"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Invoice No",
+        "WS-2026-002"
+       ],
+       [
+        "Invoice Date",
+        "2026-11-12"
+       ],
+       [
+        "Service Order",
+        "WS-2026-2433"
+       ],
+       [
+        "Delivery Date",
+        "2026-11-12"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Bill To"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "Customer",
+        "Ravi Patil"
+       ],
+       [
+        "Mobile",
+        "9876543210"
+       ],
+       [
+        "Address",
+        "Latur"
+       ],
+       [
+        "Watch",
+        "Titan Edge"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Particulars"
+     },
+     {
+      "t": "table",
+      "head": [
+       [
+        "Description",
+        "Qty",
+        "Rate \u20b9",
+        "Amount \u20b9"
+       ]
+      ],
+      "body": [
+       [
+        "Battery change",
+        "1",
+        "\u20b9300",
+        "\u20b9300"
+       ]
+      ],
+      "money": [
+       3
+      ],
+      "colStyles": {
+       "0": {
+        "cellWidth": "auto"
+       },
+       "1": {
+        "cellWidth": 46,
+        "halign": "right"
+       },
+       "2": {
+        "cellWidth": 90,
+        "halign": "right"
+       },
+       "3": {
+        "cellWidth": 98,
+        "halign": "right"
+       }
+      },
+      "foot": [
+       [
+        "Items total",
+        "",
+        "",
+        "\u20b9300"
+       ]
+      ]
+     },
+     {
+      "t": "section",
+      "title": "Tax Summary"
+     },
+     {
+      "t": "kv",
+      "cols": 2,
+      "pairs": [
+       [
+        "CGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "SGST @ 9%",
+        "\u20b923"
+       ],
+       [
+        "Items total",
+        "\u20b9300"
+       ],
+       [
+        "Discount",
+        "\u2212 \u20b946"
+       ],
+       [
+        "Taxable Value",
+        "\u20b9254"
+       ],
+       [
+        "Total GST",
+        "\u20b946"
+       ]
+      ]
+     },
+     {
+      "t": "kv",
+      "cols": 1,
+      "pairs": [
+       [
+        "Total Payable",
+        "\u20b9300",
+        "big"
+       ]
+      ]
+     },
+     {
+      "t": "note",
+      "text": "Payment via UPI \u00b7 Ref R1. Computer-generated tax invoice for service-centre / non-franchise sales."
+     },
+     {
+      "t": "sign",
+      "boxes": [
+       {
+        "role": "Customer",
+        "name": "Ravi Patil"
+       },
+       {
+        "role": "For Saagar Traders",
+        "name": "Authorised Signatory"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "slices": {
+  "figuresAndSnapshot": {
+   "chars": 2865,
+   "sha256": "4f7d42bd5714e186657dd3e8d55d08abe32a51ecd94d8e02e9ba737159f8df72"
+  },
+  "builder": {
+   "chars": 5023,
+   "sha256": "f613bdafa4f0a8a641fc18eebd6c1573166a1a0d40a687e8274d6abd13706df2"
+  }
+ }
+}

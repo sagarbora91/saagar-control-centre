@@ -75,6 +75,21 @@ const APPROVED_SERVICE_W1_DELTA_IDS = Object.freeze(new Set([
   'script-service-stores-store:persist:8254c329a92850f6d539'
 ]));
 
+/* Service wave 2 (Phase 2, Billing): the seven new first-party script surfaces script-service-billing-*. One
+   failure-posture row per file, no persisted-outcome row, no permission row and no visible action. These rows exist only
+   while the seven files are tracked by git; while they are untracked the analyser cannot see them (see the integration
+   overlay). Exact ids only: any other id on these surfaces still throws. Owner decision given in chat, 2026-11-18;
+   owner reconfirmation pending. */
+const APPROVED_SERVICE_W2_DELTA_IDS = Object.freeze(new Set([
+  'script-service-billing-area-ui:failure:posture',
+  'script-service-billing-calc:failure:posture',
+  'script-service-billing-core:failure:posture',
+  'script-service-billing-docs:failure:posture',
+  'script-service-billing-migrate:failure:posture',
+  'script-service-billing-money:failure:posture',
+  'script-service-billing-ui:failure:posture'
+]));
+
 const EXPECTED_STRUCTURAL_ACTION_IDS = Object.freeze([
   'dsr:action:st-v5-home-fab:c05eb3ddb3',
   'qms:action:st-v5-home-fab:c05eb3ddb3',
@@ -153,6 +168,12 @@ function classification(change, before, after) {
     return {
       reviewClass: 'service-wave-1-2026-11-stores-surface',
       reason: 'New Service Stores (Phase 1) script surface, one of seven www files; owner decision given in chat, 2026-11-12 (design answers) and owner decision given in chat, 2026-11-13 (go-ahead to build). Owner reconfirmation pending.'
+    };
+  }
+  if (change === 'added' && APPROVED_SERVICE_W2_DELTA_IDS.has(capability.capabilityId)) {
+    return {
+      reviewClass: 'service-wave-2-2026-11-billing-surface',
+      reason: 'New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.'
     };
   }
   if (change === 'added' && APPROVED_BRIDGE_DELTA_IDS.has(capability.capabilityId)) {
@@ -353,6 +374,9 @@ export async function buildCapabilityDeltaLedger(workspaceRoot = root) {
   /* 0 while the seven service-stores-*.js files are untracked (the analyser reads tracked files only); 8 once they are
      committed, together with the tracked-state totals in the Service wave 1 ledger overlay. */
   assert.equal(classCount('service-wave-1-2026-11-stores-surface'), 8);
+  /* 0 while the seven service-billing-*.js files are untracked (the analyser reads tracked files only); 7 once they are
+     committed, together with the tracked-state totals in the Service wave 2 ledger overlay. */
+  assert.equal(classCount('service-wave-2-2026-11-billing-surface'), 0);
   assert.deepEqual(structuralIds, EXPECTED_STRUCTURAL_ACTION_IDS);
   assert.equal(currentCheck.metric.conflictingIds, 0);
 

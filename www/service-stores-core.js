@@ -255,6 +255,9 @@
     var core;
     var sessionFn = null;
     var stepUpFn = null;
+    var shareFn = null;
+    var portTarget = null;
+    var billingPort = null;
 
     if (!crIsObj(opts)) return crFail('CORE_ARGS_INVALID', { detail: 'options' });
     adapter = opts.adapter;
@@ -268,6 +271,11 @@
     if (crHas(opts, 'stepUpAt') && opts.stepUpAt !== undefined) {
       if (typeof opts.stepUpAt !== 'function') return crFail('CORE_ARGS_INVALID', { detail: 'stepUpAt' });
       stepUpFn = opts.stepUpAt;
+    }
+    // Optional hook that hands the store and docs to billing (wave 2). Given but not a function: refused, never ignored.
+    if (crHas(opts, 'share') && opts.share !== undefined) {
+      if (typeof opts.share !== 'function') return crFail('CORE_ARGS_INVALID', { detail: 'share' });
+      shareFn = opts.share;
     }
     if (!adapter || typeof adapter.getItem !== 'function') {
       return crFail('CORE_ARGS_INVALID', { detail: 'adapter' });
@@ -287,7 +295,16 @@
     sres = storeLib.createStore(adapter, crSpread({ now: nowFn }, crIsObj(opts.storeOptions) ? opts.storeOptions : null));
     if (!sres || sres.ok !== true) return crPass(sres, 'CORE_LIBS_MISSING');
     store = sres.store;
-    made = docsLib.create({ store: store, fifo: fifo, masters: masters, now: nowFn, cases: cases });
+    // Without the share hook the docs layer gets exactly the five deps it always had (no billing port: Phase 1 behaviour).
+    if (shareFn) {
+      billingPort = {
+        creditReturn: function (jobId, creditNoteNo, lines) { return portTarget ? portTarget.creditReturn(jobId, creditNoteNo, lines) : null; },
+        saleReversible: function (saleNo) { return portTarget ? portTarget.saleReversible(saleNo) : null; }
+      };
+    }
+    made = docsLib.create(shareFn
+      ? { store: store, fifo: fifo, masters: masters, now: nowFn, cases: cases, billingPort: billingPort }
+      : { store: store, fifo: fifo, masters: masters, now: nowFn, cases: cases });
     if (crIsObj(made) && made.ok === false) return crPass(made, 'CORE_LIBS_MISSING');
     docs = crIsObj(made) && made.api ? made.api : made;
     if (!docs || typeof docs.open !== 'function') return crFail('CORE_LIBS_MISSING', { detail: ['docs api'] });
@@ -2109,6 +2126,25 @@
       can: can,
       reportData: reportData
     };
+    if (shareFn) {
+      // Called once, after docs exists. The handle is frozen. The port target can be set once. A hook that fails closes create.
+      made = guarded(function () {
+        shareFn(Object.freeze({
+          store: store,
+          docs: docs,
+          ready: function () { return ready(); },
+          setBillingPort: function (target) {
+            if (portTarget || !crIsObj(target) || typeof target.creditReturn !== 'function' || typeof target.saleReversible !== 'function') {
+              return crFail('CORE_ARGS_INVALID', { detail: 'billingPort' });
+            }
+            portTarget = target;
+            return { ok: true };
+          }
+        }));
+        return { ok: true };
+      });
+      if (made.ok !== true) return crFail('CORE_INTERNAL', { detail: 'share' });
+    }
     return { ok: true, core: Object.freeze(core) };
   }
 

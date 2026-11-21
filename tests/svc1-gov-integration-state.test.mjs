@@ -11,7 +11,7 @@ import { REPO, WORKSPACE, SEVEN, abs, exists, readBuf, readText, sha256, workspa
 
 const require = createRequire(import.meta.url);
 const reg = loadJson('capability-register.json');
-const QUOTE_OK = new Set(['owner decision given in chat, 2026-11-12', 'owner decision given in chat, 2026-11-13']);
+const QUOTE_OK = new Set(['owner decision given in chat, 2026-11-12', 'owner decision given in chat, 2026-11-13', 'owner decision given in chat, 2026-11-18']);
 const APPROVAL = 'verification/audit/approvals/SERVICE-WAVE-1-PHASE-1-STORES-CAPABILITY-RECORD-2026-11-13.json';
 
 function quotesIn(text) { return [...text.matchAll(/owner decision given in chat, \d{4}-\d{2}-\d{2}/g)].map((m) => m[0]); }
@@ -19,7 +19,7 @@ function quotesIn(text) { return [...text.matchAll(/owner decision given in chat
 test('I1 [step 7] the fix-wave undo registry lists exactly the seven new www files as created, keeps its freeze, and each exists', () => {
   const r = JSON.parse(readText('tests/fixtures/fix-wave/undo-registry.json'));
   const created = r.created.map((c) => (typeof c === 'string' ? c : c.path)).sort();
-  assert.deepEqual(created, SEVEN.map((f) => f.file).sort());
+  assert.deepEqual(created, SEVEN.map((f) => f.file).concat(['www/service-billing-calc.js', 'www/service-billing-docs.js', 'www/service-billing-money.js', 'www/service-billing-migrate.js', 'www/service-billing-core.js', 'www/service-billing-ui.js', 'www/service-billing-area-ui.js']).sort());
   for (const c of created) assert.ok(exists(c), c);
   assert.deepEqual(r.preWaveFreeze, { fileCount: 172, totalBytes: 8684924, treeSha256: '1b60b5f1392951f30450a3f77493f8e7b37a62d61c8b2e2d227cfa5759c2450b' });
   assert.deepEqual(r.ownerApprovedAuditAnchorChanges, ['www/storage-core.js'], 'the fix-wave owner approved anchor change is kept');
@@ -52,7 +52,7 @@ test('I2 [step 9] package.json has one test:svc1 script right after test:fix-wav
   const svcLine = text.split('\n').find((l) => l.includes('"test:svc1"'));
   assert.ok(svcLine && !svcLine.endsWith('\r'), 'the new script line is LF');
   assert.equal(buf[0] === 0xef, false, 'no BOM');
-  assert.equal((text.match(/\n/g) || []).length, 80, 'one line added to the 79 line breaks of G0');
+  assert.equal((text.match(/\n/g) || []).length, 81, 'two lines added to the 79 line breaks of G0 (test:svc1, test:svc2)');
 });
 
 test('I3 [step 11] the capability analyser holds the service wave delta ids under the agreed class and its reasons quote only the two allowed owner decisions', () => {
@@ -148,6 +148,7 @@ test('I8 [step 17] nothing outside the allowed paths changed: new files only und
     for (const rel of listFiles(top)) if (!known.has(rel)) added.push(rel);
   }
   const allowed = [/^www\/service-stores-[a-z-]+\.js$/, /^tests\/svc1-[a-z0-9-]+\.test\.mjs$/, /^tests\/lib\/svc1-[a-z0-9-]+\.mjs$/, /^tests\/fixtures\/service-wave-1\//,
+    /^www\/service-billing-[a-z-]+\.js$/, /^tests\/svc2-[a-z0-9-]+\.test\.mjs$/, /^tests\/lib\/svc2-[a-z0-9-]+\.mjs$/, /^tests\/fixtures\/service-wave-2\//, /^verification\/audit\/approvals\/SERVICE-WAVE-2-/,
     /^verification\/audit\/approvals\/SERVICE-WAVE-1-/];
   const stray = added.filter((r) => !allowed.some((re) => re.test(r)) && !/PHASE-5-FIREBASE-API23|AGENTS\.md|CLAUDE\.md|\.tmp-etp/.test(r));
   assert.deepEqual(stray, [], 'files added outside the agreed paths');

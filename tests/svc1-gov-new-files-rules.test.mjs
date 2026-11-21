@@ -265,7 +265,7 @@ test('T2 SVCS_PREFIX is declared once in the store; the literal appears in no ot
     if (/\bSVCS_PREFIX\s*=/.test(t)) decl.push(rel);
     if (t.indexOf('st_v2_svcs_watermark_v1') !== -1) watermark.push(rel);
   }
-  assert.deepEqual(holders.sort(), ['www/index.html', 'www/service-stores-store.js']);
+  assert.deepEqual(holders.sort(), ['www/index.html', 'www/integration-bridge.js', 'www/service-stores-store.js']);
   assert.deepEqual(decl, ['www/service-stores-store.js']);
   assert.deepEqual(watermark, ['www/service-stores-store.js']);
 });

@@ -18,6 +18,7 @@
   var DCS_PIN_FRESH_MS = 120000;
   var DCS_FIRST_INVOICE_DAY = '2020-01-01';
   var DCS_GENERIC_FAIL_TEXT = 'The store could not finish this. Nothing was posted.';
+  var DCS_CN_NO_RE = /^SCN\/\d{2}-\d{2}\/\d{1,6}$/;
 
   function dcFreezeAll(o) {
     var keys, i;
@@ -314,7 +315,7 @@
 
   function create(deps) {
     var ck = dcCheckDeps(deps);
-    var store, fifo, masters, cases, clockFn;
+    var store, fifo, masters, cases, clockFn, billingPort = null;
     var X = null;          // the adopted index (null until a clean open)
     var built = null;      // the index made by the last replay check
     var isOpen = false;
@@ -330,6 +331,7 @@
     masters = deps.masters;
     cases = deps.cases;
     clockFn = deps.now;
+    if (deps.billingPort) billingPort = deps.billingPort;
 
     // ------------------------------------------------------------ results
 
@@ -752,6 +754,13 @@
         }
       }
       return { ok: true, row: g.row };
+    }
+    // Asks the billing port (given by the core once billing is loaded). null = no port or no usable answer (callers refuse).
+    function portSays(name, args) {
+      var r = null;
+      if (!billingPort) return null;
+      try { r = billingPort[name].apply(billingPort, args); } catch (e) { r = null; }
+      return dcIsObj(r) ? r : null;
     }
     function jobCheck(jobId, mustBeOpen, warns) {
       var id = dcText(jobId, 60), job;
@@ -1261,7 +1270,7 @@
     }
 
     function returnFromJob(input, ctx) {
-      var g = begin('RETURN', ctx), rf, dn, bad, nt, jb, rl, lines = [], seen = dcMap(), i, ln, mv0, qty, why, warns = [], cf, res;
+      var g = begin('RETURN', ctx), rf, dn, bad, nt, jb, rl, lines = [], seen = dcMap(), i, ln, mv0, qty, why, warns = [], cf, res, cn = '', pr, pl = [], pf;
       if (!g.ok) return g;
       rf = clientRef(ctx);
       if (!rf.ok) return fail('INPUT_INVALID', { field: 'clientRef' });
@@ -1273,8 +1282,13 @@
       if (bad) return bad;
       nt = readNote(input.note, 0);
       if (!nt.ok) return nt;
-      jb = jobCheck(input.jobId, true, warns);
+      if (input.creditNoteNo !== undefined && input.creditNoteNo !== null) {
+        if (typeof input.creditNoteNo !== 'string' || !DCS_CN_NO_RE.test(input.creditNoteNo)) return fail('INPUT_INVALID', { field: 'creditNoteNo' });
+        cn = input.creditNoteNo;
+      }
+      jb = jobCheck(input.jobId, cn === '', warns);
       if (!jb.ok) return jb;
+      if (cn !== '' && !billingPort) return fail('JOB_CLOSED', { jobId: jb.id, port: 'NO_PORT' });
       rl = readLines(input);
       if (!rl.ok) return rl;
       for (i = 0; i < rl.lines.length; i++) {
@@ -1291,12 +1305,22 @@
         if (typeof why !== 'string' || !dcHas(RETURN_REASONS, why)) return lineFail('RETURN_REASON_INVALID', i, { partCode: mv0.partCode });
         lines.push({ partCode: mv0.partCode, qty: qty, issueMovementId: mv0.id, issueDocNo: mv0.ref.grnNo, issueLineNo: mv0.ref.lineNo, returnReason: why });
       }
+      if (cn !== '') {
+        for (i = 0; i < lines.length; i++) pl.push({ issueMovementId: lines[i].issueMovementId, qty: lines[i].qty });
+        pr = portSays('creditReturn', [jb.id, cn, pl]);
+        if (!pr || pr.ok !== true) {
+          // Stage E (D-flows-2): the code stays JOB_CLOSED; the billing port's own sentence is the real reason.
+          pf = fail('JOB_CLOSED', { jobId: jb.id, port: pr && typeof pr.code === 'string' ? pr.code : 'NO_ANSWER' });
+          if (pr && typeof pr.message === 'string' && pr.message.length > 3) pf.message = pr.message.slice(0, 300);
+          return pf;
+        }
+      }
       cf = clockFlag(ctx, g);
       if (!cf.ok) return cf;
       res = postLedger({
         kind: 'RET', series: 'RET', ref: rf.ref, sess: g.sess, ctx: ctx, reauth: false, clockOn: cf.on,
         build: function (c) {
-          var j, st, ap, mv = [];
+          var j, st, ap, mv = [], bd;
           for (j = 0; j < lines.length; j++) {
             st = fifo.planReturnFromJob(c.clone, {
               issueId: lines[j].issueMovementId, qty: lines[j].qty, at: c.at, ref: { grnNo: c.no, lineNo: j + 1, jobId: jb.id }
@@ -1305,7 +1329,9 @@
             if (!ap.ok) return ap;
             mv.push(ap.movement);
           }
-          return { ok: true, warnings: warns, body: { no: c.no, docDate: c.docDate, note: nt.value, jobId: jb.id, lines: lines, mv: mv } };
+          bd = { no: c.no, docDate: c.docDate, note: nt.value, jobId: jb.id, lines: lines, mv: mv };
+          if (cn !== '') bd.creditNoteNo = cn;
+          return { ok: true, warnings: warns, body: bd };
         }
       });
       if (!res.ok) return res;
@@ -1356,7 +1382,7 @@
       res = postLedger({
         kind: 'CSL', series: 'CSL', ref: rf.ref, sess: g.sess, ctx: ctx, reauth: false, clockOn: cf.on,
         build: function (c) {
-          var j, st, ap, mv = [];
+          var j, st, ap, mv = [], bd;
           for (j = 0; j < lines.length; j++) {
             st = fifo.planCounterSale(c.clone, {
               partCode: lines[j].partCode, qty: lines[j].qty, at: c.at, ref: { grnNo: c.no, lineNo: j + 1, saleRef: c.no }
@@ -1365,10 +1391,10 @@
             if (!ap.ok) return ap;
             mv.push(ap.movement);
           }
-          return {
-            ok: true, warnings: warns,
-            body: { no: c.no, docDate: c.docDate, note: nt.value, payMode: pay, ccptInvoiceNo: ccpt, amountPaise: total, moneyPosted: false, lines: lines, mv: mv }
-          };
+          bd = { no: c.no, docDate: c.docDate, note: nt.value, payMode: pay, ccptInvoiceNo: ccpt, amountPaise: total, moneyPosted: false, lines: lines, mv: mv };
+          // Marked for a Billing receipt only when billing is wired in (a billing port was given). Without it: the Phase 1 body.
+          if (billingPort) bd.rcptDue = true;
+          return { ok: true, warnings: warns, body: bd };
         }
       });
       if (!res.ok) return res;
@@ -1535,7 +1561,7 @@
     // ------------------------------------------------------------ reversal
 
     function reverseDoc(docNo, reason, ctx) {
-      var sess = dcSession(ctx), rd, rf, dn, rec, kind, rs, action, ru, today0, needPinNow, cf, res, g, pinAt = null;
+      var sess = dcSession(ctx), rd, rf, dn, rec, kind, rs, action, ru, today0, needPinNow, cf, res, g, pinAt = null, pr;
       if (!sess) return fail('SESSION_REQUIRED');
       rd = ready();
       if (!rd.ok) return rd;
@@ -1552,6 +1578,11 @@
       action = kind === 'GRN' ? 'REVERSE_GRN' : (kind === 'ADJ' ? 'REVERSE_ADJUST' : 'REVERSE_COUNTER_SALE');
       ru = dcRule(action, sess, X.cfg);
       if (!ru.ok) return fail(ru.code);
+      if (kind === 'CSL' && rec.b.rcptDue === true) {
+        // A counter sale marked for a Billing receipt is undone only when billing says so. No port: refused (fail closed).
+        pr = portSays('saleReversible', [docNo]);
+        if (!pr || pr.ok !== true) return fail('STATE_INVALID', { state: 'RECEIPT_LIVE', port: !billingPort ? 'NO_PORT' : (pr && typeof pr.code === 'string' ? pr.code : 'NO_ANSWER') });
+      }
       rs = dcText(reason, 200);
       needPinNow = ru.needsPin === true;
       if (kind === 'CSL') {
@@ -2043,6 +2074,10 @@
     if (!deps.masters || typeof deps.masters.getRow !== 'function' || typeof deps.masters.canUse !== 'function') return bad('masters');
     if (typeof deps.now !== 'function') return bad('now');
     if (!deps.cases || typeof deps.cases.get !== 'function') return bad('cases');
+    if (deps.billingPort !== undefined && deps.billingPort !== null) {
+      f = deps.billingPort;
+      if (typeof f !== 'object' || typeof f.creditReturn !== 'function' || typeof f.saleReversible !== 'function') return bad('billingPort');
+    }
     return { ok: true, store: s };
   }
 

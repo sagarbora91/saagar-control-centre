@@ -253,3 +253,16 @@ html.bcc-mobile[data-mod="payroll"] #app-toast{bottom:88px !important}          
 html.bcc-mobile[data-mod="qms"] .toast{bottom:92px !important}                                                      /* qms-L11 */
 html.bcc-mobile[data-mod="planning"] .toast{bottom:98px !important}                                                 /* planning toast over FAB */
 html.bcc-mobile[data-mod="service"] .toast{max-width:calc(100vw - 32px) !important;white-space:normal !important}   /* svc-l7: long toast wrap at mid-mobile width */
+
+/* Service wave 2 / D10: in wizard mode the 12-step sidebar is the sticky chip rail at EVERY width (it sat over the form from 721 px up). Same declarations as the module's own max-width 720px block. */
+html.bcc-mobile[data-mod="service"] .form-sidebar{width:100%;height:auto;position:sticky;top:60px;z-index:150;padding:0;flex-direction:column;box-shadow:0 4px 12px rgba(13,35,64,.18)}
+html.bcc-mobile[data-mod="service"] .sidebar-order-info{padding:10px 14px;margin-bottom:0;border-bottom:1px solid rgba(255,255,255,.08)}
+html.bcc-mobile[data-mod="service"] .sidebar-prog-wrap{margin-top:8px}
+html.bcc-mobile[data-mod="service"] .sidebar-nav{flex:none;display:flex;flex-direction:row;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 14px;scrollbar-width:none}
+html.bcc-mobile[data-mod="service"] .sidebar-nav::-webkit-scrollbar{display:none}
+html.bcc-mobile[data-mod="service"] .nav-item{flex:0 0 auto;gap:7px;padding:8px 12px;min-height:44px;border-radius:999px;background:rgba(255,255,255,.05);white-space:nowrap}
+html.bcc-mobile[data-mod="service"] .nav-item.active::before{display:none}
+html.bcc-mobile[data-mod="service"] .nav-item.active{background:rgba(184,146,42,.18)}
+html.bcc-mobile[data-mod="service"] .nav-item.done{background:rgba(22,101,52,.18)}
+html.bcc-mobile[data-mod="service"] .nav-text{font-size:12px}
+html.bcc-mobile[data-mod="service"] .sidebar-actions{display:none}

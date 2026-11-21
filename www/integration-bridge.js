@@ -17,6 +17,7 @@
      • DSR → Stock roll-up (feed) ....... DSR_SUBMITTED
      • DSR/Leave → Payroll (feed) ....... DSR_SUBMITTED + LEAVE_APPROVED
      • WSC delivery → Expense income .... SERVICE_DELIVERED (central ledger)
+     * Service receipts / refunds ..... Service money stream -> Expense (state based, ref wscr_<no>)
      • Organisation publish ............. seeds Payroll firm + Tax firms
    Honest boundary: best-effort offline reconciliation; true transactional
    enforcement is the server rebuild. Every write is idempotent, labelled,
@@ -40,6 +41,15 @@
   var CRO_FEED='saagar_cro_audit_feed', WSC='saagar_wsf_v2', TAXPAY='saagar_tax_payable';
   var EXC='saagar_exceptions', EXP_LEDGER='gm_expenses', EXP_TAXFEED='gm_tax_feed';
   var CFG='saagar_bridge_config';
+  /* Service money (Phase 2): receipts and refunds of the Service module become Expense rows. State based, no event, no message.
+     READ ONLY on the Service side: this file never writes a Service key. */
+  var SVCM_PREFIX='saagar_svcs_';
+  var SVCM_RE=new RegExp('^'+SVCM_PREFIX+'receipts_v1_FY(\\d{4})-(\\d{2})(_p([2-9]|[1-9]\\d{1,2}))?$');
+  var SVCM_NO_RE=/^(SAR|SRC|SRF)\/\d{2}-\d{2}\/\d{4,9}$/, SVCM_MAX=100000000;   /* paise: Rs 10,00,000, the same ceiling as the Service page */
+  var _svcmCache=Object.create(null);
+  var _svcm={ok:true,recs:[],jobs:Object.create(null),hold:Object.create(null),reversed:Object.create(null),bad:0};
+  var _svcmStat={receipts:0,posted:0,held:0,failed:0,revHeld:0,drift:0,twice:0,reused:0,bad:0};
+  var _svcmLedBad=false;   /* the cash book (Expense ledger) could not be read this cycle: nothing was written to it */
   var MK_BRANDS='saagar_master_brands', MK_VENDORS='saagar_master_vendors', MK_CUSTOMERS='saagar_master_customers';
   var CUST_MASTER='saagar_customer_master_v1';   // Wave 3: derived mobile-keyed identity index (Customer 360 / Udhaar foundation)
   var FAIL_PCT=60, TICK=60000, BUS_CAP=2000;
@@ -191,6 +201,7 @@
     try{ var wl=L(WSC,null);
       if(Array.isArray(wl)) wl.forEach(function(c){
         if(!c||c.status!=='closed'||!c.id||!c.delivery) return;
+        if(!_svcm.ok||svcmHas(c.id)||svcmHold(c.id)) return;   /* Phase 2: a job paid by receipts never posts the old delivery income; unreadable money records: wait, never guess */
         var wrc=String(c.closedAt||'').slice(0,10);
         if(!wrc||wrc<rc) return;
         var wamt=parseFloat(c.delivery.finalAmt); if(!(wamt>0)) return;
@@ -490,6 +501,57 @@
     if(added){ if(S(WSC,arr)) blog('QMS→WSC stub +'+added); else { done.forEach(function(e){ if(e.consumed) delete e.consumed.wsc; }); _busDirty=true; } }   /* a failed write must not mark the events consumed */
   }
 
+  /* -- SERVICE MONEY: read the Service receipts stream (read only) --
+     Shards are append-only JSON arrays. A parsed shard is cached by key+length, so an idle cycle parses nothing.
+     ok=false means "cannot be sure": the caller must not guess (nothing is posted, nothing is emitted for Service).
+     jobs = jobs with a live receipt (SAR/SRC not reversed, in-book ones included). hold = jobs named by a record that
+     could not be read: the old delivery path waits for them (never posts, never consumes). */
+  function svcmNorm(r){
+    if(!r||typeof r!=='object'||!r.b||typeof r.b!=='object') return null;
+    var b=r.b, k=r.k, at=String(r.at||'');
+    if(k==='RRV'){
+      if(typeof b.reverses!=='string'||!SVCM_NO_RE.test(b.reverses)) return null;
+      return {k:'RRV',reverses:b.reverses,reason:String(b.reason||'').slice(0,60),at:at};
+    }
+    if(k!=='SAR'&&k!=='SRC'&&k!=='SRF') return null;
+    var no=b.no, amt=b.amountPaise, dd=b.docDate;
+    if(typeof no!=='string'||!SVCM_NO_RE.test(no)||no.slice(0,3)!==k) return null;
+    if(typeof amt!=='number'||Math.floor(amt)!==amt||amt<1||amt>SVCM_MAX) return null;
+    if(typeof dd!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(dd)) return null;
+    return {k:k,no:no,amt:amt,date:dd,mode:String(b.payMode||''),ref:String(b.payRef||'').slice(0,40),
+      job:String(b.jobId||''),sale:String(b.saleNo||''),inv:String(b.invoiceNo||''),reason:String(b.reason||'').slice(0,60),
+      inBook:b.inBook===true,legacy:b.legacy===true,at:at};
+  }
+  function svcmBadJob(r){ return (r&&typeof r==='object'&&(r.k==='SAR'||r.k==='SRC')&&r.b&&typeof r.b==='object'&&typeof r.b.jobId==='string'&&r.b.jobId)?r.b.jobId:''; }
+  function svcmLoad(){
+    var out={ok:true,recs:[],jobs:Object.create(null),hold:Object.create(null),reversed:Object.create(null),bad:0}, keys=[], i, k;
+    try{ for(i=0;i<localStorage.length;i++){ k=localStorage.key(i); if(k&&SVCM_RE.test(k)) keys.push(k); } }catch(e){ out.ok=false; _svcm=out; return out; }
+    keys.sort(function(a,b){ var x=SVCM_RE.exec(a), y=SVCM_RE.exec(b), fx=x[1]+x[2], fy=y[1]+y[2];
+      if(fx!==fy) return fx<fy?-1:1; return (x[4]?+x[4]:1)-(y[4]?+y[4]:1); });
+    for(i=0;i<keys.length&&out.ok;i++){
+      var raw=null; try{ raw=localStorage.getItem(keys[i]); }catch(e2){ out.ok=false; break; }
+      if(raw===null||raw==='') continue;
+      var c=_svcmCache[keys[i]];
+      if(!c||c.len!==raw.length){
+        var arr; try{ arr=JSON.parse(raw); }catch(e3){ arr=null; }
+        if(!Array.isArray(arr)){ out.ok=false; break; }
+        var norm=[], bad=0, badJobs=[]; arr.forEach(function(r){ var n=svcmNorm(r); if(n) norm.push(n); else { bad++; var bj=svcmBadJob(r); if(bj) badJobs.push(bj); } });
+        c=_svcmCache[keys[i]]={len:raw.length,recs:norm,bad:bad,badJobs:badJobs};
+      }
+      out.bad+=c.bad;
+      c.badJobs.forEach(function(j){ out.hold[j]=true; });
+      c.recs.forEach(function(n){ out.recs.push(n); });
+    }
+    if(out.ok){
+      out.recs.forEach(function(n){ if(n.k==='RRV') out.reversed[n.reverses]=true; });
+      out.recs.forEach(function(n){ if((n.k==='SAR'||n.k==='SRC')&&n.job&&!out.reversed[n.no]) out.jobs[n.job]=true; });
+    }
+    _svcm=out; return out;
+  }
+  function svcmHas(jobId){ return _svcm.jobs[String(jobId)]===true; }
+  function svcmHold(jobId){ return _svcm.hold[String(jobId)]===true; }
+  function svcmMode(m){ m=String(m||'Cash'); if(m==='Cash'||m==='UPI'||m==='Card'||m==='Bank') return m; return /bank/i.test(m)?'Bank':/upi/i.test(m)?'UPI':/card/i.test(m)?'Card':/cash/i.test(m)?'Cash':'Bank'; }
+
   /* ── LINK 6: WSC delivered case → Expense central ledger (service income) ──
      Consumes SERVICE_DELIVERED as exactly ONE gm_expenses income row (the shape Expense's own
      normEntry() re-normalises on read, so every renderer/total just works). Durable dedupe =
@@ -500,6 +562,7 @@
      event unconsumed and retry next cycle (it posts on the next open day). */
   function consumeServiceIncomeToLedger(bus){
     var cur=L(EXP_LEDGER,null);
+    _svcmLedBad=false; if(cur==null){ try{ var __lr=localStorage.getItem(EXP_LEDGER); if(__lr&&JSON.parse(__lr)!==null) throw 0; }catch(eL){ _svcmLedBad=true; return; } }   /* wave 2: unreadable text is never treated as an empty cash book (it would be overwritten); the events wait */
     if(cur!=null && !Array.isArray(cur)) return;            // unknown shape — never corrupt
     var arr=Array.isArray(cur)?cur:[];
     var have={}, ids={}; arr.forEach(function(x){ if(!x) return; if(x.id) ids[x.id]=1; if(x.sourceRef && !x.void) have[x.sourceRef]=1; });   /* a voided row no longer counts as posted */
@@ -508,6 +571,8 @@
     consume(bus,'SERVICE_DELIVERED','expense',function(e){
       var p=e.payload||{}; if(!p.cid) return true;
       var ref='wsc_'+p.cid;
+      if(!_svcm.ok||svcmHold(p.cid)) return false;          /* Phase 2: money records unreadable: keep the event, retry next cycle */
+      if(svcmHas(p.cid)) return true;                       /* Phase 2: this job is paid by receipts; the old entry must never post */
       if(have[ref]) return true;                            // already in the ledger (bridge OR manual Sync) — mark done
       var tb=tombs[ref], tca=p.closedAt||e.at; if(tb&&tca&&String(tca)<=String(tb.at||'')) return true;   // that close belongs to a case the Owner deleted before it was posted: never post it (old-format events carry no closedAt: their emit time is used)
       var amt=Number(p.amount)||0; if(!(amt>0)) return true;
@@ -525,6 +590,91 @@
       have[ref]=1; added++; done.push(e); return true;
     });
     if(added){ if(S(EXP_LEDGER,arr)) blog('WSC delivered → ledger income +'+added); else { done.forEach(function(e){ if(e.consumed) delete e.consumed.expense; }); _busDirty=true; } }   /* a failed write must not mark the events consumed */
+  }
+
+  /* -- SERVICE MONEY: keep the Expense ledger in step with the Service receipts stream --
+     One income row per receipt (SAR, SRC), one outflow row per refund (SRF), key sourceRef 'wscr_<number>', dated the day
+     it was taken. A row that is void still counts as posted: the ledger row itself is the only dedupe record. No event,
+     no consumed flag: a failed write simply repeats next cycle. A reversal (RRV) voids the row. For every job with a live
+     receipt one void, zero-amount marker row 'wsc_<jobId>' is added (never over an existing wsc_ row) so the Expense Sync
+     tab sees the job as already posted. Rows are never edited except the void of a reversed receipt. */
+  function svcmDescHas(row,r){
+    var d=String(row&&row.description||''), tok=r.sale?(' sale '+r.sale):(r.job?(' job '+r.job):''), at;
+    if(!tok) return true;
+    at=d.indexOf(tok); if(at<0) return false;
+    var nx=d.charAt(at+tok.length); return nx===''||nx===' ';
+  }
+  function reconcileServiceMoney(){
+    var st={receipts:0,posted:0,held:0,failed:0,revHeld:0,drift:0,twice:0,reused:0,bad:_svcm.bad||0}; _svcmStat=st;
+    if(!_svcm.ok||!_svcm.recs.length) return;
+    function ledgerBad(){ _svcm.recs.forEach(function(r){ if(r.k!=='RRV'&&!r.inBook&&!_svcm.reversed[r.no]) st.failed++; }); }   /* ledger unreadable: nothing can be posted; Home says so (never silent) */
+    var raw=null; try{ raw=localStorage.getItem(EXP_LEDGER); }catch(e0){ ledgerBad(); return; }
+    var arr=[]; if(raw){ try{ arr=JSON.parse(raw); }catch(e1){ ledgerBad(); return; } if(!Array.isArray(arr)){ ledgerBad(); return; } }   /* unreadable or unknown shape: never overwrite the ledger */
+    var byRef=Object.create(null), ids=Object.create(null), oldRow=Object.create(null), anyOld=Object.create(null), dupRef=0;
+    arr.forEach(function(x){ if(!x) return; if(x.id) ids[x.id]=1;
+      var sr=x.sourceRef; if(typeof sr!=='string') return;
+      if(sr.indexOf('wscr_')===0){ if(byRef[sr]) dupRef++; else byRef[sr]=x; }
+      else if(sr.indexOf('wsc_')===0){ anyOld[sr]=1; if(!x.void) oldRow[sr]=1; } });
+    var stm=L(EXP_STMT,null)||{}; if(typeof stm!=='object') stm={};
+    var tf=L(EXP_TAXFEED,null)||{}; if(typeof tf!=='object') tf={};
+    var d=today(), added=0, changed=0, marked=0, jobs=null;
+    function dayClosed(dt){ return !!(stm[dt]&&stm[dt].closed); }
+    function monthLocked(dt){ var mo=ym(dt); if(tf[mo]) return true; for(var k in stm){ if(k.slice(0,7)===mo&&stm[k]&&stm[k].monthLocked===true) return true; } return false; }
+    function jobInfo(id){ if(!jobs){ jobs=Object.create(null); var w=L(WSC,null); if(Array.isArray(w)) w.forEach(function(c){ if(c&&c.id) jobs[String(c.id)]=c; }); } return jobs[String(id)]||null; }
+    function freeId(base){ var eid=base, en=2; while(ids[eid]){ eid=base+'_'+(en++); } ids[eid]=1; return eid; }
+    _svcm.recs.forEach(function(r){
+      if(r.k==='RRV') return;
+      if(r.inBook) return;                                   /* Owner said it is already in the cash book: never posted */
+      st.receipts++;
+      if(_svcm.reversed[r.no]) return;                       /* reversed: never post (a posted row is voided below) */
+      var ref='wscr_'+r.no;
+      if(byRef[ref]) return;                                 /* posted already (a void row counts) */
+      var fd=r.date; if(dayClosed(fd)) fd=d;
+      if(dayClosed(fd)){ st.held++; return; }                /* every day is closed: wait, retry next cycle */
+      var out=(r.k==='SRF'), job=r.job?jobInfo(r.job):null, cust=job&&job.custName?String(job.custName):'', watch=job&&job.brand?(String(job.brand)+(job.model?' '+String(job.model):'')):'';
+      var desc=(out?'Service refund ':(r.sale?'Counter sale receipt ':(r.k==='SAR'?'Service advance ':'Service receipt ')))+r.no
+        +(r.legacy?' (earlier advance, confirmed)':'')+(r.sale?' - sale '+r.sale:(r.job?' - job '+r.job:''))+(r.inv?' - invoice '+r.inv:'')
+        +(cust?' - '+cust:'')+(watch?' ('+watch+')':'')+(out&&r.reason?' - '+r.reason.slice(0,40):'')+(fd!==r.date?' - taken '+r.date:'');
+      var eid=freeId('e_wscr_'+r.no.replace(/[^A-Za-z0-9_-]/g,'_'));
+      var row={id:eid,type:out?'expense':'income',date:fd,amount:Math.round(r.amt)/100,
+        category:out?'Miscellaneous':'Service Income',mode:svcmMode(r.mode),vendor:'',firm:'',description:desc,
+        notes:r.ref?('Pay ref: '+r.ref):'',billPhoto:null,source:'wsc',sourceRef:ref,void:false,
+        createdAt:new Date().toISOString(),createdBy:'bridge',editLog:[]};
+      arr.push(row); byRef[ref]=row; added++;
+    });
+    _svcm.recs.forEach(function(r){                          /* reversals: void the row, or hold when its day is closed or its month is tax-locked */
+      if(r.k!=='RRV') return;
+      var row=byRef['wscr_'+r.reverses]; if(!row||row.void) return;
+      var dt=String(row.date||'').slice(0,10);
+      if(dayClosed(dt)||monthLocked(dt)){ st.revHeld++; return; }
+      row.void=true; row.voidReason='Service '+(r.reverses.indexOf('SRF')===0?'refund ':'receipt ')+r.reverses+' was reversed'+(r.reason?' - '+r.reason:'');
+      if(!Array.isArray(row.editLog)) row.editLog=[];
+      row.editLog.push({at:new Date().toISOString(),by:'bridge',old:{void:false},new:{void:true},reason:row.voidReason}); changed++;
+    });
+    /* marker rows: one void, zero-amount row 'wsc_<jobId>' per job with a live receipt, so the Expense Sync tab cannot post the job again.
+       Never over an existing wsc_ row (void or not). Written only on an open day (today); otherwise it waits. */
+    if(!dayClosed(d)) Object.keys(_svcm.jobs).forEach(function(job){
+      var wref='wsc_'+job; if(anyOld[wref]) return;
+      var iso=new Date().toISOString(), mid=freeId('e_wscg_'+String(job).replace(/[^A-Za-z0-9_-]/g,''));
+      arr.push({id:mid,type:'income',date:d,amount:0,category:'Service Income',mode:'Cash',vendor:'',firm:'',
+        description:'Paid by Service receipts (see the wscr_ rows). Not income.',notes:'',billPhoto:null,source:'wsc',sourceRef:wref,
+        void:true,voidReason:'Marker: this job is paid by Service receipts',createdAt:iso,createdBy:'bridge',editLog:[]});
+      anyOld[wref]=1; marked++;
+    });
+    if(added||changed||marked){ if(S(EXP_LEDGER,arr)){ st.posted=added; blog('Service money -> ledger +'+added+' / voided '+changed+' / markers '+marked); } else { st.failed=added+changed; } }   /* markers alone failing is silent: they are tried again */
+    if(st.failed) return;                                    /* nothing was saved: report only the failure */
+    /* read-only checks: never change a row */
+    var twice=dupRef, seenJob=Object.create(null);
+    _svcm.recs.forEach(function(r){
+      if(r.k==='RRV'||r.inBook) return;
+      var row=byRef['wscr_'+r.no], rev=_svcm.reversed[r.no];
+      if(row && !rev){ var want=(r.k==='SRF')?'expense':'income', amtBad=Math.abs(Number(row.amount)-r.amt/100)>0.004;
+        if(row.void===true||String(row.type||'').toLowerCase()!==want||amtBad) st.drift++;
+        if(amtBad||!svcmDescHas(row,r)) st.reused++; }       /* the number is already used by a row that is not this receipt */
+      if(row && rev && !row.void){ var dt2=String(row.date||'').slice(0,10); if(!(dayClosed(dt2)||monthLocked(dt2))) st.drift++; }
+      if(!rev && r.k!=='SRF' && r.job && oldRow['wsc_'+r.job] && !seenJob[r.job]){ seenJob[r.job]=1; twice++; }
+    });
+    st.twice=twice;
   }
 
   /* S03b U07-F11 (interface C): Service records an Owner deletion in saagar_wsf_settings_v1.deleted
@@ -715,6 +865,17 @@
       /* S03b U14-07: delivery income waiting because the cash statement is closed */
       try{ var held=0; bus.forEach(function(e){ if(e&&e.type==='SERVICE_DELIVERED'&&!(e.consumed&&e.consumed.expense)) held++; });
         if(held) ex.push({sev:'med',area:'Cash',msg:held+' service delivery income(s) are waiting to be posted — the cash statement is closed; reopen the day or post from Expense > Sync',at:d}); }catch(e){}
+      /* Phase 2 Service money: read-only reports from the last reconcile */
+      try{ var __sm=_svcmStat;
+        if(__sm.held) ex.push({sev:'med',area:'Cash',msg:__sm.held+' service receipt(s) are waiting to be posted - the cash statement is closed. They post by themselves when a day is open. Do not add them by hand.',at:d});
+        if(__sm.failed) ex.push({sev:'high',area:'Cash',msg:__sm.failed+' service receipt(s) could not be saved to the cash book - they will be tried again',at:d});
+        if(__sm.drift) ex.push({sev:'high',area:'Cash',msg:__sm.drift+' service receipt(s) differ from the cash book (changed or voided in Expense) - review them',at:d});
+        if(__sm.revHeld) ex.push({sev:'high',area:'Expense',msg:__sm.revHeld+' service reversal(s) cannot change a row on a closed day or a tax-locked month - reopen the day or void the row in Expense',at:d});
+        if(__sm.twice) ex.push({sev:'high',area:'Expense',msg:__sm.twice+' service job(s) are in the cash book twice (old delivery entry and receipts) - review in Expense',at:d});
+        if(__sm.reused) ex.push({sev:'high',area:'Expense',msg:'Service receipt number seen twice - review in Expense ('+__sm.reused+')',at:d});
+        if(_svcmLedBad) ex.push({sev:'high',area:'Expense',msg:'The cash book (Expense) could not be read - service income was not posted to it and nothing was overwritten. Ask support before adding entries in Expense.',at:d});
+        if(__sm.bad||!_svcm.ok) ex.push({sev:'high',area:'Expense',msg:(__sm.bad||1)+' service money record(s) could not be read and were not posted - ask support',at:d});
+      }catch(e){}
       /* S03b U14-08: the staff master does not reach Payroll (Payroll keeps its own roster); show a notice, never write into Payroll */
       try{ var __pb2=L(PAYROLL,null), __em2=L(EMP_MASTER,[]);
         if(__pb2&&Array.isArray(__pb2.rows)&&Array.isArray(__em2)){
@@ -927,6 +1088,7 @@
     _lastCycle=Date.now();   // rec #18: stamp every reconcile (all entry paths) for the freshness indicator
     _busDirty=false;
     var bus=busLoad();
+    svcmLoad();
     produce(bus);
     consumeQmsToDsr(bus);
     consumeQmsAllocatedToDsr(bus);
@@ -936,6 +1098,7 @@
     consumeCroAuditFeed(bus);
     consumeQmsServiceToWsc(bus);
     consumeServiceIncomeToLedger(bus);
+    reconcileServiceMoney();
     voidDeletedServiceIncome();
     computeGate(bus);
     var pruned=busPrune(bus);
@@ -956,6 +1119,7 @@
     croAuditFeed:function(){return L(CRO_FEED,{});},
     taxPayable:function(){return L(TAXPAY,{});},
     config:function(){return cfg();},
+    serviceMoney:function(){ return {ok:_svcm.ok,receipts:_svcmStat.receipts,posted:_svcmStat.posted,held:_svcmStat.held,failed:_svcmStat.failed,revHeld:_svcmStat.revHeld,drift:_svcmStat.drift,twice:_svcmStat.twice,reused:_svcmStat.reused,bad:_svcmStat.bad}; },
     status:function(){var b=busLoad();var byType={};b.forEach(function(e){byType[e.type]=(byType[e.type]||0)+1;});
       var exc=L(EXC,{items:[]});
       return {busEvents:b.length,byType:byType,employeeMaster:(L(EMP_MASTER,[])||[]).length,

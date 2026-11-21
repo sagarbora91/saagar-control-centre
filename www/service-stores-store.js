@@ -42,9 +42,15 @@
     ledger: { code: 'LED', period: 'month', base: 'ledger' },
     docs: { code: 'DOC', period: 'fy', base: 'docs' },
     defective: { code: 'DEF', period: 'none', base: 'defective' },
-    audit: { code: 'AUD', period: 'month', base: 'audit' }
+    audit: { code: 'AUD', period: 'month', base: 'audit' },
+    invoices: { code: 'INV', period: 'fy', base: 'invoices' },
+    receipts: { code: 'RCT', period: 'fy', base: 'receipts' }
   };
-  var STREAM_NAMES = ['audit', 'config', 'defective', 'docs', 'labour', 'ledger', 'parts'];
+  var STREAM_NAMES = ['audit', 'config', 'defective', 'docs', 'invoices', 'labour', 'ledger', 'parts', 'receipts'];
+  // The replay hook (FIFO and so on) is handed the Phase 1 streams only; billing keeps its own index of invoices and receipts.
+  var REPLAY_STREAMS = ['audit', 'config', 'defective', 'docs', 'labour', 'ledger', 'parts'];
+  // A series seed (b.seriesSeed) is read only in the Phase 2 streams; in a Phase 1 stream it stays plain body text, as before.
+  var SEED_STREAMS = { invoices: true, receipts: true };
 
   var SERIES = {
     GRN: { stream: 'ledger', width: 4 },
@@ -54,7 +60,13 @@
     CSL: { stream: 'ledger', width: 4 },
     ADJ: { stream: 'ledger', width: 4 },
     OLD: { stream: 'defective', width: 4 },
-    SCR: { stream: 'defective', width: 4 }
+    SCR: { stream: 'defective', width: 4 },
+    // Phase 2: SV has the long financial year form SV/2026-27/0001; the rest use the short form.
+    SV: { stream: 'invoices', width: 4, fy: 'long' },
+    SCN: { stream: 'invoices', width: 4 },
+    SAR: { stream: 'receipts', width: 4 },
+    SRC: { stream: 'receipts', width: 4 },
+    SRF: { stream: 'receipts', width: 4 }
   };
 
   var KEY_RE = {
@@ -62,6 +74,7 @@
     noPeriod: new RegExp('^' + SVCS_PREFIX + '(parts|labour|config|defective)_v1(_p([2-9]|[1-9]\\d{1,2}))?$'),
     month: new RegExp('^' + SVCS_PREFIX + '(ledger|audit)_v1_(\\d{4})-(0[1-9]|1[0-2])(_p([2-9]|[1-9]\\d{1,2}))?$'),
     fy: new RegExp('^' + SVCS_PREFIX + 'docs_v1_FY(\\d{4})-(\\d{2})(_p([2-9]|[1-9]\\d{1,2}))?$'),
+    fy2: new RegExp('^' + SVCS_PREFIX + '(invoices|receipts)_v1_FY(\\d{4})-(\\d{2})(_p([2-9]|[1-9]\\d{1,2}))?$'),
     watermark: /^st_v2_svcs_watermark_v1$/
   };
 
@@ -131,6 +144,7 @@
   var HEX64 = /^[0-9a-f]{64}$/;
   var ISO_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z$/;
   var SERIES_NO_RE = /^([A-Z]{3})\/(\d{2}-\d{2})\/(\d+)$/;
+  var SERIES_NO_LONG_RE = /^([A-Z]{2})\/(\d{4}-\d{2})\/(\d+)$/;
   // The Service page's own case fields (cust + name, mobile, addr) are refused too.
   var FORBIDDEN_FIELD_RE = new RegExp('^(mobile|phone|email|address|cust' + 'name|customername|customermobile|cust' + 'mobile|cust' + 'addr|customeraddress|aadhaar|pan)$', 'i');
   function badKeyName(k) { return k === '__proto__' || k === 'constructor' || k === 'prototype'; }
@@ -234,6 +248,36 @@
   function fyShort(iso) {
     var y = fyStartYear(iso);
     return y === null ? null : pad(y % 100, 2) + '-' + pad((y + 1) % 100, 2);
+  }
+
+  function fyLong(iso) {
+    var y = fyStartYear(iso);
+    return y === null ? null : pad(y, 4) + '-' + pad((y + 1) % 100, 2);
+  }
+
+  // The financial year text of a number series: long (2026-27) for SV, short (26-27) for the rest.
+  function seriesFy(series, iso) {
+    return SERIES[series] && SERIES[series].fy === 'long' ? fyLong(iso) : fyShort(iso);
+  }
+
+  // A stored or proposed number, accepted only in its own form (long for SV, short for the rest).
+  function parseSeriesNo(no) {
+    if (typeof no !== 'string') return null;
+    var longForm = false;
+    var m = SERIES_NO_RE.exec(no);
+    if (!m) { m = SERIES_NO_LONG_RE.exec(no); longForm = true; }
+    if (!m || !SERIES[m[1]]) return null;
+    if ((SERIES[m[1]].fy === 'long') !== longForm) return null;
+    return { code: m[1], fy: m[2], num: parseInt(m[3], 10) };
+  }
+
+  // A series seed: exactly three keys, a series of this stream, the year text of the record's own time, last 0..99999.
+  function seedOf(sd, stream, atIso) {
+    if (!isPlain(sd) || Object.keys(sd).length !== 3) return null;
+    if (typeof sd.series !== 'string' || !SERIES[sd.series] || SERIES[sd.series].stream !== stream) return null;
+    if (typeof sd.fy !== 'string' || sd.fy !== seriesFy(sd.series, atIso)) return null;
+    if (!isInt(sd.last) || sd.last < 0 || sd.last > 99999) return null;
+    return { series: sd.series, fy: sd.fy, last: sd.last };
   }
 
   /* ---------- SHA-256 (FIPS 180-4), synchronous ---------- */
@@ -462,6 +506,8 @@
     if (m) return Object.freeze({ stream: m[1], period: m[2] + '-' + m[3], part: m[5] ? parseInt(m[5], 10) : 1 });
     m = KEY_RE.fy.exec(key);
     if (m) return Object.freeze({ stream: 'docs', period: 'FY' + m[1] + '-' + m[2], part: m[4] ? parseInt(m[4], 10) : 1 });
+    m = KEY_RE.fy2.exec(key);
+    if (m) return Object.freeze({ stream: m[1], period: 'FY' + m[2] + '-' + m[3], part: m[5] ? parseInt(m[5], 10) : 1 });
     return null;
   }
 
@@ -607,7 +653,7 @@
     }
 
     function emptyMem() {
-      return { opened: false, streams: {}, series: {}, problems: [], blocked: false, watermark: 'OFF', warnings: [], healed: [] };
+      return { opened: false, streams: {}, series: {}, devHi: {}, problems: [], blocked: false, watermark: 'OFF', warnings: [], healed: [] };
     }
 
     /* adapter wrappers: nothing here throws */
@@ -715,19 +761,68 @@
         if (st.refs[rec.r] !== undefined) return { code: 'SVCS_DUPLICATE_REF', detail: 'reference used twice', n: rec.n };
       }
       var no = rec.b.no;
+      if (SEED_STREAMS[stream] === true && rec.b.seriesSeed !== undefined) {
+        // A seed only moves a counter forward, for the year of its own record time.
+        var sdo = seedOf(rec.b.seriesSeed, stream, rec.at);
+        if (sdo === null || no !== undefined) return { code: 'SVCS_SERIES_GAP', detail: 'bad series seed', n: rec.n };
+        var sk = sdo.series + '|' + sdo.fy;
+        if (sdo.last < (st.series[sk] || 0)) return { code: 'SVCS_SERIES_GAP', detail: 'series seed goes backwards', n: rec.n };
+        st.series[sk] = sdo.last;
+      }
       if (typeof no === 'string') {
-        var m = SERIES_NO_RE.exec(no);
-        if (m && SERIES[m[1]] && SERIES[m[1]].stream === stream) {
-          var num = parseInt(m[3], 10);
-          var lk = m[1] + '|' + m[2];
+        var m = parseSeriesNo(no);
+        if (m && SERIES[m.code].stream === stream) {
+          var lk = m.code + '|' + m.fy;
           var want = (st.series[lk] || 0) + 1;
-          if (no !== m[1] + '/' + m[2] + '/' + pad(num, SERIES[m[1]].width) || fyShort(rec.at) !== m[2] || num !== want) {
+          if (no !== m.code + '/' + m.fy + '/' + pad(m.num, SERIES[m.code].width) || seriesFy(m.code, rec.at) !== m.fy || m.num !== want) {
             return { code: 'SVCS_SERIES_GAP', detail: 'number out of order', n: rec.n };
           }
-          st.series[lk] = num;
+          st.series[lk] = m.num;
         }
       }
       return null;
+    }
+
+    // Number floors (Stage E, D-backup-1). When the Owner acknowledges an older backup or a module reset, the audit
+    // record WATERMARK_RESET keeps, per series and year, the highest number this device had given (f) and how many
+    // records the series' stream held at that moment (n). From that position on, the series continues above f, so a
+    // number given before the restore is never given again. Audit is walked first, so its floors are known in time.
+    var FLOOR_KEY_RE = /^([A-Z]{2,3})\|(\d{2}-\d{2}|\d{4}-\d{2})$/;
+    function floorEntry(k, v) {
+      var m = FLOOR_KEY_RE.exec(k);
+      if (!m || !SERIES[m[1]] || !isPlain(v) || !isInt(v.f) || v.f < 1 || v.f > 99999 || !isInt(v.n) || v.n < 0) return null;
+      return { stream: SERIES[m[1]].stream, sk: k, f: v.f, n: v.n, done: false };
+    }
+    function collectFloors(rec, snap) {
+      if (rec.k !== 'WATERMARK_RESET' || !isPlain(rec.b) || !isPlain(rec.b.numbers)) return;
+      if (!snap.floors) snap.floors = {};
+      var ks = Object.keys(rec.b.numbers);
+      for (var i = 0; i < ks.length; i++) {
+        var fe = floorEntry(ks[i], rec.b.numbers[ks[i]]);
+        if (!fe) continue;
+        if (!snap.floors[fe.stream]) snap.floors[fe.stream] = [];
+        snap.floors[fe.stream].push(fe);
+      }
+    }
+    function applyFloors(snap, stream, upto) {
+      var list = snap.floors ? snap.floors[stream] : null;
+      if (!list) return;
+      for (var i = 0; i < list.length; i++) {
+        var fe = list[i];
+        if (fe.done || fe.n > upto) continue;
+        if ((snap.series[fe.sk] || 0) < fe.f) snap.series[fe.sk] = fe.f;
+        fe.done = true;
+      }
+    }
+    // The device mark keeps the highest number of each series and year (hi), never lower than the data.
+    function mergeHi(series, devHi) {
+      var out = {};
+      var ks = Object.keys(series);
+      var i;
+      for (i = 0; i < ks.length; i++) if (series[ks[i]] > 0) out[ks[i]] = series[ks[i]];
+      ks = Object.keys(devHi || {});
+      for (i = 0; i < ks.length; i++) if (devHi[ks[i]] > 0 && !(out[ks[i]] >= devHi[ks[i]])) out[ks[i]] = devHi[ks[i]];
+      return out;
     }
 
     function walkStream(name, shardList, snap) {
@@ -758,6 +853,7 @@
         lastRaw = rr.raw;
         for (i = 0; i < arr.length; i++) {
           rec = arr[i];
+          applyFloors(snap, name, st.prevN);
           bad = checkRecord(name, rec, st);
           if (bad) {
             snap.problems.push(prob(bad.code, name, key, bad.n, bad.detail));
@@ -768,6 +864,7 @@
             snap.warnings.push('SVCS_CLOCK_BACK:' + name + ':' + rec.n);
           }
           deepFreeze(rec);
+          if (name === 'audit') collectFloors(rec, snap);
           S.records.push(rec);
           S.recKey.push(key);
           if (rec.r !== undefined) S.refs[rec.r] = S.records.length - 1;
@@ -776,6 +873,7 @@
           st.prevAt = rec.at;
         }
       }
+      if (!S.broken) applyFloors(snap, name, Infinity);
       if (!S.broken && S.records.length > 0) {
         S.n = st.prevN;
         S.h = st.prevH;
@@ -823,16 +921,23 @@
         var w = o.streams[names[i]];
         if (!isPlain(w) || !isInt(w.n) || w.n < 0 || typeof w.h !== 'string' || !HEX64.test(w.h)) return null;
       }
+      if (o.hi !== undefined) {
+        if (!isPlain(o.hi)) return null;
+        var hk = Object.keys(o.hi);
+        for (var j = 0; j < hk.length; j++) if (!floorEntry(hk[j], { f: o.hi[hk[j]], n: 0 })) return null;
+      }
       return o;
     }
 
-    function watermarkTextFor(streams, at) {
+    function watermarkTextFor(streams, at, hi) {
       var out = {};
       for (var i = 0; i < STREAM_NAMES.length; i++) {
         var S = streams[STREAM_NAMES[i]];
         if (S && S.n > 0) out[STREAM_NAMES[i]] = { rev: S.rev, n: S.n, h: S.h };
       }
-      return canonicalText({ v: 1, at: at, streams: out });
+      var wm = { v: 1, at: at, streams: out };
+      if (hi && Object.keys(hi).length > 0) wm.hi = hi;
+      return canonicalText(wm);
     }
 
     function latestAt(streams) {
@@ -983,7 +1088,7 @@
       for (i = 0; i < snap.problems.length; i++) if (FATAL[snap.problems[i].code] === true) fatalSoFar = true;
       if (typeof replayFn === 'function' && !fatalSoFar) {
         var byName = {};
-        for (i = 0; i < STREAM_NAMES.length; i++) byName[STREAM_NAMES[i]] = Object.freeze(snap.streams[STREAM_NAMES[i]].records.slice());
+        for (i = 0; i < REPLAY_STREAMS.length; i++) byName[REPLAY_STREAMS[i]] = Object.freeze(snap.streams[REPLAY_STREAMS[i]].records.slice());
         Object.freeze(byName);
         var rp = null;
         try { rp = replayFn(byName); } catch (e3) { rp = [{ code: 'SVCS_FIFO_MISMATCH', detail: 'replay stopped with an error' }]; }
@@ -1012,6 +1117,7 @@
         if (wmRaw.ok && wmRaw.raw !== null) {
           wm = parseWatermark(wmRaw.raw);
           if (wm === null) { wmBad = true; snap.warnings.push('SVCS_WATERMARK_INVALID'); }
+          else if (wm.hi) snap.devHi = wm.hi;
         }
         fatalSoFar = false;
         for (i = 0; i < snap.problems.length; i++) if (isFatalProblem(snap.problems[i])) fatalSoFar = true;
@@ -1027,13 +1133,13 @@
           for (i = 0; i < ev.problems.length; i++) snap.problems.push(ev.problems[i]);
           if (ev.state === 'OK' && !fatalSoFar) {
             // Data may be newer than the stored mark: move the mark forward.
-            var cur = watermarkTextFor(snap.streams, latestAt(snap.streams));
+            var cur = watermarkTextFor(snap.streams, latestAt(snap.streams), mergeHi(snap.series, snap.devHi));
             if (wmRaw.raw !== cur) wmWrite = true;
           }
         }
         if (wmWrite && heal) {
           var at = latestAt(snap.streams);
-          var wt = watermarkTextFor(snap.streams, at);
+          var wt = watermarkTextFor(snap.streams, at, mergeHi(snap.series, snap.devHi));
           var ww = put(WATERMARK_KEY, wt);
           if (!ww.ok) snap.warnings.push('SVCS_WATERMARK_WRITE_FAILED');
         }
@@ -1060,6 +1166,7 @@
         next.streams[STREAM_NAMES[i]] = S;
       }
       next.series = snap.series;
+      next.devHi = snap.devHi || {};
       next.problems = snap.problems;
       next.warnings = snap.warnings;
       next.healed = snap.healed;
@@ -1192,7 +1299,7 @@
 
     function lastNumber(series, atIso) {
       if (!SERIES[series]) return fail('SVCS_ARGS_INVALID', { detail: 'series' });
-      var fy = fyShort(atIso);
+      var fy = seriesFy(series, atIso);
       if (fy === null) return fail('SVCS_ARGS_INVALID', { detail: 'at' });
       var f = ensureOpen();
       if (f) return f;
@@ -1212,7 +1319,7 @@
 
     function watermarkAfterAppend(at) {
       if (!wmOn) return [];
-      var w = put(WATERMARK_KEY, watermarkTextFor(mem.streams, latestAt(mem.streams) || at));
+      var w = put(WATERMARK_KEY, watermarkTextFor(mem.streams, latestAt(mem.streams) || at, mergeHi(mem.series, mem.devHi)));
       return w.ok ? [] : ['SVCS_WATERMARK_WRITE_FAILED'];
     }
 
@@ -1236,11 +1343,12 @@
         var it = items[i];
         if (!isPlain(it) || typeof it.k !== 'string' || !KIND_RE.test(it.k) || !isPlain(it.b)) return fail('SVCS_ARGS_INVALID', { detail: 'item ' + i });
         if (it.r !== undefined && it.r !== null && (typeof it.r !== 'string' || !REF_RE.test(it.r))) return fail('SVCS_ARGS_INVALID', { detail: 'ref ' + i });
+        if (SEED_STREAMS[stream] === true && it.b.seriesSeed !== undefined && ((it.series !== undefined && it.series !== null) || it.b.no !== undefined)) return fail('SVCS_ARGS_INVALID', { detail: 'series seed ' + i });
         if (it.series !== undefined && it.series !== null) {
           if (typeof it.series !== 'string' || !SERIES[it.series] || SERIES[it.series].stream !== stream) return fail('SVCS_ARGS_INVALID', { detail: 'series ' + i });
         } else if (typeof it.b.no === 'string') {
-          var nm = SERIES_NO_RE.exec(it.b.no);
-          if (nm && SERIES[nm[1]] && SERIES[nm[1]].stream === stream) return fail('SVCS_ARGS_INVALID', { detail: 'number without series' });
+          var nm = parseSeriesNo(it.b.no);
+          if (nm && SERIES[nm.code].stream === stream) return fail('SVCS_ARGS_INVALID', { detail: 'number without series' });
         }
       }
       var actor = normActor(opts.actor);
@@ -1321,10 +1429,20 @@
       }
       // 8. numbers: the caller supplies b.no, the store checks it
       var counters = {};
-      var fy = fyShort(at);
       for (i = 0; i < items.length; i++) {
+        if (SEED_STREAMS[stream] === true && items[i].b.seriesSeed !== undefined) {
+          // A seed hands an old counter over: it may only move forward, in item order.
+          var sdo = seedOf(items[i].b.seriesSeed, stream, at);
+          if (sdo === null) return fail('SVCS_ARGS_INVALID', { detail: 'series seed ' + i });
+          var sk = sdo.series + '|' + sdo.fy;
+          var runSeed = counters[sk] !== undefined ? counters[sk] : seriesLast(sdo.series, sdo.fy);
+          if (sdo.last < runSeed) return fail('SVCS_SERIES_MISMATCH', { stream: stream, detail: 'series seed is below the last number' });
+          counters[sk] = sdo.last;
+          continue;
+        }
         var sr = items[i].series;
         if (sr === undefined || sr === null) continue;
+        var fy = seriesFy(sr, at);
         var ck = sr + '|' + fy;
         var lastNo = counters[ck] !== undefined ? counters[ck] : seriesLast(sr, fy);
         var expected = sr + '/' + fy + '/' + pad(lastNo + 1, SERIES[sr].width);
@@ -1499,10 +1617,26 @@
         var S = mem.streams[STREAM_NAMES[i]];
         if (S.n > 0 || from[STREAM_NAMES[i]]) to[STREAM_NAMES[i]] = { n: S.n, h: S.h };
       }
+      // Numbers this device gave that the restored data no longer holds: never give them again.
+      var hiNow = mergeHi(mem.devHi, oldWm && oldWm.hi ? oldWm.hi : {});
+      var numbers = {};
+      var anyNo = false;
+      var hks = Object.keys(hiNow);
+      for (i = 0; i < hks.length; i++) {
+        var fe = floorEntry(hks[i], { f: hiNow[hks[i]], n: 0 });
+        if (!fe || hiNow[hks[i]] <= (mem.series[hks[i]] || 0)) continue;
+        numbers[hks[i]] = { f: hiNow[hks[i]], n: mem.streams[fe.stream].n };
+        anyNo = true;
+      }
+      var body = { from: from, to: to, reason: o.reason };
+      if (anyNo) body.numbers = numbers;
+      mem.devHi = hiNow;
       var ah = head('audit');
       if (ah.ok !== true) return ah;
-      var res = appendCore('audit', [{ k: 'WATERMARK_RESET', b: { from: from, to: to, reason: o.reason } }], { expectRev: ah.rev, actor: actor }, true);
+      var res = appendCore('audit', [{ k: 'WATERMARK_RESET', b: body }], { expectRev: ah.rev, actor: actor }, true);
       if (res.ok !== true) return res;
+      var nks = Object.keys(numbers);
+      for (i = 0; i < nks.length; i++) if ((mem.series[nks[i]] || 0) < numbers[nks[i]].f) mem.series[nks[i]] = numbers[nks[i]].f;
       // The append wrote a fresh watermark from the current heads. Re-check from memory.
       var keep = [];
       for (i = 0; i < mem.problems.length; i++) {

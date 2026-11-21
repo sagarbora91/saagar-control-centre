@@ -1,0 +1,2049 @@
+{
+  "format": "SAAGAR_EXTERNAL_GATE_APPROVAL",
+  "schemaVersion": 1,
+  "gateId": "SERVICE-SYSTEM-OF-RECORD-PHASE-2-BILLING-CAPABILITY-DELTA",
+  "decision": "build go-ahead given for Phase 2; capability delta not approved",
+  "state": "go-ahead-given; capability-delta-pending-owner-reconfirmation",
+  "reviewer": {
+    "displayName": "Sagar",
+    "role": "Owner/Admin"
+  },
+  "receivedAt": "2026-11-18",
+  "approvalEvidence": "owner decision given in chat, 2026-11-18",
+  "amendmentsEvidence": "owner decision given in chat, 2026-11-19",
+  "ownerWords": "The owner approved the Phase 2 plan with its defaults and told the agents to start the wave. On the next day the owner accepted the defaults for the eight open questions, allowed the fifteen named Phase 1 test checks to be updated and no more, and chose the cash-book route that writes a zero-amount marker row through the bridge, so the Expense page is not edited. Phase 2 covers: estimates from the masters, the approval form, advances, the bill (tax invoice with the GST split), receipts, cancel, credit note and refund, job void, counter-sale money, the day summary, two control lists and the cash-book route through the bridge. Valuation stays FIFO. Phases 3 to 5 are not built. The owner named no capability, no identity re-binding and no hash.",
+  "recordedBy": "Claude Code agents, Service wave 2 (integration stage). This is a transcription of chat decisions, not a signed attestation, and carries no GitHub identity or package hash.",
+  "signature": null,
+  "githubIdentity": null,
+  "packageHash": null,
+  "priorRecords": [
+    {
+      "path": "verification/audit/approvals/2026-08-12-11bb84abc74c.json",
+      "bytes": 31136,
+      "sha256": "8f463cb7e68a85c543232ce2fdbfee0aec8188a7b58af09f7a94a9da5be115aa",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-12-9b54d5bd0036.json",
+      "bytes": 31136,
+      "sha256": "3106a9246eef04fc6c5f8da0acb56ce71f5b48c146126654ca71530f5ac93595",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-16-3f8a37cebf99.json",
+      "bytes": 31507,
+      "sha256": "4f92d42a696de732aad2d108e59c5ebebd0f2c996634b90b39c1a2c0c772c858",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/2026-08-17-cc9a117c5245.json",
+      "bytes": 31507,
+      "sha256": "fbce51a37b3026fc6ea2210d45cba054e5568f5fb2cfa289ffb13236ab7a0d3d",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-08-22.json",
+      "bytes": 3466,
+      "sha256": "da5337f5b19f513bf98254494da4e489252c06d60c97c3da8a2435dccd4ef612",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-CAPABILITY-DELTA-APPROVAL-2026-11-11.json",
+      "bytes": 11437,
+      "sha256": "8e8749463dc0c60c9c0fafcc7661d5f024108b88339a8846cad7e557793e459e",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-ENGINE-BRIDGE-TABLET-SIDE-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 20850,
+      "sha256": "4e812423055782cec06a8a9ca3f5dd8c5b7f1a95f11f1bb1e2124ee0efc8a237",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-EXCEPTIONS-APPROVAL-2026-08-22.json",
+      "bytes": 2417,
+      "sha256": "1db38dbc11d73b014fae96332ae7c11492a4c1f54b421855f297b6889ded7405",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/ETP-LOCALIZATION-APPROVAL-2026-08-21.json",
+      "bytes": 4860,
+      "sha256": "77776928c66bc27f255812ed58bdb78fed756f6f7f335326106342d5d73ab987",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/FIX-WAVE-2026-11-12-IDENTITY-AND-CAPABILITY-RECORD.json",
+      "bytes": 62852,
+      "sha256": "c21bdd8af07e80fb70a1d5eec9cf18c469d37ffde8891c5ecd4d36b04f619102",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/GATE-UPDATE-PHYSICAL-APPROVAL-2026-08-22.json",
+      "bytes": 3032,
+      "sha256": "9875a978062dccd905f93c4610d8348c2acf77736ddbcdbe9d88372792e66260",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/MAH3-ETP-VISUAL-APPROVAL-2026-08-22.json",
+      "bytes": 2881,
+      "sha256": "e48ba79490ff1ac24adee1e1c2aa677393a2bfd4f6525dfe19dbc494cd34c0e1",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4-PAYMENTTYPE25-QUARANTINE-APPROVAL-2026-08-21.json",
+      "bytes": 1594,
+      "sha256": "aed75215b351e141e6cbf99c92deca036f96c6fec8a52c677bee232149a9c277",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4A-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "bytes": 2703,
+      "sha256": "40cdbd0078155b50ccb776d1a17ef7075c75c7d9ab5dbec786dc3d87e1095cb9",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4B-NATIVE-LANGUAGE-APPROVAL-2026-08-16.json",
+      "bytes": 2607,
+      "sha256": "2da51e5ca86db35c2cc112fd0bfd8fec1256917b3111aa4e999ae08b60055978",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-4C1-NATIVE-LANGUAGE-APPROVAL-2026-08-17.json",
+      "bytes": 2589,
+      "sha256": "9e290f1313790f274ba450f1aa8d343858a3ebfd06d4c0586335f5020b82f458",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-A104F5F-IDENTITY-REBIND-APPROVAL-2026-08-22.json",
+      "bytes": 7525,
+      "sha256": "eee44432f7b75b67c60645d59e3b58784f328437724b363e456e1911b6df490d",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5-ROLE-ASSIGNMENT-2026-08-22.json",
+      "bytes": 3130,
+      "sha256": "0d39197c44a4bdf9ed2de1905c68b02bd8b656b724475331ecb609146269af8a",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/PHASE-5C-NATIVE-LANGUAGE-APPROVAL-2026-08-22.json",
+      "bytes": 3200,
+      "sha256": "35f50bedf3fb9bbed8ab01d1da4531dc2938db7cd58978d8e459bcedae376719",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/SERVICE-WAVE-1-PHASE-1-STORES-CAPABILITY-RECORD-2026-11-13.json",
+      "bytes": 73363,
+      "sha256": "773237b2e10db4645e8f28b2e62d153fb2accdd5b6f754d6837ff907e85cf45b",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/SHELL-SEARCH-AND-ETP-LOADER-CAPABILITY-APPROVAL-2026-11-12.json",
+      "bytes": 8217,
+      "sha256": "9a58ca7a85950f44f966acda5c49dbe14c00eedf15ae323eef749c9ce192bfc9",
+      "treatment": "left unchanged"
+    },
+    {
+      "path": "verification/audit/approvals/WAVE-7-RELEASE-READINESS-ADDENDUM-2026-11-12.json",
+      "bytes": 18036,
+      "sha256": "cb9e8ab58c807580ea44899eefa6511ea1e7f2ab384e663a02f0f183336fe852",
+      "treatment": "left unchanged"
+    }
+  ],
+  "sourceBinding": {
+    "baseCommit": "031841fcf336bd2d6426aa4f098af9198907c994",
+    "includesUncommitted": true,
+    "preWaveWwwFingerprint": {
+      "fileCount": 172,
+      "totalBytes": 8684924,
+      "treeSha256": "1b60b5f1392951f30450a3f77493f8e7b37a62d61c8b2e2d227cfa5759c2450b"
+    },
+    "wave2PreWaveWwwFingerprint": {
+      "fileCount": 179,
+      "totalBytes": 9511226,
+      "treeSha256": "1e331a3edfb755deb19a0e25e1836f27d20282c34535305ad4aac646665f4e49",
+      "note": "taken at G0 of wave 2, before any writer started"
+    },
+    "postWaveWwwFingerprint": {
+      "fileCount": 186,
+      "totalBytes": 10282304,
+      "treeSha256": "9a58fbd7e5c2a3e4e09919c11a4bf5cd963c9725aa0ae8e63062744f5b1cd619"
+    },
+    "undoRegistry": {
+      "path": "tests/fixtures/fix-wave/undo-registry.json",
+      "bytes": 105480,
+      "sha256": "58c4487837d03c9bf94b9f122bbc866d91c2aa57a7c3a4355c9fa89871cacec9",
+      "beforeThisStage": {
+        "bytes": 103938,
+        "sha256": "02826cde975606ab67a2d549cc6fcfa9eb42544d8e1cfdbe54bfebac03520885"
+      }
+    }
+  },
+  "undoLayer": {
+    "created": [
+      "www/service-billing-area-ui.js",
+      "www/service-billing-calc.js",
+      "www/service-billing-core.js",
+      "www/service-billing-docs.js",
+      "www/service-billing-migrate.js",
+      "www/service-billing-money.js",
+      "www/service-billing-ui.js",
+      "www/service-stores-core.js",
+      "www/service-stores-docs.js",
+      "www/service-stores-fifo.js",
+      "www/service-stores-masters-ui.js",
+      "www/service-stores-masters.js",
+      "www/service-stores-store.js",
+      "www/service-stores-ui.js"
+    ],
+    "ownerApprovedAuditAnchorChanges": [
+      "www/storage-core.js"
+    ],
+    "filesOfThisWaveInTheRegistry": [
+      "www/integration-bridge.js",
+      "www/modules/service/index.html",
+      "www/modules/service/service-ui.css",
+      "www/saagar-report.js",
+      "www/shared/module-mobile-common.css",
+      "www/shared/shell-search.js"
+    ],
+    "statement": "The registry was regenerated by the workspace tool against the same pre-fix-wave copy, so it undoes the fix wave, wave 1 and wave 2 together. The pre-wave freeze is unchanged. No frozen expected hash, byte count or evidence file was edited."
+  },
+  "identitiesRegenerated": {
+    "moduleManifest": {
+      "path": "www/module-manifest.js",
+      "old": {
+        "bytes": 34733,
+        "sha256": "811bd86454dd10f46bd8ef079e357787f236618dd9baaa8c1fc715c508e5b78f"
+      },
+      "new": {
+        "bytes": 34733,
+        "sha256": "9f8fed5c5f89118fff14c2dc0072444aeacef1d8d0d330e67b8052f7ede767b7"
+      },
+      "recordsMoved": [
+        {
+          "kind": "modules",
+          "id": "service",
+          "file": "modules/service/index.html",
+          "oldBytes": 212574,
+          "newBytes": 264713,
+          "oldSha256": "39a35a8a0bd094053d5bd073881eb388f4338dd97e75fe80f7e5e4b3fa7097bd",
+          "newSha256": "f12db21810f6197cc635d8b51e5be24deb50445d473ec200b70b8a0a6833c562"
+        },
+        {
+          "kind": "sharedAssets",
+          "id": "module-mobile-common-css",
+          "file": "shared/module-mobile-common.css",
+          "oldBytes": 26137,
+          "newBytes": 27549,
+          "oldSha256": "b8ae67010cb906861df2e858079106a1d76a122ccc6f2748b9090a843d7f67f2",
+          "newSha256": "5506cfb223f49d97f1d84c1168dbfa2afcce1bd754eb62adaeb4008df9f9623f"
+        },
+        {
+          "kind": "sharedAssets",
+          "id": "service-ui-css",
+          "file": "modules/service/service-ui.css",
+          "oldBytes": 57919,
+          "newBytes": 63655,
+          "oldSha256": "a747e9379781f65b6915832b48940cf7d6aa4281faceb547ddfb39a177b6ae19",
+          "newSha256": "7cdd8f4eb496841aeba98ef917b1054266d5338a8dd81dff25dc2c73c8ca45a9"
+        }
+      ]
+    },
+    "golden": {
+      "path": "verification/module-build-golden-hashes.json",
+      "old": {
+        "bytes": 1591,
+        "sha256": "ff0d2a721676f4320685efbb2aeec3bea85f8825896d202410ec707e7d08245c"
+      },
+      "new": {
+        "bytes": 1591,
+        "sha256": "24e97451beb5166e4d9ee5a657be6c51a27c0ebe4d0ea2a4c823478104adb25f"
+      },
+      "entriesMoved": [
+        {
+          "id": "service",
+          "oldBytes": 212574,
+          "newBytes": 264713,
+          "oldSha256": "39a35a8a0bd094053d5bd073881eb388f4338dd97e75fe80f7e5e4b3fa7097bd",
+          "newSha256": "f12db21810f6197cc635d8b51e5be24deb50445d473ec200b70b8a0a6833c562"
+        }
+      ]
+    },
+    "shellAssetManifest": {
+      "path": "www/shell-asset-manifest.js",
+      "old": {
+        "bytes": 2341,
+        "sha256": "7e691f2b51a04241c93254787e0800248361538c53230e6ac47c5826273e4206"
+      },
+      "new": {
+        "bytes": 2341,
+        "sha256": "992617dbddfe14029a7fbf21b09b766a327af3d8146087825ad86399418a1d50"
+      },
+      "recordMoved": "shell-search"
+    },
+    "gate0": {
+      "regenerated": false,
+      "reason": "npm run test:v6-gate0 was green after the refresh, so create-v6-etp-gate0-freeze.mjs was not run."
+    },
+    "capabilityLedger": {
+      "path": "verification/MODULAR-CAPABILITY-DELTA-LEDGER-2026-08-12.json",
+      "old": {
+        "bytes": 1589694,
+        "sha256": "c0b98ad6b6ccffefcec53d28db9778b097fd75f280f94cebe6bf4170307a1c6c"
+      },
+      "now": {
+        "bytes": 1589695,
+        "sha256": "04b05e99e2ab867ed55017d0d7a2794cd531dee8ce4386b8f1423b00783e879f"
+      },
+      "state": "working-tree state: the seven new billing files are untracked and the ledger scanner reads tracked files only, so it holds the same counts as before and only the outcome hashes of rows on edited files moved",
+      "oldInventorySha256": "ce910c8d1e4b478334b3467a44b0dda2d043acb5c75d60348e9b8a2e51b8c90d",
+      "nowInventorySha256": "f892f8972d5deefc1086874e3af52f3b2e9587e77fed435178f3b57008fb55b5",
+      "nowCounts": {
+        "capabilities": 760,
+        "categories": {
+          "failure-posture": 129,
+          "permission": 32,
+          "persisted-outcome": 90,
+          "route": 13,
+          "visible-action": 496
+        },
+        "added": 457,
+        "removed": 352,
+        "changed": 60,
+        "capabilityApprovalsRequired": 869
+      },
+      "existingRowsWhoseOutcomeHashMoved": [
+        "script-integration-bridge:failure:posture|changed",
+        "script-saagar-report:failure:posture|changed",
+        "script-service-stores-docs:failure:posture|added",
+        "script-service-stores-store:failure:posture|added",
+        "script-service-stores-ui:failure:posture|added",
+        "service:action:back:bca917e83b|added",
+        "service:action:btn-back-dash:cb97c5af71|added",
+        "service:action:cancel-a9e64f4c9d:36b6b34a3f|added",
+        "service:action:cancel-aadf0c90d2:f108a3f171|added",
+        "service:action:mark-as-delivered-amp-close-case:af977af257|added",
+        "service:action:new-service-order:0930cd9fd5|added",
+        "service:action:save-order-179d14e8b0:d49def68cb|added",
+        "service:action:save-order-235acec870:5205e676bf|added",
+        "service:action:save-order-df9e5c6aa8:7aa416f779|added",
+        "service:failure:posture|changed"
+      ],
+      "trackedStateOverlay": {
+        "folder": "service-wave-2\\integration\\ledger-overlay",
+        "useWhen": "copy the four overlay files over the repo straight after the commit that adds the seven billing files, then run analyze-modular-capability-delta without --write and compare byte for byte",
+        "ledger": {
+          "bytes": 1596041,
+          "sha256": "cee480a57864cc73481b921bbf4fae6263df5bf01e0b2dd0b16bce5286cbbd80"
+        },
+        "analyser": {
+          "bytes": 22515,
+          "sha256": "86e3e47920e6d1409630c56bee093332df61f7519ef637f4c1988e49cb88ff79"
+        },
+        "modularCapabilityDeltaTest": {
+          "bytes": 2994,
+          "sha256": "5f64787d379655bff3ed8e700acd7f6a1537dd99cd494b8dd20dcc54ecab16df"
+        },
+        "phase1SharedSpineTest": {
+          "bytes": 7416,
+          "sha256": "558107da9b2a7836b8110ee15d4d5fc45420fa000273434a2c750c1232f98dce"
+        },
+        "inventorySha256": "180a2daa98e27fea5b88f66cf8f01e1e11d7369c7d2132cc1b70e00cd64445a2",
+        "counts": {
+          "capabilities": 767,
+          "categories": {
+            "failure-posture": 136,
+            "permission": 32,
+            "persisted-outcome": 90,
+            "route": 13,
+            "visible-action": 496
+          },
+          "added": 464,
+          "removed": 352,
+          "changed": 60,
+          "capabilityApprovalsRequired": 876
+        },
+        "idsNewComparedWithG0Ledger": [
+          "script-service-billing-area-ui:failure:posture|added",
+          "script-service-billing-calc:failure:posture|added",
+          "script-service-billing-core:failure:posture|added",
+          "script-service-billing-docs:failure:posture|added",
+          "script-service-billing-migrate:failure:posture|added",
+          "script-service-billing-money:failure:posture|added",
+          "script-service-billing-ui:failure:posture|added"
+        ],
+        "existingRowsWhoseOutcomeHashMoved": [
+          "script-integration-bridge:failure:posture|changed",
+          "script-saagar-report:failure:posture|changed",
+          "script-service-stores-docs:failure:posture|added",
+          "script-service-stores-store:failure:posture|added",
+          "script-service-stores-ui:failure:posture|added",
+          "service:action:back:bca917e83b|added",
+          "service:action:btn-back-dash:cb97c5af71|added",
+          "service:action:cancel-a9e64f4c9d:36b6b34a3f|added",
+          "service:action:cancel-aadf0c90d2:f108a3f171|added",
+          "service:action:mark-as-delivered-amp-close-case:af977af257|added",
+          "service:action:new-service-order:0930cd9fd5|added",
+          "service:action:save-order-179d14e8b0:d49def68cb|added",
+          "service:action:save-order-235acec870:5205e676bf|added",
+          "service:action:save-order-df9e5c6aa8:7aa416f779|added",
+          "service:failure:posture|changed"
+        ],
+        "measuredBy": "scratch copy outside the project with its own git repository; the project repository was only read"
+      }
+    },
+    "analyser": {
+      "path": "scripts/analyze-modular-capability-delta.mjs",
+      "old": {
+        "bytes": 20945,
+        "sha256": "523a97ead5c5823a0d3d90fc736e21d0bd4f0576a3292d4c8f6d257ece58a35a"
+      },
+      "new": {
+        "bytes": 22515,
+        "sha256": "87266ed2f7742828531a5677a5d08399ebd9fce64f352e2723f661e9894b0f77"
+      },
+      "changes": "Added the frozen exact-id set APPROVED_SERVICE_W2_DELTA_IDS (7 ids), its branch after the wave-1 branch (class service-wave-2-2026-11-billing-surface), and an assertion of the class count (0 now, 7 once the files are tracked). Other constants unchanged in the working tree."
+    },
+    "countTests": [
+      {
+        "path": "tests/modular-capability-delta.test.mjs",
+        "now": {
+          "bytes": 2994,
+          "sha256": "48ff7721835667d92b126a58c050381222109a0489dba347750fb809ce9fbc95"
+        },
+        "constants": "unchanged in the working tree (760/457/869); overlay 767/464/876"
+      },
+      {
+        "path": "tests/phase1-shared-spine.test.mjs",
+        "now": {
+          "bytes": 7416,
+          "sha256": "b9455193295555cbd1adc51db9a71762e749d8f429f9eb0fc53f8680b9cf5b3c"
+        },
+        "constants": "unchanged in the working tree (760/869); overlay 767/876"
+      }
+    ],
+    "phase1TestsAmended": [
+      {
+        "path": "tests/svc1-store-primitives.test.mjs",
+        "rows": "A-1, A-2",
+        "old": {
+          "bytes": 14461,
+          "sha256": "0cafd9c173aa4c7d7d6ed8b042cddae5433c9bec65051a9285b69027c11507ba"
+        },
+        "new": {
+          "bytes": 14519,
+          "sha256": "d6e473e704f1bac543af24c12b7880f36c726776f54520398a4ac8273defa519"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-capability-register.test.mjs",
+        "rows": "A-3",
+        "old": {
+          "bytes": 11714,
+          "sha256": "16687550bc68e0a2398aa0cadd4cc71460fcfd61aae776698c71abc4e61ffaec"
+        },
+        "new": {
+          "bytes": 11800,
+          "sha256": "a6bd0a9a82c599663f000321914ce2c6e893e9d9e34ddd165d9f947932f232ad"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-guards.test.mjs",
+        "rows": "A-4",
+        "old": {
+          "bytes": 9739,
+          "sha256": "f3ab89543612489ad24820373283269ae87f3dd04e9309419823427be4fd27ac"
+        },
+        "new": {
+          "bytes": 9836,
+          "sha256": "2f4ce6a9826e64c38283cb929fd3839a48addd4d721be15c39539f016e22a9d4"
+        }
+      },
+      {
+        "path": "tests/svc1-ui-source.test.mjs",
+        "rows": "A-5, A-15",
+        "old": {
+          "bytes": 14533,
+          "sha256": "a4d32b7a143616bad36d1599ea932ed4e246c41e8a5de5f2f112fe321fd7cf63"
+        },
+        "new": {
+          "bytes": 14928,
+          "sha256": "87ec8845f2876aefda693019913390c06f5bd57ceadcd7c40b4c515e8b3593c0"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-page-wiring.test.mjs",
+        "rows": "A-6",
+        "old": {
+          "bytes": 14216,
+          "sha256": "e0a22c275804265ab62e387c41d37404a361dc549c05cd5c58101b0984a8f07a"
+        },
+        "new": {
+          "bytes": 14287,
+          "sha256": "d87347d0592e0ffe06b297e654036485ba271a825e854cbc72ebe4e479a3f1cd"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-new-files-rules.test.mjs",
+        "rows": "A-9",
+        "old": {
+          "bytes": 20210,
+          "sha256": "13dd1249a36972a193b9083bde877c9305196b7b54900a4faa98c55db9049dfc"
+        },
+        "new": {
+          "bytes": 20239,
+          "sha256": "bf8f48e046431430798e17bd9f4590d5ae710c01a6c36325cfcf1f6c97963d38"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-integration-state.test.mjs",
+        "rows": "A-7, A-8, A-10, A-13",
+        "old": {
+          "bytes": 10976,
+          "sha256": "df6a74e6d22a68857f9a8b09f72a48b7e06fae92f0f39eb3e58b45b6aa860b03"
+        },
+        "new": {
+          "bytes": 11484,
+          "sha256": "e5f29503f36ef506fc190a132c70a19c86ddebd652b7eebcdb7b3f0aa240b500"
+        }
+      },
+      {
+        "path": "tests/svc1-ui-screens.test.mjs",
+        "rows": "A-11",
+        "old": {
+          "bytes": 52114,
+          "sha256": "d3e8630bd19b25b86efe117d7542aedc6943795251ba247d540985a85e04f82b"
+        },
+        "new": {
+          "bytes": 52118,
+          "sha256": "b44d6408260647641c3fcd7f8ac53f3882203960ed2405c0e636a00c12f77ac5"
+        }
+      },
+      {
+        "path": "tests/svc1-gov-phrases.test.mjs",
+        "rows": "A-12",
+        "old": {
+          "bytes": 6674,
+          "sha256": "3adbbc3c422cafe444bcedf6c86baebb1fa6f290be424514eca5b18edbeafcf1"
+        },
+        "new": {
+          "bytes": 7089,
+          "sha256": "a62e47db911360e905f5bf674e18255c924fce748d5eed8da662cac9cc9c8867"
+        }
+      },
+      {
+        "path": "tests/fix-s02-reports-role.test.mjs",
+        "rows": "A-14",
+        "old": {
+          "bytes": 9743,
+          "sha256": "9d7c6218d73e8d7087d29c3e426b714848a9206f3fc4112cdc0e08ede0663630"
+        },
+        "new": {
+          "bytes": 9993,
+          "sha256": "33ebd87b02f8966ea03b522fa89a5c1819238f095daafe892b347157c85d6fef"
+        }
+      }
+    ],
+    "phase1RegisterFixture": "tests/fixtures/service-wave-1/capability-register.json not regenerated (no Phase 1 control changed)"
+  },
+  "capabilityDelta": {
+    "declaredAndClassified": [
+      {
+        "id": "script-service-billing-calc:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-docs:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-money:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-migrate:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-core:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-ui:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      },
+      {
+        "id": "script-service-billing-area-ui:failure:posture",
+        "kind": "failure-posture",
+        "reviewClass": "service-wave-2-2026-11-billing-surface"
+      }
+    ],
+    "undeclared": [],
+    "permissionRows": "none added (the billing files name no owner-session or reauthentication token; the Owner PIN step is done by the Service page and passed in)",
+    "visibleActionRows": "none added; the Billing screens are built in script and carry no static control in the Service page",
+    "controlsNotVisibleToTheLedger": {
+      "why": "listed by hand because the ledger scanner does not read controls created in script files",
+      "count": 104,
+      "actions": [
+        {
+          "id": "svb-appr-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-appr-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-ar-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-ar-print",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-ar-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-ask-owner",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-back",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-done",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-print",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-review",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-blocked-retry",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cbill-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cbill-confirm",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cc-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cc-change-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cc-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-done",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-print",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-print-refund",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-restock",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "ledger"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cn-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices",
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-dialog-close",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-dialog-discard",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-dialog-keep",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-add-labour",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-add-other",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-add-part",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-line-remove",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-pick",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-est-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-advance-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-approval-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-balance-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-bill-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-cancel-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-ccptchange-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-ccptno-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-credit-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-estimate-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-goto-billing",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-nccancel-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-ncsheet-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-notccpt-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-print-bill",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-print-nocharge",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-print-receipt",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-refund-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-reverse-open",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-reverse-refund-open",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-stores-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-job-void-open",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-nc-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-nc-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-ncc-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-ncc-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-open-billing",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-done",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-fill-due",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-print",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rv-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rv-refund-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rv-save",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-void-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-void-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-adv-open-job",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-adv-page-next",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-adv-page-prev",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-adv-refund",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-area-retry",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bill-view",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bills-page-next",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bills-page-prev",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bv-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bv-close",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bv-credit",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-bv-print",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-cs-receipt",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-migrate-check",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-migrate-run",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-old-confirm",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-old-confirm-cancel",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-old-confirm-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "receipts"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpt-reprint",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpts-page-next",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-rcpts-page-prev",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-set-save",
+          "tier": "owner",
+          "ownerPin": true,
+          "persists": [
+            "invoices"
+          ],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-advances",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-bills",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-old",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-receipts",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-settings",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-today",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-tab-unbilled",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-today-print",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-today-refresh",
+          "tier": "manager",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-unb-open-job",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-unb-page-next",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        },
+        {
+          "id": "svb-unb-page-prev",
+          "tier": "staff",
+          "ownerPin": false,
+          "persists": [],
+          "failureCodes": []
+        }
+      ]
+    },
+    "persistedKeys": [
+      {
+        "pattern": "saagar_svcs_invoices_v1_FYyyyy-yy[_pNN]",
+        "period": "ist-financial-year",
+        "inBackup": true,
+        "deviceLocal": false,
+        "writer": "SaagarServiceStoresStore.adapterFromWindow"
+      },
+      {
+        "pattern": "saagar_svcs_receipts_v1_FYyyyy-yy[_pNN]",
+        "period": "ist-financial-year",
+        "inBackup": true,
+        "deviceLocal": false,
+        "writer": "SaagarServiceStoresStore.adapterFromWindow"
+      }
+    ],
+    "failureCodes": {
+      "count": 299,
+      "codes": [
+        "ALLOC_INVALID",
+        "AMOUNT_INVALID",
+        "APPROVAL_INVALID",
+        "BASIS_INVALID",
+        "BASIS_REQUIRED",
+        "BILL_DISCOUNT_INVALID",
+        "BILL_MISMATCH",
+        "BILL_RECORD_INVALID",
+        "BILL_TOO_LARGE",
+        "CALC_VERSION_UNKNOWN",
+        "CODE_INVALID",
+        "CREDIT_BILL_INVALID",
+        "CREDIT_DUPLICATE_LINE",
+        "CREDIT_EXCEEDS_INVOICE",
+        "CREDIT_EXCEEDS_LINE",
+        "CREDIT_EXCEEDS_REMAINING",
+        "CREDIT_EXCEEDS_TAXABLE",
+        "CREDIT_KIND_CONFLICT",
+        "CREDIT_LINE_NOCHARGE",
+        "CREDIT_LINE_UNKNOWN",
+        "CREDIT_NOTHING",
+        "CREDIT_PRIOR_INVALID",
+        "CREDIT_QTY_INVALID",
+        "CREDIT_REQUEST_INVALID",
+        "CREDIT_TAXABLE_INVALID",
+        "CUSTOMER_STATE_INVALID",
+        "DISCOUNT_EXCEEDS_BILL",
+        "DISCOUNT_EXCEEDS_LINE",
+        "DISCOUNT_INVALID",
+        "GSTIN_CHECKSUM",
+        "GSTIN_FORMAT",
+        "GSTIN_STATE",
+        "GSTIN_STATE_MISMATCH",
+        "HSN_INVALID",
+        "HSN_REQUIRED",
+        "INPUT_INVALID",
+        "INTERNAL_ERROR",
+        "LEGACY_GST_BLANK",
+        "LEGACY_INVALID",
+        "LEGACY_QTY_FRACTION",
+        "LINES_REQUIRED",
+        "LINE_KIND_INVALID",
+        "LINE_NAME_INVALID",
+        "LINE_NAME_REQUIRED",
+        "LINE_TOO_LARGE",
+        "NOCHARGE_HAS_DISCOUNT",
+        "NOCHARGE_NO_CREDIT",
+        "OTHER_LINE_PRESENT",
+        "OTHER_STATE_UNREGISTERED_INTRA",
+        "PERCENT_INVALID",
+        "PRICE_INVALID",
+        "PRICE_ZERO",
+        "QTY_INVALID",
+        "RATE_INVALID",
+        "RATE_REQUIRED",
+        "RATE_UNUSUAL",
+        "REFUNDS_EXCEED_RECEIPTS",
+        "REF_INVALID",
+        "SAC_INVALID",
+        "SAC_REQUIRED",
+        "SELLER_STATE_INVALID",
+        "SETTLE_INVALID",
+        "TARGET_ABOVE_TOTAL",
+        "TARGET_INVALID",
+        "TARGET_NOT_REACHABLE",
+        "TOO_MANY_LINES",
+        "ZERO_VALUE_BILL",
+        "ABOVE_MANAGER_LIMIT",
+        "ADVANCE_EXCEEDS_BILL",
+        "ALREADY_APPROVED",
+        "AMOUNT_MISMATCH",
+        "APPROVAL_TIME_INVALID",
+        "BACKDATE_NOT_ALLOWED",
+        "BILLED_PART_NOT_ISSUED",
+        "BILLING_BLOCKED",
+        "CALC_INCONSISTENT",
+        "CANCEL_HAS_CREDIT",
+        "CANCEL_SAME_DAY_ONLY",
+        "COST_MISMATCH",
+        "CREDIT_EMPTY",
+        "CREDIT_EXCEEDS_INVOICE",
+        "CREDIT_RETURN_INVALID",
+        "DEPS_INVALID",
+        "DISCOUNT_NOT_ALLOWED",
+        "DISCOUNT_REASON_REQUIRED",
+        "DOC_NOT_FOUND",
+        "DUPLICATE_CCPT_INVOICE",
+        "DUPLICATE_LINE",
+        "ESTIMATE_NOT_FOUND",
+        "ESTIMATE_NOT_LATEST",
+        "GSTIN_INVALID",
+        "INPUT_INVALID",
+        "INTERNAL_ERROR",
+        "INVOICE_ALREADY_ISSUED",
+        "INVOICE_CANCELLED",
+        "ISSUED_PART_UNBILLED",
+        "ISSUE_BILLING_MISMATCH",
+        "JOB_CLOSED",
+        "JOB_CLOSED_OLD_WAY",
+        "JOB_IS_STUB",
+        "JOB_LOCKED",
+        "JOB_NOT_FOUND",
+        "JOB_VOIDED",
+        "LABOUR_UNKNOWN",
+        "LEGACY_ADVANCE_UNCONFIRMED",
+        "LEGACY_CONFLICT",
+        "LEGACY_READ_ONLY",
+        "LINES_REQUIRED",
+        "NOT_ALLOWED",
+        "NOT_IN_CCPT_OWNER_ONLY",
+        "NOT_NO_CHARGE_JOB",
+        "NO_APPROVAL",
+        "NO_CHANGE",
+        "NO_CHARGE_JOB",
+        "PART_INACTIVE",
+        "PART_UNKNOWN",
+        "PAST_VIEW",
+        "PIN_REQUIRED",
+        "PRICE_NOT_FROM_MASTER",
+        "QTY_INVALID",
+        "REAPPROVAL_REQUIRED",
+        "REASON_REQUIRED",
+        "RECEIPT_SET_OFF",
+        "SESSION_REQUIRED",
+        "SHEET_ALREADY_ISSUED",
+        "STATE_INVALID",
+        "SVCS_ARGS_INVALID",
+        "SVCS_BLOCKED",
+        "SVCS_CLOCK_BACK",
+        "SVCS_DOC_TOO_LARGE",
+        "SVCS_DUPLICATE_REF",
+        "SVCS_HEAD_BEHIND",
+        "SVCS_HEAD_WRITE_FAILED",
+        "SVCS_READBACK_MISMATCH",
+        "SVCS_REV_CONFLICT",
+        "SVCS_SERIES_MISMATCH",
+        "SVCS_SERIES_TOO_LONG",
+        "SVCS_STORAGE_UNAVAILABLE",
+        "SVCS_WRITE_FAILED",
+        "TAX_DETAILS_MISSING",
+        "TOO_MANY_LINES",
+        "TOO_MANY_OTHER_LINES",
+        "VOID_INVOICE_ACTIVE",
+        "VOID_MONEY_HELD",
+        "VOID_PARTS_OUTSTANDING",
+        "VOID_SHEET_ACTIVE",
+        "VOID_STOCK_PENDING",
+        "WARRANTY_NOT_CREDITABLE",
+        "ADVANCE_HELD",
+        "ALREADY_REVERSED",
+        "AMOUNT_INVALID",
+        "AMOUNT_MISMATCH",
+        "AMOUNT_TOO_LARGE",
+        "BACKDATE_NOT_ALLOWED",
+        "CASH_LIMIT_WARN",
+        "COUNTER_RECEIPT_EXISTS",
+        "CREDIT_NOTE_REQUIRED",
+        "DECISION_EXISTS",
+        "DEPS_INVALID",
+        "INPUT_INVALID",
+        "INVOICE_CANCELLED",
+        "INVOICE_EXISTS_USE_BALANCE",
+        "INVOICE_NOT_FOUND",
+        "INVOICE_REQUIRED",
+        "JOB_CLOSED",
+        "JOB_IS_STUB",
+        "JOB_NOT_FOUND",
+        "JOB_VOID",
+        "LEGACY_ADVANCE_UNCONFIRMED",
+        "NOT_ALLOWED",
+        "NOT_RECEIPTABLE",
+        "NOT_SAME_DAY",
+        "NO_LEGACY_ADVANCE",
+        "PAST_VIEW",
+        "PAYMODE_INVALID",
+        "PAYREF_INVALID",
+        "PAYREF_LOOKS_LIKE_CARD",
+        "PIN_REQUIRED",
+        "REASON_REQUIRED",
+        "RECEIPT_EXCEEDS_BALANCE",
+        "RECEIPT_NOT_FOUND",
+        "REFUND_EXCEEDS_REFUNDABLE",
+        "REFUND_FIRST",
+        "SALE_NOT_FOUND",
+        "SESSION_REQUIRED",
+        "STORE_NOT_READY",
+        "SVCS_ACTOR_INVALID",
+        "SVCS_ARGS_INVALID",
+        "SVCS_BLOCKED",
+        "SVCS_CLOCK_BACK",
+        "SVCS_DOC_TOO_LARGE",
+        "SVCS_DUPLICATE_REF",
+        "SVCS_HEAD_BEHIND",
+        "SVCS_HEAD_WRITE_FAILED",
+        "SVCS_OWNER_REQUIRED",
+        "SVCS_READBACK_MISMATCH",
+        "SVCS_REV_CONFLICT",
+        "SVCS_SERIES_MISMATCH",
+        "SVCS_SERIES_TOO_LONG",
+        "SVCS_STORAGE_UNAVAILABLE",
+        "SVCS_WRITE_FAILED",
+        "AMOUNT_OUT_OF_RANGE",
+        "BODY_INVALID",
+        "BUSY",
+        "CASES_UNAVAILABLE",
+        "DEPS_INVALID",
+        "DUPLICATE_JOB",
+        "DUPLICATE_LEGACY_NUMBER",
+        "FIGURES_INCONSISTENT",
+        "FIGURES_INVALID",
+        "JOB_ALREADY_BILLED",
+        "JOB_ID_INVALID",
+        "NOT_ALLOWED",
+        "NO_COLLECT_DATE",
+        "NUMBER_INVALID",
+        "NUMBER_USED_BY_NEW_BILL",
+        "PAST_VIEW",
+        "PIN_REQUIRED",
+        "PLAN_INVALID",
+        "PLAN_STALE",
+        "READ_FAILED",
+        "SESSION_REQUIRED",
+        "SNAPSHOT_UNBUILDABLE",
+        "STORE_BLOCKED",
+        "STORE_NOT_READY",
+        "WRITE_FAILED",
+        "ABOVE_MANAGER_LIMIT",
+        "BCORE_ARGS_INVALID",
+        "BCORE_INTERNAL",
+        "BCORE_LIBS_MISSING",
+        "BILLING_BLOCKED",
+        "CREDIT_RETURN_INVALID",
+        "DISCOUNT_NOT_ALLOWED",
+        "INVOICE_REQUIRED",
+        "JOB_NOT_FOUND",
+        "JOB_VOIDED",
+        "NOT_ALLOWED",
+        "PAST_VIEW",
+        "PIN_REQUIRED",
+        "PRINT_ARGS_INVALID",
+        "PRINT_NOT_FOUND",
+        "PRINT_TYPE_UNKNOWN",
+        "RECEIPT_NOT_FOUND",
+        "RECEIPT_REVERSED",
+        "RECEIPT_SET_OFF",
+        "REFUND_FIRST",
+        "SALE_MONEY_UNKNOWN",
+        "SALE_NOT_FOUND",
+        "SESSION_REQUIRED",
+        "TEXT_HAS_PHONE",
+        "WRONG_DOC",
+        "SVB_ABOVE_LIMIT",
+        "SVB_ACCESS_CHANGED",
+        "SVB_ADV_OVER",
+        "SVB_BAD_REPLY",
+        "SVB_BASIS",
+        "SVB_BUSY",
+        "SVB_CCPT_REQUIRED",
+        "SVB_CONFIRM_TICK",
+        "SVB_CORE_MISSING",
+        "SVB_CREDIT_NONE",
+        "SVB_DATE_FUTURE",
+        "SVB_DATE_INVALID",
+        "SVB_DATE_OLD",
+        "SVB_DISCOUNT_BIG",
+        "SVB_DUP_LINE",
+        "SVB_FIELD_REQUIRED",
+        "SVB_GSTIN",
+        "SVB_INTEGRITY",
+        "SVB_INTERNAL",
+        "SVB_JOB_NOT_SAVED",
+        "SVB_JOB_UNKNOWN",
+        "SVB_JOB_VOIDED",
+        "SVB_MONEY_INVALID",
+        "SVB_NC_TICK",
+        "SVB_NOTHING_TO_DO",
+        "SVB_NO_LINES",
+        "SVB_OVERRIDE_NEEDED",
+        "SVB_OVER_DUE",
+        "SVB_OWNER_ONLY",
+        "SVB_PAST_VIEW",
+        "SVB_PICK_REQUIRED",
+        "SVB_PIN_DENIED",
+        "SVB_PRICE_MISSING",
+        "SVB_PRICE_ZERO",
+        "SVB_PRINT_UNAVAILABLE",
+        "SVB_QTY_INVALID",
+        "SVB_RATE",
+        "SVB_REASON_SHORT",
+        "SVB_REFUND_OVER",
+        "SVB_REF_REQUIRED",
+        "SVB_ROLE_DENIED",
+        "SVB_STATE_MISMATCH",
+        "SVB_TAXCODE",
+        "SVB_TAX_MISSING",
+        "SVB_TIME_INVALID",
+        "SVB_TOO_MANY_LINES",
+        "SVB_TOTAL_ZERO",
+        "SVB_WARR_REF"
+      ]
+    },
+    "reports": [
+      {
+        "type": "serviceAdvancesHeld",
+        "module": "*",
+        "tier": "manager"
+      },
+      {
+        "type": "serviceBillSummary",
+        "module": "service",
+        "tier": "staff"
+      },
+      {
+        "type": "serviceCreditNote",
+        "module": "service",
+        "tier": "staff"
+      },
+      {
+        "type": "serviceDaySummary",
+        "module": "*",
+        "tier": "manager"
+      },
+      {
+        "type": "serviceReceipt",
+        "module": "service",
+        "tier": "staff"
+      },
+      {
+        "type": "serviceRefundVoucher",
+        "module": "service",
+        "tier": "staff"
+      },
+      {
+        "type": "serviceRevenue",
+        "module": "*",
+        "tier": "manager"
+      },
+      {
+        "type": "serviceTaxInvoiceV2",
+        "module": "service",
+        "tier": "staff"
+      },
+      {
+        "type": "serviceUnbilledIssues",
+        "module": "service",
+        "tier": "manager"
+      },
+      {
+        "type": "serviceWarrantySheet",
+        "module": "service",
+        "tier": "staff"
+      }
+    ],
+    "sharedFiles": "www/integration-bridge.js (cash-book route: reads the receipts stream and writes a zero-amount marker row; the Expense page is not edited), www/shared/module-mobile-common.css (one appended block; all 12 modules link this sheet), www/shared/shell-search.js (ten report types), www/saagar-report.js (ten report types, no new public name)",
+    "shellChange": "www/index.html unchanged",
+    "messagesAndSinks": "no new message type, no postMessage site, no network call, no dynamic code sink; MAH-4 loader numbers 7 39 41 unchanged"
+  },
+  "newFiles": {
+    "www": [
+      {
+        "path": "www/service-billing-calc.js",
+        "bytes": 52000,
+        "sha256": "d189513eb5ffd5449b336e6e803168461dd17b17577dbdc702142961f2c77053"
+      },
+      {
+        "path": "www/service-billing-docs.js",
+        "bytes": 119798,
+        "sha256": "05b064426010e29752b0180e3d5f136fefd42038718e02f8799a65f050e607de"
+      },
+      {
+        "path": "www/service-billing-money.js",
+        "bytes": 58254,
+        "sha256": "02d7ecb3eca3e0c2be264e1321d4332c48d95e06590260c9e39bc6301753343f"
+      },
+      {
+        "path": "www/service-billing-migrate.js",
+        "bytes": 23342,
+        "sha256": "e830c3860c91747ee15bd0542514883998d86e7f592e1e4e2b056a2ed2efa0f1"
+      },
+      {
+        "path": "www/service-billing-core.js",
+        "bytes": 92507,
+        "sha256": "b5e2416e2ea72bf77aa23dcf8163c55fd4faa32f4153caa847916d94dd5f06b7"
+      },
+      {
+        "path": "www/service-billing-ui.js",
+        "bytes": 174680,
+        "sha256": "53d2cd7dc2c0a2aae34a83458194d1c851fdedf6df7170a2b0d30afc4aed1d76"
+      },
+      {
+        "path": "www/service-billing-area-ui.js",
+        "bytes": 84690,
+        "sha256": "91a22db4ed175e53829c3fe557e450e79656ee714ece86cbb98e221fd2418565"
+      }
+    ],
+    "notRegisteredInModuleManifest": true,
+    "reason": "The billing files are loaded by script tags in the Service page only; the module manifest keeps 66 shared assets, so no manifest, golden or MAH-4 count moves for them."
+  },
+  "byteBudget": {
+    "indexHtml": {
+      "bytes": 579823,
+      "sha256": "fb5377aefbae7c54a7bb520cdf04cebacbc3a586f78c65a25d3d21bb8119a444"
+    },
+    "limitExclusive": 580636,
+    "g0Bytes": 579823,
+    "grewBy": 0
+  },
+  "testsAdded": {
+    "svc2TestFiles": 81,
+    "files": [
+      "svc2-area-kitcheck.test.mjs",
+      "svc2-area-kitpin.test.mjs",
+      "svc2-area-lists.test.mjs",
+      "svc2-area-owner.test.mjs",
+      "svc2-area-real.test.mjs",
+      "svc2-area-safety.test.mjs",
+      "svc2-area-shell.test.mjs",
+      "svc2-area-source.test.mjs",
+      "svc2-bridge-changeover.test.mjs",
+      "svc2-bridge-e2e.test.mjs",
+      "svc2-bridge-golden.test.mjs",
+      "svc2-bridge-post.test.mjs",
+      "svc2-calc-bill.test.mjs",
+      "svc2-calc-credit.test.mjs",
+      "svc2-calc-gst.test.mjs",
+      "svc2-calc-invariants.test.mjs",
+      "svc2-calc-static.test.mjs",
+      "svc2-core-flow.test.mjs",
+      "svc2-core-pastview.test.mjs",
+      "svc2-core-print.test.mjs",
+      "svc2-core-printreal.test.mjs",
+      "svc2-core-real.test.mjs",
+      "svc2-core-roles.test.mjs",
+      "svc2-core-rules.test.mjs",
+      "svc2-core-sync.test.mjs",
+      "svc2-core-wiring.test.mjs",
+      "svc2-css-shared.test.mjs",
+      "svc2-docs-approval.test.mjs",
+      "svc2-docs-estimate.test.mjs",
+      "svc2-docs-hand.test.mjs",
+      "svc2-docs-integrity.test.mjs",
+      "svc2-docs-invoice.test.mjs",
+      "svc2-docs-money.test.mjs",
+      "svc2-docs-property.test.mjs",
+      "svc2-docs-reverse.test.mjs",
+      "svc2-docs-seed.test.mjs",
+      "svc2-durability-audit.test.mjs",
+      "svc2-durability-glue.test.mjs",
+      "svc2-durability-jobs.test.mjs",
+      "svc2-gov-backup-inclusion.test.mjs",
+      "svc2-gov-bridge-guards.test.mjs",
+      "svc2-gov-capability-register.test.mjs",
+      "svc2-gov-guards.test.mjs",
+      "svc2-gov-integration-state.test.mjs",
+      "svc2-gov-mah4-assets.test.mjs",
+      "svc2-gov-money-source-guard.test.mjs",
+      "svc2-gov-new-files-rules.test.mjs",
+      "svc2-gov-no-customer-data.test.mjs",
+      "svc2-gov-page-wiring.test.mjs",
+      "svc2-gov-phase1-amendments.test.mjs",
+      "svc2-gov-phrases.test.mjs",
+      "svc2-gov-report-types.test.mjs",
+      "svc2-gov-role-matrix.test.mjs",
+      "svc2-gov-shared-css.test.mjs",
+      "svc2-gov-stepup-source.test.mjs",
+      "svc2-migrate-core.test.mjs",
+      "svc2-migrate-hygiene.test.mjs",
+      "svc2-migrate-page.test.mjs",
+      "svc2-migrate-real.test.mjs",
+      "svc2-money-core.test.mjs",
+      "svc2-money-hygiene.test.mjs",
+      "svc2-p1edit-core.test.mjs",
+      "svc2-p1edit-docs.test.mjs",
+      "svc2-page-glue.test.mjs",
+      "svc2-page-wiring.test.mjs",
+      "svc2-reports-docs.test.mjs",
+      "svc2-reports-guards.test.mjs",
+      "svc2-reports-lists.test.mjs",
+      "svc2-store-backup.test.mjs",
+      "svc2-store-primitives.test.mjs",
+      "svc2-store-series.test.mjs",
+      "svc2-store-verify.test.mjs",
+      "svc2-ui-audit.test.mjs",
+      "svc2-ui-card.test.mjs",
+      "svc2-ui-estimate.test.mjs",
+      "svc2-ui-logic.test.mjs",
+      "svc2-ui-money.test.mjs",
+      "svc2-ui-safety.test.mjs",
+      "svc2-ui-source.test.mjs",
+      "svc2-wiring-e2e.test.mjs",
+      "svc2-wiring-roles.test.mjs"
+    ],
+    "helpers": [
+      "svc2-area-kit.mjs",
+      "svc2-bridge-seed.mjs",
+      "svc2-calc-load.mjs",
+      "svc2-core-kit.mjs",
+      "svc2-docs-env.mjs",
+      "svc2-gov-common.mjs",
+      "svc2-gov-env.mjs",
+      "svc2-money-kit.mjs",
+      "svc2-perf-probe.mjs",
+      "svc2-reports-fixtures.mjs",
+      "svc2-store-golden.mjs",
+      "svc2-store-harness.mjs",
+      "svc2-store-shell.mjs",
+      "svc2-ui-harness.mjs"
+    ],
+    "fixtures": [
+      "bridge-031841f.js",
+      "calc-bill-examples.json",
+      "capability-register.json",
+      "g0-baseline.json",
+      "g0-frozen.json",
+      "p6-v1-invoice-models.json"
+    ],
+    "script": "test:svc2 in package.json (after test:svc1)"
+  },
+  "frozenNotRegenerated": {
+    "g0FrozenListCount": 766,
+    "changedSinceG0": [
+      "scripts/analyze-modular-capability-delta.mjs"
+    ],
+    "note": "the analyser, the capability ledger, the manifests, the golden file, the undo registry, package.json, SCHEMA.md, HANDOFF.md and the ten amended tests are on the integrator list and are described above; they are allowed to move."
+  },
+  "valuation": "FIFO carried over from Phase 1; accountant confirmation of the CCPT arrangement (D1), of the service invoice money rule (OD-6), of the HSN and SAC list and of FIFO is still outstanding",
+  "scope": {
+    "doesNotClose": [
+      "Phase 3 (Excel and bridge imports, reconciliation)",
+      "Phase 4",
+      "Phase 5",
+      "IRN e-invoice",
+      "Hindi and Marathi wording (new phrases collected in service-wave-2\\l10n\\PHRASES.json)",
+      "Store Manager discount and adjustment limits (Rs 0)",
+      "the no-charge warranty document",
+      "browser, tablet, emulator and device acceptance of the Billing screens"
+    ]
+  },
+  "suiteResultsAtIntegration": [
+    {
+      "suite": "test:phase0",
+      "tests": 112,
+      "pass": 112,
+      "fail": 0
+    },
+    {
+      "suite": "test:security",
+      "tests": 101,
+      "pass": 101,
+      "fail": 0
+    },
+    {
+      "suite": "test:modular",
+      "tests": 88,
+      "pass": 87,
+      "fail": 1,
+      "reds": [
+        "MAH-3 Planning canary evidence binds all 12 browser cases without device overclaim"
+      ]
+    },
+    {
+      "suite": "test:etp",
+      "tests": 229,
+      "pass": 229,
+      "fail": 0
+    },
+    {
+      "suite": "test:etp-bridge",
+      "tests": 186,
+      "pass": 186,
+      "fail": 0
+    },
+    {
+      "suite": "test:mah4",
+      "tests": 46,
+      "pass": 46,
+      "fail": 0
+    },
+    {
+      "suite": "test:mah3",
+      "tests": 19,
+      "pass": 16,
+      "fail": 3,
+      "reds": [
+        "DSR evidence binds all 12 rendered cases without device overclaim",
+        "QMS evidence binds all 12 rendered cases and menu interactions without device overclaim",
+        "MAH-3 Planning canary evidence binds all 12 browser cases without device overclaim"
+      ]
+    },
+    {
+      "suite": "test:manifest",
+      "tests": 8,
+      "pass": 8,
+      "fail": 0
+    },
+    {
+      "suite": "test:phase6h",
+      "tests": 341,
+      "pass": 341,
+      "fail": 0
+    },
+    {
+      "suite": "test:fix-wave",
+      "tests": 573,
+      "pass": 573,
+      "fail": 0
+    },
+    {
+      "suite": "test:svc1",
+      "tests": 847,
+      "pass": 847,
+      "fail": 0
+    },
+    {
+      "suite": "test:svc2",
+      "tests": 1225,
+      "pass": 1225,
+      "fail": 0
+    },
+    {
+      "suite": "test:reports",
+      "tests": 9,
+      "pass": 9,
+      "fail": 0
+    },
+    {
+      "suite": "test:v6-gate0",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0
+    },
+    {
+      "suite": "whole-app-audit-runner (node --test)",
+      "tests": 80,
+      "pass": 77,
+      "fail": 3,
+      "reds": [
+        "audit tooling preserves the exact product anchor fingerprint using Git blobs",
+        "audit tooling commit must preserve the product anchor independently of audit mode",
+        "committing an audit-control document cannot move the product fingerprint"
+      ]
+    },
+    {
+      "suite": "test:offline (--ignore-scripts)",
+      "tests": 283,
+      "pass": 283,
+      "fail": 0
+    }
+  ],
+  "knownReds": [
+    "test:mah3 three (DSR, QMS, Planning evidence), test:modular 87 of 88 (Planning), whole-app-audit-runner three (product anchor fingerprint): all existed before this wave."
+  ],
+  "notExpectedReds": [],
+  "productFaultsHandedToTheNextReview": [
+    "Closed in the second pass: the function name switchTab in the Billing area was renamed, so the nine Payroll hash-only rows no longer move.",
+    "Round three and four (frozen product): slow open of the Service module with many bills fixed; stored record shapes did not change."
+  ],
+  "notRun": [
+    "No tablet, emulator or physical device test was run for the Billing screens (only headless desktop-browser runs on scratch copies with invented data: the Stage B audit walks, then seven testers and their re-tests in Stages D and E, all in desktop Edge).",
+    "The browser data-durability check (write-ahead log, 512,000-byte cap) is not reproduced and not verified on the Tab S7; it blocks go-live, not the code merge.",
+    "test:offline pretest chain was not run.",
+    "Accountant confirmation of the CCPT arrangement, the service invoice money rule, the HSN and SAC list and FIFO is outstanding."
+  ],
+  "noDeviceTest": "No tablet, emulator or physical device test was run for the Billing screens. Only headless desktop-browser runs on scratch copies of the app with invented data were done: the Stage B audit walks, then, in Stages D and E, seven browser testers and their re-tests on the fixed product (flows, abuse, roles, backup, old-data bring-in, tablet layout and speed, regression), all in desktop Edge and none on the tablet. Nothing in this record is a device claim.",
+  "ownerReconfirmation": "Not yet given. New capabilities are recorded as pending owner reconfirmation.",
+  "registryNote": "The capability ledger remains pending-owner-approval and every delta stays ownerApproval pending."
+}

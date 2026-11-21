@@ -419,7 +419,7 @@ test('S15 receipts list: view dialog, print, reverse is Owner only with a reason
 test('S16 counter sale: no customer field, price change needs a note, success clears the form, reverse needs a reason and no PIN', async () => {
   const a = await open(SESS.manager);
   await a.click('svs-tab-counter');
-  has(a.rootHtml(), /Money for counter sales is not posted to the Expense ledger in this version/);
+  has(a.rootHtml(), /Counter sale money is taken as a receipt in Billing and goes to the cash book\./);
   hasNot(a.rootHtml(), /data-svs-field="(cust|customer|mobile|phone|address|email)/i);
   hasNot(a.rootHtml(), /Customer|Mobile/);
   await a.click('svs-cs-save');

@@ -271,7 +271,7 @@
     condition_note: 'Condition note',
     counted_qty: 'Counted quantity',
     cs_empty: 'No counter sales today.',
-    cs_notice: 'Money for counter sales is not posted to the Expense ledger in this version. Record the cash in the usual way.',
+    cs_notice: 'Counter sale money is taken as a receipt in Billing and goes to the cash book.',
     cs_save: 'Record counter sale',
     cs_saved: 'Counter sale recorded: {qty} x {code}.',
     cs_today: 'Counter sales today',
@@ -3041,6 +3041,7 @@
       return callWrite('counterSale', [payload, makeCtx(readSession(), null, S.csRef)]).then(function (r) {
         if (!r.ok) return csFail(r);
         toast(fill(t('cs_saved'), { qty: q.qty, code: c.partCode }));
+        csReceiptHook(r);
         S.cs = blankCs();
         S.csError = '';
         S.csRef = '';
@@ -3048,6 +3049,15 @@
         return r;
       });
     });
+  }
+  /* Billing (wave 2) opens the counter receipt dialog for the sale just made; without it nothing happens. */
+  function csReceiptHook(r) {
+    try {
+      var w = H && H.root && H.root.ownerDocument ? H.root.ownerDocument.defaultView : null;
+      var ui = w ? w.SaagarServiceBillingUI : null;
+      var no = r && r.doc && r.doc.no ? String(r.doc.no) : '';
+      if (ui && typeof ui.afterCounterSale === 'function' && no) ui.afterCounterSale(no, r.doc);
+    } catch (e) { toast(fill(ERR.SVS_INTERNAL, { code: 'SVS_INTERNAL' })); }
   }
   function csClear() {
     S.cs = blankCs();

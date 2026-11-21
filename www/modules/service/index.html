@@ -29,6 +29,13 @@
 <script src="../../service-stores-core.js"></script>
 <script src="../../service-stores-masters-ui.js"></script>
 <script src="../../service-stores-ui.js"></script>
+<script src="../../service-billing-calc.js"></script>
+<script src="../../service-billing-docs.js"></script>
+<script src="../../service-billing-money.js"></script>
+<script src="../../service-billing-migrate.js"></script>
+<script src="../../service-billing-core.js"></script>
+<script src="../../service-billing-ui.js"></script>
+<script src="../../service-billing-area-ui.js"></script>
 </head>
 <body data-saagar-ui data-saagar-width="auto" data-saagar-width-resolved="mobile">
 <script id="service-phase6f-ui-boot">SaagarUiFoundation.configure(document.body,{mode:'auto'});</script>
@@ -694,6 +701,7 @@
           <div style="font-size:11px;color:var(--g400);margin-top:8px;font-style:italic">
             Note: This is an estimate only. Final charges may vary. Additional work requires separate approval.
           </div>
+          <div id="svb-job-host" class="svb-job-host" data-no-i18n></div>
           <div id="svs-job-host" class="svs-job-host" data-no-i18n></div>
         </div>
       </div>
@@ -885,6 +893,7 @@
                 <input class="field-input" id="f-das" placeholder="Type name">
               </div>
             </div>
+            <div id="svb-close-host" class="svb-close-host" data-no-i18n></div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
               <button data-action="mark-as-delivered-amp-close-case" class="btn btn-green" onclick="closeCase()" style="flex:1;min-width:200px;justify-content:center">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -916,6 +925,7 @@
 
 <!-- STORES (service spares stock) -->
 <div class="view" id="view-stores" data-no-i18n><div class="svs-wrap" id="svs-root"></div></div>
+<div class="view" id="view-billing" data-no-i18n><div class="svs-wrap svb-wrap" id="svb-root"></div></div>
 
 <!-- PRINT TARGET -->
 <div class="view" id="view-print"></div>
@@ -1678,6 +1688,7 @@ function showView(id) {
   document.getElementById('btn-back-dash').style.display = (id === 'form' || id === 'stores') ? '' : 'none';
   if (id === 'dash') renderDash();
   if (id === 'stores' && typeof svsShowStores === 'function') svsShowStores();
+  if (id === 'billing') { document.getElementById('btn-back-dash').style.display = ''; typeof svbShowBilling === 'function' && svbShowBilling(); }
   // MOBILE WIZARD: entering the form must never show a blank screen — make sure
   // exactly one step is active. Safety: if none is active, start at step 0.
   if (id === 'form' && isMobileWiz() &&
@@ -1792,6 +1803,7 @@ function offerReadyNotify(id) {
 function markEstimateApproved(id) {
   if (readOnlyGuard()) return;                 // past-view = read-only, consistent w/ quickStage/addFollowUp
   const c = byId(id); if (!c) return;
+  if (typeof svbOpenApproval === 'function' && svbOpenApproval(id)) return;
   if (c.estimateApproval && c.estimateApproval.at) {                  // idempotent — already approved
     if (!confirm('Estimate already marked approved on ' + (c.estimateApproval.at || '').slice(0, 10) + '. Re-record?')) return;
   }
@@ -1825,6 +1837,7 @@ function renderStageChips(openCases) {
 
 function renderDash() {
   typeof svsContextChanged === 'function' && svsContextChanged();
+  typeof svbContextChanged === 'function' && svbContextChanged();
   document.getElementById('dash-date').textContent =
     new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   const open = DB.filter(c => c.status === 'open');
@@ -2560,6 +2573,7 @@ function openNew() {
   showView('form');
   svcPaintInvoiceLockBanner();
   typeof svsRefreshJob === 'function' && svsRefreshJob();
+  typeof svbRefreshJob === 'function' && svbRefreshJob();
   if (isMobileWiz()) showFormStep(0);   // mobile wizard: always open on step 1; desktop untouched
 }
 
@@ -2586,6 +2600,7 @@ function openEdit(id) {
   applyReadOnlyUI();
   typeof svsRefreshJob === 'function' && svsRefreshJob();
   showView('form');
+  typeof svbRefreshJob === 'function' && svbRefreshJob();
   if (isMobileWiz()) showFormStep(0);   // mobile wizard: always open on step 1; desktop untouched
 }
 
@@ -2713,6 +2728,7 @@ function doSave() {
   persistWatchPhoto(editId || id);   // store/replace/remove the watch photo for this case
   toast('✓ Saved — ' + (editId || id));
   typeof svsRefreshJob === 'function' && svsRefreshJob();
+  typeof svbRefreshJob === 'function' && svbRefreshJob();
   // P1-11: offer notify only on a real transition INTO "ready" (not on re-saving an
   // already-ready case). readForm() put the chosen stage on `data`.
   if (data.stage === 'ready' && _prevStage !== 'ready') offerReadyNotify(editId || id);
@@ -2734,6 +2750,7 @@ function closeCase() {
     toast('⚠ Complete pickup readiness from the Service Workboard before closing');
     return;
   }
+  { const _bg = (typeof svbCloseGate === 'function') ? svbCloseGate(editId) : null; if (_bg && _bg.ok === false) { toast('⚠ ' + _bg.message); return; } }
   const del = readDelivery();
   /* Audit fix svc-money-comma-finalamt: #f-fa is free text, so a natural Indian
      entry '1,200' was stored verbatim. parseFloat('1,200') === 1, so the case
@@ -2754,7 +2771,7 @@ function closeCase() {
   }
   // Final Amount must be a real positive number (was: any non-empty string, so
   // "0" or "abc" closed the case with a nonsense charged amount).
-  if (!(parseRupee(del.finalAmt) > 0)) {
+  if (!(parseRupee(del.finalAmt) > 0) && !(typeof svbAllowsZeroFinal === 'function' && svbAllowsZeroFinal(editId))) {
     toast('⚠ Enter a valid Final Amount before closing');
     return;
   }
@@ -2790,6 +2807,7 @@ function delCase(id) {
   const c = byId(id); if (!c) return;
   if (svcInvoiceLocked(c)) { toast('⛔ ' + id + ' has tax invoice ' + c.invoiceNo + ' and cannot be deleted.'); return; }
   if (typeof svsBlocksDelete === 'function' && svsBlocksDelete(c)) return;
+  if (typeof svbBlocksDelete === 'function' && svbBlocksDelete(c)) return;
   if (c.status === 'closed') { svcDeleteClosedWithApproval(c); return; }
   if (!confirm('Delete case ' + id + '? This cannot be undone.')) return;
   svcFinishDelete(c, { pin: false, reason: '' });
@@ -2804,6 +2822,7 @@ async function svcDeleteClosedWithApproval(c) {
 function svcFinishDelete(c, how) {
   const id = c.id, cur = byId(id);
   if (!cur || svcInvoiceLocked(cur) || (typeof svsBlocksDelete === 'function' && svsBlocksDelete(cur))) return;                 // re-check after the awaited PIN
+  if (typeof svbBlocksDelete === 'function' && svbBlocksDelete(cur)) return;
   if (!svcRecordDeletion(cur, how)) { toast('⚠ Could not record the deletion. The case was kept.'); return; }
   DB = DB.filter(x => x.id !== id);
   saveDB();
@@ -3141,6 +3160,7 @@ function assignInvoiceNo(c) {
 function doTaxInvoice() { if (!editId) { alert('Save and close the service order first.'); return; } taxInvoiceById(editId); }
 function taxInvoiceById(id) {
   const c = byId(id); if (!c) return;
+  if (typeof svbTaxInvoiceRoute === 'function' && svbTaxInvoiceRoute(id)) return;
   const fa = parseFloat(c.delivery && c.delivery.finalAmt) || 0;
   if (c.status !== 'closed' || !(fa > 0)) { toast('⚠ Record the Final Amount (close the case) before invoicing'); return; }
   const no = assignInvoiceNo(c);
@@ -3421,6 +3441,807 @@ function addFollowUp() {
 
 // ─── INIT ──────────────────────────────────────────────────────
 
+// ─── BILLING GLUE (Service wave 2; the libraries are loaded in <head>) ─────────────
+// ─── DURABILITY GLUE (Service wave 2, durability fix; F1 and F2 of the emulator run) ─────────────
+// F1: the storage layer (storage-core.js, not edited) keeps a write in memory and in a small log, and saves it to the native store on a
+// timer (6 s) unless flush() is called. A kill inside that time lost receipts. So every money, document, stock or number write made through
+// the billing or Stores facade is followed by an awaited SaagarStore.flush(); the number is shown only after it answered true.
+// F2: during the first load into the native store a kill loses recent writes, so the module is held behind a notice until it settles.
+// Desktop browser and tests: no parent store, or no file store (hasFS false): flush is not needed and answers true at once.
+var SVCD_FLUSH_MS = 10000;      // one save attempt may take 10 s (a normal save is well under 1 s; 10 s is slow but real); then it counts as failed
+var SVCD_RETRY_MS = 10000;      // after a failure the page tries again by itself every 10 s; the button tries at once
+var SVCD_BULK_KEYS = 500;       // more waiting keys than this means a first load or a restore, never a normal edit
+var SVCD_PREP_MAX_MS = 600000;  // the "preparing" notice never holds the module longer than 10 minutes
+var SVCD_WRITES_BILLING = ['saveEstimate', 'recordApproval', 'issueBill', 'addCcptNumber', 'cancelBill', 'issueCreditNote', 'returnCreditedStock',
+  'takeReceipt', 'takeCounterReceipt', 'refund', 'reverseReceipt', 'reverseSale', 'issueNoChargeSheet', 'cancelNoChargeSheet', 'voidJob',
+  'decideLegacyAdvance', 'setConfig', 'runMigration'];
+var SVCD_WRITES_CORE = ['savePart', 'setPartActive', 'removePart', 'saveLabour', 'setLabourActive', 'removeLabour', 'commitBulk', 'proposeOpening',
+  'approveOpening', 'rejectOpening', 'withdrawOpening', 'receiveGoods', 'reverseDoc', 'issueToJob', 'returnFromJob', 'counterSale', 'proposeAdjustment',
+  'approveAdjustment', 'rejectAdjustment', 'withdrawAdjustment', 'registerOldPart', 'moveOldPart', 'signOffScrap', 'setConfig', 'acknowledgeRestore'];
+var SVCD_TEXT = {
+  saving: 'Saving... Please wait. Do not hand over any paper yet.',
+  failed: 'This record is not yet safely saved. Keep the app open and do not hand over the paper. Press "Try saving again".',
+  retry: 'Try saving again',
+  prep: 'Preparing storage for first use, please wait.',
+  prepMore: 'This can take a minute or two the first time. Do not close the app.',
+  prepBusy: 'Preparing storage for first use, please wait. Nothing was changed.',
+  printWait: 'Saving... Please wait. Nothing can be printed until the record is safely saved.',
+  jobSaving: 'Saving the job, please wait. Do not close the app.',
+  jobFailed: 'This job is not yet safely saved. Keep the app open and press "Try saving again" below.',
+  jobWait: 'Saving the job, please wait. Nothing can be printed, shared or closed until the job is safely saved.'
+};
+// docs: money or document waits (they hold printing); kickWait/kickAgain: one job-list wait at a time; calm: a ready legacy store (not polled); wasOn: the notice was shown
+var SVCD = { active: 0, failed: 0, docs: 0, now: [], prepSince: 0, prepGaveUp: false, timer: null, kickWait: false, kickAgain: false, calm: false, wasOn: false };
+// P2 (job form): ctx: inside a job-form save; held: job saves still waiting for the real save; toasts, after, view: what waits until it is saved
+var SVCD_JOB = { ctx: 0, held: 0, toasts: [], after: [], view: null };
+var SVCD_RAW = {};   // the page's own functions, before the durability wrappers below
+var SVCD_SAVED_TOAST = /^(✓ Saved|✅ Case closed)/;   // the Phase 1 "saved" toasts of the job form; shown only after the real save
+
+function svcdStore() {
+  try { var p = window.parent && window.parent !== window ? window.parent.SaagarStore : null; return p || null; } catch (e) { return null; }
+}
+// True when the store has a file or native store that flush() really writes to. No such store (desktop, tests): nothing to wait for.
+function svcdNeedsFlush(p) {
+  try {
+    if (typeof p._status !== 'function') return true;
+    var st = p._status();
+    return !!(st && st.hasFS === true);
+  } catch (e) { return true; }
+}
+function svcdWillFlush() {
+  var p = svcdStore();
+  return !!(p && typeof p.flush === 'function' && svcdNeedsFlush(p));
+}
+// One save attempt: resolves true only when the store said true; false on a refusal, an error or no answer within SVCD_FLUSH_MS. Never rejects, never waits forever.
+function svcdAttempt() {
+  return new Promise(function (resolve) {
+    var done = false;
+    var t = null;
+    var finish = function (v) { if (done) return; done = true; clearTimeout(t); resolve(v === true); };
+    t = setTimeout(function () { finish(false); }, SVCD_FLUSH_MS);
+    try {
+      var p = svcdStore();
+      if (!p || typeof p.flush !== 'function' || !svcdNeedsFlush(p)) { finish(true); return; }
+      Promise.resolve(p.flush()).then(finish, function () { finish(false); });
+    } catch (e) { finish(false); }
+  });
+}
+function svcdEl(id, css) {
+  var el = null;
+  try {
+    el = document.getElementById(id);
+    if (!el && document.body && document.createElement) {
+      el = document.createElement('div');
+      el.id = id;
+      el.setAttribute('data-no-i18n', '');
+      el.style.cssText = css;
+      document.body.appendChild(el);
+    }
+  } catch (e) { el = null; }
+  return el;
+}
+function svcdShowBanner() {
+  var el = svcdEl('svcd-banner', 'position:fixed;left:0;right:0;bottom:0;z-index:2147483000;padding:12px 16px;font:600 15px/1.4 system-ui,sans-serif;text-align:center;');
+  if (!el) return;
+  if (SVCD.failed > 0) {
+    el.style.background = '#8a1c1c'; el.style.color = '#fff'; el.style.display = 'block';
+    el.setAttribute('role', 'alert');
+    el.textContent = SVCD_TEXT.failed + ' ';
+    var b = document.createElement('button');
+    b.id = 'svcd-retry';
+    b.type = 'button';
+    b.textContent = SVCD_TEXT.retry;
+    b.style.cssText = 'margin-left:8px;padding:8px 14px;font:inherit;border-radius:6px;border:0;background:#fff;color:#8a1c1c;';
+    b.addEventListener('click', function () { svcdRetryNow(); });
+    el.appendChild(b);
+  } else if (SVCD.active > 0) {
+    el.style.background = '#1f3a5f'; el.style.color = '#fff'; el.style.display = 'block';
+    el.setAttribute('role', 'status');
+    el.textContent = SVCD_TEXT.saving;
+  } else {
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+  if (SVCD_JOB.held > 0) svcdShowHold();   // the job-form cover says the same (saving, or not yet saved)
+}
+function svcdRetryNow() {
+  var list = SVCD.now.slice();
+  SVCD.now.length = 0;
+  list.forEach(function (f) { try { f(); } catch (e) { /* a retry is only a nudge */ } });
+}
+// Resolves true only after the store has taken every write made so far. A failure shows the warning and keeps trying (button or timer); the caller
+// is not told "saved" before that, and nothing is dropped. The number of a record is never reissued while this waits.
+function svcdSaved(jobList) {
+  if (!svcdWillFlush()) return Promise.resolve(true);   // no store, or no file store (desktop, tests): nothing to wait for
+  var doc = jobList !== true;   // a money or document write (not the job list): printing waits for it
+  SVCD.active += 1;
+  if (doc) SVCD.docs += 1;
+  svcdShowBanner();
+  return new Promise(function (resolve) {
+    var failedOnce = false;
+    function leave() {
+      SVCD.active -= 1;
+      if (doc) SVCD.docs -= 1;
+      if (failedOnce) SVCD.failed -= 1;
+      svcdShowBanner();
+      resolve(true);
+    }
+    function attempt() {
+      svcdAttempt().then(function (ok) {
+        if (ok) { leave(); return; }
+        if (!failedOnce) { failedOnce = true; SVCD.failed += 1; svcdShowBanner(); }
+        var timer = null;
+        var again = function () { clearTimeout(timer); var i = SVCD.now.indexOf(again); if (i >= 0) SVCD.now.splice(i, 1); attempt(); };
+        SVCD.now.push(again);
+        timer = setTimeout(again, SVCD_RETRY_MS);
+      });
+    }
+    attempt();
+  });
+}
+// A write made outside the facades (every save of the job list: a new job, a watch taken in, a close, a follow-up, the legacy copy): flush at once,
+// no waiting; the banner still shows a failure. One wait at a time: a save made while it waits sets kickAgain, and one more flush follows, asked
+// after that save, so it covers it (storage-core shares one save in flight and runs it once more for writes made meanwhile).
+function svcdKick() {
+  try {
+    if (SVCD.kickWait) { SVCD.kickAgain = true; return; }
+    SVCD.kickWait = true;
+    svcdSaved(true).then(function () {
+      SVCD.kickWait = false;
+      if (SVCD.kickAgain) { SVCD.kickAgain = false; svcdKick(); }
+    });
+  } catch (e) { SVCD.kickWait = false; console.warn('[durability] job list flush not started', e && e.message); }
+}
+// Printing waits while a money or document record is still being saved (a list on another screen could show it already).
+function svcdPrintBlocked() { return SVCD.docs > 0; }
+// The job list is saved by the page's own saveDB() and by the workboard commit. Both are wrapped here (the Phase 1 lines stay as they are): after the
+// save, a flush at once instead of the 6 s timer. The job list is larger than the storage log keeps inline (50,000 characters), so until the flush the
+// only copy is in memory. Errors are passed on exactly as before and ask for no flush.
+var svcdRawSaveDb = null;
+var svcdRawCommit = null;
+function svcdHookJobSaves() {
+  try {
+    if (!svcdRawSaveDb && typeof saveDB === 'function') {
+      svcdRawSaveDb = saveDB;
+      // inside a job-form save (doSave, closeCase) the screen waits for the real save (P2); any other save is flushed at once without waiting
+      saveDB = function () { var r = svcdRawSaveDb.apply(this, arguments); if (SVCD_JOB.ctx > 0 && svcdWillFlush()) svcdHoldJob(); else svcdKick(); return r; };
+    }
+    if (!svcdRawCommit && typeof svcD3CommitCases === 'function') {
+      svcdRawCommit = svcD3CommitCases;
+      svcD3CommitCases = function () {
+        if (svcdPreparing()) { svcdToast(SVCD_TEXT.prepBusy); return false; }   // P1: no workboard move while storage is being prepared
+        var r = svcdRawCommit.apply(this, arguments); if (r === true) svcdKick(); return r;
+      };
+    }
+  } catch (e) { console.warn('[durability] job saves not hooked', e && e.message); }
+}
+svcdHookJobSaves();
+// P2. A job saved from the job form (doSave, closeCase) is a customer's watch in our hands. The job list is larger than the storage log keeps
+// inline, so until the real save answers true the only copy is in memory (storage-core.js 204, 416, 434, 681-682). The flush is asked for in the
+// same tick as the save (inside saveDB, before the form does any other work). Until it answers true: a cover "Saving the job, please wait" holds the
+// screen; the Phase 1 "saved" toast waits; the job card print, the Proforma, the tax invoice and the WhatsApp offer wait or are refused; leaving the
+// form waits. On a failure the red warning and "Try saving again" show, as for money. Desktop browser and tests (no file store): nothing changes.
+function svcdToast(msg) {
+  try { var t = SVCD_RAW.toast || (typeof toast === 'function' ? toast : null); if (t) t(msg); } catch (e) { console.warn('[durability] toast', e && e.message); }
+}
+function svcdShowHold() {
+  var on = SVCD_JOB.held > 0;
+  var el = null;
+  try { el = on ? svcdEl('svcd-hold', 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147482999;background:rgba(15,25,45,.88);color:#fff;display:flex;align-items:center;justify-content:center;padding:24px 24px 96px;text-align:center;font:600 20px/1.4 system-ui,sans-serif;') : document.getElementById('svcd-hold'); } catch (e) { el = null; }
+  if (!el) return on;
+  if (on) {
+    el.style.display = 'flex';
+    el.setAttribute('role', 'status');
+    el.textContent = SVCD.failed > 0 ? SVCD_TEXT.jobFailed : SVCD_TEXT.jobSaving;
+  } else {
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+  return on;
+}
+function svcdReleaseJob() {
+  svcdShowHold();
+  var t = SVCD_JOB.toasts.slice();
+  SVCD_JOB.toasts.length = 0;
+  if (t.length) svcdToast(t[t.length - 1]);   // the Phase 1 "saved" toast, now true
+  var a = SVCD_JOB.after.splice(0, SVCD_JOB.after.length);
+  a.forEach(function (f) { try { f(); } catch (e) { console.warn('[durability] a step held for the save failed', e && e.message); } });
+  var v = SVCD_JOB.view;
+  SVCD_JOB.view = null;
+  if (v && SVCD_RAW.showView) { try { SVCD_RAW.showView(v); } catch (e) { console.warn('[durability] view after the save', e && e.message); } }
+}
+function svcdHoldJob() {
+  SVCD_JOB.held += 1;
+  svcdShowHold();
+  svcdSaved(true).then(function () {
+    SVCD_JOB.held -= 1;
+    if (SVCD_JOB.held <= 0) { SVCD_JOB.held = 0; svcdReleaseJob(); }
+  });
+}
+// The page functions that write the job list from a staff action (P1: refused while storage is being prepared), the two job-form saves that
+// hold the screen (P2), and the prints of the job form (refused while a job save waits).
+var SVCD_JOB_SAVERS = ['doSave', 'closeCase', 'svcFinishDelete', 'markEstimateApproved', 'addFollowUp', 'taxInvoiceById', 'logWhatsAppFollowUp'];
+var SVCD_JOB_HOLDS = ['doSave', 'closeCase'];
+var SVCD_JOB_PRINTS = ['doPrint', 'doProforma', 'doTaxInvoice', 'taxInvoiceById', 'printById', 'printProformaById'];
+function svcdGate(name, raw) {
+  return function () {
+    if (SVCD_JOB_SAVERS.indexOf(name) >= 0 && svcdPreparing()) { svcdToast(SVCD_TEXT.prepBusy); return undefined; }
+    var hold = SVCD_JOB_HOLDS.indexOf(name) >= 0;
+    if ((hold || SVCD_JOB_PRINTS.indexOf(name) >= 0) && SVCD_JOB.held > 0) { svcdToast(SVCD_TEXT.jobWait); return undefined; }
+    if (!hold) return raw.apply(this, arguments);
+    SVCD_JOB.ctx += 1;
+    try { return raw.apply(this, arguments); } finally { SVCD_JOB.ctx -= 1; }
+  };
+}
+function svcdHookJobForm() {
+  try {
+    if (!SVCD_RAW.doSave && typeof doSave === 'function') { SVCD_RAW.doSave = doSave; doSave = svcdGate('doSave', doSave); }
+    if (!SVCD_RAW.closeCase && typeof closeCase === 'function') { SVCD_RAW.closeCase = closeCase; closeCase = svcdGate('closeCase', closeCase); }
+    if (!SVCD_RAW.svcFinishDelete && typeof svcFinishDelete === 'function') { SVCD_RAW.svcFinishDelete = svcFinishDelete; svcFinishDelete = svcdGate('svcFinishDelete', svcFinishDelete); }
+    if (!SVCD_RAW.markEstimateApproved && typeof markEstimateApproved === 'function') { SVCD_RAW.markEstimateApproved = markEstimateApproved; markEstimateApproved = svcdGate('markEstimateApproved', markEstimateApproved); }
+    if (!SVCD_RAW.addFollowUp && typeof addFollowUp === 'function') { SVCD_RAW.addFollowUp = addFollowUp; addFollowUp = svcdGate('addFollowUp', addFollowUp); }
+    if (!SVCD_RAW.taxInvoiceById && typeof taxInvoiceById === 'function') { SVCD_RAW.taxInvoiceById = taxInvoiceById; taxInvoiceById = svcdGate('taxInvoiceById', taxInvoiceById); }
+    if (!SVCD_RAW.logWhatsAppFollowUp && typeof logWhatsAppFollowUp === 'function') { SVCD_RAW.logWhatsAppFollowUp = logWhatsAppFollowUp; logWhatsAppFollowUp = svcdGate('logWhatsAppFollowUp', logWhatsAppFollowUp); }
+    if (!SVCD_RAW.doPrint && typeof doPrint === 'function') { SVCD_RAW.doPrint = doPrint; doPrint = svcdGate('doPrint', doPrint); }
+    if (!SVCD_RAW.doProforma && typeof doProforma === 'function') { SVCD_RAW.doProforma = doProforma; doProforma = svcdGate('doProforma', doProforma); }
+    if (!SVCD_RAW.doTaxInvoice && typeof doTaxInvoice === 'function') { SVCD_RAW.doTaxInvoice = doTaxInvoice; doTaxInvoice = svcdGate('doTaxInvoice', doTaxInvoice); }
+    if (!SVCD_RAW.printById && typeof printById === 'function') { SVCD_RAW.printById = printById; printById = svcdGate('printById', printById); }
+    if (!SVCD_RAW.printProformaById && typeof printProformaById === 'function') { SVCD_RAW.printProformaById = printProformaById; printProformaById = svcdGate('printProformaById', printProformaById); }
+    if (!SVCD_RAW.toast && typeof toast === 'function') {
+      SVCD_RAW.toast = toast;
+      toast = function (msg) { if (SVCD_JOB.held > 0 && SVCD_SAVED_TOAST.test(String(msg))) { SVCD_JOB.toasts.push(msg); return undefined; } return SVCD_RAW.toast.apply(this, arguments); };
+    }
+    if (!SVCD_RAW.showView && typeof showView === 'function') {
+      SVCD_RAW.showView = showView;
+      showView = function (id) { if (SVCD_JOB.held > 0 && id !== 'form') { SVCD_JOB.view = id; return undefined; } return SVCD_RAW.showView.apply(this, arguments); };
+    }
+    if (!SVCD_RAW.offerReadyNotify && typeof offerReadyNotify === 'function') {
+      SVCD_RAW.offerReadyNotify = offerReadyNotify;
+      offerReadyNotify = function () { var s = this, a = arguments; if (SVCD_JOB.held > 0) { SVCD_JOB.after.push(function () { SVCD_RAW.offerReadyNotify.apply(s, a); }); return undefined; } return SVCD_RAW.offerReadyNotify.apply(this, arguments); };
+    }
+  } catch (e) { console.warn('[durability] job form not hooked', e && e.message); }
+}
+svcdHookJobForm();
+// When the notice lifts, the case list is read again: a page opened while storage was still pending read an empty or old list (G-emulator F2:
+// "case list empty for some seconds", billing JOB_NOT_FOUND). Only when the store says it is authoritative, so it never reads an empty answer.
+function svcdReloadCases() {
+  try {
+    var p = svcdStore();
+    if (!p || typeof p.authoritative !== 'function' || p.authoritative() !== true) return false;
+    if (typeof svcD3RestorePersistedDb !== 'function') return false;
+    svcD3RestorePersistedDb();
+    return true;
+  } catch (e) { console.warn('[durability] case list not read again', e && e.message); return false; }
+}
+
+// F2 test, from _status(): (a) the store is still starting (authority-pending), or (b) it is not ready yet on a device with a file store (a first
+// start or the first start after an update moves the old data into the native store BEFORE it says ready, in legacy-snapshot mode), or (c) it is
+// ready and in native mode, a save is waiting, and the waiting part is a first load or a restore (many keys waiting, or far fewer rows in the
+// native store than in memory). A normal edit waits with 4 to 8 keys. A missing or non-number field never turns it on by itself.
+function svcdFirstLoadOpen() {
+  if (SVCD.calm) return false;   // a ready legacy store stays legacy for this page; its _status() reads the whole database, so it is not polled
+  var p = svcdStore();
+  if (!p || typeof p._status !== 'function') return false;
+  var st = null;
+  try { st = p._status(); } catch (e) { return false; }
+  if (!st || st.storageBlocked === true || st.persistenceMode === 'blocked') return false;   // the existing "storage unavailable" state speaks for itself
+  if (st.persistenceMode === 'authority-pending') return true;
+  if (st.ready === false) return st.hasFS === true || st.persistenceMode === 'native-incremental';
+  if (st.ready === true && st.hasFS === true && svcdSeedRunning(p)) return true;   // (d) P1: the demo seed of a DummyData build has not finished
+  if (st.ready === true && st.persistenceMode === 'legacy-snapshot') { SVCD.calm = true; return false; }
+  if (st.persistenceMode !== 'native-incremental' || st.dirty !== true) return false;
+  var num = function (v) { return (typeof v === 'number' && isFinite(v)) ? v : null; };
+  var keys = num(st.dirtyKeys);
+  var rows = num(st.rows);
+  var nat = num(st.nativeRows);
+  var gap = (rows !== null && nat !== null) ? rows - nat : 0;
+  return (keys !== null && keys >= SVCD_BULK_KEYS) || gap >= SVCD_BULK_KEYS;
+}
+// (d) P1, proven on the emulator (H-emulator 2a, 2b) and in the code: a DummyData build (the shell sets window.__DEMO_SEED_ACTIVE, www/index.html
+// 102-103) loads demo-seed.js after storage says ready (index.html 108) and writes the whole data set inside ONE bulkAsync (demo-seed.js 800). While
+// that runs, a page save skips the storage log (storage-core.js 679) and flush() answers false (591); then the seed writes its own case list over
+// the page's (demo-seed.js 627, set('saagar_wsf_v2', WSC)), and that list is what the final publish carries. The seed sets its marker last
+// (demo-seed.js 787). So: a DummyData build whose marker is not set yet is still preparing. A plain build never sets the flag: never true there.
+function svcdSeedRunning(p) {
+  try {
+    var w = window.parent;
+    if (!w || w === window || w.__DEMO_SEED_ACTIVE !== true || typeof p.get !== 'function') return false;
+    var m = p.get('saagar_demo_seeded');
+    return m === null || m === undefined || m === '';
+  } catch (e) { return false; }
+}
+function svcdPreparing() {
+  if (SVCD.prepGaveUp) return false;
+  return svcdFirstLoadOpen();
+}
+function svcdGuardTick() {
+  if (SVCD.timer) svcdAdoptCore();   // idempotent; also covers a core created late
+  var on = false;
+  try { on = svcdFirstLoadOpen(); } catch (e) { on = false; }
+  if (on && !SVCD.prepGaveUp) {
+    if (!SVCD.prepSince) SVCD.prepSince = Date.now();
+    if (Date.now() - SVCD.prepSince > SVCD_PREP_MAX_MS) { SVCD.prepGaveUp = true; on = false; }
+  } else if (!on) {
+    SVCD.prepSince = 0;
+    SVCD.prepGaveUp = false;
+  }
+  var show = on && !SVCD.prepGaveUp;
+  if (show) SVCD.wasOn = true;
+  else if (SVCD.wasOn) { SVCD.wasOn = false; svcdReloadCases(); }
+  var el = null;
+  try { el = show ? svcdEl('svcd-prep', 'position:fixed;top:0;right:0;bottom:0;left:0;z-index:2147483001;background:rgba(15,25,45,.94);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;font:600 20px/1.4 system-ui,sans-serif;') : document.getElementById('svcd-prep'); } catch (e) { el = null; }
+  if (!el) return show;
+  if (show) {
+    el.style.display = 'flex';
+    el.setAttribute('role', 'status');
+    el.textContent = '';
+    var a = document.createElement('div'); a.textContent = SVCD_TEXT.prep;
+    var b = document.createElement('div'); b.style.cssText = 'font-size:15px;font-weight:400;'; b.textContent = SVCD_TEXT.prepMore;
+    el.appendChild(a); el.appendChild(b);
+  } else {
+    el.style.display = 'none';
+  }
+  return show;
+}
+// The facade the screens get: reads are the same functions; every write verb waits for the flush before its answer is handed on. While the
+// first load is open a write is refused with a plain sentence. The page's own sync callers keep the raw facade.
+function svcdWrap(target, names, cache, refuseCode) {
+  if (!target || typeof target !== 'object') return target;
+  if (cache.t === target && cache.w) return cache.w;
+  var w = {};
+  Object.keys(target).forEach(function (k) {
+    var fn = target[k];
+    if (typeof fn !== 'function' || names.indexOf(k) < 0) { w[k] = fn; return; }
+    w[k] = function () {
+      if (svcdPreparing()) return { ok: false, code: refuseCode, message: SVCD_TEXT.prepBusy };
+      var out = fn.apply(target, arguments);
+      if (!svcdWillFlush()) return out;   // no file store (desktop, tests): the answer stays exactly as the facade gave it, sync or not
+      var after = function (r) { return (r && r.ok === true) ? svcdSaved().then(function () { return r; }) : r; };
+      return (out && typeof out.then === 'function') ? out.then(after) : after(out);
+    };
+  });
+  cache.t = target;
+  cache.w = Object.freeze(w);
+  return cache.w;
+}
+var SVCD_CACHE_B = { t: null, w: null };
+var SVCD_CACHE_C = { t: null, w: null };
+// The Stores core object is created by the Phase 1 function and kept in svsCoreRef. This swaps the kept object for the wrapped one, once, so the Stores
+// screens (which ask the host for it each time) get write answers only after the flush. Reads and sync callers (jobHasParts) get the same functions. The
+// refusal code is one the Stores screens already know: "Storage is not ready yet. Wait a moment and try again."
+function svcdAdoptCore() {
+  try {
+    var c = (typeof svsCore === 'function') ? svsCore() : null;
+    if (!c || SVCD_CACHE_C.w === c) return !!c;
+    var w = svcdWrap(c, SVCD_WRITES_CORE, SVCD_CACHE_C, 'SVCS_STORAGE_UNAVAILABLE');
+    window['svsCoreRef'] = w;   // the page's own kept core (a top-level var is a property of window); written by name in a string
+    SVCD_CACHE_C.w = w;
+    return true;
+  } catch (e) { return false; }
+}
+try { if (typeof Promise !== 'undefined') Promise.resolve().then(function () { svcdAdoptCore(); }); } catch (e) { /* the tick below tries again */ }
+try { if (typeof setInterval === 'function') { svcdGuardTick(); SVCD.timer = setInterval(svcdGuardTick, 1000); } } catch (e) { console.warn('[durability] guard could not start', e && e.message); }
+
+var svbBillingRef = null;
+var svbShareRef = null;
+const SVB_BILL_TYPES = ['serviceBillSummary', 'serviceTaxInvoiceV2', 'serviceCreditNote', 'serviceReceipt', 'serviceRefundVoucher', 'serviceWarrantySheet'];
+// The billing core takes the PIN time only from here. This gate is its own and never shares a stamp with the Stores gate.
+const svbPinGate = (function (gate) {
+  let at = 0;
+  return Object.freeze({
+    reauth: async function (label) { const ok = (await gate(label)) === true; if (ok) at = Date.now(); return ok; },
+    at: function () { return at; }
+  });
+})(svcD3Reauth);
+function svbShare(handle) { if (!svbShareRef && handle && typeof handle === 'object') svbShareRef = handle; }
+function svbUi() { return (typeof SaagarServiceBillingUI !== 'undefined' && SaagarServiceBillingUI) ? SaagarServiceBillingUI : null; }
+function svbAreaUi() { return (typeof SaagarServiceBillingAreaUI !== 'undefined' && SaagarServiceBillingAreaUI) ? SaagarServiceBillingAreaUI : null; }
+function svbLibsLoaded() { return typeof SaagarServiceBillingCore !== 'undefined' && !!SaagarServiceBillingCore && typeof SaagarServiceBillingDocs !== 'undefined' && typeof SaagarServiceBillingMoney !== 'undefined' && typeof SaagarServiceBillingCalc !== 'undefined'; }
+function svbNoSession() { return { ok: false, isOwner: false, isManager: false, role: '', tier: 'none', actorName: '' }; }
+function svbSessionFn() { return typeof svsSession === 'function' ? svsSession : svbNoSession; }
+function svbPaise(text) { const p = Math.round(parseRupee(text) * 100); return (isFinite(p) && p > 0 && p < 1000000000) ? p : 0; }
+function svbCaseView(id) {
+  const c = id ? byId(String(id)) : null;
+  if (!c) return null;
+  const rd = (c.d3Readiness && typeof c.d3Readiness === 'object') ? c.d3Readiness : {};
+  return {
+    id: c.id,
+    status: c.status === 'closed' ? 'closed' : 'open',
+    invoiceNo: c.invoiceNo ? String(c.invoiceNo) : '',
+    paymentStatus: rd.paymentStatus ? String(rd.paymentStatus) : '',
+    stub: c._bridgeStub === true,
+    label: (String(c.id) + ' ' + String(c.brand || '') + ' ' + String(c.model || '')).replace(/\s+/g, ' ').trim().slice(0, 80),
+    voided: !!c.voided,
+    typedAdvancePaise: svbPaise(c.advancePaid)
+  };
+}
+// The one place that reads the customer fields of a case. The copy is frozen on the case when a bill is issued.
+function svbFreezeBillTo(c) {
+  return { name: String(c.custName || '').slice(0, 80), mobile: String(c.custMobile || '').slice(0, 15), address: String(c.custAddr || '').slice(0, 240), at: new Date().toISOString() };
+}
+// The one place that uses it: the frozen copy for a reprint, else the job as it is now (marked live).
+function svbBillToForPrint(jobId, no) {
+  const c = byId(String(jobId || ''));
+  if (!c) return { name: '', mobile: '', address: '', at: '', live: true };
+  const kept = (no && c.svbBillTo && typeof c.svbBillTo === 'object') ? c.svbBillTo[String(no)] : null;
+  if (kept && typeof kept === 'object') return Object.assign({}, kept, { live: false });
+  return Object.assign({}, svbFreezeBillTo(c), { live: true });
+}
+function svbWithBillTo(type, d) {
+  if (SVB_BILL_TYPES.indexOf(type) < 0 || !d || typeof d !== 'object') return d;
+  const o = JSON.parse(JSON.stringify(d));
+  const doc = o.invoice || o.note || o.receipt || o.refund || o.sheet || {};
+  const b = svbBillToForPrint(String(doc.jobId || ''), String(doc.invoiceNo || ''));
+  const t = { name: b.name, live: b.live === true };
+  if (type !== 'serviceReceipt' && type !== 'serviceRefundVoucher') t.mobile = b.mobile;
+  if (type !== 'serviceReceipt' && type !== 'serviceRefundVoucher' && type !== 'serviceWarrantySheet') {
+    t.address = b.address;
+    t.gstin = String(doc.recipientGstin || '');
+    t.stateCode = String(doc.recipientStateCode || '');
+  }
+  o.billTo = t;
+  // the warranty is captured at delivery on the case (Wave 3); a bill or sheet printed after delivery shows it (report audit check 6)
+  const wd = (byId(String(doc.jobId || '')) || {}).delivery;
+  if ((o.invoice || o.sheet) && !doc.warrantyTill && wd && /^\d{4}-\d{2}-\d{2}/.test(String(wd.warrantyTill || ''))) { doc.warrantyTill = String(wd.warrantyTill).slice(0, 10); doc.warrantyMonths = Math.max(0, parseInt(wd.warrantyMonths, 10) || 0); }
+  return o;
+}
+function svbPrintGo(type, a, r) {
+  // Stage E round 4 (D-perf-5): a refusal (wrong document for the job, missing data) is shown with its own sentence
+  if (!r || r.ok !== true || !r.svcData) { toast('⚠ ' + ((r && typeof r.message === 'string' && r.message) ? r.message : 'Nothing could be prepared to print.')); return false; }
+  SaagarModuleBridge.report.preview(type, Object.assign({}, a, { svcData: svbWithBillTo(type, r.svcData) }));
+  return true;
+}
+function svbPrint(type, args) {
+  const t = String(type || '');
+  const a = (args && typeof args === 'object') ? args : {};
+  try {
+    const R = (typeof SaagarModuleBridge !== 'undefined' && SaagarModuleBridge) ? SaagarModuleBridge.report : null;
+    if (!R || typeof R.preview !== 'function') { toast('⚠ Printing is not available in this build.'); return false; }
+    if (typeof svcdPrintBlocked === 'function' && svcdPrintBlocked()) { toast('⚠ ' + SVCD_TEXT.printWait); return false; }   // durability fix: no paper before the save answered
+    if (a.svcData) return svbPrintGo(t, a, { ok: true, svcData: a.svcData });
+    const b = svbBilling();
+    if (!b || typeof b.printData !== 'function') { toast('⚠ Billing is not available. Nothing was printed.'); return false; }
+    const r = b.printData(t, a, {});
+    if (r && typeof r.then === 'function') return r.then(function (x) { return svbPrintGo(t, a, x); }).catch(function (e) { toast('⚠ Could not print: ' + (e && e.message || e)); return false; });
+    return svbPrintGo(t, a, r);
+  } catch (e) { toast('⚠ Could not print: ' + (e && e.message || e)); return false; }
+}
+// The firm on the bill: exactly the firm the version 1 invoice prints (the report engine reads it from the org master).
+function svbFirm() {
+  try {
+    const R = (typeof SaagarModuleBridge !== 'undefined' && SaagarModuleBridge) ? SaagarModuleBridge.report : null;
+    if (!R || typeof R.makeInvoiceSnapshot !== 'function') return {};
+    const f = (R.makeInvoiceSnapshot({}, '') || {}).firm || {};
+    const g = String(f.gstin || '').trim().toUpperCase();
+    return { name: String(f.name || ''), gstin: g, address: String(f.address || ''), state: '', stateCode: /^\d{2}/.test(g) ? g.slice(0, 2) : '' };
+  } catch (e) { console.warn('[billing] firm not readable', e && e.message); return {}; }
+}
+function svbCases() {
+  return { get: svbCaseView, legacyFloor: svbLegacyFloor, legacyInput: svbLegacyInput, firm: svbFirm, list: function () { return DB.map(function (c) { return svbCaseView(String(c.id)); }).filter(Boolean); } };
+}
+function svbBilling() {
+  if (svbBillingRef) return svbBillingRef;
+  try {
+    if (!svbLibsLoaded() || typeof SaagarServiceMasters === 'undefined') return null;
+    if (typeof svsCore === 'function') svsCore();
+    if (!svbShareRef) return null;
+    const made = SaagarServiceBillingCore.create({
+      share: svbShareRef, calc: SaagarServiceBillingCalc, docsLib: SaagarServiceBillingDocs, moneyLib: SaagarServiceBillingMoney,
+      migrateLib: (typeof SaagarServiceBillingMigrate !== 'undefined') ? SaagarServiceBillingMigrate : null,
+      masters: SaagarServiceMasters, cases: svbCases(), now: () => new Date(), session: svbSessionFn(), stepUpAt: svbPinGate.at,
+      pastView: function () { return isPastView(); },
+      hashHex: (typeof SaagarServiceStoresStore !== 'undefined' && typeof SaagarServiceStoresStore.sha256Hex === 'function') ? SaagarServiceStoresStore.sha256Hex : undefined
+    });
+    const core = (made && made.ok === true) ? (made.core || made.billing || made.api || null) : null;
+    if (core) svbBillingRef = core;
+    return svbBillingRef;
+  } catch (e) { console.warn('[billing] could not start', e && e.message); return null; }
+}
+// The highest old invoice number of a financial year ('2026-27'): the old counter and the numbers already on cases.
+function svbLegacyFloor(fy) {
+  const f = String(fy || '');
+  if (!/^\d{4}-\d{2}$/.test(f)) return 0;
+  let top = 0;
+  try {
+    const s = svcReloadSettings();
+    const map = (s && s.invoiceSeq && typeof s.invoiceSeq === 'object' && !Array.isArray(s.invoiceSeq)) ? s.invoiceSeq : {};
+    top = Math.floor(Number(map[f])) || 0;
+  } catch (e) { console.warn('[billing] old counter unreadable', e && e.message); }
+  const pre = 'SV/' + f + '/';
+  DB.forEach(function (c) {
+    const n = String(c && c.invoiceNo || '');
+    const t = (n.indexOf(pre) === 0 && /^\d{1,9}$/.test(n.slice(pre.length))) ? Number(n.slice(pre.length)) : 0;
+    if (t > top) top = t;
+  });
+  return top > 0 ? top : 0;
+}
+function svbSha(snap) { try { return SaagarServiceStoresStore.sha256Hex(JSON.stringify(snap)); } catch (e) { console.warn('[billing] hash failed', e && e.message); return null; } }
+// Figures of one closed, invoiced case for the migration: numbers, dates and counts only, never the customer block.
+function svbLegacyInput(jobId) {
+  const c = byId(String(jobId || ''));
+  if (!c || c.status !== 'closed' || !c.invoiceNo) return null;
+  const s0 = c.invoiceSnapshot;
+  const frozen = !!(s0 && s0.v === 1 && s0.figs && s0.firm && s0.customer && s0.delivery && Array.isArray(s0.lines));
+  let snap = s0;
+  if (!frozen) {
+    try { snap = SaagarModuleBridge.report.makeInvoiceSnapshot(Object.assign({}, c), String(c.invoiceNo), 'live'); } catch (e) { return { ok: false, code: 'SNAPSHOT_UNBUILDABLE' }; }
+  }
+  if (!snap || !snap.figs) return { ok: false, code: 'SNAPSHOT_UNBUILDABLE' };
+  const f = snap.figs, d = snap.delivery || {};
+  const P = function (x) { const n = Math.round((Number(x) || 0) * 100); return isFinite(n) ? n : 0; };
+  const warn = [];
+  const out = {
+    ok: true, jobId: String(c.id), legacyNo: String(c.invoiceNo), basis: frozen ? 'SNAPSHOT_V1' : 'LIVE_CASE',
+    figs: { gstPct: f.gstPct, listed: f.listed, adjustment: f.adjustment, taxable: f.taxable, gst: f.gst, cgst: f.cgst, sgst: f.sgst, roundOff: f.roundOff, finalAmt: f.finalAmt, total: f.total },
+    invoiceDate: String(snap.invoiceDate || '').slice(0, 10), issuedAt: (frozen && snap.issuedAt) ? String(snap.issuedAt) : null,
+    gstBp: Math.round((Number(f.gstPct) || 0) * 100), listedPaise: P(f.listed), adjustmentPaise: P(f.adjustment), taxablePaise: P(f.taxable),
+    cgstPaise: P(f.cgst), sgstPaise: P(f.sgst), igstPaise: 0, gstPaise: P(f.gst), roundOffPaise: P(f.roundOff), totalPaise: P(f.total), finalPaise: P(f.finalAmt),
+    payMode: String(d.payMode || '').slice(0, 20), lineCount: Array.isArray(snap.lines) ? snap.lines.length : 0,
+    correctionCount: Array.isArray(c.corrections) ? c.corrections.length : 0, snapshotSha: frozen ? svbSha(snap) : null, warn: warn
+  };
+  if (out.taxablePaise + out.gstPaise + out.roundOffPaise !== out.totalPaise) warn.push('FIGURES_INCONSISTENT');
+  if (DB.some(function (x) { return x && x.id !== c.id && x.invoiceNo && String(x.invoiceNo) === out.legacyNo; })) warn.push('DUPLICATE_LEGACY_NUMBER');
+  if (!d.collectDate) warn.push('NO_COLLECT_DATE');
+  if (out.finalPaise < 0 || String(d.finalAmt || '').length > 16) warn.push('AMOUNT_OUT_OF_RANGE');
+  return out;
+}
+function svbHost() {
+  return {
+    root: document.getElementById('svb-root'),
+    jobHost: document.getElementById('svb-job-host'),
+    closeHost: document.getElementById('svb-close-host'),
+    session: svbSessionFn(),
+    reauth: svbPinGate.reauth,
+    isPast: function () { return isPastView(); },
+    viewDate: function () { return viewDate; },
+    today: function () { return todayStr(); },
+    nowIso: function () { return new Date().toISOString(); },
+    toast: function (m) { toast(m); },
+    job: svbCaseView,
+    currentJobId: function () { return editId || ''; },
+    jobIds: function () { return DB.map(function (c) { return c.id; }); },
+    openJob: function (id) { openEdit(id); },
+    showCases: function () { showView('dash'); },
+    showStores: function () { showView('stores'); },
+    showBilling: function () { showView('billing'); },
+    gotoBilling: function () { scrollToSec('sec-7'); },
+    core: function () { return typeof svsCore === 'function' ? svsCore() : null; },
+    billing: function () { return typeof svcdWrap === 'function' ? svcdWrap(svbBilling(), SVCD_WRITES_BILLING, SVCD_CACHE_B, 'SVCD_PREPARING') : svbBilling(); },
+    report: function () { try { return (SaagarModuleBridge.report && typeof SaagarModuleBridge.report.preview === 'function') ? { preview: svbPrint } : null; } catch (e) { console.warn('[billing] report route missing', e && e.message); return null; } },
+    syncLegacy: svbLegacySync,
+    setLegacyApproval: svbSetCaseApproval,
+    setLegacyInvoiceNo: svbSetCaseInvoice,
+    legacyVoid: svbSetCaseVoid,
+    legacyAdvances: svbLegacyAdvances
+  };
+}
+// Case writers. These are the only functions in this block that save the case list.
+function svbSetCaseInvoice(jobId, no, deferSave) {
+  const c = byId(String(jobId || ''));
+  if (!c) return false;
+  const n = (typeof no === 'string') ? no.slice(0, 40) : '';
+  if (n) {
+    if (!c.svbBillTo || typeof c.svbBillTo !== 'object' || Array.isArray(c.svbBillTo)) c.svbBillTo = {};
+    if (!c.svbBillTo[n]) c.svbBillTo[n] = svbFreezeBillTo(c);
+  }
+  c.invoiceNo = n;
+  if (deferSave === true) return true;   // Stage E round 3 (D-perf-1): the link repair saves the job list once for all its rows
+  try { saveDB(); } catch (e) { console.warn('[billing] could not save the invoice number on the job', e && e.message); return false; }
+  if (typeof svcdKick === 'function') svcdKick();   // the job list carries a billing change: flush at once, not on the timer
+  return true;
+}
+function svbSetCaseApproval(jobId, rec) {
+  const c = byId(String(jobId || ''));
+  if (!c || !rec || typeof rec !== 'object') return false;
+  const m = String(rec.via || rec.method || '').toUpperCase();
+  const via = m === 'WHATSAPP' ? 'whatsapp' : (m === 'CALL' ? 'call' : (m === 'IN_PERSON' ? 'in_person' : 'other'));
+  const by = String(rec.by || rec.takenByName || '').slice(0, 80);
+  const when = rec.at || rec.approvedAt;
+  const at = (typeof when === 'string' && when) ? when : new Date().toISOString();
+  const rupees = (typeof rec.amount === 'number' && isFinite(rec.amount)) ? rec.amount : ((typeof rec.amountPaise === 'number' && isFinite(rec.amountPaise)) ? rec.amountPaise / 100 : 0);
+  c.estimateApproval = { at: at, via: via, by: by, amount: rupees };
+  if (!Array.isArray(c.followUps)) c.followUps = [];
+  c.followUps.push({ type: 'Approval', datetime: nowLocalDT(), remarks: 'Estimate approved (₹' + rupees.toLocaleString('en-IN') + ') via ' + via, outcome: 'Estimate approved', dueDate: '', by: by, createdAt: new Date().toISOString() });
+  try { saveDB(); } catch (e) { console.warn('[billing] could not save the approval on the job', e && e.message); return false; }
+  if (typeof svcdKick === 'function') svcdKick();   // the job list carries a billing change: flush at once, not on the timer
+  return true;
+}
+function svbSetCaseVoid(jobId, rec) {
+  const c = byId(String(jobId || ''));
+  if (!c) return false;
+  const r = (rec && typeof rec === 'object') ? rec : {};
+  const at = (typeof r.at === 'string' && r.at) ? r.at : new Date().toISOString();
+  const reason = String(r.reason || '').slice(0, 200);
+  c.voided = { at: at, reason: reason };
+  if (c.status !== 'closed') {
+    c.status = 'closed';
+    if (!c.closedAt) c.closedAt = at;
+    if (!c.delivery || typeof c.delivery !== 'object') c.delivery = { finalAmt: '0' };
+  }
+  if (!Array.isArray(c.followUps)) c.followUps = [];
+  c.followUps.push({ type: 'Void', datetime: nowLocalDT(), remarks: 'Voided: ' + reason, outcome: '', dueDate: '', by: '', createdAt: new Date().toISOString() });
+  try { saveDB(); } catch (e) { console.warn('[billing] could not save the void on the job', e && e.message); return false; }
+  if (typeof svcdKick === 'function') svcdKick();   // the job list carries a billing change: flush at once, not on the timer
+  return true;
+}
+// Writes the invoice number of the billing records onto cases that differ (a failed case write at issue is repaired here).
+function svbApplyRepairs() {
+  try {
+    const b = svbBilling();
+    if (!b || typeof b.repairLinks !== 'function') return 0;
+    const r = b.repairLinks();
+    const rows = Array.isArray(r) ? r : ((r && Array.isArray(r.rows)) ? r.rows : ((r && Array.isArray(r.links)) ? r.links : []));
+    let n = 0;
+    const todo = [];
+    rows.forEach(function (x) {
+      const c = (x && x.jobId) ? byId(String(x.jobId)) : null;
+      const no = (x && typeof x.invoiceNo === 'string') ? x.invoiceNo : '';
+      if (!c || String(c.invoiceNo || '') === no) return;
+      if (!no && c.invoiceSnapshot) return;
+      todo.push([c.id, no]);
+    });
+    // Stage E round 3 (D-perf-1): one save of the whole job list, by the last row, not one per repaired job
+    // (1,451 repairs were 1,451 full rewrites of the job list: about 2 GB of text on the tester's data)
+    todo.forEach(function (t, i) { if (svbSetCaseInvoice(t[0], t[1], i < todo.length - 1)) n += 1; });
+    if (n < todo.length) return 0;   // the one save failed: nothing counts as repaired, the next open repairs again
+    return n;
+  } catch (e) { console.warn('[billing] link repair failed', e && e.message); return 0; }
+}
+function svbLegacyAdvances() {
+  return DB.filter(function (c) { return c && parseRupee(c.advancePaid) > 0; }).map(function (c) {
+    return { jobId: c.id, amountPaise: svbPaise(c.advancePaid), status: c.status === 'closed' ? 'closed' : 'open', dateRec: String(c.dateRec || '') };
+  });
+}
+// The old estimate table, totals and buttons follow the estimate in Billing. Nothing here saves the case.
+function svbSyncRows(lines) {
+  try {
+    const tb = document.getElementById('est-tbody');
+    if (!tb) return;
+    tb.innerHTML = '';
+    rowN = 0;
+    (Array.isArray(lines) ? lines : []).forEach(function (l) {
+      const amt = String(l && l.amountText || '');
+      addRow();
+      set('ed' + rowN, String(l && l.desc || ''));
+      set('eq' + rowN, '1');
+      set('eu' + rowN, amt);
+      set('et' + rowN, amt);
+    });
+  } catch (e) { console.warn('[billing] estimate mirror failed', e && e.message); }
+}
+function svbSyncValues(s) {
+  try {
+    set('f-gst', '0');
+    subTotalDirty = false;
+    calcTotal();
+    if (typeof s.finalText === 'string') set('f-fa', s.finalText);
+    if (typeof s.advanceText === 'string') set('f-advpaid', s.advanceText);
+    updateBalance();
+  } catch (e) { console.warn('[billing] totals mirror failed', e && e.message); }
+}
+function svbSyncLocks(on, s) {
+  try {
+    const want = ['f-st', 'f-gst'];
+    if (typeof s.advanceText === 'string') want.push('f-advpaid');
+    if (s.finalLocked === true) want.push('f-fa');
+    const els = ['f-st', 'f-gst', 'f-advpaid', 'f-fa'].map(function (id) { return document.getElementById(id); }).concat(Array.prototype.slice.call(document.querySelectorAll('#est-tbody input')));
+    els.forEach(function (el) {
+      if (!el) return;
+      if (on && (want.indexOf(el.id) >= 0 || el.closest('#est-tbody'))) { el.setAttribute('tabindex', '-1'); el.setAttribute('data-svb-locked', '1'); }
+      else if (el.getAttribute('data-svb-locked') === '1') { el.removeAttribute('tabindex'); el.removeAttribute('data-svb-locked'); }
+    });
+  } catch (e) { console.warn('[billing] lock mirror failed', e && e.message); }
+}
+function svbSyncNote(on, hint) {
+  try {
+    let n = document.getElementById('svb-est-note');
+    if (!on) { if (n) n.style.display = 'none'; return; }
+    const tb = document.getElementById('est-tbody');
+    const table = tb ? tb.closest('table') : null;
+    if (!n && table && table.parentNode) {
+      n = document.createElement('div');
+      n.id = 'svb-est-note';
+      n.className = 'svb-est-note';
+      n.setAttribute('data-no-i18n', '');
+      table.parentNode.insertBefore(n, table.nextSibling);
+    }
+    if (n) { n.textContent = String(hint || 'These lines follow the estimate in Billing for this job. Change the estimate there. GST is included in these amounts. The tax split is on the bill.'); n.style.display = ''; }
+  } catch (e) { console.warn('[billing] note failed', e && e.message); }
+}
+function svbSyncTaxLabel() {
+  try {
+    const btn = document.querySelector('button[onclick="doTaxInvoice()"]');
+    if (!btn) return;
+    btn.textContent = '🧾 Bill and receipts';
+    btn.setAttribute('title', 'Bill summary, or tax invoice for jobs not billed in CCPT');
+  } catch (e) { console.warn('[billing] button label failed', e && e.message); }
+}
+function svbLegacySync(s) {
+  if (!s || typeof s !== 'object' || isPastView()) return false;
+  const on = s.on === true;
+  try {
+    const s7 = document.getElementById('sec-7'), s11 = document.getElementById('sec-11');
+    if (s7) s7.classList.toggle('svb-est-master', on);
+    if (s11) s11.classList.toggle('svb-bill-locked', on && s.finalLocked === true);
+  } catch (e) { console.warn('[billing] lock class failed', e && e.message); }
+  if (on) { svbSyncRows(s.lines); svbSyncValues(s); }
+  svbSyncLocks(on, s);
+  svbSyncNote(on, s.hint);
+  svbSyncTaxLabel();
+  return true;
+}
+function svbMount() {
+  try { if (svbUi()) svbUi().mount(svbHost()); if (svbAreaUi()) svbAreaUi().mount(svbHost(), svbUi()); } catch (e) { console.warn('[billing] mount failed', e && e.message); }
+  svbApplyRepairs();
+}
+function svbShowBilling() { try { if (svbAreaUi()) svbAreaUi().show(); else toast('⚠ Billing is not available in this build.'); } catch (e) { toast('⚠ Billing could not open: ' + (e && e.message || e)); } }
+function svbRefreshJob() { try { if (svbUi()) svbUi().refreshJob(); } catch (e) { console.warn('[billing] job card failed', e && e.message); } }
+function svbContextChanged() { try { if (svbUi()) svbUi().onContextChange(); if (svbAreaUi()) svbAreaUi().onContextChange(); } catch (e) { console.warn('[billing] context refresh failed', e && e.message); } }
+function svbOpenApproval(id) { try { return svbUi() ? svbUi().openApproval(String(id)) === true : false; } catch (e) { toast('⚠ Billing could not open: ' + (e && e.message || e)); return true; } }
+function svbRouteRefused(had, v2) {
+  if (had && !v2) return false;
+  toast(v2 ? '⚠ Billing is not available. This bill cannot be printed now.' : '⚠ Billing is not available. No invoice number can be issued.');
+  return true;
+}
+// A number with a frozen bill-to copy is a new bill: while billing cannot answer it is never printed as an old tax invoice.
+function svbIsV2No(c) { return !!(c && c.invoiceNo && c.svbBillTo && typeof c.svbBillTo === 'object' && c.svbBillTo[String(c.invoiceNo)]); }
+function svbTaxInvoiceRoute(id) {
+  const c = byId(String(id));
+  const had = !!(c && c.invoiceNo);
+  try {
+    const b = svbBilling();
+    if (!b) return svbRouteRefused(had, svbIsV2No(c));
+    svbApplyRepairs();
+    const r = b.taxRoute(String(id));
+    if (!r || r.ok !== true) return svbRouteRefused(had, svbIsV2No(c));
+    if (r.route === 'legacy') return svbRouteRefused(had);
+    if (r.route === 'old_way_closed') { toast('This job was closed without a bill. CCPT issues the tax invoice. Use Proforma for a printout.'); return true; }
+    if (r.route === 'issue') {
+      if (svbUi() && svbUi().taxInvoiceRoute(String(id)) === true) return true;
+      return svbRouteRefused(had);
+    }
+    const no = (r.route === 'no_charge') ? '' : b.activeInvoiceNo(String(id));
+    const num = (no && typeof no === 'object') ? String(no.no || no.invoiceNo || '') : String(no || '');
+    if (r.route === 'summary' && num) { svbPrint('serviceBillSummary', { jobId: String(id), invoiceNo: num }); return true; }
+    if (r.route === 'tax_invoice' && num) { svbPrint('serviceTaxInvoiceV2', { jobId: String(id), invoiceNo: num }); return true; }
+    if (r.route === 'no_charge') { svbPrint('serviceWarrantySheet', { jobId: String(id) }); return true; }
+    return svbRouteRefused(had);
+  } catch (e) { toast('⚠ Billing could not open: ' + (e && e.message || e)); return true; }
+}
+function svbCloseGate(id) {
+  if (!svbLibsLoaded()) return null;
+  const refuse = { ok: false, message: 'Billing could not be checked. Nothing was closed.' };
+  try {
+    const b = svbBilling();
+    const r = b ? b.closeCheck(String(id)) : null;
+    if (!r || r.ok !== true) return refuse;
+    if (r.legacy === true || r.mayClose === true) return { ok: true };
+    if (r.billNo && r.dueNowPaise > 0) return { ok: false, message: 'Take the balance first: ₹' + (r.dueNowPaise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' is still due on bill ' + r.billNo + '.' };
+    return { ok: false, message: 'Issue the bill first, or mark the job as no-charge warranty.' };
+  } catch (e) { console.warn('[billing] close check failed', e && e.message); return refuse; }
+}
+function svbAllowsZeroFinal(id) {
+  try {
+    const b = svbBilling();
+    const r = b ? b.closeCheck(String(id)) : null;
+    return !!(r && r.ok === true && r.noCharge === true);
+  } catch (e) { console.warn('[billing] no-charge check failed', e && e.message); return false; }
+}
+function svbBlocksDelete(c) {
+  if (!svbLibsLoaded()) return false;
+  const id = c && c.id ? String(c.id) : '';
+  let has = null;                       // null = could not check: block (fail closed)
+  try {
+    const b = svbBilling();
+    const r = (id && b) ? b.jobHasRecords(id) : null;
+    if (r && r.ok === true && typeof r.has === 'boolean') has = r.has;
+  } catch (e) { console.warn('[billing] delete check failed', e && e.message); has = null; }
+  if (has === false) return false;
+  toast(has === true ? '⛔ ' + id + ' has money or a bill on it. Ask the Owner to void it instead of deleting it.' : '⚠ Could not check billing. Nothing was deleted.');
+  return true;
+}
+Promise.resolve().then(function () { svbMount(); });   // after the whole script, so the Stores button already exists
+
 // ─── STORES GLUE (Service Stores, Phase 1; the libraries are loaded in <head>) ─────────────
 var svsCoreRef = null;
 // The Stores core takes the session and the PIN time only from here, never from what a caller passes in.
@@ -3463,7 +4284,9 @@ function svsCore() {
   if (svsCoreRef) return svsCoreRef;
   try {
     if (typeof SaagarServiceStoresCore === 'undefined' || typeof SaagarServiceStoresStore === 'undefined') return null;
-    const made = SaagarServiceStoresCore.create({ adapter: SaagarServiceStoresStore.adapterFromWindow(window), now: () => new Date(), cases: { get: svsCaseView }, session: svsSession, stepUpAt: svsPinGate.at });
+    const o = { adapter: SaagarServiceStoresStore.adapterFromWindow(window), now: () => new Date(), cases: { get: svsCaseView }, session: svsSession, stepUpAt: svsPinGate.at };
+    if (typeof svbShare === 'function') o.share = svbShare;
+    const made = SaagarServiceStoresCore.create(o);
     if (made && made.ok === true && made.core) svsCoreRef = made.core;
     return svsCoreRef;
   } catch (e) { console.warn('[stores] core could not start', e && e.message); return null; }

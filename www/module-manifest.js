@@ -302,8 +302,8 @@
       "id": "module-mobile-common-css",
       "version": 1,
       "file": "shared/module-mobile-common.css",
-      "bytes": 26137,
-      "sha256": "b8ae67010cb906861df2e858079106a1d76a122ccc6f2748b9090a843d7f67f2"
+      "bytes": 27549,
+      "sha256": "5506cfb223f49d97f1d84c1168dbfa2afcce1bd754eb62adaeb4008df9f9623f"
     },
     {
       "id": "module-brand-tokens-css",
@@ -379,8 +379,8 @@
       "id": "service-ui-css",
       "version": 1,
       "file": "modules/service/service-ui.css",
-      "bytes": 57919,
-      "sha256": "a747e9379781f65b6915832b48940cf7d6aa4281faceb547ddfb39a177b6ae19"
+      "bytes": 63655,
+      "sha256": "7cdd8f4eb496841aeba98ef917b1054266d5338a8dd81dff25dc2c73c8ca45a9"
     },
     {
       "id": "leave-ui-css",
@@ -745,8 +745,8 @@
       "file": "modules/service/index.html",
       "subtitle": "Job cards, repair stages, customer tracking, delivery and billing support.",
       "summary": "End-to-end watch repair and service-centre workflow.",
-      "bytes": 212574,
-      "sha256": "39a35a8a0bd094053d5bd073881eb388f4338dd97e75fe80f7e5e4b3fa7097bd",
+      "bytes": 264713,
+      "sha256": "f12db21810f6197cc635d8b51e5be24deb50445d473ec200b70b8a0a6833c562",
       "source_title": "Watch Service Centre — Saagar Traders",
       "src": "modules/service/index.html"
     },

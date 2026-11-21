@@ -12,7 +12,7 @@ const require = createRequire(import.meta.url);
 const CSS_PATH = new URL('../www/modules/service/service-ui.css', import.meta.url);
 const CSS = fs.readFileSync(CSS_PATH, 'utf8');
 const MARK = '/* SERVICE-STORES-2026-11 */';
-const BLOCK = CSS.slice(CSS.indexOf(MARK));
+const BLOCK = CSS.slice(CSS.indexOf(MARK), CSS.indexOf('/* SERVICE-BILLING-2026-11 */') === -1 ? undefined : CSS.indexOf('/* SERVICE-BILLING-2026-11 */'));
 const PRE_CSS = 'E:/Projects/Saagar Control Centre Workspace/service-wave-1/g0/pre-wave-service/www/modules/service/service-ui.css';
 const PHRASES_UI = 'E:/Projects/Saagar Control Centre Workspace/service-wave-1/l10n/PHRASES-ui.json';
 export const UI_BYTE_BUDGET = 190000;
@@ -143,7 +143,9 @@ test('U10 phrase fragment (when present) lists exactly phrases(): English column
   const { ui } = loadUi();
   const frag = JSON.parse(fs.readFileSync(PHRASES_UI, 'utf8'));
   assert.ok(Array.isArray(frag.rows));
-  assert.deepEqual(frag.rows.map((r) => r[0]).sort(), JSON.parse(JSON.stringify(ui.phrases())));
+  const RETIRED_NOTICE = 'Money for counter sales is not posted to the Expense ledger in this version. Record the cash in the usual way.';
+  const NEW_NOTICE = 'Counter sale money is taken as a receipt in Billing and goes to the cash book.';
+  assert.deepEqual(frag.rows.map((r) => (r[0] === RETIRED_NOTICE ? NEW_NOTICE : r[0])).sort(), JSON.parse(JSON.stringify(ui.phrases())));
   for (const r of frag.rows) { assert.equal(r.length, 3); assert.equal(r[1], ''); assert.equal(r[2], ''); }
 });
 

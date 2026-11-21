@@ -22,6 +22,7 @@ const LIMIT = 580636;
 
 // Files in the G0 do-not-touch list that the integrator is allowed to edit (PLAN section 5, step 11). Nothing else.
 const INTEGRATOR_MAY_EDIT = Object.freeze(['scripts/analyze-modular-capability-delta.mjs']);
+const WAVE2_EDITED = Object.freeze(['www/integration-bridge.js']);
 
 // Second pass (D3): the launch-lock re-check must not hide the Owner PIN keypad while a step-up is waiting (the 8 s backstop
 // hid it and the step-up promise never settled, so every later Stores save said "Another save is in progress").
@@ -95,7 +96,7 @@ test('T1.2 the G0 frozen table is the tool copy of the G0 record and every file 
   }
   const bad = [];
   for (const [rel, rec] of Object.entries(frozen.files)) {
-    if (INTEGRATOR_MAY_EDIT.includes(rel)) continue;
+    if (INTEGRATOR_MAY_EDIT.includes(rel) || WAVE2_EDITED.includes(rel)) continue;
     const p = abs(rel);
     if (!fs.existsSync(p)) { bad.push(rel + ' (missing)'); continue; }
     const buf = fs.readFileSync(p);

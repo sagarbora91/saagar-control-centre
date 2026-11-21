@@ -43,7 +43,10 @@
     groomingMonthly: 'grooming', taxReport: 'tax', serviceAging: 'service', serviceJobCard: 'service',
     serviceTaxInvoice: 'service', ownerBrief: '', ownerMonthly: '', weeklyBrief: '',
     svcStockList: 'service', svcPartLedger: 'service', svcReorderList: 'service', svcGoodsReceipt: 'service',
-    svcDefectiveRegister: 'service', svcAdjustmentRegister: ''
+    svcDefectiveRegister: 'service', svcAdjustmentRegister: '',
+    serviceBillSummary: 'service', serviceTaxInvoiceV2: 'service', serviceCreditNote: 'service', serviceReceipt: 'service',
+    serviceRefundVoucher: 'service', serviceWarrantySheet: 'service', serviceUnbilledIssues: 'service',
+    serviceDaySummary: '', serviceAdvancesHeld: '', serviceRevenue: ''
   };
 
   /* Romanised and Devanagari synonyms. Keys: module id, module:target, r:<report type>, s:<settings route>. */
