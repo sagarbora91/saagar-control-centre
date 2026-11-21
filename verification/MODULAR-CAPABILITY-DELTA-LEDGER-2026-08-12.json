@@ -14,16 +14,16 @@
     "inventorySha256": "8efd32f52bad0774af8db0771903232d4afb06e3d5669d24c9ee08568bbbabb9"
   },
   "current": {
-    "capabilities": 760,
+    "capabilities": 767,
     "categories": {
-      "failure-posture": 129,
+      "failure-posture": 136,
       "permission": 32,
       "persisted-outcome": 90,
       "route": 13,
       "visible-action": 496
     },
     "conflicts": 0,
-    "inventorySha256": "f892f8972d5deefc1086874e3af52f3b2e9587e77fed435178f3b57008fb55b5"
+    "inventorySha256": "180a2daa98e27fea5b88f66cf8f01e1e11d7369c7d2132cc1b70e00cd64445a2"
   },
   "deltas": [
     {
@@ -23383,6 +23383,160 @@
     {
       "baseline": null,
       "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-area-ui:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 24,
+          "explicitFallbackSites": 20,
+          "swallowedCatchBlocks": 3,
+          "throwSites": 0,
+          "userVisibleErrorSites": 18
+        },
+        "surface": "script-service-billing-area-ui"
+      },
+      "currentOutcomeSha256": "26a74b556b1af9052e5ddc2f646ccba42063170a66db5610ba6f63d3de889399",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-calc:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 1,
+          "explicitFallbackSites": 20,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-billing-calc"
+      },
+      "currentOutcomeSha256": "37956a3ee28597b6a39a6bec7efa1f4cc8c13cea5e6f7d3d1d21c80ff58e4ea5",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-core:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 19,
+          "explicitFallbackSites": 17,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 16,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-billing-core"
+      },
+      "currentOutcomeSha256": "66023f4cda87487fa78031212c7bda16b6f8230c931d6cc367eabef6d8a93b57",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-docs:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 12,
+          "explicitFallbackSites": 44,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 1,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-billing-docs"
+      },
+      "currentOutcomeSha256": "ce86e078cb3303cf15cb66d1d1e222fd201e0a832213d84195a3d34affc0565d",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-migrate:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 10,
+          "explicitFallbackSites": 16,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-billing-migrate"
+      },
+      "currentOutcomeSha256": "98b5c5d0e50952ca2fa940f64d280c182c51454d5746b895c6880eaf991fb5b5",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-money:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 6,
+          "explicitFallbackSites": 21,
+          "swallowedCatchBlocks": 0,
+          "throwSites": 0,
+          "userVisibleErrorSites": 0
+        },
+        "surface": "script-service-billing-money"
+      },
+      "currentOutcomeSha256": "8a989479d18e60edb7d010645b96d9a573172191699e24c68eb66d5c8301d5a3",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
+      "capabilityId": "script-service-billing-ui:failure:posture",
+      "category": "failure-posture",
+      "change": "added",
+      "current": {
+        "category": "failure-posture",
+        "outcome": {
+          "catchBlocks": 29,
+          "explicitFallbackSites": 46,
+          "swallowedCatchBlocks": 5,
+          "throwSites": 0,
+          "userVisibleErrorSites": 47
+        },
+        "surface": "script-service-billing-ui"
+      },
+      "currentOutcomeSha256": "b1f0cb18486694a939ab0f7280957c9cfee64d6518fa880fed1999dff82dab24",
+      "ownerApproval": "pending",
+      "reason": "New Service Billing (Phase 2) script surface, one of seven www files; owner decision given in chat, 2026-11-18 (go-ahead to build Phase 2). Owner reconfirmation pending.",
+      "reviewClass": "service-wave-2-2026-11-billing-surface"
+    },
+    {
+      "baseline": null,
+      "baselineOutcomeSha256": null,
       "capabilityId": "script-service-stores-core:failure:posture",
       "category": "failure-posture",
       "change": "added",
@@ -44644,15 +44798,15 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "added": 457,
+    "added": 464,
     "bindingStructureChanged": 3,
-    "capabilityApprovalsRequired": 869,
+    "capabilityApprovalsRequired": 876,
     "changed": 60,
     "changedFailurePostures": 22,
     "changedVisibleActions": 38,
-    "comparisonDeltaSha256": "b989b1a45f574fe75b70bbe0e595c8c6bf41c626797b71336389d2b49e078aaa",
+    "comparisonDeltaSha256": "2d103f5c68c5a353ca66b42034fd6b5794e4f2fcfdf2ca1f2283d8de9be062e8",
     "handlerBodyHashOnly": 35,
-    "netCapabilities": 105,
+    "netCapabilities": 112,
     "removed": 352,
     "reportPresentationFallbacks": 1
   }
